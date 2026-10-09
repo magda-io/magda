@@ -1,6 +1,8 @@
 # Agent Manager DSH proxy PoC (agent-manager/server.mjs). It only needs to read
-# SandboxClaims (user -> sandbox) and, for stock-DSH managed-cookie mode, the
-# sandbox Pod log (launch token).
+# SandboxClaims (user -> sandbox) and, for stock-DSH managed-cookie mode, exec
+# into the sandbox Pod to read the launch-token file (the production Agent
+# Manager needs pods/exec for the post-claim bootstrap anyway, #3823). No
+# pods/log: the token is redacted from the Pod log.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -16,9 +18,11 @@ rules:
   - apiGroups: ["extensions.agents.x-k8s.io"]
     resources: ["sandboxclaims"]
     verbs: ["get", "list"]
+  # The exec WebSocket is a GET: the apiserver checks `get`, and `create` too
+  # (AuthorizePodWebsocketUpgradeCreatePermission, default on since 1.31).
   - apiGroups: [""]
-    resources: ["pods/log"]
-    verbs: ["get"]
+    resources: ["pods/exec"]
+    verbs: ["get", "create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

@@ -3,7 +3,7 @@
 // Usage: node lifecycle-browser.mjs <alice|bob> [--out file]
 import { execSync } from "node:child_process";
 import fs from "node:fs";
-import { launch, loggedInContext, recordMux, MOUNT, sleep } from "./lib/browser.mjs";
+import { dismissPreviewNotice, launch, loggedInContext, recordMux, MOUNT, sleep } from "./lib/browser.mjs";
 import { USERS } from "./lib/magda.mjs";
 
 const user = process.argv[2] || "alice";
@@ -28,7 +28,14 @@ const sandbox = claim.status.sandbox.name;
 report.sandbox = sandbox;
 report.agentManagerAuthMode = kubectl(`-n ${NS} get deploy agent-manager -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AUTH_MODE")].value}'`);
 const cookieExchanges = () => kubectl(`-n ${NS} logs deploy/agent-manager`).split("\n").filter((l) => l.includes("dsh-cookie-acquired")).length;
-const launchToken = () => (/token=([A-Za-z0-9_-]{6})/.exec(kubectl(`-n ${NS} logs ${sandbox} -c agent`).split("\n").filter((l) => l.startsWith("dsh web:")).pop() || "") || [])[1];
+// Fingerprint of the current launch token (hand-off file; the log is redacted).
+const launchToken = () => {
+    try {
+        return kubectl(`-n ${NS} exec ${sandbox} -c agent -- sh -c 'sha256sum /run/magda-agent/dsh-launch-token 2>/dev/null | cut -c1-12'`);
+    } catch {
+        return "";
+    }
+};
 
 const browser = await launch();
 const ctx = await loggedInContext(browser, `${user}@magda.test`);
@@ -39,6 +46,7 @@ await page.getByRole("button", { name: "Continue" }).click({ timeout: 8000 }).ca
 await waitFor(() => mux.opened.size >= 3, 20000);
 
 async function promptRoundTrip(tag) {
+    await dismissPreviewNotice(page);
     await page.getByRole("button", { name: "New session" }).first().click();
     // the new-session draft view must replace the current session before typing
     await page.getByText("Into the Unknown").waitFor({ timeout: 15000 });

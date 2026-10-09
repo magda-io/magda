@@ -1,13 +1,13 @@
 {
   "user": "bob",
-  "startedAt": "2026-10-09T01:51:10.464Z",
+  "startedAt": "2026-10-09T05:13:18.394Z",
   "checks": [
     {
       "name": "index + assets load, UI boots",
       "ok": true,
       "status": 200,
       "pageErrors": [],
-      "bootMs": 1058
+      "bootMs": 581
     },
     {
       "name": "one physical WebSocket carries several logical streams",
@@ -28,7 +28,7 @@
         "cancel": 0
       },
       "downlink": {
-        "item": 10,
+        "item": 3,
         "end": 0,
         "error": 0
       }
@@ -40,21 +40,21 @@
     {
       "name": "server->browser streaming over remote.mux (15 s turn)",
       "ok": true,
-      "downlinkFrames": 91,
+      "downlinkFrames": 90,
       "seconds": 16
     },
     {
       "name": "cancellation reaches the model stream",
       "ok": true,
-      "stopMs": 2501,
+      "stopMs": 2472,
       "mockLlm": [
-        "stream chatcmpl-mock-1791510689441 cancelled by client after 12 ticks"
+        "stream chatcmpl-mock-1791522818525 cancelled by client after 12 ticks"
       ]
     },
     {
       "name": "agent tool call streams back",
       "ok": true,
-      "toolText": "Tool finished. Output: tool-ran-on-6.12.76-linuxkit"
+      "toolText": "Tool finished. Output: tool-ran-on-7.0.14-linuxkit"
     },
     {
       "name": "terminal: input via HTTP RPC, output via remote.mux",
@@ -69,16 +69,16 @@
     {
       "name": "reconnect after Agent Manager restart mid-stream",
       "ok": true,
-      "socketDroppedAfterMs": 1019,
-      "newSocketAfterMs": 1435,
-      "failedReconnectAttempts": 0,
+      "socketDroppedAfterMs": 921,
+      "newSocketAfterMs": 1986,
+      "failedReconnectAttempts": 1,
       "turnCompletedAfterReconnect": true
     },
     {
       "name": "reconnect after magda-gateway restart mid-stream",
       "ok": true,
-      "socketDroppedAfterMs": 12822,
-      "newSocketAfterMs": 14268,
+      "socketDroppedAfterMs": 11620,
+      "newSocketAfterMs": 12837,
       "failedReconnectAttempts": 1,
       "turnCompletedAfterReconnect": true
     },
@@ -86,14 +86,22 @@
       "name": "refresh on the public mount reconnects to the same sessions",
       "ok": true,
       "url": "https://magda.test:18443/api/v0/agent/runtime/",
-      "sessionsBefore": 1,
-      "sessionsAfter": 1
+      "sessionsBefore": 2,
+      "sessionsAfter": 2,
+      "titlesBefore": [
+        "Mock session",
+        "Mock session"
+      ],
+      "titlesAfter": [
+        "Mock session",
+        "Mock session"
+      ]
     }
   ],
   "mux": {
-    "physicalSockets": 5,
-    "socketsClosed": 3,
-    "logicalStreamsOpened": 29,
+    "physicalSockets": 6,
+    "socketsClosed": 4,
+    "logicalStreamsOpened": 28,
     "endpoints": [
       "$events",
       "job/list",
@@ -104,13 +112,13 @@
       "workspace/follow"
     ],
     "uplink": {
-      "open": 29,
+      "open": 28,
       "item": 0,
       "end": 0,
-      "cancel": 1
+      "cancel": 0
     },
     "downlink": {
-      "item": 473,
+      "item": 469,
       "end": 0,
       "error": 0
     }
@@ -120,25 +128,24 @@
     "/api/credentials/describe": 2,
     "/api/dynamicCordisRunner/inventory": 6,
     "/api/session/modelCatalog": 6,
-    "/api/agentPresets/list": 14,
+    "/api/agentPresets/list": 15,
     "/api/session/list": 4,
     "/api/permissionPresets/catalog": 4,
-    "/api/workspace/initializeDefault": 1,
-    "/api/session/create": 1,
+    "/api/session/create": 2,
     "/api/llm/listProviders": 3,
     "/api/llm/listConfigurableProviders": 3,
+    "/api/schedule/catalog": 4,
     "/api/commands/list": 4,
     "/api/skills/list": 2,
     "/api/schedule/list": 4,
     "/api/session/prompt": 5,
-    "/api/schedule/catalog": 6,
     "/api/session/cancel": 1,
     "/api/terminal/environment": 2,
     "/api/terminal/list": 2,
     "/api/terminal/shells": 1,
     "/api/terminal/create": 1,
-    "/api/terminal/resize": 2,
+    "/api/terminal/resize": 1,
     "/api/terminal/write": 21
   },
-  "finishedAt": "2026-10-09T01:53:02.417Z"
+  "finishedAt": "2026-10-09T05:15:15.181Z"
 }

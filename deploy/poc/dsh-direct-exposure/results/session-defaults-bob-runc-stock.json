@@ -1,0 +1,112 @@
+{
+  "user": "bob",
+  "expected": {
+    "preset": "workspace-write",
+    "sandbox": "workspace-write",
+    "approval": "ask"
+  },
+  "checks": [
+    {
+      "name": "default preset for new sessions is workspace-write",
+      "ok": true,
+      "defaultPreset": "workspace-write",
+      "options": [
+        "read-only",
+        "workspace-write",
+        "danger-full-access"
+      ]
+    },
+    {
+      "name": "default Workspace initialized or reused",
+      "ok": true,
+      "path": "/data/workspace/deepseek-harness/default-workspace"
+    },
+    {
+      "name": "new session's permissions projection is workspace-write",
+      "ok": true,
+      "sessionId": "session-878baaae-8958-458f-b3ff-7dbc2695e738",
+      "permissions": {
+        "currentValue": "workspace-write"
+      }
+    },
+    {
+      "name": "prompt accepted (persists the session)",
+      "ok": true
+    },
+    {
+      "name": "journal: permission/preset = workspace-write",
+      "ok": true,
+      "preset": "workspace-write"
+    },
+    {
+      "name": "journal: sandbox/mode = workspace-write",
+      "ok": true,
+      "mode": "workspace-write"
+    },
+    {
+      "name": "journal: approval/policy = ask",
+      "ok": true,
+      "policy": "ask"
+    },
+    {
+      "name": "no later permission/sandbox/approval change in the session",
+      "ok": true,
+      "events": 3
+    }
+  ],
+  "catalog": {
+    "options": [
+      {
+        "value": "read-only",
+        "name": "read-only"
+      },
+      {
+        "value": "workspace-write",
+        "name": "workspace-write"
+      },
+      {
+        "value": "danger-full-access",
+        "name": "danger-full-access"
+      }
+    ],
+    "defaultOptions": [
+      {
+        "value": "read-only",
+        "name": "read-only"
+      },
+      {
+        "value": "workspace-write",
+        "name": "workspace-write"
+      },
+      {
+        "value": "danger-full-access",
+        "name": "danger-full-access"
+      }
+    ],
+    "defaultPreset": "workspace-write"
+  },
+  "sandbox": "bob-3",
+  "journal": [
+    {
+      "type": "permission/preset",
+      "seq": 0,
+      "data": {
+        "preset": "workspace-write"
+      }
+    },
+    {
+      "type": "sandbox/mode",
+      "seq": 1,
+      "data": {
+        "mode": "workspace-write"
+      }
+    },
+    {
+      "type": "approval/policy",
+      "seq": 2,
+      "data": {
+        "policy": "ask"
+      }
+    }
+  ]
+}

@@ -7,7 +7,7 @@
 // Prints a JSON report; exits non-zero when a check fails.
 import { execSync } from "node:child_process";
 import fs from "node:fs";
-import { launch, loggedInContext, recordMux, summariseMux, MOUNT, sleep } from "./lib/browser.mjs";
+import { dismissPreviewNotice, launch, loggedInContext, recordMux, summariseMux, MOUNT, sleep } from "./lib/browser.mjs";
 
 const user = process.argv[2] || "alice";
 const disrupt = process.argv.includes("--disrupt");
@@ -34,6 +34,7 @@ page.on("pageerror", (e) => pageErrors.push(String(e).slice(0, 200)));
 const mux = recordMux(page);
 
 async function send(text) {
+    await dismissPreviewNotice(page);
     const editor = page.locator('[contenteditable="true"]').first();
     await editor.click();
     await page.keyboard.type(text);
@@ -146,10 +147,14 @@ if (disrupt) {
 }
 
 // 7. refresh on the nested public URL
+// Compare by session id (sidebar row key), not title: DSH titles sessions
+// asynchronously, so a row can read "Untitled" before and "Mock session" after.
 const sessionTitles = async () =>
-    (await page.locator("[role=tree] [role=treeitem]").allInnerTexts())
-        .map((t) => t.split("\n")[0].trim())
-        .filter((t) => t && t !== "New Session" && t !== "Default workspace");
+    page.locator("[role=tree] [role=treeitem][data-row-key^='session:']").evaluateAll((rows) =>
+        rows
+            .filter((r) => r.querySelector("[class*=title]")?.textContent.trim() !== "New Session")
+            .map((r) => r.getAttribute("data-row-key").slice("session:".length))
+    );
 const sessionsBefore = await sessionTitles();
 await page.reload();
 await waitFor(() => mux.sockets.at(-1) && !mux.sockets.at(-1).closedAt && mux.opened.size > 0, 20000);
@@ -158,7 +163,7 @@ const sessionsAfter = await sessionTitles();
 check(
     "refresh on the public mount reconnects to the same sessions",
     sessionsBefore.length > 0 && sessionsBefore.every((t) => sessionsAfter.includes(t)),
-    { url: page.url(), sessionsBefore: sessionsBefore.length, sessionsAfter: sessionsAfter.length }
+    { url: page.url(), sessionsBefore: sessionsBefore.length, sessionsAfter: sessionsAfter.length, idsBefore: sessionsBefore, idsAfter: sessionsAfter }
 );
 
 report.mux = summariseMux(mux);

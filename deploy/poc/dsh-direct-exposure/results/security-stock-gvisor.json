@@ -32,6 +32,17 @@
       ]
     },
     {
+      "name": "agent mount carries the relaxed CSP (script-src 'unsafe-inline' 'unsafe-eval')",
+      "ok": true,
+      "scriptSrc": "'self' 'unsafe-inline' 'unsafe-eval'"
+    },
+    {
+      "name": "other Magda paths keep the strict CSP (script-src 'self', no unsafe-*)",
+      "ok": true,
+      "whoami": "'self'",
+      "siblingPath": "'self'"
+    },
+    {
       "name": "authenticated same-origin WebSocket upgrade succeeds",
       "ok": true,
       "status": 101
@@ -82,11 +93,20 @@
     {
       "name": "stock DSH keeps its cookie-signing secret on the PVC",
       "ok": true
+    },
+    {
+      "name": "launch token is redacted from the Pod log (hand-off via file + pods/exec)",
+      "ok": true
     }
   ],
-  "sandbox": "alice-gvisor-stock-4",
+  "sandbox": "dsh-gvisor-stock-gdc5x",
   "template": "dsh-gvisor-stock",
   "agentManagerAuthMode": "managed-cookie",
+  "csp": {
+    "agentMount": "'self' 'unsafe-inline' 'unsafe-eval'",
+    "whoami": "'self'",
+    "siblingPath": "'self'"
+  },
   "serviceLevel": {
     "indexDeclared": 401,
     "indexUndeclared": 401,

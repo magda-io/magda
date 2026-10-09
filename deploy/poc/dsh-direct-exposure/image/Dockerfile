@@ -4,6 +4,8 @@
 #   - DSH 0.2.1-alpha.1, the first release with `--public-url` (#3972 upstream);
 #   - no loopback relay: the Magda profile patch binds the DSH webserver row to
 #     0.0.0.0:3080, so the Sandbox Service targets DSH itself;
+#   - DSH runs under dsh-launch.mjs: the launch token goes to a 0600 file in an
+#     in-memory emptyDir (/run/magda-agent) instead of stdout/log aggregation;
 #   - optional `nba` target: the same image plus the Discussion #8528
 #     `--no-browser-auth` port (image/dsh-patches/).
 #
@@ -38,10 +40,11 @@ RUN npm install -g --no-audit --no-fund /tmp/mgd/*.tgz \
 RUN groupadd --gid 10001 agent \
   && useradd --uid 10001 --gid 10001 --create-home --shell /bin/bash agent \
   && mkdir -p /data && chown agent:agent /data \
-  && install -d -m 0755 /etc/magda-agent
+  && install -d -m 0755 /etc/magda-agent /usr/local/lib/magda-agent
 
 COPY --chmod=0644 magda.cordis.patch.yml /etc/magda-agent/magda.cordis.patch.yml
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/magda-agent-entrypoint
+COPY --chmod=0644 dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
 
 ENV DSH_HOME=/data/dsh-home \
   XDG_CONFIG_HOME=/data/config \

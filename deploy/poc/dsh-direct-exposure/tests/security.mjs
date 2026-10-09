@@ -48,6 +48,26 @@ check(
     !setCookies.some((c) => /^dsh-auth-/.test(c)) && !/[?&]token=/.test(r.body),
     { setCookieNames: setCookies.map((c) => c.split("=")[0]) }
 );
+// --- CSP relaxation is scoped to the agent mount (review task E) -----------
+// The gateway's helmetPerPath entry for /api/v0/agent/runtime relaxes
+// script-src for DSH's UI; every other Magda path keeps the strict default.
+const scriptSrc = (res) =>
+    /(?:^|;)\s*script-src\s+([^;]*)/.exec(res.headers["content-security-policy"] || "")?.[1].trim();
+const cspAgent = scriptSrc(r);
+const cspWhoami = scriptSrc(await request("GET", "/api/v0/auth/users/whoami", { headers: { cookie } }));
+const cspSibling = scriptSrc(await request("GET", "/api/v0/agent/runtime-sibling/", { headers: { cookie } }));
+report.csp = { agentMount: cspAgent, whoami: cspWhoami, siblingPath: cspSibling };
+check(
+    "agent mount carries the relaxed CSP (script-src 'unsafe-inline' 'unsafe-eval')",
+    /'unsafe-inline'/.test(cspAgent) && /'unsafe-eval'/.test(cspAgent),
+    { scriptSrc: cspAgent }
+);
+check(
+    "other Magda paths keep the strict CSP (script-src 'self', no unsafe-*)",
+    cspWhoami === "'self'" && cspSibling === "'self'",
+    { whoami: cspWhoami, siblingPath: cspSibling }
+);
+
 r = await openMux({ cookie });
 check("authenticated same-origin WebSocket upgrade succeeds", r.status === 101, { status: r.status });
 r.ws?.close();
@@ -128,6 +148,11 @@ if (variant === "nba") {
     check("Service: undeclared Host /api -> 403 (fence before auth)", probe.apiUndeclared === 403 && probe.wsUndeclaredHost === 403);
     const files = kubectl(`-n ${NS} exec ${sandbox} -- sh -c 'ls -a $DSH_HOME'`);
     check("stock DSH keeps its cookie-signing secret on the PVC", files.includes(".credentials.yaml"));
+    const logs = kubectl(`-n ${NS} logs ${sandbox}`);
+    check(
+        "launch token is redacted from the Pod log (hand-off via file + pods/exec)",
+        /token=<redacted>/.test(logs) && !/token=(?!<redacted>)[A-Za-z0-9_-]{8,}/.test(logs)
+    );
 }
 
 if (out) fs.writeFileSync(out, JSON.stringify(report, null, 2));

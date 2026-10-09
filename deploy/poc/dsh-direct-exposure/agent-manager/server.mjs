@@ -13,8 +13,9 @@
 //      drop X-Magda-Session and other Magda headers.
 //   4. DSH browser auth, by AUTH_MODE:
 //      managed-cookie  stock DSH. The proxy reads the launch token from the
-//                      sandbox Pod log, redeems it server-side (GET /?token= with
-//                      the external Host), keeps the authority-bound cookie and
+//                      sandbox's token file (written by image/dsh-launch.mjs) via
+//                      pods/exec, redeems it server-side (GET /?token= with the
+//                      external Host), keeps the authority-bound cookie and
 //                      injects it upstream. The browser never sees token/cookie.
 //      none            DSH runs with --no-browser-auth (#8528 port).
 //      passthrough     forward the browser's own ?token= exchange and rewrite
@@ -24,6 +25,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import https from "node:https";
+import { fileURLToPath } from "node:url";
 
 const cfg = {
     port: Number(process.env.PORT || 8080),
@@ -35,7 +37,8 @@ const cfg = {
     servicePort: Number(process.env.SANDBOX_SERVICE_PORT || 3080),
     authMode: process.env.AUTH_MODE || "managed-cookie",
     claimLabel: process.env.CLAIM_USER_LABEL || "magda.io/agent-user",
-    agentContainer: process.env.AGENT_CONTAINER || "agent"
+    agentContainer: process.env.AGENT_CONTAINER || "agent",
+    launchTokenFile: process.env.LAUNCH_TOKEN_FILE || "/run/magda-agent/dsh-launch-token"
 };
 if (!cfg.jwtSecret) throw new Error("JWT_SECRET is required");
 if (!["managed-cookie", "none", "passthrough"].includes(cfg.authMode)) {
@@ -134,15 +137,97 @@ async function resolveSandbox(userId) {
 // sandbox name -> "dsh-auth-<hash>=<value>"
 const cookieJar = new Map();
 
+// Run a command in a Pod over the Kubernetes exec WebSocket protocol
+// (v5/v4.channel.k8s.io: binary frames, first byte = channel; 1 stdout,
+// 2 stderr, 3 final status JSON). Needs RBAC `create pods/exec`. Returns stdout.
+function kubeExec(pod, command, timeoutMs = 10_000) {
+    const query = new URLSearchParams({ container: cfg.agentContainer, stdout: "true", stderr: "true" });
+    for (const arg of command) query.append("command", arg);
+    return new Promise((resolve, reject) => {
+        const req = https.request({
+            host: process.env.KUBERNETES_SERVICE_HOST,
+            port: process.env.KUBERNETES_SERVICE_PORT,
+            path: `/api/v1/namespaces/${cfg.namespace}/pods/${pod}/exec?${query}`,
+            ca: fs.readFileSync(`${SA_DIR}/ca.crt`),
+            headers: {
+                authorization: `Bearer ${fs.readFileSync(`${SA_DIR}/token`, "utf8")}`,
+                connection: "Upgrade",
+                upgrade: "websocket",
+                "sec-websocket-version": "13",
+                "sec-websocket-key": crypto.randomBytes(16).toString("base64"),
+                "sec-websocket-protocol": "v5.channel.k8s.io, v4.channel.k8s.io"
+            }
+        });
+        req.setTimeout(timeoutMs, () => req.destroy(new Error(`exec ${pod}: timeout`)));
+        req.on("error", reject);
+        req.on("response", (res) => {
+            let body = "";
+            res.on("data", (d) => (body += d));
+            res.on("end", () => reject(new Error(`exec ${pod}: HTTP ${res.statusCode} ${body.slice(0, 200)}`)));
+        });
+        req.on("upgrade", (res, socket, head) => {
+            const out = { 1: [], 2: [], 3: [] };
+            let buf = head;
+            let channel;
+            const timer = setTimeout(() => socket.destroy(new Error(`exec ${pod}: timeout`)), timeoutMs);
+            socket.on("data", (d) => {
+                buf = Buffer.concat([buf, d]);
+                for (;;) {
+                    if (buf.length < 2) return;
+                    const opcode = buf[0] & 0x0f;
+                    let len = buf[1] & 0x7f;
+                    let off = 2;
+                    if (len === 126) {
+                        if (buf.length < 4) return;
+                        len = buf.readUInt16BE(2);
+                        off = 4;
+                    } else if (len === 127) {
+                        if (buf.length < 10) return;
+                        len = Number(buf.readBigUInt64BE(2));
+                        off = 10;
+                    }
+                    if (buf.length < off + len) return;
+                    const payload = buf.subarray(off, off + len);
+                    buf = buf.subarray(off + len);
+                    if (opcode === 0x2 && payload.length) {
+                        channel = payload[0];
+                        out[channel]?.push(payload.subarray(1));
+                    } else if (opcode === 0x0) {
+                        out[channel]?.push(payload); // continuation of the last frame
+                    } else if (opcode === 0x8) {
+                        socket.end();
+                    }
+                }
+            });
+            socket.on("error", (e) => {
+                clearTimeout(timer);
+                reject(e);
+            });
+            socket.on("close", () => {
+                clearTimeout(timer);
+                const text = (c) => Buffer.concat(out[c]).toString("utf8");
+                let status;
+                try {
+                    status = JSON.parse(text(3) || "{}");
+                } catch {}
+                if (status?.status !== "Success") {
+                    return reject(
+                        new Error(`exec ${pod}: ${status?.message || "no status"} ${text(2).slice(0, 200)}`)
+                    );
+                }
+                resolve(text(1));
+            });
+        });
+        req.end();
+    });
+}
+
 async function readLaunchToken(sandbox) {
-    // The Sandbox Pod is named after the Sandbox (Agent Sandbox v1.0.4).
-    const logText = await kube(
-        `/api/v1/namespaces/${cfg.namespace}/pods/${sandbox}/log?container=${cfg.agentContainer}&tailLines=200`
-    );
-    const lines = logText.split("\n").filter((l) => l.startsWith("dsh web: "));
-    const match = /[?&]token=([A-Za-z0-9_-]+)/.exec(lines[lines.length - 1] || "");
-    if (!match) throw new Error(`no DSH launch token in ${sandbox} log`);
-    return match[1];
+    // The Sandbox Pod is named after the Sandbox (Agent Sandbox v1.0.4), also
+    // for a Sandbox adopted from a warm pool (tests/warmpool-adoption.mjs).
+    const token = (await kubeExec(sandbox, ["cat", cfg.launchTokenFile])).trim();
+    if (!/^[A-Za-z0-9_-]+$/.test(token)) throw new Error(`no DSH launch token in ${sandbox}`);
+    return token;
 }
 
 function exchangeLaunchToken(target, token) {
@@ -419,13 +504,19 @@ server.on("upgrade", async (req, socket, head) => {
     connectWebSocket(req, socket, head, auth, cookie, 0);
 });
 
-server.listen(cfg.port, () =>
-    log("listening", { port: cfg.port, authMode: cfg.authMode, externalAuthority: cfg.externalAuthority })
-);
+// Exported for tests/am-upstream-headers.mjs, which imports this module
+// without starting the server.
+export { DROP_REQUEST_HEADERS, upstreamHeaders, verifyMagdaSession };
 
-process.on("SIGTERM", () => {
-    log("sigterm", { upgradedSockets: upgraded.size });
-    server.close();
-    upgraded.forEach((s) => s.destroy());
-    setTimeout(() => process.exit(0), 500).unref();
-});
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    server.listen(cfg.port, () =>
+        log("listening", { port: cfg.port, authMode: cfg.authMode, externalAuthority: cfg.externalAuthority })
+    );
+
+    process.on("SIGTERM", () => {
+        log("sigterm", { upgradedSockets: upgraded.size });
+        server.close();
+        upgraded.forEach((s) => s.destroy());
+        setTimeout(() => process.exit(0), 500).unref();
+    });
+}

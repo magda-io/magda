@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Render manifests/30-sandbox-templates.yaml: one SandboxTemplate + 0-replica
-# SandboxWarmPool per (runtime, DSH auth) variant used by #3841:
+# Render manifests/30-sandbox-templates.yaml: one SandboxTemplate + SandboxWarmPool
+# (REPLICAS, default 0 = every claim cold-starts; tests/warmpool-adoption.mjs
+# patches one pool to 1) per (runtime, DSH auth) variant used by #3841:
 #   dsh-gvisor-stock  dsh-runc-stock  dsh-gvisor-nba  dsh-runc-nba
 # plus dsh-runc-stock-hb120: DSH WebSocket heartbeat raised to 120 s, the
 # counterfactual for the ingress idle-timeout test.
@@ -125,6 +126,15 @@ ${runtime_line}
           volumeMounts:
             - name: data
               mountPath: /data
+            # DSH launch token (dsh-launch.mjs), per process: memory-backed, not
+            # on the PVC, gone with the Pod. Agent Manager reads it via pods/exec.
+            - name: run
+              mountPath: /run/magda-agent
+      volumes:
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
 ---
 apiVersion: extensions.agents.x-k8s.io/v1beta1
 kind: SandboxWarmPool
@@ -132,7 +142,7 @@ metadata:
   name: ${name}
   namespace: magda-agent-poc
 spec:
-  replicas: 0
+  replicas: ${REPLICAS:-0}
   sandboxTemplateRef:
     name: ${name}
 YAML

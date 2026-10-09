@@ -106,6 +106,15 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            # DSH launch token (dsh-launch.mjs), per process: memory-backed, not
+            # on the PVC, gone with the Pod. Agent Manager reads it via pods/exec.
+            - name: run
+              mountPath: /run/magda-agent
+      volumes:
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
 ---
 apiVersion: extensions.agents.x-k8s.io/v1beta1
 kind: SandboxWarmPool
@@ -223,6 +232,15 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            # DSH launch token (dsh-launch.mjs), per process: memory-backed, not
+            # on the PVC, gone with the Pod. Agent Manager reads it via pods/exec.
+            - name: run
+              mountPath: /run/magda-agent
+      volumes:
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
 ---
 apiVersion: extensions.agents.x-k8s.io/v1beta1
 kind: SandboxWarmPool
@@ -340,6 +358,15 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            # DSH launch token (dsh-launch.mjs), per process: memory-backed, not
+            # on the PVC, gone with the Pod. Agent Manager reads it via pods/exec.
+            - name: run
+              mountPath: /run/magda-agent
+      volumes:
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
 ---
 apiVersion: extensions.agents.x-k8s.io/v1beta1
 kind: SandboxWarmPool
@@ -457,6 +484,15 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            # DSH launch token (dsh-launch.mjs), per process: memory-backed, not
+            # on the PVC, gone with the Pod. Agent Manager reads it via pods/exec.
+            - name: run
+              mountPath: /run/magda-agent
+      volumes:
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
 ---
 apiVersion: extensions.agents.x-k8s.io/v1beta1
 kind: SandboxWarmPool
@@ -574,6 +610,15 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            # DSH launch token (dsh-launch.mjs), per process: memory-backed, not
+            # on the PVC, gone with the Pod. Agent Manager reads it via pods/exec.
+            - name: run
+              mountPath: /run/magda-agent
+      volumes:
+        - name: run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Mi
 ---
 apiVersion: extensions.agents.x-k8s.io/v1beta1
 kind: SandboxWarmPool

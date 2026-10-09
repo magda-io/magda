@@ -32,6 +32,17 @@
       ]
     },
     {
+      "name": "agent mount carries the relaxed CSP (script-src 'unsafe-inline' 'unsafe-eval')",
+      "ok": true,
+      "scriptSrc": "'self' 'unsafe-inline' 'unsafe-eval'"
+    },
+    {
+      "name": "other Magda paths keep the strict CSP (script-src 'self', no unsafe-*)",
+      "ok": true,
+      "whoami": "'self'",
+      "siblingPath": "'self'"
+    },
+    {
       "name": "authenticated same-origin WebSocket upgrade succeeds",
       "ok": true,
       "status": 101
@@ -103,7 +114,6 @@
         ".",
         "..",
         "profiles",
-        "sessions",
         "storages"
       ]
     },
@@ -112,9 +122,14 @@
       "ok": true
     }
   ],
-  "sandbox": "bob-runc-nba-2",
+  "sandbox": "bob-nba-1",
   "template": "dsh-runc-nba",
   "agentManagerAuthMode": "none",
+  "csp": {
+    "agentMount": "'self' 'unsafe-inline' 'unsafe-eval'",
+    "whoami": "'self'",
+    "siblingPath": "'self'"
+  },
   "serviceLevel": {
     "indexDeclared": 200,
     "indexUndeclared": 403,

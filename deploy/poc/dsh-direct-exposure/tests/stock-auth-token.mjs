@@ -11,9 +11,9 @@ const kubectl = (args) => execSync(`kubectl ${args}`, { encoding: "utf8" }).trim
 const claim = JSON.parse(kubectl(`-n ${NS} get sandboxclaim -l magda.io/agent-user=${USERS.alice.id} -o json`)).items[0];
 const sandbox = claim.status.sandbox.name;
 const svc = `${sandbox}.${NS}.svc.cluster.local`;
-const token = /token=([A-Za-z0-9_-]+)/.exec(
-    kubectl(`-n ${NS} logs ${sandbox}`).split("\n").filter((l) => l.startsWith("dsh web:")).pop()
-)[1];
+// The launch token is redacted from the Pod log; read the hand-off file
+// (image/dsh-launch.mjs) the way Agent Manager does, via exec.
+const token = kubectl(`-n ${NS} exec ${sandbox} -c agent -- cat /run/magda-agent/dsh-launch-token`);
 
 // Each case: exchange the token with (exchangeHost, path), then use the
 // resulting cookie with useHost on GET / and POST /api/session/list.

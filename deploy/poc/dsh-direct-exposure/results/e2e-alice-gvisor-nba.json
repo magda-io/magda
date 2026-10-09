@@ -1,13 +1,13 @@
 {
   "user": "alice",
-  "startedAt": "2026-10-09T01:53:22.305Z",
+  "startedAt": "2026-10-09T05:25:10.092Z",
   "checks": [
     {
       "name": "index + assets load, UI boots",
       "ok": true,
       "status": 200,
       "pageErrors": [],
-      "bootMs": 1413
+      "bootMs": 715
     },
     {
       "name": "one physical WebSocket carries several logical streams",
@@ -28,7 +28,7 @@
         "cancel": 0
       },
       "downlink": {
-        "item": 10,
+        "item": 5,
         "end": 0,
         "error": 0
       }
@@ -40,15 +40,15 @@
     {
       "name": "server->browser streaming over remote.mux (15 s turn)",
       "ok": true,
-      "downlinkFrames": 89,
+      "downlinkFrames": 96,
       "seconds": 16
     },
     {
       "name": "cancellation reaches the model stream",
       "ok": true,
-      "stopMs": 2455,
+      "stopMs": 2467,
       "mockLlm": [
-        "stream chatcmpl-mock-1791510823140 cancelled by client after 12 ticks"
+        "stream chatcmpl-mock-1791523531399 cancelled by client after 12 ticks"
       ]
     },
     {
@@ -69,17 +69,17 @@
     {
       "name": "reconnect after Agent Manager restart mid-stream",
       "ok": true,
-      "socketDroppedAfterMs": 1518,
-      "newSocketAfterMs": 2913,
+      "socketDroppedAfterMs": 1180,
+      "newSocketAfterMs": 2464,
       "failedReconnectAttempts": 1,
       "turnCompletedAfterReconnect": true
     },
     {
       "name": "reconnect after magda-gateway restart mid-stream",
       "ok": true,
-      "socketDroppedAfterMs": 12093,
-      "newSocketAfterMs": 13446,
-      "failedReconnectAttempts": 1,
+      "socketDroppedAfterMs": 11758,
+      "newSocketAfterMs": 12079,
+      "failedReconnectAttempts": 0,
       "turnCompletedAfterReconnect": true
     },
     {
@@ -87,13 +87,19 @@
       "ok": true,
       "url": "https://magda.test:18443/api/v0/agent/runtime/",
       "sessionsBefore": 1,
-      "sessionsAfter": 1
+      "sessionsAfter": 1,
+      "idsBefore": [
+        "session-bda492ce-3ade-4b74-aa87-4f896092afa4"
+      ],
+      "idsAfter": [
+        "session-bda492ce-3ade-4b74-aa87-4f896092afa4"
+      ]
     }
   ],
   "mux": {
-    "physicalSockets": 6,
-    "socketsClosed": 4,
-    "logicalStreamsOpened": 28,
+    "physicalSockets": 5,
+    "socketsClosed": 3,
+    "logicalStreamsOpened": 29,
     "endpoints": [
       "$events",
       "job/list",
@@ -104,13 +110,13 @@
       "workspace/follow"
     ],
     "uplink": {
-      "open": 28,
+      "open": 29,
       "item": 0,
       "end": 0,
-      "cancel": 0
+      "cancel": 1
     },
     "downlink": {
-      "item": 470,
+      "item": 483,
       "end": 0,
       "error": 0
     }
@@ -120,13 +126,13 @@
     "/api/credentials/describe": 2,
     "/api/dynamicCordisRunner/inventory": 6,
     "/api/session/modelCatalog": 6,
-    "/api/agentPresets/list": 14,
+    "/api/agentPresets/list": 15,
     "/api/session/list": 4,
     "/api/permissionPresets/catalog": 4,
     "/api/workspace/initializeDefault": 1,
-    "/api/session/create": 2,
     "/api/llm/listProviders": 3,
     "/api/llm/listConfigurableProviders": 3,
+    "/api/session/create": 1,
     "/api/commands/list": 4,
     "/api/skills/list": 2,
     "/api/schedule/list": 4,
@@ -137,8 +143,8 @@
     "/api/terminal/list": 2,
     "/api/terminal/shells": 1,
     "/api/terminal/create": 1,
-    "/api/terminal/resize": 2,
+    "/api/terminal/resize": 1,
     "/api/terminal/write": 21
   },
-  "finishedAt": "2026-10-09T01:55:16.856Z"
+  "finishedAt": "2026-10-09T05:27:08.595Z"
 }

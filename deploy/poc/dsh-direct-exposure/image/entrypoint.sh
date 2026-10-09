@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 # Magda agent entrypoint for #3841: DSH Web listens on 0.0.0.0:3080 directly
 # (no loopback relay / bridge sidecar). tini is PID 1 and reaps orphans.
+# DSH runs under dsh-launch.mjs, which writes the launch token to
+# DSH_LAUNCH_TOKEN_FILE (in-memory emptyDir, read by Agent Manager via
+# pods/exec) and redacts it from stdout.
 #
 # Environment:
 #   DSH_PUBLIC_URL     advertised browser root, e.g.
 #                      https://magda.test:18443/api/v0/agent/runtime/
 #   DSH_TRUSTED_HOSTS  extra Host authorities for the DSH fence (space separated)
 #   DSH_BROWSER_AUTH   "false" adds --no-browser-auth (only the `nba` image has it)
+#   DSH_LAUNCH_TOKEN_FILE  default /run/magda-agent/dsh-launch-token
 #   DSH_WS_HEARTBEAT_MS  override the /api/remote.mux WebSocket ping interval
 #                      (default 2000); used only by the ingress-timeout counterfactual
 set -euo pipefail
@@ -32,4 +36,4 @@ if [[ -n "${DSH_PUBLIC_URL:-}" ]]; then args+=(--public-url "$DSH_PUBLIC_URL"); 
 for h in ${DSH_TRUSTED_HOSTS:-}; do args+=(--trusted-host "$h"); done
 if [[ "${DSH_BROWSER_AUTH:-true}" == "false" ]]; then args+=(--no-browser-auth); fi
 
-exec dsh web "${launcher[@]}" "${args[@]}" "$@"
+exec node /usr/local/lib/magda-agent/dsh-launch.mjs dsh web "${launcher[@]}" "${args[@]}" "$@"

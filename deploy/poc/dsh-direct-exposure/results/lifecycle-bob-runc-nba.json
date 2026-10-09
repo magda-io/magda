@@ -9,8 +9,8 @@
       "name": "DSH process restart (same Pod, same PVC): browser reconnects and the agent works again",
       "ok": true,
       "launchTokenChanged": false,
-      "socketDroppedAfterMs": 171,
-      "reconnectedAfterMs": 6397,
+      "socketDroppedAfterMs": 466,
+      "reconnectedAfterMs": 5189,
       "transientSockets": 3,
       "sessionFilesBefore": 2,
       "sessionFilesAfter": 2,
@@ -21,11 +21,11 @@
       "name": "Sandbox suspend + resume (Pod deleted, PVC kept): browser reconnects and the agent works again",
       "ok": true,
       "podDeleted": true,
-      "suspendedSeconds": 15,
+      "suspendedSeconds": 13,
       "newPodUid": true,
-      "pvcCreatedAt": "2026-10-08T06:03:54Z",
-      "socketDroppedAfterMs": 132,
-      "reconnectedAfterMs": 20612,
+      "pvcCreatedAt": "2026-10-09T05:24:26Z",
+      "socketDroppedAfterMs": 289,
+      "reconnectedAfterMs": 15989,
       "transientSockets": 5,
       "sessionFilesBefore": 3,
       "sessionFilesAfter": 3,
@@ -33,6 +33,6 @@
       "dshCookieReExchanges": 0
     }
   ],
-  "sandbox": "bob-runc-nba-1",
+  "sandbox": "bob-nba-1",
   "agentManagerAuthMode": "none"
 }

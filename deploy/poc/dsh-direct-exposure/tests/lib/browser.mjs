@@ -83,3 +83,12 @@ export function summariseMux(rec) {
 }
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Dismiss DSH's "Preview Notice" dialog if it is showing. On a first load it
+ * can render seconds after the UI boots, and it then intercepts clicks into the
+ * prompt editor, so call this before interacting with the page.
+ */
+export async function dismissPreviewNotice(page, timeout = 1000) {
+    await page.getByRole("button", { name: "Continue" }).click({ timeout }).catch(() => {});
+}
