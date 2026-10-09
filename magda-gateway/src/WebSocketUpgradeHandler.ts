@@ -51,14 +51,44 @@ function isWebSocketHandshake(req: IncomingMessage) {
     );
 }
 
-function rejectRawSocket(socket: Duplex, statusCode: number) {
-    if (socket.writable) {
-        socket.end(
-            `HTTP/1.1 ${statusCode} ${STATUS_CODES[statusCode]}\r\n` +
-                "Connection: close\r\nContent-Length: 0\r\n\r\n"
-        );
+// how long a closing handshake socket may take to flush & close before it is destroyed
+const SOCKET_CLOSE_TIMEOUT_MS = 5000;
+
+/**
+ * Close a socket without discarding data that is still queued for the client.
+ * `end()` flushes pending writes before closing, whereas destroying the socket straight away
+ * may drop them (and closing with unread request bytes makes the TCP stack send a reset).
+ * The socket is destroyed if it hasn't closed within a short timeout.
+ */
+export function closeSocketGracefully(socket: Duplex, data?: string) {
+    if (!socket.writable) {
+        socket.destroy();
+        return;
     }
-    socket.destroy();
+    socket.end(data);
+    // read & discard anything the client still sends so the socket can close normally
+    socket.resume();
+    const timer = setTimeout(() => socket.destroy(), SOCKET_CLOSE_TIMEOUT_MS);
+    timer.unref();
+    socket.once("close", () => clearTimeout(timer));
+}
+
+/**
+ * Answer a WebSocket handshake that hasn't been upgraded with a plain HTTP response, then close
+ * the socket. Must not be used once the connection has been upgraded.
+ */
+export function rejectWebSocketHandshake(
+    socket: Duplex,
+    statusCode: number,
+    message: string = STATUS_CODES[statusCode]
+) {
+    closeSocketGracefully(
+        socket,
+        `HTTP/1.1 ${statusCode} ${STATUS_CODES[statusCode]}\r\n` +
+            "Connection: close\r\nContent-Type: text/plain\r\n" +
+            `Content-Length: ${Buffer.byteLength(message)}\r\n\r\n` +
+            message
+    );
 }
 
 /**
@@ -93,10 +123,10 @@ export default class WebSocketUpgradeHandler {
         socket.on("error", () => socket.destroy());
 
         if (this.closing) {
-            return rejectRawSocket(socket, 503);
+            return rejectWebSocketHandshake(socket, 503);
         }
         if (!isWebSocketHandshake(req)) {
-            return rejectRawSocket(socket, 400);
+            return rejectWebSocketHandshake(socket, 400);
         }
 
         this.sockets.add(socket);
@@ -115,7 +145,7 @@ export default class WebSocketUpgradeHandler {
         res.once("finish", () => {
             // the app answered the handshake with an ordinary HTTP response
             if (!context.claimed) {
-                socket.end();
+                closeSocketGracefully(socket);
             }
         });
 

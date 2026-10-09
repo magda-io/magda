@@ -10,6 +10,10 @@ import {
     MAGDA_ADMIN_PORTAL_ID
 } from "magda-typescript-common/src/registry/TenantConsts.js";
 import { GenericProxyRouterOptions } from "./createGenericProxyRouter.js";
+import { rejectWebSocketHandshake } from "./WebSocketUpgradeHandler.js";
+
+// default time allowed for the upstream to answer a WebSocket handshake (seconds)
+export const DEFAULT_WEBSOCKET_HANDSHAKE_TIMEOUT = 60;
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
@@ -110,22 +114,16 @@ function isSocket(res: any): res is Duplex {
 }
 
 /**
- * Answer a WebSocket handshake that failed before / while connecting to upstream.
+ * State of one proxied WebSocket connection, keyed by the client socket.
  */
-function writeSocketError(socket: Duplex, statusCode: number, message: string) {
-    try {
-        if (socket.writable) {
-            socket.end(
-                `HTTP/1.1 ${statusCode} ${message}\r\n` +
-                    "Connection: close\r\nContent-Type: text/plain\r\n" +
-                    `Content-Length: ${Buffer.byteLength(message)}\r\n\r\n` +
-                    message
-            );
-        }
-    } finally {
-        socket.destroy();
-    }
+interface WebSocketProxyState {
+    // the upstream answered `101` and the connection is now a WebSocket byte stream
+    upgraded: boolean;
+    // the upstream didn't answer the handshake in time
+    timedOut: boolean;
 }
+
+const webSocketProxyStates = new WeakMap<Duplex, WebSocketProxyState>();
 
 export default function createBaseProxy(
     options: GenericProxyRouterOptions
@@ -157,12 +155,32 @@ export default function createBaseProxy(
     );
 
     proxy.on("error", function (err, req, res) {
-        console.error(err);
         if (isSocket(res)) {
-            // WebSocket upgrade (`proxy.ws`) error: `res` is the client socket
-            writeSocketError(res, 502, "Bad Gateway");
+            // WebSocket (`proxy.ws`) error: `res` is the client socket.
+            // http-proxy reports errors of the upstream request and, after the upgrade, of the
+            // upstream socket through this same event.
+            const state = webSocketProxyStates.get(res);
+            if (res.destroyed || !res.writable) {
+                // the client is gone (e.g. it disconnected while the upstream was connecting),
+                // or a response is already being sent and the socket is closing
+                return;
+            }
+            if (state?.upgraded) {
+                // HTTP is over: never write an HTTP response into the WebSocket stream
+                console.error(err);
+                res.destroy();
+                return;
+            }
+            if (state?.timedOut) {
+                console.error("WebSocket handshake timed out: " + req.url);
+                rejectWebSocketHandshake(res, 504);
+                return;
+            }
+            console.error(err);
+            rejectWebSocketHandshake(res, 502);
             return;
         }
+        console.error(err);
         try {
             res.writeHead(500, {
                 "Content-Type": "text/plain"
@@ -291,17 +309,58 @@ export default function createBaseProxy(
         }
     });
 
+    const handshakeTimeoutMs =
+        (typeof options.websocketHandshakeTimeout === "number" &&
+        options.websocketHandshakeTimeout > 0
+            ? options.websocketHandshakeTimeout
+            : DEFAULT_WEBSOCKET_HANDSHAKE_TIMEOUT) * 1000;
+
     proxy.on("proxyReqWs", function (proxyReq, req, socket) {
+        const state: WebSocketProxyState = { upgraded: false, timedOut: false };
+        webSocketProxyStates.set(socket, state);
+
         const errorMessage = setTenantHeader(proxyReq, req);
         if (errorMessage) {
             proxyReq.destroy();
-            writeSocketError(socket, 400, errorMessage);
+            rejectWebSocketHandshake(socket, 400, errorMessage);
             return;
         }
-        // http-proxy does not close the upstream connection when the client socket is destroyed
-        // without an error (e.g. on gateway shutdown), so tie both sockets' lifetimes together.
-        proxyReq.on("upgrade", (_proxyRes, proxySocket) => {
-            socket.once("close", () => proxySocket.destroy());
+
+        // http-proxy neither closes the upstream when the client socket goes away (before or after
+        // the upgrade) nor limits how long the upstream may take to answer the handshake.
+        let upstreamSocket: Duplex | undefined;
+        const handshakeTimer = setTimeout(() => {
+            state.timedOut = true;
+            proxyReq.destroy(new Error("WebSocket handshake timed out"));
+        }, handshakeTimeoutMs);
+        handshakeTimer.unref();
+
+        // The client socket is half-open (http.Server's `allowHalfOpen`), so a client that leaves
+        // with a FIN only emits `end`, not `close`.
+        const onClientGone = () => {
+            clearTimeout(handshakeTimer);
+            proxyReq.destroy();
+            upstreamSocket?.destroy();
+            socket.destroy();
+        };
+        if (socket.destroyed || socket.readableEnded) {
+            onClientGone();
+            return;
+        }
+        socket.once("end", onClientGone);
+        socket.once("close", onClientGone);
+
+        // a non-101 response is relayed to the client as is
+        proxyReq.once("response", () => clearTimeout(handshakeTimer));
+        // registered before http-proxy's own `upgrade` listener, so runs first
+        proxyReq.once("upgrade", (_proxyRes, proxySocket) => {
+            clearTimeout(handshakeTimer);
+            state.upgraded = true;
+            upstreamSocket = proxySocket;
+            if (socket.destroyed) {
+                proxySocket.destroy();
+                return;
+            }
             proxySocket.once("close", () => socket.destroy());
         });
     });

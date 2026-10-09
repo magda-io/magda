@@ -57,6 +57,7 @@ Kubernetes: `>= 1.14.0-0`
 | skipAuth | bool | `false` | when set to true, API will not query policy engine for auth decision but assume it's always permitted.  It's for debugging only. |
 | web | string | `"http://web"` | Default web route.  This is the last route of the proxy. Main UI should be served from here. |
 | webRoutes | object | `{"preview-map":"http://preview-map:6110"}` | extra web routes. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
+| websocketHandshakeTimeout | int | nil (60 seconds default value will be used) | How long (in seconds) the target of a `websocket: true` route has to answer a WebSocket handshake. The client receives a `504` when the target doesn't answer in time. It doesn't limit the lifetime of an established WebSocket connection. |
 
 #### Proxy Target Definition
 
@@ -87,7 +88,8 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
 
 - `websocket`: whether WebSocket upgrade requests (`GET` with `Upgrade: websocket`) are forwarded to the target. Default: `false`.
   - The handshake passes the same middleware as other requests on the route (session / API key authentication when `auth` or `accessControl` is `true`, access control, tenant header), and the target receives the `X-Magda-Session` header of the authenticated user. `Cookie` & `Authorization` headers are not forwarded.
-  - A handshake rejected before it reaches the target (e.g. `403` from access control) is answered with a plain HTTP response. Upgrades on routes without `websocket: true` are answered with `400`.
+  - A handshake rejected before it reaches the target (e.g. `403` from access control) is answered with a plain HTTP response. Upgrades on routes without `websocket: true` are answered with `400`. A target that doesn't answer the handshake within `websocketHandshakeTimeout` gets the client a `504`.
+  - Enabling `websocket: true` doesn't by itself protect against cross-site WebSocket hijacking: browsers don't apply CORS to WebSocket handshakes. The target must validate the `Origin` header of the handshake (the gateway forwards it unchanged), or the deployment must otherwise ensure authenticated cross-site handshakes can't happen (e.g. keep the session cookie's default `sameSite: lax`).
   - Upgraded connections are closed when the gateway receives `SIGTERM`. Your ingress / load balancer must allow long-lived connections (e.g. ingress-nginx `proxy-read-timeout`, GKE `BackendConfig` `timeoutSec`).
 
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.

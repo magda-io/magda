@@ -78,6 +78,7 @@ export type Config = {
     defaultCacheControl?: string;
     magdaAdminPortalName?: string;
     proxyTimeout?: string;
+    websocketHandshakeTimeout?: number;
     skipAuth?: boolean;
     registryQueryCacheMaxKeys: number;
     registryQueryCacheStdTTL: number;
@@ -178,6 +179,7 @@ export default function buildApp(app: express.Application, config: Config) {
         defaultCacheControl: config.defaultCacheControl,
         routes,
         proxyTimeout,
+        websocketHandshakeTimeout: config.websocketHandshakeTimeout,
         authClient: authDecisionClient
     };
 

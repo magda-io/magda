@@ -236,6 +236,12 @@ const argv = addJwtSecretFromEnvVar(
             describe:
                 "How long time (in seconds) before upstream service must complete request in order to avoid request timeout error.",
             type: "string"
+        })
+        .option("websocketHandshakeTimeout", {
+            describe:
+                "How long (in seconds) the upstream of a `websocket: true` route has to answer a WebSocket handshake. Doesn't limit the lifetime of an established WebSocket connection.",
+            type: "number",
+            default: 60
         }).argv
 );
 

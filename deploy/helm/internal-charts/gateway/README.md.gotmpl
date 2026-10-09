@@ -46,7 +46,8 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
 
 - `websocket`: whether WebSocket upgrade requests (`GET` with `Upgrade: websocket`) are forwarded to the target. Default: `false`.
   - The handshake passes the same middleware as other requests on the route (session / API key authentication when `auth` or `accessControl` is `true`, access control, tenant header), and the target receives the `X-Magda-Session` header of the authenticated user. `Cookie` & `Authorization` headers are not forwarded.
-  - A handshake rejected before it reaches the target (e.g. `403` from access control) is answered with a plain HTTP response. Upgrades on routes without `websocket: true` are answered with `400`.
+  - A handshake rejected before it reaches the target (e.g. `403` from access control) is answered with a plain HTTP response. Upgrades on routes without `websocket: true` are answered with `400`. A target that doesn't answer the handshake within `websocketHandshakeTimeout` gets the client a `504`.
+  - Enabling `websocket: true` doesn't by itself protect against cross-site WebSocket hijacking: browsers don't apply CORS to WebSocket handshakes. The target must validate the `Origin` header of the handshake (the gateway forwards it unchanged), or the deployment must otherwise ensure authenticated cross-site handshakes can't happen (e.g. keep the session cookie's default `sameSite: lax`).
   - Upgraded connections are closed when the gateway receives `SIGTERM`. Your ingress / load balancer must allow long-lived connections (e.g. ingress-nginx `proxy-read-timeout`, GKE `BackendConfig` `timeoutSec`).
 
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.

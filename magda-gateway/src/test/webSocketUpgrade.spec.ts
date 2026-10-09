@@ -9,7 +9,10 @@ import jwt from "jsonwebtoken";
 import Authenticator from "../Authenticator.js";
 import setupTenantMode from "../setupTenantMode.js";
 import createGenericProxyRouter from "../createGenericProxyRouter.js";
-import WebSocketUpgradeHandler from "../WebSocketUpgradeHandler.js";
+import WebSocketUpgradeHandler, {
+    closeSocketGracefully
+} from "../WebSocketUpgradeHandler.js";
+import { Duplex } from "stream";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
     UnconditionalFalseDecision,
@@ -24,19 +27,30 @@ type UpstreamRequest = {
     headers: IncomingMessage["headers"];
 };
 
+const SWITCHING_PROTOCOLS =
+    "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n";
+
 /**
- * Upstream that accepts WebSocket upgrades (echoing every byte back) unless the
- * request path contains `/reject`, which is answered with a plain 401.
+ * Upstream that accepts WebSocket upgrades (echoing every byte back). Special paths:
+ * - `/reject`: answered with a plain 401
+ * - `/slow`: answered with 101 after 300ms
+ * - `/never`: never answered
+ * - `/reset`: upgraded, then the connection is reset
  */
 function createUpstream() {
     const requests: UpstreamRequest[] = [];
     const sockets = new Set<net.Socket>();
+    // upstream sockets whose client went away before the 101 was sent
+    const abandoned: string[] = [];
     const server = http.createServer((req, res) => {
         res.writeHead(200);
         res.end("plain http");
     });
     server.on("upgrade", (req, socket: net.Socket) => {
         requests.push({ url: req.url, headers: req.headers });
+        socket.on("error", () => socket.destroy());
+        // like a real WebSocket server: close when the peer closes its side
+        socket.on("end", () => socket.destroy());
         if (req.url.includes("/reject")) {
             socket.end(
                 "HTTP/1.1 401 Unauthorized\r\nContent-Length: 6\r\nConnection: close\r\n\r\nnope!!"
@@ -45,12 +59,28 @@ function createUpstream() {
         }
         sockets.add(socket);
         socket.on("close", () => sockets.delete(socket));
-        socket.write(
-            "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n"
-        );
-        socket.pipe(socket);
+        if (req.url.includes("/never")) {
+            return;
+        }
+        const accept = () => {
+            if (socket.destroyed) {
+                abandoned.push(req.url);
+                return;
+            }
+            socket.write(SWITCHING_PROTOCOLS);
+            if (req.url.includes("/reset")) {
+                setTimeout(() => socket.resetAndDestroy(), 50);
+                return;
+            }
+            socket.pipe(socket);
+        };
+        if (req.url.includes("/slow")) {
+            setTimeout(accept, 300);
+        } else {
+            accept();
+        }
     });
-    return { server, requests, sockets };
+    return { server, requests, sockets, abandoned };
 }
 
 function listen(server: http.Server): Promise<number> {
@@ -95,6 +125,17 @@ function upgrade(
         socket.write(lines.join("\r\n") + "\r\n\r\n");
     });
 }
+
+/** Collect everything the client receives until the socket closes. */
+function readUntilClose(socket: net.Socket): Promise<string> {
+    return new Promise((resolve) => {
+        let data = "";
+        socket.on("data", (d) => (data += d.toString("latin1")));
+        socket.once("close", () => resolve(data));
+    });
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function readOnce(socket: net.Socket): Promise<string> {
     return new Promise((resolve) =>
@@ -141,6 +182,7 @@ describe("WebSocket upgrade proxying", () => {
                 jwtSecret: JWT_SECRET,
                 authClient,
                 tenantMode: setupTenantMode({ enableMultiTenants: false }),
+                websocketHandshakeTimeout: 0.5,
                 routes: {
                     "agent/runtime": {
                         to: `http://127.0.0.1:${upstreamPort}/runtime`,
@@ -292,6 +334,91 @@ describe("WebSocket upgrade proxying", () => {
         after.socket.destroy();
     });
 
+    it("should abort the upstream handshake when the client disconnects before the upgrade", async () => {
+        const socket = net.connect(gatewayPort, "127.0.0.1");
+        await new Promise((r) => socket.once("connect", r));
+        socket.write(
+            [
+                "GET /api/v0/agent/runtime/slow HTTP/1.1",
+                "Host: magda.example.com",
+                "Connection: Upgrade",
+                "Upgrade: websocket",
+                "Sec-WebSocket-Version: 13",
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ=="
+            ].join("\r\n") + "\r\n\r\n"
+        );
+        // leave while the upstream is still "resuming"
+        await sleep(100);
+        expect(upstream.requests).to.have.length(1);
+        socket.destroy();
+        // the upstream would answer at 300ms
+        await sleep(400);
+        expect(upstream.abandoned).to.deep.equal(["/runtime/slow"]);
+        expect(upstream.sockets.size).to.equal(0);
+        expect(upgradeHandler.activeSocketCount).to.equal(0);
+    });
+
+    it("should answer 504 when the upstream doesn't answer the handshake in time", async () => {
+        const started = Date.now();
+        const { status, socket } = await upgrade(
+            gatewayPort,
+            "/api/v0/agent/runtime/never"
+        );
+        expect(status).to.equal(504);
+        expect(Date.now() - started).to.be.within(400, 2000);
+        await new Promise((r) => socket.once("close", r));
+        // the pending upstream connection is closed as well
+        await sleep(50);
+        expect(upstream.sockets.size).to.equal(0);
+    });
+
+    it("should not apply the handshake timeout to an upgraded connection", async () => {
+        const { status, socket } = await upgrade(
+            gatewayPort,
+            "/api/v0/agent/runtime/api/remote.mux"
+        );
+        expect(status).to.equal(101);
+        // longer than the 0.5s handshake timeout
+        await sleep(800);
+        socket.write("still-here");
+        expect(await readOnce(socket)).to.equal("still-here");
+        socket.destroy();
+    });
+
+    it("should close an upgraded connection without writing HTTP when the upstream fails", async () => {
+        const { status, socket } = await upgrade(
+            gatewayPort,
+            "/api/v0/agent/runtime/reset"
+        );
+        expect(status).to.equal(101);
+        const afterUpgrade = await readUntilClose(socket);
+        expect(afterUpgrade).to.not.include("HTTP/1.1");
+    });
+
+    it("should deliver a complete rejection response even when the client keeps sending data", async () => {
+        const socket = net.connect(gatewayPort, "127.0.0.1");
+        await new Promise((r) => socket.once("connect", r));
+        const received = readUntilClose(socket);
+        socket.write(
+            [
+                "GET /api/v0/plain/x HTTP/1.1",
+                "Host: magda.example.com",
+                "Connection: Upgrade",
+                "Upgrade: websocket",
+                "Sec-WebSocket-Version: 13",
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ=="
+            ].join("\r\n") + "\r\n\r\n"
+        );
+        // unread bytes that would make an abrupt close reset the connection
+        socket.write(Buffer.alloc(64 * 1024, 1));
+        socket.end();
+        const response = await received;
+        expect(response).to.match(/^HTTP\/1\.1 400 /);
+        expect(response).to.include(
+            "WebSocket upgrade is not supported by this route."
+        );
+    });
+
     it("should keep serving ordinary HTTP requests", async () => {
         const body = await new Promise<string>((resolve, reject) => {
             http.get(
@@ -304,5 +431,59 @@ describe("WebSocket upgrade proxying", () => {
             ).on("error", reject);
         });
         expect(body).to.equal("plain http");
+    });
+});
+
+describe("closeSocketGracefully", () => {
+    /** A socket whose writes reach the "network" 50ms after they are queued. */
+    function createSlowSocket() {
+        const delivered: string[] = [];
+        const socket: Duplex = new Duplex({
+            read() {
+                // no incoming data
+            },
+            write(chunk, _encoding, callback) {
+                setTimeout(() => {
+                    if (!socket.destroyed) {
+                        delivered.push(chunk.toString());
+                    }
+                    callback();
+                }, 50);
+            },
+            final(callback) {
+                callback();
+                // the peer closes its side once it has read the response
+                socket.push(null);
+            }
+        });
+        return { socket, delivered };
+    }
+
+    it("should flush queued data before the socket closes", async () => {
+        const { socket, delivered } = createSlowSocket();
+        const closed = new Promise((r) => socket.once("close", r));
+        closeSocketGracefully(
+            socket,
+            "HTTP/1.1 503 Service Unavailable\r\n\r\n"
+        );
+        await closed;
+        expect(delivered).to.deep.equal([
+            "HTTP/1.1 503 Service Unavailable\r\n\r\n"
+        ]);
+    });
+
+    it("would lose the data with an immediate destroy (the previous behaviour)", async () => {
+        const { socket, delivered } = createSlowSocket();
+        socket.end("HTTP/1.1 503 Service Unavailable\r\n\r\n");
+        socket.destroy();
+        await sleep(100);
+        expect(delivered).to.deep.equal([]);
+    });
+
+    it("should destroy a socket that can't be written to", () => {
+        const { socket } = createSlowSocket();
+        socket.destroy();
+        closeSocketGracefully(socket, "x");
+        expect(socket.destroyed).to.equal(true);
     });
 });

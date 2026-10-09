@@ -39,6 +39,8 @@ export interface GenericProxyRouterOptions {
     tenantMode: TenantMode;
     defaultCacheControl?: string;
     proxyTimeout?: number;
+    // seconds the upstream of a `websocket: true` route has to answer a WebSocket handshake
+    websocketHandshakeTimeout?: number;
     authClient: AuthDecisionQueryClient;
 }
 
