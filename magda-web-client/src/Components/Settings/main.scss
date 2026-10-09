@@ -1,6 +1,7 @@
 .setting-page-main-container {
     position: relative;
-    min-height: 600px;
+    // the side navigation is absolutely positioned: leave room for all its menu items
+    min-height: 720px;
     background-color: #fff;
 
     .main-content-container {

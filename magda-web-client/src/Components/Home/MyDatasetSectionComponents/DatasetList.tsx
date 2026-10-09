@@ -69,8 +69,9 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                         history.push("/dataset/add/metadata");
                     }
                 }}
+                startIcon={<BsPlusCircleFill />}
             >
-                <BsPlusCircleFill /> Create new dataset
+                Create new dataset
             </Button>
             <div className="dataset-list-inner-container row">
                 <div className="dataset-list-header">

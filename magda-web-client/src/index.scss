@@ -346,6 +346,23 @@ h4 {
     }
 }
 
+// rsuite (v6+) highlights matched search keywords in pickers with `<mark class="rs-highlight-mark">`.
+// Use rsuite's highlight style rather than the design system's global `.au-body mark` style.
+.au-body .rs-highlight-mark {
+    color: inherit;
+    background-color: var(--rs-text-highlight-bg);
+}
+
+// rsuite v6 styles the selected item of `<RadioGroup appearance="picker">` via a `.rs-radio-checked`
+// class that v6 `Radio` no longer renders (it sets `data-checked="true"` instead). Restore the active style.
+.rs-radio-group[data-appearance="picker"]
+    .rs-radio[data-checked="true"]
+    .rs-radio-checker
+    > label {
+    --rs-radio-checker-label-color: var(--rs-text-active);
+    --rs-radio-checker-border-color: var(--rs-text-active);
+}
+
 .rs-btn-icon-fix {
     svg {
         position: absolute;

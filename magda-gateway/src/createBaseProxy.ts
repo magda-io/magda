@@ -1,6 +1,7 @@
 import httpProxy from "http-proxy";
 import express from "express";
-import { IncomingHttpHeaders } from "http";
+import { ClientRequest, IncomingHttpHeaders, IncomingMessage } from "http";
+import { Duplex } from "stream";
 import getNoCacheHeaders from "magda-typescript-common/src/express/getNoCacheHeaders.js";
 import groupBy from "lodash/groupBy.js";
 
@@ -9,6 +10,10 @@ import {
     MAGDA_ADMIN_PORTAL_ID
 } from "magda-typescript-common/src/registry/TenantConsts.js";
 import { GenericProxyRouterOptions } from "./createGenericProxyRouter.js";
+import { rejectWebSocketHandshake } from "./WebSocketUpgradeHandler.js";
+
+// default time allowed for the upstream to answer a WebSocket handshake (seconds)
+export const DEFAULT_WEBSOCKET_HANDSHAKE_TIMEOUT = 60;
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
@@ -72,6 +77,54 @@ function setHeaderValue(
     headers[headerName] = value;
 }
 
+/**
+ * As we set `ignorePath`=true, we need append req.path to proxyReq.path.
+ * We need to use req.url to include query string.
+ */
+function appendRequestPath(proxyReq: ClientRequest, req: IncomingMessage) {
+    if (req.url !== "/") {
+        if (
+            proxyReq.path[proxyReq.path.length - 1] === "/" &&
+            req.url[0] === "/"
+        ) {
+            proxyReq.path = proxyReq.path + req.url.substr(1);
+        } else {
+            proxyReq.path = proxyReq.path + req.url;
+        }
+    }
+}
+
+/**
+ * Presume that we've already got whatever auth details we need out of the request and so remove it now.
+ * If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
+ * be leaking auth details to wherever it proxies to.
+ */
+function removeDoNotProxyHeaders(proxyReq: ClientRequest) {
+    const headerNames = proxyReq.getHeaderNames();
+    for (let i = 0; i < headerNames.length; i++) {
+        const headerName = headerNames[i];
+        if (!!doNotProxyHeaderLookup[headerName]) {
+            proxyReq.removeHeader(headerName);
+        }
+    }
+}
+
+function isSocket(res: any): res is Duplex {
+    return !!res && typeof res.writeHead !== "function";
+}
+
+/**
+ * State of one proxied WebSocket connection, keyed by the client socket.
+ */
+interface WebSocketProxyState {
+    // the upstream answered `101` and the connection is now a WebSocket byte stream
+    upgraded: boolean;
+    // the upstream didn't answer the handshake in time
+    timedOut: boolean;
+}
+
+const webSocketProxyStates = new WeakMap<Duplex, WebSocketProxyState>();
+
 export default function createBaseProxy(
     options: GenericProxyRouterOptions
 ): httpProxy {
@@ -102,6 +155,31 @@ export default function createBaseProxy(
     );
 
     proxy.on("error", function (err, req, res) {
+        if (isSocket(res)) {
+            // WebSocket (`proxy.ws`) error: `res` is the client socket.
+            // http-proxy reports errors of the upstream request and, after the upgrade, of the
+            // upstream socket through this same event.
+            const state = webSocketProxyStates.get(res);
+            if (res.destroyed || !res.writable) {
+                // the client is gone (e.g. it disconnected while the upstream was connecting),
+                // or a response is already being sent and the socket is closing
+                return;
+            }
+            if (state?.upgraded) {
+                // HTTP is over: never write an HTTP response into the WebSocket stream
+                console.error(err);
+                res.destroy();
+                return;
+            }
+            if (state?.timedOut) {
+                console.error("WebSocket handshake timed out: " + req.url);
+                rejectWebSocketHandshake(res, 504);
+                return;
+            }
+            console.error(err);
+            rejectWebSocketHandshake(res, 502);
+            return;
+        }
         console.error(err);
         try {
             res.writeHead(500, {
@@ -118,33 +196,20 @@ export default function createBaseProxy(
     });
 
     proxy.on("proxyReq", function (proxyReq, req, res) {
-        // as we set `ignorePath`=true, we need append req.path to proxyReq.path
-        // we need to use req.url to include query string
-        if (req.url !== "/") {
-            if (
-                proxyReq.path[proxyReq.path.length - 1] === "/" &&
-                req.url[0] === "/"
-            ) {
-                proxyReq.path = proxyReq.path + req.url.substr(1);
-            } else {
-                proxyReq.path = proxyReq.path + req.url;
-            }
-        }
+        appendRequestPath(proxyReq, req);
 
-        // Presume that we've already got whatever auth details we need out of the request and so remove it now.
-        // If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
-        // be leaking auth details to wherever it proxies to.
         if ((req as any).__expectHeader) {
             proxyReq.setHeader("Expect", (req as any).__expectHeader);
         }
 
-        const headerNames = proxyReq.getHeaderNames();
-        for (let i = 0; i < headerNames.length; i++) {
-            const headerName = headerNames[i];
-            if (!!doNotProxyHeaderLookup[headerName]) {
-                proxyReq.removeHeader(headerName);
-            }
-        }
+        removeDoNotProxyHeaders(proxyReq);
+    });
+
+    // WebSocket upgrade requests (`proxy.ws`) emit `proxyReqWs` instead of `proxyReq`.
+    // Apply the same path & credential header handling as ordinary requests.
+    proxy.on("proxyReqWs", function (proxyReq, req) {
+        appendRequestPath(proxyReq, req);
+        removeDoNotProxyHeaders(proxyReq);
     });
 
     proxy.on("proxyRes", function (proxyRes, req, res) {
@@ -197,7 +262,14 @@ export default function createBaseProxy(
         });
     });
 
-    proxy.on("proxyReq", async function (proxyReq, req, res) {
+    /**
+     * Set the tenant id header.
+     * Returns the error message when the tenant can't be determined (the caller must reject the request).
+     */
+    function setTenantHeader(
+        proxyReq: ClientRequest,
+        req: IncomingMessage
+    ): string | undefined {
         if (options.tenantMode.multiTenantsMode === true) {
             const theRequest = <express.Request>req;
             const domainName = theRequest.hostname.toLowerCase();
@@ -220,15 +292,77 @@ export default function createBaseProxy(
                     // So we just let user try again.
                     // See https://github.com/nodejitsu/node-http-proxy/issues/1328
                     options.tenantMode.tenantsLoader.reloadTenants();
-                    res.writeHead(400, { "Content-Type": "text/plain" });
-                    res.end(
-                        `Unable to process ${domainName} right now. Please try again shortly.`
-                    );
+                    return `Unable to process ${domainName} right now. Please try again shortly.`;
                 }
             }
         } else {
             proxyReq.setHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID);
         }
+        return undefined;
+    }
+
+    proxy.on("proxyReq", function (proxyReq, req, res) {
+        const errorMessage = setTenantHeader(proxyReq, req);
+        if (errorMessage) {
+            res.writeHead(400, { "Content-Type": "text/plain" });
+            res.end(errorMessage);
+        }
+    });
+
+    const handshakeTimeoutMs =
+        (typeof options.websocketHandshakeTimeout === "number" &&
+        options.websocketHandshakeTimeout > 0
+            ? options.websocketHandshakeTimeout
+            : DEFAULT_WEBSOCKET_HANDSHAKE_TIMEOUT) * 1000;
+
+    proxy.on("proxyReqWs", function (proxyReq, req, socket) {
+        const state: WebSocketProxyState = { upgraded: false, timedOut: false };
+        webSocketProxyStates.set(socket, state);
+
+        const errorMessage = setTenantHeader(proxyReq, req);
+        if (errorMessage) {
+            proxyReq.destroy();
+            rejectWebSocketHandshake(socket, 400, errorMessage);
+            return;
+        }
+
+        // http-proxy neither closes the upstream when the client socket goes away (before or after
+        // the upgrade) nor limits how long the upstream may take to answer the handshake.
+        let upstreamSocket: Duplex | undefined;
+        const handshakeTimer = setTimeout(() => {
+            state.timedOut = true;
+            proxyReq.destroy(new Error("WebSocket handshake timed out"));
+        }, handshakeTimeoutMs);
+        handshakeTimer.unref();
+
+        // The client socket is half-open (http.Server's `allowHalfOpen`), so a client that leaves
+        // with a FIN only emits `end`, not `close`.
+        const onClientGone = () => {
+            clearTimeout(handshakeTimer);
+            proxyReq.destroy();
+            upstreamSocket?.destroy();
+            socket.destroy();
+        };
+        if (socket.destroyed || socket.readableEnded) {
+            onClientGone();
+            return;
+        }
+        socket.once("end", onClientGone);
+        socket.once("close", onClientGone);
+
+        // a non-101 response is relayed to the client as is
+        proxyReq.once("response", () => clearTimeout(handshakeTimer));
+        // registered before http-proxy's own `upgrade` listener, so runs first
+        proxyReq.once("upgrade", (_proxyRes, proxySocket) => {
+            clearTimeout(handshakeTimer);
+            state.upgraded = true;
+            upstreamSocket = proxySocket;
+            if (socket.destroyed) {
+                proxySocket.destroy();
+                return;
+            }
+            proxySocket.once("close", () => socket.destroy());
+        });
     });
 
     return proxy;

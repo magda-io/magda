@@ -10,7 +10,7 @@ import {
     getImmediateChildren,
     getOrgUnitById
 } from "api-clients/OrgUnitApis";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../../../../helpers/rsuiteTypes";
 import { User } from "reducers/userManagementReducer";
 import ServerError from "@magda/typescript-common/dist/ServerError.js";
 

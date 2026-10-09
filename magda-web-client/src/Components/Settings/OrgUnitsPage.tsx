@@ -19,10 +19,10 @@ import { toaster } from "rsuite";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import Tree from "rsuite/Tree";
-import { DropData } from "rsuite/esm/Tree/Tree";
+import { DropData } from "../../helpers/rsuiteTypes";
 import Dropdown from "rsuite/Dropdown";
 import { OrgUnit, User } from "reducers/userManagementReducer";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../helpers/rsuiteTypes";
 import {
     MdFolder,
     MdCreateNewFolder,

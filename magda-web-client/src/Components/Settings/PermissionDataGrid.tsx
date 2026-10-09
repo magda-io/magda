@@ -142,8 +142,9 @@ const PermissionDataGrid: FunctionComponent<PropsType> = (props) => {
                                 setDataReloadToken(`${Math.random()}`);
                             })
                         }
+                        startIcon={<MdAddCircle />}
                     >
-                        <MdAddCircle /> Add Permission to Role
+                        Add Permission to Role
                     </Button>
                 </div>
                 <div className="search-button-inner-wrapper">

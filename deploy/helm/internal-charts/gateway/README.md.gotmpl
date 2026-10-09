@@ -44,6 +44,35 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
   - Once the system admin creates proper `resource` & `operation` records for the proxy target, he can grant access to those endpoints by creating permission & role records.
   - More information of the access control system, please refer to [this doc](https://github.com/magda-io/magda/blob/main/docs/docs/architecture/Guide%20to%20Magda%20Internals.md#new-authorisation-model--implementation)
 
+- `websocket`: whether WebSocket upgrade requests (`GET` with `Upgrade: websocket`) are forwarded to the target. Default: `false`.
+  - The handshake passes the same middleware as other requests on the route (session / API key authentication when `auth` or `accessControl` is `true`, access control, tenant header), and the target receives the `X-Magda-Session` header of the authenticated user. `Cookie` & `Authorization` headers are not forwarded.
+  - A handshake rejected before it reaches the target (e.g. `403` from access control) is answered with a plain HTTP response. Upgrades on routes without `websocket: true` are answered with `400`. A target that doesn't answer the handshake within `websocketHandshakeTimeout` gets the client a `504`.
+  - Upgraded connections are closed when the gateway receives `SIGTERM`. Your ingress / load balancer must allow long-lived connections (e.g. ingress-nginx `proxy-read-timeout`, GKE `BackendConfig` `timeoutSec`).
+  - The handshake's `Origin` header is validated against the route's `websocketAllowedOrigins` (see below) before access control runs and before anything is sent to the target. By default only the origin of `global.externalUrl` is allowed.
+- `websocketAllowedOrigins`: the origins allowed to open a WebSocket on a `websocket: true` route. Only applies to WebSocket upgrade requests; ordinary HTTP requests and CORS are not affected.
+  - Omitted (default): only the origin of the gateway's `externalUrl` (`global.externalUrl`) is allowed. The origin is the scheme, hostname and non-default port; the URL path is ignored, e.g. `https://magda.example.com/some/path` allows `https://magda.example.com`.
+  - A non-empty list: exactly these origins are allowed; the list replaces the `externalUrl` default. Each entry must be `http(s)://host[:port]` (an optional trailing `/` is accepted) without path, query, fragment, credentials or wildcards; otherwise the gateway fails to start. Matching compares complete normalised origins (scheme, lowercase hostname, port with defaults removed), never hostname suffixes.
+  - `[]`: Origin validation is disabled for the route. Only use this when the target validates `Origin` itself, or the route isn't used by browsers.
+  - When validation is enabled, a handshake with a missing, `null`, malformed or non-matching `Origin` header is rejected with `403`.
+  - If no `externalUrl` is configured and `websocketAllowedOrigins` is omitted, Origin isn't validated. Both the Helm chart and the gateway's own `--externalUrl` option default `externalUrl` to `http://localhost:6100`, so validation is on unless explicitly disabled.
+  - Why: browsers don't apply CORS to WebSocket handshakes. Without this check, a page on another site could open a WebSocket that carries the user's Magda session cookie (cross-site WebSocket hijacking). The check is an additional browser safeguard: it does not replace session / API key authentication, access control or authorisation in the target, and non-browser clients can send any `Origin`.
+  - Multi-tenant deployments: list every trusted portal origin explicitly, e.g.
+
+    ```yaml
+    gateway:
+      additionalRoutes:
+        agent/runtime:
+          to: http://agent-manager/v0/runtime
+          auth: true
+          websocket: true
+          websocketAllowedOrigins:
+            - https://admin.magda.example.com
+            - https://tenant-a.example.com
+            - https://tenant-b.example.com
+    ```
+
+    This is a route-level allowlist, not tenant-specific authorisation: any listed origin can open a WebSocket on the route. Tenant identification and the target's / OPA authorisation must still enforce tenant boundaries.
+
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
 
 #### Default Value for `defaultRoutes` field
