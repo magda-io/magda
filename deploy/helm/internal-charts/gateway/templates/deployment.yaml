@@ -111,6 +111,9 @@ spec:
 {{- if .Values.proxyTimeout }}
             "--proxyTimeout", {{ .Values.proxyTimeout | quote }},
 {{- end }}
+{{- if .Values.websocketHandshakeTimeout }}
+            "--websocketHandshakeTimeout", {{ .Values.websocketHandshakeTimeout | quote }},
+{{- end }}
         ]
         volumeMounts:
           - name: config
