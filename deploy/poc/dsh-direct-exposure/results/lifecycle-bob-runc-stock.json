@@ -1,0 +1,38 @@
+{
+  "user": "bob",
+  "checks": [
+    {
+      "name": "baseline prompt round trip",
+      "ok": true
+    },
+    {
+      "name": "DSH process restart (same Pod, same PVC): browser reconnects and the agent works again",
+      "ok": true,
+      "launchTokenChanged": true,
+      "socketDroppedAfterMs": 442,
+      "reconnectedAfterMs": 3040,
+      "transientSockets": 2,
+      "sessionFilesBefore": 1,
+      "sessionFilesAfter": 1,
+      "promptRetried": false,
+      "dshCookieReExchanges": 0
+    },
+    {
+      "name": "Sandbox suspend + resume (Pod deleted, PVC kept): browser reconnects and the agent works again",
+      "ok": true,
+      "podDeleted": true,
+      "suspendedSeconds": 13,
+      "newPodUid": true,
+      "pvcCreatedAt": "2026-10-09T05:18:53Z",
+      "socketDroppedAfterMs": 296,
+      "reconnectedAfterMs": 14327,
+      "transientSockets": 4,
+      "sessionFilesBefore": 2,
+      "sessionFilesAfter": 2,
+      "promptRetried": false,
+      "dshCookieReExchanges": 0
+    }
+  ],
+  "sandbox": "bob-4",
+  "agentManagerAuthMode": "managed-cookie"
+}

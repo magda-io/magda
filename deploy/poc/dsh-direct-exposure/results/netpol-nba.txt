@@ -1,0 +1,10 @@
+agent-manager (allowed)            -> alice-nba-1.magda-agent-poc.svc.cluster.local              404
+agent-manager (allowed)            -> bob-nba-1.magda-agent-poc.svc.cluster.local                404
+mock-llm (same ns, other label)    -> alice-nba-1.magda-agent-poc.svc.cluster.local              BLOCKED(timeout)
+mock-llm (same ns, other label)    -> bob-nba-1.magda-agent-poc.svc.cluster.local                BLOCKED(timeout)
+magda gateway (other ns)           -> alice-nba-1.magda-agent-poc.svc.cluster.local              BLOCKED(timeout)
+magda gateway (other ns)           -> bob-nba-1.magda-agent-poc.svc.cluster.local                BLOCKED(timeout)
+sandbox alice-nba-1                -> alice-nba-1.magda-agent-poc.svc.cluster.local              404 (own Service: hairpin, NetworkPolicy never applies to self)
+sandbox alice-nba-1                -> bob-nba-1.magda-agent-poc.svc.cluster.local                BLOCKED(timeout)
+sandbox bob-nba-1                  -> alice-nba-1.magda-agent-poc.svc.cluster.local              BLOCKED(timeout)
+sandbox bob-nba-1                  -> bob-nba-1.magda-agent-poc.svc.cluster.local                404 (own Service: hairpin, NetworkPolicy never applies to self)

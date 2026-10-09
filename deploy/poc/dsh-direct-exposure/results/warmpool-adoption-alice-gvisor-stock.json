@@ -1,0 +1,155 @@
+{
+  "user": "alice",
+  "pool": "dsh-gvisor-stock",
+  "startedAt": "2026-10-09T05:06:39.758Z",
+  "checks": [
+    {
+      "name": "warm Sandbox, PVC and Ready Pod exist before any claim",
+      "ok": true,
+      "warmSandbox": "dsh-gvisor-stock-gdc5x",
+      "secondsToWarm": 6
+    },
+    {
+      "name": "warm Pod is named after the Sandbox and is its only Pod",
+      "ok": true,
+      "pod": "dsh-gvisor-stock-gdc5x",
+      "podsOwnedBySandbox": [
+        "dsh-gvisor-stock-gdc5x"
+      ]
+    },
+    {
+      "name": "startup line logged with the token redacted; no raw token in the Pod log",
+      "ok": true
+    },
+    {
+      "name": "claim adopts the pre-existing warm Sandbox (not a Sandbox named after the claim)",
+      "ok": true,
+      "claim": "alice-warm-mv0i6w5y",
+      "adopted": "dsh-gvisor-stock-gdc5x",
+      "warm": "dsh-gvisor-stock-gdc5x",
+      "claimShSeconds": 0.772
+    },
+    {
+      "name": "same Sandbox UID, Pod and PVC after adoption",
+      "ok": true,
+      "pod": "dsh-gvisor-stock-gdc5x",
+      "pvc": "data-dsh-gvisor-stock-gdc5x",
+      "volumeCreatedAt": "2026-10-09T05:06:40Z"
+    },
+    {
+      "name": "DSH not restarted: Pod UID and restartCount unchanged",
+      "ok": true,
+      "restartCount": 0
+    },
+    {
+      "name": "launch-token file unchanged and written before the claim existed",
+      "ok": true,
+      "tokenFileMtime": "2026-10-09T05:06:43.000Z",
+      "claimCreatedAt": "2026-10-09T05:06:57Z"
+    },
+    {
+      "name": "Agent Manager routes the user to the adopted Sandbox; index and RPC work",
+      "ok": true,
+      "index": 200,
+      "rpc": 200,
+      "routed": true
+    },
+    {
+      "name": "stock token exchange with the token printed before the claim: one dsh-cookie-acquired",
+      "ok": true,
+      "dshCookieAcquired": 1,
+      "launchTokenWrittenAt": "2026-10-09T05:06:43.000Z"
+    },
+    {
+      "name": "browser E2E on the adopted Sandbox (e2e-browser.mjs)",
+      "ok": true,
+      "passed": 8,
+      "total": 8,
+      "report": "warmpool-adoption-alice-gvisor-stock-e2e.json"
+    },
+    {
+      "name": "still exactly one token exchange for the adopted Sandbox after the browser run",
+      "ok": true,
+      "dshCookieAcquired": 1
+    },
+    {
+      "name": "pool replenishes to 1 with a different Sandbox and PVC",
+      "ok": true,
+      "replacement": "dsh-gvisor-stock-ztlzc",
+      "pvc": "data-dsh-gvisor-stock-ztlzc"
+    },
+    {
+      "name": "adopted Sandbox is no longer owned by the pool",
+      "ok": true
+    }
+  ],
+  "agentManagerAuthMode": "managed-cookie",
+  "warm": {
+    "sandbox": "dsh-gvisor-stock-gdc5x",
+    "sandboxUid": "7e782c20-28ce-4bff-9129-06152867d6d5",
+    "sandboxCreatedAt": "2026-10-09T05:06:40Z",
+    "podsOwnedBySandbox": [
+      "dsh-gvisor-stock-gdc5x"
+    ],
+    "pod": "dsh-gvisor-stock-gdc5x",
+    "podUid": "ab216494-a197-4f42-b9ac-da15be9b6264",
+    "podReady": true,
+    "restartCount": 0,
+    "pvc": "data-dsh-gvisor-stock-gdc5x",
+    "pvcUid": "77a4b6a8-3c99-41a7-9d98-a9513a69a951",
+    "startupLinePresent": true,
+    "startupLineRedacted": true,
+    "rawTokenInLog": false,
+    "volumeCreatedAt": "2026-10-09T05:06:40Z",
+    "tokenFileSha256": "bd4dbb8611cf",
+    "tokenFileMtime": "2026-10-09T05:06:43.000Z"
+  },
+  "claim": {
+    "name": "alice-warm-mv0i6w5y",
+    "createdAt": "2026-10-09T05:06:57Z",
+    "sandbox": "dsh-gvisor-stock-gdc5x",
+    "claimShSeconds": 0.772,
+    "claimSh": "alice-warm-mv0i6w5y -> sandbox dsh-gvisor-stock-gdc5x (dsh-gvisor-stock-gdc5x.magda-agent-poc.svc.cluster.local)"
+  },
+  "adopted": {
+    "sandbox": "dsh-gvisor-stock-gdc5x",
+    "sandboxUid": "7e782c20-28ce-4bff-9129-06152867d6d5",
+    "sandboxCreatedAt": "2026-10-09T05:06:40Z",
+    "podsOwnedBySandbox": [
+      "dsh-gvisor-stock-gdc5x"
+    ],
+    "pod": "dsh-gvisor-stock-gdc5x",
+    "podUid": "ab216494-a197-4f42-b9ac-da15be9b6264",
+    "podReady": true,
+    "restartCount": 0,
+    "pvc": "data-dsh-gvisor-stock-gdc5x",
+    "pvcUid": "77a4b6a8-3c99-41a7-9d98-a9513a69a951",
+    "startupLinePresent": true,
+    "startupLineRedacted": true,
+    "rawTokenInLog": false,
+    "volumeCreatedAt": "2026-10-09T05:06:40Z",
+    "tokenFileSha256": "bd4dbb8611cf",
+    "tokenFileMtime": "2026-10-09T05:06:43.000Z"
+  },
+  "replenished": {
+    "sandbox": "dsh-gvisor-stock-ztlzc",
+    "sandboxUid": "4e173356-6b6a-43d3-ac68-e66c82fdd4cd",
+    "sandboxCreatedAt": "2026-10-09T05:06:57Z",
+    "podsOwnedBySandbox": [
+      "dsh-gvisor-stock-ztlzc"
+    ],
+    "pod": "dsh-gvisor-stock-ztlzc",
+    "podUid": "385584c4-649e-42ea-b887-375cf8effd01",
+    "podReady": true,
+    "restartCount": 0,
+    "pvc": "data-dsh-gvisor-stock-ztlzc",
+    "pvcUid": "d714bf62-def4-4cac-9355-1f94b3ea6aa2",
+    "startupLinePresent": true,
+    "startupLineRedacted": true,
+    "rawTokenInLog": false,
+    "volumeCreatedAt": "2026-10-09T05:06:57Z",
+    "tokenFileSha256": "b0ad1d9e8de2",
+    "tokenFileMtime": "2026-10-09T05:07:00.000Z"
+  },
+  "poolRestoredToZero": true
+}

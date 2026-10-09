@@ -1,0 +1,150 @@
+{
+  "user": "alice",
+  "startedAt": "2026-10-09T05:25:10.092Z",
+  "checks": [
+    {
+      "name": "index + assets load, UI boots",
+      "ok": true,
+      "status": 200,
+      "pageErrors": [],
+      "bootMs": 715
+    },
+    {
+      "name": "one physical WebSocket carries several logical streams",
+      "ok": true,
+      "socketUrl": "wss://magda.test:18443/api/v0/agent/runtime/api/remote.mux",
+      "physicalSockets": 1,
+      "socketsClosed": 0,
+      "logicalStreamsOpened": 3,
+      "endpoints": [
+        "$events",
+        "session/control",
+        "workspace/follow"
+      ],
+      "uplink": {
+        "open": 3,
+        "item": 0,
+        "end": 0,
+        "cancel": 0
+      },
+      "downlink": {
+        "item": 5,
+        "end": 0,
+        "error": 0
+      }
+    },
+    {
+      "name": "no asset/WebSocket URL escapes the mount",
+      "ok": true
+    },
+    {
+      "name": "server->browser streaming over remote.mux (15 s turn)",
+      "ok": true,
+      "downlinkFrames": 96,
+      "seconds": 16
+    },
+    {
+      "name": "cancellation reaches the model stream",
+      "ok": true,
+      "stopMs": 2467,
+      "mockLlm": [
+        "stream chatcmpl-mock-1791523531399 cancelled by client after 12 ticks"
+      ]
+    },
+    {
+      "name": "agent tool call streams back",
+      "ok": true,
+      "toolText": "Tool finished. Output: tool-ran-on-4.19.0-gvisor"
+    },
+    {
+      "name": "terminal: input via HTTP RPC, output via remote.mux",
+      "ok": true,
+      "terminalWriteRpcs": 21,
+      "muxUplinkItems": 0,
+      "terminalEndpoints": [
+        "terminal/retain",
+        "terminal/follow"
+      ]
+    },
+    {
+      "name": "reconnect after Agent Manager restart mid-stream",
+      "ok": true,
+      "socketDroppedAfterMs": 1180,
+      "newSocketAfterMs": 2464,
+      "failedReconnectAttempts": 1,
+      "turnCompletedAfterReconnect": true
+    },
+    {
+      "name": "reconnect after magda-gateway restart mid-stream",
+      "ok": true,
+      "socketDroppedAfterMs": 11758,
+      "newSocketAfterMs": 12079,
+      "failedReconnectAttempts": 0,
+      "turnCompletedAfterReconnect": true
+    },
+    {
+      "name": "refresh on the public mount reconnects to the same sessions",
+      "ok": true,
+      "url": "https://magda.test:18443/api/v0/agent/runtime/",
+      "sessionsBefore": 1,
+      "sessionsAfter": 1,
+      "idsBefore": [
+        "session-bda492ce-3ade-4b74-aa87-4f896092afa4"
+      ],
+      "idsAfter": [
+        "session-bda492ce-3ade-4b74-aa87-4f896092afa4"
+      ]
+    }
+  ],
+  "mux": {
+    "physicalSockets": 5,
+    "socketsClosed": 3,
+    "logicalStreamsOpened": 29,
+    "endpoints": [
+      "$events",
+      "job/list",
+      "session/control",
+      "session/follow",
+      "terminal/follow",
+      "terminal/retain",
+      "workspace/follow"
+    ],
+    "uplink": {
+      "open": 29,
+      "item": 0,
+      "end": 0,
+      "cancel": 1
+    },
+    "downlink": {
+      "item": 483,
+      "end": 0,
+      "error": 0
+    }
+  },
+  "httpRpcCounts": {
+    "/api/dynamicCordisRunner/syncInspectManifest": 6,
+    "/api/credentials/describe": 2,
+    "/api/dynamicCordisRunner/inventory": 6,
+    "/api/session/modelCatalog": 6,
+    "/api/agentPresets/list": 15,
+    "/api/session/list": 4,
+    "/api/permissionPresets/catalog": 4,
+    "/api/workspace/initializeDefault": 1,
+    "/api/llm/listProviders": 3,
+    "/api/llm/listConfigurableProviders": 3,
+    "/api/session/create": 1,
+    "/api/commands/list": 4,
+    "/api/skills/list": 2,
+    "/api/schedule/list": 4,
+    "/api/session/prompt": 5,
+    "/api/schedule/catalog": 6,
+    "/api/session/cancel": 1,
+    "/api/terminal/environment": 2,
+    "/api/terminal/list": 2,
+    "/api/terminal/shells": 1,
+    "/api/terminal/create": 1,
+    "/api/terminal/resize": 1,
+    "/api/terminal/write": 21
+  },
+  "finishedAt": "2026-10-09T05:27:08.595Z"
+}

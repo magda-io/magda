@@ -1,0 +1,161 @@
+Port of DeepSeek Harness Discussion #8528 (`dsh web --no-browser-auth`,
+`browserAuth: false` on @deepseek-ai/dsh-client-connection) to the published
+@deepseek-ai/dsh@0.2.1-alpha.1 npm packages. PoC only (magda-io/magda#3841).
+
+Source: YungKC/deepseek-harness kai/no-browser-auth, functional commit
+54d0151d77bf8ddcc1e95eb353189e198a68d57b (based on dsh-v0.2.0-rc.2). The
+commit cherry-picks onto dsh-v0.2.1-alpha.1 with conflicts only in comments,
+help text and READMEs (the new --public-url flag); this file carries the same
+runtime change applied to the compiled lib/ files, without docs/tests.
+
+Apply from the directory holding the @deepseek-ai package folders:
+  patch -p1 -d <node_modules>/@deepseek-ai < this-file
+
+diff -ruN a/dsh-client-connection/lib/index.js b/dsh-client-connection/lib/index.js
+--- a/dsh-client-connection/lib/index.js	2026-10-08 15:12:50
++++ b/dsh-client-connection/lib/index.js	2026-10-08 15:12:50
+@@ -197,6 +197,17 @@
+ 	});
+ }
+ /**
++* Whether the request Host authority is loopback or matches a `trustedHosts`
++* entry, without applying the `/api` Origin/`sec-fetch-site` markers (#8528).
++*/
++function isTrustedRequestAuthority(request, trustedHosts) {
++	const host = header$1(request.headers, "host");
++	if (host === void 0) return false;
++	const hostUrl = parseAuthority(host);
++	if (hostUrl === void 0) return false;
++	return isLoopbackHostname(hostUrl.hostname) || isTrustedAuthority(hostUrl, trustedHosts);
++}
++/**
+ * Decide whether one /api request may reach the RPC bridge.
+ * @param request - Node HTTP or Fetch request facts (headers).
+ * @param trustedHosts - non-loopback authorities this deployment serves: exact `host:port`, or port-less `host` matching any port.
+@@ -207,7 +218,7 @@
+ 	if (host === void 0) return false;
+ 	const hostUrl = parseAuthority(host);
+ 	if (hostUrl === void 0) return false;
+-	if (!isLoopbackHostname(hostUrl.hostname) && !isTrustedAuthority(hostUrl, trustedHosts)) return false;
++	if (!isTrustedRequestAuthority(request, trustedHosts)) return false;
+ 	if (header$1(request.headers, "sec-fetch-site") === "cross-site") return false;
+ 	const origin = header$1(request.headers, "origin");
+ 	if (origin === void 0) return true;
+@@ -366,14 +377,25 @@
+ 	static async create(processOwner, credentials, maxAgeDays) {
+ 		return new BrowserAuth(processOwner, await initializeSecret(credentials), maxAgeDays);
+ 	}
++	/** Whether this owner skips browser authentication (#8528 BrowserAuth.open). */
++	get authenticationFree() {
++		return this.secret === void 0;
++	}
+ 	/**
++	* Authentication-free owner for a deployment that authenticates visitors in
++	* front of the harness (#8528). No signing secret is loaded or created.
++	*/
++	static open(processOwner) {
++		return new BrowserAuth(processOwner, void 0, 1);
++	}
++	/**
+ 	* Add this process's launch token to the caller's application URL.
+ 	* @param baseUrl - clean browser URL whose authority and mount are preserved.
+ 	* @returns the same URL carrying the process token as its sole authentication input.
+ 	*/
+ 	authenticatedUrl(baseUrl) {
+ 		const url = new URL(baseUrl);
+-		url.searchParams.set(TOKEN_QUERY, this.launchToken);
++		if (this.secret !== void 0) url.searchParams.set(TOKEN_QUERY, this.launchToken);
+ 		return url.href;
+ 	}
+ 	/**
+@@ -386,6 +408,7 @@
+ 	* @returns true only when the caller may serve index.html.
+ 	*/
+ 	authorizeIndex(req, res) {
++		if (this.secret === void 0) return true;
+ 		/* v8 ignore next -- node:http always supplies url on server requests. */
+ 		const url = new URL(req.url ?? "/", "http://dsh.invalid");
+ 		const tokens = url.searchParams.getAll(TOKEN_QUERY);
+@@ -431,6 +454,7 @@
+ 	* @returns true only for an unexpired cookie signed by this activation's loaded secret.
+ 	*/
+ 	isAuthenticated(request) {
++		if (this.secret === void 0) return true;
+ 		const authority = requestAuthority(request.headers);
+ 		const rawCookie = header(request.headers, "cookie");
+ 		if (authority === void 0 || rawCookie === void 0) return false;
+@@ -594,6 +618,14 @@
+ 	}
+ 	/** Authenticate an index request through the process-token exchange or cookie. */
+ 	authorizeIndex(request, response) {
++		if (this.browserAuth.authenticationFree && !isTrustedRequestAuthority(request, this.trustedHosts)) {
++			response.writeHead(403, {
++				"cache-control": "no-store",
++				"content-type": "text/plain; charset=utf-8"
++			});
++			response.end(request.method === "HEAD" ? void 0 : "forbidden");
++			return false;
++		}
+ 		return this.browserAuth.authorizeIndex(request, response);
+ 	}
+ 	/** Add this process's launch token to the clean application URL. */
+@@ -799,6 +831,7 @@
+ const Config = z.object({
+ 	recovery: ConnectionRecoveryConfigSchema.default({}),
+ 	trustedHosts: z.array(String).default([]),
++	browserAuth: z.boolean().default(true),
+ 	cookieMaxAgeDays: z.natural().min(1).default(30),
+ 	maxRequestBodyBytes: z.natural().min(1).default(DEFAULT_MAX_REQUEST_BODY_BYTES)
+ });
+@@ -812,11 +845,13 @@
+ async function apply(ctx, config) {
+ 	const recovery = resolveConnectionConfig(config?.recovery);
+ 	const trustedHosts = config?.trustedHosts ?? [];
++	const browserAuth = config?.browserAuth ?? true;
+ 	const cookieMaxAgeDays = config?.cookieMaxAgeDays ?? 30;
+ 	const maxRequestBodyBytes = config?.maxRequestBodyBytes ?? 314572800;
+ 	for (const entry of trustedHosts) assertTrustedAuthority(entry);
++	if (!browserAuth) console.warn("client-connection: browser authentication is off; every Host-trusted request can use the Web UI and operator RPC/WebSocket surface without a browser session");
+ 	assertImageBodyCapacity(ctx, maxRequestBodyBytes);
+-	const connection = new HostConnectionService(ctx, trustedHosts, await BrowserAuth.create(ctx.root, ctx.credentials, cookieMaxAgeDays));
++	const connection = new HostConnectionService(ctx, trustedHosts, browserAuth ? await BrowserAuth.create(ctx.root, ctx.credentials, cookieMaxAgeDays) : BrowserAuth.open(ctx.root));
+ 	ctx.inject(["webServer"], (webCtx) => {
+ 		assertImageBodyCapacity(webCtx, maxRequestBodyBytes);
+ 		webCtx.on("webserver/index-inject", (table) => {
+diff -ruN a/dsh-web-app/cordis.patch.yml b/dsh-web-app/cordis.patch.yml
+--- a/dsh-web-app/cordis.patch.yml	2026-10-08 15:12:50
++++ b/dsh-web-app/cordis.patch.yml	2026-10-08 15:12:50
+@@ -228,8 +228,10 @@
+     # advertised public URL contributes nothing to it.
+     - id: connection
+       name: '@deepseek-ai/dsh-client-connection'
+-      inject: [webRuntime]
++      inject: [webRuntime, webStartup]
+       config:
++        # --no-browser-auth clears this; the /api trust fence is unaffected (#8528).
++        browserAuth: !!js ctx.webStartup.browserAuth
+         # LAN literals derived from the active bind plus --trusted-host extras.
+         # A deployment adding authorities keeps this expression and concatenates
+         # its literals, for example: ['app.internal', ...ctx.webRuntime.trustedHosts].
+diff -ruN a/dsh-web-app/lib/startup.js b/dsh-web-app/lib/startup.js
+--- a/dsh-web-app/lib/startup.js	2026-10-08 15:12:50
++++ b/dsh-web-app/lib/startup.js	2026-10-08 15:12:50
+@@ -21,7 +21,7 @@
+ * @returns a fresh program, so one process can parse more than once (tests).
+ */
+ function webCommand() {
+-	return new Command().name("dsh --profile web").description("Serve the DeepSeek Harness browser UI.").helpOption("-h, --help", "show this help").option("--host <host>", "bind host").option("--no-open", "do not open the Web UI in the default browser").option("--port <port>", "listen port; pass 0 to let the OS pick a free one").option("--public-url <url>", "advertise this HTTP(S) root in the printed, opened, web-surface, and DSH_WEB_URL forms; grants no trust").option("--trusted-host <authority...>", "extra authority the /api browser-trust fence accepts (host or host:port; repeatable)").addHelpText("after", `
++	return new Command().name("dsh --profile web").description("Serve the DeepSeek Harness browser UI.").helpOption("-h, --help", "show this help").option("--host <host>", "bind host").option("--no-open", "do not open the Web UI in the default browser").option("--port <port>", "listen port; pass 0 to let the OS pick a free one").option("--public-url <url>", "advertise this HTTP(S) root in the printed, opened, web-surface, and DSH_WEB_URL forms; grants no trust").option("--trusted-host <authority...>", "extra authority the /api browser-trust fence accepts (host or host:port; repeatable)").option("--no-browser-auth", "skip the launch-token handshake; only for a deployment something else already authenticates").addHelpText("after", `
+ Examples:
+   dsh --profile web                          serve on the composed host and port
+   dsh --profile web --no-open                serve without opening a browser
+@@ -53,7 +53,8 @@
+ 			...options.host !== void 0 && { host: options.host },
+ 			...options.port !== void 0 && { port: Number(options.port) },
+ 			...options.publicUrl !== void 0 && { publicUrl: options.publicUrl },
+-			trustedHosts: options.trustedHost ?? []
++			trustedHosts: options.trustedHost ?? [],
++			browserAuth: options.browserAuth
+ 		});
+ 	});
+ 	parseCmdline(ctx, program);

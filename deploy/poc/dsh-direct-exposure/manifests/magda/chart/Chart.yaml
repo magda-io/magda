@@ -1,0 +1,11 @@
+apiVersion: v2
+name: magda-3841-poc
+description: Minimal Magda 7.0.0 + magda-auth-internal for the #3841 DSH transport PoC
+version: 0.0.0
+dependencies:
+  - name: magda
+    version: "7.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"
+  - name: magda-auth-internal
+    version: "4.0.0"
+    repository: "oci://ghcr.io/magda-io/charts"

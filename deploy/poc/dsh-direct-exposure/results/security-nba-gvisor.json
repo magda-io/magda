@@ -1,0 +1,143 @@
+{
+  "variant": "nba",
+  "user": "alice",
+  "checks": [
+    {
+      "name": "anonymous HTTP to the agent route is rejected by Magda before DSH",
+      "ok": true,
+      "status": 401,
+      "body": "Magda authentication required"
+    },
+    {
+      "name": "anonymous WebSocket upgrade is rejected before upgrade",
+      "ok": true,
+      "status": 401,
+      "body": "Magda authentication required"
+    },
+    {
+      "name": "forged Magda session cookie is rejected",
+      "ok": true,
+      "status": 401
+    },
+    {
+      "name": "authenticated index loads",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "name": "no DSH token or DSH cookie reaches the browser",
+      "ok": true,
+      "setCookieNames": [
+        "connect.sid"
+      ]
+    },
+    {
+      "name": "agent mount carries the relaxed CSP (script-src 'unsafe-inline' 'unsafe-eval')",
+      "ok": true,
+      "scriptSrc": "'self' 'unsafe-inline' 'unsafe-eval'"
+    },
+    {
+      "name": "other Magda paths keep the strict CSP (script-src 'self', no unsafe-*)",
+      "ok": true,
+      "whoami": "'self'",
+      "siblingPath": "'self'"
+    },
+    {
+      "name": "authenticated same-origin WebSocket upgrade succeeds",
+      "ok": true,
+      "status": 101
+    },
+    {
+      "name": "authenticated same-origin RPC succeeds",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "name": "cross-site Origin WebSocket is rejected by the gateway before Agent Manager / DSH",
+      "ok": true,
+      "status": 403,
+      "body": "WebSocket Origin not allowed.",
+      "reachedAgentManager": false
+    },
+    {
+      "name": "cross-site Origin RPC is rejected by DSH",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "Sec-Fetch-Site: cross-site RPC is rejected by DSH",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "undeclared external Host does not reach Magda (ingress host rule)",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "Service: declared Host index served without any token/cookie",
+      "ok": true,
+      "indexDeclared": 200,
+      "indexUndeclared": 403,
+      "apiDeclared": 200,
+      "apiUndeclared": 403,
+      "apiLoopbackHost": 200,
+      "wsDeclared": 101,
+      "wsUndeclaredHost": 403,
+      "wsForeignOrigin": 403
+    },
+    {
+      "name": "Service: undeclared Host index -> 403",
+      "ok": true
+    },
+    {
+      "name": "Service: undeclared Host /api -> 403",
+      "ok": true
+    },
+    {
+      "name": "Service: undeclared Host WebSocket -> 403",
+      "ok": true
+    },
+    {
+      "name": "Service: foreign Origin WebSocket -> 403",
+      "ok": true
+    },
+    {
+      "name": "Service: a peer that can reach the port and sends Host: 127.0.0.1 is fully admitted (fence is not access control)",
+      "ok": true,
+      "apiLoopbackHost": 200
+    },
+    {
+      "name": "no DSH browser-session credential file is created",
+      "ok": true,
+      "dshHome": [
+        ".",
+        "..",
+        "profiles",
+        "storages"
+      ]
+    },
+    {
+      "name": "printed URL carries no launch token",
+      "ok": true
+    }
+  ],
+  "sandbox": "alice-nba-1",
+  "template": "dsh-gvisor-nba",
+  "agentManagerAuthMode": "none",
+  "csp": {
+    "agentMount": "'self' 'unsafe-inline' 'unsafe-eval'",
+    "whoami": "'self'",
+    "siblingPath": "'self'"
+  },
+  "serviceLevel": {
+    "indexDeclared": 200,
+    "indexUndeclared": 403,
+    "apiDeclared": 200,
+    "apiUndeclared": 403,
+    "apiLoopbackHost": 200,
+    "wsDeclared": 101,
+    "wsUndeclaredHost": 403,
+    "wsForeignOrigin": 403
+  }
+}

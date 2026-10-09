@@ -1,0 +1,99 @@
+# Agent Manager DSH proxy PoC (agent-manager/server.mjs). It only needs to read
+# SandboxClaims (user -> sandbox) and, for stock-DSH managed-cookie mode, exec
+# into the sandbox Pod to read the launch-token file (the production Agent
+# Manager needs pods/exec for the post-claim bootstrap anyway, #3823). No
+# pods/log: the token is redacted from the Pod log.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-manager
+  namespace: magda-agent-poc
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-manager
+  namespace: magda-agent-poc
+rules:
+  - apiGroups: ["extensions.agents.x-k8s.io"]
+    resources: ["sandboxclaims"]
+    verbs: ["get", "list"]
+  # The exec WebSocket is a GET: the apiserver checks `get`, and `create` too
+  # (AuthorizePodWebsocketUpgradeCreatePermission, default on since 1.31).
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["get", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-manager
+  namespace: magda-agent-poc
+subjects:
+  - kind: ServiceAccount
+    name: agent-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: agent-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-manager
+  namespace: magda-agent-poc
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app.kubernetes.io/name: magda-agent-manager}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: magda-agent-manager}
+    spec:
+      serviceAccountName: agent-manager
+      containers:
+        - name: agent-manager
+          image: magda-agent-poc-tools:dev
+          imagePullPolicy: Never
+          ports: [{containerPort: 8080}]
+          env:
+            # managed-cookie (stock DSH) | none (DSH --no-browser-auth) | passthrough
+            - {name: AUTH_MODE, value: managed-cookie}
+            - {name: EXTERNAL_AUTHORITY, value: "magda.test:18443"}
+            - {name: MOUNT_PATH, value: "/api/v0/agent/runtime/"}
+            - {name: PATH_PREFIX, value: "/runtime"}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: {name: auth-secrets, key: jwt-secret}
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+          resources:
+            requests: {cpu: 20m, memory: 48Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-manager
+  namespace: magda-agent-poc
+spec:
+  selector: {app.kubernetes.io/name: magda-agent-manager}
+  ports: [{port: 80, targetPort: 8080}]
+---
+# Only magda-gateway may call the Agent Manager proxy.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: agent-manager-ingress
+  namespace: magda-agent-poc
+spec:
+  podSelector:
+    matchLabels: {app.kubernetes.io/name: magda-agent-manager}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: magda}
+          podSelector:
+            matchLabels: {service: gateway}
+      ports: [{port: 8080, protocol: TCP}]
