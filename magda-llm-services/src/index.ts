@@ -147,10 +147,8 @@ app.get("/v0/v1/models", (_req, res) => {
     });
 });
 
-app.post(
-    "/v0/v1/chat/completions",
-    express.raw({ type: "application/json", limit: "2mb" }),
-    (req, res) => {
+function proxyModelRequest(path: string) {
+    return (req: Request, res: Response) => {
         const body = Buffer.isBuffer(req.body)
             ? req.body
             : Buffer.from(JSON.stringify(req.body || {}));
@@ -169,8 +167,23 @@ app.post(
             });
             return;
         }
-        proxyToLiteLlm(req, res, "/v1/chat/completions", body);
-    }
+        proxyToLiteLlm(req, res, path, body);
+    };
+}
+
+const modelRequestBody = express.raw({
+    type: "application/json",
+    limit: "2mb"
+});
+app.post(
+    "/v0/v1/chat/completions",
+    modelRequestBody,
+    proxyModelRequest("/v1/chat/completions")
+);
+app.post(
+    "/v0/v1/responses",
+    modelRequestBody,
+    proxyModelRequest("/v1/responses")
 );
 
 const server = app.listen(port, () =>

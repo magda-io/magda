@@ -114,9 +114,15 @@
     border-bottom: 1px solid #d9dce3;
     background: #f5f6f8;
 
-    > div {
+    .agent-workspace-toolbar-heading {
         display: flex;
         flex-direction: column;
+    }
+
+    .agent-workspace-toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     strong {
@@ -139,6 +145,15 @@
     background: #fff;
 }
 
+// DSH Web keeps a 280px navigation column by default. In the managed Magda
+// embedding we crop that column without altering DSH internals, while retaining
+// a toolbar control that restores it for session/workspace navigation.
+.agent-workspace-ready.dsh-navigation-hidden .agent-workspace-runtime {
+    width: calc(100% + 280px);
+    max-width: none;
+    margin-left: -280px;
+}
+
 @media (max-width: 768px) {
     .agent-workspace-page > .main-content-container {
         padding-right: 15px;
@@ -152,5 +167,9 @@
     .agent-workspace-toolbar {
         align-items: flex-start;
         flex-direction: column;
+
+        .agent-workspace-toolbar-actions {
+            flex-wrap: wrap;
+        }
     }
 }

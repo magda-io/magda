@@ -18,7 +18,7 @@
       magda:
         displayName: Magda LLM
         apiKeyEnv: MAGDA_LLM_API_KEY
-        api: openai-completions
+        api: openai-responses
         baseURL: !!js process.env.MAGDA_LLM_BASE_URL
         models:
           - id: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'

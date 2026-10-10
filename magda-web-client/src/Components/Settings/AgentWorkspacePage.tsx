@@ -119,6 +119,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
     const [action, setAction] = useState<"start" | "resume" | "reset">();
     const [requestError, setRequestError] = useState<string>();
     const [resetOpen, setResetOpen] = useState(false);
+    const [dshNavigationVisible, setDshNavigationVisible] = useState(false);
     const requestSequence = useRef(0);
 
     const refresh = useCallback(async (showLoading = false) => {
@@ -233,16 +234,34 @@ const AgentWorkspacePage: FunctionComponent = () => {
 
         if (status.state === "READY") {
             return (
-                <div className="agent-workspace-ready">
+                <div
+                    className={`agent-workspace-ready${
+                        dshNavigationVisible ? "" : " dsh-navigation-hidden"
+                    }`}
+                >
                     <div className="agent-workspace-toolbar">
-                        <div>
+                        <div className="agent-workspace-toolbar-heading">
                             <strong>Agent Workspace</strong>
                             <span>
                                 Private workspace running with your Magda
                                 authority
                             </span>
                         </div>
-                        {resetButton}
+                        <div className="agent-workspace-toolbar-actions">
+                            <Button
+                                appearance="subtle"
+                                onClick={() =>
+                                    setDshNavigationVisible(
+                                        (visible) => !visible
+                                    )
+                                }
+                            >
+                                {dshNavigationVisible
+                                    ? "Hide DSH Navigation"
+                                    : "Show DSH Navigation"}
+                            </Button>
+                            {resetButton}
+                        </div>
                     </div>
                     <iframe
                         className="agent-workspace-runtime"
