@@ -1,4 +1,14 @@
 global:
+  agentWorkspace:
+    # -- Enable the opt-in integrated Agent Workspace MVP. The target cluster
+    # must have Kubernetes Agent Sandbox v1.0.4 or newer installed.
+    enabled: false
+    # -- Namespace containing per-user SandboxClaim, Sandbox and PVC resources.
+    # Empty derives a collision-resistant name from the Helm release namespace.
+    sandboxNamespace: ""
+  llmServices:
+    # -- Enable the authenticated Magda LLM facade independently of Agent Workspace.
+    enabled: false
   searchEngine:
     semanticIndexer:
       indexName: "semantic-index"

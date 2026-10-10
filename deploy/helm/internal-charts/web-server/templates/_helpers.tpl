@@ -14,5 +14,6 @@
 {{- $_ := .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | set $webConfigDict "useLocalStyleSheet" }}
 {{- $_ := .Values.defaultDatasetBucket | default .Values.global.defaultDatasetBucket | set $webConfigDict "defaultDatasetBucket" }}
 {{- $_ := .Chart.Version | dict "tag" | merge (.Values.global.image | default dict | deepCopy | merge (deepCopy .Values.image)) | set $webConfigDict "image" }}
+{{- $_ := set $webConfigDict.featureFlags "agentWorkspace" (dig "agentWorkspace" "enabled" false .Values.global) }}
 {{- mustToRawJson $webConfigDict }}
 {{- end -}}

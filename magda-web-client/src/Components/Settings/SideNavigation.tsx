@@ -18,7 +18,8 @@ import {
     MdOutlineArticle,
     MdOutlineHome,
     MdOutlineTextFields,
-    MdSecurity
+    MdSecurity,
+    MdSmartToy
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -27,6 +28,7 @@ import { useSelector } from "react-redux";
 import uniq from "lodash/uniq";
 import { User } from "reducers/userManagementReducer";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
+import { config } from "../../config";
 import {
     getUrlWithPopUpQueryString,
     showSideNav
@@ -80,6 +82,16 @@ const defaultMenuItems: MenuItem[] = [
             "object/faas/function/invoke"
         ]
     },
+    ...(config.featureFlags.agentWorkspace
+        ? [
+              {
+                  title: "Agent Workspace",
+                  path: "/settings/agent-workspace",
+                  icon: <MdSmartToy />,
+                  requireRoleIds: [ADMIN_USERS_ROLE_ID]
+              }
+          ]
+        : []),
     {
         title: "Access Controls",
         path: "/settings/accessControls",

@@ -1,0 +1,161 @@
+{{- $root := . -}}
+{{- $namespace := include "agent-services.sandboxNamespace" . -}}
+{{- $runtimeType := .Values.warmPool.type | lower -}}
+{{- $name := include "agent-services.warmPoolName" . -}}
+{{- $installationId := include "agent-services.installationId" . -}}
+apiVersion: extensions.agents.x-k8s.io/v1beta1
+kind: SandboxTemplate
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
+    agent.magda.io/runtime: {{ $runtimeType | quote }}
+  annotations:
+    agent.magda.io/dsh-version: {{ .Values.runtime.dshVersion | quote }}
+spec:
+  service: true
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        {{- if .Values.runtime.storage.storageClassName }}
+        storageClassName: {{ .Values.runtime.storage.storageClassName | quote }}
+        {{- end }}
+        resources:
+          requests: {storage: {{ .Values.runtime.storage.size }}}
+  networkPolicyManagement: Managed
+  networkPolicy:
+    ingress:
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: {{ .Release.Namespace }}
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/name: magda-agent-manager
+                app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        ports:
+          - {port: 3080, protocol: TCP}
+    egress:
+      - to:
+          - namespaceSelector:
+              matchLabels: {kubernetes.io/metadata.name: kube-system}
+            podSelector:
+              matchLabels: {k8s-app: kube-dns}
+        ports:
+          - {port: 53, protocol: UDP}
+          - {port: 53, protocol: TCP}
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: {{ .Values.ingressController.namespace }}
+            podSelector:
+              matchLabels:
+{{ toYaml .Values.ingressController.podLabels | indent 16 }}
+        ports:
+          - {port: 80, protocol: TCP}
+          - {port: 443, protocol: TCP}
+      {{- range $cidr := .Values.runtime.externalPrivateCidrs }}
+      - to:
+          - ipBlock:
+              cidr: {{ $cidr | quote }}
+        ports:
+          {{- range $port := $root.Values.runtime.externalPrivatePorts }}
+          - {port: {{ $port }}, protocol: TCP}
+          {{- end }}
+      {{- end }}
+      - to:
+          - ipBlock:
+              cidr: 0.0.0.0/0
+              except:
+                - 10.0.0.0/8
+                - 100.64.0.0/10
+                - 127.0.0.0/8
+                - 169.254.0.0/16
+                - 172.16.0.0/12
+                - 192.168.0.0/16
+  podTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/name: magda-agent-sandbox
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        agent.magda.io/installation-id: {{ $installationId | quote }}
+        agent.magda.io/runtime: {{ $runtimeType | quote }}
+    spec:
+{{ include "magda.imagePullSecrets" . | indent 6 }}
+      {{- if ne $runtimeType "runc" }}
+      runtimeClassName: {{ get .Values.runtimeClasses $runtimeType | quote }}
+      {{- end }}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      {{- with .Values.runtime.hostAliases }}
+      hostAliases:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        # CSI remounts must not recursively broaden DSH credential files from
+        # 0600 to 0660 during suspend/resume or Pod replacement (see #3852).
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: agent
+          image: {{ include "agent-services.runtimeImage" . | quote }}
+          imagePullPolicy: {{ include "agent-services.runtimeImagePullPolicy" . | quote }}
+          ports:
+            - {name: dsh, containerPort: 3080}
+          env:
+            - name: DSH_PUBLIC_URL
+              value: "{{ .Values.global.externalUrl | trimSuffix "/" }}/api/v0/agent/runtime/"
+            - name: DSH_TRUSTED_HOSTS
+              value: {{ (urlParse .Values.global.externalUrl).host | quote }}
+            - {name: DSH_BROWSER_AUTH, value: "true"}
+            - name: MAGDA_LLM_BASE_URL
+              value: "{{ .Values.global.externalUrl | trimSuffix "/" }}/api/v0/llm/v1"
+            {{- if .Values.runtime.trustedCaSecret.name }}
+            - {name: NODE_EXTRA_CA_CERTS, value: /etc/magda-agent/ca/ca.crt}
+            {{- end }}
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+          resources:
+{{ toYaml .Values.runtime.resources | indent 12 }}
+          readinessProbe:
+            tcpSocket: {port: 3080}
+            periodSeconds: 3
+            failureThreshold: 100
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: run, mountPath: /run/magda-agent}
+            {{- if .Values.runtime.trustedCaSecret.name }}
+            - {name: trusted-ca, mountPath: /etc/magda-agent/ca, readOnly: true}
+            {{- end }}
+      volumes:
+        - name: run
+          emptyDir: {medium: Memory, sizeLimit: 1Mi}
+        {{- if .Values.runtime.trustedCaSecret.name }}
+        - name: trusted-ca
+          secret:
+            secretName: {{ .Values.runtime.trustedCaSecret.name }}
+            items:
+              - key: {{ .Values.runtime.trustedCaSecret.key }}
+                path: ca.crt
+        {{- end }}
+---
+apiVersion: extensions.agents.x-k8s.io/v1beta1
+kind: SandboxWarmPool
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
+    agent.magda.io/runtime: {{ $runtimeType | quote }}
+spec:
+  replicas: {{ .Values.warmPool.size }}
+  sandboxTemplateRef:
+    name: {{ $name }}

@@ -1,0 +1,26 @@
+{{- /* Render-time validation only; this template emits no manifest. */ -}}
+{{- $runtimeType := .Values.warmPool.type | toString | lower -}}
+{{- if not (has $runtimeType (list "runc" "gvisor" "kata")) -}}
+{{- fail (printf "agent-services.warmPool.type must be one of runc, gvisor, or kata; got %q" .Values.warmPool.type) -}}
+{{- end -}}
+
+{{- $size := .Values.warmPool.size -}}
+{{- $sizeKind := kindOf $size -}}
+{{- if not (has $sizeKind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services.warmPool.size must be a non-negative integer; got %v (%s)" $size $sizeKind) -}}
+{{- end -}}
+{{- $sizeFloat := float64 $size -}}
+{{- if or (lt $sizeFloat 0.0) (ne $sizeFloat (floor $sizeFloat)) -}}
+{{- fail (printf "agent-services.warmPool.size must be a non-negative integer; got %v" $size) -}}
+{{- end -}}
+
+{{- if and (ne $runtimeType "runc") (empty (get .Values.runtimeClasses $runtimeType)) -}}
+{{- fail (printf "agent-services.runtimeClasses.%s is required when warmPool.type=%s" $runtimeType $runtimeType) -}}
+{{- end -}}
+
+{{- $namespaceOverride := dig "agentWorkspace" "sandboxNamespace" "" .Values.global | toString | trim -}}
+{{- if $namespaceOverride -}}
+{{- if or (gt (len $namespaceOverride) 63) (not (regexMatch "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" $namespaceOverride)) -}}
+{{- fail (printf "global.agentWorkspace.sandboxNamespace must be a valid DNS-1123 label of at most 63 characters; got %q" $namespaceOverride) -}}
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,26 @@
+image:
+  repository: ghcr.io/berriai
+  name: litellm
+  tag: main-v1.81.12-stable
+  pullPolicy: IfNotPresent
+model:
+  alias: magda-agent-default
+  providerModel: openai/gpt-4o-mini
+  apiKeyEnv: OPENAI_API_KEY
+  # Optional provider reasoning effort (for example: low, medium, or high).
+  reasoningEffort: ""
+providerSecret:
+  name: litellm-provider
+  key: api-key
+masterKeySecret:
+  # Create and retain a stable release-owned master key. Set false to reference
+  # an existing operator-managed secret.
+  create: true
+  name: magda-litellm-master-key
+  key: master-key
+service:
+  name: litellm
+  port: 4000
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {cpu: "1", memory: 1Gi}

@@ -23,6 +23,9 @@ import LogoSettingsPage from "./Content/LogoSettingsPage";
 import PagesSettingsPage from "./Content/PagesSettingsPage";
 import HomeSettingsPage from "./Content/HomeSettingsPage";
 import UiTextSettingsPage from "./Content/UiTextSettingsPage";
+import AgentWorkspacePage from "./AgentWorkspacePage";
+import RequireAdmin from "Components/RequireAdmin";
+import { config } from "../../config";
 
 function SettingsRedirect() {
     const location = useLocation();
@@ -67,6 +70,17 @@ const Routes = () => {
                             noContainerClass: true
                         })}
                     />
+                    {config.featureFlags.agentWorkspace && (
+                        <Route
+                            exact
+                            path="/settings/agent-workspace"
+                            component={RequireAdmin(
+                                withHeader(AgentWorkspacePage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
                     <Route
                         exact
                         path="/settings/users"

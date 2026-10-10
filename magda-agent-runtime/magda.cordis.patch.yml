@@ -1,0 +1,93 @@
+# Production Magda Agent Workspace overlay for the pinned DSH runtime.
+# DSH binds directly to the Sandbox Pod network; no bridge sidecar is used.
+- id: webserver
+  config:
+    host: 0.0.0.0
+    port: 3080
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024
+
+# Magda owns the single provider and model. The lifecycle bootstrap writes the
+# raw API-key credential to /data/config/magda-agent.env and restarts the
+# container; the credential is the user's lifecycle-bound Magda API key, never a
+# provider secret. DSH's adapter adds the HTTP authorization scheme.
+- id: llm-pi-ai
+  config:
+    providers:
+      magda:
+        displayName: Magda LLM
+        apiKeyEnv: MAGDA_LLM_API_KEY
+        api: openai-responses
+        baseURL: !!js process.env.MAGDA_LLM_BASE_URL
+        models:
+          - id: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'
+            name: Magda Agent Default
+            contextWindow: 131072
+            maxTokens: 8192
+            reasoningEfforts:
+              off:
+              low: low
+              medium: medium
+              high: high
+
+- id: agent-default-model
+  config:
+    provider: magda
+    model: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'
+    reasoningEffort: !!js process.env.MAGDA_LLM_REASONING_EFFORT || undefined
+
+# The managed deployment exposes only confined presets. Per-action approval is
+# retained and defaults to ask.
+- id: permission
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: ask
+      workspace-write:
+        sandbox: workspace-write
+        approval: ask
+
+# Provider/model/plugin management is deployment-owned and intentionally absent
+# from the managed browser profile.
+- id: tool-plugin-manager
+  disabled: true
+- id: plugin-manager
+  disabled: true
+- id: ui-plugin-manager
+  disabled: true
+- id: ui-settings-models
+  disabled: true
+- id: ui-settings-plugin-inventory
+  disabled: true
+- id: ui-settings-plugins
+  disabled: true
+- id: ui-settings-shell
+  disabled: true
+- id: ui-settings-agent-loop
+  disabled: true
+- id: ui-settings-subagent
+  disabled: true
+- id: ui-settings-web-search
+  disabled: true
+
+# The managed profile fixes model and permission policy at deployment time and
+# does not expose deployment feedback collection as an agent command.
+- id: ui-model-selection
+  disabled: true
+- id: ui-permission
+  disabled: true
+- id: command-feedback
+  disabled: true
+- insert:
+    - id: ui-managed-profile
+      name: "@magda/dsh-client-managed-profile"
+
+- id: session-log-deepseek
+  disabled: true
+
+- id: workspace-controller
+  config:
+    documentsDirectory: /data/workspace
+    documentsLookupTimeoutMs: 10000

@@ -1,0 +1,55 @@
+{{- $backendUrl := .Values.backend.url -}}
+{{- $secretName := .Values.backend.masterKeySecret.name -}}
+{{- $secretKey := .Values.backend.masterKeySecret.key -}}
+{{- if .Values.litellm.enabled -}}
+{{- $backendUrl = printf "http://%s:%v" .Values.litellm.service.name .Values.litellm.service.port -}}
+{{- $secretName = .Values.litellm.masterKeySecret.name -}}
+{{- $secretKey = .Values.litellm.masterKeySecret.key -}}
+{{- end -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-services
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels: {service: llm-services}
+  template:
+    metadata:
+      labels:
+        service: llm-services
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    spec:
+{{ include "magda.imagePullSecrets" . | indent 6 }}
+      automountServiceAccountToken: false
+      containers:
+        - name: llm-services
+          image: {{ include "magda.image" . | quote }}
+          imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+          ports:
+            - {name: http, containerPort: 8080}
+          env:
+            - {name: PORT, value: "8080"}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: {name: auth-secrets, key: jwt-secret}
+            - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
+            - {name: LITELLM_URL, value: {{ $backendUrl | quote }}}
+            - {name: ALLOWED_MODELS, value: {{ .Values.allowedModels | quote }}}
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: {{ $secretKey }}
+          readinessProbe:
+            httpGet: {path: /v0/status/ready, port: http}
+          livenessProbe:
+            httpGet: {path: /v0/status/live, port: http}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile: {type: RuntimeDefault}

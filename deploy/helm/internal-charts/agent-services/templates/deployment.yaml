@@ -1,0 +1,73 @@
+{{- $namespace := include "agent-services.sandboxNamespace" . -}}
+{{- $installationId := include "agent-services.installationId" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-manager
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
+    app.kubernetes.io/name: magda-agent-manager
+spec:
+  replicas: {{ .Values.manager.replicas }}
+  # Keep the pre-merge selector stable so upgrades from the split chart do not
+  # attempt to mutate Deployment.spec.selector (which Kubernetes forbids).
+  selector:
+    matchLabels:
+      service: agent-manager
+  template:
+    metadata:
+      labels:
+        service: agent-manager
+        app.kubernetes.io/name: magda-agent-manager
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        agent.magda.io/installation-id: {{ $installationId | quote }}
+    spec:
+{{ include "magda.imagePullSecrets" . | indent 6 }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: agent-manager
+          image: {{ include "agent-services.managerImage" . | quote }}
+          imagePullPolicy: {{ include "agent-services.managerImagePullPolicy" . | quote }}
+          ports:
+            - {name: http, containerPort: 8080}
+          env:
+            - {name: PORT, value: "8080"}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: {name: auth-secrets, key: jwt-secret}
+            - name: CONTROL_PLANE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.controlPlaneSecret.name }}
+                  key: {{ .Values.controlPlaneSecret.key }}
+            - {name: SYSTEM_USER_ID, value: {{ .Values.global.defaultAdminUserId | quote }}}
+            - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
+            - {name: SANDBOX_NAMESPACE, value: {{ $namespace | quote }}}
+            - {name: MAGDA_INSTALLATION_ID, value: {{ $installationId | quote }}}
+            - {name: SANDBOX_WARM_POOL, value: {{ include "agent-services.warmPoolName" . | quote }}}
+            - {name: MANAGED_API_KEY_NAME, value: {{ printf "%s-%s" .Values.managedApiKeyNamePrefix $installationId | quote }}}
+            - {name: EXTERNAL_URL, value: {{ .Values.global.externalUrl | quote }}}
+            - {name: MAGDA_API_URL, value: {{ .Values.magdaApiUrl | default (printf "%s/api" (.Values.global.externalUrl | trimSuffix "/")) | quote }}}
+            - {name: MAGDA_LLM_API_URL, value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (.Values.global.externalUrl | trimSuffix "/")) | quote }}}
+            - {name: RUNTIME_PREFIX, value: {{ .Values.runtimePrefix | quote }}}
+            - {name: HARD_DELETE_SECONDS, value: {{ .Values.hardDeleteSeconds | quote }}}
+            - {name: IDLE_SUSPEND_SECONDS, value: {{ .Values.idleSuspendSeconds | quote }}}
+            - {name: RECONCILE_INTERVAL_SECONDS, value: {{ .Values.reconcileIntervalSeconds | quote }}}
+            - {name: RUNTIME_MAX_BODY_BYTES, value: {{ .Values.runtimeMaxBodyBytes | quote }}}
+            - {name: MAGDA_LLM_PROVIDER, value: {{ .Values.llm.provider | quote }}}
+            - {name: MAGDA_LLM_MODEL, value: {{ .Values.llm.model | quote }}}
+{{- with .Values.llm.reasoningEffort }}
+            - {name: MAGDA_LLM_REASONING_EFFORT, value: {{ . | quote }}}
+{{- end }}
+          readinessProbe:
+            httpGet: {path: /v0/status/ready, port: http}
+          livenessProbe:
+            httpGet: {path: /v0/status/live, port: http}
+          resources:
+{{ toYaml .Values.manager.resources | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile: {type: RuntimeDefault}

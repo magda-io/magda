@@ -86,7 +86,8 @@ describe("Auth api router", function (this) {
                 tenantId: MAGDA_ADMIN_PORTAL_ID,
                 maxRetries: 0
             }),
-            failedApiKeyAuthBackOffSeconds: 5
+            failedApiKeyAuthBackOffSeconds: 5,
+            systemApiKeyIssuerUserId: argv.userId
         });
 
         const app = express();
@@ -577,6 +578,72 @@ describe("Auth api router", function (this) {
                     })
                 );
             });
+        });
+    });
+
+    describe("system-managed API keys", () => {
+        const userId = "00000000-0000-4000-8000-000000000111";
+
+        it("allows only the trusted issuer to create, extend, list and delete keys", async () => {
+            const app = buildExpressApp();
+            const token = buildJwt(argv.jwtSecret, DEFAULT_ADMIN_USER_ID);
+            const created = await request(app)
+                .post(`/private/users/${userId}/systemApiKeys`)
+                .set("X-Magda-Session", token)
+                .send({
+                    name: "magda-agent-workspace",
+                    expiryTime: new Date(Date.now() + 60_000).toISOString()
+                });
+            expect(created.status).to.equal(201);
+            expect(created.body.key).to.equal("test-secret");
+
+            const extendedExpiry = new Date(Date.now() + 120_000);
+            const extended = await request(app)
+                .patch(
+                    `/private/users/${userId}/systemApiKeys/${created.body.id}?name=magda-agent-workspace`
+                )
+                .set("X-Magda-Session", token)
+                .send({ expiryTime: extendedExpiry.toISOString() });
+            expect(extended.status).to.equal(204);
+
+            const listed = await request(app)
+                .get(
+                    `/private/users/${userId}/systemApiKeys?name=magda-agent-workspace`
+                )
+                .set("X-Magda-Session", token);
+            expect(listed.status).to.equal(200);
+            expect(listed.body).to.have.length(1);
+            expect(listed.body[0]).not.to.have.property("hash");
+            expect(listed.body[0].system_managed).to.equal(true);
+            expect(new Date(listed.body[0].expiry_time).getTime()).to.equal(
+                extendedExpiry.getTime()
+            );
+
+            const deleted = await request(app)
+                .delete(
+                    `/private/users/${userId}/systemApiKeys?name=magda-agent-workspace`
+                )
+                .set("X-Magda-Session", token);
+            expect(deleted.status).to.equal(200);
+            expect(deleted.body.deleted).to.equal(1);
+        });
+
+        it("rejects a valid session for a different caller", async () => {
+            const app = buildExpressApp();
+            const response = await request(app)
+                .post(`/private/users/${userId}/systemApiKeys`)
+                .set(
+                    "X-Magda-Session",
+                    buildJwt(
+                        argv.jwtSecret,
+                        "00000000-0000-4000-8000-000000000222"
+                    )
+                )
+                .send({
+                    name: "magda-agent-workspace",
+                    expiryTime: new Date(Date.now() + 60_000).toISOString()
+                });
+            expect(response.status).to.equal(403);
         });
     });
 });

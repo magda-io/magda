@@ -293,7 +293,11 @@ export default function createUserApiRouter(options: ApiRouterOptions) {
                     apiKeyId,
                     res.locals.authDecision
                 );
-                if (!apiKey || apiKey.user_id !== userId) {
+                if (
+                    !apiKey ||
+                    apiKey.user_id !== userId ||
+                    apiKey.system_managed === true
+                ) {
                     throw new ServerError(
                         `Cannot locate api key by id: ${apiKeyId} for user: ${userId}.`,
                         404

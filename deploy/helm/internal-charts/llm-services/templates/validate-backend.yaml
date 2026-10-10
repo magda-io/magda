@@ -1,0 +1,14 @@
+{{- /* Render-time backend selection validation; emits no manifest. */ -}}
+{{- $bundled := .Values.litellm.enabled -}}
+{{- $backendUrl := .Values.backend.url | default "" -}}
+{{- $secretName := .Values.backend.masterKeySecret.name | default "" -}}
+{{- $secretKey := .Values.backend.masterKeySecret.key | default "" -}}
+{{- $hasExternal := or $backendUrl $secretName $secretKey -}}
+{{- if and $bundled $hasExternal -}}
+{{- fail "llm-services: backend.* must be empty when litellm.enabled=true; disable bundled LiteLLM before configuring an external backend" -}}
+{{- end -}}
+{{- if not $bundled -}}
+{{- if or (empty $backendUrl) (empty $secretName) (empty $secretKey) -}}
+{{- fail "llm-services: litellm.enabled=false requires backend.url, backend.masterKeySecret.name, and backend.masterKeySecret.key" -}}
+{{- end -}}
+{{- end -}}
