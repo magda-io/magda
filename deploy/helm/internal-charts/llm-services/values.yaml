@@ -4,9 +4,21 @@ image:
   pullPolicy: IfNotPresent
 replicas: 1
 allowedModels: magda-agent-default
-masterKeySecret:
-  name: magda-litellm-master-key
-  key: master-key
+
+# External LiteLLM-compatible backend. Leave empty when the bundled LiteLLM
+# subchart is enabled. When bundled LiteLLM is disabled all three fields are
+# required.
+backend:
+  url: ""
+  masterKeySecret:
+    name: ""
+    key: ""
+
+# Optional bundled static LiteLLM router. Child values not repeated here use the
+# defaults from the litellm chart.
+litellm:
+  enabled: true
+
 resources:
   requests: {cpu: 50m, memory: 64Mi}
   limits: {cpu: 500m, memory: 256Mi}

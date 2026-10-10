@@ -1,9 +1,12 @@
-{{- $namespace := dig "agentWorkspace" "sandboxNamespace" .Values.sandboxNamespace .Values.global }}
+{{- $namespace := include "agent-services.sandboxNamespace" . -}}
+{{- $rbacName := include "agent-services.rbacName" . -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: magda-agent-manager
+  name: {{ $rbacName }}
   namespace: {{ $namespace }}
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
 rules:
   - apiGroups: ["extensions.agents.x-k8s.io"]
     resources: ["sandboxclaims"]
@@ -21,8 +24,10 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: magda-agent-manager
+  name: {{ $rbacName }}
   namespace: {{ $namespace }}
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ .Values.serviceAccount.name }}
@@ -30,4 +35,4 @@ subjects:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: magda-agent-manager
+  name: {{ $rbacName }}

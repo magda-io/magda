@@ -6,6 +6,9 @@ global:
   enableLivenessProbes: true
   agentWorkspace:
     enabled: true
+    sandboxNamespace: magda-agent
+  llmServices:
+    enabled: true
   image:
     pullPolicy: IfNotPresent
   openfaas:
@@ -18,13 +21,16 @@ tags:
   all: true
   priorities: false
 
-agent-manager:
-  image:
-    repository: localhost:5000
-    tag: latest
-    pullPolicy: Never
-  warmPool: magda-agent-runc
-  sandboxNamespaceResource:
+agent-services:
+  manager:
+    image:
+      repository: localhost:5000
+      tag: latest
+      pullPolicy: Never
+  warmPool:
+    type: runc
+    size: 1
+  sandboxNamespace:
     # The E2E setup pre-creates this namespace to install the local ingress CA.
     create: false
   magdaApiUrl: https://magda.test/api
@@ -33,25 +39,21 @@ agent-manager:
     provider: magda
     model: gpt-5.6-sol
     reasoningEffort: high
-
-agent-runtime:
-  image:
-    repository: localhost:5000
-    tag: latest
-    pullPolicy: Never
-  storage:
-    size: 1Gi
-  warmPool:
-    runcReplicas: 1
-    gvisorReplicas: 0
-  # Supply hostAliases and externalPrivateCidrs from the ingress Service's
-  # current ClusterIP as shown in the E2E guide; Minikube assigns it dynamically.
-  hostAliases: []
-  externalPrivateCidrs: []
-  externalPrivatePorts: [443]
-  trustedCaSecret:
-    name: magda-agent-trusted-ca
-    key: ca.crt
+  runtime:
+    image:
+      repository: localhost:5000
+      tag: latest
+      pullPolicy: Never
+    storage:
+      size: 1Gi
+    # Supply hostAliases and externalPrivateCidrs from the ingress Service's
+    # current ClusterIP as shown in the E2E guide; Minikube assigns it dynamically.
+    hostAliases: []
+    externalPrivateCidrs: []
+    externalPrivatePorts: [443]
+    trustedCaSecret:
+      name: magda-agent-trusted-ca
+      key: ca.crt
 
 llm-services:
   image:
@@ -59,17 +61,16 @@ llm-services:
     tag: latest
     pullPolicy: Never
   allowedModels: gpt-5.6-sol
-
-# The provider secret is deliberately not committed. Create `litellm-provider`
-# from OPENAI_API_KEY before deployment for real model responses.
-litellm:
-  model:
-    alias: gpt-5.6-sol
-    providerModel: openai/gpt-5.6-sol
-    reasoningEffort: high
-  resources:
-    requests: {cpu: 50m, memory: 128Mi}
-    limits: {cpu: 500m, memory: 1Gi}
+  # The provider secret is deliberately not committed. Create
+  # `litellm-provider` from OPENAI_API_KEY before deployment.
+  litellm:
+    model:
+      alias: gpt-5.6-sol
+      providerModel: openai/gpt-5.6-sol
+      reasoningEffort: high
+    resources:
+      requests: {cpu: 50m, memory: 128Mi}
+      limits: {cpu: 500m, memory: 1Gi}
 
 authorization-api:
   image:

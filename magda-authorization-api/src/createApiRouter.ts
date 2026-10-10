@@ -230,6 +230,42 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    router.patch(
+        "/private/users/:userId/systemApiKeys/:apiKeyId",
+        requireSystemApiKeyIssuer,
+        async (req, res) => {
+            try {
+                const name = String(req.query.name || "").trim();
+                if (!name) {
+                    throw new GenericError("API key name is required", 400);
+                }
+                const expiryTime = new Date(String(req.body?.expiryTime || ""));
+                if (
+                    !Number.isFinite(expiryTime.getTime()) ||
+                    expiryTime.getTime() <= Date.now()
+                ) {
+                    throw new GenericError(
+                        "A future API key expiryTime is required",
+                        400
+                    );
+                }
+                await database.updateSystemManagedUserApiKeyExpiry(
+                    req.params.userId,
+                    name,
+                    req.params.apiKeyId,
+                    expiryTime
+                );
+                res.status(204).end();
+            } catch (e) {
+                respondWithError(
+                    "PATCH /private/users/:userId/systemApiKeys/:apiKeyId",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
     router.delete(
         "/private/users/:userId/systemApiKeys/:apiKeyId?",
         requireSystemApiKeyIssuer,

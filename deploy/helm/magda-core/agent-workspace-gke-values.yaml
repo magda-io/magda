@@ -1,0 +1,35 @@
+# Qualified production profile for GKE with ingress-nginx and the gVisor
+# RuntimeClass. Kubernetes Agent Sandbox v1.0.4+ and ingress-nginx must be
+# installed separately before enabling Agent Workspace.
+global:
+  agentWorkspace:
+    enabled: true
+    # Empty derives <release-namespace>-agents with collision-safe truncation.
+    sandboxNamespace: ""
+  llmServices:
+    enabled: true
+
+agent-services:
+  warmPool:
+    type: gvisor
+    size: 2
+  runtimeClasses:
+    gvisor: gvisor
+  ingressController:
+    namespace: ingress-nginx
+    podLabels:
+      app.kubernetes.io/component: controller
+
+llm-services:
+  # Bundled static LiteLLM. Create the provider Secret named
+  # litellm-provider before installation, or disable this child chart and
+  # configure llm-services.backend for an external LiteLLM endpoint.
+  litellm:
+    enabled: true
+
+# Agent Workspace is qualified on GKE through ingress-nginx behind an L4
+# passthrough load balancer. Native GCE L7 Ingress is not supported for v8 alpha.
+ingress:
+  ingressClass: nginx
+  proxyReadTimeout: 3600
+  proxySendTimeout: 3600

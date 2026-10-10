@@ -13,8 +13,14 @@ providerSecret:
   name: litellm-provider
   key: api-key
 masterKeySecret:
+  # Create and retain a stable release-owned master key. Set false to reference
+  # an existing operator-managed secret.
+  create: true
   name: magda-litellm-master-key
   key: master-key
+service:
+  name: litellm
+  port: 4000
 resources:
   requests: {cpu: 100m, memory: 256Mi}
   limits: {cpu: "1", memory: 1Gi}

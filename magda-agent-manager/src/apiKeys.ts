@@ -70,6 +70,20 @@ export class ManagedApiKeyClient {
         return (await response.json()) as ManagedApiKey;
     }
 
+    async extend(userId: string, id: string, expiryTime: Date): Promise<void> {
+        const response = await fetch(this.url(userId, id), {
+            method: "PATCH",
+            headers: this.headers(true),
+            body: JSON.stringify({ expiryTime: expiryTime.toISOString() }),
+            signal: AbortSignal.timeout(10_000)
+        });
+        if (!response.ok) {
+            throw new Error(
+                `Extend managed API key failed: HTTP ${response.status}`
+            );
+        }
+    }
+
     async delete(userId: string, id?: string): Promise<void> {
         const response = await fetch(this.url(userId, id), {
             method: "DELETE",

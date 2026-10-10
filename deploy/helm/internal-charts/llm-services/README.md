@@ -8,16 +8,22 @@ Authenticated Magda LLM facade
 
 Kubernetes: `>= 1.24.0-0`
 
+| Repository | Name | Version |
+|------------|------|---------|
+| file://../litellm | litellm | 7.0.0 |
+
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | allowedModels | string | `"magda-agent-default"` |  |
+| backend.masterKeySecret.key | string | `""` |  |
+| backend.masterKeySecret.name | string | `""` |  |
+| backend.url | string | `""` |  |
 | image.name | string | `"magda-llm-services"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `""` |  |
-| masterKeySecret.key | string | `"master-key"` |  |
-| masterKeySecret.name | string | `"magda-litellm-master-key"` |  |
+| litellm.enabled | bool | `true` |  |
 | replicas | int | `1` |  |
 | resources.limits.cpu | string | `"500m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |

@@ -19,6 +19,7 @@ const config: ManagerConfig = {
     port: Number(process.env.PORT || 80),
     jwtSecret: required("JWT_SECRET"),
     namespace: process.env.SANDBOX_NAMESPACE || "magda-agent",
+    installationId: required("MAGDA_INSTALLATION_ID"),
     warmPool: process.env.SANDBOX_WARM_POOL || "magda-agent-runc",
     authApiUrl: process.env.AUTH_API_URL || "http://authorization-api/v0",
     systemUserId: required("SYSTEM_USER_ID"),
@@ -63,8 +64,11 @@ const apiKeys = new ManagedApiKeyClient({
     systemUserId: config.systemUserId,
     name: config.managedApiKeyName
 });
-const proxy = new RuntimeProxy(config, kubernetes);
-const manager = new AgentManager(config, kubernetes, apiKeys, proxy);
+let manager: AgentManager;
+const proxy = new RuntimeProxy(config, kubernetes, (userId, activityTime) =>
+    manager.recordMeaningfulActivity(userId, activityTime)
+);
+manager = new AgentManager(config, kubernetes, apiKeys, proxy);
 const app = buildApp(config, manager);
 const server = http.createServer((req, res) => {
     if (
@@ -89,13 +93,15 @@ server.on("upgrade", (req, socket, head) => {
     }
     socket.destroy();
 });
+const reconcile = () =>
+    manager
+        .reconcileIdleWorkspaces()
+        .catch((error) =>
+            console.error("Agent Workspace reconciliation failed", error)
+        );
+void reconcile();
 const reconcileTimer = setInterval(
-    () =>
-        manager
-            .reconcileIdleWorkspaces()
-            .catch((error) =>
-                console.error("Agent Workspace reconciliation failed", error)
-            ),
+    reconcile,
     config.reconcileIntervalSeconds * 1000
 );
 reconcileTimer.unref();

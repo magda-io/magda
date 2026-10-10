@@ -584,7 +584,7 @@ describe("Auth api router", function (this) {
     describe("system-managed API keys", () => {
         const userId = "00000000-0000-4000-8000-000000000111";
 
-        it("allows only the trusted issuer to create, list and delete keys", async () => {
+        it("allows only the trusted issuer to create, extend, list and delete keys", async () => {
             const app = buildExpressApp();
             const token = buildJwt(argv.jwtSecret, DEFAULT_ADMIN_USER_ID);
             const created = await request(app)
@@ -597,6 +597,15 @@ describe("Auth api router", function (this) {
             expect(created.status).to.equal(201);
             expect(created.body.key).to.equal("test-secret");
 
+            const extendedExpiry = new Date(Date.now() + 120_000);
+            const extended = await request(app)
+                .patch(
+                    `/private/users/${userId}/systemApiKeys/${created.body.id}?name=magda-agent-workspace`
+                )
+                .set("X-Magda-Session", token)
+                .send({ expiryTime: extendedExpiry.toISOString() });
+            expect(extended.status).to.equal(204);
+
             const listed = await request(app)
                 .get(
                     `/private/users/${userId}/systemApiKeys?name=magda-agent-workspace`
@@ -606,6 +615,9 @@ describe("Auth api router", function (this) {
             expect(listed.body).to.have.length(1);
             expect(listed.body[0]).not.to.have.property("hash");
             expect(listed.body[0].system_managed).to.equal(true);
+            expect(new Date(listed.body[0].expiry_time).getTime()).to.equal(
+                extendedExpiry.getTime()
+            );
 
             const deleted = await request(app)
                 .delete(

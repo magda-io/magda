@@ -1,3 +1,11 @@
+{{- $backendUrl := .Values.backend.url -}}
+{{- $secretName := .Values.backend.masterKeySecret.name -}}
+{{- $secretKey := .Values.backend.masterKeySecret.key -}}
+{{- if .Values.litellm.enabled -}}
+{{- $backendUrl = printf "http://%s:%v" .Values.litellm.service.name .Values.litellm.service.port -}}
+{{- $secretName = .Values.litellm.masterKeySecret.name -}}
+{{- $secretKey = .Values.litellm.masterKeySecret.key -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,7 +16,9 @@ spec:
     matchLabels: {service: llm-services}
   template:
     metadata:
-      labels: {service: llm-services}
+      labels:
+        service: llm-services
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
     spec:
 {{ include "magda.imagePullSecrets" . | indent 6 }}
       automountServiceAccountToken: false
@@ -24,13 +34,13 @@ spec:
               valueFrom:
                 secretKeyRef: {name: auth-secrets, key: jwt-secret}
             - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
-            - {name: LITELLM_URL, value: "http://litellm:4000"}
+            - {name: LITELLM_URL, value: {{ $backendUrl | quote }}}
             - {name: ALLOWED_MODELS, value: {{ .Values.allowedModels | quote }}}
             - name: LITELLM_MASTER_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.masterKeySecret.name }}
-                  key: {{ .Values.masterKeySecret.key }}
+                  name: {{ $secretName }}
+                  key: {{ $secretKey }}
           readinessProbe:
             httpGet: {path: /v0/status/ready, port: http}
           livenessProbe:

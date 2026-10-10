@@ -1,0 +1,88 @@
+global:
+  agentWorkspace:
+    enabled: false
+    sandboxNamespace: ""
+  llmServices:
+    enabled: false
+  image:
+    repository: ghcr.io/magda-io
+    pullPolicy: IfNotPresent
+  externalUrl: http://localhost:6100
+  defaultAdminUserId: 00000000-0000-4000-8000-000000000000
+
+manager:
+  image:
+    name: magda-agent-manager
+    tag: ""
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests: {cpu: 50m, memory: 96Mi}
+    limits: {cpu: 500m, memory: 384Mi}
+
+runtime:
+  image:
+    name: magda-agent-runtime
+    tag: ""
+    pullPolicy: IfNotPresent
+  dshVersion: 0.2.1-alpha.1
+  storage:
+    size: 5Gi
+    storageClassName: ""
+  resources:
+    requests: {cpu: 100m, memory: 384Mi, ephemeral-storage: 256Mi}
+    limits: {cpu: "1", memory: 1536Mi, ephemeral-storage: 1Gi}
+  hostAliases: []
+  externalPrivateCidrs: []
+  externalPrivatePorts: [80, 443]
+  trustedCaSecret:
+    name: ""
+    key: ca.crt
+
+# runc is intended for trusted local development. Use gvisor or kata for
+# production after qualifying the selected RuntimeClass on the target cluster.
+warmPool:
+  type: gvisor
+  size: 2
+runtimeClasses:
+  gvisor: gvisor
+  kata: kata
+
+sandboxNamespace:
+  create: true
+  annotations:
+    helm.sh/resource-policy: keep
+  labels: {}
+
+managedApiKeyNamePrefix: magda-agent-workspace
+controlPlaneSecret:
+  # Create a stable release-owned secret when true. Set false to reference an
+  # existing operator-managed secret.
+  create: true
+  name: magda-agent-control
+  key: token
+runtimePrefix: /v0/runtime
+magdaApiUrl: ""
+llmApiUrl: ""
+hardDeleteSeconds: 28800
+idleSuspendSeconds: 1800
+reconcileIntervalSeconds: 30
+runtimeMaxBodyBytes: 16777216
+llm:
+  provider: magda
+  model: magda-agent-default
+  reasoningEffort: ""
+serviceAccount:
+  name: magda-agent-manager
+
+kasValidation:
+  enabled: true
+  image:
+    repository: alpine/k8s
+    tag: 1.31.5
+    pullPolicy: IfNotPresent
+
+ingressController:
+  namespace: ingress-nginx
+  podLabels:
+    app.kubernetes.io/component: controller

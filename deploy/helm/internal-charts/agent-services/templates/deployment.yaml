@@ -1,10 +1,16 @@
-{{- $namespace := dig "agentWorkspace" "sandboxNamespace" .Values.sandboxNamespace .Values.global }}
+{{- $namespace := include "agent-services.sandboxNamespace" . -}}
+{{- $installationId := include "agent-services.installationId" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-manager
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
+    app.kubernetes.io/name: magda-agent-manager
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ .Values.manager.replicas }}
+  # Keep the pre-merge selector stable so upgrades from the split chart do not
+  # attempt to mutate Deployment.spec.selector (which Kubernetes forbids).
   selector:
     matchLabels:
       service: agent-manager
@@ -13,13 +19,15 @@ spec:
       labels:
         service: agent-manager
         app.kubernetes.io/name: magda-agent-manager
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        agent.magda.io/installation-id: {{ $installationId | quote }}
     spec:
 {{ include "magda.imagePullSecrets" . | indent 6 }}
       serviceAccountName: {{ .Values.serviceAccount.name }}
       containers:
         - name: agent-manager
-          image: {{ include "magda.image" . | quote }}
-          imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+          image: {{ include "agent-services.managerImage" . | quote }}
+          imagePullPolicy: {{ include "agent-services.managerImagePullPolicy" . | quote }}
           ports:
             - {name: http, containerPort: 8080}
           env:
@@ -35,8 +43,9 @@ spec:
             - {name: SYSTEM_USER_ID, value: {{ .Values.global.defaultAdminUserId | quote }}}
             - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
             - {name: SANDBOX_NAMESPACE, value: {{ $namespace | quote }}}
-            - {name: SANDBOX_WARM_POOL, value: {{ .Values.warmPool | quote }}}
-            - {name: MANAGED_API_KEY_NAME, value: {{ .Values.managedApiKeyName | quote }}}
+            - {name: MAGDA_INSTALLATION_ID, value: {{ $installationId | quote }}}
+            - {name: SANDBOX_WARM_POOL, value: {{ include "agent-services.warmPoolName" . | quote }}}
+            - {name: MANAGED_API_KEY_NAME, value: {{ printf "%s-%s" .Values.managedApiKeyNamePrefix $installationId | quote }}}
             - {name: EXTERNAL_URL, value: {{ .Values.global.externalUrl | quote }}}
             - {name: MAGDA_API_URL, value: {{ .Values.magdaApiUrl | default (printf "%s/api" (.Values.global.externalUrl | trimSuffix "/")) | quote }}}
             - {name: MAGDA_LLM_API_URL, value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (.Values.global.externalUrl | trimSuffix "/")) | quote }}}
@@ -55,7 +64,7 @@ spec:
           livenessProbe:
             httpGet: {path: /v0/status/live, port: http}
           resources:
-{{ toYaml .Values.resources | indent 12 }}
+{{ toYaml .Values.manager.resources | indent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities: {drop: ["ALL"]}

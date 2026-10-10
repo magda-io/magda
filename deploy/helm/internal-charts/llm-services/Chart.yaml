@@ -5,3 +5,8 @@ version: 7.0.0
 kubeVersion: ">= 1.24.0-0"
 annotations:
   magdaModuleType: core
+dependencies:
+  - name: litellm
+    version: 7.0.0
+    repository: file://../litellm
+    condition: litellm.enabled

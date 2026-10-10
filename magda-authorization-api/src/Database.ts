@@ -353,6 +353,34 @@ export default class Database {
         return result.rowCount || 0;
     }
 
+    async updateSystemManagedUserApiKeyExpiry(
+        userId: string,
+        name: string,
+        apiKeyId: string,
+        expiryTime: Date
+    ): Promise<void> {
+        if (!userId || !name || !apiKeyId) {
+            throw new ServerError(
+                "User ID, API key name and API key ID are required!",
+                400
+            );
+        }
+        const result = await this.pool.query(
+            ...sqls`UPDATE api_keys
+                SET expiry_time=${expiryTime}, edit_time=CURRENT_TIMESTAMP
+                WHERE user_id=${userId}
+                  AND name=${name}
+                  AND id=${apiKeyId}
+                  AND system_managed=true`.toQuery()
+        );
+        if (!result.rowCount) {
+            throw new ServerError(
+                `Cannot locate system managed API key record with API key id: ${apiKeyId} user id: ${userId}`,
+                404
+            );
+        }
+    }
+
     async updateUserApiKey(
         userId: string,
         apiKeyId: string,

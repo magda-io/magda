@@ -13,10 +13,12 @@ data:
   {{- $runtimeRoutes = .Values.routes | default .Values.defaultRoutes }}
   {{- end }}
   {{- if dig "agentWorkspace" "enabled" false .Values.global }}
-  {{- $agentRoutes := dict
-        "agent" (dict "to" "http://agent-manager/v0" "auth" true "websocket" true "redirectTrailingSlash" true)
-        "llm" (dict "to" "http://llm-services/v0" "auth" true) }}
-  {{- $runtimeRoutes = mergeOverwrite (deepCopy $runtimeRoutes) $agentRoutes }}
+  {{- $runtimeRoutes = mergeOverwrite (deepCopy $runtimeRoutes) (dict
+        "agent" (dict "to" "http://agent-manager/v0" "auth" true "websocket" true "redirectTrailingSlash" true)) }}
+  {{- end }}
+  {{- if dig "llmServices" "enabled" false .Values.global }}
+  {{- $runtimeRoutes = mergeOverwrite (deepCopy $runtimeRoutes) (dict
+        "llm" (dict "to" "http://llm-services/v0" "auth" true)) }}
   {{- end }}
   routes.json: {{ $runtimeRoutes | mustToRawJson | quote }}
   webRoutes.json: {{ .Values.webRoutes | default dict | mustToRawJson | quote }}

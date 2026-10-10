@@ -1,0 +1,33 @@
+{
+  "name": "@magda/agent-runtime",
+  "version": "7.0.0",
+  "description": "Managed DeepSeek Harness runtime for Magda Agent Workspace",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "bash -n entrypoint.sh && node --check bootstrap.mjs && node --check dsh-launch.mjs",
+    "test": "node test-runtime.mjs",
+    "predocker-build-local": "yarn test",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "predocker-build-prod": "yarn test",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "retag-and-push": "retag-and-push"
+  },
+  "devDependencies": {
+    "@magda/scripts": "^7.0.0"
+  },
+  "config": {
+    "docker": {
+      "name": "magda-agent-runtime",
+      "include": "Dockerfile ../packages/mgd/package.json ../packages/mgd/esbuild.js ../packages/mgd/src ../packages/mgd/skills ../magda-agent-runtime/dsh-client-managed-profile ../magda-agent-runtime/magda.cordis.patch.yml ../magda-agent-runtime/entrypoint.sh ../magda-agent-runtime/bootstrap.mjs ../magda-agent-runtime/dsh-launch.mjs"
+    }
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "dockerizedTool": true
+    }
+  }
+}

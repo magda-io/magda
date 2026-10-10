@@ -1,0 +1,6 @@
+{{- /* Cross-chart feature validation; emits no manifest. */ -}}
+{{- $agentWorkspaceEnabled := dig "agentWorkspace" "enabled" false .Values.global -}}
+{{- $llmServicesEnabled := dig "llmServices" "enabled" false .Values.global -}}
+{{- if and $agentWorkspaceEnabled (not $llmServicesEnabled) -}}
+{{- fail "global.agentWorkspace.enabled=true requires global.llmServices.enabled=true because the managed runtime uses the authenticated Magda LLM facade" -}}
+{{- end -}}

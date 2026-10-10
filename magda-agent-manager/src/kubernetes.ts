@@ -16,6 +16,7 @@ const CLAIMS = "sandboxclaims";
 const SANDBOXES = "sandboxes";
 
 export const USER_LABEL = "agent.magda.io/user-id";
+export const INSTALLATION_LABEL = "agent.magda.io/installation-id";
 export const STATE_ANNOTATION = "agent.magda.io/bootstrap-state";
 export const ERROR_ANNOTATION = "agent.magda.io/bootstrap-error";
 export const UPDATED_ANNOTATION = "agent.magda.io/updated-at";
@@ -52,8 +53,17 @@ function readyCondition(resource: {
     );
 }
 
-export function claimName(userId: string) {
-    return `magda-agent-${userId.toLowerCase()}`;
+export function claimName(userId: string, installationId: string) {
+    return `magda-agent-${installationId.toLowerCase()}-${userId.toLowerCase()}`;
+}
+
+export function shutdownTimeForActivity(
+    activityTime: Date,
+    hardDeleteSeconds: number
+) {
+    return new Date(
+        activityTime.getTime() + hardDeleteSeconds * 1000
+    ).toISOString();
 }
 
 export class AgentKubernetesClient {
@@ -78,7 +88,7 @@ export class AgentKubernetesClient {
             version: VERSION,
             namespace: this.options.namespace,
             plural: CLAIMS,
-            labelSelector: USER_LABEL
+            labelSelector: `${INSTALLATION_LABEL}=${this.options.installationId}`
         })) as { items?: SandboxClaim[] };
         return response.items || [];
     }
@@ -90,7 +100,7 @@ export class AgentKubernetesClient {
                 version: VERSION,
                 namespace: this.options.namespace,
                 plural: CLAIMS,
-                name: claimName(userId)
+                name: claimName(userId, this.options.installationId)
             })) as SandboxClaim;
         } catch (error) {
             if (isNotFound(error)) return undefined;
@@ -100,15 +110,19 @@ export class AgentKubernetesClient {
 
     async createClaim(userId: string): Promise<SandboxClaim> {
         const now = new Date();
-        const shutdownTime = new Date(
-            now.getTime() + this.options.hardDeleteSeconds * 1000
-        ).toISOString();
+        const shutdownTime = shutdownTimeForActivity(
+            now,
+            this.options.hardDeleteSeconds
+        );
         const body: SandboxClaim = {
             apiVersion: `${EXT_GROUP}/${VERSION}`,
             kind: "SandboxClaim",
             metadata: {
-                name: claimName(userId),
-                labels: { [USER_LABEL]: userId },
+                name: claimName(userId, this.options.installationId),
+                labels: {
+                    [USER_LABEL]: userId,
+                    [INSTALLATION_LABEL]: this.options.installationId
+                },
                 annotations: {
                     [STATE_ANNOTATION]: "ALLOCATING",
                     [UPDATED_ANNOTATION]: now.toISOString(),
@@ -150,12 +164,43 @@ export class AgentKubernetesClient {
                 version: VERSION,
                 namespace: this.options.namespace,
                 plural: CLAIMS,
-                name: claimName(userId),
+                name: claimName(userId, this.options.installationId),
                 body: {
                     metadata: {
                         annotations: {
                             ...annotations,
                             [UPDATED_ANNOTATION]: new Date().toISOString()
+                        }
+                    }
+                }
+            },
+            mergePatchOptions
+        )) as SandboxClaim;
+    }
+
+    async updateActivity(userId: string, activityTime: Date) {
+        const shutdownTime = shutdownTimeForActivity(
+            activityTime,
+            this.options.hardDeleteSeconds
+        );
+        return (await this.customApi.patchNamespacedCustomObject(
+            {
+                group: EXT_GROUP,
+                version: VERSION,
+                namespace: this.options.namespace,
+                plural: CLAIMS,
+                name: claimName(userId, this.options.installationId),
+                body: {
+                    metadata: {
+                        annotations: {
+                            [LAST_ACTIVITY_ANNOTATION]: activityTime.toISOString(),
+                            [UPDATED_ANNOTATION]: activityTime.toISOString()
+                        }
+                    },
+                    spec: {
+                        lifecycle: {
+                            shutdownPolicy: "DeleteForeground",
+                            shutdownTime
                         }
                     }
                 }
@@ -171,7 +216,7 @@ export class AgentKubernetesClient {
                 version: VERSION,
                 namespace: this.options.namespace,
                 plural: CLAIMS,
-                name: claimName(userId),
+                name: claimName(userId, this.options.installationId),
                 propagationPolicy: "Foreground",
                 body: { propagationPolicy: "Foreground" }
             });
@@ -188,7 +233,7 @@ export class AgentKubernetesClient {
         if (current && readyCondition(current)?.status === "True")
             return current;
 
-        const name = claimName(userId);
+        const name = claimName(userId, this.options.installationId);
         return new Promise<SandboxClaim>(async (resolve, reject) => {
             let settled = false;
             let controller: AbortController | undefined;

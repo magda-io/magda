@@ -30,8 +30,8 @@ credentials remain in the Magda namespace.
   bootstraps the runtime, proxies DSH HTTP/WebSocket traffic, and reconciles idle
   workspaces.
 - **Kubernetes Agent Sandbox** provides the per-user execution boundary. The
-  qualified API version is Kubernetes Agent Sandbox v1.0.4. Both ordinary `runc`
-  and optional gVisor templates are supplied through warm pools.
+  qualified release is Kubernetes Agent Sandbox v1.0.4. The installation renders
+  exactly one selected runc, gVisor, or Kata template and warm pool.
 - **Agent Runtime** pins DSH, bundles `mgd`, and applies a deployment-owned Cordis
   profile. The workspace is mounted at `/data/workspace`; runtime configuration
   and DSH state are stored on the same per-user PVC.
@@ -46,8 +46,9 @@ credentials remain in the Magda namespace.
 
 ## Lifecycle and resource identity
 
-A user UUID maps deterministically to the claim name
-`magda-agent-<user UUID>` and label `agent.magda.io/user-id=<UUID>`.
+A user UUID and stable installation ID map deterministically to the claim name
+`magda-agent-<installation ID>-<user UUID>`. Claims carry both
+`agent.magda.io/installation-id` and `agent.magda.io/user-id` labels.
 The user-visible states are:
 
 `ABSENT`, `ALLOCATING`, `BOOTSTRAPPING`, `READY`, `SUSPENDING`, `SUSPENDED`,
@@ -55,17 +56,18 @@ The user-visible states are:
 
 Provisioning performs these operations:
 
-1. Rotate the reserved `magda-agent-workspace` managed API key. Its expiry is no
-   later than the hard workspace lifetime.
-2. Create/adopt the user's `SandboxClaim` from the selected warm pool.
+1. Create the installation-scoped user's `SandboxClaim` from the selected warm
+   pool, making interrupted provisioning discoverable before issuing a secret.
+2. Rotate the installation-scoped reserved managed API key. Its expiry follows
+   the current eight-hour inactivity deadline.
 3. Wait for the claim and Sandbox Pod to become ready.
 4. Send a one-time bootstrap payload through `pods/exec` over stdin.
 5. Write `mgd` configuration and DSH environment to mode-0600 files on the PVC.
 6. Restart the runtime container and require post-bootstrap readiness before
    returning `READY`.
 
-Idle `READY` workspaces with no active runtime WebSockets are suspended. Resume
-reuses the PVC and Sandbox. Reset, explicit deletion, and logout revoke the key,
+Idle `READY` workspaces are suspended even if an otherwise idle runtime WebSocket
+remains open. Resume reuses the PVC and Sandbox and renews the deadline. Reset, explicit deletion, and logout revoke the key,
 close sockets, delete the claim and storage, and remove all DSH sessions and
 workspace files. Logout waits for cleanup before destroying the Magda session.
 
@@ -119,7 +121,33 @@ LLM Services proxies both Responses and Chat Completions for compatibility.
 The manager can restart without an application database. Claims, Sandbox status,
 annotations, PVCs, and the Authorization DB are the durable sources of truth.
 Per-user in-flight operations are serialized; destructive operations queue
-behind provisioning rather than being silently dropped.
+behind provisioning rather than being silently dropped. Every installation gets
+a stable release/namespace-derived identifier. Claim names, labels, list
+selectors, warm-pool resources, RBAC, and managed API-key names include that
+identifier, so two Magda installations cannot adopt or delete one another's
+workspaces even if an operator deliberately shares a Sandbox namespace.
+
+### Meaningful inactivity lifecycle
+
+The accepted lifecycle is 30 minutes of meaningful inactivity before suspension
+and eight hours before permanent deletion. Both values are configurable. For the
+alpha, **meaningful activity** is a successfully accepted, authenticated DSH
+mutation RPC (for example prompt, session/terminal create, rename, write, cancel,
+or delete) or an explicit resume. DSH uses HTTP `POST` for both reads and writes,
+so method alone is deliberately insufficient. Page loads, list/catalog/status
+RPCs, malformed or rejected requests, lifecycle polling, an open WebSocket, and
+Remote-stream/heartbeat/ping-pong traffic do not renew the deadline.
+
+A meaningful request atomically advances the persisted claim activity timestamp
+and `SandboxClaim.spec.lifecycle.shutdownTime`, and extends the managed Magda API
+key to the same deadline. Reconciliation reads that persisted timestamp after a
+Manager restart. It also completes persisted suspend/resume/delete transitions;
+an interrupted allocation/bootstrap is destroyed after credential revocation.
+If revocation is temporarily unavailable, the claim remains `DELETING` with key
+identity intact and reconciliation retries before removing the PVC. It suspends a running
+Sandbox after 30 minutes and permanently
+deletes the claim (and its owner-controlled PVC) and credential after eight
+hours. Reset and logout remain immediate destructive operations.
 
 ### Warm pools
 
@@ -149,43 +177,89 @@ open sockets during destructive lifecycle operations.
 
 ## Helm configuration
 
-Enable the four feature charts and Gateway/Web integration:
+LLM Services is independently deployable. Agent Workspace requires it:
 
 ```yaml
 global:
   agentWorkspace:
     enabled: true
-    sandboxNamespace: magda-agent
+    # Empty derives <release-namespace>-agents with collision-safe truncation.
+    sandboxNamespace: ""
+  llmServices:
+    enabled: true
 
-agent-manager:
-  warmPool: magda-agent-runc
+agent-services:
+  warmPool:
+    type: gvisor # runc, gvisor, or kata
+    size: 2
+  runtimeClasses:
+    gvisor: gvisor
+    kata: kata
   hardDeleteSeconds: 28800
   idleSuspendSeconds: 1800
   llm:
     provider: magda
     model: gpt-5.6-sol
     reasoningEffort: high
-
-agent-runtime:
-  warmPool:
-    runcReplicas: 1
-    gvisorReplicas: 0
-  storage:
-    size: 1Gi
+  runtime:
+    storage:
+      size: 5Gi
 
 llm-services:
   allowedModels: gpt-5.6-sol
-
-litellm:
-  model:
-    alias: gpt-5.6-sol
-    providerModel: openai/gpt-5.6-sol
-    reasoningEffort: high
+  litellm:
+    enabled: true
+    model:
+      alias: gpt-5.6-sol
+      providerModel: openai/gpt-5.6-sol
+      reasoningEffort: high
 ```
 
-Use a model available to your provider account. Leaving `reasoningEffort` empty
-omits the parameter. Production deployments should use immutable image tags and
-an externally managed Secret rather than local `latest` images.
+The merged `agent-services` chart owns the Manager Deployment, Service, RBAC,
+control Secret, Sandbox namespace, and exactly one selected SandboxTemplate and
+SandboxWarmPool. `runc` omits `runtimeClassName` and is intended only for trusted
+local development. gVisor and Kata default to RuntimeClasses named `gvisor` and
+`kata`, which may be overridden.
+
+Changing `warmPool.type` while claims exist is a migration, not an in-place
+runtime switch. Drain or reset active workspaces, confirm their claims and warm
+Sandboxes are gone, then upgrade the release and admit new workspaces.
+
+### Mandatory migration from the split charts
+
+Upgrading from the earlier `agent-manager` + `agent-runtime` charts to
+`agent-services` is also a **drain/reset migration**. Legacy claim names and
+managed-key names were user-scoped but not installation-scoped. The new Manager
+intentionally does not adopt those resources, and Helm replaces the old
+unhashed Template/WarmPool. Before upgrading:
+
+1. Ask every user to publish durable results, then reset or log out through the
+   old Manager. Do not manually delete a claim first: reset/logout revokes the
+   legacy `magda-agent-workspace` managed key before deleting its claim and PVC.
+2. Confirm no claimed legacy workspaces remain. Unclaimed old warm Sandboxes may
+   remain until Helm removes the old pool during the upgrade:
+
+   ```sh
+   kubectl -n <sandbox-namespace> get sandboxclaims,sandboxes,pvc
+   kubectl get sandboxclaims -A \
+     -l '!agent.magda.io/installation-id'
+   ```
+
+3. If the old Manager cannot perform cleanup, use an administrator-issued system
+   JWT with the trusted Authorization API private route to revoke each user's
+   key named `magda-agent-workspace`, and only then remove that user's legacy
+   claim/PVC. Never carry a raw legacy credential into the new runtime.
+4. Upgrade Helm. Verify that exactly one installation-hashed Template/Pool is
+   present, every new claim has `agent.magda.io/installation-id`, and no legacy
+   managed keys, unscoped claims, claimed Sandboxes, or user PVCs remain. Users
+   can then start clean installation-scoped workspaces.
+
+With bundled LiteLLM enabled, its service URL and retained master-key Secret are
+derived automatically. To use an external backend, set
+`llm-services.litellm.enabled=false` and provide all of
+`llm-services.backend.url`, `masterKeySecret.name`, and `masterKeySecret.key`.
+Provider credentials remain confined to LiteLLM. Use a model available to your
+provider account; leaving `reasoningEffort` empty omits the parameter.
 
 ## Deployment
 
@@ -199,6 +273,11 @@ an externally managed Secret rather than local `latest` images.
      https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v1.0.4/sandbox-with-extensions.yaml
    kubectl -n agent-sandbox-system rollout status deploy --timeout=300s
    ```
+
+   KAS remains a cluster prerequisite, not a Magda Helm dependency. An
+   `agent-services` pre-install/pre-upgrade hook checks the expected v1beta1 APIs
+   and the selected gVisor/Kata RuntimeClass. The hook runs only during a real
+   installation, so offline `helm lint` and `helm template` continue to work.
 
 3. A Magda authentication plugin or another way to establish an administrator
    session. `magda-auth-internal` is not a dependency of `magda-core`.
@@ -229,8 +308,7 @@ organisation-specific image names/tags for a shared registry:
   ../node_modules/.bin/create-docker-context-for-node-component \
     --build --tag localhost:5000/magda-llm-services:latest --local
 )
-docker build -f magda-agent-runtime/Dockerfile \
-  -t localhost:5000/magda-agent-runtime:latest .
+yarn workspace @magda/agent-runtime docker-build-local --version latest
 ```
 
 Build the changed existing components using the repository's standard component
@@ -264,12 +342,13 @@ Service IP:
 
 ```sh
 cat >/tmp/agent-workspace-ingress-values.yaml <<EOF
-agent-runtime:
-  hostAliases:
-    - ip: ${INGRESS_IP}
-      hostnames: [magda.test]
-  externalPrivateCidrs: [${INGRESS_IP}/32]
-  externalPrivatePorts: [443]
+agent-services:
+  runtime:
+    hostAliases:
+      - ip: ${INGRESS_IP}
+        hostnames: [magda.test]
+    externalPrivateCidrs: [${INGRESS_IP}/32]
+    externalPrivatePorts: [443]
 EOF
 ```
 
@@ -308,12 +387,20 @@ with these differences:
 - omit local `hostAliases` when cluster DNS resolves the external name, while
   retaining the required NetworkPolicy destination;
 - provision `litellm-provider` through the platform secret manager;
-- choose `runc` or an installed isolation RuntimeClass and size warm pools/PVCs;
-- set hard lifetime and idle suspension values for the organisation's policy;
+- select a qualified gVisor or Kata RuntimeClass and size the one selected warm
+  pool and its PVCs (`runc` is trusted local-development only);
+- set permanent-delete and idle-suspension inactivity values for the
+  organisation's policy;
 - include the Authorization DB migration before starting the updated
   Authorization API; and
 - retain `global.agentWorkspace.enabled=false` until all dependencies and secrets
   are ready.
+
+For the v8 alpha, the qualified GKE path is **ingress-nginx + gVisor**, with an
+L4 passthrough external load balancer. Native GCE L7 Ingress/BackendConfig is not
+supported for Agent Workspace; that future qualification is tracked separately.
+The supplied `agent-workspace-gke-values.yaml` captures the supported runtime and
+ingress profile.
 
 ### Verification
 
@@ -342,13 +429,20 @@ The full lifecycle and security qualification procedure is in
 
 ## Operational notes
 
+- Agent Runtime is a versioned workspace package. The normal Docker CI publishes
+  both amd64 and arm64 manifests and the release retag/push path copies
+  `magda-agent-runtime` alongside other Magda images. DSH remains pinned to the
+  qualified runtime version in the Dockerfile.
 - A same-tag local runtime image does not replace existing warm Sandboxes. Delete
   only the unclaimed warm Sandbox and wait for its replacement before resetting a
   test workspace onto a rebuilt image.
 - LiteLLM configuration changes require a Pod restart unless the deployment
   template checksum changes.
 - A `runAsNonRoot` image must declare a numeric UID. Agent Manager and LLM
-  Services use UID 1000; Agent Runtime uses UID/GID 10001.
+  Services use UID 1000; Agent Runtime uses UID/GID 10001. Its Pod security
+  context sets `fsGroupChangePolicy: OnRootMismatch`; this is required on GKE PD
+  CSI and similar volumes so remounts do not broaden DSH's mode-0600 credential
+  file and break resume or Pod replacement.
 - Local GPT-5.6 Sol use required a 1 GiB LiteLLM memory limit during qualification.
 - Reset and logout are destructive by design. Publish important outputs to Magda
   or another durable store first.

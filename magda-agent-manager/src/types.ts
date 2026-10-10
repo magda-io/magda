@@ -21,6 +21,7 @@ export interface ManagerConfig {
     port: number;
     jwtSecret: string;
     namespace: string;
+    installationId: string;
     warmPool: string;
     authApiUrl: string;
     systemUserId: string;

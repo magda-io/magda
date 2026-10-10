@@ -47,19 +47,20 @@ for implementation details, key decisions, configuration, and deployment steps.
 
   ```sh
   cat >/tmp/agent-workspace-ingress-values.yaml <<EOF
-  agent-runtime:
-    hostAliases:
-      - ip: ${INGRESS_IP}
-        hostnames: [magda.test]
-    externalPrivateCidrs: [${INGRESS_IP}/32]
-    externalPrivatePorts: [443]
+  agent-services:
+    runtime:
+      hostAliases:
+        - ip: ${INGRESS_IP}
+          hostnames: [magda.test]
+      externalPrivateCidrs: [${INGRESS_IP}/32]
+      externalPrivatePorts: [443]
   EOF
   ```
 
   The committed local values set
-  `agent-manager.sandboxNamespaceResource.create=false` because this procedure
+  `agent-services.sandboxNamespace.create=false` because this procedure
   pre-creates the namespace. They also set the in-Sandbox API URLs and select
-  `magda-agent-trusted-ca` with `trustedCaSecret`.
+  `magda-agent-trusted-ca` with `agent-services.runtime.trustedCaSecret`.
 
 - An admin login. `magda-auth-internal` is not a `magda-core` dependency; install
   it as a separate release or include it in an umbrella chart if password login
@@ -112,11 +113,31 @@ Run each check while watching the Settings page and Kubernetes resources:
   fresh replacement.
 - Reset the workspace. Confirm the old claim, Sandbox, Pod, Service, PVC and
   reserved managed API key are deleted; a fresh generation/key/PVC is created.
+- Leave a DSH WebSocket open without user input for more than the configured idle
+  interval. Confirm it does not renew activity and the workspace suspends.
+- Send real mutating runtime interactions across an accelerated lifecycle window.
+  Confirm each renews the persisted claim deadline and managed API-key expiry,
+  allowing continued activity beyond the original eight-hour deadline.
+- Restart Agent Manager, then confirm reconciliation uses the persisted activity
+  timestamp. Resume a suspended workspace and verify the deadline renews.
+- Advance inactivity beyond the accelerated hard-delete interval. Confirm the
+  claim, Sandbox, Pod, Service, PVC, and managed API key are removed.
 - Open a DSH WebSocket and log out. Confirm the socket closes promptly and all
   workspace resources and the managed API key are deleted before logout
   completes.
 - Log in as a non-admin. Confirm the navigation item is hidden and direct Agent
   Manager and LLM requests return 403.
+- In a disposable cluster without KAS, attempt an enabled Helm install and confirm
+  the pre-install hook fails with the missing KAS v1beta1 API message before
+  normal Agent resources are installed.
+- Render/install two releases with a shared explicit Sandbox namespace. Confirm
+  installation labels, claim names, selectors, warm pools, RBAC, and managed
+  API-key names differ, and that one Manager cannot list or delete the other's
+  claims.
+- For an upgrade fixture from the old split charts, reset all legacy workspaces
+  before upgrade and verify the legacy unscoped claims, user PVCs, and
+  `magda-agent-workspace` keys are gone. Confirm the merged chart does not adopt
+  an intentionally retained unscoped test claim.
 - Inspect Agent Manager RBAC: it must include `pods/exec` but not `pods/log`.
 - Inspect DSH requests at the Sandbox boundary: `X-Magda-Session`, browser
   cookies, `Authorization`, proxy authorization, and Magda API-key headers must
@@ -127,9 +148,13 @@ Run each check while watching the Settings page and Kubernetes resources:
 
 Repeat the core browser, `mgd`, LLM streaming, refresh and reset journey with:
 
-1. `agent-manager.warmPool=magda-agent-runc`; and
-2. `agent-manager.warmPool=magda-agent-gvisor` with the Minikube gVisor runtime
+1. `agent-services.warmPool.type=runc`; and
+2. `agent-services.warmPool.type=gvisor` with the Minikube gVisor RuntimeClass
    installed.
+
+Each render must contain exactly one SandboxTemplate and one matching
+SandboxWarmPool. Kata is covered by the offline Helm render matrix; run the full
+journey on a Kata-capable cluster when qualifying that production runtime.
 
 ## Expected result
 

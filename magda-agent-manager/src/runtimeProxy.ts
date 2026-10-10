@@ -24,6 +24,47 @@ interface RuntimeTarget {
     host: string;
 }
 
+const MEANINGFUL_RPC_OPERATIONS = new Set([
+    "$events/result",
+    "attachment",
+    "cancel",
+    "close",
+    "create",
+    "delete",
+    "fork",
+    "pause",
+    "prompt",
+    "remove",
+    "rename",
+    "resume",
+    "selectModel",
+    "update",
+    "updateQueue",
+    "write"
+]);
+
+export function isMeaningfulRuntimeRequest(
+    method: string | undefined,
+    path: string
+) {
+    if (
+        !["POST", "PUT", "PATCH", "DELETE"].includes(
+            (method || "GET").toUpperCase()
+        )
+    ) {
+        return false;
+    }
+    const pathname = new URL(path, "http://runtime.invalid").pathname;
+    const endpoint = pathname.startsWith("/api/")
+        ? pathname.slice("/api/".length)
+        : "";
+    const operation =
+        endpoint === "$events/result"
+            ? endpoint
+            : endpoint.split("/").at(-1) || "";
+    return MEANINGFUL_RPC_OPERATIONS.has(operation);
+}
+
 export function upstreamHeaders(
     headers: IncomingMessage["headers"],
     externalAuthority: string,
@@ -70,7 +111,11 @@ export class RuntimeProxy {
 
     constructor(
         private readonly config: ManagerConfig,
-        private readonly kubernetes: AgentKubernetesClient
+        private readonly kubernetes: AgentKubernetesClient,
+        private readonly onMeaningfulActivity: (
+            userId: string,
+            activityTime: Date
+        ) => Promise<void> = async () => undefined
     ) {
         this.authOptions = {
             jwtSecret: config.jwtSecret,
@@ -180,16 +225,9 @@ export class RuntimeProxy {
         const now = Date.now();
         if (now - (this.lastActivityWrite.get(userId) || 0) < 30_000) return;
         this.lastActivityWrite.set(userId, now);
-        this.kubernetes
-            .patchClaimAnnotations(userId, {
-                "agent.magda.io/last-activity": new Date(now).toISOString()
-            })
-            .catch((error) =>
-                console.error(
-                    "Could not update Agent Workspace activity",
-                    error
-                )
-            );
+        this.onMeaningfulActivity(userId, new Date(now)).catch((error) =>
+            console.error("Could not update Agent Workspace activity", error)
+        );
     }
 
     private async readBody(req: IncomingMessage): Promise<Buffer> {
@@ -215,6 +253,7 @@ export class RuntimeProxy {
         auth: Awaited<ReturnType<RuntimeProxy["authenticate"]>>,
         body: Buffer,
         cookie: string,
+        meaningful: boolean,
         attempt = 0
     ) {
         const upstream = http.request(
@@ -237,16 +276,28 @@ export class RuntimeProxy {
                             auth.target,
                             true
                         );
-                        this.forwardHttp(req, res, auth, body, freshCookie, 1);
+                        this.forwardHttp(
+                            req,
+                            res,
+                            auth,
+                            body,
+                            freshCookie,
+                            meaningful,
+                            1
+                        );
                     } catch (error) {
                         if (!res.headersSent) res.writeHead(502);
                         res.end("Agent runtime authentication failed");
                     }
                     return;
                 }
+                const status = upstreamResponse.statusCode || 502;
+                if (meaningful && status >= 200 && status < 300) {
+                    this.touchActivity(auth.user.id);
+                }
                 const headers = { ...upstreamResponse.headers };
                 delete headers["set-cookie"];
-                res.writeHead(upstreamResponse.statusCode || 502, headers);
+                res.writeHead(status, headers);
                 upstreamResponse.pipe(res);
             }
         );
@@ -267,10 +318,13 @@ export class RuntimeProxy {
     async handleHttp(req: IncomingMessage, res: ServerResponse) {
         try {
             const auth = await this.authenticate(req);
-            this.touchActivity(auth.user.id);
+            const meaningful = isMeaningfulRuntimeRequest(
+                req.method,
+                auth.path
+            );
             const body = await this.readBody(req);
             const cookie = await this.cookie(auth.target);
-            this.forwardHttp(req, res, auth, body, cookie);
+            this.forwardHttp(req, res, auth, body, cookie, meaningful);
         } catch (error) {
             const proxyError = error as AgentAuthorizationError;
             const status = proxyError.status || 502;
@@ -279,7 +333,7 @@ export class RuntimeProxy {
         }
     }
 
-    private trackSocket(userId: string, sandbox: string, ...pair: Duplex[]) {
+    private trackSocket(sandbox: string, ...pair: Duplex[]) {
         const set = this.sockets.get(sandbox) || new Set<Duplex>();
         pair.forEach((socket) => set.add(socket));
         this.sockets.set(sandbox, set);
@@ -296,7 +350,6 @@ export class RuntimeProxy {
         pair.forEach((socket) => {
             socket.once("close", close);
             socket.once("error", close);
-            socket.on("data", () => this.touchActivity(userId));
         });
     }
 
@@ -329,12 +382,7 @@ export class RuntimeProxy {
             if (upstreamHead.length) socket.write(upstreamHead);
             if (head.length) upstreamSocket.write(head);
             upstreamSocket.pipe(socket).pipe(upstreamSocket);
-            this.trackSocket(
-                auth.user.id,
-                auth.target.sandbox,
-                socket,
-                upstreamSocket
-            );
+            this.trackSocket(auth.target.sandbox, socket, upstreamSocket);
         });
         upstream.on("response", async (response) => {
             response.resume();
@@ -369,7 +417,9 @@ export class RuntimeProxy {
         socket.on("error", () => socket.destroy());
         try {
             const auth = await this.authenticate(req);
-            this.touchActivity(auth.user.id);
+            // DSH 0.2.1 uses this socket for server-driven Remote streams and
+            // protocol ping/pong. User mutations are explicit HTTP RPCs, so an
+            // upgrade or frame traffic must not renew workspace retention.
             this.connectWebSocket(
                 req,
                 socket,

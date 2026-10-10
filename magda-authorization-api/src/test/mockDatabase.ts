@@ -34,7 +34,7 @@ export default class MockDatabase {
 
     async createUserApiKey(
         userId: string,
-        _expiryTime?: Date,
+        expiryTime?: Date,
         options: { name?: string; systemManaged?: boolean } = {}
     ) {
         const id = `00000000-0000-4000-8000-${String(
@@ -46,10 +46,27 @@ export default class MockDatabase {
             created_timestamp: new Date(),
             hash: "hidden",
             enabled: true,
+            expiry_time: expiryTime,
             name: options.name,
             system_managed: options.systemManaged
         });
         return { id, key: "test-secret" };
+    }
+
+    async updateSystemManagedUserApiKeyExpiry(
+        userId: string,
+        name: string,
+        apiKeyId: string,
+        expiryTime: Date
+    ) {
+        const key = this.systemApiKeys.find(
+            (item) =>
+                item.user_id === userId &&
+                item.name === name &&
+                item.id === apiKeyId
+        );
+        if (!key) throw new Error("System managed API key not found");
+        key.expiry_time = expiryTime;
     }
 
     async deleteSystemManagedUserApiKeys(
