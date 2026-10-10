@@ -1,12 +1,5 @@
 /** @jest-environment node */
 
-jest.mock("../config", () => ({
-    config: {
-        baseUrl: "/",
-        commonFetchRequestOptions: { credentials: "same-origin" }
-    }
-}));
-
 import {
     AgentWorkspaceApiError,
     getAgentWorkspaceStatus,
@@ -15,6 +8,13 @@ import {
     resumeAgentWorkspace,
     startAgentWorkspace
 } from "./AgentWorkspaceApis";
+
+jest.mock("../config", () => ({
+    config: {
+        baseUrl: "/",
+        commonFetchRequestOptions: { credentials: "same-origin" }
+    }
+}));
 
 function response(status: number, body?: unknown): Response {
     return ({

@@ -45,6 +45,8 @@ doc for how the CA is delivered to each workload.
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../internal-charts/admin-api | admin-api | 7.0.0 |
+| file://../internal-charts/agent-manager | agent-manager | 7.0.0 |
+| file://../internal-charts/agent-runtime | agent-runtime | 7.0.0 |
 | file://../internal-charts/apidocs-server | apidocs-server | 7.0.0 |
 | file://../internal-charts/authorization-api | authorization-api | 7.0.0 |
 | file://../internal-charts/authorization-db | authorization-db | 7.0.0 |
@@ -57,6 +59,8 @@ doc for how the CA is delivered to each workload.
 | file://../internal-charts/gateway | gateway | 7.0.0 |
 | file://../internal-charts/indexer | indexer | 7.0.0 |
 | file://../internal-charts/ingress | ingress | 7.0.0 |
+| file://../internal-charts/litellm | litellm | 7.0.0 |
+| file://../internal-charts/llm-services | llm-services | 7.0.0 |
 | file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 7.0.0 |
 | file://../internal-charts/opensearch | opensearch | 7.0.0 |
 | file://../internal-charts/priorities | priorities | 7.0.0 |
@@ -107,6 +111,8 @@ doc for how the CA is delivered to each workload.
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.styleSrc[3] | string | `"fonts.googleapis.com"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.workerSrc[0] | string | `"'self'"` |  |
 | gateway.helmetPerPath./preview-map/*.contentSecurityPolicy.directives.workerSrc[1] | string | `"blob:"` |  |
+| global.agentWorkspace.enabled | bool | `false` | Enable the opt-in integrated Agent Workspace MVP. The target cluster must have Kubernetes Agent Sandbox v1.0.4 installed. |
+| global.agentWorkspace.sandboxNamespace | string | `"magda-agent"` | Namespace containing per-user SandboxClaim, Sandbox and PVC resources. |
 | global.authPluginAllowedExternalRedirectDomains | list | `[]` | By default, at end of authentication process, an auth plugin will never redirect the user to an external domain,  even if `authPluginRedirectUrl` is configured to an URL with an external domain. Unless an external domain is added to the whitelist i.e. this `authPluginAllowedExternalRedirectDomains` config,  any auth plugins will always ignore the domain part of the url (if supplied) and only redirect the user to the URL path under the current domain. Please note: you add a url host string to this list. e.g. "abc.com:8080" |
 | global.authPluginRedirectUrl | string | `"/sign-in-redirect"` | the redirection url after the whole authentication process is completed. Authentication Plugins will use this value as default setting. The following query parameters might be present to supply the authentication result: <ul> <li>result: (string) Compulsory. Possible value: "success" or "failure". </li> <li>errorMessage: (string) Optional. Text message to provide more information on the error to the user. </li> </ul> The default built-in landing "/sign-in-redirect" route supports an additional `redirectTo` query parameter. If this parameter not presents, the user will be redirected further to the frontend route `/account` which is the account page . Otherwise, user will redirected to the url path specified by `redirectTo` query parameter. Please note: `redirectTo` only accept an URL path (e.g. `/a/b/c`). External domain urls are not supported.  You can config `authPluginRedirectUrl` to an full URL string rather than a URL path (which imply current domain). However, unless an external domain is added to `authPluginAllowedExternalRedirectDomains`, an auth plugin should never redirect the user to the external domain. |
 | global.awsRdsEndpoint | string | `nil` | AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com. Compulsory if `useAwsRdsDb` = true |
