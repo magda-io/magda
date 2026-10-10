@@ -18,6 +18,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 - [Large file storage (multipart upload + Range download)](./large-file-storage.md)
 - [mgd CLI (auth, search, dataset/dist CRUD, large-file round-trip)](./mgd-cli.md)
 - [mgd agent skill auto-use](./mgd-skill-auto-use.md)
+- [Agent Workspace (DSH, lifecycle, LLM and security)](./agent-workspace.md)
 - [Distribution version aspect in the Web UI](./distribution-version-web-ui.md)
 - [In-cluster PostgreSQL wal-g cross-version backup / restore (roll-forward + PITR)](./postgres-walg-cross-version-restore.md)
 - [In-cluster PostgreSQL major upgrade (PG 13 → 17 logical dump / restore)](./postgres-major-upgrade.md)

@@ -1,0 +1,107 @@
+# Local qualification values for the integrated Agent Workspace MVP.
+# Images tagged localhost:5000/*:latest must be loaded into the Minikube node.
+global:
+  externalUrl: https://magda.test:18443
+  useCombinedDb: true
+  enableLivenessProbes: true
+  agentWorkspace:
+    enabled: true
+  image:
+    pullPolicy: IfNotPresent
+  openfaas:
+    enabled: false
+  searchEngine:
+    hybridSearch:
+      enabled: false
+
+tags:
+  all: true
+  priorities: false
+
+agent-manager:
+  image:
+    repository: localhost:5000
+    tag: latest
+    pullPolicy: Never
+  warmPool: magda-agent-runc
+  sandboxNamespaceResource:
+    # The E2E setup pre-creates this namespace to install the local ingress CA.
+    create: false
+  magdaApiUrl: https://magda.test/api
+  llmApiUrl: https://magda.test/api/v0/llm/v1
+
+agent-runtime:
+  image:
+    repository: localhost:5000
+    tag: latest
+    pullPolicy: Never
+  storage:
+    size: 1Gi
+  warmPool:
+    runcReplicas: 1
+    gvisorReplicas: 0
+  # Supply hostAliases and externalPrivateCidrs from the ingress Service's
+  # current ClusterIP as shown in the E2E guide; Minikube assigns it dynamically.
+  hostAliases: []
+  externalPrivateCidrs: []
+  externalPrivatePorts: [443]
+  trustedCaSecret:
+    name: magda-agent-trusted-ca
+    key: ca.crt
+
+llm-services:
+  image:
+    repository: localhost:5000
+    tag: latest
+    pullPolicy: Never
+
+# The provider secret is deliberately not committed. Create `litellm-provider`
+# from OPENAI_API_KEY before deployment for real model responses.
+litellm:
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 512Mi}
+
+authorization-api:
+  image:
+    repository: localhost:5000
+    tag: latest
+    pullPolicy: Never
+
+authorization-db:
+  image:
+    repository: localhost:5000
+    tag: latest
+    pullPolicy: Never
+
+gateway:
+  image:
+    repository: localhost:5000
+    tag: latest
+    pullPolicy: Never
+  enableAuthEndpoint: true
+  enableCkanRedirection: false
+  # Install an authentication plugin separately or use an umbrella chart; this
+  # magda-core chart intentionally does not own magda-auth-internal.
+  cookie:
+    secure: auto
+
+web-server:
+  image:
+    repository: localhost:5000
+    tag: latest
+    pullPolicy: Never
+
+ingress:
+  hostname: magda.test
+  ingressClass: nginx
+  enableTls: true
+  useDefaultCertificate: true
+
+combined-db:
+  magda-postgres:
+    postgresql:
+      primary:
+        resources:
+          requests: {cpu: 100m, memory: 256Mi}
+          limits: {memory: 1Gi}

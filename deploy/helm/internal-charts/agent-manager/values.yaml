@@ -1,0 +1,34 @@
+image:
+  name: magda-agent-manager
+  tag: ""
+  pullPolicy: IfNotPresent
+replicas: 1
+# Deprecated chart-local fallback; prefer global.agentWorkspace.sandboxNamespace.
+sandboxNamespace: magda-agent
+sandboxNamespaceResource:
+  create: true
+  annotations:
+    helm.sh/resource-policy: keep
+  labels: {}
+warmPool: magda-agent-runc
+managedApiKeyName: magda-agent-workspace
+controlPlaneSecret:
+  name: magda-agent-control
+  key: token
+runtimePrefix: /v0/runtime
+# Defaults to global.externalUrl when empty. These can point at the same external
+# authority through an in-cluster ingress address for local clusters.
+magdaApiUrl: ""
+llmApiUrl: ""
+hardDeleteSeconds: 28800
+idleSuspendSeconds: 1800
+reconcileIntervalSeconds: 30
+runtimeMaxBodyBytes: 16777216
+llm:
+  provider: magda
+  model: magda-agent-default
+resources:
+  requests: {cpu: 50m, memory: 96Mi}
+  limits: {cpu: 500m, memory: 384Mi}
+serviceAccount:
+  name: magda-agent-manager

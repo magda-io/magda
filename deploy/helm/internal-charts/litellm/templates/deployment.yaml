@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {service: litellm}
+  template:
+    metadata:
+      labels: {service: litellm}
+    spec:
+{{ include "magda.imagePullSecrets" . | indent 6 }}
+      automountServiceAccountToken: false
+      containers:
+        - name: litellm
+          image: {{ include "magda.image" . | quote }}
+          imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+          args: ["--config", "/etc/litellm/config.yaml", "--port", "4000"]
+          ports:
+            - {name: http, containerPort: 4000}
+          env:
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.masterKeySecret.name }}
+                  key: {{ .Values.masterKeySecret.key }}
+            - name: {{ .Values.model.apiKeyEnv }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.providerSecret.name }}
+                  key: {{ .Values.providerSecret.key }}
+                  optional: true
+          volumeMounts:
+            - {name: config, mountPath: /etc/litellm, readOnly: true}
+          readinessProbe:
+            httpGet: {path: /health/readiness, port: http}
+            initialDelaySeconds: 10
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile: {type: RuntimeDefault}
+      volumes:
+        - name: config
+          configMap: {name: litellm-config}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: litellm
+spec:
+  podSelector:
+    matchLabels: {service: litellm}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {service: llm-services}
+      ports:
+        - {port: 4000, protocol: TCP}

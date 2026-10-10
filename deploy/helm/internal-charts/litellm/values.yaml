@@ -1,0 +1,18 @@
+image:
+  repository: ghcr.io/berriai
+  name: litellm
+  tag: main-v1.81.12-stable
+  pullPolicy: IfNotPresent
+model:
+  alias: magda-agent-default
+  providerModel: openai/gpt-4o-mini
+  apiKeyEnv: OPENAI_API_KEY
+providerSecret:
+  name: litellm-provider
+  key: api-key
+masterKeySecret:
+  name: magda-litellm-master-key
+  key: master-key
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {cpu: "1", memory: 1Gi}

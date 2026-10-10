@@ -155,6 +155,22 @@ dependencies:
     tags:
       - all
       - storage-api
+  - name: agent-manager
+    version: 7.0.0
+    repository: file://../internal-charts/agent-manager
+    condition: global.agentWorkspace.enabled
+  - name: agent-runtime
+    version: 7.0.0
+    repository: file://../internal-charts/agent-runtime
+    condition: global.agentWorkspace.enabled
+  - name: llm-services
+    version: 7.0.0
+    repository: file://../internal-charts/llm-services
+    condition: global.agentWorkspace.enabled
+  - name: litellm
+    version: 7.0.0
+    repository: file://../internal-charts/litellm
+    condition: global.agentWorkspace.enabled
   - name: tenant-api
     version: 7.0.0
     repository: file://../internal-charts/tenant-api

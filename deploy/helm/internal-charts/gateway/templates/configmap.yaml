@@ -12,10 +12,27 @@ data:
   {{- else }}
   {{- $runtimeRoutes = .Values.routes | default .Values.defaultRoutes }}
   {{- end }}
+  {{- if dig "agentWorkspace" "enabled" false .Values.global }}
+  {{- $agentRoutes := dict
+        "agent" (dict "to" "http://agent-manager/v0" "auth" true "websocket" true "redirectTrailingSlash" true)
+        "llm" (dict "to" "http://llm-services/v0" "auth" true) }}
+  {{- $runtimeRoutes = mergeOverwrite (deepCopy $runtimeRoutes) $agentRoutes }}
+  {{- end }}
   routes.json: {{ $runtimeRoutes | mustToRawJson | quote }}
   webRoutes.json: {{ .Values.webRoutes | default dict | mustToRawJson | quote }}
   helmet.json: {{ .Values.helmet | default dict | mustToRawJson | quote }}
-  helmetPerPath.json: {{ .Values.helmetPerPath | default dict | mustToRawJson | quote }}
+  {{- $helmetPerPath := .Values.helmetPerPath | default dict }}
+  {{- if dig "agentWorkspace" "enabled" false .Values.global }}
+  {{- $agentCsp := dict "contentSecurityPolicy" (dict "directives" (dict
+        "scriptSrc" (list "'self'" "'unsafe-inline'" "'unsafe-eval'")
+        "connectSrc" (list "'self'")
+        "imgSrc" (list "'self'" "data:" "blob:")
+        "workerSrc" (list "'self'" "blob:")
+        "frameSrc" (list "'self'" "blob:")
+        "frameAncestors" (list "'self'"))) }}
+  {{- $helmetPerPath = mergeOverwrite (deepCopy $helmetPerPath) (dict "/api/v0/agent/runtime" $agentCsp) }}
+  {{- end }}
+  helmetPerPath.json: {{ $helmetPerPath | mustToRawJson | quote }}
   cors.json: {{ .Values.cors | default dict | mustToRawJson | quote }}
   csp.json: {{ .Values.csp | default dict | mustToRawJson | quote }}
   cookie.json: {{ .Values.cookie | default dict | mustToRawJson | quote }}

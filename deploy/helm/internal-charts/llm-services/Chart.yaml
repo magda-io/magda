@@ -1,0 +1,7 @@
+apiVersion: v2
+name: llm-services
+description: Authenticated Magda LLM facade
+version: 7.0.0
+kubeVersion: ">= 1.24.0-0"
+annotations:
+  magdaModuleType: core

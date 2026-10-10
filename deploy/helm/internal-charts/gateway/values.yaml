@@ -25,6 +25,13 @@ autoscaler:
 # You can turn it off if you don't need to log into any account.
 enableAuthEndpoint: true
 
+# -- Optional internal Agent Manager URL. When set, logout destroys the user's
+# current Agent Workspace before the Magda session is removed.
+agentManagerUrl:
+agentManagerControlSecret:
+  name: magda-agent-control
+  key: token
+
 # -- wether or not enable http basic auth access control.
 # `username` & `password` will be retrieved from k8s secrets `web-access-secret`, `username` & `password` fields.
 enableWebAccessControl: false

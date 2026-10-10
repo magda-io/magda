@@ -1,4 +1,10 @@
 global:
+  agentWorkspace:
+    # -- Enable the opt-in integrated Agent Workspace MVP. The target cluster
+    # must have Kubernetes Agent Sandbox v1.0.4 installed.
+    enabled: false
+    # -- Namespace containing per-user SandboxClaim, Sandbox and PVC resources.
+    sandboxNamespace: magda-agent
   searchEngine:
     semanticIndexer:
       indexName: "semantic-index"

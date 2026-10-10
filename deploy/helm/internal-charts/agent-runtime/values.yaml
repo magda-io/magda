@@ -1,0 +1,31 @@
+sandboxNamespace: magda-agent
+image:
+  name: magda-agent-runtime
+  tag: ""
+  pullPolicy: IfNotPresent
+dshVersion: 0.2.1-alpha.1
+storage:
+  size: 5Gi
+  storageClassName: ""
+warmPool:
+  runcReplicas: 0
+  gvisorReplicas: 0
+runtimeClasses:
+  gvisor: gvisor
+resources:
+  requests: {cpu: 100m, memory: 384Mi, ephemeral-storage: 256Mi}
+  limits: {cpu: "1", memory: 1536Mi, ephemeral-storage: 1Gi}
+# Optional Pod host aliases and private destination CIDRs for local clusters
+# whose externally advertised hostname resolves through a host port.
+hostAliases: []
+externalPrivateCidrs: []
+externalPrivatePorts: [80, 443]
+trustedCaSecret:
+  # Existing Secret in sandboxNamespace containing an optional private CA.
+  name: ""
+  key: ca.crt
+
+ingressController:
+  namespace: ingress-nginx
+  podLabels:
+    app.kubernetes.io/component: controller

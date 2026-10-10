@@ -215,7 +215,8 @@ export default class Database {
 
     async getUserApiKeys(
         userId: string,
-        authDecision: AuthDecision = UnconditionalTrueDecision
+        authDecision: AuthDecision = UnconditionalTrueDecision,
+        includeSystemManaged: boolean = false
     ): Promise<APIKeyRecord[]> {
         if (!userId) {
             throw new ServerError("User ID cannot be empty!", 400);
@@ -231,6 +232,9 @@ export default class Database {
                 LEFT JOIN users u ON u.id = a.user_id
                 WHERE ${SQLSyntax.joinWithAnd([
                     sqls`a.user_id = ${userId}`,
+                    ...(includeSystemManaged
+                        ? []
+                        : [sqls`a.system_managed = false`]),
                     authConditions
                 ])}) r ORDER BY r.created_timestamp DESC`.toQuery()
         );
@@ -269,7 +273,8 @@ export default class Database {
 
     async createUserApiKey(
         userId: string,
-        expiryTime?: Date
+        expiryTime?: Date,
+        options: { name?: string; systemManaged?: boolean } = {}
     ): Promise<{ id: string; key: string }> {
         if (!userId) {
             throw new ServerError("User ID cannot be empty!", 400);
@@ -289,18 +294,63 @@ export default class Database {
         const keyHash = await createApiKeyHash(newKey);
 
         const result = await this.pool.query(
-            ...sqls`INSERT INTO "api_keys" 
-                ("id", "user_id", "created_timestamp", "hash", "expiry_time", "enabled") 
+            ...sqls`INSERT INTO "api_keys"
+                ("id", "user_id", "created_timestamp", "hash", "expiry_time", "enabled", "name", "system_managed")
                 VALUES
                 (uuid_generate_v4(), ${userId}, CURRENT_TIMESTAMP, ${keyHash}, ${
                 expiryTime ? expiryTime : null
-            }, True) RETURNING id`.toQuery()
+            }, True, ${options.name || null}, ${
+                options.systemManaged === true
+            }) RETURNING id`.toQuery()
         );
         const apiKeyId = result.rows[0].id;
         return {
             id: apiKeyId,
             key: newKey
         };
+    }
+
+    async getSystemManagedUserApiKeys(
+        userId: string,
+        name: string
+    ): Promise<APIKeyRecord[]> {
+        if (!userId || !name) {
+            throw new ServerError(
+                "User ID and API key name are required!",
+                400
+            );
+        }
+        const result = await this.pool.query(
+            ...sqls`SELECT * FROM api_keys
+                WHERE user_id=${userId}
+                  AND name=${name}
+                  AND system_managed=true
+                ORDER BY created_timestamp DESC`.toQuery()
+        );
+        return result.rows;
+    }
+
+    async deleteSystemManagedUserApiKeys(
+        userId: string,
+        name: string,
+        apiKeyId?: string
+    ): Promise<number> {
+        if (!userId || !name) {
+            throw new ServerError(
+                "User ID and API key name are required!",
+                400
+            );
+        }
+        const result = await this.pool.query(
+            ...sqls`DELETE FROM api_keys
+                WHERE ${SQLSyntax.joinWithAnd([
+                    sqls`user_id=${userId}`,
+                    sqls`name=${name}`,
+                    sqls`system_managed=true`,
+                    ...(apiKeyId ? [sqls`id=${apiKeyId}`] : [])
+                ])}`.toQuery()
+        );
+        return result.rowCount || 0;
     }
 
     async updateUserApiKey(
@@ -320,7 +370,7 @@ export default class Database {
             return;
         }
         const apiKey = await this.pool.query(
-            ...sqls`SELECT id FROM api_keys WHERE user_id=${userId} AND id=${apiKeyId} LIMIT 1`.toQuery()
+            ...sqls`SELECT id FROM api_keys WHERE user_id=${userId} AND id=${apiKeyId} AND system_managed=false LIMIT 1`.toQuery()
         );
 
         if (!apiKey?.rows?.length) {
@@ -358,7 +408,7 @@ export default class Database {
         }
 
         const apiKey = await this.pool.query(
-            ...sqls`SELECT id FROM api_keys WHERE user_id=${userId} AND id=${apiKeyId} LIMIT 1`.toQuery()
+            ...sqls`SELECT id FROM api_keys WHERE user_id=${userId} AND id=${apiKeyId} AND system_managed=false LIMIT 1`.toQuery()
         );
 
         if (!apiKey?.rows?.length) {

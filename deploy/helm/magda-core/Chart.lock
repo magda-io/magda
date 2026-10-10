@@ -74,6 +74,18 @@ dependencies:
 - name: storage-api
   repository: file://../internal-charts/storage-api
   version: 7.0.0
+- name: agent-manager
+  repository: file://../internal-charts/agent-manager
+  version: 7.0.0
+- name: agent-runtime
+  repository: file://../internal-charts/agent-runtime
+  version: 7.0.0
+- name: llm-services
+  repository: file://../internal-charts/llm-services
+  version: 7.0.0
+- name: litellm
+  repository: file://../internal-charts/litellm
+  version: 7.0.0
 - name: tenant-api
   repository: file://../internal-charts/tenant-api
   version: 7.0.0
@@ -89,5 +101,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 7.0.0
-digest: sha256:4a14696fe85a135a77ade10fb6563cb91648f7672e95d7c91947941ff9fb72c5
-generated: "2026-10-07T13:19:50.582409311Z"
+digest: sha256:77f90393e89cb79e5ed5ccd0034fd3ea01a4090fc37bf590f41b2673736e4c9b
+generated: "2026-10-10T06:10:19.9508+11:00"

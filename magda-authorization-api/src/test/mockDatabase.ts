@@ -24,6 +24,50 @@ const defaultPool = {
 
 export default class MockDatabase {
     mockPool = defaultPool;
+    systemApiKeys: APIKeyRecord[] = [];
+
+    async getSystemManagedUserApiKeys(userId: string, name: string) {
+        return this.systemApiKeys.filter(
+            (key) => key.user_id === userId && key.name === name
+        );
+    }
+
+    async createUserApiKey(
+        userId: string,
+        _expiryTime?: Date,
+        options: { name?: string; systemManaged?: boolean } = {}
+    ) {
+        const id = `00000000-0000-4000-8000-${String(
+            this.systemApiKeys.length + 1
+        ).padStart(12, "0")}`;
+        this.systemApiKeys.push({
+            id,
+            user_id: userId,
+            created_timestamp: new Date(),
+            hash: "hidden",
+            enabled: true,
+            name: options.name,
+            system_managed: options.systemManaged
+        });
+        return { id, key: "test-secret" };
+    }
+
+    async deleteSystemManagedUserApiKeys(
+        userId: string,
+        name: string,
+        apiKeyId?: string
+    ) {
+        const before = this.systemApiKeys.length;
+        this.systemApiKeys = this.systemApiKeys.filter(
+            (key) =>
+                !(
+                    key.user_id === userId &&
+                    key.name === name &&
+                    (!apiKeyId || key.id === apiKeyId)
+                )
+        );
+        return before - this.systemApiKeys.length;
+    }
 
     setDbPool(pool: Pool) {
         this.mockPool = pool;

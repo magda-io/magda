@@ -17,6 +17,7 @@ import createPermissionApiRouter from "./apiRouters/createPermissionApiRouter.js
 import createAccessGroupApiRouter from "./apiRouters/createAccessGroupApiRouter.js";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import { requireUnconditionalAuthDecision } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId.js";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -26,6 +27,8 @@ export interface ApiRouterOptions {
     tenantId: number;
     failedApiKeyAuthBackOffSeconds: number;
     registryClient: AuthorizedRegistryClient;
+    /** Trusted service identity allowed to manage lifecycle-bound API keys. */
+    systemApiKeyIssuerUserId: string;
 }
 
 /**
@@ -37,6 +40,23 @@ export default function createApiRouter(options: ApiRouterOptions) {
     const authDecisionClient = options.authDecisionClient;
 
     const router: express.Router = express.Router();
+
+    const requireSystemApiKeyIssuer: express.RequestHandler = (
+        req,
+        res,
+        next
+    ) => {
+        const callerId = getUserId(req, options.jwtSecret).valueOr("");
+        if (!callerId || callerId !== options.systemApiKeyIssuerUserId) {
+            res.status(403).json({
+                isError: true,
+                errorCode: 403,
+                errorMessage: "System-managed API key access denied"
+            });
+            return;
+        }
+        next();
+    };
 
     const status = {
         probes: {
@@ -143,6 +163,97 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
         res.end();
     });
+
+    // Internal lifecycle API used by trusted control-plane services. It is not
+    // exposed by the Gateway (the public `auth` route targets `/v0/public`).
+    // The resulting credentials are still ordinary user-scoped Magda API keys;
+    // the marker only lets their owning service reconcile and revoke them.
+    router.get(
+        "/private/users/:userId/systemApiKeys",
+        requireSystemApiKeyIssuer,
+        async (req, res) => {
+            try {
+                const name = String(req.query.name || "").trim();
+                if (!name) {
+                    throw new GenericError("API key name is required", 400);
+                }
+                const records = await database.getSystemManagedUserApiKeys(
+                    req.params.userId,
+                    name
+                );
+                res.json(records.map(({ hash, ...record }) => record));
+            } catch (e) {
+                respondWithError(
+                    "GET /private/users/:userId/systemApiKeys",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    router.post(
+        "/private/users/:userId/systemApiKeys",
+        requireSystemApiKeyIssuer,
+        async (req, res) => {
+            try {
+                const name = String(req.body?.name || "").trim();
+                if (!name || name.length > 128) {
+                    throw new GenericError(
+                        "API key name must be between 1 and 128 characters",
+                        400
+                    );
+                }
+                const expiryTime = new Date(String(req.body?.expiryTime || ""));
+                if (
+                    !Number.isFinite(expiryTime.getTime()) ||
+                    expiryTime.getTime() <= Date.now()
+                ) {
+                    throw new GenericError(
+                        "A future API key expiryTime is required",
+                        400
+                    );
+                }
+                const result = await database.createUserApiKey(
+                    req.params.userId,
+                    expiryTime,
+                    { name, systemManaged: true }
+                );
+                res.status(201).json(result);
+            } catch (e) {
+                respondWithError(
+                    "POST /private/users/:userId/systemApiKeys",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    router.delete(
+        "/private/users/:userId/systemApiKeys/:apiKeyId?",
+        requireSystemApiKeyIssuer,
+        async (req, res) => {
+            try {
+                const name = String(req.query.name || "").trim();
+                if (!name) {
+                    throw new GenericError("API key name is required", 400);
+                }
+                const deleted = await database.deleteSystemManagedUserApiKeys(
+                    req.params.userId,
+                    name,
+                    req.params.apiKeyId
+                );
+                res.json({ deleted });
+            } catch (e) {
+                respondWithError(
+                    "DELETE /private/users/:userId/systemApiKeys/:apiKeyId?",
+                    res,
+                    e
+                );
+            }
+        }
+    );
 
     /**
      * @apiGroup Auth Users
