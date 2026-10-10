@@ -83,7 +83,7 @@ run "chmod 600 /data/dsh-home/.credentials.yaml" before starting again
 
 **Cause.** The template sets `fsGroup: 10001`. The GKE PD CSI driver supports volume ownership management, so with the default `fsGroupChangePolicy: Always` the kubelet re-applies fsGroup recursively on every mount (chgrp + `g+rw`, setgid on dirs). That turns DSH's `0600` credential file into `0660`, and DSH rightly refuses it. The first boot is fine because the file doesn't exist yet. Minikube's hostpath volumes skip fsGroup handling, which is why #3841 never saw it. The same failure was reproduced with a **runc** Sandbox on default-pool.
 
-**Fix (verified).** `fsGroupChangePolicy: OnRootMismatch`: the kubelet only fixes ownership when the volume root doesn't already match. With it, suspend/resume (Ready in 24 s) and Pod replacement (17 s) keep the volume, the marker file and DSH's credentials intact. Both PoC template renderers now set it. **The #3850 chart must set it too.** `deploy/helm/internal-charts/agent-runtime/templates/runtime.yaml` on `feat/3849-agent-workspace-mvp` currently has `fsGroup: 10001` only, so it will hit this on GKE (and on any CSI block storage). Raised on #3850: FSGROUP_COMMENT_LINK.
+**Fix (verified).** `fsGroupChangePolicy: OnRootMismatch`: the kubelet only fixes ownership when the volume root doesn't already match. With it, suspend/resume (Ready in 24 s) and Pod replacement (17 s) keep the volume, the marker file and DSH's credentials intact. Both PoC template renderers now set it. **The #3850 chart must set it too.** `deploy/helm/internal-charts/agent-runtime/templates/runtime.yaml` on `feat/3849-agent-workspace-mvp` currently has `fsGroup: 10001` only, so it will hit this on GKE (and on any CSI block storage). Raised on #3850: [#3850 comment](https://github.com/magda-io/magda/pull/3850#issuecomment-6097974312).
 
 ### G3 — External passthrough NLB, verified at the GCP resource level
 
@@ -168,7 +168,7 @@ All runs used gVisor Sandboxes and went through the NLB. A run is "quiet" when D
 
 ### For the MVP (#3850)
 
-- **`fsGroupChangePolicy: OnRootMismatch` on the agent-runtime Sandbox template** (G2). Without it, a Sandbox on GKE fails to restart after its first suspend/resume or Pod replacement. Raised on #3850: FSGROUP_COMMENT_LINK.
+- **`fsGroupChangePolicy: OnRootMismatch` on the agent-runtime Sandbox template** (G2). Without it, a Sandbox on GKE fails to restart after its first suspend/resume or Pod replacement. Raised on #3850: [#3850 comment](https://github.com/magda-io/magda/pull/3850#issuecomment-6097974312).
 
 ### For the deployment guide (#3849)
 
