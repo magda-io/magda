@@ -20,6 +20,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 RUN npm install -g --no-audit --no-fund "@deepseek-ai/dsh@${DSH_VERSION}" \
   && npm cache clean --force
+COPY magda-agent-runtime/dsh-client-managed-profile/ \
+  /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile/
+RUN chmod -R a+rX \
+  /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile
 COPY --from=mgd-build /out/ /tmp/mgd/
 RUN npm install -g --no-audit --no-fund /tmp/mgd/*.tgz \
   && rm -rf /tmp/mgd && npm cache clean --force

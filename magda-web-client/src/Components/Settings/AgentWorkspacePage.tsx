@@ -119,7 +119,6 @@ const AgentWorkspacePage: FunctionComponent = () => {
     const [action, setAction] = useState<"start" | "resume" | "reset">();
     const [requestError, setRequestError] = useState<string>();
     const [resetOpen, setResetOpen] = useState(false);
-    const [dshNavigationVisible, setDshNavigationVisible] = useState(false);
     const requestSequence = useRef(0);
 
     const refresh = useCallback(async (showLoading = false) => {
@@ -234,11 +233,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
 
         if (status.state === "READY") {
             return (
-                <div
-                    className={`agent-workspace-ready${
-                        dshNavigationVisible ? "" : " dsh-navigation-hidden"
-                    }`}
-                >
+                <div className="agent-workspace-ready dsh-navigation-hidden">
                     <div className="agent-workspace-toolbar">
                         <div className="agent-workspace-toolbar-heading">
                             <strong>Agent Workspace</strong>
@@ -247,21 +242,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
                                 authority
                             </span>
                         </div>
-                        <div className="agent-workspace-toolbar-actions">
-                            <Button
-                                appearance="subtle"
-                                onClick={() =>
-                                    setDshNavigationVisible(
-                                        (visible) => !visible
-                                    )
-                                }
-                            >
-                                {dshNavigationVisible
-                                    ? "Hide DSH Navigation"
-                                    : "Show DSH Navigation"}
-                            </Button>
-                            {resetButton}
-                        </div>
+                        {resetButton}
                     </div>
                     <iframe
                         className="agent-workspace-runtime"

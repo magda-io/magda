@@ -9,9 +9,9 @@
     compressionThresholdBytes: 1024
 
 # Magda owns the single provider and model. The lifecycle bootstrap writes the
-# bearer credential to /data/config/magda-agent.env and restarts the container;
-# the provider credential is the user's lifecycle-bound Magda API key, never a
-# provider secret.
+# raw API-key credential to /data/config/magda-agent.env and restarts the
+# container; the credential is the user's lifecycle-bound Magda API key, never a
+# provider secret. DSH's adapter adds the HTTP authorization scheme.
 - id: llm-pi-ai
   config:
     providers:
@@ -71,6 +71,18 @@
   disabled: true
 - id: ui-settings-web-search
   disabled: true
+
+# The managed profile fixes model and permission policy at deployment time and
+# does not expose deployment feedback collection as an agent command.
+- id: ui-model-selection
+  disabled: true
+- id: ui-permission
+  disabled: true
+- id: command-feedback
+  disabled: true
+- insert:
+    - id: ui-managed-profile
+      name: "@magda/dsh-client-managed-profile"
 
 - id: session-log-deepseek
   disabled: true

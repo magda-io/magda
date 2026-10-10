@@ -16,6 +16,20 @@
 set -euo pipefail
 
 mkdir -p "$DSH_HOME" /data/workspace "${XDG_CONFIG_HOME:-/data/config}"
+
+# The profile loader resolves out-of-tree plugins from the profile directory.
+# Keep the deployment-owned client plugin immutable in the image and expose it
+# to both fresh and PVC-restored Web profiles through a stable symlink.
+managed_plugin_source=/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile
+managed_plugin_parent="$DSH_HOME/profiles/web/node_modules/@magda"
+managed_plugin_target="$managed_plugin_parent/dsh-client-managed-profile"
+mkdir -p "$managed_plugin_parent"
+if [[ -e "$managed_plugin_target" && ! -L "$managed_plugin_target" ]]; then
+  echo "magda-agent: managed DSH plugin path is not a symlink" >&2
+  exit 1
+fi
+ln -sfn "$managed_plugin_source" "$managed_plugin_target"
+
 # Bootstrap-owned values are PVC-backed and are never placed in the Pod spec.
 # shellcheck disable=SC1091
 if [[ -f /data/config/magda-agent.env ]]; then source /data/config/magda-agent.env; fi

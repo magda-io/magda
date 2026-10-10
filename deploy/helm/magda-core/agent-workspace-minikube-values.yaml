@@ -29,6 +29,10 @@ agent-manager:
     create: false
   magdaApiUrl: https://magda.test/api
   llmApiUrl: https://magda.test/api/v0/llm/v1
+  llm:
+    provider: magda
+    model: gpt-5.6-sol
+    reasoningEffort: high
 
 agent-runtime:
   image:
@@ -54,13 +58,18 @@ llm-services:
     repository: localhost:5000
     tag: latest
     pullPolicy: Never
+  allowedModels: gpt-5.6-sol
 
 # The provider secret is deliberately not committed. Create `litellm-provider`
 # from OPENAI_API_KEY before deployment for real model responses.
 litellm:
+  model:
+    alias: gpt-5.6-sol
+    providerModel: openai/gpt-5.6-sol
+    reasoningEffort: high
   resources:
     requests: {cpu: 50m, memory: 128Mi}
-    limits: {cpu: 500m, memory: 512Mi}
+    limits: {cpu: 500m, memory: 1Gi}
 
 authorization-api:
   image:

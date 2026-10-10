@@ -11,7 +11,8 @@ DSH / mgd -> external gateway -> Magda APIs / Magda LLM Services -> LiteLLM
 
 This case covers the user-visible lifecycle, the trusted-header boundary, stock
 DSH launch-token hand-off, persistent workspace behavior and both local runtime
-profiles.
+profiles. See [Agent Workspace architecture and deployment](../architecture/agent-workspace.md)
+for implementation details, key decisions, configuration, and deployment steps.
 
 ## Prerequisites
 
@@ -83,17 +84,19 @@ profiles.
    `BOOTSTRAPPING`, then the embedded stock DSH UI (`READY`). Kubernetes names
    and addresses must not appear in the UI.
 4. Start a conversation. Confirm new sessions use `workspace-write`, sandbox
-   mode `workspace-write`, and approval policy `ask`; provider/model/plugin
-   management and persistent danger-full-access are unavailable.
+   mode `workspace-write`, and approval policy `ask`; DSH navigation and the
+   Feedback, Permission, and Model composer commands are absent; provider/model/
+   plugin management and persistent danger-full-access are unavailable.
 5. Ask the agent to run `mgd auth status` and a representative read such as a
    dataset search. The call must go through the external Magda endpoint using
    the lifecycle-bound user API key.
 6. Ask for a throwaway dataset mutation. The bundled `mgd` guidance must ask for
    explicit confirmation before executing it. Confirm, verify the result, then
    clean it up.
-7. Send a prompt that produces a streamed model response. Confirm the request
-   follows `/api/v0/llm/v1/chat/completions` and no provider credential appears
-   in the browser or Sandbox.
+7. Send a tool-using prompt that produces a streamed model response. Confirm a
+   reasoning model follows `/api/v0/llm/v1/responses` (Chat Completions remains
+   available for compatible models) and no provider credential appears in the
+   browser or Sandbox.
 
 ## Lifecycle and security checks
 

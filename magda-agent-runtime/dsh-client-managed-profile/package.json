@@ -1,0 +1,19 @@
+{
+  "name": "@magda/dsh-client-managed-profile",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-commands"
+      ],
+      "platform": "web"
+    }
+  }
+}
