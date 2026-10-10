@@ -1,0 +1,21 @@
+u-0d0d-1791634645 -> sandbox u-0d0d-1791634645 (u-0d0d-1791634645.magda-gke-3848.svc.cluster.local) ready in 23s
+INFO claim u-0d0d-1791634645 sandbox u-0d0d-1791634645 pvc data-u-0d0d-1791634645 pv pvc-c3354b97-660b-435b-8cd6-dd5466b13b43 storageClass standard-rwo reclaimPolicy Delete
+INFO GCE disk: pvc-c3354b97-660b-435b-8cd6-dd5466b13b43	1	pd-balanced	READY (PVC requested 1Gi, capacity 1Gi)
+INFO PVC owner: Sandbox/u-0d0d-1791634645
+INFO runtime gvisor node gke-ai4m-p11-dev-kas-gvisor-3848-123d1dfb-3rbl
+INFO mount inside gVisor: none /data 9p rw,trans=fd,rfdno=53,wfdno=53,aname=/,dfltuid=4294967294,dfltgid=4294967294,dcache=1000,cache=remote_revalidating,disable_fifo_open,directfs 0 0 root:agent 2775 none            974M   76K  958M   1% /data 
+PASS non-root (uid 10001, fsGroup) can write the PD-backed volume under gVisor
+PASS suspend: Pod deleted
+PASS suspend: PVC kept (Bound)
+INFO resume -> Ready in 24s (PD re-attach + DSH start)
+PASS resume: marker survived suspend/resume
+PASS resume: same volume (.created-at unchanged)
+PASS resume: new Pod
+PASS deleted Pod recreated by the controller in 17s
+PASS marker survived Pod deletion
+PASS claim deleted -> Sandbox deleted
+PASS claim deleted -> Service deleted
+PASS claim deleted -> PVC deleted
+PASS PV deleted (reclaimPolicy Delete)
+PASS GCE PD pvc-c3354b97-660b-435b-8cd6-dd5466b13b43 deleted
+== 0 failure(s)

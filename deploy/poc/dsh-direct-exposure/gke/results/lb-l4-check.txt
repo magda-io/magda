@@ -1,0 +1,45 @@
+{
+  "name": "a9922b4a2f37a4158a1f09213de8153a",
+  "region": "australia-southeast1",
+  "IPAddress": "34.87.194.9",
+  "IPProtocol": "TCP",
+  "ports": [
+    "80",
+    "443"
+  ],
+  "portRange": null,
+  "loadBalancingScheme": "EXTERNAL",
+  "networkTier": "PREMIUM",
+  "backendService": "https://www.googleapis.com/compute/v1/projects/ai4m-p11-dev-a8f7/regions/australia-southeast1/backendServices/k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2",
+  "target": null,
+  "description": "{\"networking.gke.io/service-name\":\"ingress-nginx-3848/ingress-nginx-3848-controller\",\"networking.gke.io/api-version\":\"ga\",\"networking.gke.io/service-ip\":\"34.87.194.9\"}"
+}
+PASS forwarding rule is regional (global = L7/proxy LB) (true)
+PASS loadBalancingScheme (EXTERNAL)
+PASS IPProtocol (L4) (TCP)
+PASS points at a backend service (l4-rbs), not a target pool / target proxy (true)
+{
+  "name": "k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2",
+  "protocol": "TCP",
+  "loadBalancingScheme": "EXTERNAL",
+  "sessionAffinity": "NONE",
+  "backends": [
+    {
+      "group": "k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2",
+      "balancingMode": "CONNECTION"
+    }
+  ],
+  "healthChecks": [
+    "k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2"
+  ]
+}
+PASS backend service protocol (TCP passthrough) (TCP)
+PASS backend service scheme (EXTERNAL)
+PASS no URL map routes to this backend service (0)
+INFO target HTTPS proxies in the project (unrelated to this IP): 0
+INFO firewall rules for the Service:
+NAME                                                             SOURCE_RANGES                                                 ALLOW           TARGET_TAGS
+k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0-fw  130.211.0.0/22,35.191.0.0/16,209.85.152.0/22,209.85.204.0/22  tcp:32082       gke-ai4m-p11-dev-5dd4e9f6-node
+k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2  115.186.214.115/32                                            tcp:80,tcp:443  gke-ai4m-p11-dev-5dd4e9f6-node
+NAME                                                             TYPE  REGION                PORT   REQUEST_PATH
+k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2  HTTP  australia-southeast1  32082  /healthz

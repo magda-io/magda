@@ -1,0 +1,19 @@
+{
+  "label": "gvisor, DSH heartbeat 2 s, ingress timeout 3600, nginx config reload at 30 s (proxy-body-size toggled)",
+  "userId": "00000000-0000-4000-8000-00000000a11c",
+  "sandbox": "dsh-gvisor",
+  "ingressTimeouts": {
+    "proxyReadTimeout": "3600",
+    "proxySendTimeout": "3600"
+  },
+  "startedAt": "2026-10-10T13:04:48.301Z",
+  "requestedSeconds": 400,
+  "heldSeconds": 271,
+  "outcome": "closed",
+  "closeCode": "tcp-close-without-close-frame",
+  "pings": 135,
+  "firstPingAfterMs": 1217,
+  "lastPingAfterS": 269,
+  "reloadAfterS": 30,
+  "closedSecondsAfterReload": 241
+}

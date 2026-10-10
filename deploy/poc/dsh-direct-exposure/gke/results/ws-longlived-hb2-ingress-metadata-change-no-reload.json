@@ -1,0 +1,21 @@
+{
+  "label": "gvisor, DSH heartbeat 2 s, ingress timeout 3600, Ingress metadata-only annotation change at 30 s (controller logged Sync only, NO nginx reload)",
+  "userId": "00000000-0000-4000-8000-00000000a11c",
+  "sandbox": "dsh-gvisor",
+  "ingressTimeouts": {
+    "proxyReadTimeout": "3600",
+    "proxySendTimeout": "3600"
+  },
+  "startedAt": "2026-10-10T12:45:46.020Z",
+  "requestedSeconds": 400,
+  "heldSeconds": 400,
+  "outcome": "still-open",
+  "probe": {
+    "endToEndPingPong": true,
+    "roundTripMs": 28
+  },
+  "pings": 200,
+  "firstPingAfterMs": 1233,
+  "lastPingAfterS": 399,
+  "reloadAfterS": 30
+}

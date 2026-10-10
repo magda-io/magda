@@ -1,0 +1,87 @@
+{
+  "test": "browser-e2e",
+  "endpoint": "https://34-87-194-9.sslip.io",
+  "lbIp": "34.87.194.9",
+  "startedAt": "2026-10-10T12:20:27.648Z",
+  "checks": [
+    {
+      "name": "index + assets load and the DSH UI boots in Chrome",
+      "ok": true,
+      "status": 200,
+      "bootMs": 2486,
+      "pageErrors": []
+    },
+    {
+      "name": "one physical wss socket carries several logical streams",
+      "ok": true,
+      "socketUrl": "wss://34-87-194-9.sslip.io/api/v0/agent/runtime/api/remote.mux",
+      "physicalSockets": 1,
+      "socketsClosed": 0,
+      "logicalStreamsOpened": 4,
+      "endpoints": [
+        "$events",
+        "session/control",
+        "session/follow",
+        "workspace/follow"
+      ],
+      "uplink": {
+        "open": 4,
+        "item": 0,
+        "end": 0,
+        "cancel": 0
+      },
+      "downlink": {
+        "item": 10,
+        "end": 0,
+        "error": 0
+      }
+    },
+    {
+      "name": "the socket is wss on the external origin and mount",
+      "ok": true
+    },
+    {
+      "name": "server -> browser streaming over remote.mux (mock LLM, 15 s turn)",
+      "ok": true,
+      "downlinkFramesDuringTurn": 44,
+      "itemsWithTag": 7
+    },
+    {
+      "name": "socket stayed open through the turn",
+      "ok": true,
+      "socketsClosed": 0
+    },
+    {
+      "name": "browser handshake reached Agent Manager with the external Host/Origin and X-Forwarded-Proto https",
+      "ok": true,
+      "t": "2026-10-10T12:20:30.608Z",
+      "event": "ws-handshake",
+      "path": "/runtime/api/remote.mux",
+      "upgrade": "websocket",
+      "connection": "upgrade",
+      "host": "34-87-194-9.sslip.io",
+      "origin": "https://34-87-194-9.sslip.io",
+      "hasMagdaSession": true,
+      "hasCookie": false,
+      "xForwardedProto": "https"
+    }
+  ],
+  "sandbox": {
+    "claim": "u-a11c-1791633554",
+    "template": "dsh-gvisor",
+    "sandbox": "u-a11c-1791633554",
+    "runtimeClassName": "gvisor"
+  },
+  "agentManagerHandshake": {
+    "t": "2026-10-10T12:20:30.608Z",
+    "event": "ws-handshake",
+    "path": "/runtime/api/remote.mux",
+    "upgrade": "websocket",
+    "connection": "upgrade",
+    "host": "34-87-194-9.sslip.io",
+    "origin": "https://34-87-194-9.sslip.io",
+    "hasMagdaSession": true,
+    "hasCookie": false,
+    "xForwardedProto": "https"
+  }
+}

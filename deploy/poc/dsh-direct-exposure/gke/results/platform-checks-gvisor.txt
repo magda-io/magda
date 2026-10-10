@@ -1,0 +1,31 @@
+== 1. GKE Sandbox (gVisor) — sandbox u-a11c-1791633554
+PASS Pod runtimeClassName=gvisor
+INFO RuntimeClass gvisor: handler=gvisor scheduling.nodeSelector={"sandbox.gke.io/runtime":"gvisor"}
+INFO Pod tolerations (injected by the RuntimeClass): {"effect":"NoSchedule","key":"sandbox.gke.io/runtime","operator":"Equal","value":"gvisor"}
+PASS scheduled on GKE Sandbox node gke-ai4m-p11-dev-kas-gvisor-3848-123d1dfb-3rbl (sandbox.gke.io/runtime=gvisor)
+INFO node taints: [{"effect":"NoSchedule","key":"sandbox.gke.io/runtime","value":"gvisor"}]
+INFO node: v1.35.6-gke.1250000 Container-Optimized OS from Google containerd://2.1.7 kernel 6.12.85+
+INFO node pool kas-gvisor-3848 sandboxConfig: type=GVISOR
+INFO uname -r: gVisor Pod '4.4.0' vs runc Pod '6.12.94+' (node kernel 6.12.85+)
+PASS dmesg inside the Pod is gVisor's: [    0.000000] Starting gVisor...
+INFO seccompProfile RuntimeDefault requested in the Pod: RuntimeDefault (GKE Sandbox does not apply node seccomp/AppArmor inside gVisor; the Pod was admitted)
+== 2. DNS and egress from the sandbox
+PASS DNS resolves mock-llm.magda-gke-3848.svc.cluster.local -> 10.100.8.201
+PASS DNS resolves kubernetes.default.svc.cluster.local -> 10.100.0.1
+PASS DNS resolves registry.npmjs.org -> 2606:4700::6810:522
+PASS in-cluster mock LLM reachable (HTTP 200)
+PASS public HTTPS egress (private nodes via Cloud NAT) HTTP 200
+== 3. Metadata server from the sandbox
+INFO metadata /instance/attributes/kube-env -> HTTP 404 (node credentials; must not be 200)
+INFO metadata /instance/service-accounts/default/email -> HTTP 200
+INFO metadata /instance/service-accounts/default/token -> HTTP 200
+PASS node kube-env (bootstrap credentials) is not readable from the sandbox
+FAIL the sandbox obtained a Google access token (HTTP 200)
+== 4. NetworkPolicy enforcement
+INFO cluster networkPolicy.enabled / addonsConfig.networkPolicyConfig.disabled / datapathProvider: '	True	LEGACY_DATAPATH'
+INFO KAS-managed policies: networkpolicy.networking.k8s.io/agent-manager-ingress networkpolicy.networking.k8s.io/dsh-gvisor-hb120-network-policy networkpolicy.networking.k8s.io/dsh-gvisor-hb3600-network-policy networkpolicy.networking.k8s.io/dsh-gvisor-network-policy networkpolicy.networking.k8s.io/dsh-runc-network-policy 
+PASS allowed peer (Agent Manager) -> sandbox :3080 CONNECTED
+EXPECTED-GAP non-allowed peer (mock-llm) -> sandbox :3080 CONNECTED: NetworkPolicy NOT enforced on this cluster
+EXPECTED-GAP sandbox -> private ClusterIP 10.100.14.208 (not allowed by its egress policy) HTTP 200: NetworkPolicy NOT enforced
+EXPECTED-GAP sandbox -> control-plane private endpoint 172.16.0.34 HTTP 200 (reachable; policy not enforced)
+== 1 failure(s)

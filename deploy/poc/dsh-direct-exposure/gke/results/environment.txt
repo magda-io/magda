@@ -1,0 +1,115 @@
+# #3848 GKE qualification environment (2026-10-10T12:21Z)
+## Cluster
+addonsConfig:
+  httpLoadBalancing: {}
+  networkPolicyConfig:
+    disabled: true
+autopilot: {}
+currentMasterVersion: 1.35.6-gke.1250000
+currentNodeVersion: 1.34.9-gke.1655001
+ipAllocationPolicy:
+  stackType: IPV4
+  useIpAliases: true
+location: australia-southeast1-a
+networkConfig:
+  datapathProvider: LEGACY_DATAPATH
+privateClusterConfig:
+  enablePrivateNodes: true
+releaseChannel: {}
+workloadIdentityConfig:
+  workloadPool: ai4m-p11-dev-a8f7.svc.id.goog
+## Node pools
+NAME             NODE_VERSION        MACHINE_TYPE   IMAGE_TYPE      SPOT  TYPE    MODE
+default-pool     1.34.9-gke.1655001  e2-standard-8  COS_CONTAINERD                GKE_METADATA
+kas-gvisor-3848  1.35.6-gke.1250000  e2-standard-2  COS_CONTAINERD  True  GVISOR  GKE_METADATA
+## Nodes
+NAME                                             KUBELET               RUNTIME              KERNEL     OS                                   SANDBOX   TAINTS
+gke-ai4m-p11-dev-default-pool-3e87cba1-5em2      v1.34.9-gke.1655001   containerd://2.1.7   6.12.94+   Container-Optimized OS from Google   <none>    <none>
+gke-ai4m-p11-dev-kas-gvisor-3848-123d1dfb-3rbl   v1.35.6-gke.1250000   containerd://2.1.7   6.12.85+   Container-Optimized OS from Google   gvisor    sandbox.gke.io/runtime
+## RuntimeClasses
+NAME                         HANDLER                      NODESELECTOR
+confidential-linked-runner   confidential-linked-runner   map[sandbox.gke.io/runtime:confidential-linked-runner]
+gvisor                       gvisor                       map[sandbox.gke.io/runtime:gvisor]
+## StorageClasses
+NAME                     PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+dynamic-rwo              pd.csi.storage.gke.io   Delete          WaitForFirstConsumer   true                   19d
+premium-rwo              pd.csi.storage.gke.io   Delete          WaitForFirstConsumer   true                   3y85d
+standard                 kubernetes.io/gce-pd    Delete          Immediate              true                   3y85d
+standard-rwo (default)   pd.csi.storage.gke.io   Delete          WaitForFirstConsumer   true                   3y85d
+## Agent Sandbox
+NAME                       IMAGE                                                           ARGS
+agent-sandbox-controller   registry.k8s.io/agent-sandbox/agent-sandbox-controller:v1.0.4   [--leader-elect=true --extensions]
+CRD                                                    VERSIONS
+sandboxclaims.extensions.agents.x-k8s.io               v1beta1
+sandboxes.agents.x-k8s.io                              v1beta1
+sandboxtemplates.extensions.agents.x-k8s.io            v1beta1
+sandboxwarmpools.extensions.agents.x-k8s.io            v1beta1
+## ingress-nginx
+- app_version: 1.15.1
+  chart: ingress-nginx-4.15.1
+  name: ingress-nginx-3848
+  namespace: ingress-nginx-3848
+registry.k8s.io/ingress-nginx/controller:v1.15.1@sha256:594ceea76b01c592858f803f9ff4d2cb40542cae2060410b2c95f75907d659e1
+["/nginx-ingress-controller","--publish-service=$(POD_NAMESPACE)/ingress-nginx-3848-controller","--election-id=ingress-nginx-3848-leader","--controller-class=k8s.io/ingress-nginx-3848","--ingress-class=nginx-3848","--configmap=$(POD_NAMESPACE)/ingress-nginx-3848-controller","--watch-namespace=magda-gke-3848"]
+NAME         CONTROLLER                     PARAMETERS   AGE
+nginx        nginx.org/ingress-controller   <none>       3y84d
+nginx-3848   k8s.io/ingress-nginx-3848      <none>       35m
+metadata:
+  annotations:
+    cloud.google.com/l4-rbs: enabled
+    cloud.google.com/neg: '{"ingress":true}'
+    cloud.google.com/neg-status: '{"network_endpoint_groups":{"0":"k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2"},"zones":["australia-southeast1-a"]}'
+    meta.helm.sh/release-name: ingress-nginx-3848
+    meta.helm.sh/release-namespace: ingress-nginx-3848
+    service.kubernetes.io/backend-service: k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2
+    service.kubernetes.io/firewall-rule: k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2
+    service.kubernetes.io/firewall-rule-for-hc: k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0-fw
+    service.kubernetes.io/healthcheck: k8s2-10z9a5by-ingress-nginx-3-ingress-nginx-3848-contr-y75h0sz2
+    service.kubernetes.io/tcp-forwarding-rule: a9922b4a2f37a4158a1f09213de8153a
+  finalizers:
+  - gke.networking.io/l4-netlb-v3
+  - service.kubernetes.io/load-balancer-cleanup
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-3848
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/version: 1.15.1
+    helm.sh/chart: ingress-nginx-4.15.1
+  name: ingress-nginx-3848-controller
+  namespace: ingress-nginx-3848
+spec:
+  allocateLoadBalancerNodePorts: true
+  clusterIP: 10.100.13.55
+  clusterIPs:
+  - 10.100.13.55
+  externalTrafficPolicy: Local
+  healthCheckNodePort: 32082
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  loadBalancerSourceRanges:
+  - 115.186.214.115/32
+  ports:
+  - appProtocol: http
+    name: http
+    nodePort: 31012
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - appProtocol: https
+    name: https
+    nodePort: 32748
+    port: 443
+    protocol: TCP
+    targetPort: https
+  selector:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-3848
+    app.kubernetes.io/name: ingress-nginx
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+status: {"loadBalancer":{"ingress":[{"ip":"34.87.194.9","ipMode":"VIP"}]}}

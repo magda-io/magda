@@ -1,0 +1,40 @@
+# ingress-nginx (kubernetes/ingress-nginx chart 4.15.1, controller v1.15.1) for
+# the #3848 GKE qualification. Installed by gke/scripts/02-ingress-nginx.sh into
+# its own namespace, beside any controller already on the cluster:
+#   - its own IngressClass (nginx-3848), not the default class;
+#   - scoped to the PoC namespace only;
+#   - no ValidatingWebhookConfiguration (it would match every Ingress in the
+#     cluster and block other namespaces' changes while this controller is down);
+#   - exposed by a backend-service-based external passthrough Network Load
+#     Balancer (cloud.google.com/l4-rbs), NOT GCE Ingress / an L7 HTTP(S) LB.
+#     The annotation must be present when the Service is created.
+controller:
+  replicaCount: 1
+  ingressClass: nginx-3848
+  ingressClassResource:
+    name: nginx-3848
+    controllerValue: k8s.io/ingress-nginx-3848
+    default: false
+  watchIngressWithoutClass: false
+  electionID: ingress-nginx-3848-leader
+  scope:
+    enabled: true
+    namespace: magda-gke-3848
+  admissionWebhooks:
+    enabled: false
+  metrics:
+    enabled: false
+  resources:
+    requests: {cpu: 50m, memory: 96Mi}
+    limits: {memory: 256Mi}
+  service:
+    type: LoadBalancer
+    annotations:
+      cloud.google.com/l4-rbs: "enabled"
+    # Local: keep the client IP and skip the second hop. The NLB health-checks
+    # healthCheckNodePort, so only nodes with a controller Pod receive traffic.
+    externalTrafficPolicy: Local
+    # Set by the install script (LB_SOURCE_RANGES) to the tester's egress IP.
+    loadBalancerSourceRanges: []
+defaultBackend:
+  enabled: false

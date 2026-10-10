@@ -148,6 +148,8 @@ export class WsConnection extends EventEmitter {
                 this.pings++;
                 this.emit("ping");
                 this.socket.write(encodeFrame(0xa, payload));
+            } else if (opcode === 0xa) {
+                this.emit("pong", payload);
             } else if (opcode === 0x8) {
                 this.closeCode = payload.length >= 2 ? payload.readUInt16BE(0) : 1005;
                 this.socket.end(encodeFrame(0x8, payload.subarray(0, 2)));
@@ -169,6 +171,18 @@ export class WsConnection extends EventEmitter {
 
     send(value) {
         this.socket.write(encodeFrame(0x1, typeof value === "string" ? value : JSON.stringify(value)));
+    }
+
+    /** Client-initiated ping; resolves true when the matching pong arrives within timeoutMs. */
+    ping(timeoutMs = 10000) {
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => resolve(false), timeoutMs);
+            this.once("pong", () => {
+                clearTimeout(timer);
+                resolve(true);
+            });
+            this.socket.write(encodeFrame(0x9, "probe"));
+        });
     }
 
     close(code = 1000) {

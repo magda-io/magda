@@ -4,6 +4,8 @@ PoC material for [#3841](https://github.com/magda-io/magda/issues/3841). It is n
 
 Write-up, results and recommendations: [`docs/investigations/v8-dsh-direct-exposure.md`](../../../docs/investigations/v8-dsh-direct-exposure.md).
 
+The same images and proxy, adapted to a real GKE cluster (ingress-nginx behind an L4 NLB, GKE Sandbox/gVisor): [`gke/`](gke/) ([#3848](https://github.com/magda-io/magda/issues/3848)).
+
 ```text
 Chrome (host) --https://magda.test:18443--> minikube ingress-nginx (TLS)
   -> magda-gateway (Magda session auth, route websocket: true)

@@ -1,0 +1,20 @@
+{
+  "label": "gvisor, DSH heartbeat 1 h (quiet socket > GCP 10-min idle), ingress timeout 3600, end-to-end ping probe",
+  "userId": "00000000-0000-4000-8000-000000000c0c",
+  "sandbox": "dsh-gvisor-hb3600",
+  "ingressTimeouts": {
+    "proxyReadTimeout": "3600",
+    "proxySendTimeout": "3600"
+  },
+  "startedAt": "2026-10-10T12:52:27.429Z",
+  "requestedSeconds": 720,
+  "heldSeconds": 720,
+  "outcome": "still-open",
+  "probe": {
+    "endToEndPingPong": true,
+    "roundTripMs": 23
+  },
+  "pings": 1,
+  "firstPingAfterMs": 651744,
+  "lastPingAfterS": 652
+}
