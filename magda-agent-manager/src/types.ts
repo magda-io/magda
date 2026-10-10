@@ -36,6 +36,7 @@ export interface ManagerConfig {
     llmApiUrl: string;
     llmProvider: string;
     llmModel: string;
+    llmReasoningEffort?: string;
     hardDeleteSeconds: number;
     idleSuspendSeconds: number;
     reconcileIntervalSeconds: number;

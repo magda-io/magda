@@ -100,6 +100,7 @@ export class AgentManager {
                 baseUrl: this.config.llmApiUrl,
                 provider: this.config.llmProvider,
                 model: this.config.llmModel,
+                reasoningEffort: this.config.llmReasoningEffort,
                 authorization: `Bearer ${key.id}:${key.key}`
             }
         };

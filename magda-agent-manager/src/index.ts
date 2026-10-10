@@ -41,6 +41,7 @@ const config: ManagerConfig = {
         `${externalUrl.replace(/\/$/, "")}/api/v0/llm/v1`,
     llmProvider: process.env.MAGDA_LLM_PROVIDER || "magda",
     llmModel: process.env.MAGDA_LLM_MODEL || "magda-agent-default",
+    llmReasoningEffort: process.env.MAGDA_LLM_REASONING_EFFORT || undefined,
     hardDeleteSeconds: Number(process.env.HARD_DELETE_SECONDS || 8 * 60 * 60),
     idleSuspendSeconds: Number(process.env.IDLE_SUSPEND_SECONDS || 30 * 60),
     reconcileIntervalSeconds: Number(

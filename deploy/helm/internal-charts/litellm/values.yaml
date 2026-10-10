@@ -7,6 +7,8 @@ model:
   alias: magda-agent-default
   providerModel: openai/gpt-4o-mini
   apiKeyEnv: OPENAI_API_KEY
+  # Optional provider reasoning effort (for example: low, medium, or high).
+  reasoningEffort: ""
 providerSecret:
   name: litellm-provider
   key: api-key

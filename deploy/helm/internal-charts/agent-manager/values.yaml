@@ -27,6 +27,7 @@ runtimeMaxBodyBytes: 16777216
 llm:
   provider: magda
   model: magda-agent-default
+  reasoningEffort: ""
 resources:
   requests: {cpu: 50m, memory: 96Mi}
   limits: {cpu: 500m, memory: 384Mi}

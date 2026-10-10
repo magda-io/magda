@@ -47,6 +47,9 @@ spec:
             - {name: RUNTIME_MAX_BODY_BYTES, value: {{ .Values.runtimeMaxBodyBytes | quote }}}
             - {name: MAGDA_LLM_PROVIDER, value: {{ .Values.llm.provider | quote }}}
             - {name: MAGDA_LLM_MODEL, value: {{ .Values.llm.model | quote }}}
+{{- with .Values.llm.reasoningEffort }}
+            - {name: MAGDA_LLM_REASONING_EFFORT, value: {{ . | quote }}}
+{{- end }}
           readinessProbe:
             httpGet: {path: /v0/status/ready, port: http}
           livenessProbe:

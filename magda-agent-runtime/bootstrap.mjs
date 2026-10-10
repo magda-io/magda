@@ -72,6 +72,13 @@ fs.writeFileSync(
         `export MAGDA_LLM_BASE_URL=${shellQuote(payload.llm.baseUrl)}`,
         `export MAGDA_LLM_API_KEY=${shellQuote(payload.llm.authorization)}`,
         `export MAGDA_LLM_MODEL=${shellQuote(payload.llm.model)}`,
+        ...(payload.llm.reasoningEffort
+            ? [
+                  `export MAGDA_LLM_REASONING_EFFORT=${shellQuote(
+                      payload.llm.reasoningEffort
+                  )}`
+              ]
+            : []),
         ""
     ].join("\n"),
     { mode: 0o600 }

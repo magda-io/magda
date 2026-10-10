@@ -9,6 +9,9 @@ data:
         litellm_params:
           model: {{ .Values.model.providerModel | quote }}
           api_key: "os.environ/{{ .Values.model.apiKeyEnv }}"
+{{- with .Values.model.reasoningEffort }}
+          reasoning_effort: {{ . | quote }}
+{{- end }}
     general_settings:
       master_key: "os.environ/LITELLM_MASTER_KEY"
       database_url: null
