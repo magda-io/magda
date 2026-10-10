@@ -1,0 +1,22 @@
+# tests/pvc-lifecycle.sh on gVisor BEFORE adding fsGroupChangePolicy: OnRootMismatch
+# (template had fsGroup: 10001 with the default policy, Always). Same result with
+# runc on default-pool (u-0e0e-...), so this is GKE PD / fsGroup, not gVisor.
+PASS non-root (uid 10001, fsGroup) can write the PD-backed volume under gVisor
+PASS suspend: Pod deleted
+PASS suspend: PVC kept (Bound)
+FAIL resume: marker lost            (exec: container "agent" in state stopped)
+FAIL resume: different volume       (container not found)
+PASS resume: new Pod
+PASS deleted Pod recreated by the controller in 420s   (after CrashLoopBackOff + KAS "PodFailed")
+FAIL marker lost after Pod deletion
+PASS claim deleted -> Sandbox / Service / PVC / PV / GCE PD deleted
+
+# Container log of the resumed Pod (gVisor; identical under runc):
+magda-agent: volume created at 2026-10-10T12:14:22Z, boot 2026-10-10T12:15:11Z
+dsh: startup failed: 1 required plugin did not activate
+Failed plugins (1):
+  credentials
+    Package: @deepseek-ai/dsh-credentials-local
+    Error: credentials-local: /data/dsh-home/.credentials.yaml is readable beyond its owner (mode 660); run "chmod 600 /data/dsh-home/.credentials.yaml" before starting again
+# First boot: stat -c '%a' /data/dsh-home/.credentials.yaml -> 600
+# After remount: 660 (kubelet recursive fsGroup chmod g+rw on the PD-CSI volume)

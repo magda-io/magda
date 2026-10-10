@@ -1,0 +1,16 @@
+{
+  "label": "gvisor, DSH heartbeat 2 s, ingress default timeouts",
+  "userId": "00000000-0000-4000-8000-00000000a11c",
+  "sandbox": "dsh-gvisor",
+  "ingressTimeouts": {
+    "proxyReadTimeout": "(default 60)",
+    "proxySendTimeout": "(default 60)"
+  },
+  "startedAt": "2026-10-10T12:03:18.796Z",
+  "requestedSeconds": 900,
+  "heldSeconds": 900,
+  "outcome": "still-open",
+  "pings": 450,
+  "firstPingAfterMs": 809,
+  "lastPingAfterS": 900
+}

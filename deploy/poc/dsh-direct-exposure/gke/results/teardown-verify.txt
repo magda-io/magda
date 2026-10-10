@@ -1,0 +1,35 @@
+## post-teardown check 2026-10-10T13:15:59Z
+forwarding rules:
+a304f059bc952483bae5541e3a504622	35.189.28.80
+a84a3b6de16ee4cb59052118fd121ed7	34.151.80.246
+backend services matching 3848:
+WARNING: The following filter keys were not present in any resource : name
+health checks matching:
+WARNING: The following filter keys were not present in any resource : name
+NEGs matching:
+WARNING: The following filter keys were not present in any resource : name
+firewall rules matching:
+pvc-* disks (unattached):
+pvc-00ce7f85-4e52-49d9-ba32-57bf0e8fdee2	100
+pvc-32584584-7e57-4528-a470-656786118e61	10
+pvc-72918f54-1b37-4908-9a15-b93f38dab754	50
+pvc-efda8fb2-bbef-4b4a-a4e0-29911281e215	50
+PVs bound to test ns:
+0
+namespaces:
+none
+ingressclasses:
+ingressclass.networking.k8s.io/nginx
+crds:
+0
+AR repos:
+data-sharing-portal
+nodes:
+NAME                                          STATUS   ROLES    AGE   VERSION
+gke-ai4m-p11-dev-default-pool-3e87cba1-5em2   Ready    <none>   33d   v1.34.9-gke.1655001
+live site pods not Running/Completed:
+vault-secrets-operator-system      vault-secrets-operator-controller-manager-7446cb46d4-qhc4p        1/2   ImagePullBackOff   29 (42h ago)     33d
+# Notes: the remaining forwarding rules (35.189.28.80, 34.151.80.246) are the live site's
+# pre-existing target-pool NLBs. The 4 unattached pvc-* disks were created 2023-07-19 /
+# 2024-09-17 (100/10/50/50 GB) and are unrelated; all 1 GB PoC disks are gone. The
+# vault-secrets-operator ImagePullBackOff predates this test (33 d old pod, 42 h).

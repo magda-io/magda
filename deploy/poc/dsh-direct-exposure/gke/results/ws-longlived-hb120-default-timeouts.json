@@ -1,0 +1,15 @@
+{
+  "label": "gvisor, DSH heartbeat 120 s, ingress default timeouts",
+  "userId": "00000000-0000-4000-8000-000000000b0b",
+  "sandbox": "dsh-gvisor-hb120",
+  "ingressTimeouts": {
+    "proxyReadTimeout": "(default 60)",
+    "proxySendTimeout": "(default 60)"
+  },
+  "startedAt": "2026-10-10T12:03:18.797Z",
+  "requestedSeconds": 180,
+  "heldSeconds": 61,
+  "outcome": "closed",
+  "closeCode": "tcp-close-without-close-frame",
+  "pings": 0
+}

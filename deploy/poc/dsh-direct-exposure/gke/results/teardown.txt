@@ -1,0 +1,39 @@
+sandboxclaim.extensions.agents.x-k8s.io "u-0b0b-1791633761" deleted from magda-gke-3848 namespace
+sandboxclaim.extensions.agents.x-k8s.io "u-0c0c-1791633761" deleted from magda-gke-3848 namespace
+sandboxclaim.extensions.agents.x-k8s.io "u-a11c-1791633554" deleted from magda-gke-3848 namespace
+No resources found
+sandboxwarmpool.extensions.agents.x-k8s.io "dsh-gvisor" deleted from magda-gke-3848 namespace
+sandboxwarmpool.extensions.agents.x-k8s.io "dsh-gvisor-hb120" deleted from magda-gke-3848 namespace
+sandboxwarmpool.extensions.agents.x-k8s.io "dsh-gvisor-hb3600" deleted from magda-gke-3848 namespace
+sandboxwarmpool.extensions.agents.x-k8s.io "dsh-runc" deleted from magda-gke-3848 namespace
+sandboxtemplate.extensions.agents.x-k8s.io "dsh-gvisor" deleted from magda-gke-3848 namespace
+sandboxtemplate.extensions.agents.x-k8s.io "dsh-gvisor-hb120" deleted from magda-gke-3848 namespace
+sandboxtemplate.extensions.agents.x-k8s.io "dsh-gvisor-hb3600" deleted from magda-gke-3848 namespace
+sandboxtemplate.extensions.agents.x-k8s.io "dsh-runc" deleted from magda-gke-3848 namespace
+persistentvolumeclaim "data-u-0b0b-1791633761" deleted from magda-gke-3848 namespace
+persistentvolumeclaim "data-u-0c0c-1791633761" deleted from magda-gke-3848 namespace
+persistentvolumeclaim "data-u-a11c-1791633554" deleted from magda-gke-3848 namespace
+namespace "magda-gke-3848" deleted
+release "ingress-nginx-3848" uninstalled
+namespace "ingress-nginx-3848" deleted
+namespace "agent-sandbox-system" deleted
+customresourcedefinition.apiextensions.k8s.io "sandboxclaims.extensions.agents.x-k8s.io" deleted
+customresourcedefinition.apiextensions.k8s.io "sandboxes.agents.x-k8s.io" deleted
+customresourcedefinition.apiextensions.k8s.io "sandboxtemplates.extensions.agents.x-k8s.io" deleted
+customresourcedefinition.apiextensions.k8s.io "sandboxwarmpools.extensions.agents.x-k8s.io" deleted
+serviceaccount "agent-sandbox-controller" deleted from agent-sandbox-system namespace
+clusterrole.rbac.authorization.k8s.io "agent-sandbox-controller" deleted
+clusterrole.rbac.authorization.k8s.io "agent-sandbox-controller-extensions" deleted
+clusterrolebinding.rbac.authorization.k8s.io "agent-sandbox-controller" deleted
+clusterrolebinding.rbac.authorization.k8s.io "agent-sandbox-controller-extensions" deleted
+service "agent-sandbox-controller" deleted from agent-sandbox-system namespace
+deployment.apps "agent-sandbox-controller" deleted from agent-sandbox-system namespace
+Deleting node pool kas-gvisor-3848...
+......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................done.
+Deleted [https://container.googleapis.com/v1/projects/ai4m-p11-dev-a8f7/zones/australia-southeast1-a/clusters/ai4m-p11-dev/nodePools/kas-gvisor-3848].
+Delete request issued for: [magda-kas-poc]
+Waiting for operation [projects/ai4m-p11-dev-a8f7/locations/australia-southeast1/operations/5538af67-fded-4b15-968c-fb2de0670047] to complete...
+..........done.
+Deleted repository [magda-kas-poc].
+== leftovers (all should be empty)
+default-pool

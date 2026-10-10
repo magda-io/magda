@@ -1,0 +1,103 @@
+{
+  "test": "external-chain",
+  "endpoint": "https://34-87-194-9.sslip.io",
+  "lbIp": "34.87.194.9",
+  "startedAt": "2026-10-10T12:01:43.991Z",
+  "checks": [
+    {
+      "name": "HTTP :80 through the NLB is redirected to HTTPS by ingress-nginx",
+      "ok": true,
+      "status": 308,
+      "location": "https://34-87-194-9.sslip.io/api/v0/agent/runtime"
+    },
+    {
+      "name": "HTTPS: certificate for the sslip.io name verifies against the PoC CA",
+      "ok": true,
+      "tlsProtocol": "TLSv1.3"
+    },
+    {
+      "name": "anonymous request reaches Agent Manager and is rejected before DSH",
+      "ok": true,
+      "status": 401,
+      "body": "Magda authentication required"
+    },
+    {
+      "name": "authenticated index is served by DSH in the Sandbox",
+      "ok": true,
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 35592
+    },
+    {
+      "name": "no DSH token or DSH cookie reaches the client",
+      "ok": true,
+      "setCookieNames": []
+    },
+    {
+      "name": "undeclared Host is not routed (ingress host rule)",
+      "ok": true,
+      "status": 404
+    },
+    {
+      "name": "anonymous WebSocket upgrade is rejected before DSH",
+      "ok": true,
+      "status": 401
+    },
+    {
+      "name": "wss /api/remote.mux upgrade succeeds end to end (101)",
+      "ok": true,
+      "status": 101
+    },
+    {
+      "name": "DSH heartbeat frames arrive over the socket (server -> client)",
+      "ok": true,
+      "firstPingAfterMs": 1593
+    },
+    {
+      "name": "cross-site Origin WebSocket is rejected (by DSH's fence; gateway check not in this chain)",
+      "ok": true,
+      "status": 403,
+      "body": "rejected by agent runtime"
+    },
+    {
+      "name": "cross-site Origin RPC is rejected by DSH",
+      "ok": true,
+      "status": 403
+    },
+    {
+      "name": "DSH RPC: default Workspace initialized (PVC-backed)",
+      "ok": true,
+      "path": "/data/workspace/deepseek-harness/default-workspace"
+    },
+    {
+      "name": "DSH RPC: prompt accepted (mock LLM turn)",
+      "ok": true,
+      "sessionId": "session-9e1ccb81-e876-41a5-bf09-907b89b1de41"
+    },
+    {
+      "name": "the gVisor Sandbox called the in-cluster mock LLM (DNS + Service egress)",
+      "ok": true,
+      "mockLlmLogLines": 2
+    }
+  ],
+  "sandbox": {
+    "claim": "u-a11c-1791633554",
+    "template": "dsh-gvisor",
+    "sandbox": "u-a11c-1791633554",
+    "runtimeClassName": "gvisor",
+    "node": "gke-ai4m-p11-dev-kas-gvisor-3848-123d1dfb-3rbl",
+    "podIP": "10.96.0.3"
+  },
+  "agentManagerLastHandshake": {
+    "t": "2026-10-10T12:01:47.718Z",
+    "event": "ws-handshake",
+    "path": "/runtime/api/remote.mux",
+    "upgrade": "websocket",
+    "connection": "upgrade",
+    "host": "34-87-194-9.sslip.io",
+    "origin": "https://evil.test",
+    "hasMagdaSession": true,
+    "hasCookie": false,
+    "xForwardedProto": "https"
+  }
+}

@@ -90,6 +90,12 @@ ${runtime_line}
         runAsUser: 10001
         runAsGroup: 10001
         fsGroup: 10001
+        # Required on CSI block volumes (GKE PD): with the default policy
+        # (Always) the kubelet re-applies fsGroup recursively on every mount and
+        # widens DSH's 0600 .credentials.yaml to 0660, and DSH then refuses to
+        # start after a resume or Pod replacement (#3848). hostPath-backed
+        # Minikube volumes skip fsGroup handling, which hid this in #3841.
+        fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
       containers:
