@@ -1,6 +1,6 @@
 # Authentication and credential boundaries
 
-**Status:** Accepted  
+**Status:** Accepted credential delegation model (#3825); expiring managed key and cloud identity clarification aligned with MVP #3850 / GKE #3852  
 **Owner ticket:** #3825  
 **Depends on:** #3822/#3823; coordinates with #3824 and #3838  
 **Blocks:** sandbox credential/bootstrap implementation
@@ -36,14 +36,17 @@ Each current user Sandbox receives one real, user-scoped Magda API key.
 The key:
 
 - is created automatically by Agent Manager with a reserved system-managed name;
-- has no intrinsic expiry in the initial design;
+- has an initial, renewable expiry aligned to the eight-hour inactivity deletion deadline in the current MVP (#3850);
 - is written into the PVC-backed `mgd` profile by post-claim bootstrap;
 - is also configured as DSH's credential for the external Magda LLM API;
 - survives suspend/resume with the same PVC;
+- has its expiry **extended on recorded meaningful activity/resume** alongside the claim's KAS shutdown deadline;
 - is revoked/deleted when the sandbox is permanently deleted/logged out;
 - is rotated by deletion/recreation when a new sandbox is started.
 
-Before creation, Agent Manager removes stale keys with the reserved name so partial failures self-heal toward exactly one managed key for the current sandbox.
+The key's reserved name is scoped to the **Magda installation ID** as well as the user. Before creation, Agent Manager removes stale keys with *this installation's* reserved name so partial failures self-heal toward exactly one managed key for this installation's current sandbox; it must not revoke a different installation's keys.
+
+The MVP creates a recoverable SandboxClaim before issuing the raw key, and attempts revocation **before** deleting the claim/PVC on logout/reset or interrupted bootstrap. Activity renewal requires two durable writes (KAS claim deadline and Authorization DB expiry). Those writes are not atomic in #3850; retry/reconciliation and monotonicity on partial failures remain follow-up requirements described in [session-lifecycle.md](./session-lifecycle.md).
 
 The reserved name is an operational marker, not a separate security principal.
 
@@ -57,7 +60,7 @@ Magda supports bearer API-key form:
 Authorization: Bearer <apiKeyId>:<apiKey>
 ```
 
-DSH uses that same bearer credential when calling Magda LLM Services.
+DSH uses the **same underlying credential** when calling Magda LLM Services. Its managed OpenAI-compatible adapter is given the raw `<apiKeyId>:<apiKey>` value and adds the `Bearer` authorization scheme itself; do not persist a second `Bearer ` prefix in the DSH config.
 
 The key is stored on the sandbox PVC, not baked into the image and not placed in claim metadata/environment.
 
@@ -121,6 +124,8 @@ The sandbox is arbitrary-code execution and has public egress. Therefore the Mag
 The lifecycle reduces abandoned-key exposure:
 
 - suspend retains the key because the same logical Sandbox continues;
+- inactivity-based expiry limits a stale key even if cleanup cannot immediately run;
+- meaningful activity/resume renews expiry with the claim deadline (subject to robust failure/reconciliation handling);
 - logout/hard deletion revokes it;
 - starting a new Sandbox rotates it.
 
@@ -138,3 +143,13 @@ The credential design assumes:
 - sandbox ingress is limited to the Agent Manager/approved DSH proxy path.
 
 Network restrictions protect infrastructure/lateral boundaries; they are not intended to make the sandbox-held user credential secret from the sandbox itself.
+
+## Kubernetes ServiceAccount and GKE cloud identity (separate trust boundary)
+
+The **Magda user API key** above must not be confused with a Kubernetes ServiceAccount identity or a GKE Workload Identity Federation Google access token. The Magda key is intentionally available to DSH/agent tools; Google Cloud authority unrelated to that user's Magda permissions is **not** required.
+
+The real-GKE PoC #3852 obtained HTTP 200 from the GKE metadata-server token endpoint despite `automountServiceAccountToken: false`; it obtained HTTP 404 for the node `kube-env` endpoint. The PoC did **not** determine the token's effective IAM permissions. Do not infer that no service-account volume implies that the metadata server is unreachable, or that a returned token is necessarily privileged.
+
+**Required GKE design/qualification:** explicitly choose a minimally privileged Sandbox Kubernetes ServiceAccount (not an implicit `default` grant), ensure no unintended IAM bindings (including broad namespace/pool `principalSet` grants), verify effective token authorizations using permitted/denied IAM probes, and test the metadata/network boundary under an **enforcing** GKE datapath. Metadata blocking must respect documented GKE platform needs; if it remains reachable, the Sandbox principal must have no unrelated useful IAM authority. See [network-security.md](./network-security.md).
+
+This is a **pending security acceptance item**, not a retroactive claim that #3852 proved cloud identity isolation.
