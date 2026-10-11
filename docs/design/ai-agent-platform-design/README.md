@@ -39,7 +39,7 @@ DSH + mgd + tools                +--> AWS Bedrock
 
 The following contracts are now the baseline for the initial v8 design:
 
-- **one current sandbox per Magda user**; a user UUID is the stable ownership key;
+- **one current sandbox per Magda user per installation**, with **multiple DSH sessions/conversations permitted** inside that sandbox; a user UUID plus installation ID is the stable ownership key;
 - the deterministic `SandboxClaim` name is derived from the **Magda installation ID + user UUID** (`magda-agent-<installation-id>-<user-uuid>` in #3850), with both installation and user labels; this prevents cross-release adoption/cleanup;
 - there is no separate Magda Agent session-id/database row; `SandboxClaim.metadata.uid` is sufficient when an incarnation/generation identifier is needed;
 - Agent Manager is intentionally **stateless** for the initial scope: Kubernetes Agent Sandbox resources are the control-plane source of truth and the sandbox PVC is the source of truth for DSH/workspace state;
@@ -124,7 +124,7 @@ Runtime + credentials + network
 | Shared LLM services | [llm-services.md](./llm-services.md) | #3838 — **Proposed** |
 | Network / security | [network-security.md](./network-security.md) | Draft |
 | Mutation confirmation | [mutation-approval.md](./mutation-approval.md) | Proposed product/DSH UX contract |
-| Skills | [skills.md](./skills.md) | Draft |
+| Skills | [skills.md](./skills.md) | Agreed follow-on design: three categories, existing-bucket ZIP storage, `mgd` management; implementation pending |
 | Web/product integration | [web-ui.md](./web-ui.md) | Draft |
 | Deployment / Helm | [deployment.md](./deployment.md) | Draft |
 | Observability / audit | [observability.md](./observability.md) | Draft |
@@ -156,6 +156,13 @@ The v8 alpha target uses GKE/gVisor and the experimentally qualified L4 ingress 
 
 Long-lived ingress configuration is tracked by #3847 and path-scoped DSH CSP by #3846.
 
+
+## Durable skill architecture (agreed follow-on design)
+
+The Agent Workspace is disposable and may host multiple DSH sessions; durable **skills** live outside it. [skills.md](./skills.md) specifies three categories: runtime-bundled skills shipped with the pinned runtime (including `capture-workflow`), admin-published system skills available to all users (Markdown plus arbitrary scripts/models/assets), and owner-published Markdown-only user skills. Every skill runs under the *current user's* Magda authority and ordinary DSH tool approvals.
+
+Agent Services independently authorizes skill CRUD and uses its own MinIO client against the **existing default Magda bucket**. Each published system/user skill is a single ZIP under `agent-services/skills/` with `SKILL.md`; no Agent Manager DB, new bucket, mandatory skill revision history, Registry aspect or skill editor UI. The `mgd agent-skill` CLI drives local draft/review/publish/sync. Skills are fetched **after warm-Sandbox claim and user bootstrap**, before READY, with manual sync later. Local edits, even to system skills, do not update published objects. System mutations emit concise Agent Services Pod logs; operators may enable provider-side bucket versioning for archival recovery. Storage API's separate owner-metadata mismatch is tracked by [#3853](https://github.com/magda-io/magda/issues/3853).
+
 ## Remaining #3811 work
 
 The foundation is substantially clearer, but #3811 is **not complete**. Remaining implementation-critical design includes:
@@ -163,7 +170,7 @@ The foundation is substantially clearer, but #3811 is **not complete**. Remainin
 - #3838 exact LLM API/authz/Helm contract;
 - **verified** network/security enforcement per provider (GKE NetworkPolicy negative tests, metadata/KSA/Workload Identity IAM boundaries);
 - polished/structured mutation-confirmation UX (optional DSH approval integration);
-- user/global skill persistence/trust model;
+- implementation of the **agreed** [runtime-bundled/system/user skill design](./skills.md): trusted Agent Services API, MinIO default-bucket ZIP objects, owner/admin permissions, `mgd` publishing/synchronization and agent-led workflow capture (not yet in #3850);
 - full web/product lifecycle UX;
 - Helm/runtime implementation contract is now represented in #3850; remaining **secure GKE deployment qualification**, maintained ingress-controller choice and cluster preflight policy;
 - observability/audit;
