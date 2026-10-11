@@ -15,7 +15,7 @@ manager:
     name: magda-agent-manager
     tag: ""
     pullPolicy: IfNotPresent
-  # Must remain 1: lifecycle reconciliation is single-writer.
+  # -- Must remain one because lifecycle reconciliation is single-writer.
   replicas: 1
   resources:
     requests: {cpu: 50m, memory: 96Mi}
@@ -36,8 +36,8 @@ runtime:
   hostAliases: []
   externalPrivateCidrs: []
   externalPrivatePorts: [80, 443]
-  # Additional public destinations that the broad public HTTPS policy must deny,
-  # such as a GKE cluster's public control-plane endpoint (/32).
+  # -- Additional public destinations denied by the broad public egress rule,
+  # such as a GKE public control-plane endpoint (/32).
   deniedCidrs: []
   trustedCaSecret:
     name: ""
