@@ -1,6 +1,6 @@
 # Magda LLM Services design
 
-**Status:** Proposed  
+**Status:** Proposed generic authorization contract; MVP subset implemented in draft PR #3850  
 **Owner ticket:** #3838  
 **Depends on:** Magda Gateway/authentication and generic authorisation  
 **Consumed by:** DSH Agent Platform and future Magda components
@@ -79,6 +79,12 @@ For the minimal deployment, using the LiteLLM master key as that internal creden
 
 Provider credentials and the LiteLLM internal credential never enter user sandboxes.
 
+## MVP Helm packaging and feature flags
+
+Draft PR #3850 implements an independent `global.llmServices.enabled` feature flag: the LLM facade can be deployed without Agent Workspace, whereas Agent Workspace currently requires the LLM facade. The `llm-services` chart owns a nested **optional** `litellm` subchart. With bundled LiteLLM enabled, the facade derives its backend URL and master-key Secret from the subchart. With bundled LiteLLM disabled, the operator supplies an external `backend.url` and `backend.masterKeySecret.{name,key}`; configuration must not silently fall back to an unusable backend.
+
+The MVP is deliberately admin-only at the feature/model gate; **the generic per-model authorization resource/action contract below remains proposed in #3838**, not a feature already completed by the initial admin-only implementation. Do not conflate the two.
+
 ## Minimal LiteLLM deployment
 
 Initial deployment intentionally avoids LiteLLM persistence/control-plane features:
@@ -107,7 +113,7 @@ The public Magda mount should be independent of Agent Manager, for example:
 /api/v0/llm/v1/messages
 ```
 
-#3838 must settle which surfaces are actually promised and how streaming/errors/unsupported fields are handled.
+#3850 currently exposes an initial authenticated streaming-compatible OpenAI facade with Chat Completions and Responses support; the permanent generic model-level authorization and exact advertised API contract remain #3838 decisions. Do not claim full provider/protocol parity from the MVP subset.
 
 ## DSH consumption
 
