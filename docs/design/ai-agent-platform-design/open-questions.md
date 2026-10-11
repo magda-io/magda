@@ -50,7 +50,7 @@ See [network-security.md](./network-security.md), [deployment.md](./deployment.m
 
 ## Skill system — agreed decisions and implementation checks
 
-The storage/auth/skill trust model is specified in [skills.md](./skills.md): existing default storage bucket accessed via the trusted Agent Services MinIO client; one ZIP object per current published skill under `agent-services/skills/`; runtime-bundled/system/user categories; admin-owned shared system publication; Markdown-only user bundles; all execution as current user; explicit `mgd agent-skill` draft/review/publish and manual sync after claim/bootstrap. No new bucket, separate Registry index, Agent Manager skill database or mandatory application-level versions. These are **design decisions for implementation**, not shipped by draft MVP #3850.
+The storage/auth/skill trust model is specified in [skills.md](./skills.md): existing default storage bucket accessed via the trusted Agent Services MinIO client; one ZIP object per current published skill under `agent-services/skills/`; runtime-bundled/system/user categories; admin-owned shared system publication; Markdown-only user bundles; all execution as current user; explicit `mgd agent-skill` draft/review/publish and manual sync after claim/bootstrap. No new bucket, separate Registry index, Agent Manager skill database or mandatory application-level versions. These are **agreed design decisions for the expanded MVP**, to be implemented and tested incrementally in draft PR #3850 under #3854 (backend), #3855 (CLI/runtime), and #3856 (capture); they are **not yet shipped**.
 
 Remaining implementation-level verification: MinIO gateway/default-bucket compatibility, ETag/overwrite conflicts, ZIP decompression validation, strict server-derived ownership and skill-name collision handling; safe sync of unpublished local changes; DSH skill discovery in the pinned runtime; readable current-PVC session history for `capture-workflow`; and no inadvertent publication of local system-skill modifications. The separate Storage API owner-metadata mismatch is tracked in [#3853](https://github.com/magda-io/magda/issues/3853).
 
@@ -58,7 +58,7 @@ Remaining implementation-level verification: MinIO gateway/default-bucket compat
 
 - optional structured DSH approval integration for mutating `mgd` operations;
 - provider-specific **functional** network policy enforcement and Cloud IAM qualification (GKE security matrix above);
-- implement and qualify the **agreed** [three-category skill storage, permissions, CLI and capture workflow](./skills.md); no separate Agent Manager DB, Registry index or mandatory skill version history is required;
+- implement and qualify the **agreed** [three-category skill storage, permissions, CLI and capture workflow](./skills.md) **inside expanded draft PR #3850 in stages #3854–#3856**; no separate Agent Manager DB, Registry index or mandatory skill version history is required;
 - full web/product UX;
 - remaining provider/ingress **security** qualification, including #3846 (DSH CSP), #3847 (nginx WebSocket timeouts), #3848 / PR #3852 (GKE transport evidence) and #3851 (future native GCE L7 study);
 - observability/audit;
