@@ -87,7 +87,10 @@ const WorkspaceInformation: FunctionComponent = () => (
             working files and analysis tools.
         </p>
         <ul>
-            <li>Only one current Agent Workspace is supported per user.</li>
+            <li>
+                One current Agent Workspace is supported per user. You can keep
+                multiple DSH Sessions in its shared files and tools.
+            </li>
             <li>
                 The agent acts with your Magda authority. Normal Magda
                 authorization rules still apply to everything it does.
@@ -265,7 +268,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
 
         if (isAgentWorkspaceRunning(status.state)) {
             return (
-                <div className="agent-workspace-ready dsh-navigation-hidden">
+                <div className="agent-workspace-ready">
                     <div className="agent-workspace-toolbar">
                         <div className="agent-workspace-toolbar-heading">
                             <strong>Agent Workspace</strong>

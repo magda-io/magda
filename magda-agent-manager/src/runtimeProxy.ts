@@ -7,6 +7,7 @@ import {
     authenticateAdminToken
 } from "./auth.js";
 import { ManagerConfig, SandboxClaim } from "./types.js";
+import type { ActivitySnapshotToken } from "./webSocketActivity.js";
 import {
     DshSessionStatusFrameParser,
     ForegroundActivityTracker,
@@ -316,36 +317,48 @@ export class RuntimeProxy {
     private observeSessionList(
         userId: string,
         path: string,
-        response: IncomingMessage
+        response: IncomingMessage,
+        snapshotToken: ActivitySnapshotToken | undefined
     ) {
         if (path.split("?", 1)[0] !== "/api/session/list") return;
         const chunks: Buffer[] = [];
         let size = 0;
-        let valid = true;
+        let settled = false;
+        const cancel = () => {
+            if (settled) return;
+            settled = true;
+            this.foregroundActivity.cancelSnapshot(userId, snapshotToken);
+        };
         response.on("data", (chunk: Buffer) => {
-            if (!valid) return;
+            if (settled) return;
             size += chunk.length;
             if (size > 1024 * 1024) {
-                valid = false;
                 chunks.length = 0;
+                cancel();
                 return;
             }
             chunks.push(Buffer.from(chunk));
         });
         response.once("end", () => {
-            if (!valid) return;
+            if (settled) return;
             try {
                 const value = JSON.parse(
                     Buffer.concat(chunks).toString("utf8")
                 );
                 this.foregroundActivity.replaceSnapshot(
                     userId,
-                    runningSessionIds(value)
+                    runningSessionIds(value),
+                    snapshotToken
                 );
+                settled = true;
             } catch {
                 // DSH owns response validation; observation must not affect it.
+                cancel();
             }
         });
+        response.once("aborted", cancel);
+        response.once("error", cancel);
+        response.once("close", cancel);
     }
 
     private forwardHttp(
@@ -354,8 +367,11 @@ export class RuntimeProxy {
         auth: Awaited<ReturnType<RuntimeProxy["authenticate"]>>,
         body: Buffer,
         cookie: string,
+        snapshotToken: ActivitySnapshotToken | undefined,
         attempt = 0
     ) {
+        const cancelSnapshot = () =>
+            this.foregroundActivity.cancelSnapshot(auth.user.id, snapshotToken);
         const upstream = http.request(
             {
                 host: auth.target.host,
@@ -376,8 +392,17 @@ export class RuntimeProxy {
                             auth.target,
                             true
                         );
-                        this.forwardHttp(req, res, auth, body, freshCookie, 1);
+                        this.forwardHttp(
+                            req,
+                            res,
+                            auth,
+                            body,
+                            freshCookie,
+                            snapshotToken,
+                            1
+                        );
                     } catch (error) {
+                        cancelSnapshot();
                         if (!res.headersSent) res.writeHead(502);
                         res.end("Agent runtime authentication failed");
                     }
@@ -388,8 +413,11 @@ export class RuntimeProxy {
                     this.observeSessionList(
                         auth.user.id,
                         auth.path,
-                        upstreamResponse
+                        upstreamResponse,
+                        snapshotToken
                     );
+                } else {
+                    cancelSnapshot();
                 }
                 const headers = { ...upstreamResponse.headers };
                 delete headers["set-cookie"];
@@ -401,9 +429,13 @@ export class RuntimeProxy {
             upstream.destroy(new Error("Agent runtime request timed out"))
         );
         res.once("close", () => {
-            if (!res.writableEnded) upstream.destroy();
+            if (!res.writableEnded) {
+                cancelSnapshot();
+                upstream.destroy();
+            }
         });
         upstream.on("error", (error) => {
+            cancelSnapshot();
             console.error("Agent runtime HTTP proxy error", error);
             if (!res.headersSent) res.writeHead(502);
             res.end("Agent runtime unavailable");
@@ -412,20 +444,33 @@ export class RuntimeProxy {
     }
 
     async handleHttp(req: IncomingMessage, res: ServerResponse) {
+        let snapshotUserId: string | undefined;
+        let snapshotToken: ActivitySnapshotToken | undefined;
         try {
             const auth = await this.authenticate(req);
             const meaningful = isMeaningfulRuntimeRequest(
                 req.method,
                 auth.path
             );
+            snapshotUserId = auth.user.id;
+            snapshotToken =
+                auth.path.split("?", 1)[0] === "/api/session/list"
+                    ? this.foregroundActivity.beginSnapshot(auth.user.id)
+                    : undefined;
             const body = await this.readBody(req);
             // Persist the lease before DSH begins work. Otherwise KAS can
             // enforce the previous shutdownTime while a near-expiry mutation is
             // still in flight. If persistence fails, reject without executing.
             if (meaningful) await this.touchActivity(auth.user.id);
             const cookie = await this.cookie(auth.target);
-            this.forwardHttp(req, res, auth, body, cookie);
+            this.forwardHttp(req, res, auth, body, cookie, snapshotToken);
         } catch (error) {
+            if (snapshotUserId) {
+                this.foregroundActivity.cancelSnapshot(
+                    snapshotUserId,
+                    snapshotToken
+                );
+            }
             const proxyError = error as AgentAuthorizationError;
             const status = proxyError.status || 502;
             res.writeHead(status, { "content-type": "application/json" });

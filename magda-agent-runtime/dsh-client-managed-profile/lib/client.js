@@ -10,13 +10,41 @@
             document.head.appendChild(style);
         }
         style.textContent = `
-        /* A managed Magda deployment owns the only workspace directory. */
-        button[aria-label="Choose workspace"] {
+        /* Magda owns the only filesystem workspace. Keep DSH's native Session
+           navigation and Search, but hide controls that create or regroup
+           filesystem workspaces. */
+        button[aria-label="Choose workspace"],
+        button[aria-label="Add workspace"],
+        button[aria-label="View options"] {
             display: none !important;
+        }
+
+        .magda-dsh-brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            border-radius: 6px;
+            background: #30384d;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .magda-dsh-brand-name {
+            overflow: hidden;
+            color: var(--dsw-alias-label-primary);
+            font-weight: 600;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     `;
 
-        const applyBrand = () => {
+        // The pinned DSH release does not expose the new-session hero through a
+        // branding slot. Keep this narrowly scoped replacement while using the
+        // native sidebar branding slots below.
+        const applyHeroBrand = () => {
             for (const element of document.querySelectorAll("span")) {
                 if (
                     element.childNodes.length !== 1 ||
@@ -39,8 +67,8 @@
             }
         };
 
-        applyBrand();
-        const observer = new MutationObserver(applyBrand);
+        applyHeroBrand();
+        const observer = new MutationObserver(applyHeroBrand);
         observer.observe(document.body, {
             childList: true,
             subtree: true,
@@ -57,20 +85,57 @@
 
     window.__ModuleLoader__.load({
         id: "@magda/dsh-client-managed-profile",
-        factory() {
+        factory(require) {
+            const { jsx } = require("react/jsx-runtime");
             const hiddenCommands = new Set(["permission"]);
+            const EmptySlot = () => null;
+            const AgentWorkspaceBrandMark = ({ size }) =>
+                jsx("span", {
+                    "aria-hidden": true,
+                    className: "magda-dsh-brand-mark",
+                    style: { width: size, height: size },
+                    children: "M"
+                });
+            const AgentWorkspaceBrandName = () =>
+                jsx("span", {
+                    className: "magda-dsh-brand-name",
+                    children: "Agent Workspace"
+                });
 
             return {
-                inject: ["commandUi"],
+                inject: ["commandUi", "slots"],
 
                 /**
                  * Removes host commands that remain necessary for enforcement but
                  * must not be selectable in Magda's deployment-managed composer UI.
+                 * It also composes the supported DSH sidebar slots instead of
+                 * replacing the sidebar or disabling the Settings service.
                  */
                 apply(ctx) {
                     ctx.effect(
                         () => installManagedChrome(),
                         "managed profile: Magda chrome"
+                    );
+
+                    ctx.slots.inject("sidebar.brand.mark", () =>
+                        ctx.slots.register(
+                            { name: "sidebar.brand.mark", priority: -100 },
+                            AgentWorkspaceBrandMark
+                        )
+                    );
+                    ctx.slots.inject("sidebar.brand.name", () =>
+                        ctx.slots.register(
+                            { name: "sidebar.brand.name", priority: -100 },
+                            AgentWorkspaceBrandName
+                        )
+                    );
+                    // Hide only the Settings trigger. The DSH Settings service and
+                    // its host-side enforcement remain mounted.
+                    ctx.slots.inject("sidebar.settings", () =>
+                        ctx.slots.register(
+                            { name: "sidebar.settings", priority: -100 },
+                            EmptySlot
+                        )
                     );
 
                     ctx.inject(["commandUi"], (scope) => {

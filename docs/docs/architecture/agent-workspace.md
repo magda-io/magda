@@ -23,8 +23,8 @@ credentials remain in the Magda namespace.
 
 - **Magda Web** exposes the feature-flagged, admin-only Settings route and renders
   lifecycle state. When ready, it embeds the runtime through
-  `/api/v0/agent/runtime/`. The managed embedding permanently crops DSH's own
-  left navigation so the conversation uses the available width.
+  `/api/v0/agent/runtime/` with DSH's native responsive sidebar, session history,
+  Search, and collapse/expand navigation.
 - **Agent Manager** is stateless. It authenticates the Gateway session, checks
   current role membership through `whoami`, manages Kubernetes resources,
   bootstraps the runtime, proxies DSH HTTP/WebSocket traffic, and reconciles idle
@@ -70,6 +70,24 @@ Idle `READY` workspaces are suspended even if an otherwise idle runtime WebSocke
 remains open. Resume reuses the PVC and Sandbox and renews the deadline. Reset, explicit deletion, and logout revoke the key,
 close sockets, delete the claim and storage, and remove all DSH sessions and
 workspace files. Logout waits for cleanup before destroying the Magda session.
+Any destructive cleanup that is only partially completed remains durably
+`DELETING`; reconciliation retries key revocation and claim/PVC deletion after a
+dependency recovers rather than stranding the workspace in `FAILED`. Reset also
+persists its replacement intent, so successful retry cleanup provisions the fresh
+workspace requested by the user. Reconciliation is single-flight globally and
+shares the per-user lifecycle lock with UI actions; Terminate durably clears the
+intent and cancels any in-flight replacement before it can be reprovisioned.
+
+### One workspace, multiple sessions
+
+A Magda user has one current SandboxClaim, PVC, filesystem workspace, and managed
+API key per Magda installation. That Sandbox can hold multiple native DSH
+**Sessions**. New Session creates another conversation in the existing
+`/data/workspace`; it does not allocate another Sandbox, PVC, or key. The DSH
+sidebar provides creation, history, rename, Search, switching, and reopening.
+Sessions and files survive browser refresh, Pod replacement, and suspend/resume
+because DSH state and `/data/workspace` share the PVC. Reset, Terminate, and
+logout remove all sessions and files with that single workspace.
 
 ## Authentication and trust boundaries
 
@@ -100,12 +118,17 @@ reasoning configuration. The managed profile therefore:
 - hides provider/model/plugin configuration pages;
 - removes the Model, Permission, and Feedback commands from the composer menu;
 - disables persistent `danger-full-access` selection;
-- permanently hides DSH's left navigation in the Magda iframe; and
-- keeps workspace documents rooted at `/data/workspace`.
+- keeps DSH's native sidebar, New Session, session history/switching, Search, and
+  collapse/expand behavior;
+- brands the sidebar **Agent Workspace** through DSH's `sidebar.brand.mark` and
+  `sidebar.brand.name` slots;
+- hides Plugins, the Settings trigger, Workspace View Options, Add Workspace,
+  and the redundant new-session workspace chooser; and
+- keeps every session rooted in the one managed `/data/workspace` filesystem.
 
-The underlying permission service remains mounted even though its selector is
-hidden. This preserves enforcement while removing the interactive selector from
-the managed UI. DSH registers `/permission` from that same core service, so the
+The Settings and permission services remain mounted even though their buttons or
+selectors are hidden. This preserves enforcement while removing the interactive
+selector from the managed UI. DSH registers `/permission` from that same core service, so the
 runtime includes a small client-only managed-profile plugin that filters the
 command from composer candidates without weakening host-side enforcement.
 
@@ -147,9 +170,19 @@ renews activity at a bounded interval, including turns longer than the
 30-minute suspension threshold. Per-socket ownership prevents one of several
 browser sockets from clearing another, a short disconnect grace covers transport
 reconnect, and the authoritative `session/list` running snapshot restores the
-baseline after reconnect. Snapshot ownership expires after the last browser
-transport disconnects, so a missed settlement cannot renew an abandoned
-workspace forever. Page loads, other list/catalog/status RPCs,
+baseline after reconnect. Each request is tagged with its browser-connection
+epoch and a monotonic sequence. A snapshot is accepted only while that exact
+epoch is active and it is newer than the last successfully applied snapshot.
+An older successful response is buffered while any newer request remains pending:
+a newer success supersedes it, while failure, malformed data, oversize or abort
+cancels the newer token and releases the newest buffered valid response. Zero/live
+transport boundaries and
+Remote status events invalidate older requests, while unrelated secondary-socket
+churn does not discard a surviving baseline. Consequently,
+out-of-order responses and responses arriving after disconnect/reconnect cannot
+create or resurrect foreground activity. Existing snapshot ownership expires
+after the last browser transport disconnects, so a missed settlement cannot
+renew an abandoned workspace forever. Page loads, other list/catalog/status RPCs,
 unauthenticated or non-allowlisted requests, oversized bodies rejected by the
 proxy, lifecycle polling, merely opening a WebSocket, ordinary Remote-stream
 traffic, and WebSocket heartbeat/ping-pong frames do not renew the deadline.

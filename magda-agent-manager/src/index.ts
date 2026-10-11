@@ -93,12 +93,19 @@ server.on("upgrade", (req, socket, head) => {
     }
     socket.destroy();
 });
-const reconcile = () =>
-    manager
+let reconciliation: Promise<void> | undefined;
+const reconcile = () => {
+    if (reconciliation) return reconciliation;
+    reconciliation = manager
         .reconcileIdleWorkspaces()
         .catch((error) =>
             console.error("Agent Workspace reconciliation failed", error)
-        );
+        )
+        .finally(() => {
+            reconciliation = undefined;
+        });
+    return reconciliation;
+};
 void reconcile();
 const reconcileTimer = setInterval(
     reconcile,

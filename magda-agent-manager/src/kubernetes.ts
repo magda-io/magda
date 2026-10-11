@@ -22,6 +22,8 @@ export const ERROR_ANNOTATION = "agent.magda.io/bootstrap-error";
 export const UPDATED_ANNOTATION = "agent.magda.io/updated-at";
 export const KEY_ID_ANNOTATION = "agent.magda.io/api-key-id";
 export const LAST_ACTIVITY_ANNOTATION = "agent.magda.io/last-activity";
+export const RESET_AFTER_DELETE_ANNOTATION =
+    "agent.magda.io/reset-after-delete";
 
 const mergePatchOptions = {
     middleware: [

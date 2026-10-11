@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { runInNewContext } from "node:vm";
 
 const dockerfile = await readFile(
     new URL("Dockerfile", import.meta.url),
@@ -65,13 +66,119 @@ assert.match(
     /- id: ui-message-feedback\n\s+disabled: true/,
     "The managed UI must not expose DSH feedback collection"
 );
-assert.match(
-    managedClient,
-    /button\[aria-label="Choose workspace"\]/,
-    "The managed UI must hide the redundant workspace selector"
-);
+for (const hiddenWorkspaceControl of [
+    "Choose workspace",
+    "Add workspace",
+    "View options"
+]) {
+    assert.match(
+        managedClient,
+        new RegExp(`button\\[aria-label="${hiddenWorkspaceControl}"\\]`),
+        `The managed UI must hide ${hiddenWorkspaceControl}`
+    );
+}
 assert.match(
     managedClient,
     /element\.textContent = "Agent Workspace"/,
-    "The managed UI must replace the DSH hero branding"
+    "The managed UI must preserve the Agent Workspace hero branding"
+);
+let loadedManagedModule;
+runInNewContext(managedClient, {
+    window: {
+        __ModuleLoader__: {
+            load(value) {
+                loadedManagedModule = value;
+            }
+        }
+    }
+});
+assert.equal(
+    loadedManagedModule?.id,
+    "@magda/dsh-client-managed-profile",
+    "The managed client module must register with DSH"
+);
+const requiredModules = [];
+const managedPlugin = loadedManagedModule.factory((id) => {
+    requiredModules.push(id);
+    if (id !== "react/jsx-runtime") {
+        throw new Error(`Unexpected managed client dependency: ${id}`);
+    }
+    return {
+        jsx: (type, props) => ({ type, props })
+    };
+});
+assert.deepEqual(requiredModules, ["react/jsx-runtime"]);
+assert.deepEqual(Array.from(managedPlugin.inject), ["commandUi", "slots"]);
+
+const slotInjections = [];
+const slotRegistrations = [];
+const serviceInjections = [];
+managedPlugin.apply({
+    effect(_callback, label) {
+        assert.equal(label, "managed profile: Magda chrome");
+        return () => undefined;
+    },
+    slots: {
+        inject(name, register) {
+            slotInjections.push(name);
+            register();
+            return () => undefined;
+        },
+        register(options, component) {
+            slotRegistrations.push({ options, component });
+            return () => undefined;
+        }
+    },
+    inject(dependencies) {
+        serviceInjections.push(Array.from(dependencies));
+        return () => undefined;
+    }
+});
+assert.deepEqual(slotInjections, [
+    "sidebar.brand.mark",
+    "sidebar.brand.name",
+    "sidebar.settings"
+]);
+assert.deepEqual(
+    slotRegistrations.map(({ options }) => ({ ...options })),
+    [
+        { name: "sidebar.brand.mark", priority: -100 },
+        { name: "sidebar.brand.name", priority: -100 },
+        { name: "sidebar.settings", priority: -100 }
+    ]
+);
+assert.deepEqual(serviceInjections, [["commandUi"]]);
+const [brandMark, brandName, settings] = slotRegistrations.map(
+    ({ component }) => component
+);
+assert.deepEqual(JSON.parse(JSON.stringify(brandMark({ size: 24 }))), {
+    type: "span",
+    props: {
+        "aria-hidden": true,
+        className: "magda-dsh-brand-mark",
+        style: { width: 24, height: 24 },
+        children: "M"
+    }
+});
+assert.deepEqual(JSON.parse(JSON.stringify(brandName())), {
+    type: "span",
+    props: {
+        className: "magda-dsh-brand-name",
+        children: "Agent Workspace"
+    }
+});
+assert.equal(
+    settings(),
+    null,
+    "The managed Settings sidebar slot must be empty"
+);
+assert.doesNotMatch(
+    cordisPatch,
+    /- id: ui-settings\n\s+disabled: true/,
+    "The underlying DSH Settings service must remain enabled"
+);
+assert.match(
+    cordisPatch,
+    /- id: ui-plugin-manager\n\s+disabled: true/,
+    "The managed UI must keep the Plugins control hidden"
 );

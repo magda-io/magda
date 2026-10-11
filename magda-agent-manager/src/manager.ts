@@ -4,6 +4,7 @@ import {
     ERROR_ANNOTATION,
     KEY_ID_ANNOTATION,
     LAST_ACTIVITY_ANNOTATION,
+    RESET_AFTER_DELETE_ANNOTATION,
     STATE_ANNOTATION,
     USER_LABEL
 } from "./kubernetes.js";
@@ -16,6 +17,7 @@ export class AgentManager {
         { promise: Promise<void>; state: WorkspaceStatus["state"] }
     >();
     private readonly activityRenewals = new Map<string, Promise<void>>();
+    private readonly pendingDeletes = new Map<string, number>();
 
     constructor(
         private readonly config: ManagerConfig,
@@ -42,12 +44,19 @@ export class AgentManager {
     private runOnce(
         userId: string,
         state: WorkspaceStatus["state"],
-        operation: () => Promise<void>
+        operation: (
+            setState: (state: WorkspaceStatus["state"]) => void
+        ) => Promise<void>
     ) {
         const running = this.operations.get(userId);
         if (running) return running.promise;
         let promise: Promise<void>;
-        promise = operation()
+        const setState = (nextState: WorkspaceStatus["state"]) => {
+            const current = this.operations.get(userId);
+            if (current?.promise === promise) current.state = nextState;
+        };
+        promise = Promise.resolve()
+            .then(() => operation(setState))
             .catch((error) => {
                 console.error(
                     `Agent Workspace operation failed for ${userId}`,
@@ -66,12 +75,18 @@ export class AgentManager {
     private queueOperation(
         userId: string,
         state: WorkspaceStatus["state"],
-        operation: () => Promise<void>
+        operation: (
+            setState: (state: WorkspaceStatus["state"]) => void
+        ) => Promise<void>
     ) {
         const prior = this.operations.get(userId)?.promise || Promise.resolve();
         let promise: Promise<void>;
+        const setState = (nextState: WorkspaceStatus["state"]) => {
+            const current = this.operations.get(userId);
+            if (current?.promise === promise) current.state = nextState;
+        };
         promise = prior
-            .then(operation)
+            .then(() => operation(setState))
             .catch((error) => {
                 console.error(
                     `Agent Workspace queued operation failed for ${userId}`,
@@ -85,6 +100,19 @@ export class AgentManager {
             });
         this.operations.set(userId, { promise, state });
         return promise;
+    }
+
+    private addPendingDelete(userId: string) {
+        this.pendingDeletes.set(
+            userId,
+            (this.pendingDeletes.get(userId) || 0) + 1
+        );
+    }
+
+    private removePendingDelete(userId: string) {
+        const remaining = (this.pendingDeletes.get(userId) || 1) - 1;
+        if (remaining > 0) this.pendingDeletes.set(userId, remaining);
+        else this.pendingDeletes.delete(userId);
     }
 
     private bootstrapPayload(userId: string, key: { id: string; key: string }) {
@@ -160,7 +188,7 @@ export class AgentManager {
                 // A partially bootstrapped PVC may already contain the raw key.
                 // Keep DELETING on cleanup failure so reconciliation retries
                 // revocation before removing the claim and owner-controlled PVC.
-                await this.destroy(userId, true).catch((cleanupError) =>
+                await this.destroy(userId).catch((cleanupError) =>
                     console.error(
                         "Could not clean up failed Agent Workspace provisioning",
                         cleanupError
@@ -196,7 +224,7 @@ export class AgentManager {
         throw new Error("Timed out deleting the previous Agent Workspace");
     }
 
-    private async destroy(userId: string, retryOnFailure = false) {
+    private async destroy(userId: string) {
         await this.proxy.closeUserSockets(userId);
         await this.kubernetes
             .patchClaimAnnotations(userId, {
@@ -214,9 +242,10 @@ export class AgentManager {
             if (await this.kubernetes.getClaim(userId).catch(() => undefined)) {
                 await this.kubernetes
                     .patchClaimAnnotations(userId, {
-                        [STATE_ANNOTATION]: retryOnFailure
-                            ? "DELETING"
-                            : "FAILED",
+                        // Any partial destructive operation must remain
+                        // retryable. FAILED is reserved for non-destructive
+                        // lifecycle failures; reconciliation owns DELETING.
+                        [STATE_ANNOTATION]: "DELETING",
                         [ERROR_ANNOTATION]:
                             error instanceof Error
                                 ? error.message.slice(0, 1000)
@@ -229,29 +258,70 @@ export class AgentManager {
     }
 
     async delete(userId: string, wait = false): Promise<WorkspaceStatus> {
-        const current = await this.status(userId);
-        if (current.state === "ABSENT") return current;
-        const operation = this.queueOperation(userId, "DELETING", () =>
-            this.destroy(userId)
-        );
-        if (!wait) {
-            return { state: "DELETING", updatedAt: new Date().toISOString() };
+        // Record Terminate before the first await so an in-flight Reset recovery
+        // cannot provision after its cleanup completes.
+        this.addPendingDelete(userId);
+        let releaseAfterOperation = false;
+        try {
+            const current = await this.status(userId);
+            if (current.state === "ABSENT") return current;
+            // Persist the override immediately as well, so a Manager restart
+            // cannot recover an older Reset intent.
+            try {
+                await this.kubernetes.patchClaimAnnotations(userId, {
+                    [RESET_AFTER_DELETE_ANNOTATION]: null
+                });
+            } catch (error) {
+                // Ignore only a verified concurrent deletion. Any other failure
+                // must reject Terminate rather than acknowledge an override that
+                // would be lost across a Manager restart.
+                let claim;
+                try {
+                    claim = await this.kubernetes.getClaim(userId);
+                } catch {
+                    throw error;
+                }
+                if (claim) throw error;
+            }
+            const operation = this.queueOperation(
+                userId,
+                "DELETING",
+                async () => {
+                    if (!(await this.kubernetes.getClaim(userId))) return;
+                    await this.destroy(userId);
+                }
+            );
+            releaseAfterOperation = true;
+            void operation.finally(() => this.removePendingDelete(userId));
+            if (!wait) {
+                return {
+                    state: "DELETING",
+                    updatedAt: new Date().toISOString()
+                };
+            }
+            await operation;
+            const completed = await this.status(userId);
+            if (completed.state !== "ABSENT") {
+                throw new Error("Agent Workspace cleanup did not complete");
+            }
+            return completed;
+        } finally {
+            if (!releaseAfterOperation) this.removePendingDelete(userId);
         }
-        await operation;
-        const completed = await this.status(userId);
-        if (completed.state !== "ABSENT") {
-            throw new Error("Agent Workspace cleanup did not complete");
-        }
-        return completed;
     }
 
     async reset(userId: string): Promise<WorkspaceStatus> {
-        this.queueOperation(userId, "DELETING", async () => {
+        this.queueOperation(userId, "DELETING", async (setState) => {
             if ((await this.kubernetes.status(userId)).state !== "ABSENT") {
+                // Persist the Reset intent before destructive cleanup. If key
+                // revocation or claim deletion fails, reconciliation can finish
+                // cleanup and still provision the requested replacement.
+                await this.kubernetes.patchClaimAnnotations(userId, {
+                    [RESET_AFTER_DELETE_ANNOTATION]: "true"
+                });
                 await this.destroy(userId);
             }
-            const running = this.operations.get(userId);
-            if (running) running.state = "ALLOCATING";
+            setState("ALLOCATING");
             await this.provision(userId);
         });
         return { state: "DELETING", updatedAt: new Date().toISOString() };
@@ -342,62 +412,94 @@ export class AgentManager {
 
     private async recoverTransientClaim(
         userId: string,
-        state: WorkspaceStatus["state"],
-        sandbox: string | undefined
+        state: WorkspaceStatus["state"]
     ): Promise<boolean> {
-        if (state === "DELETING") {
-            await this.destroy(userId, true);
-            return true;
+        if (
+            state !== "DELETING" &&
+            state !== "ALLOCATING" &&
+            state !== "BOOTSTRAPPING" &&
+            state !== "SUSPENDING" &&
+            state !== "RESUMING"
+        ) {
+            return false;
         }
-        if (state === "ALLOCATING" || state === "BOOTSTRAPPING") {
-            // The raw managed key exists only in the in-memory bootstrap payload.
-            // Destroy the partial workspace; if revocation fails, destroy keeps
-            // DELETING so the next reconciliation retries without losing key
-            // identity or leaving a credential-bearing PVC reachable.
-            await this.destroy(userId, true);
-            return true;
-        }
-        if (state !== "SUSPENDING" && state !== "RESUMING") return false;
-        if (!sandbox) {
-            await this.kubernetes.patchClaimAnnotations(userId, {
-                [STATE_ANNOTATION]: "FAILED",
-                [ERROR_ANNOTATION]:
-                    "Agent Manager restarted during a lifecycle transition and the runtime is missing"
-            });
-            return true;
-        }
-        try {
-            if (state === "SUSPENDING") {
-                await this.kubernetes.setSandboxOperatingMode(
-                    sandbox,
-                    "Suspended"
-                );
-                await this.kubernetes.patchClaimAnnotations(userId, {
-                    [STATE_ANNOTATION]: "SUSPENDED",
-                    [ERROR_ANNOTATION]: null
-                });
-            } else {
-                await this.kubernetes.setSandboxOperatingMode(
-                    sandbox,
-                    "Running"
-                );
-                await this.kubernetes.waitForPodReady(sandbox);
-                await this.kubernetes.patchClaimAnnotations(userId, {
-                    [STATE_ANNOTATION]: "READY",
-                    [ERROR_ANNOTATION]: null
-                });
-                await this.recordMeaningfulActivity(userId);
+
+        // Reconciliation shares the same per-user single-flight operation as UI
+        // actions. Re-read the claim inside the lock because this pass may have
+        // been queued from a stale list result.
+        await this.runOnce(userId, state, async (setState) => {
+            const claim = await this.kubernetes.getClaim(userId);
+            if (!claim) return;
+            const currentState = claim.metadata.annotations?.[
+                STATE_ANNOTATION
+            ] as WorkspaceStatus["state"] | undefined;
+            const sandbox = claim.status?.sandbox?.name;
+
+            if (currentState === "DELETING") {
+                const resetAfterDelete =
+                    claim.metadata.annotations?.[
+                        RESET_AFTER_DELETE_ANNOTATION
+                    ] === "true";
+                await this.destroy(userId);
+                if (resetAfterDelete && !this.pendingDeletes.has(userId)) {
+                    setState("ALLOCATING");
+                    await this.provision(userId);
+                }
+                return;
             }
-        } catch (error) {
-            await this.kubernetes.patchClaimAnnotations(userId, {
-                [STATE_ANNOTATION]: "FAILED",
-                [ERROR_ANNOTATION]:
-                    error instanceof Error
-                        ? error.message.slice(0, 1000)
-                        : "Could not recover Agent Workspace transition"
-            });
-            throw error;
-        }
+            if (
+                currentState === "ALLOCATING" ||
+                currentState === "BOOTSTRAPPING"
+            ) {
+                // The raw managed key exists only in the in-memory bootstrap
+                // payload. Cleanup remains DELETING on revocation failure.
+                await this.destroy(userId);
+                return;
+            }
+            if (currentState !== "SUSPENDING" && currentState !== "RESUMING") {
+                return;
+            }
+            if (!sandbox) {
+                await this.kubernetes.patchClaimAnnotations(userId, {
+                    [STATE_ANNOTATION]: "FAILED",
+                    [ERROR_ANNOTATION]:
+                        "Agent Manager restarted during a lifecycle transition and the runtime is missing"
+                });
+                return;
+            }
+            try {
+                if (currentState === "SUSPENDING") {
+                    await this.kubernetes.setSandboxOperatingMode(
+                        sandbox,
+                        "Suspended"
+                    );
+                    await this.kubernetes.patchClaimAnnotations(userId, {
+                        [STATE_ANNOTATION]: "SUSPENDED",
+                        [ERROR_ANNOTATION]: null
+                    });
+                } else {
+                    await this.kubernetes.setSandboxOperatingMode(
+                        sandbox,
+                        "Running"
+                    );
+                    await this.kubernetes.waitForPodReady(sandbox);
+                    await this.kubernetes.patchClaimAnnotations(userId, {
+                        [STATE_ANNOTATION]: "READY",
+                        [ERROR_ANNOTATION]: null
+                    });
+                    await this.recordMeaningfulActivity(userId);
+                }
+            } catch (error) {
+                await this.kubernetes.patchClaimAnnotations(userId, {
+                    [STATE_ANNOTATION]: "FAILED",
+                    [ERROR_ANNOTATION]:
+                        error instanceof Error
+                            ? error.message.slice(0, 1000)
+                            : "Could not recover Agent Workspace transition"
+                });
+                throw error;
+            }
+        });
         return true;
     }
 
@@ -421,8 +523,7 @@ export class AgentManager {
                     state &&
                     (await this.recoverTransientClaim(
                         userId,
-                        state as WorkspaceStatus["state"],
-                        sandbox
+                        state as WorkspaceStatus["state"]
                     ))
                 ) {
                     return;

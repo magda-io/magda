@@ -5,6 +5,11 @@ interface SessionStatusEvent {
 
 type ActivityOwner = string | symbol;
 
+export interface ActivitySnapshotToken {
+    epoch: number;
+    sequence: number;
+}
+
 /**
  * Parses unmasked Host-to-browser WebSocket text frames and reports DSH's
  * `api-session/status` forwarded events. Ping/pong control frames are ignored.
@@ -131,6 +136,14 @@ export class ForegroundActivityTracker {
     >();
     private readonly timers = new Map<string, ReturnType<typeof setInterval>>();
     private readonly connections = new Map<string, Set<ActivityOwner>>();
+    private readonly snapshotEpochs = new Map<string, number>();
+    private readonly snapshotSequences = new Map<string, number>();
+    private readonly pendingSnapshotSequences = new Map<string, Set<number>>();
+    private readonly deferredSnapshots = new Map<
+        string,
+        Map<number, { runningAgentIds: Set<string>; owner: ActivityOwner }>
+    >();
+    private readonly appliedSnapshotSequences = new Map<string, number>();
     private readonly disconnectTimers = new Map<
         ActivityOwner,
         ReturnType<typeof setTimeout>
@@ -143,10 +156,39 @@ export class ForegroundActivityTracker {
         private readonly disconnectGraceMs = Math.max(intervalMs * 2, 30_000)
     ) {}
 
+    private invalidateSnapshots(userId: string) {
+        this.snapshotEpochs.set(
+            userId,
+            (this.snapshotEpochs.get(userId) || 0) + 1
+        );
+        this.snapshotSequences.delete(userId);
+        this.pendingSnapshotSequences.delete(userId);
+        this.deferredSnapshots.delete(userId);
+        this.appliedSnapshotSequences.delete(userId);
+    }
+
+    beginSnapshot(userId: string): ActivitySnapshotToken | undefined {
+        if (!this.connections.get(userId)?.size) return undefined;
+        const sequence = (this.snapshotSequences.get(userId) || 0) + 1;
+        this.snapshotSequences.set(userId, sequence);
+        const pending =
+            this.pendingSnapshotSequences.get(userId) || new Set<number>();
+        pending.add(sequence);
+        this.pendingSnapshotSequences.set(userId, pending);
+        return {
+            epoch: this.snapshotEpochs.get(userId) || 0,
+            sequence
+        };
+    }
+
     connect(userId: string, owner: ActivityOwner) {
         const owners = this.connections.get(userId) || new Set<ActivityOwner>();
+        const wasDisconnected = owners.size === 0;
         owners.add(owner);
         this.connections.set(userId, owners);
+        // A zero-to-live transition starts a new browser transport epoch.
+        // Churn in another socket must not invalidate a surviving baseline.
+        if (wasDisconnected) this.invalidateSnapshots(userId);
     }
 
     status(
@@ -155,6 +197,9 @@ export class ForegroundActivityTracker {
         running: boolean,
         owner: ActivityOwner = "event"
     ) {
+        // Remote status is newer, authoritative evidence. Do not allow an HTTP
+        // snapshot that started before it to overwrite this transition.
+        this.invalidateSnapshots(userId);
         if (!running) {
             // A settled status is authoritative and broadcast to every client.
             this.removeAgent(userId, agentId);
@@ -171,12 +216,85 @@ export class ForegroundActivityTracker {
         this.ensureTimer(userId);
     }
 
+    private completeSnapshot(
+        userId: string,
+        token: ActivitySnapshotToken | undefined
+    ) {
+        if (!token || token.epoch !== (this.snapshotEpochs.get(userId) || 0)) {
+            return false;
+        }
+        const pending = this.pendingSnapshotSequences.get(userId);
+        if (!pending?.delete(token.sequence)) return false;
+        if (!pending.size) this.pendingSnapshotSequences.delete(userId);
+        return true;
+    }
+
+    cancelSnapshot(userId: string, token: ActivitySnapshotToken | undefined) {
+        if (this.completeSnapshot(userId, token)) {
+            this.flushDeferredSnapshots(userId);
+        }
+    }
+
     replaceSnapshot(
         userId: string,
         runningAgentIds: Iterable<string>,
+        token: ActivitySnapshotToken | undefined,
         owner: ActivityOwner = "session-list"
     ) {
-        const running = new Set(runningAgentIds);
+        // An HTTP session/list response is only supporting evidence for the
+        // exact live browser-connection epoch in which its request began.
+        // Successful older responses wait for all newer requests: a newer
+        // success supersedes them, while cancellation releases the newest
+        // remaining successful baseline.
+        if (
+            !token ||
+            !this.completeSnapshot(userId, token) ||
+            !this.connections.get(userId)?.size
+        ) {
+            return;
+        }
+        if (token.sequence > (this.appliedSnapshotSequences.get(userId) || 0)) {
+            const deferred = this.deferredSnapshots.get(userId) || new Map();
+            deferred.set(token.sequence, {
+                runningAgentIds: new Set(runningAgentIds),
+                owner
+            });
+            this.deferredSnapshots.set(userId, deferred);
+        }
+        this.flushDeferredSnapshots(userId);
+    }
+
+    private flushDeferredSnapshots(userId: string) {
+        if (!this.connections.get(userId)?.size) return;
+        const deferred = this.deferredSnapshots.get(userId);
+        if (!deferred?.size) return;
+        const applied = this.appliedSnapshotSequences.get(userId) || 0;
+        for (const sequence of deferred.keys()) {
+            if (sequence <= applied) deferred.delete(sequence);
+        }
+        if (!deferred.size) {
+            this.deferredSnapshots.delete(userId);
+            return;
+        }
+
+        const sequence = Math.max(...deferred.keys());
+        const pending = this.pendingSnapshotSequences.get(userId);
+        if (pending && [...pending].some((value) => value > sequence)) return;
+
+        const snapshot = deferred.get(sequence)!;
+        this.appliedSnapshotSequences.set(userId, sequence);
+        for (const value of deferred.keys()) {
+            if (value <= sequence) deferred.delete(value);
+        }
+        if (!deferred.size) this.deferredSnapshots.delete(userId);
+        this.applySnapshot(userId, snapshot.runningAgentIds, snapshot.owner);
+    }
+
+    private applySnapshot(
+        userId: string,
+        running: Set<string>,
+        owner: ActivityOwner
+    ) {
         const agents = this.agents.get(userId) || new Map();
         for (const [agentId, owners] of agents) {
             if (running.has(agentId)) owners.add(owner);
@@ -204,13 +322,21 @@ export class ForegroundActivityTracker {
 
     disconnect(userId: string, owner: ActivityOwner) {
         if (this.disconnectTimers.has(owner)) return;
+
+        // Stop accepting HTTP snapshots for this transport immediately. The
+        // activity owner itself remains during the grace period to bridge a
+        // normal WebSocket reconnect.
+        const connections = this.connections.get(userId);
+        connections?.delete(owner);
+        if (connections && !connections.size) {
+            this.connections.delete(userId);
+            // Only the live-to-zero boundary invalidates all in-flight
+            // baselines. Other sockets can continue to support snapshots.
+            this.invalidateSnapshots(userId);
+        }
+
         const timer = setTimeout(() => {
             this.disconnectTimers.delete(owner);
-            const connections = this.connections.get(userId);
-            connections?.delete(owner);
-            if (connections && !connections.size)
-                this.connections.delete(userId);
-
             const agents = this.agents.get(userId);
             if (!agents) return;
             const hasConnection = Boolean(this.connections.get(userId)?.size);
@@ -235,6 +361,11 @@ export class ForegroundActivityTracker {
         for (const timer of this.disconnectTimers.values()) clearTimeout(timer);
         this.disconnectTimers.clear();
         this.connections.clear();
+        this.snapshotEpochs.clear();
+        this.snapshotSequences.clear();
+        this.pendingSnapshotSequences.clear();
+        this.deferredSnapshots.clear();
+        this.appliedSnapshotSequences.clear();
         this.agents.clear();
     }
 

@@ -75,6 +75,125 @@ describe("DSH foreground activity", () => {
         ).to.deep.equal(["active"]);
     });
 
+    it("ignores a running snapshot when no browser socket is active", async () => {
+        const renewals: Date[] = [];
+        const tracker = new ForegroundActivityTracker(async (_userId, at) => {
+            renewals.push(at);
+        }, 60 * 60 * 1000);
+
+        tracker.replaceSnapshot(
+            "user-1",
+            ["agent-1"],
+            tracker.beginSnapshot("user-1")
+        );
+        tracker.renewActive("user-1");
+        await Promise.resolve();
+
+        expect(renewals).to.deep.equal([]);
+        tracker.close();
+    });
+
+    it("does not resurrect activity from a response arriving after disconnect", async () => {
+        const renewals: Date[] = [];
+        const socket = Symbol("socket");
+        const tracker = new ForegroundActivityTracker(
+            async (_userId, at) => {
+                renewals.push(at);
+            },
+            60 * 60 * 1000,
+            () => new Date("2026-10-10T12:00:00.000Z"),
+            100
+        );
+
+        tracker.connect("user-1", socket);
+        const token = tracker.beginSnapshot("user-1");
+        tracker.disconnect("user-1", socket);
+        tracker.replaceSnapshot("user-1", ["agent-1"], token);
+        tracker.renewActive("user-1");
+        await Promise.resolve();
+
+        expect(renewals).to.deep.equal([]);
+        tracker.close();
+    });
+
+    it("defers an older response while a newer successful request is pending", async () => {
+        const renewals: Date[] = [];
+        const tracker = new ForegroundActivityTracker(async (_userId, at) => {
+            renewals.push(at);
+        }, 60 * 60 * 1000);
+        tracker.connect("user-1", Symbol("socket"));
+        const older = tracker.beginSnapshot("user-1");
+        const newer = tracker.beginSnapshot("user-1");
+
+        tracker.replaceSnapshot("user-1", ["agent-1"], older);
+        tracker.renewActive("user-1");
+        await Promise.resolve();
+        expect(renewals).to.deep.equal([]);
+
+        tracker.replaceSnapshot("user-1", [], newer);
+        tracker.renewActive("user-1");
+        await Promise.resolve();
+        expect(renewals).to.deep.equal([]);
+        tracker.close();
+    });
+
+    it("accepts an older valid response when a newer request fails", async () => {
+        const renewals: Date[] = [];
+        const tracker = new ForegroundActivityTracker(async (_userId, at) => {
+            renewals.push(at);
+        }, 60 * 60 * 1000);
+        tracker.connect("user-1", Symbol("socket"));
+        const older = tracker.beginSnapshot("user-1");
+        const failedNewer = tracker.beginSnapshot("user-1");
+
+        tracker.replaceSnapshot("user-1", ["agent-1"], older);
+        await Promise.resolve();
+        expect(renewals).to.deep.equal([]);
+
+        tracker.cancelSnapshot("user-1", failedNewer);
+        await Promise.resolve();
+        expect(renewals).to.have.length(1);
+        tracker.close();
+    });
+
+    it("rejects a pre-disconnect snapshot after reconnect", async () => {
+        const renewals: Date[] = [];
+        const tracker = new ForegroundActivityTracker(async (_userId, at) => {
+            renewals.push(at);
+        }, 60 * 60 * 1000);
+        const firstSocket = Symbol("first");
+        tracker.connect("user-1", firstSocket);
+        const stale = tracker.beginSnapshot("user-1");
+        tracker.disconnect("user-1", firstSocket);
+        tracker.connect("user-1", Symbol("reconnected"));
+
+        tracker.replaceSnapshot("user-1", ["agent-1"], stale);
+        tracker.renewActive("user-1");
+        await Promise.resolve();
+
+        expect(renewals).to.deep.equal([]);
+        tracker.close();
+    });
+
+    it("keeps a valid baseline across unrelated socket churn", async () => {
+        const renewals: Date[] = [];
+        const tracker = new ForegroundActivityTracker(async (_userId, at) => {
+            renewals.push(at);
+        }, 60 * 60 * 1000);
+        const survivingSocket = Symbol("surviving");
+        const otherSocket = Symbol("other");
+        tracker.connect("user-1", survivingSocket);
+        const baseline = tracker.beginSnapshot("user-1");
+
+        tracker.connect("user-1", otherSocket);
+        tracker.disconnect("user-1", otherSocket);
+        tracker.replaceSnapshot("user-1", ["agent-1"], baseline);
+        await Promise.resolve();
+
+        expect(renewals).to.have.length(1);
+        tracker.close();
+    });
+
     it("retains activity across duplicate sockets and reconnect baseline", async () => {
         const renewals: Date[] = [];
         const firstSocket = Symbol("first");
@@ -102,14 +221,18 @@ describe("DSH foreground activity", () => {
         tracker.disconnect("user-1", secondSocket);
         const reconnectedSocket = Symbol("reconnected");
         tracker.connect("user-1", reconnectedSocket);
-        tracker.replaceSnapshot("user-1", ["agent-1"]);
+        tracker.replaceSnapshot(
+            "user-1",
+            ["agent-1"],
+            tracker.beginSnapshot("user-1")
+        );
         await new Promise((resolve) => setTimeout(resolve, 5));
         const beforeReconnectRenewal = renewals.length;
         tracker.renewActive("user-1");
         await Promise.resolve();
         expect(renewals).to.have.length(beforeReconnectRenewal + 1);
 
-        tracker.replaceSnapshot("user-1", []);
+        tracker.replaceSnapshot("user-1", [], tracker.beginSnapshot("user-1"));
         const afterSettlement = renewals.length;
         tracker.renewActive("user-1");
         await Promise.resolve();
@@ -129,7 +252,11 @@ describe("DSH foreground activity", () => {
             1
         );
         tracker.connect("user-1", socket);
-        tracker.replaceSnapshot("user-1", ["agent-1"]);
+        tracker.replaceSnapshot(
+            "user-1",
+            ["agent-1"],
+            tracker.beginSnapshot("user-1")
+        );
         tracker.disconnect("user-1", socket);
         await new Promise((resolve) => setTimeout(resolve, 5));
         const afterDisconnect = renewals.length;

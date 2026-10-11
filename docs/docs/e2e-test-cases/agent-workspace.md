@@ -85,17 +85,24 @@ for implementation details, key decisions, configuration, and deployment steps.
 3. Select **Start Agent Workspace**. Observe `ALLOCATING`, then
    `BOOTSTRAPPING`, then the embedded stock DSH UI (`READY`). Kubernetes names
    and addresses must not appear in the UI.
-4. Start a conversation. Confirm new sessions use `workspace-write`, sandbox
-   mode `workspace-write`, and approval policy `ask`; DSH navigation and the
-   Feedback, Permission, and Model composer commands are absent; provider/model/
-   plugin management and persistent danger-full-access are unavailable.
-5. Ask the agent to run `mgd auth status` and a representative read such as a
-   dataset search. The call must go through the external Magda endpoint using
-   the lifecycle-bound user API key.
-6. Ask for a throwaway dataset mutation. The bundled `mgd` guidance must ask for
+4. Confirm the native DSH sidebar is visible and branded **Agent Workspace**.
+   New Session, the session history, Search, and collapse/expand must work.
+   Plugins, Settings, Workspace View Options, Add Workspace, and the redundant
+   workspace chooser must be absent. Feedback, Permission, and Model composer
+   commands, provider/model/plugin management, and persistent
+   `danger-full-access` must remain unavailable.
+5. Create Session A and complete a distinctive prompt. Create Session B and
+   complete a different prompt. Switch between A and B and confirm both
+   histories remain. Rename one Session, search for it using DSH's native
+   Session terminology, and open the search result.
+6. Confirm new sessions use `workspace-write`, sandbox mode `workspace-write`,
+   and approval policy `ask`. Ask the agent to run `mgd auth status` and a
+   representative read such as a dataset search. The call must go through the
+   external Magda endpoint using the lifecycle-bound user API key.
+7. Ask for a throwaway dataset mutation. The bundled `mgd` guidance must ask for
    explicit confirmation before executing it. Confirm, verify the result, then
    clean it up.
-7. Send a tool-using prompt that produces a streamed model response. Confirm a
+8. Send a tool-using prompt that produces a streamed model response. Confirm a
    reasoning model follows `/api/v0/llm/v1/responses` (Chat Completions remains
    available for compatible models) and no provider credential appears in the
    browser or Sandbox.
@@ -104,16 +111,25 @@ for implementation details, key decisions, configuration, and deployment steps.
 
 Run each check while watching the Settings page and Kubernetes resources:
 
-- Refresh the browser and reconnect to the same DSH workspace/session.
-- Delete the DSH Pod. Confirm DSH restarts against the same PVC and the browser
-  reconnects.
+- Record the claim, PVC, and managed-key IDs, create both Sessions, then refresh
+  the browser. Confirm both histories remain available and no resource ID changes.
+- Delete the DSH Pod. Confirm DSH restarts against the same PVC, the browser
+  reconnects, and both Sessions remain available.
 - Patch the bound Sandbox to `spec.operatingMode: Suspended`, confirm the UI
-  offers Resume, resume it, and verify the same files/session remain.
+  offers Resume, resume it, and verify both Sessions and shared files remain on
+  the same PVC.
+- Create another Session and confirm it does not rotate the managed API key or
+  create another SandboxClaim/PVC.
+- Navigate among Sessions, refresh, and collapse/expand the sidebar; all managed
+  hidden controls must remain absent. Verify normal desktop and narrow browser
+  widths without iframe overflow or clipping.
 - Set the selected warm pool to one replica before starting a second test user.
   Confirm claim adoption uses `claim.status.sandbox.name` and the pool creates a
   fresh replacement.
-- Reset the workspace. Confirm the old claim, Sandbox, Pod, Service, PVC and
-  reserved managed API key are deleted; a fresh generation/key/PVC is created.
+- Reset the workspace. Confirm all previous DSH Sessions and files plus the old
+  claim, Sandbox, Pod, Service, PVC and reserved managed API key are deleted; a
+  fresh generation/key/PVC is created. Repeat with Terminate and confirm the
+  workspace reaches `ABSENT` without replacement.
 - Leave a DSH WebSocket open without user input for more than the configured idle
   interval. Confirm protocol ping/pong and an idle Remote stream do not renew
   activity and the workspace suspends.
@@ -127,6 +143,24 @@ Run each check while watching the Settings page and Kubernetes resources:
   extension failure. Confirm the next interaction retries, an older/concurrent
   request cannot shorten the newer deadline, and a partial claim-first update is
   repaired without shortening either value.
+- Inject an Authorization API key-revocation failure during both Terminate and
+  Reset. Confirm the claim remains `DELETING` with key identity intact; restore
+  the dependency and confirm reconciliation completes key, claim, and PVC
+  cleanup. Terminate must finish `ABSENT`; Reset must preserve its intent and
+  provision one fresh replacement workspace. Overlap two reconciliation passes
+  and confirm only one replacement is created; issue Terminate during recovery
+  and confirm the replacement is cancelled and the final state is `ABSENT`.
+  Fail the Reset-intent annotation patch and confirm Terminate is rejected rather
+  than acknowledged; after a successful retry and Manager restart, confirm no
+  replacement is provisioned.
+- Delay a successful `session/list` response until after closing the last DSH
+  WebSocket. Also let an older running response arrive while a newer request is
+  pending, then complete the newer request with an empty response; repeat with
+  the older response arriving after the newer success and after
+  disconnect/reconnect. Confirm none of the stale responses renews activity or
+  prevents idle suspension. Fail a newer request after the older valid response
+  is buffered and confirm that baseline is then accepted. While one valid socket survives, add and remove a second socket and
+  confirm its churn does not discard the valid baseline.
 - Restart Agent Manager after that partial update. Confirm reconciliation uses the
   persisted activity timestamp to repair key expiry. Resume a suspended workspace
   and verify the deadline renews.

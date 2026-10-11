@@ -3,6 +3,7 @@ import { AgentManager } from "../manager.js";
 import {
     KEY_ID_ANNOTATION,
     LAST_ACTIVITY_ANNOTATION,
+    RESET_AFTER_DELETE_ANNOTATION,
     shutdownTimeForActivity,
     STATE_ANNOTATION,
     USER_LABEL
@@ -102,6 +103,8 @@ class FakeKubernetes {
     activityAttempts = 0;
     activityFailures = 0;
     deleted = 0;
+    deleteBarrier: Promise<void> | undefined;
+    annotationFailures = 0;
 
     async listClaims() {
         return this.claims;
@@ -121,6 +124,10 @@ class FakeKubernetes {
         _id: string,
         annotations: Record<string, string | null>
     ) {
+        if (this.annotationFailures > 0) {
+            this.annotationFailures -= 1;
+            throw new Error("Kubernetes annotation patch unavailable");
+        }
         const current = this.claims[0];
         if (!current.metadata.annotations) current.metadata.annotations = {};
         for (const [name, value] of Object.entries(annotations)) {
@@ -160,9 +167,21 @@ class FakeKubernetes {
                 "SUSPENDED";
         }
     }
+    async createClaim() {
+        this.claims = [claim(new Date(), "ALLOCATING")];
+        return this.claims[0];
+    }
+    async waitForClaimReady() {
+        return this.claims[0];
+    }
     async waitForPodReady() {}
+    async containerRestartCount() {
+        return 0;
+    }
+    async bootstrap() {}
     async deleteClaim() {
         this.deleted += 1;
+        await this.deleteBarrier;
         this.claims = [];
     }
 }
@@ -173,6 +192,11 @@ class FakeApiKeys {
     extendFailures = 0;
     deleted = 0;
     deleteError: Error | undefined;
+    rotated = 0;
+    async rotate() {
+        this.rotated += 1;
+        return { id: `key-${this.rotated + 1}`, key: "secret" };
+    }
     async extend(_userId: string, _keyId: string, expiry: Date) {
         this.extendAttempts.push(expiry);
         if (this.extendFailures > 0) {
@@ -541,13 +565,193 @@ describe("Agent Workspace inactivity lifecycle", () => {
         }
     });
 
+    it("keeps failed Terminate and Reset cleanup retryable", async () => {
+        for (const action of ["terminate", "reset"] as const) {
+            const kubernetes = new FakeKubernetes();
+            kubernetes.claims = [claim(new Date())];
+            if (action === "terminate") {
+                kubernetes.claims[0].metadata.annotations![
+                    RESET_AFTER_DELETE_ANNOTATION
+                ] = "true";
+            }
+            const keys = new FakeApiKeys();
+            keys.deleteError = new Error("authorization API unavailable");
+            const instance = manager(kubernetes, keys).manager;
+            const originalError = console.error;
+            console.error = () => undefined;
+            try {
+                if (action === "terminate") {
+                    await instance.delete(userId);
+                } else {
+                    await instance.reset(userId);
+                }
+                for (let i = 0; i < 20 && !keys.deleted; i += 1) {
+                    await new Promise((resolve) => setImmediate(resolve));
+                }
+                await new Promise((resolve) => setImmediate(resolve));
+            } finally {
+                console.error = originalError;
+            }
+
+            expect(kubernetes.deleted, action).to.equal(0);
+            expect(
+                kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION],
+                action
+            ).to.equal("DELETING");
+            expect(
+                kubernetes.claims[0].metadata.annotations?.[KEY_ID_ANNOTATION],
+                action
+            ).to.equal("key-1");
+            expect(
+                kubernetes.claims[0].metadata.annotations?.[
+                    RESET_AFTER_DELETE_ANNOTATION
+                ],
+                action
+            ).to.equal(action === "reset" ? "true" : undefined);
+
+            keys.deleteError = undefined;
+            await instance.reconcileIdleWorkspaces();
+            expect(kubernetes.deleted, action).to.equal(1);
+            if (action === "terminate") {
+                expect(kubernetes.claims, action).to.have.length(0);
+                expect(keys.rotated, action).to.equal(0);
+            } else {
+                expect(kubernetes.claims, action).to.have.length(1);
+                expect(
+                    kubernetes.claims[0].metadata.annotations?.[
+                        STATE_ANNOTATION
+                    ],
+                    action
+                ).to.equal("READY");
+                expect(
+                    kubernetes.claims[0].metadata.annotations?.[
+                        KEY_ID_ANNOTATION
+                    ],
+                    action
+                ).to.equal("key-2");
+                expect(keys.rotated, action).to.equal(1);
+            }
+        }
+    });
+
+    it("single-flights overlapping Reset recovery passes", async () => {
+        const kubernetes = new FakeKubernetes();
+        kubernetes.claims = [claim(new Date(), "DELETING")];
+        kubernetes.claims[0].metadata.annotations![
+            RESET_AFTER_DELETE_ANNOTATION
+        ] = "true";
+        let releaseDelete!: () => void;
+        kubernetes.deleteBarrier = new Promise<void>((resolve) => {
+            releaseDelete = resolve;
+        });
+        const { manager: instance, keys } = manager(kubernetes);
+
+        const first = instance.reconcileIdleWorkspaces();
+        for (let i = 0; i < 20 && !kubernetes.deleted; i += 1) {
+            await new Promise((resolve) => setImmediate(resolve));
+        }
+        const second = instance.reconcileIdleWorkspaces();
+        releaseDelete();
+        await Promise.all([first, second]);
+
+        expect(kubernetes.deleted).to.equal(1);
+        expect(keys.rotated).to.equal(1);
+        expect(kubernetes.claims).to.have.length(1);
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION]
+        ).to.equal("READY");
+    });
+
+    it("lets Terminate cancel an in-flight Reset recovery", async () => {
+        const kubernetes = new FakeKubernetes();
+        kubernetes.claims = [claim(new Date(), "DELETING")];
+        kubernetes.claims[0].metadata.annotations![
+            RESET_AFTER_DELETE_ANNOTATION
+        ] = "true";
+        let releaseDelete!: () => void;
+        kubernetes.deleteBarrier = new Promise<void>((resolve) => {
+            releaseDelete = resolve;
+        });
+        const { manager: instance, keys } = manager(kubernetes);
+
+        const recovery = instance.reconcileIdleWorkspaces();
+        for (let i = 0; i < 20 && !kubernetes.deleted; i += 1) {
+            await new Promise((resolve) => setImmediate(resolve));
+        }
+        const termination = instance.delete(userId, true);
+        await new Promise((resolve) => setImmediate(resolve));
+        releaseDelete();
+        await Promise.all([recovery, termination]);
+
+        expect(kubernetes.deleted).to.equal(1);
+        expect(keys.rotated).to.equal(0);
+        expect(kubernetes.claims).to.have.length(0);
+    });
+
+    it("does not acknowledge Terminate until Reset intent is durably cleared", async () => {
+        const kubernetes = new FakeKubernetes();
+        kubernetes.claims = [claim(new Date(), "DELETING")];
+        kubernetes.claims[0].metadata.annotations![
+            RESET_AFTER_DELETE_ANNOTATION
+        ] = "true";
+        kubernetes.annotationFailures = 1;
+        const keys = new FakeApiKeys();
+        const instance = manager(kubernetes, keys).manager;
+
+        let rejected = false;
+        try {
+            await instance.delete(userId);
+        } catch {
+            rejected = true;
+        }
+        expect(rejected).to.equal(true);
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                RESET_AFTER_DELETE_ANNOTATION
+            ]
+        ).to.equal("true");
+        expect(kubernetes.deleted).to.equal(0);
+
+        keys.deleteError = new Error("authorization API unavailable");
+        const originalError = console.error;
+        console.error = () => undefined;
+        try {
+            await instance.delete(userId);
+            for (let i = 0; i < 20 && !keys.deleted; i += 1) {
+                await new Promise((resolve) => setImmediate(resolve));
+            }
+            await new Promise((resolve) => setImmediate(resolve));
+        } finally {
+            console.error = originalError;
+        }
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                RESET_AFTER_DELETE_ANNOTATION
+            ]
+        ).to.equal(undefined);
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION]
+        ).to.equal("DELETING");
+
+        keys.deleteError = undefined;
+        await manager(kubernetes, keys).manager.reconcileIdleWorkspaces();
+        expect(kubernetes.claims).to.have.length(0);
+        expect(keys.rotated).to.equal(0);
+    });
+
     it("retries interrupted cleanup without losing key identity", async () => {
         const kubernetes = new FakeKubernetes();
         kubernetes.claims = [claim(new Date(), "BOOTSTRAPPING")];
         const keys = new FakeApiKeys();
         keys.deleteError = new Error("authorization API unavailable");
 
-        await manager(kubernetes, keys).manager.reconcileIdleWorkspaces();
+        const originalError = console.error;
+        console.error = () => undefined;
+        try {
+            await manager(kubernetes, keys).manager.reconcileIdleWorkspaces();
+        } finally {
+            console.error = originalError;
+        }
 
         expect(kubernetes.deleted).to.equal(0);
         expect(

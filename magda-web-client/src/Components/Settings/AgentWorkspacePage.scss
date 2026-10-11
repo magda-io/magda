@@ -150,14 +150,6 @@
     background: #fff;
 }
 
-// DSH Web keeps a 280px navigation column by default. The managed Magda
-// embedding permanently crops that column without altering DSH internals.
-.agent-workspace-ready.dsh-navigation-hidden .agent-workspace-runtime {
-    width: calc(100% + 280px);
-    max-width: none;
-    margin-left: -280px;
-}
-
 @media (max-width: 768px) {
     .agent-workspace-page > .main-content-container {
         padding-right: 15px;
