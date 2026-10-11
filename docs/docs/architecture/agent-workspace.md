@@ -364,6 +364,25 @@ helm upgrade --install magda deploy/helm/magda-core \
   --timeout 15m --wait
 ```
 
+Because `magda-core` deliberately does not own authentication plugins, install
+the internal password plugin as a separate release for local sign-in. The
+Minikube values above already register its service URL with Gateway:
+
+```sh
+helm upgrade --install magda-auth-internal \
+  deploy/helm/local-deployment/charts/magda-auth-internal-4.0.0.tgz \
+  --namespace magda \
+  --set global.magdaCompatibilityCheck=false \
+  --set global.externalUrl=https://magda.test:18443 \
+  --timeout 5m --wait
+curl --fail --silent --show-error --insecure \
+  https://magda.test:18443/auth/plugins
+```
+
+The final command must return an entry whose key is `internal`; an empty array
+means Gateway has not registered the plugin and the password form will not be
+shown.
+
 If deploying through the top-level `deploy/helm/magda` umbrella, run
 `helm dependency update deploy/helm/magda` first so its generated local
 `magda-core` dependency is current.
