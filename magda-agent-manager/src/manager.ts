@@ -15,6 +15,7 @@ export class AgentManager {
         string,
         { promise: Promise<void>; state: WorkspaceStatus["state"] }
     >();
+    private readonly activityRenewals = new Map<string, Promise<void>>();
 
     constructor(
         private readonly config: ManagerConfig,
@@ -256,17 +257,87 @@ export class AgentManager {
         return { state: "DELETING", updatedAt: new Date().toISOString() };
     }
 
-    async recordMeaningfulActivity(userId: string, activityTime = new Date()) {
-        const claim = await this.kubernetes.getClaim(userId);
+    private async extendManagedKeyWithRetry(
+        userId: string,
+        keyId: string,
+        expiryTime: Date
+    ) {
+        const delays = [100, 200, 400, 800, 1_600, 3_200, 6_400];
+        for (let attempt = 0; ; attempt += 1) {
+            try {
+                await this.apiKeys.extend(userId, keyId, expiryTime);
+                return;
+            } catch (error) {
+                if (attempt >= delays.length) throw error;
+                await new Promise((resolve) =>
+                    setTimeout(resolve, delays[attempt])
+                );
+            }
+        }
+    }
+
+    private async persistActivityRenewal(
+        userId: string,
+        requestedActivity: Date
+    ) {
+        let claim = await this.kubernetes.getClaim(userId);
         if (!claim) return;
-        const keyId = claim.metadata.annotations?.[KEY_ID_ANNOTATION];
-        const expiryTime = new Date(
-            activityTime.getTime() + this.config.hardDeleteSeconds * 1000
+
+        const persistedActivity = new Date(
+            claim.metadata.annotations?.[LAST_ACTIVITY_ANNOTATION] ||
+                claim.metadata.creationTimestamp ||
+                0
         );
-        await Promise.all([
-            this.kubernetes.updateActivity(userId, activityTime),
-            ...(keyId ? [this.apiKeys.extend(userId, keyId, expiryTime)] : [])
-        ]);
+        const effectiveActivity = new Date(
+            Math.max(
+                requestedActivity.getTime(),
+                Number.isFinite(persistedActivity.getTime())
+                    ? persistedActivity.getTime()
+                    : 0
+            )
+        );
+
+        if (
+            !Number.isFinite(persistedActivity.getTime()) ||
+            effectiveActivity.getTime() > persistedActivity.getTime()
+        ) {
+            // The claim is the durable source of truth. Persist it before
+            // extending the credential so a restart can repair a partial
+            // success without ever deriving an older expiry.
+            claim = await this.kubernetes.updateActivity(
+                userId,
+                effectiveActivity
+            );
+        }
+
+        const keyId = claim.metadata.annotations?.[KEY_ID_ANNOTATION];
+        if (!keyId) return;
+        const durableActivity = Date.parse(
+            claim.metadata.annotations?.[LAST_ACTIVITY_ANNOTATION] || ""
+        );
+        const expiryBase = Number.isFinite(durableActivity)
+            ? Math.max(durableActivity, effectiveActivity.getTime())
+            : effectiveActivity.getTime();
+        await this.extendManagedKeyWithRetry(
+            userId,
+            keyId,
+            new Date(expiryBase + this.config.hardDeleteSeconds * 1000)
+        );
+    }
+
+    async recordMeaningfulActivity(userId: string, activityTime = new Date()) {
+        const prior = this.activityRenewals.get(userId) || Promise.resolve();
+        let renewal: Promise<void>;
+        renewal = prior
+            .catch(() => undefined)
+            .then(() => this.persistActivityRenewal(userId, activityTime))
+            .finally(() => {
+                if (this.activityRenewals.get(userId) === renewal) {
+                    this.activityRenewals.delete(userId);
+                }
+            });
+        this.activityRenewals.set(userId, renewal);
+        return renewal;
     }
 
     private async recoverTransientClaim(
@@ -358,13 +429,53 @@ export class AgentManager {
                 }
                 if (!Number.isFinite(lastActivity)) return;
                 if (lastActivity <= deleteCutoff) {
+                    // A request accepted near the boundary may already be
+                    // persisting. Wait for it and re-read durable state before
+                    // destructive cleanup; never act on the stale list result.
+                    await this.activityRenewals
+                        .get(userId)
+                        ?.catch(() => undefined);
+                    const currentClaim = await this.kubernetes.getClaim(userId);
+                    const currentActivity = Date.parse(
+                        currentClaim?.metadata.annotations?.[
+                            LAST_ACTIVITY_ANNOTATION
+                        ] || ""
+                    );
+                    if (
+                        Number.isFinite(currentActivity) &&
+                        currentActivity > deleteCutoff
+                    ) {
+                        return;
+                    }
                     await this.delete(userId, true);
                     return;
                 }
+
+                // Reconciliation also repairs a managed-key extension that may
+                // have failed after the claim activity was durably advanced.
+                // The per-user renewal queue re-reads the claim and therefore
+                // cannot overwrite a newer concurrent activity timestamp.
+                await this.recordMeaningfulActivity(
+                    userId,
+                    new Date(lastActivity)
+                );
+
+                // A real request may have queued behind the repair above. Read
+                // the durable state again before deciding to suspend so this
+                // reconciliation snapshot cannot override newer activity.
+                const currentClaim = await this.kubernetes.getClaim(userId);
+                const currentActivity = Date.parse(
+                    currentClaim?.metadata.annotations?.[
+                        LAST_ACTIVITY_ANNOTATION
+                    ] || ""
+                );
+                const currentState =
+                    currentClaim?.metadata.annotations?.[STATE_ANNOTATION];
                 if (
                     !sandbox ||
-                    state !== "READY" ||
-                    lastActivity > suspendCutoff
+                    currentState !== "READY" ||
+                    !Number.isFinite(currentActivity) ||
+                    currentActivity > suspendCutoff
                 ) {
                     return;
                 }

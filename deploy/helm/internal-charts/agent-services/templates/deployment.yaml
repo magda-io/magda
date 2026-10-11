@@ -1,5 +1,8 @@
 {{- $namespace := include "agent-services.sandboxNamespace" . -}}
 {{- $installationId := include "agent-services.installationId" . -}}
+{{- if ne (int .Values.manager.replicas) 1 -}}
+{{- fail "agent-services.manager.replicas must be 1 because lifecycle reconciliation is single-writer" -}}
+{{- end -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,6 +12,11 @@ metadata:
     app.kubernetes.io/name: magda-agent-manager
 spec:
   replicas: {{ .Values.manager.replicas }}
+  # Avoid old/new Manager overlap: activity and destructive lifecycle decisions
+  # are single-writer. Durable writes still use Kubernetes CAS and max-only key
+  # expiry updates as defense in depth.
+  strategy:
+    type: Recreate
   # Keep the pre-merge selector stable so upgrades from the split chart do not
   # attempt to mutate Deployment.spec.selector (which Kubernetes forbids).
   selector:

@@ -15,6 +15,7 @@ manager:
     name: magda-agent-manager
     tag: ""
     pullPolicy: IfNotPresent
+  # Must remain 1: lifecycle reconciliation is single-writer.
   replicas: 1
   resources:
     requests: {cpu: 50m, memory: 96Mi}
@@ -35,6 +36,9 @@ runtime:
   hostAliases: []
   externalPrivateCidrs: []
   externalPrivatePorts: [80, 443]
+  # Additional public destinations that the broad public HTTPS policy must deny,
+  # such as a GKE cluster's public control-plane endpoint (/32).
+  deniedCidrs: []
   trustedCaSecret:
     name: ""
     key: ca.crt
@@ -72,6 +76,9 @@ llm:
   provider: magda
   model: magda-agent-default
   reasoningEffort: ""
+# ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox
+# Pods use a separate installation-scoped, no-RBAC ServiceAccount created in the
+# Sandbox namespace; its name is generated to avoid shared-namespace collisions.
 serviceAccount:
   name: magda-agent-manager
 

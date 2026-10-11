@@ -367,7 +367,8 @@ export default class Database {
         }
         const result = await this.pool.query(
             ...sqls`UPDATE api_keys
-                SET expiry_time=${expiryTime}, edit_time=CURRENT_TIMESTAMP
+                SET expiry_time=GREATEST(expiry_time, ${expiryTime}),
+                    edit_time=CURRENT_TIMESTAMP
                 WHERE user_id=${userId}
                   AND name=${name}
                   AND id=${apiKeyId}

@@ -8,6 +8,24 @@ Magda Agent Workspace manager and isolated runtime resources
 
 Kubernetes: `>= 1.24.0-0`
 
+## Sandbox identity
+
+Each installation creates a dedicated ServiceAccount named
+`magda-agent-sandbox-<installation-id>` in its Sandbox namespace and explicitly
+selects it from `SandboxTemplate.spec.podTemplate.spec.serviceAccountName`. The
+installation ID is derived from the Magda release namespace and name, so two
+Magda releases can share one Sandbox namespace without colliding.
+
+Agent Manager is deliberately single-replica and uses Deployment strategy
+`Recreate`, preventing old/new reconcilers from overlapping during upgrades.
+Activity writes additionally use Kubernetes resource-version compare-and-swap.
+
+The Sandbox ServiceAccount and Pod template both set
+`automountServiceAccountToken: false`. This chart deliberately creates no
+RoleBinding, ClusterRoleBinding, GKE Workload Identity annotation, or other
+cloud IAM grant for that identity. The separately configured `serviceAccount`
+value applies only to Agent Manager in the Magda release namespace.
+
 ## Values
 
 | Key | Type | Default | Description |
@@ -39,7 +57,7 @@ Kubernetes: `>= 1.24.0-0`
 | manager.image.name | string | `"magda-agent-manager"` |  |
 | manager.image.pullPolicy | string | `"IfNotPresent"` |  |
 | manager.image.tag | string | `""` |  |
-| manager.replicas | int | `1` |  |
+| manager.replicas | int | `1` | Must remain one because lifecycle reconciliation is single-writer. |
 | manager.resources.limits.cpu | string | `"500m"` |  |
 | manager.resources.limits.memory | string | `"384Mi"` |  |
 | manager.resources.requests.cpu | string | `"50m"` |  |
@@ -49,6 +67,7 @@ Kubernetes: `>= 1.24.0-0`
 | runtime.externalPrivateCidrs | list | `[]` |  |
 | runtime.externalPrivatePorts[0] | int | `80` |  |
 | runtime.externalPrivatePorts[1] | int | `443` |  |
+| runtime.deniedCidrs | list | `[]` | Additional public destinations denied by the broad public egress rule, such as a GKE public control-plane endpoint. |
 | runtime.hostAliases | list | `[]` |  |
 | runtime.image.name | string | `"magda-agent-runtime"` |  |
 | runtime.image.pullPolicy | string | `"IfNotPresent"` |  |

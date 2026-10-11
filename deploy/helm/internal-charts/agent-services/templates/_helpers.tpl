@@ -27,6 +27,11 @@
 {{- printf "magda-agent-manager-%s" (include "agent-services.installationId" .) -}}
 {{- end -}}
 
+{{/* Least-privilege identity used only by this installation's Sandbox Pods. */}}
+{{- define "agent-services.sandboxServiceAccountName" -}}
+{{- printf "magda-agent-sandbox-%s" (include "agent-services.installationId" .) -}}
+{{- end -}}
+
 {{- define "agent-services.installationLabels" -}}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}

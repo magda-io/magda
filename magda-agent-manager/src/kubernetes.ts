@@ -34,6 +34,17 @@ const mergePatchOptions = {
     ]
 };
 
+const jsonPatchOptions = {
+    middleware: [
+        new PromiseMiddlewareWrapper(
+            k8s.setHeaderMiddleware(
+                "Content-Type",
+                "application/json-patch+json"
+            )[0]
+        )
+    ]
+};
+
 function isNotFound(error: unknown) {
     return error instanceof ApiException && error.code === 404;
 }
@@ -179,34 +190,79 @@ export class AgentKubernetesClient {
     }
 
     async updateActivity(userId: string, activityTime: Date) {
-        const shutdownTime = shutdownTimeForActivity(
-            activityTime,
-            this.options.hardDeleteSeconds
-        );
-        return (await this.customApi.patchNamespacedCustomObject(
-            {
-                group: EXT_GROUP,
-                version: VERSION,
-                namespace: this.options.namespace,
-                plural: CLAIMS,
-                name: claimName(userId, this.options.installationId),
-                body: {
-                    metadata: {
-                        annotations: {
-                            [LAST_ACTIVITY_ANNOTATION]: activityTime.toISOString(),
-                            [UPDATED_ANNOTATION]: activityTime.toISOString()
-                        }
+        const name = claimName(userId, this.options.installationId);
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            const claim = await this.getClaim(userId);
+            if (!claim)
+                throw new Error("Agent Workspace claim no longer exists");
+            const current = Date.parse(
+                claim.metadata.annotations?.[LAST_ACTIVITY_ANNOTATION] || ""
+            );
+            if (Number.isFinite(current) && current >= activityTime.getTime()) {
+                return claim;
+            }
+            const resourceVersion = claim.metadata.resourceVersion;
+            if (!resourceVersion) {
+                throw new Error(
+                    "Agent Workspace claim has no Kubernetes resourceVersion"
+                );
+            }
+            const timestamp = activityTime.toISOString();
+            try {
+                return (await this.customApi.patchNamespacedCustomObject(
+                    {
+                        group: EXT_GROUP,
+                        version: VERSION,
+                        namespace: this.options.namespace,
+                        plural: CLAIMS,
+                        name,
+                        body: [
+                            {
+                                op: "test",
+                                path: "/metadata/resourceVersion",
+                                value: resourceVersion
+                            },
+                            {
+                                op: "add",
+                                path:
+                                    "/metadata/annotations/agent.magda.io~1last-activity",
+                                value: timestamp
+                            },
+                            {
+                                op: "add",
+                                path:
+                                    "/metadata/annotations/agent.magda.io~1updated-at",
+                                value: timestamp
+                            },
+                            {
+                                op: "add",
+                                path: "/spec/lifecycle/shutdownPolicy",
+                                value: "DeleteForeground"
+                            },
+                            {
+                                op: "add",
+                                path: "/spec/lifecycle/shutdownTime",
+                                value: shutdownTimeForActivity(
+                                    activityTime,
+                                    this.options.hardDeleteSeconds
+                                )
+                            }
+                        ]
                     },
-                    spec: {
-                        lifecycle: {
-                            shutdownPolicy: "DeleteForeground",
-                            shutdownTime
-                        }
-                    }
+                    jsonPatchOptions
+                )) as SandboxClaim;
+            } catch (error) {
+                if (
+                    error instanceof ApiException &&
+                    (error.code === 409 || error.code === 422) &&
+                    attempt < 4
+                ) {
+                    continue;
                 }
-            },
-            mergePatchOptions
-        )) as SandboxClaim;
+                throw error;
+            }
+        }
+        throw new Error("Could not update Agent Workspace activity");
     }
 
     async deleteClaim(userId: string): Promise<void> {

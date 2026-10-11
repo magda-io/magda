@@ -7,8 +7,39 @@ import {
 } from "../kubernetes.js";
 import {
     isMeaningfulRuntimeRequest,
+    RuntimeProxy,
     upstreamHeaders
 } from "../runtimeProxy.js";
+import { ManagerConfig } from "../types.js";
+
+function proxyConfig(): ManagerConfig {
+    return {
+        port: 8080,
+        jwtSecret: "secret",
+        namespace: "magda-agent",
+        installationId: "a1b2c3d4e5f6",
+        warmPool: "pool",
+        authApiUrl: "http://authorization-api/v0",
+        systemUserId: "system",
+        managedApiKeyName: "agent-key",
+        externalUrl: "https://magda.test",
+        externalAuthority: "magda.test",
+        runtimePrefix: "/v0/runtime",
+        sandboxPort: 3080,
+        agentContainer: "agent",
+        launchTokenFile: "/token",
+        bootstrapCommand: "/bootstrap",
+        magdaApiUrl: "https://magda.test/api",
+        llmApiUrl: "https://magda.test/api/v0/llm/v1",
+        llmProvider: "magda",
+        llmModel: "model",
+        hardDeleteSeconds: 8 * 60 * 60,
+        idleSuspendSeconds: 30 * 60,
+        reconcileIntervalSeconds: 30,
+        runtimeMaxBodyBytes: 1024,
+        controlPlaneSecret: "control"
+    };
+}
 
 describe("Agent Manager contracts", () => {
     it("uses the accepted deterministic claim identity", () => {
@@ -56,6 +87,67 @@ describe("Agent Manager contracts", () => {
                 isMeaningfulRuntimeRequest(method, "/api/session/prompt")
             ).to.equal(false);
         }
+    });
+
+    it("rate-limits activity only after persistence succeeds", async () => {
+        let attempts = 0;
+        const originalError = console.error;
+        console.error = () => undefined;
+        const proxy = new RuntimeProxy(proxyConfig(), {} as never, async () => {
+            attempts += 1;
+            if (attempts === 1) throw new Error("transient failure");
+        });
+        const touchActivity = ((proxy as unknown) as {
+            touchActivity(userId: string): Promise<void>;
+        }).touchActivity.bind(proxy);
+        const originalNow = Date.now;
+        Date.now = () => new Date("2026-10-10T12:00:00.000Z").getTime();
+        try {
+            await touchActivity("user-1").catch(() => undefined);
+            await touchActivity("user-1");
+            await touchActivity("user-1");
+        } finally {
+            Date.now = originalNow;
+            console.error = originalError;
+        }
+
+        expect(attempts).to.equal(2);
+    });
+
+    it("coalesces concurrent writes without dropping newer activity", async () => {
+        const persisted: Date[] = [];
+        let complete!: () => void;
+        const pending = new Promise<void>((resolve) => {
+            complete = resolve;
+        });
+        let now = new Date("2026-10-10T12:00:00.000Z").getTime();
+        const proxy = new RuntimeProxy(
+            proxyConfig(),
+            {} as never,
+            async (_userId, activityTime) => {
+                persisted.push(activityTime);
+                if (persisted.length === 1) await pending;
+            }
+        );
+        const touchActivity = ((proxy as unknown) as {
+            touchActivity(userId: string): Promise<void>;
+        }).touchActivity.bind(proxy);
+        const originalNow = Date.now;
+        Date.now = () => now;
+        try {
+            const first = touchActivity("user-1");
+            now += 10_000;
+            const second = touchActivity("user-1");
+            expect(persisted).to.have.length(1);
+            complete();
+            await Promise.all([first, second]);
+        } finally {
+            Date.now = originalNow;
+        }
+        expect(persisted.map((at) => at.toISOString())).to.deep.equal([
+            "2026-10-10T12:00:00.000Z",
+            "2026-10-10T12:00:10.000Z"
+        ]);
     });
 
     it("terminates browser and Magda credentials at the proxy boundary", () => {

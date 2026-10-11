@@ -75,6 +75,9 @@ spec:
                 - 169.254.0.0/16
                 - 172.16.0.0/12
                 - 192.168.0.0/16
+                {{- range .Values.runtime.deniedCidrs }}
+                - {{ . | quote }}
+                {{- end }}
   podTemplate:
     metadata:
       labels:
@@ -84,6 +87,7 @@ spec:
         agent.magda.io/runtime: {{ $runtimeType | quote }}
     spec:
 {{ include "magda.imagePullSecrets" . | indent 6 }}
+      serviceAccountName: {{ include "agent-services.sandboxServiceAccountName" . }}
       {{- if ne $runtimeType "runc" }}
       runtimeClassName: {{ get .Values.runtimeClasses $runtimeType | quote }}
       {{- end }}

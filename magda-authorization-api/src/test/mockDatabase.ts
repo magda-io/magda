@@ -66,7 +66,9 @@ export default class MockDatabase {
                 item.id === apiKeyId
         );
         if (!key) throw new Error("System managed API key not found");
-        key.expiry_time = expiryTime;
+        if (!key.expiry_time || expiryTime > key.expiry_time) {
+            key.expiry_time = expiryTime;
+        }
     }
 
     async deleteSystemManagedUserApiKeys(

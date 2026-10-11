@@ -7,6 +7,11 @@ import {
     authenticateAdminToken
 } from "./auth.js";
 import { ManagerConfig, SandboxClaim } from "./types.js";
+import {
+    DshSessionStatusFrameParser,
+    ForegroundActivityTracker,
+    runningSessionIds
+} from "./webSocketActivity.js";
 
 const DROP_REQUEST_HEADERS = new Set([
     "host",
@@ -107,7 +112,10 @@ export class RuntimeProxy {
     private readonly cookieExchanges = new Map<string, Promise<string>>();
     private readonly sockets = new Map<string, Set<Duplex>>();
     private readonly lastActivityWrite = new Map<string, number>();
+    private readonly pendingActivityWrite = new Map<string, number>();
+    private readonly activityWrites = new Map<string, Promise<void>>();
     private readonly authOptions: AuthOptions;
+    private readonly foregroundActivity: ForegroundActivityTracker;
 
     constructor(
         private readonly config: ManagerConfig,
@@ -121,6 +129,13 @@ export class RuntimeProxy {
             jwtSecret: config.jwtSecret,
             authApiUrl: config.authApiUrl
         };
+        this.foregroundActivity = new ForegroundActivityTracker(
+            onMeaningfulActivity,
+            Math.max(
+                1_000,
+                Math.min(60_000, (config.idleSuspendSeconds * 1000) / 3)
+            )
+        );
     }
 
     private stripRuntimePrefix(url = "/"): string | undefined {
@@ -221,13 +236,64 @@ export class RuntimeProxy {
         return exchange;
     }
 
-    private touchActivity(userId: string) {
+    private touchActivity(userId: string): Promise<void> {
         const now = Date.now();
-        if (now - (this.lastActivityWrite.get(userId) || 0) < 30_000) return;
-        this.lastActivityWrite.set(userId, now);
-        this.onMeaningfulActivity(userId, new Date(now)).catch((error) =>
-            console.error("Could not update Agent Workspace activity", error)
+        const existing = this.activityWrites.get(userId);
+        if (
+            !existing &&
+            !this.pendingActivityWrite.has(userId) &&
+            now - (this.lastActivityWrite.get(userId) || 0) < 30_000
+        ) {
+            return Promise.resolve();
+        }
+        this.pendingActivityWrite.set(
+            userId,
+            Math.max(this.pendingActivityWrite.get(userId) || 0, now)
         );
+        if (existing) return existing;
+
+        let write: Promise<void>;
+        write = (async () => {
+            while (this.pendingActivityWrite.has(userId)) {
+                const activityTime = this.pendingActivityWrite.get(userId)!;
+                this.pendingActivityWrite.delete(userId);
+                try {
+                    await this.onMeaningfulActivity(
+                        userId,
+                        new Date(activityTime)
+                    );
+                    this.lastActivityWrite.set(
+                        userId,
+                        Math.max(
+                            this.lastActivityWrite.get(userId) || 0,
+                            activityTime
+                        )
+                    );
+                } catch (error) {
+                    // Preserve the newest unpersisted activity. The next
+                    // qualifying request starts a fresh bounded attempt. Do not
+                    // send this request to DSH without its durable lease.
+                    this.pendingActivityWrite.set(
+                        userId,
+                        Math.max(
+                            this.pendingActivityWrite.get(userId) || 0,
+                            activityTime
+                        )
+                    );
+                    console.error(
+                        "Could not update Agent Workspace activity",
+                        error
+                    );
+                    throw error;
+                }
+            }
+        })().finally(() => {
+            if (this.activityWrites.get(userId) === write) {
+                this.activityWrites.delete(userId);
+            }
+        });
+        this.activityWrites.set(userId, write);
+        return write;
     }
 
     private async readBody(req: IncomingMessage): Promise<Buffer> {
@@ -247,13 +313,47 @@ export class RuntimeProxy {
         return Buffer.concat(chunks);
     }
 
+    private observeSessionList(
+        userId: string,
+        path: string,
+        response: IncomingMessage
+    ) {
+        if (path.split("?", 1)[0] !== "/api/session/list") return;
+        const chunks: Buffer[] = [];
+        let size = 0;
+        let valid = true;
+        response.on("data", (chunk: Buffer) => {
+            if (!valid) return;
+            size += chunk.length;
+            if (size > 1024 * 1024) {
+                valid = false;
+                chunks.length = 0;
+                return;
+            }
+            chunks.push(Buffer.from(chunk));
+        });
+        response.once("end", () => {
+            if (!valid) return;
+            try {
+                const value = JSON.parse(
+                    Buffer.concat(chunks).toString("utf8")
+                );
+                this.foregroundActivity.replaceSnapshot(
+                    userId,
+                    runningSessionIds(value)
+                );
+            } catch {
+                // DSH owns response validation; observation must not affect it.
+            }
+        });
+    }
+
     private forwardHttp(
         req: IncomingMessage,
         res: ServerResponse,
         auth: Awaited<ReturnType<RuntimeProxy["authenticate"]>>,
         body: Buffer,
         cookie: string,
-        meaningful: boolean,
         attempt = 0
     ) {
         const upstream = http.request(
@@ -276,15 +376,7 @@ export class RuntimeProxy {
                             auth.target,
                             true
                         );
-                        this.forwardHttp(
-                            req,
-                            res,
-                            auth,
-                            body,
-                            freshCookie,
-                            meaningful,
-                            1
-                        );
+                        this.forwardHttp(req, res, auth, body, freshCookie, 1);
                     } catch (error) {
                         if (!res.headersSent) res.writeHead(502);
                         res.end("Agent runtime authentication failed");
@@ -292,8 +384,12 @@ export class RuntimeProxy {
                     return;
                 }
                 const status = upstreamResponse.statusCode || 502;
-                if (meaningful && status >= 200 && status < 300) {
-                    this.touchActivity(auth.user.id);
+                if (status >= 200 && status < 300) {
+                    this.observeSessionList(
+                        auth.user.id,
+                        auth.path,
+                        upstreamResponse
+                    );
                 }
                 const headers = { ...upstreamResponse.headers };
                 delete headers["set-cookie"];
@@ -323,8 +419,12 @@ export class RuntimeProxy {
                 auth.path
             );
             const body = await this.readBody(req);
+            // Persist the lease before DSH begins work. Otherwise KAS can
+            // enforce the previous shutdownTime while a near-expiry mutation is
+            // still in flight. If persistence fails, reject without executing.
+            if (meaningful) await this.touchActivity(auth.user.id);
             const cookie = await this.cookie(auth.target);
-            this.forwardHttp(req, res, auth, body, cookie, meaningful);
+            this.forwardHttp(req, res, auth, body, cookie);
         } catch (error) {
             const proxyError = error as AgentAuthorizationError;
             const status = proxyError.status || 502;
@@ -373,13 +473,31 @@ export class RuntimeProxy {
             )
         });
         upstream.on("upgrade", (response, upstreamSocket, upstreamHead) => {
+            const activityOwner = Symbol("dsh-websocket");
+            this.foregroundActivity.connect(auth.user.id, activityOwner);
+            const parser = new DshSessionStatusFrameParser(
+                ({ agentId, running }) =>
+                    this.foregroundActivity.status(
+                        auth.user.id,
+                        agentId,
+                        running,
+                        activityOwner
+                    )
+            );
+            upstreamSocket.on("data", (chunk: Buffer) => parser.push(chunk));
+            upstreamSocket.once("close", () =>
+                this.foregroundActivity.disconnect(auth.user.id, activityOwner)
+            );
             socket.write(
                 responseHeaders(
                     "HTTP/1.1 101 Switching Protocols",
                     response.headers
                 )
             );
-            if (upstreamHead.length) socket.write(upstreamHead);
+            if (upstreamHead.length) {
+                parser.push(upstreamHead);
+                socket.write(upstreamHead);
+            }
             if (head.length) upstreamSocket.write(head);
             upstreamSocket.pipe(socket).pipe(upstreamSocket);
             this.trackSocket(auth.target.sandbox, socket, upstreamSocket);
@@ -417,9 +535,9 @@ export class RuntimeProxy {
         socket.on("error", () => socket.destroy());
         try {
             const auth = await this.authenticate(req);
-            // DSH 0.2.1 uses this socket for server-driven Remote streams and
-            // protocol ping/pong. User mutations are explicit HTTP RPCs, so an
-            // upgrade or frame traffic must not renew workspace retention.
+            // Opening the DSH Remote stream and its protocol-level ping/pong do
+            // not count as activity. The proxy observes only the explicit
+            // api-session/status running signal to protect foreground turns.
             this.connectWebSocket(
                 req,
                 socket,
@@ -462,5 +580,7 @@ export class RuntimeProxy {
         this.cookieJar.clear();
         this.cookieExchanges.clear();
         this.lastActivityWrite.clear();
+        this.pendingActivityWrite.clear();
+        this.foregroundActivity.close();
     }
 }

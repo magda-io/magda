@@ -121,7 +121,11 @@ LLM Services proxies both Responses and Chat Completions for compatibility.
 The manager can restart without an application database. Claims, Sandbox status,
 annotations, PVCs, and the Authorization DB are the durable sources of truth.
 Per-user in-flight operations are serialized; destructive operations queue
-behind provisioning rather than being silently dropped. Every installation gets
+behind provisioning rather than being silently dropped. Agent Manager is pinned
+to one replica with a `Recreate` deployment strategy. Activity updates also use a
+Kubernetes `resourceVersion` compare-and-swap, and Authorization applies API-key
+expiry as `max(current, requested)`, so even a stale writer cannot shorten a
+durable deadline. Every installation gets
 a stable release/namespace-derived identifier. Claim names, labels, list
 selectors, warm-pool resources, RBAC, and managed API-key names include that
 identifier, so two Magda installations cannot adopt or delete one another's
@@ -131,17 +135,33 @@ workspaces even if an operator deliberately shares a Sandbox namespace.
 
 The accepted lifecycle is 30 minutes of meaningful inactivity before suspension
 and eight hours before permanent deletion. Both values are configurable. For the
-alpha, **meaningful activity** is a successfully accepted, authenticated DSH
-mutation RPC (for example prompt, session/terminal create, rename, write, cancel,
-or delete) or an explicit resume. DSH uses HTTP `POST` for both reads and writes,
-so method alone is deliberately insufficient. Page loads, list/catalog/status
-RPCs, malformed or rejected requests, lifecycle polling, an open WebSocket, and
-Remote-stream/heartbeat/ping-pong traffic do not renew the deadline.
+alpha, **meaningful activity** begins when Agent Manager accepts an authenticated,
+allowlisted DSH mutation RPC (for example prompt, session/terminal create, rename,
+write, cancel, or delete), plus an explicit resume or an executing foreground
+Agent turn. The lease is persisted before the mutation is sent to DSH; if lease
+persistence fails, the proxy rejects the request without executing it. DSH uses
+HTTP `POST` for both reads and writes, so method alone is deliberately
+insufficient. DSH reports foreground execution through the
+`api-session/status` Remote event. While that state is running, Agent Manager
+renews activity at a bounded interval, including turns longer than the
+30-minute suspension threshold. Per-socket ownership prevents one of several
+browser sockets from clearing another, a short disconnect grace covers transport
+reconnect, and the authoritative `session/list` running snapshot restores the
+baseline after reconnect. Snapshot ownership expires after the last browser
+transport disconnects, so a missed settlement cannot renew an abandoned
+workspace forever. Page loads, other list/catalog/status RPCs,
+unauthenticated or non-allowlisted requests, oversized bodies rejected by the
+proxy, lifecycle polling, merely opening a WebSocket, ordinary Remote-stream
+traffic, and WebSocket heartbeat/ping-pong frames do not renew the deadline.
 
-A meaningful request atomically advances the persisted claim activity timestamp
-and `SandboxClaim.spec.lifecycle.shutdownTime`, and extends the managed Magda API
-key to the same deadline. Reconciliation reads that persisted timestamp after a
-Manager restart. It also completes persisted suspend/resume/delete transitions;
+A meaningful request first advances the persisted claim activity timestamp and
+`SandboxClaim.spec.lifecycle.shutdownTime`, then extends the managed Magda API
+key to the same deadline. Per-user writes are serialized and take the maximum of
+the requested and persisted timestamps, so old or concurrent requests cannot
+shorten either deadline. Failed writes remain retryable; key extension has a
+bounded immediate backoff before periodic reconciliation takes over. Reconciliation reads the
+persisted timestamp after Manager restart and repairs a partial key extension.
+It also completes persisted suspend/resume/delete transitions;
 an interrupted allocation/bootstrap is destroyed after credential revocation.
 If revocation is temporarily unavailable, the claim remains `DELETING` with key
 identity intact and reconciliation retries before removing the PVC. It suspends a running
@@ -412,16 +432,167 @@ with these differences:
   organisation's policy;
 - include the Authorization DB migration before starting the updated
   Authorization API; and
-- retain `global.agentWorkspace.enabled=false` until all dependencies and secrets
-  are ready.
+- retain `global.agentWorkspace.enabled=false` until all dependencies, secrets,
+  and security qualification checks are ready.
 
-For the v8 alpha, the qualified GKE path is **ingress-nginx + gVisor**, with an
-L4 passthrough external load balancer. Native GCE L7 Ingress/BackendConfig is not
-supported for Agent Workspace; that future qualification is tracked separately.
-The supplied `agent-workspace-gke-values.yaml` captures the supported runtime and
-ingress profile.
+### GKE alpha reference profile
 
-### Verification
+The GKE work in [PR #3852](https://github.com/magda-io/magda/pull/3852)
+provides real interoperability evidence for GKE Standard, a dedicated GKE
+Sandbox/gVisor node pool, KAS v1.0.4, a regional L4 passthrough NLB terminating
+TLS at community ingress-nginx, HTTPS/WSS, and PD CSI provision/remount/reclaim.
+It also found the CSI ownership issue addressed by
+`fsGroupChangePolicy: OnRootMismatch`.
+
+It did **not** qualify the integrated Magda Gateway/auth/logout path, real
+LiteLLM/provider access, effective GKE NetworkPolicy enforcement, Workload
+Identity isolation, warm pools greater than zero, multiple users, HA,
+multi-zone operation, node upgrades, cert-manager, or native GCE L7/Gateway API.
+The supplied `agent-workspace-gke-values.yaml` is therefore an **alpha reference
+profile**, not a qualified production profile. Do not claim GKE production or
+security qualification until the functional gates below pass.
+
+#### Cluster and gVisor prerequisites
+
+Use GKE Standard with NetworkPolicy enforcement provided by **GKE Dataplane V2**
+(preferably selected at cluster creation with `--enable-dataplane-v2`) or a
+separately qualified Calico configuration. Create a dedicated, non-default
+COS_CONTAINERD node pool with `--sandbox type=gvisor`; production Sandbox nodes
+must not be Spot/preemptible. Keep ordinary system workloads on a non-Sandbox
+pool. Verify the GKE-managed `gvisor` RuntimeClass and its
+`sandbox.gke.io/runtime=gvisor` scheduling requirements:
+
+```sh
+gcloud container clusters describe "$CLUSTER" --location "$LOCATION" \
+  --format='yaml(datapathProvider,networkPolicy,workloadIdentityConfig)'
+gcloud container node-pools list --cluster "$CLUSTER" --location "$LOCATION"
+kubectl get runtimeclass gvisor -o yaml
+kubectl get apiservice | grep agents.x-k8s.io
+```
+
+KAS v1.0.4 remains an external prerequisite. `pods/exec` must work because Agent
+Manager uses it for the one-time launch-token/bootstrap hand-off. GKE gVisor does
+not support `kubectl port-forward`, but this architecture does not depend on it.
+Published runtime images must include amd64 and be pullable from Artifact
+Registry by the nodes or configured image pull secrets.
+
+#### NetworkPolicy is a hard functional prerequisite
+
+Creating or listing NetworkPolicy objects does **not** demonstrate enforcement.
+The #3852 cluster accepted KAS-managed policies while an unauthorized Pod could
+reach DSH and the Sandbox could reach private services and the control-plane
+endpoint. The Helm KAS preflight intentionally checks APIs and RuntimeClass only;
+it cannot prove dataplane behavior.
+
+Before enabling Agent Workspace for untrusted workloads, run a disposable traffic
+matrix and retain the evidence:
+
+1. confirm Agent Manager can reach the claimed Sandbox Service on TCP 3080;
+2. confirm ordinary probe Pods in both the Magda and Sandbox namespaces, without
+   the allowed labels, time out when connecting to Sandbox TCP 3080;
+3. from the Sandbox, confirm kube-dns, the configured external Magda HTTPS
+   endpoint, and an approved public HTTPS endpoint work;
+4. from the Sandbox, confirm direct Agent Manager, Registry, Authorization,
+   PostgreSQL and other Sandbox ClusterIPs, every private or public
+   Kubernetes/control-plane endpoint, and `169.254.169.254` time out; public
+   control-plane addresses must be added as exact `/32` entries in
+   `agent-services.runtime.deniedCidrs`;
+5. repeat after suspend/resume and Sandbox Pod replacement.
+
+Any forbidden successful connection fails qualification. If enforcement cannot be
+verified, leave Agent Workspace disabled. The authoritative intended matrix is in
+`agent-services/templates/runtime.yaml`; the executable procedure is in the
+Agent Workspace end-to-end test document.
+
+#### Sandbox Kubernetes and Google Cloud identity
+
+Every Sandbox Pod uses a dedicated installation-scoped Kubernetes ServiceAccount
+in the Sandbox namespace. It has no RoleBinding or ClusterRoleBinding, no Google
+IAM binding, and `automountServiceAccountToken: false`. Agent Manager has a
+separate KSA and Kubernetes RBAC; never reuse that identity for a Sandbox.
+
+On GKE, `automountServiceAccountToken: false` prevents a projected Kubernetes
+credential but does **not** make the GKE metadata server inaccessible. PR #3852
+received HTTP 200 from the Workload Identity token endpoint; obtaining a token
+alone does not prove that the identity has useful IAM permissions. Operators must:
+
+- inspect the Pod `serviceAccountName` and KSA annotations and confirm Kubernetes
+  API authorization is denied;
+- audit direct IAM bindings for the Sandbox KSA and broader Workload Identity
+  Federation grants to namespace or pool-wide `principalSet` principals;
+- grant neither `roles/iam.workloadIdentityUser` nor Google resource roles to the
+  Sandbox identity by default; and
+- identify the metadata identity, audit its effective permissions, and verify
+  access to unrelated Google Cloud resources is denied.
+
+Metadata-server blocking through NetworkPolicy remains unverified until tested on
+an enforcing GKE dataplane. If the identity has unintended permissions or the
+required isolation cannot be established, do not enable Agent Workspace.
+
+#### ingress-nginx, IngressClass and external NLB
+
+Install the controller separately with a unique class and verify ownership:
+
+```yaml
+controller:
+  ingressClass: magda-agent-nginx
+  ingressClassResource:
+    name: magda-agent-nginx
+    controllerValue: k8s.io/ingress-nginx
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+    annotations:
+      cloud.google.com/l4-rbs: "enabled"
+    loadBalancerSourceRanges: ["<approved-cidr>"]
+```
+
+```sh
+kubectl get ingressclass magda-agent-nginx \
+  -o jsonpath='{.spec.controller}{"\n"}'
+```
+
+The result must be `k8s.io/ingress-nginx`. Do not assume a class named `nginx` is
+community ingress-nginx: the #3852 cluster's class with that name belonged to the
+F5 controller (`nginx.org/ingress-controller`), which does not consume community
+annotations. Set `cloud.google.com/l4-rbs: enabled` when creating the controller
+Service; adding it later does not migrate a legacy target-pool load balancer.
+
+Verify in GCP that the external forwarding rule is regional EXTERNAL TCP on ports
+80/443, targets a regional TCP backend service using GCE_VM_IP NEGs, and has no
+URL map or target HTTP(S) proxy. TLS terminates in ingress-nginx. Native GCE L7
+Ingress/BackendConfig and Gateway API remain outside this alpha profile.
+
+Set `ingress.proxyReadTimeout` and `proxySendTimeout` to 3600. The NLB has no HTTP
+timeout, but nginx defaults close quiet sockets after about 60 seconds. Test a
+quiet socket beyond 60 seconds and the selected operational window, streaming,
+and browser reconnect after Gateway/Manager restart. A controller config reload
+can close existing sockets at `worker-shutdown-timeout` (240 seconds by default)
+without a WebSocket close frame; DSH must reconnect. Shared-controller changes
+can therefore interrupt sessions.
+
+> **Controller lifecycle warning:** community ingress-nginx v1.15.1/chart 4.15.1
+> was its final release in March 2026 and receives no future fixes. Its GKE PoC
+> evidence remains useful only as a frozen alpha path. New production adoption
+> requires explicit risk acceptance and a time-bound migration plan. Any
+> successor controller requires fresh WSS, timeout, reload, and NetworkPolicy
+> qualification; F5 NGINX is not a drop-in replacement.
+
+#### Persistent storage
+
+The tested GKE profile explicitly selects `standard-rwo`: PD CSI
+(`pd.csi.storage.gke.io`), ReadWriteOnce, `WaitForFirstConsumer`, and reclaim
+policy `Delete`. Zonal PD pins the Sandbox to one zone; regional/multi-zone
+storage, capacity, performance, and backup policy remain operator decisions and
+are not qualified. Workspaces remain temporary.
+
+Verify a marker file, DSH session, and credential mode before and after
+suspend/resume and Pod deletion. The same PVC must survive and the credential
+must remain mode 0600. Deleting the claim must remove Sandbox, Pod, Service, PVC,
+PV, and GCE disk. A StorageClass with reclaim policy `Retain` requires explicit
+operator cleanup and does not satisfy the automatic deletion claim.
+
+### Basic smoke verification
 
 After deployment:
 
@@ -433,18 +604,14 @@ kubectl -n magda-agent get sandboxclaims,sandboxes,pods
 ```
 
 Log in as an administrator, open **Settings → Agent Workspace**, start the
-workspace, and wait for `READY`. Verify:
+workspace, and wait for `READY`. Verify the managed DSH UI, a real model/tool
+response through `/api/v0/llm/v1/responses`, `mgd auth status`, a Registry read,
+and destructive cleanup of the claim and managed key.
 
-1. the DSH navigation is absent and the composer does not offer Feedback,
-   Permission, or Model commands;
-2. a simple prompt returns a model response;
-3. a tool-using prompt succeeds through `/api/v0/llm/v1/responses`;
-4. `mgd auth status` identifies the logged-in Magda user;
-5. a Registry read succeeds; and
-6. reset/logout removes the claim and managed API key.
-
-The full lifecycle and security qualification procedure is in
-`docs/docs/e2e-test-cases/agent-workspace.md`.
+This smoke test is not a GKE security qualification. The full lifecycle test and
+mandatory GKE qualification gate—including gVisor, positive/negative networking,
+KSA/IAM/metadata, NLB shape, WSS reload/reconnect, CSI lifecycle/reclaim and
+cleanup evidence—is in `docs/docs/e2e-test-cases/agent-workspace.md`.
 
 ## Operational notes
 

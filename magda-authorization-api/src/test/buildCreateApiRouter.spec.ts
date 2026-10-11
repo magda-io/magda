@@ -606,6 +606,16 @@ describe("Auth api router", function (this) {
                 .send({ expiryTime: extendedExpiry.toISOString() });
             expect(extended.status).to.equal(204);
 
+            const staleExtension = await request(app)
+                .patch(
+                    `/private/users/${userId}/systemApiKeys/${created.body.id}?name=magda-agent-workspace`
+                )
+                .set("X-Magda-Session", token)
+                .send({
+                    expiryTime: new Date(Date.now() + 90_000).toISOString()
+                });
+            expect(staleExtension.status).to.equal(204);
+
             const listed = await request(app)
                 .get(
                     `/private/users/${userId}/systemApiKeys?name=magda-agent-workspace`

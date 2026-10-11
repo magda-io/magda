@@ -16,6 +16,23 @@ count_kind() {
     grep -c "^kind: $1$" "$2" || true
 }
 
+resource_document() {
+    local kind="$1" name="$2" file="$3"
+    awk -v kind="$kind" -v name="$name" '
+        BEGIN { RS = "---" }
+        $0 ~ "(^|\\n)kind: " kind "(\\n|$)" &&
+        $0 ~ "(^|\\n)  name: " name "(\\n|$)" { print; exit }
+    ' "$file"
+}
+
+resources_of_kind() {
+    local kind="$1" file="$2"
+    awk -v kind="$kind" '
+        BEGIN { RS = "---" }
+        $0 ~ "(^|\\n)kind: " kind "(\\n|$)" { print "---"; print }
+    ' "$file"
+}
+
 expect_failure() {
     local expected="$1"
     shift
@@ -50,8 +67,13 @@ for runtime in runc gvisor kata; do
     [[ "$(count_kind SandboxTemplate "$tmp/$runtime.yaml")" == 1 ]]
     [[ "$(count_kind SandboxWarmPool "$tmp/$runtime.yaml")" == 1 ]]
     grep -q 'MAGDA_INSTALLATION_ID' "$tmp/$runtime.yaml"
+    grep -Eq '^  name: magda-agent-sandbox-[0-9a-f]{12}$' "$tmp/$runtime.yaml"
+    grep -Eq '^      serviceAccountName: magda-agent-sandbox-[0-9a-f]{12}$' "$tmp/$runtime.yaml"
+    [[ "$(grep -c '^automountServiceAccountToken: false$' "$tmp/$runtime.yaml")" == 1 ]]
+    [[ "$(grep -c '^      automountServiceAccountToken: false$' "$tmp/$runtime.yaml")" == 1 ]]
     grep -q 'fsGroupChangePolicy: OnRootMismatch' "$tmp/$runtime.yaml"
     grep -q 'Kubernetes Agent Sandbox v1beta1 extension APIs are unavailable' "$tmp/$runtime.yaml"
+    grep -q '^    type: Recreate$' "$tmp/$runtime.yaml"
     if [[ "$runtime" == runc ]]; then
         ! grep -q 'runtimeClassName:' "$tmp/$runtime.yaml"
     else
@@ -59,10 +81,25 @@ for runtime in runc gvisor kata; do
     fi
 done
 
+render "$tmp/denied-public.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set 'agent-services.runtime.deniedCidrs[0]=203.0.113.10/32'
+awk '
+    /cidr: 0\.0\.0\.0\/0/ { public_rule = 1 }
+    public_rule && /- "203\.0\.113\.10\/32"/ { found = 1 }
+    END { exit !found }
+' "$tmp/denied-public.yaml"
+
 expect_failure \
     'global.agentWorkspace.enabled=true requires global.llmServices.enabled=true' \
     helm template magda "$chart" --namespace test \
         --set global.agentWorkspace.enabled=true
+expect_failure 'agent-services.manager.replicas must be 1' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set agent-services.manager.replicas=2
 expect_failure 'agent-services.warmPool.type must be one of' \
     helm template magda "$chart" --namespace test \
         --set global.agentWorkspace.enabled=true \
@@ -135,6 +172,8 @@ id_a="$(sed -n 's/.*name: MAGDA_INSTALLATION_ID, value: "\([^"]*\)".*/\1/p' "$tm
 id_b="$(sed -n 's/.*name: MAGDA_INSTALLATION_ID, value: "\([^"]*\)".*/\1/p' "$tmp/release-b.yaml" | head -1)"
 key_a="$(sed -n 's/.*name: MANAGED_API_KEY_NAME, value: "\([^"]*\)".*/\1/p' "$tmp/release-a.yaml" | head -1)"
 key_b="$(sed -n 's/.*name: MANAGED_API_KEY_NAME, value: "\([^"]*\)".*/\1/p' "$tmp/release-b.yaml" | head -1)"
+sandbox_sa_a="magda-agent-sandbox-$id_a"
+sandbox_sa_b="magda-agent-sandbox-$id_b"
 [[ -n "$pool_a" && -n "$pool_b" && "$pool_a" != "$pool_b" ]]
 [[ -n "$id_a" && -n "$id_b" && "$id_a" != "$id_b" ]]
 [[ "$key_a" == "magda-agent-workspace-$id_a" ]]
@@ -148,6 +187,27 @@ grep -q "agent.magda.io/installation-id: \"$id_a\"" "$tmp/release-a.yaml"
 grep -q "agent.magda.io/installation-id: \"$id_b\"" "$tmp/release-b.yaml"
 grep -q 'namespace: shared-agents' "$tmp/release-a.yaml"
 grep -q 'namespace: shared-agents' "$tmp/release-b.yaml"
+
+# Sandbox identities live in the shared Sandbox namespace but remain unique to
+# each Magda installation. They are explicitly selected by the Pod template,
+# do not mount a Kubernetes token, and receive no RoleBinding or GKE IAM
+# annotation from this chart.
+[[ "$sandbox_sa_a" != "$sandbox_sa_b" ]]
+sa_doc_a="$(resource_document ServiceAccount "$sandbox_sa_a" "$tmp/release-a.yaml")"
+sa_doc_b="$(resource_document ServiceAccount "$sandbox_sa_b" "$tmp/release-b.yaml")"
+[[ -n "$sa_doc_a" && -n "$sa_doc_b" ]]
+grep -q '^  namespace: shared-agents$' <<<"$sa_doc_a"
+grep -q '^  namespace: shared-agents$' <<<"$sa_doc_b"
+grep -q '^automountServiceAccountToken: false$' <<<"$sa_doc_a"
+grep -q '^automountServiceAccountToken: false$' <<<"$sa_doc_b"
+! grep -q 'iam.gke.io/gcp-service-account' <<<"$sa_doc_a"
+! grep -q 'iam.gke.io/gcp-service-account' <<<"$sa_doc_b"
+grep -q "^      serviceAccountName: $sandbox_sa_a$" "$tmp/release-a.yaml"
+grep -q "^      serviceAccountName: $sandbox_sa_b$" "$tmp/release-b.yaml"
+! resources_of_kind RoleBinding "$tmp/release-a.yaml" | grep -q "name: $sandbox_sa_a"
+! resources_of_kind RoleBinding "$tmp/release-b.yaml" | grep -q "name: $sandbox_sa_b"
+! resources_of_kind ClusterRoleBinding "$tmp/release-a.yaml" | grep -q "name: $sandbox_sa_a"
+! resources_of_kind ClusterRoleBinding "$tmp/release-b.yaml" | grep -q "name: $sandbox_sa_b"
 
 long_namespace="this-is-a-valid-but-deliberately-long-release-namespace-for-magda"
 render "$tmp/long-namespace.yaml" magda "$long_namespace" \
