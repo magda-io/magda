@@ -3,7 +3,7 @@
 **Status:** Accepted  
 **Owner ticket:** #3824  
 **Depends on:** #3822; coordinates with #3823, #3825 and #3838  
-**Evidence:** #3841 / draft PoC PR #3844  
+**Evidence:** #3841 / draft PoC PR #3844 (local); #3848 / draft PR #3852 (real GKE)  
 **Blocks:** DSH runtime image/browser proxy implementation
 
 #3841 qualified the browser/runtime integration end to end in local Minikube under both runc and gVisor. The accepted contract below replaces the earlier loopback-listener/bridge-sidecar proposal.
@@ -51,7 +51,7 @@ Bootstrap configures:
 
 - PVC-backed `mgd` profile, e.g. via `XDG_CONFIG_HOME=/workspace/.config`;
 - DSH provider/base URL pointing to the external Magda LLM Services endpoint;
-- the same Magda API-key bearer value for DSH's managed LLM provider;
+- the same Magda API-key id/secret for DSH's managed LLM provider (stored as a **raw** `<key-id>:<key>`; DSH's OpenAI adapter supplies the HTTP `Bearer` scheme);
 - default model;
 - default reasoning effort;
 - any non-secret user/sandbox config required by the Magda DSH profile.
@@ -229,9 +229,17 @@ for the agent runtime mount only. This is tracked by #3846. Unrelated Magda rout
 
 Local ingress-nginx qualification is complete in #3841. Production Helm must configure suitable long-lived WebSocket timeouts; tracked by #3847.
 
-GKE production qualification, including provider backend timeout policy and gVisor, is tracked by #3848.
+**Real GKE result (#3852):** a minimal client/proxy reached native DSH `/api/remote.mux` over HTTPS/WSS through a **regional external L4 passthrough Network Load Balancer** -> community ingress-nginx -> KAS Service -> gVisor Pod. The NLB was created by ingress-nginx's **controller Service** (`type: LoadBalancer`, `cloud.google.com/l4-rbs: "enabled"` on initial Service creation), not by Magda's Ingress resource. This route needs **no** GCE `BackendConfig`/`GCPBackendPolicy`. Native GCE L7 Ingress remains **unsupported** for this alpha and is deferred to #3851.
 
-These are deployment/implementation follow-ups and do not reopen the accepted #3824 integration contract.
+**Timeout/reconnect evidence:** nginx's default 60-second proxy idle timeout closed silent WebSockets at ~61 seconds; setting nginx `proxy-read-timeout`/`proxy-send-timeout` to 3600 seconds let them survive >10 minutes of silence. Normal DSH 2-second heartbeat also kept the socket active, but is not a durable proxy configuration guarantee. An actual nginx reload closed a live WebSocket about **241 seconds after the reload**; the client must reconnect after ingress reload/restart. Document and test user-visible reconnect behaviour.
+
+**Controller provenance:** the GKE test cluster's already-existing `nginx` IngressClass belonged to **F5 NGINX Ingress Controller**, not community `kubernetes/ingress-nginx`. Its annotations and WebSocket configuration differ. Confirm `IngressClass.spec.controller` before deploying Magda with `ingress.ingressClass: nginx`; `nginx.ingress.kubernetes.io/*` annotations are not portable to the F5 controller.
+
+**Maintenance constraint:** the community `kubernetes/ingress-nginx` project retired in March 2026. This does not invalidate #3852's transport findings, but its final controller release is not a maintained long-term external-production choice. Qualify a supported replacement separately, rather than adding untested GCE L7 support into the initial alpha.
+
+**Qualification boundary:** #3852 did **not** exercise Magda Gateway/Auth, LiteLLM, multi-zone HA, production TLS, or **enforced GKE NetworkPolicy**. A non-allowed peer could reach the DSH Pod on the tested enforcement-off GKE cluster. The accepted #3824 same-origin/stock-auth design remains intact, but **deployment security is not verified** until the network and IAM matrix in [network-security.md](./network-security.md) passes on an enforcing cluster. See [deployment.md](./deployment.md) for Helm/LB configuration.
+
+These are deployment/provider qualification findings, not a reason to reopen the native DSH transport or restore a bridge sidecar.
 
 ## Known runtime constraints
 
