@@ -11,6 +11,14 @@ const packageJson = JSON.parse(
 const lernaJson = JSON.parse(
     await readFile(new URL("../lerna.json", import.meta.url), "utf8")
 );
+const managedClient = await readFile(
+    new URL("dsh-client-managed-profile/lib/client.js", import.meta.url),
+    "utf8"
+);
+const cordisPatch = await readFile(
+    new URL("magda.cordis.patch.yml", import.meta.url),
+    "utf8"
+);
 
 assert.match(
     dockerfile,
@@ -50,4 +58,20 @@ for (const requiredPath of [
 assert.ok(
     ![...dockerIncludes].some((path) => path.includes("node_modules")),
     "Docker context must not include local node_modules"
+);
+
+assert.match(
+    cordisPatch,
+    /- id: ui-message-feedback\n\s+disabled: true/,
+    "The managed UI must not expose DSH feedback collection"
+);
+assert.match(
+    managedClient,
+    /button\[aria-label="Choose workspace"\]/,
+    "The managed UI must hide the redundant workspace selector"
+);
+assert.match(
+    managedClient,
+    /element\.textContent = "Agent Workspace"/,
+    "The managed UI must replace the DSH hero branding"
 );

@@ -80,6 +80,8 @@
   disabled: true
 - id: command-feedback
   disabled: true
+- id: ui-message-feedback
+  disabled: true
 - insert:
     - id: ui-managed-profile
       name: "@magda/dsh-client-managed-profile"
