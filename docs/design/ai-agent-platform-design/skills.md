@@ -1,11 +1,11 @@
 # Agent skills: persistence, publication and agent workflow
 
-**Status:** Design direction agreed for v8 follow-on work; not yet implemented by the Agent Workspace MVP #3850  
-**Owner:** #3811 / epic #3810 (create implementation tickets after design review)  
+**Status:** Agreed design — **in scope of expanded Agent Workspace MVP #3849 / draft PR #3850**, implemented in sequential stages #3854 → #3855 → #3856; not yet shipped  
+**Owner:** #3811 / epic #3810 · Implementation: #3854 (backend), #3855 (CLI/bootstrap), #3856 (capture) **on the same draft PR #3850**  
 **Depends on:** #3822–#3825 (Sandbox, Manager, auth), existing MAGDA Storage API/MinIO, DSH skill discovery, `mgd` CLI  
 **Related:** [Agent platform overview](./README.md), [authentication](./authentication.md), [Sandbox lifecycle](./session-lifecycle.md), Storage API metadata bug [#3853](https://github.com/magda-io/magda/issues/3853)
 
-This document records the agreed **initial skill-system architecture**. It replaces the earlier assumption that Agent Manager has a database or that every globally shared, code-bearing skill must be baked into the runtime image. Skill CRUD/storage are **not part of the completed #3850 MVP**.
+This document records the agreed **initial skill-system architecture**. It replaces the earlier assumption that Agent Manager has a database or that every globally shared, code-bearing skill must be baked into the runtime image. Skill CRUD/storage and user workflow capture are **required for the expanded #3850 MVP** but are not yet implemented; deliver/test/review #3854, then #3855, then #3856 on the same draft implementation PR.
 
 ## Goals and terminology
 
@@ -139,13 +139,13 @@ The agent first tries the available conversation context and outputs. DSH's pers
 
 If direct agent access to the local session log is not practical, implement a small **local read-only** helper limited to the current Workspace PVC/own DSH session, without any cross-user access or launch-token exposure. A helper is a deferred convenience, not a prerequisite to building the skill storage API.
 
-## Implementation phases and non-goals
+## MVP implementation phases and non-goals
 
-1. **Backend:** Agent Services skill routes + admin/owner authentication/authorization, MinIO default-bucket prefix listing and ZIP CRUD, canonical owner metadata, limits/validation, ETags and Pod-log audit events.
-2. **CLI/runtime:** `mgd agent-skill` operations, first-claim skill sync, safe manual sync/local drafts, correct DSH skill discovery and viewable files. Test warm adoption, reset, multiple DSH sessions and local-vs-published edits.
-3. **Capture UX:** bundled `capture-workflow`, system-prompt suggestion, agent-led review/publish flow, selective session-history reading when needed.
+1. **[#3854](https://github.com/magda-io/magda/issues/3854) — Backend:** Agent Services skill routes + admin/owner authentication/authorization, MinIO default-bucket prefix listing and ZIP CRUD, canonical owner metadata, limits/validation, ETags and Pod-log audit events.
+2. **[#3855](https://github.com/magda-io/magda/issues/3855) — CLI/runtime:** `mgd agent-skill` operations, first-claim skill sync, safe manual sync/local drafts, correct DSH skill discovery and viewable files. Test warm adoption, reset, multiple DSH sessions and local-vs-published edits.
+3. **[#3856](https://github.com/magda-io/magda/issues/3856) — Capture UX:** bundled `capture-workflow`, system-prompt suggestion, agent-led review/publish flow, selective session-history reading when needed.
 
-No initial skill Registry aspect, skill DB, special privileged system-skill executor, skill history service, standalone skill UI/editor, mandatory new storage bucket, or separate system-skill approval workflow. These can be reconsidered with evidence and later requirements.
+**All three stages belong in the same draft #3850 PR**, with passing tests and review between stages; do not treat this design change as already merged or implemented. No initial skill Registry aspect, skill DB, special privileged system-skill executor, skill history service, standalone skill UI/editor, mandatory new storage bucket, or separate system-skill approval workflow. These can be reconsidered with evidence and later requirements.
 
 ## Qualification checklist
 
