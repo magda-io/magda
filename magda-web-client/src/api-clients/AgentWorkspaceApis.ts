@@ -39,6 +39,12 @@ export class AgentWorkspaceApiError extends Error {
     }
 }
 
+export function isAgentWorkspaceRunning(
+    state?: AgentWorkspaceState
+): state is "READY" {
+    return state === "READY";
+}
+
 export function isAgentWorkspacePollingState(
     state?: AgentWorkspaceState
 ): boolean {

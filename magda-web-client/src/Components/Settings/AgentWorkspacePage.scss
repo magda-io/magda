@@ -134,6 +134,13 @@
     }
 }
 
+.agent-workspace-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 .agent-workspace-runtime {
     display: block;
     flex: 1 1 auto;
@@ -167,5 +174,9 @@
     .agent-workspace-toolbar {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .agent-workspace-toolbar-actions {
+        justify-content: flex-start;
     }
 }

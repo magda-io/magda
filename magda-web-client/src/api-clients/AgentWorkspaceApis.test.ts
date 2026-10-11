@@ -2,8 +2,10 @@
 
 import {
     AgentWorkspaceApiError,
+    deleteAgentWorkspace,
     getAgentWorkspaceStatus,
     isAgentWorkspacePollingState,
+    isAgentWorkspaceRunning,
     resetAgentWorkspace,
     resumeAgentWorkspace,
     startAgentWorkspace,
@@ -55,6 +57,7 @@ describe("AgentWorkspaceApis", () => {
         await startAgentWorkspace();
         await resumeAgentWorkspace();
         await resetAgentWorkspace();
+        await deleteAgentWorkspace();
 
         expect(global.fetch).toHaveBeenNthCalledWith(
             1,
@@ -70,6 +73,11 @@ describe("AgentWorkspaceApis", () => {
             3,
             expect.stringMatching(/\/api\/v0\/agent\/session\/reset$/),
             expect.objectContaining({ method: "POST" })
+        );
+        expect(global.fetch).toHaveBeenNthCalledWith(
+            4,
+            expect.stringMatching(/\/api\/v0\/agent\/session$/),
+            expect.objectContaining({ method: "DELETE" })
         );
     });
 
@@ -105,6 +113,25 @@ describe("AgentWorkspaceApis", () => {
         await expect(getAgentWorkspaceStatus()).rejects.toThrow(
             "unknown lifecycle state"
         );
+    });
+});
+
+describe("isAgentWorkspaceRunning", () => {
+    it("only reports READY as a running workspace", () => {
+        expect(isAgentWorkspaceRunning("READY")).toBe(true);
+        for (const state of [
+            "ABSENT",
+            "ALLOCATING",
+            "BOOTSTRAPPING",
+            "SUSPENDING",
+            "SUSPENDED",
+            "RESUMING",
+            "DELETING",
+            "FAILED",
+            "DEGRADED"
+        ] as const) {
+            expect(isAgentWorkspaceRunning(state)).toBe(false);
+        }
     });
 });
 

@@ -17,8 +17,10 @@ import {
     AGENT_WORKSPACE_RUNTIME_URL,
     AgentWorkspaceStatus,
     AgentWorkspaceState,
+    deleteAgentWorkspace,
     getAgentWorkspaceStatus,
     isAgentWorkspacePollingState,
+    isAgentWorkspaceRunning,
     resetAgentWorkspace,
     resumeAgentWorkspace,
     startAgentWorkspace,
@@ -119,8 +121,11 @@ const WorkspaceInformation: FunctionComponent = () => (
 const AgentWorkspacePage: FunctionComponent = () => {
     const [status, setStatus] = useState<AgentWorkspaceStatus>();
     const [loading, setLoading] = useState(true);
-    const [action, setAction] = useState<"start" | "resume" | "reset">();
+    const [action, setAction] = useState<
+        "start" | "resume" | "terminate" | "reset"
+    >();
     const [requestError, setRequestError] = useState<string>();
+    const [terminateOpen, setTerminateOpen] = useState(false);
     const [resetOpen, setResetOpen] = useState(false);
     const requestSequence = useRef(0);
 
@@ -164,7 +169,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
     }, [action, refresh, status?.state]);
 
     const runAction = async (
-        nextAction: "start" | "resume" | "reset",
+        nextAction: "start" | "resume" | "terminate" | "reset",
         operation: () => Promise<AgentWorkspaceStatus>
     ) => {
         requestSequence.current += 1;
@@ -173,7 +178,9 @@ const AgentWorkspacePage: FunctionComponent = () => {
         try {
             const nextStatus = await operation();
             setStatus(nextStatus);
-            if (nextAction === "reset") {
+            if (nextAction === "terminate") {
+                setTerminateOpen(false);
+            } else if (nextAction === "reset") {
                 setResetOpen(false);
             }
         } catch (error) {
@@ -182,6 +189,17 @@ const AgentWorkspacePage: FunctionComponent = () => {
             setAction(undefined);
         }
     };
+
+    const terminateButton = (
+        <Button
+            appearance="ghost"
+            color="red"
+            disabled={!!action}
+            onClick={() => setTerminateOpen(true)}
+        >
+            Terminate Workspace
+        </Button>
+    );
 
     const resetButton = (
         <Button
@@ -245,7 +263,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
             );
         }
 
-        if (status.state === "READY") {
+        if (isAgentWorkspaceRunning(status.state)) {
             return (
                 <div className="agent-workspace-ready dsh-navigation-hidden">
                     <div className="agent-workspace-toolbar">
@@ -256,7 +274,10 @@ const AgentWorkspacePage: FunctionComponent = () => {
                                 authority
                             </span>
                         </div>
-                        {resetButton}
+                        <ButtonToolbar className="agent-workspace-toolbar-actions">
+                            {terminateButton}
+                            {resetButton}
+                        </ButtonToolbar>
                     </div>
                     <iframe
                         className="agent-workspace-runtime"
@@ -344,6 +365,50 @@ const AgentWorkspacePage: FunctionComponent = () => {
                 ) : null}
                 {renderContent()}
             </main>
+
+            <Modal
+                role="alertdialog"
+                backdrop="static"
+                open={terminateOpen}
+                onClose={() => !action && setTerminateOpen(false)}
+                size="sm"
+            >
+                <Modal.Header>
+                    <Modal.Title>Terminate Agent Workspace?</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>
+                        This permanently deletes the current DSH sessions,
+                        workspace files and storage volume (PVC). The workspace
+                        cannot be recovered.
+                    </p>
+                    <p>
+                        Save important results to Magda or another durable
+                        destination before continuing. No replacement workspace
+                        will be started automatically.
+                    </p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        appearance="primary"
+                        color="red"
+                        loading={action === "terminate"}
+                        disabled={!!action}
+                        onClick={() =>
+                            runAction("terminate", deleteAgentWorkspace)
+                        }
+                    >
+                        Permanently Terminate Workspace
+                    </Button>
+                    <Button
+                        appearance="subtle"
+                        disabled={!!action}
+                        onClick={() => setTerminateOpen(false)}
+                    >
+                        Cancel
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
             <Modal
                 role="alertdialog"
