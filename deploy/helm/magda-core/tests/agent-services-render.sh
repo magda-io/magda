@@ -68,9 +68,33 @@ for runtime in runc gvisor kata; do
     [[ "$(count_kind SandboxWarmPool "$tmp/$runtime.yaml")" == 1 ]]
     grep -q 'MAGDA_INSTALLATION_ID' "$tmp/$runtime.yaml"
     grep -Eq '^  name: magda-agent-sandbox-[0-9a-f]{12}$' "$tmp/$runtime.yaml"
+    awk '
+        /^---$/ {
+            if (service_account && sandbox_name && token_disabled) found = 1
+            service_account = sandbox_name = token_disabled = 0
+        }
+        /^kind: ServiceAccount$/ { service_account = 1 }
+        /^  name: magda-agent-sandbox-/ { sandbox_name = 1 }
+        /^automountServiceAccountToken: false$/ { token_disabled = 1 }
+        END {
+            if (service_account && sandbox_name && token_disabled) found = 1
+            exit !found
+        }
+    ' "$tmp/$runtime.yaml"
     grep -Eq '^      serviceAccountName: magda-agent-sandbox-[0-9a-f]{12}$' "$tmp/$runtime.yaml"
-    [[ "$(grep -c '^automountServiceAccountToken: false$' "$tmp/$runtime.yaml")" == 1 ]]
-    [[ "$(grep -c '^      automountServiceAccountToken: false$' "$tmp/$runtime.yaml")" == 1 ]]
+    awk '
+        /^---$/ {
+            if (sandbox_template && sandbox_identity && token_disabled) found = 1
+            sandbox_template = sandbox_identity = token_disabled = 0
+        }
+        /^kind: SandboxTemplate$/ { sandbox_template = 1 }
+        /^      serviceAccountName: magda-agent-sandbox-/ { sandbox_identity = 1 }
+        /^      automountServiceAccountToken: false$/ { token_disabled = 1 }
+        END {
+            if (sandbox_template && sandbox_identity && token_disabled) found = 1
+            exit !found
+        }
+    ' "$tmp/$runtime.yaml"
     grep -q 'fsGroupChangePolicy: OnRootMismatch' "$tmp/$runtime.yaml"
     grep -q 'Kubernetes Agent Sandbox v1beta1 extension APIs are unavailable' "$tmp/$runtime.yaml"
     grep -q '^    type: Recreate$' "$tmp/$runtime.yaml"
