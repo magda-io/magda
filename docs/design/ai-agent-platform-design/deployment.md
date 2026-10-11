@@ -4,7 +4,7 @@
 **Owner:** #3811 / MVP #3849 and #3850; GKE investigation #3848 / PR #3852  
 **Depends on:** #3822–#3825, network/security design, #3838
 
-This describes the **current #3850 MVP Helm interface** as implementation evidence, not a promise that all environments are production-qualified. Refer to [network-security.md](./network-security.md) for mandatory isolation preconditions and to [the GKE investigation](../../investigations/v8-gke-qualification.md) on the #3852 branch for experimental results.
+This describes the **current #3850 MVP Helm interface** as implementation evidence, not a promise that all environments are production-qualified. Refer to [network-security.md](./network-security.md) for mandatory isolation preconditions and to [the GKE investigation](https://github.com/magda-io/magda/blob/poc/3848-gke-qualification/docs/investigations/v8-gke-qualification.md) on the #3852 branch for experimental results.
 
 ## Chart and responsibility boundaries
 
