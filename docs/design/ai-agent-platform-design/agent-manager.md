@@ -1,126 +1,57 @@
 # Agent Manager design
 
-**Status:** Accepted  
+**Status:** Accepted architectural foundation (#3823), aligned with MVP #3850; activity consistency/open foreground-turn policy need follow-up  
 **Owner ticket:** #3823  
-**Depends on:** #3822  
-**Blocks:** Agent Manager implementation, DSH routing, browser lifecycle UX
+**Depends on:** #3822, #3824, #3825 and [session-lifecycle.md](./session-lifecycle.md)
 
-## Responsibility
+## Responsibilities and boundaries
 
-Agent Manager is a stateless Magda control-plane service for per-user Agent Sandboxes.
+Agent Manager is Magda's **stateless** control-plane service for per-user Sandboxes. It authenticates the trusted Gateway-provided user, independently enforces MVP admin authorization, starts/adopts one Sandbox per **installation + user**, bootstraps credentials, proxies DSH HTTP/WSS, tracks meaningful activity, implements suspend/resume/reset/logout, and reconciles crash/cleanup states.
 
-It owns:
+It does **not** host the LLM model/provider router (that is Magda LLM Services), maintain its own database, execute generated commands, or decide Kubernetes runtime/provider specifics.
 
-- resolve authenticated Magda user identity received through Magda Gateway;
-- enforce one current sandbox per user;
-- create/get/watch/patch/delete `SandboxClaim` and the bound `Sandbox`;
-- suspend/resume and hard-delete lifecycle;
-- post-claim bootstrap using Kubernetes exec + stdin;
-- lifecycle-bound system-managed Magda API-key creation/rotation/revocation;
-- DSH browser HTTP/WebSocket proxying;
-- meaningful-activity tracking and idle policy;
-- lifecycle/readiness/error information for the Magda web client;
-- operational lifecycle metrics/audit.
-
-It does **not** own:
-
-- LLM provider routing/credentials/model authorisation — see #3838 / [llm-services.md](./llm-services.md);
-- a dedicated Agent Manager database;
-- user skill persistence (later skills design);
-- model-generated command execution.
-
-## Source of truth
-
-The initial design intentionally has no Agent Manager persistence database.
+## Durable sources of truth and identity
 
 ```text
-user ownership/lifecycle -> SandboxClaim/Sandbox
-DSH/workspace/session     -> sandbox PVC
-Magda API credential      -> Magda auth/API-key store + PVC-backed mgd/DSH config
-LLM providers             -> Magda LLM Services / LiteLLM
+installation + user UUID -> deterministic SandboxClaim (KAS control-plane)
+claim.status.sandbox.name -> Sandbox / Pod / KAS Service
+claim annotations/lifecycle -> user, installation, progress, last activity, deletion deadline
+Sandbox PVC -> DSH sessions / workspace / mgd and DSH profiles
+Authorization DB -> installation-scoped system-managed user API key/expiry
+LiteLLM -> provider routing and provider secret (outside Sandbox)
 ```
 
-Claim metadata includes:
+#3850 derives a stable installation ID from Helm namespace/release and uses `magda-agent-<installation-id>-<user-uuid>` claim names plus `agent.magda.io/installation-id` and user labels. List/adopt/reconcile only claims in this installation; never accidentally act on another Magda release. The Sandbox namespace normally resolves to `<release-namespace>-agents` with an override, and the user key reserved name is also installation-scoped.
 
-```text
-metadata.name = magda-agent-<user-uuid>
-metadata.labels["agent.magda.io/user-id"] = <user-uuid>
-```
+`SandboxClaim.metadata.uid` denotes a particular incarnation, not an extra Magda logical session id. Warm adoption means Sandbox name can differ from claim name; always resolve the bound Sandbox from claim status.
 
-A separate `session-id` is unnecessary. `SandboxClaim.metadata.uid` is the incarnation identifier.
+## KAS control protocol and readiness
 
-## Agent Sandbox control protocol
+Agent Manager uses Kubernetes/KAS APIs rather than a separate controller REST endpoint. It creates a claim **before** issuing the raw managed credential so an interrupted bootstrap is discoverable. It waits for claim status and Pod readiness, uses `pods/exec` with stdin to bootstrap, verifies the required DSH process restart, then exposes the runtime to the browser. Warm Sandboxes have DSH and a dedicated PVC but **no per-user secrets** before adoption.
 
-Agent Manager talks to the Kubernetes API. It may use an Agent Sandbox SDK where suitable, but there is no requirement for a separate controller REST service.
+Initial #3850 implementation may poll for readiness; watching instead is an optimization, **not** an accepted protocol requirement. The lifecycle invariant is to verify the actual adopted Pod/DSH is usable before returning READY.
 
-Provisioning:
+Agent Manager creates/patches/deletes its own claims, patches Sandbox `operatingMode`, and relies on KAS for Pods/Services/PVC ownership and garbage collection.
 
-1. create/adopt `SandboxClaim` against configured WarmPool;
-2. watch the Claim `Ready` condition rather than polling;
-3. read `claim.status.sandbox.name`;
-4. resolve the bound Sandbox/Pod/Service;
-5. run bootstrap;
-6. expose DSH only after bootstrap succeeds.
+## RBAC, Sandbox identity and transport
 
-Warm adoption means claim name and Sandbox name can differ. Current Agent Sandbox guarantees the backing Pod name matches the Sandbox name.
+Agent Manager's ServiceAccount has **namespace-scoped** KAS claim/sandbox read/change permissions and tightly limited `pods/exec` (`get` + `create`) to read the stock DSH token and bootstrap. `pods/log` is not needed. No cluster-wide exec.
 
-## Kubernetes RBAC
+Manager proxies same-origin DSH HTTP and native `/api/remote.mux` WebSocket. Browser and Gateway authorization is rechecked; `X-Magda-Session`, Magda/browser Cookies, Authorization and proxy credentials are filtered before DSH. The Manager pins external Host and preserves Origin/Fetch headers needed for DSH's own trust fence. The DSH launch token and signed cookie are held only server-side; per-Sandbox cache may be independently refreshed by multiple Manager replicas.
 
-RBAC is namespace-scoped to the dedicated agent namespace and limited to required resources.
+Logout/reset/deletion must close active runtime sockets promptly, without waiting for KAS GC. **NetworkPolicy enforcement** is a mandatory separate cluster property for restricting direct Sandbox access (see [network-security.md](./network-security.md)): DSH's Host fence does not replace it.
 
-Expected permissions include:
+## Post-claim bootstrap and managed key
 
-- `SandboxClaim`: get/list/watch/create/patch/delete;
-- `Sandbox`: get/list/watch/patch as needed for operating mode;
-- Pods: get and `pods/exec` for bootstrap and stock-DSH launch-token hand-off;
-- read only the Services/status needed for DSH routing.
+After creating/adopting the claim, Agent Manager rotates the installation's reserved user-scoped Magda API key **with an initial eight-hour expiry**, then passes it through `pods/exec` stdin (never Pod args/env/labels/logs). The helper writes restrictive PVC-backed `mgd` and DSH managed-provider configuration. The same key allows ordinary external Magda `/api` requests and authenticated LLM facade calls; provider secrets stay inside the LLM Services/LiteLLM boundary.
 
-Agent Manager does **not** need `pods/log` for DSH authentication. The Magda agent image hands the stock DSH launch token to Agent Manager through a restrictive in-memory file read via `pods/exec`; see #3824 / [dsh-integration.md](./dsh-integration.md).
+Suspend/resume retains the same key. Successful resume and other **meaningful activity** extend expiry and `SandboxClaim.spec.lifecycle.shutdownTime`. A new workspace/reset rotates it; logout or permanent deletion revokes it before the claim/PVC are removed. Partial bootstrap/rotation cleanup must fail closed, retaining recoverable state until revocation succeeds.
 
-Agent Manager must not receive cluster-wide exec privileges and sandboxes have no service-account token.
+The previously accepted notion of a key with **no intrinsic TTL** has been superseded in #3850 by an expiring system-managed key with a renewable deadline. This is a consistency and security improvement; see [authentication.md](./authentication.md).
 
-## Bootstrap
+## Lifecycle states / browser API
 
-Warm sandboxes run DSH before assignment and contain no user-specific Magda/LLM credentials.
-
-After claim:
-
-```text
-Agent Manager
-  -> Kubernetes exec
-  -> /usr/local/bin/magda-agent-bootstrap
-  -> stdin bootstrap payload
-```
-
-Bootstrap data includes:
-
-- external Magda base URL;
-- system-managed Magda API-key id + secret;
-- reserved `mgd` profile name/config;
-- Magda LLM Services endpoint/provider alias;
-- default model and reasoning effort.
-
-Secrets are passed on the exec stream/stdin, not command-line arguments, claim labels/annotations or Pod environment.
-
-The helper writes required configuration under PVC-backed locations with restrictive permissions and performs a minimal verification before Agent Manager considers the environment READY.
-
-## System-managed Magda API key
-
-Agent Manager owns lifecycle orchestration for one reserved-name key per current sandbox.
-
-Rules:
-
-- before a new sandbox, remove stale keys with the reserved name and create exactly one fresh key;
-- suspend/resume retains the existing key/profile;
-- starting a new sandbox rotates the key by deleting/recreating it;
-- permanent sandbox deletion/logout revokes/deletes it;
-- reconciliation enforces "no current sandbox -> no system-managed agent key" best-effort.
-
-The key has no intrinsic TTL in the initial design; its lifetime is bounded by sandbox lifecycle.
-
-## API shape
-
-Representative browser/control API:
+Representative operations:
 
 ```text
 GET    /api/v0/agent/session
@@ -130,26 +61,28 @@ DELETE /api/v0/agent/session
 GET    /api/v0/agent/session/status
 ```
 
-The exact REST naming may change during implementation, but semantics are fixed:
+Route names may evolve; semantics remain one workspace, visible provisioning/ready/suspended/error/deleting status, and a separate authenticated DSH runtime proxy route.
 
-- GET derives state from current Kubernetes resources;
-- POST creates when absent and is idempotent for the current user;
-- reset deletes/recreates;
-- DELETE permanently destroys current sandbox/key;
-- state/error responses distinguish ALLOCATING, BOOTSTRAPPING, READY, SUSPENDED, DELETING and FAILED/DEGRADED.
+`README`/UI should state data is ephemeral to the Sandbox and reset/logout is destructive.
 
-DSH browser traffic uses a separate authenticated same-origin HTTP/WebSocket proxy route.
+## Activity tracking and failure semantics
 
-`X-Magda-Session` is verified by Agent Manager and stripped before forwarding. It never enters the Sandbox. Agent Manager pins the configured external Host, forwards the browser Origin/Fetch metadata required by DSH's trust fence, and strips browser/Magda credentials before DSH.
+30 minutes of **meaningful** inactivity -> suspend; eight hours -> hard delete. **Open transport, polling and heartbeat do not count.** #3850 currently counts successful explicit HTTP DSH mutation RPCs plus resume; original design includes actively executing foreground tools. The >30-minute foreground-tool case is **unresolved**: decide if and how verified active work renews state without letting a permanently idle WebSocket keep Sandboxes alive (see [session-lifecycle.md](./session-lifecycle.md)).
 
-For stock DSH browser authentication, Agent Manager holds the DSH cookie server-side in a per-Sandbox in-memory cache. Multiple Manager replicas may independently redeem the same process launch token; no shared cookie database/sticky session is required.
+The claim activity/deadline write and Authorization DB key-expiry extension are **two separate writes**. The current MVP's parallel call is **not atomic**. The target invariant is a monotonic durable last-activity time and expiry/deletion deadline with retries after transient failure, no regression from stale/concurrent requests, and reconciliation after a Manager restart. A failed activity write must not be irreversibly suppressed by an in-memory debounce timestamp. This is pending implementation hardening in #3850, not already established by the code.
 
-When logout or another lifecycle transition permanently deletes a Sandbox, Agent Manager must promptly close active DSH proxy sockets associated with that Sandbox.
+## Concurrency, restarts and cleanup
 
-## Concurrency and restart
+Serialize conflicting start/reset/delete per installation+user and make operations idempotent. A second request must converge on the same deterministic claim or be explicitly retried. Reconstruct state after Manager restart from Kubernetes claims, annotations and the Authorization API rather than an app DB.
 
-Deterministic claim identity provides the primary race guard. Concurrent creates converge on the same claim or receive conflict/retry behavior rather than creating two user sandboxes.
+- Interrupted ALLOCATING/BOOTSTRAPPING -> revoke managed credential, then delete partial Sandbox/PVC.
+- Persisted SUSPENDING/RESUMING -> finish transition or explicitly fail visibly.
+- DELETING/revocation failure -> retain identifiable claim/key and retry before destroying the evidence needed for cleanup.
+- Reconcile idle claims based on persisted time and KAS lifecycle deadline even if the Manager was down.
+- Never process other installations' claims/managed keys, including when namespaces are shared.
 
-Agent Manager restart requires no DB recovery. It re-derives state from Kubernetes resources and the Magda API-key store.
+## Qualification evidence
 
-Operations must be idempotent because any create/bootstrap/delete may be interrupted between steps.
+- [PR #3844](https://github.com/magda-io/magda/pull/3844): local Gateway/Agent Manager/DSH stock-cookie and WS flow.
+- [PR #3852](https://github.com/magda-io/magda/pull/3852): GKE ingress/KAS/gVisor transport **with a minimal stand-in proxy, without real Magda Gateway/auth**; no proof of NetworkPolicy enforcement.
+- [PR #3850](https://github.com/magda-io/magda/pull/3850): integrated Manager and lifecycle tests; activity-renewal failure cases and GKE security gating need follow-up.
