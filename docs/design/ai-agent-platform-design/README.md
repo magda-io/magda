@@ -1,6 +1,6 @@
 # Magda v8 AI Agent Platform Design
 
-**Status:** Blueprint in progress  
+**Status:** Blueprint in progress — MVP/GKE evidence reconciled, security acceptance still open  
 **Umbrella design issue:** #3811  
 **Working PR:** #3819  
 **Parent implementation epic:** #3810
@@ -40,20 +40,20 @@ DSH + mgd + tools                +--> AWS Bedrock
 The following contracts are now the baseline for the initial v8 design:
 
 - **one current sandbox per Magda user**; a user UUID is the stable ownership key;
-- the deterministic `SandboxClaim` name is derived from the Magda user UUID and the claim also carries `agent.magda.io/user-id=<uuid>`;
+- the deterministic `SandboxClaim` name is derived from the **Magda installation ID + user UUID** (`magda-agent-<installation-id>-<user-uuid>` in #3850), with both installation and user labels; this prevents cross-release adoption/cleanup;
 - there is no separate Magda Agent session-id/database row; `SandboxClaim.metadata.uid` is sufficient when an incarnation/generation identifier is needed;
 - Agent Manager is intentionally **stateless** for the initial scope: Kubernetes Agent Sandbox resources are the control-plane source of truth and the sandbox PVC is the source of truth for DSH/workspace state;
 - Helm owns `SandboxTemplate` and `SandboxWarmPool`; Agent Manager creates/patches/deletes `SandboxClaim`; Agent Sandbox owns `Sandbox`, Pod, Service and template-created PVC lifecycle;
 - Agent Manager always resolves the adopted sandbox from `SandboxClaim.status.sandbox.name`; warm-pool adoption does not rename the Sandbox;
 - each Sandbox has its own PVC; an adopted warm sandbox/PVC becomes that user's sandbox and is never returned to the pool;
-- production/default warm-pool target is configurable and initially **2**; lightweight/local deployments may set it to **0**;
+- the selected `agent-services.warmPool.type` (`runc`, `gvisor`, `kata`) renders **one** template/pool, with configurable size (production starting recommendation **2**, lightweight/local **0**);
 - DSH starts in the generic warm sandbox without user credentials;
 - after claim/adoption, Agent Manager bootstraps the sandbox with Kubernetes exec + stdin before exposing DSH to the browser;
 - the bootstrap writes the `mgd` profile and DSH managed-provider/default-model configuration to PVC-backed paths;
 - 30 minutes of configurable meaningful inactivity suspends the Sandbox; 8 hours of configurable inactivity deletes it; explicit logout deletes immediately;
 - suspension preserves the PVC but not arbitrary running process memory; DSH/workspace/session data is reconstructed from disk on resume;
 - starting a new agent destroys the old Sandbox/PVC and creates a fresh Sandbox; there is no attempt to sanitise/reuse an old user environment;
-- each current sandbox has one system-managed Magda API key with a reserved name; it has no intrinsic expiry but is lifecycle-bound: retained across suspend/resume, rotated for a new sandbox and revoked on permanent deletion/logout;
+- each current sandbox has an **installation-scoped, user-scoped, system-managed Magda API key**, expiring with the renewable eight-hour inactivity deadline in #3850; retained and expiry-renewed on resume, rotated for a new sandbox, and revoked on permanent deletion/logout;
 - the same Magda API key is used by `mgd` and by DSH when calling the external Magda LLM API;
 - shared LLM access is owned by a separate **Magda LLM Services** component (#3838), not Agent Manager;
 - Magda LLM Services uses normal Magda authentication/authorisation and proxies authorised model calls to internal LiteLLM;
@@ -136,7 +136,7 @@ Runtime + credentials + network
 | --- | --- | --- |
 | Local development | runc/default | trusted single-developer use |
 | Local security/PoC | gVisor | production-style isolation testing |
-| GKE production | gVisor | recommended/reference |
+| GKE | gVisor | **L4 ingress, KAS/gVisor and zonal PD validated** in #3852; NetworkPolicy enforcement and Cloud IAM isolation **not yet security-qualified** |
 | AKS production | Kata Pod Sandboxing | supported target |
 | EKS | Fargate candidate | future #3821; not initial support |
 
@@ -148,18 +148,24 @@ Runtime choice remains deployment policy; Agent Manager does not contain gVisor/
 
 #3841 / draft PR #3844 is the local Minikube evidence base for direct DSH exposure, WebSocket proxying, stock/#8528 auth comparison, WarmPool adoption, launch-token hand-off and runc/gVisor lifecycle behavior.
 
-Provider-specific release qualification is still required for GKE/gVisor (#3848) and AKS/Kata. Long-lived ingress configuration is tracked by #3847 and the path-scoped DSH CSP exception by #3846.
+#3848 / [draft PR #3852](https://github.com/magda-io/magda/pull/3852), stacked on #3844, verified the real-GKE **regional external L4 passthrough NLB -> community ingress-nginx -> minimal Agent Manager proxy -> KAS/gVisor -> DSH** path, long-lived WebSocket behaviour and zonal PD CSI suspension/remount/deletion. It also proved that a GKE cluster can accept KAS NetworkPolicy objects **without enforcing them**: unapproved Sandbox ingress and private/control-plane egress worked on its legacy datapath. A GKE metadata token endpoint returned 200, but token IAM permissions were not tested. **This is transport/storage qualification, not production network/IAM security qualification.**
+
+Current integrated implementation [draft PR #3850](https://github.com/magda-io/magda/pull/3850) consolidated the Helm charts into **one agent-services chart** (separate Manager/Runtime images), independently gated LLM Services with optional bundled LiteLLM, an installation-scoped claim/key namespace, renewable managed-key expiry and inactivity-based deletion, and the verified `fsGroupChangePolicy: OnRootMismatch` CSI fix. #3850's pre-install hook checks KAS API and RuntimeClass **but not effective NetworkPolicy enforcement**.
+
+The v8 alpha target uses GKE/gVisor and the experimentally qualified L4 ingress route; **native GCE L7 Ingress is deferred to #3851**. Community ingress-nginx is retired and is **not endorsed here as a long-term maintained production controller**; the IngressClass's actual `spec.controller` must be verified (the #3852 cluster had an F5-owned `nginx` class). The full network/IAM security matrix, maintained ingress-controller choice, multi-zone storage/HA and >30-minute foreground-tool inactivity behaviour are still open. See [deployment.md](./deployment.md), [network-security.md](./network-security.md) and [session-lifecycle.md](./session-lifecycle.md).
+
+Long-lived ingress configuration is tracked by #3847 and path-scoped DSH CSP by #3846.
 
 ## Remaining #3811 work
 
 The foundation is substantially clearer, but #3811 is **not complete**. Remaining implementation-critical design includes:
 
 - #3838 exact LLM API/authz/Helm contract;
-- network/security enforcement per supported provider;
+- **verified** network/security enforcement per provider (GKE NetworkPolicy negative tests, metadata/KSA/Workload Identity IAM boundaries);
 - polished/structured mutation-confirmation UX (optional DSH approval integration);
 - user/global skill persistence/trust model;
 - full web/product lifecycle UX;
-- deployment/Helm details and production qualification;
+- Helm/runtime implementation contract is now represented in #3850; remaining **secure GKE deployment qualification**, maintained ingress-controller choice and cluster preflight policy;
 - observability/audit;
 - migration/coexistence with the current WebGPU agent.
 
