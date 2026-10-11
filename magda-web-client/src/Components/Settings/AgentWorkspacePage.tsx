@@ -6,9 +6,11 @@ import React, {
     useState
 } from "react";
 import Button from "rsuite/Button";
+import ButtonToolbar from "rsuite/ButtonToolbar";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import Modal from "rsuite/Modal";
+import Panel from "rsuite/Panel";
 import Breadcrumb from "./Breadcrumb";
 import SideNavigation from "./SideNavigation";
 import {
@@ -19,7 +21,8 @@ import {
     isAgentWorkspacePollingState,
     resetAgentWorkspace,
     resumeAgentWorkspace,
-    startAgentWorkspace
+    startAgentWorkspace,
+    startAgentWorkspaceStatusPolling
 } from "../../api-clients/AgentWorkspaceApis";
 import "./main.scss";
 import "./AgentWorkspacePage.scss";
@@ -154,8 +157,10 @@ const AgentWorkspacePage: FunctionComponent = () => {
         if (!isAgentWorkspacePollingState(status?.state) || action) {
             return;
         }
-        const timeout = window.setTimeout(() => refresh(), POLL_INTERVAL_MS);
-        return () => window.clearTimeout(timeout);
+
+        // Continue polling even when consecutive responses have the same state.
+        // Provisioning commonly remains ALLOCATING for several polls.
+        return startAgentWorkspaceStatusPolling(refresh, POLL_INTERVAL_MS);
     }, [action, refresh, status?.state]);
 
     const runAction = async (
@@ -192,15 +197,24 @@ const AgentWorkspacePage: FunctionComponent = () => {
     const renderContent = () => {
         if (loading && !status) {
             return (
-                <div className="agent-workspace-loading" aria-live="polite">
-                    <Loader size="lg" content="Checking Agent Workspace…" />
-                </div>
+                <Panel
+                    bordered
+                    shaded
+                    className="agent-workspace-loading"
+                    aria-live="polite"
+                >
+                    <Loader
+                        size="lg"
+                        vertical
+                        content="Checking Agent Workspace…"
+                    />
+                </Panel>
             );
         }
 
         if (!status) {
             return (
-                <div className="agent-workspace-state-card">
+                <Panel bordered shaded className="agent-workspace-state-card">
                     <h2>Agent Workspace could not be loaded</h2>
                     <p>
                         Check your connection and try again. If the problem
@@ -209,13 +223,13 @@ const AgentWorkspacePage: FunctionComponent = () => {
                     <Button appearance="primary" onClick={() => refresh(true)}>
                         Try Again
                     </Button>
-                </div>
+                </Panel>
             );
         }
 
         if (status.state === "ABSENT") {
             return (
-                <div className="agent-workspace-introduction">
+                <Panel bordered shaded className="agent-workspace-introduction">
                     <h1>Agent Workspace</h1>
                     <WorkspaceInformation />
                     <Button
@@ -227,7 +241,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
                     >
                         Start Agent Workspace
                     </Button>
-                </div>
+                </Panel>
             );
         }
 
@@ -260,11 +274,18 @@ const AgentWorkspacePage: FunctionComponent = () => {
         const isSuspended = status.state === "SUSPENDED";
 
         return (
-            <div
+            <Panel
+                bordered
+                shaded
                 className={`agent-workspace-state-card state-${status.state.toLowerCase()}`}
                 aria-live="polite"
             >
-                {!isFailure && !isSuspended ? <Loader size="lg" /> : null}
+                {!isFailure && !isSuspended ? (
+                    <Loader
+                        size="lg"
+                        content="Workspace provisioning in progress"
+                    />
+                ) : null}
                 <h1>{details.title}</h1>
                 <p>{status.message || details.description}</p>
                 {isSuspended ? (
@@ -281,7 +302,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
                     </Button>
                 ) : null}
                 {isFailure ? (
-                    <div className="agent-workspace-state-actions">
+                    <ButtonToolbar className="agent-workspace-state-actions">
                         <Button
                             appearance="primary"
                             disabled={!!action}
@@ -292,7 +313,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
                                 : "Try Again"}
                         </Button>
                         {resetButton}
-                    </div>
+                    </ButtonToolbar>
                 ) : null}
                 {status.updatedAt ? (
                     <small>
@@ -300,7 +321,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
                         {new Date(status.updatedAt).toLocaleString()}
                     </small>
                 ) : null}
-            </div>
+            </Panel>
         );
     };
 

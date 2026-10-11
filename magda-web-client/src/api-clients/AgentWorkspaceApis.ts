@@ -54,6 +54,34 @@ export function isAgentWorkspacePollingState(
     );
 }
 
+export function startAgentWorkspaceStatusPolling(
+    poll: () => Promise<void>,
+    intervalMs: number
+): () => void {
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
+    const schedule = () => {
+        timeout = setTimeout(async () => {
+            try {
+                await poll();
+            } finally {
+                if (!cancelled) {
+                    schedule();
+                }
+            }
+        }, intervalMs);
+    };
+
+    schedule();
+    return () => {
+        cancelled = true;
+        if (timeout !== undefined) {
+            clearTimeout(timeout);
+        }
+    };
+}
+
 async function lifecycleRequest(
     method: "GET" | "POST" | "DELETE",
     suffix = ""

@@ -16,13 +16,15 @@
 }
 
 .agent-workspace-introduction,
+.agent-workspace-loading,
 .agent-workspace-state-card {
+    width: 100%;
     max-width: 800px;
-    padding: 30px;
-    border: 1px solid #d9dce3;
-    border-radius: 4px;
     background: #fff;
-    box-shadow: 0 2px 7px rgba(34, 42, 58, 0.08);
+
+    > .rs-panel-body {
+        padding: 30px;
+    }
 
     h1,
     h2 {
@@ -54,19 +56,21 @@
 
 .agent-workspace-loading,
 .agent-workspace-state-card {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    min-height: 260px;
+    > .rs-panel-body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 260px;
+    }
 }
 
-.agent-workspace-loading {
+.agent-workspace-loading > .rs-panel-body {
     align-items: center;
 }
 
 .agent-workspace-state-card {
-    > .rs-loader {
+    > .rs-panel-body > .rs-loader {
         margin-bottom: 24px;
     }
 
@@ -153,8 +157,11 @@
     }
 
     .agent-workspace-introduction,
+    .agent-workspace-loading,
     .agent-workspace-state-card {
-        padding: 20px;
+        > .rs-panel-body {
+            padding: 20px;
+        }
     }
 
     .agent-workspace-toolbar {

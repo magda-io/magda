@@ -6,7 +6,8 @@ import {
     isAgentWorkspacePollingState,
     resetAgentWorkspace,
     resumeAgentWorkspace,
-    startAgentWorkspace
+    startAgentWorkspace,
+    startAgentWorkspaceStatusPolling
 } from "./AgentWorkspaceApis";
 
 jest.mock("../config", () => ({
@@ -104,6 +105,34 @@ describe("AgentWorkspaceApis", () => {
         await expect(getAgentWorkspaceStatus()).rejects.toThrow(
             "unknown lifecycle state"
         );
+    });
+});
+
+describe("startAgentWorkspaceStatusPolling", () => {
+    const flushPromises = () =>
+        new Promise<void>((resolve) =>
+            jest.requireActual("timers").setImmediate(resolve)
+        );
+
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    it("keeps polling when consecutive responses have the same state", async () => {
+        const poll = jest.fn().mockResolvedValue(undefined);
+        const stop = startAgentWorkspaceStatusPolling(poll, 2000);
+
+        jest.advanceTimersByTime(2000);
+        await flushPromises();
+        expect(poll).toHaveBeenCalledTimes(1);
+
+        jest.advanceTimersByTime(2000);
+        await flushPromises();
+        expect(poll).toHaveBeenCalledTimes(2);
+
+        stop();
+        jest.advanceTimersByTime(4000);
+        await Promise.resolve();
+        expect(poll).toHaveBeenCalledTimes(2);
     });
 });
 
