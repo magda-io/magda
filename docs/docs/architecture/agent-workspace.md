@@ -121,9 +121,11 @@ reasoning configuration. The managed profile therefore:
 - keeps DSH's native sidebar, New Session, session history/switching, Search, and
   collapse/expand behavior;
 - brands the sidebar **Agent Workspace** through DSH's `sidebar.brand.mark` and
-  `sidebar.brand.name` slots;
-- hides Plugins, the Settings trigger, Workspace View Options, Add Workspace,
-  and the redundant new-session workspace chooser; and
+  `sidebar.brand.name` slots and uses the same **M** mark in the empty-chat hero
+  through `conversation.hero.brand.mark`;
+- hides Automation tasks, Plugins, the Settings trigger, Workspace View Options,
+  Add Workspace, Delete workspace, and the redundant new-session workspace
+  chooser; and
 - keeps every session rooted in the one managed `/data/workspace` filesystem.
 
 The Settings and permission services remain mounted even though their buttons or

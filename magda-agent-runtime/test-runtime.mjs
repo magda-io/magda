@@ -69,7 +69,8 @@ assert.match(
 for (const hiddenWorkspaceControl of [
     "Choose workspace",
     "Add workspace",
-    "View options"
+    "View options",
+    "Automation tasks"
 ]) {
     assert.match(
         managedClient,
@@ -79,8 +80,18 @@ for (const hiddenWorkspaceControl of [
 }
 assert.match(
     managedClient,
+    /item\.textContent\?\.trim\(\) === "Delete workspace"/,
+    "The managed UI must hide DSH's destructive workspace action"
+);
+assert.match(
+    managedClient,
     /element\.textContent = "Agent Workspace"/,
     "The managed UI must preserve the Agent Workspace hero branding"
+);
+assert.match(
+    managedClient,
+    /element\.textContent\?\.trim\(\) !== "Agent Workspace"/,
+    "Hero branding must not create a MutationObserver feedback loop"
 );
 let loadedManagedModule;
 runInNewContext(managedClient, {
@@ -136,6 +147,7 @@ managedPlugin.apply({
 });
 assert.deepEqual(slotInjections, [
     "sidebar.brand.mark",
+    "conversation.hero.brand.mark",
     "sidebar.brand.name",
     "sidebar.settings"
 ]);
@@ -143,12 +155,13 @@ assert.deepEqual(
     slotRegistrations.map(({ options }) => ({ ...options })),
     [
         { name: "sidebar.brand.mark", priority: -100 },
+        { name: "conversation.hero.brand.mark", priority: -100 },
         { name: "sidebar.brand.name", priority: -100 },
         { name: "sidebar.settings", priority: -100 }
     ]
 );
 assert.deepEqual(serviceInjections, [["commandUi"]]);
-const [brandMark, brandName, settings] = slotRegistrations.map(
+const [brandMark, heroBrandMark, brandName, settings] = slotRegistrations.map(
     ({ component }) => component
 );
 assert.deepEqual(JSON.parse(JSON.stringify(brandMark({ size: 24 }))), {
@@ -157,6 +170,14 @@ assert.deepEqual(JSON.parse(JSON.stringify(brandMark({ size: 24 }))), {
         "aria-hidden": true,
         className: "magda-dsh-brand-mark",
         style: { width: 24, height: 24 },
+        children: "M"
+    }
+});
+assert.deepEqual(JSON.parse(JSON.stringify(heroBrandMark())), {
+    type: "span",
+    props: {
+        "aria-hidden": true,
+        className: "magda-dsh-brand-mark magda-dsh-hero-brand-mark",
         children: "M"
     }
 });

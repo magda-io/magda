@@ -10,12 +10,12 @@
             document.head.appendChild(style);
         }
         style.textContent = `
-        /* Magda owns the only filesystem workspace. Keep DSH's native Session
-           navigation and Search, but hide controls that create or regroup
-           filesystem workspaces. */
+        /* Keep DSH's native Session navigation and Search, but hide the
+           deployment-owned Automation panel and filesystem-workspace controls. */
         button[aria-label="Choose workspace"],
         button[aria-label="Add workspace"],
-        button[aria-label="View options"] {
+        button[aria-label="View options"],
+        button[aria-label="Automation tasks"] {
             display: none !important;
         }
 
@@ -32,6 +32,13 @@
             line-height: 1;
         }
 
+        .magda-dsh-hero-brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
         .magda-dsh-brand-name {
             overflow: hidden;
             color: var(--dsw-alias-label-primary);
@@ -41,34 +48,49 @@
         }
     `;
 
-        // The pinned DSH release does not expose the new-session hero through a
-        // branding slot. Keep this narrowly scoped replacement while using the
-        // native sidebar branding slots below.
-        const applyHeroBrand = () => {
+        // Keep the pinned release's hero text and workspace action menu aligned
+        // with Magda's single managed filesystem workspace. The hero mark itself
+        // is supplied through DSH's supported slot below.
+        const applyManagedDom = () => {
             for (const element of document.querySelectorAll("span")) {
                 if (
                     element.childNodes.length !== 1 ||
                     element.firstChild?.nodeType !== Node.TEXT_NODE ||
-                    element.textContent?.trim() !== "Into the Unknown"
+                    !["Into the Unknown", "Agent Workspace"].includes(
+                        element.textContent?.trim()
+                    )
                 ) {
                     continue;
                 }
 
-                element.textContent = "Agent Workspace";
                 const titleGroup = element.parentElement;
                 const previewBadge = element.nextElementSibling;
                 const brandMark = titleGroup?.previousElementSibling;
+                if (previewBadge?.textContent?.trim() !== "Preview") continue;
+
+                if (element.textContent?.trim() !== "Agent Workspace") {
+                    element.textContent = "Agent Workspace";
+                }
                 if (previewBadge instanceof HTMLElement) {
                     previewBadge.style.display = "none";
                 }
                 if (brandMark instanceof HTMLElement) {
-                    brandMark.style.display = "none";
+                    brandMark.style.removeProperty("display");
+                }
+            }
+
+            for (const item of document.querySelectorAll('[role="menuitem"]')) {
+                if (
+                    item instanceof HTMLElement &&
+                    item.textContent?.trim() === "Delete workspace"
+                ) {
+                    item.style.display = "none";
                 }
             }
         };
 
-        applyHeroBrand();
-        const observer = new MutationObserver(applyHeroBrand);
+        applyManagedDom();
+        const observer = new MutationObserver(applyManagedDom);
         observer.observe(document.body, {
             childList: true,
             subtree: true,
@@ -96,6 +118,12 @@
                     style: { width: size, height: size },
                     children: "M"
                 });
+            const AgentWorkspaceHeroBrandMark = () =>
+                jsx("span", {
+                    "aria-hidden": true,
+                    className: "magda-dsh-brand-mark magda-dsh-hero-brand-mark",
+                    children: "M"
+                });
             const AgentWorkspaceBrandName = () =>
                 jsx("span", {
                     className: "magda-dsh-brand-name",
@@ -121,6 +149,15 @@
                         ctx.slots.register(
                             { name: "sidebar.brand.mark", priority: -100 },
                             AgentWorkspaceBrandMark
+                        )
+                    );
+                    ctx.slots.inject("conversation.hero.brand.mark", () =>
+                        ctx.slots.register(
+                            {
+                                name: "conversation.hero.brand.mark",
+                                priority: -100
+                            },
+                            AgentWorkspaceHeroBrandMark
                         )
                     );
                     ctx.slots.inject("sidebar.brand.name", () =>

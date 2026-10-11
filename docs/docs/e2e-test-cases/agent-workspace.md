@@ -85,12 +85,14 @@ for implementation details, key decisions, configuration, and deployment steps.
 3. Select **Start Agent Workspace**. Observe `ALLOCATING`, then
    `BOOTSTRAPPING`, then the embedded stock DSH UI (`READY`). Kubernetes names
    and addresses must not appear in the UI.
-4. Confirm the native DSH sidebar is visible and branded **Agent Workspace**.
-   New Session, the session history, Search, and collapse/expand must work.
-   Plugins, Settings, Workspace View Options, Add Workspace, and the redundant
-   workspace chooser must be absent. Feedback, Permission, and Model composer
-   commands, provider/model/plugin management, and persistent
-   `danger-full-access` must remain unavailable.
+4. Confirm the native DSH sidebar is visible and branded **Agent Workspace** and
+   the same **M** mark appears beside the empty-chat **Agent Workspace** heading.
+   New Session, the session history, Search, rename, and collapse/expand must
+   work. Automation tasks, Plugins, Settings, Workspace View Options, Add
+   Workspace, Delete workspace, and the redundant workspace chooser must be
+   absent. Feedback, Permission, and Model composer commands,
+   provider/model/plugin management, and persistent `danger-full-access` must
+   remain unavailable.
 5. Create Session A and complete a distinctive prompt. Create Session B and
    complete a different prompt. Switch between A and B and confirm both
    histories remain. Rename one Session, search for it using DSH's native
