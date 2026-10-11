@@ -28,7 +28,13 @@ Magda deployment controls provider/model selection. The production Magda DSH pro
 
 New DSH sessions default to `workspace-write` with approval policy `ask`. The managed Magda UI hides the persistent `danger-full-access` selection. Per-action approval remains available when DSH decides an operation needs confirmation/escalation.
 
-The MVP embeds standard DSH Web rather than reimplementing its UI. It hides the managed UI's provider/model/plugin management, persistent Full Access selection and DSH navigation; **which terminal/workspace-picker interactions to expose requires a separately reviewed security/UX decision**. Do not represent CSS hiding alone as a privilege boundary.
+The initial #3850 snapshot crops the entire DSH navigation column, although DSH can create multiple sessions. **Agreed target:** retain one Agent Workspace/Sandbox per user per Magda installation while **allowing multiple DSH sessions/conversations**. Reuse a **simplified DSH sidebar** so sessions are visible and switchable instead of hidden. Brand the sidebar **Agent Workspace**; keep DSH's existing **New Session** terminology consistently throughout its UI and **keep Search**. Hide Plugins, Settings, View Options and Add Workspace controls; Settings need only be **hidden**, not disabled at its service level. Do not fork DSH just to replace standard text. Avoid exposing multiple separately managed filesystem Workspaces; DSH sessions share the single managed Sandbox/PVC.
+
+The managed UI still hides deployment-controlled provider/model/plugin management and the persistent Full Access selector. CSS hiding is **not** a security boundary: runtime and Magda server authorization remain authoritative. The stock DSH sidebar/plugin customizations should be implemented through the managed profile where possible, replacing the iframe-crop workaround, with responsive/reconnect tests.
+
+## User-skill experience (future implementation)
+
+There is **no separate MAGDA skill editor/list management UI** in the first skill-system release. The user can ask the DSH agent to create/update/delete or inspect skills through the `mgd agent-skill` CLI, use DSH's **read-only file explorer** to review downloaded/local draft `SKILL.md` and associated resources, and optionally edit local files with DSH Bash. Editing a skill locally does **not** publish it; the agent should present drafts, request explicit confirmation and publish via `mgd`. A `capture-workflow` runtime-bundled skill and a brief configured DSH system-prompt instruction can occasionally suggest saving a successful reusable workflow. Published skills survive workspace deletion and sync after a new claim/bootstrap. See [skills.md](./skills.md).
 
 ## Gateway/proxy
 
