@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { StorageBucketMetaData, StorageObjectMetaData } from "./common.js";
+import {
+    StorageBucketMetaData,
+    StorageObjectMetaData,
+    getObjectOwnerId
+} from "./common.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import MagdaMinioClient from "./MagdaMinioClient.js";
 import { requirePermission } from "magda-typescript-common/src/authorization-api/authMiddleware.js";
@@ -119,6 +123,11 @@ async function createRecordContextData(
     }
 }
 
+/**
+ * Require permission for a storage object operation.
+ * For `upload` operations, the owner that the uploaded object should be stored with is set to `res.locals.storageObjectOwnerId`:
+ * the existing object's owner when the upload replaces an owned object, otherwise the proposed `ownerId` (i.e. the uploader).
+ */
 export function requireStorageObjectPermission(
     authDecisionClient: AuthDecisionQueryClient,
     registryClient: AuthorizedRegistryClient,
@@ -185,7 +194,7 @@ export function requireStorageObjectPermission(
             const objectMetaData: StorageObjectMetaData = stateData
                 ? {
                       size: stateData?.size,
-                      ownerId: stateData?.metaData?.["magda-owner-id"],
+                      ownerId: getObjectOwnerId(stateData?.metaData),
                       orgUnitId: stateData?.metaData?.["magda-org-unit-id"],
                       recordId: stateData?.metaData?.["magda-record-id"]
                           ? stateData.metaData["magda-record-id"]
@@ -234,14 +243,27 @@ export function requireStorageObjectPermission(
                       )
                     : {};
 
-                const newContextData = { ...currentContextData };
-                newContextData.object = {
-                    record: newRecordContextData
+                // build a separate copy so the `currentContextData` used for the "before upload" check is not altered
+                const newContextData: any = {
+                    storage: {
+                        object: {
+                            ...currentContextData.storage.object,
+                            ...(metaData ? metaData : {})
+                        }
+                    },
+                    object: {
+                        record: newRecordContextData
+                    }
                 };
-                newContextData.storage.object = {
-                    ...newContextData.storage.object,
-                    ...(metaData ? metaData : {})
-                };
+
+                if (objectMetaData?.ownerId) {
+                    // replacing an existing object doesn't transfer its ownership to the uploader
+                    newContextData.storage.object.ownerId =
+                        objectMetaData.ownerId;
+                }
+                // the owner that upload handlers should persist (via `magda-owner-id` metadata) for the uploaded object
+                res.locals.storageObjectOwnerId =
+                    newContextData.storage.object.ownerId;
 
                 if (!stateData) {
                     // storage object doesn't exist, we are creating the storage object

@@ -9,7 +9,11 @@ import {
     requireStorageBucketPermission,
     requireStorageObjectPermission
 } from "./storageAuthMiddlewares.js";
-import { StorageBucketMetaData, StorageObjectMetaData } from "./common.js";
+import {
+    StorageBucketMetaData,
+    StorageObjectMetaData,
+    OBJECT_OWNER_ID_META_KEY
+} from "./common.js";
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import { isValidS3ObjectKey } from "magda-typescript-common/src/getStorageUrl.js";
 import { parseRangeHeader } from "./rangeHeader.js";
@@ -343,6 +347,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * - the file is associated with a record
      * - the user has `object/record/update` or `object/record/create` permission to an existing record.
      *
+     * The uploader becomes the owner of a new object. When the upload replaces an existing object, the existing object's owner is kept.
+     *
      * @apiParam (Request body) {File[]} a list of file attachment. Please note: we only allow one file to be uploaded for one API call
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request path) {string} path The path in the bucket to put the file in
@@ -445,8 +451,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 if (recordId) {
                     metaData["magda-record-id"] = recordId;
                 }
-                if (res?.locals?.userId) {
-                    metaData["magda-user-id"] = res.locals.userId;
+                if (res?.locals?.storageObjectOwnerId) {
+                    metaData[OBJECT_OWNER_ID_META_KEY] =
+                        res.locals.storageObjectOwnerId;
                 }
                 if (req?.query?.orgUnitId) {
                     metaData["magda-org-unit-id"] = req.query.orgUnitId;
@@ -483,6 +490,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * Besides users have `storage/object/upload` permission, a user also has access to a file when:
      * - the file is associated with a record
      * - the user has `object/record/update` or `object/record/create` permission to an existing record.
+     *
+     * The uploader becomes the owner of a new object. When the upload replaces an existing object, the existing object's owner is kept.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request path) {string} filePath The path of the file to delete
@@ -575,8 +584,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             if (recordId) {
                 metaData["magda-record-id"] = recordId;
             }
-            if (res?.locals?.userId) {
-                metaData["magda-user-id"] = res.locals.userId;
+            if (res?.locals?.storageObjectOwnerId) {
+                metaData[OBJECT_OWNER_ID_META_KEY] =
+                    res.locals.storageObjectOwnerId;
             }
             if (req?.query?.orgUnitId) {
                 metaData["magda-org-unit-id"] = req.query.orgUnitId;
