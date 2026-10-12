@@ -124,7 +124,7 @@ Runtime + credentials + network
 | Shared LLM services | [llm-services.md](./llm-services.md) | #3838 — **Proposed** |
 | Network / security | [network-security.md](./network-security.md) | Draft |
 | Mutation confirmation | [mutation-approval.md](./mutation-approval.md) | Proposed product/DSH UX contract |
-| Skills | [skills.md](./skills.md) | Agreed follow-on design: three categories, existing-bucket ZIP storage, `mgd` management; implementation pending |
+| Skills | [skills.md](./skills.md) | Expanded MVP: Registry-backed metadata, Storage API archives, scoped OPA, `mgd`, workflow capture and catalogue UI; implementation #3854–#3857 |
 | Web/product integration | [web-ui.md](./web-ui.md) | Draft |
 | Deployment / Helm | [deployment.md](./deployment.md) | Draft |
 | Observability / audit | [observability.md](./observability.md) | Draft |
@@ -161,7 +161,7 @@ Long-lived ingress configuration is tracked by #3847 and path-scoped DSH CSP by 
 
 The Agent Workspace is disposable and may host multiple DSH sessions; durable **skills** live outside it. [skills.md](./skills.md) specifies three categories: runtime-bundled skills shipped with the pinned runtime (including `capture-workflow`), admin-published system skills available to all users (Markdown plus arbitrary scripts/models/assets), and owner-published Markdown-only user skills. Every skill runs under the *current user's* Magda authority and ordinary DSH tool approvals.
 
-Skills are included in the expanded draft MVP #3850, implemented sequentially as [#3854](https://github.com/magda-io/magda/issues/3854) (API/storage) → [#3855](https://github.com/magda-io/magda/issues/3855) (`mgd`/runtime sync) → [#3856](https://github.com/magda-io/magda/issues/3856) (capture/suggestions), with each stage independently reviewed and tested before proceeding. Agent Services independently authorizes skill CRUD and uses its own MinIO client against the **existing default Magda bucket**. Each published system/user skill is a single ZIP under `agent-services/skills/` with `SKILL.md`; no Agent Manager DB, new bucket, mandatory skill revision history, Registry aspect or skill editor UI. The `mgd agent-skill` CLI drives local draft/review/publish/sync. Skills are fetched **after warm-Sandbox claim and user bootstrap**, before READY, with manual sync later. Local edits, even to system skills, do not update published objects. System mutations emit concise Agent Services Pod logs; operators may enable provider-side bucket versioning for archival recovery. Storage API's separate owner-metadata mismatch is tracked by [#3853](https://github.com/magda-io/magda/issues/3853).
+Skills are included in expanded draft MVP #3850, delivered in reviewed stages [#3854](https://github.com/magda-io/magda/issues/3854) (Registry/Storage API + skill OPA) → [#3855](https://github.com/magda-io/magda/issues/3855) (`mgd`/runtime sync) → [#3856](https://github.com/magda-io/magda/issues/3856) (capture) → [#3857](https://github.com/magda-io/magda/issues/3857) (Settings Agent Skills catalogue), plus [#3858](https://github.com/magda-io/magda/issues/3858) (`agentWorkspace/access` permission). Published skills are **Registry `agent-skill` + `access-control` records**, backed by one ZIP each via the **existing Storage API/default bucket**, with `magda-record-id` linkage and `object/agentSkill/*` OPA policy. No Agent Manager DB, direct MinIO credentials in Agent Services, new bucket or mandatory revision history. Only the limited catalogue download/replace UI is added; skill creation remains agent-led. The `mgd agent-skill` CLI drives local draft/review/publish/sync. Skills are fetched **after warm-Sandbox claim and user bootstrap**, before READY, with manual sync later. Local edits, even to system skills, do not update published objects. System mutations emit concise Agent Services Pod logs; operators may enable provider-side bucket versioning for archival recovery. Storage API's separate owner-metadata mismatch is tracked by [#3853](https://github.com/magda-io/magda/issues/3853).
 
 ## Remaining #3811 work
 
@@ -170,7 +170,7 @@ The foundation is substantially clearer, but #3811 is **not complete**. Remainin
 - #3838 exact LLM API/authz/Helm contract;
 - **verified** network/security enforcement per provider (GKE NetworkPolicy negative tests, metadata/KSA/Workload Identity IAM boundaries);
 - polished/structured mutation-confirmation UX (optional DSH approval integration);
-- staged delivery of the **agreed** [runtime-bundled/system/user skill design](./skills.md) in the expanded **draft #3850** under #3854, #3855 and #3856 (implementation pending);
+- staged delivery of the **updated** [Registry-backed runtime-bundled/system/user skill design](./skills.md) in expanded **draft #3850** under #3854–#3857, plus `agentWorkspace/access` authorization #3858 (implementation pending);
 - full web/product lifecycle UX;
 - Helm/runtime implementation contract is now represented in #3850; remaining **secure GKE deployment qualification**, maintained ingress-controller choice and cluster preflight policy;
 - observability/audit;
