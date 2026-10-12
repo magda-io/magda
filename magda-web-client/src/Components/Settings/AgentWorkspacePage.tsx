@@ -29,7 +29,8 @@ import {
 import "./main.scss";
 import "./AgentWorkspacePage.scss";
 
-const POLL_INTERVAL_MS = 2000;
+const TRANSITION_POLL_INTERVAL_MS = 2000;
+const READY_POLL_INTERVAL_MS = 10000;
 
 const STATE_DETAILS: Record<
     Exclude<AgentWorkspaceState, "ABSENT" | "READY">,
@@ -130,6 +131,9 @@ const AgentWorkspacePage: FunctionComponent = () => {
     const [requestError, setRequestError] = useState<string>();
     const [terminateOpen, setTerminateOpen] = useState(false);
     const [resetOpen, setResetOpen] = useState(false);
+    const [pageVisible, setPageVisible] = useState(
+        typeof document === "undefined" || document.visibilityState !== "hidden"
+    );
     const requestSequence = useRef(0);
 
     const refresh = useCallback(async (showLoading = false) => {
@@ -162,15 +166,41 @@ const AgentWorkspacePage: FunctionComponent = () => {
     }, [refresh]);
 
     useEffect(() => {
-        if (!isAgentWorkspacePollingState(status?.state) || action) {
+        const handleVisibilityChange = () => {
+            const visible = document.visibilityState !== "hidden";
+            setPageVisible(visible);
+            if (visible) {
+                // Refresh immediately when returning to a tab that may have been
+                // idle long enough for KAS to suspend its workspace.
+                refresh();
+            }
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () =>
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+    }, [refresh]);
+
+    useEffect(() => {
+        if (
+            !pageVisible ||
+            !isAgentWorkspacePollingState(status?.state) ||
+            action
+        ) {
             return;
         }
 
-        // Continue polling even when consecutive responses have the same state.
-        // READY must also be polled so an idle KAS suspension replaces the stale
-        // runtime iframe with the Resume UI before the user sends another prompt.
-        return startAgentWorkspaceStatusPolling(refresh, POLL_INTERVAL_MS);
-    }, [action, refresh, status?.state]);
+        // Transitions need quick feedback, while stable READY polling is slower
+        // to avoid continuous Kubernetes API load from open workspace tabs.
+        return startAgentWorkspaceStatusPolling(
+            refresh,
+            status?.state === "READY"
+                ? READY_POLL_INTERVAL_MS
+                : TRANSITION_POLL_INTERVAL_MS
+        );
+    }, [action, pageVisible, refresh, status?.state]);
 
     const runAction = async (
         nextAction: "start" | "resume" | "terminate" | "reset",
