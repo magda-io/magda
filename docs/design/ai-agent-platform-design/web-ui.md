@@ -6,7 +6,7 @@
 
 ## Product lifecycle
 
-The v8 alpha implementation (#3850) exposes **Settings → Agent Workspace** only to the **Admin Users** role, with a normal Settings page and a same-origin embedded stock DSH Web UI when the Sandbox is READY. The backend independently checks the administrator role; hiding the menu is not authorization. The product still supports one current workspace per authenticated Magda user **per Magda installation**. Fine-grained feature/model authorization is later design work (#3838).
+The initial #3850 Agent Workspace page was hard-gated to the Admin Users role. **Expanded MVP target (#3858):** one grantable OPA operation **`agentWorkspace/access`** controls only the authenticated user's own Workspace lifecycle, DSH HTTP and WebSocket; the initial role grant remains admin-only by default. This is an API-side authorization check, not a menu visibility decision. The product supports one current Workspace per authenticated Magda user **per installation**, with multiple DSH sessions inside. Fine-grained LLM-model authorization remains separate (#3838).
 
 Expected lifecycle:
 
@@ -32,9 +32,33 @@ The initial #3850 snapshot crops the entire DSH navigation column, although DSH 
 
 The managed UI still hides deployment-controlled provider/model/plugin management and the persistent Full Access selector. CSS hiding is **not** a security boundary: runtime and Magda server authorization remain authoritative. The stock DSH sidebar/plugin customizations should be implemented through the managed profile where possible, replacing the iframe-crop workaround, with responsive/reconnect tests.
 
-## User-skill experience (future implementation)
+## Agent Skills catalogue and agent-led creation (expanded MVP)
 
-There is **no separate MAGDA skill editor/list management UI** in the first skill-system release. The user can ask the DSH agent to create/update/delete or inspect skills through the `mgd agent-skill` CLI, use DSH's **read-only file explorer** to review downloaded/local draft `SKILL.md` and associated resources, and optionally edit local files with DSH Bash. Editing a skill locally does **not** publish it; the agent should present drafts, request explicit confirmation and publish via `mgd`. A `capture-workflow` runtime-bundled skill and a brief configured DSH system-prompt instruction can occasionally suggest saving a successful reusable workflow. Published skills survive workspace deletion and sync after a new claim/bootstrap. See [skills.md](./skills.md).
+**Settings navigation:** the existing `Agent Workspace` entry becomes a non-clickable group (the existing `SideNavigation.tsx` behavior for parents with children):
+
+```text
+Agent Workspace
+  Open Workspace      /settings/agent-workspace
+  Agent Skills        /settings/agent-workspace/skills
+```
+
+`Open Workspace` appears if whoami includes `agentWorkspace/access` or the user has the existing administrator override; `Agent Skills` appears if whoami indicates `object/agentSkill/read` (including owner-scoped grant) or admin. The two children are independent and the parent is visible if either child is available. **Server-side OPA remains authoritative**; visibility is merely a UI hint. Do not gate the catalogue on permission to start a Workspace.
+
+The **Agent Skills** page is a **paginated, primarily read-only catalogue and learning surface**, not a general skill creator/editor. It shows authorized **READY** Registry records carrying the `agent-skill` aspect (system + own user skills) with a scope filter (All / My Skills / System Skills), optional search and skill ID, name, description, createdAt/by, updatedAt/by and scope. `createdBy` and `updatedBy` are user UUIDs. Registry values are derived from the published archive's `SKILL.md` (apart from owner/actor/timestamps/ID), not editable here.
+
+- **System skills:** view general metadata only; no system ZIP download/upload in this UI, even for admin.
+- **User skills:** download their published ZIP; replace the **ZIP of an existing owned skill** with the same authenticated Agent Services validation/publish endpoint used by `mgd`. Metadata name/description/updatedAt/updatedBy automatically refresh; record ID/owner/createdAt/createdBy are immutable. No uploading a ZIP to **create** a new skill, delete button or general metadata editor.
+- Accessible loading/empty/error/retry/pagination states; no file explorer editing or DSH session management on this page.
+- After successful replacement: **“Your skill has been updated. To use the latest copy in a running Workspace, ask your agent to resynchronise your skills, or run `mgd agent-skill sync`.”**
+
+Prominently explain the difference between durable reusable skills and disposable conversation histories, and direct users to **ask the agent to capture a successful procedure**, with a concrete example:
+
+> “We just cleaned up a CSV with inconsistent column headings and produced a file using consistent names. I regularly receive similar CSVs from different teams. Can you capture the approach we used—matching equivalent columns, handling ambiguous headings, and checking the output—as a reusable skill for future files?”
+
+Link to **Open Workspace** for users with access; do not show a dead action when they lack `agentWorkspace/access`. The catalogue should visibly teach the feature even for users who are not authorized to run a Workspace yet.
+
+**Agent-led authoring remains the primary workflow:** the user asks DSH to create/update/delete a skill, guided by the immutable `capture-workflow` runtime skill and `mgd agent-skill` commands. Local `SKILL.md` drafts can be reviewed in DSH's existing read-only file explorer or via the agent. Local Bash edits are not published. The agent requests explicit approval before publishing; the prompt suffix occasionally suggests capture after substantial repeatable work. Published skills survive Workspace deletion and sync after claim/bootstrap. See [skills.md](./skills.md), #3854–#3857 and #3858.
+
 
 ## Gateway/proxy
 
