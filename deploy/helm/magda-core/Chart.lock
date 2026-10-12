@@ -1,93 +1,93 @@
 dependencies:
 - name: magda-common
   repository: file://../magda-common
-  version: 7.0.0
+  version: 7.0.1
 - name: apidocs-server
   repository: file://../internal-charts/apidocs-server
-  version: 7.0.0
+  version: 7.0.1
 - name: authorization-api
   repository: file://../internal-charts/authorization-api
-  version: 7.0.0
+  version: 7.0.1
 - name: authorization-db
   repository: file://../internal-charts/authorization-db
-  version: 7.0.0
+  version: 7.0.1
 - name: cloud-sql-proxy
   repository: file://../internal-charts/cloud-sql-proxy
-  version: 7.0.0
+  version: 7.0.1
 - name: combined-db
   repository: file://../internal-charts/combined-db
-  version: 7.0.0
+  version: 7.0.1
 - name: content-api
   repository: file://../internal-charts/content-api
-  version: 7.0.0
+  version: 7.0.1
 - name: content-db
   repository: file://../internal-charts/content-db
-  version: 7.0.0
+  version: 7.0.1
 - name: correspondence-api
   repository: file://../internal-charts/correspondence-api
-  version: 7.0.0
+  version: 7.0.1
 - name: elasticsearch
   repository: file://../internal-charts/elasticsearch
-  version: 7.0.0
+  version: 7.0.1
 - name: magda-embedding-api
   repository: oci://ghcr.io/magda-io/charts
   version: 1.1.0
 - name: opensearch
   repository: file://../internal-charts/opensearch
-  version: 7.0.0
+  version: 7.0.1
 - name: opensearch-dashboards
   repository: file://../internal-charts/opensearch-dashboards
-  version: 7.0.0
+  version: 7.0.1
 - name: gateway
   repository: file://../internal-charts/gateway
-  version: 7.0.0
+  version: 7.0.1
 - name: indexer
   repository: file://../internal-charts/indexer
-  version: 7.0.0
+  version: 7.0.1
 - name: magda-preview-map
   repository: oci://ghcr.io/magda-io/charts
   version: 2.1.0
 - name: registry-api
   repository: file://../internal-charts/registry-api
-  version: 7.0.0
+  version: 7.0.1
 - name: registry-db
   repository: file://../internal-charts/registry-db
-  version: 7.0.0
+  version: 7.0.1
 - name: search-api
   repository: file://../internal-charts/search-api
-  version: 7.0.0
+  version: 7.0.1
 - name: search-api-node
   repository: file://../internal-charts/search-api-node
-  version: 7.0.0
+  version: 7.0.1
 - name: semantic-search-api
   repository: file://../internal-charts/semantic-search-api
-  version: 7.0.0
+  version: 7.0.1
 - name: session-db
   repository: file://../internal-charts/session-db
-  version: 7.0.0
+  version: 7.0.1
 - name: web-server
   repository: file://../internal-charts/web-server
-  version: 7.0.0
+  version: 7.0.1
 - name: admin-api
   repository: file://../internal-charts/admin-api
-  version: 7.0.0
+  version: 7.0.1
 - name: storage-api
   repository: file://../internal-charts/storage-api
-  version: 7.0.0
+  version: 7.0.1
 - name: tenant-api
   repository: file://../internal-charts/tenant-api
-  version: 7.0.0
+  version: 7.0.1
 - name: tenant-db
   repository: file://../internal-charts/tenant-db
-  version: 7.0.0
+  version: 7.0.1
 - name: priorities
   repository: file://../internal-charts/priorities
-  version: 7.0.0
+  version: 7.0.1
 - name: ingress
   repository: file://../internal-charts/ingress
-  version: 7.0.0
+  version: 7.0.1
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
-  version: 7.0.0
-digest: sha256:4a14696fe85a135a77ade10fb6563cb91648f7672e95d7c91947941ff9fb72c5
-generated: "2026-10-07T13:19:50.582409311Z"
+  version: 7.0.1
+digest: sha256:8dff6e43b32539c3f93e5e380d9283dd7d23ccbf45d39ae8d91ba251c2aa3e95
+generated: "2026-10-08T03:32:53.562669719Z"

@@ -1,7 +1,7 @@
 dependencies:
 - name: magda-core
   repository: file://../magda-core
-  version: 7.0.0
+  version: 7.0.1
 - name: openfaas
   repository: oci://ghcr.io/magda-io/charts
   version: 5.5.5-magda.3
@@ -35,5 +35,5 @@ dependencies:
 - name: magda-csv-semantic-indexer
   repository: oci://ghcr.io/magda-io/charts
   version: 1.0.0-alpha.2
-digest: sha256:4e4bdb85a304bb6b0a2a4edff383caeb4695aedff3784cce89892a5fbc832861
-generated: "2026-10-07T13:19:51.712177038Z"
+digest: sha256:11929715935e470e3f023bb2d93b95a754435c1f942f830a3ac8155189ed68f1
+generated: "2026-10-08T03:32:55.17783665Z"
