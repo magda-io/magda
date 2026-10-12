@@ -94,13 +94,11 @@ The PVC uses deployment-owned names rather than upstream product names:
 - `/data/agent-home` contains DSH profiles, credentials, session logs, and storage;
 - `/data/workspace/agent-harness/default-workspace` is the default working tree.
 
-The pinned DSH release hard-codes its `deepseek-harness` directory segment, so the
-runtime image applies a fail-closed, version-specific patch during its build. On
-the first boot of an existing PVC, the entrypoint renames the former `dsh-home`
-and `deepseek-harness` directories, rewrites DSH registry and projection
-metadata, rewrites compressed session headers, and renames session project
-directories. Both upgraded and newly created PVCs therefore contain only the new
-names.
+The pinned DSH release hard-codes its `deepseek-harness` directory segment, so
+the runtime Dockerfile performs a fail-closed, version-specific replacement when
+building the image. This pre-release path rename deliberately has no PVC migration:
+reset local test workspaces after deploying it so the new workspace starts with
+only the deployment-owned names.
 
 ## Authentication and trust boundaries
 
@@ -268,7 +266,9 @@ agent-services:
   llm:
     provider: magda
     model: gpt-5.6-sol
-    reasoningEffort: high
+    reasoningEffort: medium
+    contextWindow: 1050000
+    maxTokens: 128000
   runtime:
     storage:
       size: 5Gi
@@ -280,7 +280,7 @@ llm-services:
     model:
       alias: gpt-5.6-sol
       providerModel: openai/gpt-5.6-sol
-      reasoningEffort: high
+      reasoningEffort: medium
 ```
 
 The merged `agent-services` chart owns the Manager Deployment, Service, RBAC,
@@ -327,7 +327,12 @@ derived automatically. To use an external backend, set
 `llm-services.litellm.enabled=false` and provide all of
 `llm-services.backend.url`, `masterKeySecret.name`, and `masterKeySecret.key`.
 Provider credentials remain confined to LiteLLM. Use a model available to your
-provider account; leaving `reasoningEffort` empty omits the parameter.
+provider account. The chart defaults match GPT-5.6 Sol's published `medium`
+reasoning default, 1,050,000-token context window, and 128,000-token maximum
+output. When selecting another model, set `model`, `reasoningEffort`,
+`contextWindow`, and `maxTokens` together to that model's capabilities; leaving
+`reasoningEffort` empty omits the parameter. See the
+[GPT-5.6 Sol model specification](https://developers.openai.com/api/docs/models/gpt-5.6-sol).
 
 ## Deployment
 

@@ -21,20 +21,22 @@
         api: openai-responses
         baseURL: !!js process.env.MAGDA_LLM_BASE_URL
         models:
-          - id: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'
+          - id: !!js process.env.MAGDA_LLM_MODEL || 'gpt-5.6-sol'
             name: Magda Agent Default
-            contextWindow: 131072
-            maxTokens: 8192
+            contextWindow: !!js Number(process.env.MAGDA_LLM_CONTEXT_WINDOW || 1050000)
+            maxTokens: !!js Number(process.env.MAGDA_LLM_MAX_TOKENS || 128000)
             reasoningEfforts:
               off:
               low: low
               medium: medium
               high: high
+              xhigh: xhigh
+              max: max
 
 - id: agent-default-model
   config:
     provider: magda
-    model: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'
+    model: !!js process.env.MAGDA_LLM_MODEL || 'gpt-5.6-sol'
     reasoningEffort: !!js process.env.MAGDA_LLM_REASONING_EFFORT || undefined
 
 # The managed deployment exposes only confined presets. Per-action approval is

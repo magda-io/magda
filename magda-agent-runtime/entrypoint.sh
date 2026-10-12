@@ -15,10 +15,6 @@
 #                      (default 2000); used only by the ingress-timeout counterfactual
 set -euo pipefail
 
-# Rename paths from pre-Agent Workspace images before DSH opens any state. The
-# one-time migration also rewrites persisted registry and session references so
-# upgraded PVCs do not need a legacy-path compatibility symlink.
-node /usr/local/lib/magda-agent/migrate-data-paths.mjs
 mkdir -p "$DSH_HOME" /data/workspace "${XDG_CONFIG_HOME:-/data/config}"
 
 # The profile loader resolves out-of-tree plugins from the profile directory.

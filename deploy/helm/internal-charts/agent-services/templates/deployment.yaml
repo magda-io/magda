@@ -64,6 +64,8 @@ spec:
             - {name: RUNTIME_MAX_BODY_BYTES, value: {{ .Values.runtimeMaxBodyBytes | quote }}}
             - {name: MAGDA_LLM_PROVIDER, value: {{ .Values.llm.provider | quote }}}
             - {name: MAGDA_LLM_MODEL, value: {{ .Values.llm.model | quote }}}
+            - {name: MAGDA_LLM_CONTEXT_WINDOW, value: {{ printf "%.0f" (float64 .Values.llm.contextWindow) | quote }}}
+            - {name: MAGDA_LLM_MAX_TOKENS, value: {{ printf "%.0f" (float64 .Values.llm.maxTokens) | quote }}}
 {{- with .Values.llm.reasoningEffort }}
             - {name: MAGDA_LLM_REASONING_EFFORT, value: {{ . | quote }}}
 {{- end }}

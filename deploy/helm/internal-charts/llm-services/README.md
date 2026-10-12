@@ -16,7 +16,7 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| allowedModels | string | `"magda-agent-default"` |  |
+| allowedModels | string | `"gpt-5.6-sol"` |  |
 | backend.masterKeySecret.key | string | `""` |  |
 | backend.masterKeySecret.name | string | `""` |  |
 | backend.url | string | `""` |  |

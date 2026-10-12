@@ -13,7 +13,7 @@ const app = createApp({
     liteLlmUrl: new URL(process.env.LITELLM_URL || "http://litellm:4000"),
     liteLlmKey,
     allowedModels: new Set(
-        (process.env.ALLOWED_MODELS || "magda-agent-default")
+        (process.env.ALLOWED_MODELS || "gpt-5.6-sol")
             .split(",")
             .map((model) => model.trim())
             .filter(Boolean)

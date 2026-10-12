@@ -30,9 +30,11 @@ Kubernetes: `>= 1.24.0-0`
 | kasValidation.image.pullPolicy | string | `"IfNotPresent"` |  |
 | kasValidation.image.repository | string | `"alpine/k8s"` |  |
 | kasValidation.image.tag | string | `"1.31.5"` |  |
-| llm.model | string | `"magda-agent-default"` |  |
+| llm.contextWindow | int | `1050000` | Model context-window capability. Override together with `llm.model` when switching models. |
+| llm.maxTokens | int | `128000` | Per-response output-token capability, including reasoning tokens. Override together with `llm.model` when switching models. |
+| llm.model | string | `"gpt-5.6-sol"` |  |
 | llm.provider | string | `"magda"` |  |
-| llm.reasoningEffort | string | `""` |  |
+| llm.reasoningEffort | string | `"medium"` | Default model reasoning effort. |
 | llmApiUrl | string | `""` |  |
 | magdaApiUrl | string | `""` |  |
 | managedApiKeyNamePrefix | string | `"magda-agent-workspace"` |  |

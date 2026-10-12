@@ -19,10 +19,10 @@ Kubernetes: `>= 1.24.0-0`
 | masterKeySecret.create | bool | `true` |  |
 | masterKeySecret.key | string | `"master-key"` |  |
 | masterKeySecret.name | string | `"magda-litellm-master-key"` |  |
-| model.alias | string | `"magda-agent-default"` |  |
+| model.alias | string | `"gpt-5.6-sol"` |  |
 | model.apiKeyEnv | string | `"OPENAI_API_KEY"` |  |
-| model.providerModel | string | `"openai/gpt-4o-mini"` |  |
-| model.reasoningEffort | string | `""` |  |
+| model.providerModel | string | `"openai/gpt-5.6-sol"` |  |
+| model.reasoningEffort | string | `"medium"` |  |
 | providerSecret.key | string | `"api-key"` |  |
 | providerSecret.name | string | `"litellm-provider"` |  |
 | resources.limits.cpu | string | `"1"` |  |

@@ -74,8 +74,12 @@ reconcileIntervalSeconds: 30
 runtimeMaxBodyBytes: 16777216
 llm:
   provider: magda
-  model: magda-agent-default
-  reasoningEffort: ""
+  model: gpt-5.6-sol
+  # GPT-5.6 Sol defaults. Override all model capability values together when
+  # selecting a model with different limits.
+  reasoningEffort: medium
+  contextWindow: 1050000
+  maxTokens: 128000
 # ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox
 # Pods use a separate installation-scoped, no-RBAC ServiceAccount created in the
 # Sandbox namespace; its name is generated to avoid shared-namespace collisions.

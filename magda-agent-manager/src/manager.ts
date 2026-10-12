@@ -130,6 +130,8 @@ export class AgentManager {
                 provider: this.config.llmProvider,
                 model: this.config.llmModel,
                 reasoningEffort: this.config.llmReasoningEffort,
+                contextWindow: this.config.llmContextWindow,
+                maxTokens: this.config.llmMaxTokens,
                 // pi-ai adds the HTTP Authorization scheme. Supplying `Bearer `
                 // here makes the value fail its raw API-key validation.
                 authorization: `${key.id}:${key.key}`

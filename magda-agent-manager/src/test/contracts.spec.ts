@@ -33,6 +33,8 @@ function proxyConfig(): ManagerConfig {
         llmApiUrl: "https://magda.test/api/v0/llm/v1",
         llmProvider: "magda",
         llmModel: "model",
+        llmContextWindow: 1_050_000,
+        llmMaxTokens: 128_000,
         hardDeleteSeconds: 8 * 60 * 60,
         idleSuspendSeconds: 30 * 60,
         reconcileIntervalSeconds: 30,

@@ -107,8 +107,9 @@ for implementation details, key decisions, configuration, and deployment steps.
    clean it up.
 8. Send a tool-using prompt that produces a streamed model response. Confirm a
    reasoning model follows `/api/v0/llm/v1/responses` (Chat Completions remains
-   available for compatible models) and no provider credential appears in the
-   browser or Sandbox.
+   available for compatible models), the DSH model catalog reports the Helm-set
+   `reasoningEffort`, `contextWindow`, and `maxTokens`, and no provider credential
+   appears in the browser or Sandbox.
 
 ## Lifecycle and security checks
 

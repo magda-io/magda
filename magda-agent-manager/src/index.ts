@@ -13,6 +13,14 @@ function required(name: string): string {
     return value;
 }
 
+function positiveInteger(name: string, fallback: number): number {
+    const value = Number(process.env[name] || fallback);
+    if (!Number.isSafeInteger(value) || value <= 0) {
+        throw new Error(`${name} must be a positive integer`);
+    }
+    return value;
+}
+
 const externalUrl = process.env.EXTERNAL_URL || "http://localhost:6100";
 const externalAuthority = new URL(externalUrl).host;
 const config: ManagerConfig = {
@@ -41,8 +49,10 @@ const config: ManagerConfig = {
         process.env.MAGDA_LLM_API_URL ||
         `${externalUrl.replace(/\/$/, "")}/api/v0/llm/v1`,
     llmProvider: process.env.MAGDA_LLM_PROVIDER || "magda",
-    llmModel: process.env.MAGDA_LLM_MODEL || "magda-agent-default",
+    llmModel: process.env.MAGDA_LLM_MODEL || "gpt-5.6-sol",
     llmReasoningEffort: process.env.MAGDA_LLM_REASONING_EFFORT || undefined,
+    llmContextWindow: positiveInteger("MAGDA_LLM_CONTEXT_WINDOW", 1_050_000),
+    llmMaxTokens: positiveInteger("MAGDA_LLM_MAX_TOKENS", 128_000),
     hardDeleteSeconds: Number(process.env.HARD_DELETE_SECONDS || 8 * 60 * 60),
     idleSuspendSeconds: Number(process.env.IDLE_SUSPEND_SECONDS || 30 * 60),
     reconcileIntervalSeconds: Number(
@@ -53,6 +63,11 @@ const config: ManagerConfig = {
     ),
     controlPlaneSecret: process.env.CONTROL_PLANE_SECRET || ""
 };
+if (config.llmMaxTokens > config.llmContextWindow) {
+    throw new Error(
+        "MAGDA_LLM_MAX_TOKENS must not exceed MAGDA_LLM_CONTEXT_WINDOW"
+    );
+}
 if (!config.controlPlaneSecret) {
     throw new Error("CONTROL_PLANE_SECRET is required");
 }

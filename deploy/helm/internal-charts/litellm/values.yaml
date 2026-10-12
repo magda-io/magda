@@ -4,11 +4,10 @@ image:
   tag: main-v1.81.12-stable
   pullPolicy: IfNotPresent
 model:
-  alias: magda-agent-default
-  providerModel: openai/gpt-4o-mini
+  alias: gpt-5.6-sol
+  providerModel: openai/gpt-5.6-sol
   apiKeyEnv: OPENAI_API_KEY
-  # Optional provider reasoning effort (for example: low, medium, or high).
-  reasoningEffort: ""
+  reasoningEffort: medium
 providerSecret:
   name: litellm-provider
   key: api-key

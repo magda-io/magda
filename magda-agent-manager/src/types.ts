@@ -38,6 +38,8 @@ export interface ManagerConfig {
     llmProvider: string;
     llmModel: string;
     llmReasoningEffort?: string;
+    llmContextWindow: number;
+    llmMaxTokens: number;
     hardDeleteSeconds: number;
     idleSuspendSeconds: number;
     reconcileIntervalSeconds: number;

@@ -3,7 +3,7 @@ image:
   tag: ""
   pullPolicy: IfNotPresent
 replicas: 1
-allowedModels: magda-agent-default
+allowedModels: gpt-5.6-sol
 
 # External LiteLLM-compatible backend. Leave empty when the bundled LiteLLM
 # subchart is enabled. When bundled LiteLLM is disabled all three fields are

@@ -18,6 +18,29 @@
 {{- fail (printf "agent-services.runtimeClasses.%s is required when warmPool.type=%s" $runtimeType $runtimeType) -}}
 {{- end -}}
 
+{{- $contextWindow := .Values.llm.contextWindow -}}
+{{- $contextWindowKind := kindOf $contextWindow -}}
+{{- if not (has $contextWindowKind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services.llm.contextWindow must be a positive integer; got %v (%s)" $contextWindow $contextWindowKind) -}}
+{{- end -}}
+{{- $contextWindowFloat := float64 $contextWindow -}}
+{{- if or (le $contextWindowFloat 0.0) (ne $contextWindowFloat (floor $contextWindowFloat)) -}}
+{{- fail (printf "agent-services.llm.contextWindow must be a positive integer; got %v" $contextWindow) -}}
+{{- end -}}
+
+{{- $maxTokens := .Values.llm.maxTokens -}}
+{{- $maxTokensKind := kindOf $maxTokens -}}
+{{- if not (has $maxTokensKind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services.llm.maxTokens must be a positive integer; got %v (%s)" $maxTokens $maxTokensKind) -}}
+{{- end -}}
+{{- $maxTokensFloat := float64 $maxTokens -}}
+{{- if or (le $maxTokensFloat 0.0) (ne $maxTokensFloat (floor $maxTokensFloat)) -}}
+{{- fail (printf "agent-services.llm.maxTokens must be a positive integer; got %v" $maxTokens) -}}
+{{- end -}}
+{{- if gt $maxTokensFloat $contextWindowFloat -}}
+{{- fail (printf "agent-services.llm.maxTokens (%v) must not exceed llm.contextWindow (%v)" $maxTokens $contextWindow) -}}
+{{- end -}}
+
 {{- $namespaceOverride := dig "agentWorkspace" "sandboxNamespace" "" .Values.global | toString | trim -}}
 {{- if $namespaceOverride -}}
 {{- if or (gt (len $namespaceOverride) 63) (not (regexMatch "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" $namespaceOverride)) -}}

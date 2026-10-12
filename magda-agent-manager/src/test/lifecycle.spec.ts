@@ -37,6 +37,9 @@ function config(): ManagerConfig {
         llmApiUrl: "https://magda.test/api/v0/llm/v1",
         llmProvider: "magda",
         llmModel: "model",
+        llmReasoningEffort: "medium",
+        llmContextWindow: 1_050_000,
+        llmMaxTokens: 128_000,
         hardDeleteSeconds: 8 * 60 * 60,
         idleSuspendSeconds: 30 * 60,
         reconcileIntervalSeconds: 30,
@@ -103,6 +106,7 @@ class FakeKubernetes {
     activityAttempts = 0;
     activityFailures = 0;
     deleted = 0;
+    bootstraps: unknown[] = [];
     deleteBarrier: Promise<void> | undefined;
     annotationFailures = 0;
 
@@ -178,7 +182,9 @@ class FakeKubernetes {
     async containerRestartCount() {
         return 0;
     }
-    async bootstrap() {}
+    async bootstrap(_sandbox: string, payload: unknown) {
+        this.bootstraps.push(payload);
+    }
     async deleteClaim() {
         this.deleted += 1;
         await this.deleteBarrier;
@@ -231,6 +237,24 @@ function manager(kubernetes: FakeKubernetes, keys = new FakeApiKeys()) {
 }
 
 describe("Agent Workspace inactivity lifecycle", () => {
+    it("bootstraps the deployment-owned model capabilities", async () => {
+        const kubernetes = new FakeKubernetes();
+        const instance = manager(kubernetes).manager;
+
+        await instance.start(userId);
+        for (let i = 0; i < 20 && !kubernetes.bootstraps.length; i += 1) {
+            await new Promise((resolve) => setImmediate(resolve));
+        }
+
+        expect(kubernetes.bootstraps).to.have.length(1);
+        expect(kubernetes.bootstraps[0]).to.have.nested.include({
+            "llm.model": "model",
+            "llm.reasoningEffort": "medium",
+            "llm.contextWindow": 1_050_000,
+            "llm.maxTokens": 128_000
+        });
+    });
+
     it("suspends after 30 minutes even when transport sockets are open", async () => {
         const kubernetes = new FakeKubernetes();
         kubernetes.claims = [claim(new Date(Date.now() - 31 * 60 * 1000))];

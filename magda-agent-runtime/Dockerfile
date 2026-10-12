@@ -20,8 +20,15 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 RUN npm install -g --no-audit --no-fund "@deepseek-ai/dsh@${DSH_VERSION}" \
   && npm cache clean --force
-COPY --chmod=0755 magda-agent-runtime/patch-dsh-workspace-path.mjs /usr/local/lib/magda-agent/patch-dsh-workspace-path.mjs
-RUN node /usr/local/lib/magda-agent/patch-dsh-workspace-path.mjs
+# The pinned DSH release hard-codes its first-use directory name. Fail closed if
+# that exact implementation changes, then brand both published entry points.
+RUN set -eu; \
+  package=/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-api-workspace-controller; \
+  bundled="$package/lib/index.js"; typed="$package/lib/types/default-directory.js"; \
+  test "$(grep -F -c 'paths.join(directory, "deepseek-harness", DEFAULT_WORKSPACE_DIRECTORY)' "$bundled")" = 1; \
+  test "$(grep -F -c "paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)" "$typed")" = 1; \
+  sed -i 's/paths.join(directory, "deepseek-harness", DEFAULT_WORKSPACE_DIRECTORY)/paths.join(directory, "agent-harness", DEFAULT_WORKSPACE_DIRECTORY)/' "$bundled"; \
+  sed -i "s/paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)/paths.join(directory, 'agent-harness', DEFAULT_WORKSPACE_DIRECTORY)/" "$typed"
 COPY magda-agent-runtime/dsh-client-managed-profile/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile/
 RUN chmod -R a+rX \
@@ -38,7 +45,6 @@ COPY --chmod=0644 magda-agent-runtime/magda.cordis.patch.yml /etc/magda-agent/ma
 COPY --chmod=0755 magda-agent-runtime/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
 COPY --chmod=0755 magda-agent-runtime/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
 COPY --chmod=0644 magda-agent-runtime/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
-COPY --chmod=0755 magda-agent-runtime/migrate-data-paths.mjs /usr/local/lib/magda-agent/migrate-data-paths.mjs
 ENV DSH_HOME=/data/agent-home \
   XDG_CONFIG_HOME=/data/config \
   DSH_TELEMETRY_MODE=DISABLED \
