@@ -167,6 +167,7 @@ describe("isAgentWorkspacePollingState", () => {
     it.each([
         "ALLOCATING",
         "BOOTSTRAPPING",
+        "READY",
         "SUSPENDING",
         "RESUMING",
         "DELETING"
@@ -174,7 +175,7 @@ describe("isAgentWorkspacePollingState", () => {
         expect(isAgentWorkspacePollingState(state)).toBe(true);
     });
 
-    it.each(["ABSENT", "READY", "SUSPENDED", "FAILED", "DEGRADED"] as const)(
+    it.each(["ABSENT", "SUSPENDED", "FAILED", "DEGRADED"] as const)(
         "does not poll while %s",
         (state) => {
             expect(isAgentWorkspacePollingState(state)).toBe(false);

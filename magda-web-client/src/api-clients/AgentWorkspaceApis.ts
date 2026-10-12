@@ -53,6 +53,7 @@ export function isAgentWorkspacePollingState(
         [
             "ALLOCATING",
             "BOOTSTRAPPING",
+            "READY",
             "SUSPENDING",
             "RESUMING",
             "DELETING"

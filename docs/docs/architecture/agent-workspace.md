@@ -67,7 +67,9 @@ Provisioning performs these operations:
    returning `READY`.
 
 Idle `READY` workspaces are suspended even if an otherwise idle runtime WebSocket
-remains open. Resume reuses the PVC and Sandbox and renews the deadline. Reset, explicit deletion, and logout revoke the key,
+remains open. While the workspace iframe is visible, the Settings page continues
+polling lifecycle status so suspension replaces the stale iframe with the Resume
+UI. Resume reuses the PVC and Sandbox and renews the deadline. Reset, explicit deletion, and logout revoke the key,
 close sockets, delete the claim and storage, and remove all DSH sessions and
 workspace files. Logout waits for cleanup before destroying the Magda session.
 Any destructive cleanup that is only partially completed remains durably

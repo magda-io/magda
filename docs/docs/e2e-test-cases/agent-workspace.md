@@ -139,7 +139,9 @@ Run each check while watching the Settings page and Kubernetes resources:
   workspace reaches `ABSENT` without replacement.
 - Leave a DSH WebSocket open without user input for more than the configured idle
   interval. Confirm protocol ping/pong and an idle Remote stream do not renew
-  activity and the workspace suspends.
+  activity and the workspace suspends. Keep the Settings page open: within one
+  status-poll interval it must remove the stale runtime iframe and show **Resume
+  Agent Workspace**, rather than allowing a prompt to fail with HTTP 409.
 - Run a foreground Agent turn across the configured idle-suspension threshold.
   Confirm `api-session/status` keeps the workspace `READY` until the turn settles,
   then confirm its idle clock resumes.

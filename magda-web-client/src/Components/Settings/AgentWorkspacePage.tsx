@@ -167,7 +167,8 @@ const AgentWorkspacePage: FunctionComponent = () => {
         }
 
         // Continue polling even when consecutive responses have the same state.
-        // Provisioning commonly remains ALLOCATING for several polls.
+        // READY must also be polled so an idle KAS suspension replaces the stale
+        // runtime iframe with the Resume UI before the user sends another prompt.
         return startAgentWorkspaceStatusPolling(refresh, POLL_INTERVAL_MS);
     }, [action, refresh, status?.state]);
 
