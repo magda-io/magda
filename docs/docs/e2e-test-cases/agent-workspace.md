@@ -28,7 +28,9 @@ for implementation details, key decisions, configuration, and deployment steps.
   ```
 
 - The local Agent Manager, LLM Services and Agent Runtime images built and
-  loaded into Minikube.
+  loaded into Minikube. Reset any workspace created by an earlier development
+  image before qualification: bootstrap configuration is PVC-backed and an
+  existing claim is not reprovisioned by a Helm upgrade.
 - `global.agentWorkspace.enabled=true` in the Magda Helm values. For a local
   self-signed ingress, route the in-Sandbox API URL through the ingress service
   and copy its CA into the Sandbox namespace before installing:
@@ -107,9 +109,10 @@ for implementation details, key decisions, configuration, and deployment steps.
    clean it up.
 8. Send a tool-using prompt that produces a streamed model response. Confirm a
    reasoning model follows `/api/v0/llm/v1/responses` (Chat Completions remains
-   available for compatible models), the DSH model catalog reports the Helm-set
-   `reasoningEffort`, `contextWindow`, and `maxTokens`, and no provider credential
-   appears in the browser or Sandbox.
+   available for compatible models), the DSH model catalog reports the Helm-set alias, `contextWindow`, and
+   `maxTokens`, and no provider credential appears in the browser or Sandbox.
+   When global `reasoningEffort` is set, verify DSH and LiteLLM both receive that
+   value; when it is null, verify neither configures a reasoning effort.
 
 ## Lifecycle and security checks
 

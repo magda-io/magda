@@ -5,7 +5,7 @@ import { ManagedApiKeyClient } from "./apiKeys.js";
 import { AgentKubernetesClient } from "./kubernetes.js";
 import { AgentManager } from "./manager.js";
 import { RuntimeProxy } from "./runtimeProxy.js";
-import { ManagerConfig } from "./types.js";
+import { ManagerConfig, resolveLlmModel } from "./types.js";
 
 function required(name: string): string {
     const value = process.env[name];
@@ -48,8 +48,7 @@ const config: ManagerConfig = {
     llmApiUrl:
         process.env.MAGDA_LLM_API_URL ||
         `${externalUrl.replace(/\/$/, "")}/api/v0/llm/v1`,
-    llmProvider: process.env.MAGDA_LLM_PROVIDER || "magda",
-    llmModel: process.env.MAGDA_LLM_MODEL || "gpt-5.6-sol",
+    llmModel: resolveLlmModel(process.env.MAGDA_LLM_MODEL),
     llmReasoningEffort: process.env.MAGDA_LLM_REASONING_EFFORT || undefined,
     llmContextWindow: positiveInteger("MAGDA_LLM_CONTEXT_WINDOW", 1_050_000),
     llmMaxTokens: positiveInteger("MAGDA_LLM_MAX_TOKENS", 128_000),

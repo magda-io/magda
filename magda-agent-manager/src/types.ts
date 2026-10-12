@@ -1,3 +1,9 @@
+export const DEFAULT_AGENT_MODEL = "magda-agent-default";
+
+export function resolveLlmModel(value: string | undefined): string {
+    return value || DEFAULT_AGENT_MODEL;
+}
+
 export type AgentWorkspaceState =
     | "ABSENT"
     | "ALLOCATING"
@@ -35,7 +41,6 @@ export interface ManagerConfig {
     bootstrapCommand: string;
     magdaApiUrl: string;
     llmApiUrl: string;
-    llmProvider: string;
     llmModel: string;
     llmReasoningEffort?: string;
     llmContextWindow: number;

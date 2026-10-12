@@ -7,13 +7,18 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "bash -n entrypoint.sh && node --check bootstrap.mjs && node --check dsh-launch.mjs",
-    "test": "node test-runtime.mjs",
-    "predocker-build-local": "yarn test",
+    "check": "bash -n entrypoint.sh && node --check bootstrap.mjs && node --check dsh-launch.mjs",
+    "build": "yarn run check",
+    "test": "yarn run check && node test-runtime.mjs",
+    "prepare-docker": "yarn --cwd ../packages/mgd build && test -x ../packages/mgd/bin/mgd.js && yarn test",
+    "predocker-build-local": "yarn prepare-docker",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "predocker-build-prod": "yarn test",
+    "predocker-build-prod": "yarn prepare-docker",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push"
+  },
+  "dependencies": {
+    "@magda/mgd": "^7.0.0"
   },
   "devDependencies": {
     "@magda/scripts": "^7.0.0"
@@ -21,7 +26,7 @@
   "config": {
     "docker": {
       "name": "magda-agent-runtime",
-      "include": "Dockerfile ../packages/mgd/package.json ../packages/mgd/esbuild.js ../packages/mgd/src ../packages/mgd/skills ../magda-agent-runtime/dsh-client-managed-profile ../magda-agent-runtime/magda.cordis.patch.yml ../magda-agent-runtime/entrypoint.sh ../magda-agent-runtime/bootstrap.mjs ../magda-agent-runtime/dsh-launch.mjs"
+      "include": "node_modules Dockerfile ../magda-agent-runtime/dsh-client-managed-profile ../magda-agent-runtime/magda.cordis.patch.yml ../magda-agent-runtime/entrypoint.sh ../magda-agent-runtime/bootstrap.mjs ../magda-agent-runtime/dsh-launch.mjs"
     }
   },
   "magda": {

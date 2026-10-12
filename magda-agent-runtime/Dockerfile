@@ -1,15 +1,7 @@
-# Build from the repository root:
-#   docker build -f magda-agent-runtime/Dockerfile -t magda-agent-runtime:local .
+# Build through MAGDA's generated Node component context:
+#   cd magda-agent-runtime && yarn prepare-docker
+#   create-docker-context-for-node-component --build --tag magda-agent-runtime:local
 ARG NODE_VERSION=22.22.0
-
-FROM node:${NODE_VERSION}-bookworm-slim AS mgd-build
-WORKDIR /src/mgd
-COPY packages/mgd/package.json ./
-RUN npm install --no-audit --no-fund --ignore-scripts
-COPY packages/mgd/esbuild.js ./
-COPY packages/mgd/src ./src
-COPY packages/mgd/skills ./skills
-RUN npm run build && mkdir -p /out && npm pack --pack-destination /out
 
 FROM node:${NODE_VERSION}-bookworm-slim
 ARG DSH_VERSION=0.2.1-alpha.1
@@ -33,9 +25,10 @@ COPY magda-agent-runtime/dsh-client-managed-profile/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile/
 RUN chmod -R a+rX \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile
-COPY --from=mgd-build /out/ /tmp/mgd/
-RUN npm install -g --no-audit --no-fund /tmp/mgd/*.tgz \
-  && rm -rf /tmp/mgd && npm cache clean --force
+COPY node_modules/ /usr/local/lib/node_modules/
+RUN test -x /usr/local/lib/node_modules/@magda/mgd/bin/mgd.js \
+  && ln -s /usr/local/lib/node_modules/@magda/mgd/bin/mgd.js /usr/local/bin/mgd \
+  && mgd --version
 RUN groupadd --gid 10001 agent \
   && useradd --uid 10001 --gid 10001 --create-home --shell /bin/bash agent \
   && mkdir -p /data /run/magda-agent \

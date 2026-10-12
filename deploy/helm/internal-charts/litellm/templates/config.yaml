@@ -1,3 +1,8 @@
+{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
+{{- $alias := coalesce .Values.model.alias (get $globalModel "alias") -}}
+{{- $providerModel := coalesce .Values.model.providerModel (get $globalModel "providerModel") -}}
+{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
+{{- $providerSecretConfigured := and .Values.providerSecret.name .Values.providerSecret.key -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,11 +10,13 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: {{ .Values.model.alias | quote }}
+      - model_name: {{ required "litellm: model.alias or global.defaultAgentModel.alias is required" $alias | quote }}
         litellm_params:
-          model: {{ .Values.model.providerModel | quote }}
-          api_key: "os.environ/{{ .Values.model.apiKeyEnv }}"
-{{- with .Values.model.reasoningEffort }}
+          model: {{ required "litellm: model.providerModel or global.defaultAgentModel.providerModel is required" $providerModel | quote }}
+{{- if $providerSecretConfigured }}
+          api_key: "os.environ/LITELLM_PROVIDER_API_KEY"
+{{- end }}
+{{- with $reasoningEffort }}
           reasoning_effort: {{ . | quote }}
 {{- end }}
     general_settings:

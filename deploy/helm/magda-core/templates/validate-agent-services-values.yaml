@@ -4,3 +4,40 @@
 {{- if and $agentWorkspaceEnabled (not $llmServicesEnabled) -}}
 {{- fail "global.agentWorkspace.enabled=true requires global.llmServices.enabled=true because the managed runtime uses the authenticated Magda LLM facade" -}}
 {{- end -}}
+
+{{- if $llmServicesEnabled -}}
+{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
+{{- $globalAlias := get $globalModel "alias" -}}
+{{- $llmServices := index .Values "llm-services" -}}
+{{- $allowedModelsValue := coalesce (get $llmServices "allowedModels") $globalAlias -}}
+{{- $allowedModels := list -}}
+{{- range (splitList "," ($allowedModelsValue | default "")) -}}
+{{- $allowedModel := trim . -}}
+{{- if $allowedModel -}}
+{{- $allowedModels = append $allowedModels $allowedModel -}}
+{{- end -}}
+{{- end -}}
+{{- if empty $allowedModels -}}
+{{- fail "llm-services: allowedModels or global.defaultAgentModel.alias is required" -}}
+{{- end -}}
+
+{{- $litellm := get $llmServices "litellm" | default dict -}}
+{{- $bundledLiteLlm := get $litellm "enabled" -}}
+{{- $litellmModel := get $litellm "model" | default dict -}}
+{{- $litellmAlias := coalesce (get $litellmModel "alias") $globalAlias -}}
+{{- if and $bundledLiteLlm (not (has $litellmAlias $allowedModels)) -}}
+{{- fail (printf "bundled LiteLLM alias %q must be included in llm-services.allowedModels" $litellmAlias) -}}
+{{- end -}}
+
+{{- if $agentWorkspaceEnabled -}}
+{{- $agentServices := index .Values "agent-services" -}}
+{{- $agentLlm := get $agentServices "llm" | default dict -}}
+{{- $agentAlias := coalesce (get $agentLlm "model") $globalAlias -}}
+{{- if not (has $agentAlias $allowedModels) -}}
+{{- fail (printf "Agent Workspace model %q must be included in llm-services.allowedModels" $agentAlias) -}}
+{{- end -}}
+{{- if and $bundledLiteLlm (ne $agentAlias $litellmAlias) -}}
+{{- fail (printf "Agent Workspace model %q must match bundled LiteLLM alias %q" $agentAlias $litellmAlias) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}

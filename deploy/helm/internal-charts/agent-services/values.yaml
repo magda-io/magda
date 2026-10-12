@@ -4,6 +4,7 @@ global:
     sandboxNamespace: ""
   llmServices:
     enabled: false
+  defaultAgentModel: {}
   image:
     repository: ghcr.io/magda-io
     pullPolicy: IfNotPresent
@@ -72,14 +73,15 @@ hardDeleteSeconds: 28800
 idleSuspendSeconds: 1800
 reconcileIntervalSeconds: 30
 runtimeMaxBodyBytes: 16777216
+# Optional chart-specific overrides. Empty values inherit
+# global.defaultAgentModel from the parent chart.
 llm:
-  provider: magda
-  model: gpt-5.6-sol
-  # GPT-5.6 Sol defaults. Override all model capability values together when
-  # selecting a model with different limits.
-  reasoningEffort: medium
-  contextWindow: 1050000
-  maxTokens: 128000
+  # -- Stable public model alias override.
+  model: ""
+  # -- Model context-window override.
+  contextWindow: null
+  # -- Model maximum-output-token override.
+  maxTokens: null
 # ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox
 # Pods use a separate installation-scoped, no-RBAC ServiceAccount created in the
 # Sandbox namespace; its name is generated to avoid shared-namespace collisions.

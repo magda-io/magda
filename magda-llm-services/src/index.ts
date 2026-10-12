@@ -1,4 +1,4 @@
-import createApp from "./createApp.js";
+import createApp, { resolveAllowedModels } from "./createApp.js";
 
 const port = Number(process.env.PORT || 80);
 const jwtSecret = process.env.JWT_SECRET;
@@ -12,12 +12,7 @@ const app = createApp({
     authApiUrl: process.env.AUTH_API_URL || "http://authorization-api/v0",
     liteLlmUrl: new URL(process.env.LITELLM_URL || "http://litellm:4000"),
     liteLlmKey,
-    allowedModels: new Set(
-        (process.env.ALLOWED_MODELS || "gpt-5.6-sol")
-            .split(",")
-            .map((model) => model.trim())
-            .filter(Boolean)
-    )
+    allowedModels: resolveAllowedModels(process.env.ALLOWED_MODELS)
 });
 
 const server = app.listen(port, () =>

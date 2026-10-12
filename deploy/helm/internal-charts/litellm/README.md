@@ -12,6 +12,7 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| global.defaultAgentModel | object | `{}` |  |
 | image.name | string | `"litellm"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/berriai"` |  |
@@ -19,12 +20,10 @@ Kubernetes: `>= 1.24.0-0`
 | masterKeySecret.create | bool | `true` |  |
 | masterKeySecret.key | string | `"master-key"` |  |
 | masterKeySecret.name | string | `"magda-litellm-master-key"` |  |
-| model.alias | string | `"gpt-5.6-sol"` |  |
-| model.apiKeyEnv | string | `"OPENAI_API_KEY"` |  |
-| model.providerModel | string | `"openai/gpt-5.6-sol"` |  |
-| model.reasoningEffort | string | `"medium"` |  |
-| providerSecret.key | string | `"api-key"` |  |
-| providerSecret.name | string | `"litellm-provider"` |  |
+| model.alias | string | `""` | Public LiteLLM model alias override. |
+| model.providerModel | string | `""` | Provider-specific LiteLLM model override. |
+| providerSecret.key | string | `"api-key"` | Provider API-key Secret key. Leave name and key empty for providers that do not need a key. |
+| providerSecret.name | string | `"litellm-provider"` | Provider API-key Secret name. Leave name and key empty for providers that do not need a key. |
 | resources.limits.cpu | string | `"1"` |  |
 | resources.limits.memory | string | `"1Gi"` |  |
 | resources.requests.cpu | string | `"100m"` |  |

@@ -1,15 +1,23 @@
+global:
+  defaultAgentModel: {}
+
 image:
   repository: ghcr.io/berriai
   name: litellm
   tag: main-v1.81.12-stable
   pullPolicy: IfNotPresent
+# Optional chart-specific overrides. Empty values inherit
+# global.defaultAgentModel from the parent chart. Reasoning effort is global-only
+# so DSH and bundled LiteLLM cannot diverge.
 model:
-  alias: gpt-5.6-sol
-  providerModel: openai/gpt-5.6-sol
-  apiKeyEnv: OPENAI_API_KEY
-  reasoningEffort: medium
+  # -- Public LiteLLM model alias override.
+  alias: ""
+  # -- Provider-specific LiteLLM model override.
+  providerModel: ""
 providerSecret:
+  # -- Provider API-key Secret name. Leave name and key empty for providers that do not need a key.
   name: litellm-provider
+  # -- Provider API-key Secret key. Leave name and key empty for providers that do not need a key.
   key: api-key
 masterKeySecret:
   # Create and retain a stable release-owned master key. Set false to reference

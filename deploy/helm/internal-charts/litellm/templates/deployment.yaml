@@ -9,6 +9,8 @@ spec:
   template:
     metadata:
       labels: {service: litellm}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
     spec:
 {{ include "magda.imagePullSecrets" . | indent 6 }}
       automountServiceAccountToken: false
@@ -25,12 +27,13 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.masterKeySecret.name }}
                   key: {{ .Values.masterKeySecret.key }}
-            - name: {{ .Values.model.apiKeyEnv }}
+{{- if and .Values.providerSecret.name .Values.providerSecret.key }}
+            - name: LITELLM_PROVIDER_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.providerSecret.name }}
                   key: {{ .Values.providerSecret.key }}
-                  optional: true
+{{- end }}
           volumeMounts:
             - {name: config, mountPath: /etc/litellm, readOnly: true}
           readinessProbe:

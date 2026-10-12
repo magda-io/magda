@@ -9,6 +9,10 @@ global:
     sandboxNamespace: magda-agent
   llmServices:
     enabled: true
+  # Exercise explicit reasoning-effort propagation in local qualification. The
+  # chart default is null so models without this capability remain supported.
+  defaultAgentModel:
+    reasoningEffort: medium
   image:
     pullPolicy: IfNotPresent
   openfaas:
@@ -19,7 +23,18 @@ global:
 
 tags:
   all: true
+  admin-api: false
+  apidocs-server: false
+  correspondence-api: false
+  indexer: false
+  ingress: true
+  opensearch: false
+  opensearch-dashboards: false
+  preview-map: false
   priorities: false
+  search-api: false
+  search-api-node: false
+  semantic-search-api: false
 
 agent-services:
   manager:
@@ -35,12 +50,6 @@ agent-services:
     create: false
   magdaApiUrl: https://magda.test/api
   llmApiUrl: https://magda.test/api/v0/llm/v1
-  llm:
-    provider: magda
-    model: gpt-5.6-sol
-    reasoningEffort: medium
-    contextWindow: 1050000
-    maxTokens: 128000
   runtime:
     image:
       repository: localhost:5000
@@ -62,14 +71,9 @@ llm-services:
     repository: localhost:5000
     tag: latest
     pullPolicy: Never
-  allowedModels: gpt-5.6-sol
   # The provider secret is deliberately not committed. Create
   # `litellm-provider` from OPENAI_API_KEY before deployment.
   litellm:
-    model:
-      alias: gpt-5.6-sol
-      providerModel: openai/gpt-5.6-sol
-      reasoningEffort: medium
     resources:
       requests: {cpu: 50m, memory: 128Mi}
       limits: {cpu: 500m, memory: 1Gi}

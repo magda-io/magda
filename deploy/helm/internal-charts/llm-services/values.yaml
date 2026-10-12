@@ -1,9 +1,14 @@
+global:
+  defaultAgentModel: {}
+
 image:
   name: magda-llm-services
   tag: ""
   pullPolicy: IfNotPresent
 replicas: 1
-allowedModels: gpt-5.6-sol
+# -- Optional comma-separated model allowlist override. Empty inherits
+# global.defaultAgentModel.alias from the parent chart.
+allowedModels: ""
 
 # External LiteLLM-compatible backend. Leave empty when the bundled LiteLLM
 # subchart is enabled. When bundled LiteLLM is disabled all three fields are

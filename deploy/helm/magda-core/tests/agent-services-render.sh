@@ -58,6 +58,86 @@ grep -q 'Source: magda-core/charts/llm-services/charts/litellm/templates/deploym
 grep -q '\\"llm\\"' "$tmp/llm-only.yaml"
 ! grep -q '\\"agent\\"' "$tmp/llm-only.yaml"
 
+# One global model definition drives Agent Manager, LLM Services, and nested
+# LiteLLM. The public alias stays stable when only the provider model changes.
+render "$tmp/model-default.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true
+for expected in \
+    'name: MAGDA_LLM_MODEL, value: "magda-agent-default"' \
+    'name: ALLOWED_MODELS, value: "magda-agent-default"' \
+    'model_name: "magda-agent-default"' \
+    'model: "openai/gpt-5.6-sol"' \
+    'name: MAGDA_LLM_CONTEXT_WINDOW, value: "1050000"' \
+    'name: MAGDA_LLM_MAX_TOKENS, value: "128000"' \
+    'api_key: "os.environ/LITELLM_PROVIDER_API_KEY"' \
+    'name: LITELLM_PROVIDER_API_KEY'; do
+    grep -Fq "$expected" "$tmp/model-default.yaml"
+done
+! grep -q 'MAGDA_LLM_REASONING_EFFORT' "$tmp/model-default.yaml"
+! grep -q 'reasoning_effort:' "$tmp/model-default.yaml"
+! resource_document Deployment litellm "$tmp/model-default.yaml" | grep -q 'optional: true'
+! grep -R -q 'apiKeyEnv' "$helm_root/internal-charts/litellm"
+
+render "$tmp/provider-model.yaml" magda test \
+    --set global.llmServices.enabled=true \
+    --set global.defaultAgentModel.providerModel=openai/another-model
+grep -q 'model_name: "magda-agent-default"' "$tmp/provider-model.yaml"
+grep -q 'model: "openai/another-model"' "$tmp/provider-model.yaml"
+grep -q 'name: ALLOWED_MODELS, value: "magda-agent-default"' "$tmp/provider-model.yaml"
+
+render "$tmp/reasoning.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set global.defaultAgentModel.reasoningEffort=high
+grep -q 'reasoning_effort: "high"' "$tmp/reasoning.yaml"
+grep -q 'name: MAGDA_LLM_REASONING_EFFORT, value: "high"' "$tmp/reasoning.yaml"
+
+render "$tmp/no-reasoning.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set-json global.defaultAgentModel.reasoningEffort=null
+! grep -q 'MAGDA_LLM_REASONING_EFFORT' "$tmp/no-reasoning.yaml"
+! grep -q 'reasoning_effort:' "$tmp/no-reasoning.yaml"
+
+render "$tmp/capabilities.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set global.defaultAgentModel.contextWindow=200000 \
+    --set global.defaultAgentModel.maxTokens=50000
+grep -q 'name: MAGDA_LLM_CONTEXT_WINDOW, value: "200000"' "$tmp/capabilities.yaml"
+grep -q 'name: MAGDA_LLM_MAX_TOKENS, value: "50000"' "$tmp/capabilities.yaml"
+
+render "$tmp/chart-overrides.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set agent-services.llm.model=private-alias \
+    --set agent-services.llm.contextWindow=300000 \
+    --set agent-services.llm.maxTokens=60000 \
+    --set llm-services.allowedModels=private-alias \
+    --set llm-services.litellm.model.alias=private-alias \
+    --set llm-services.litellm.model.providerModel=openai/private-model
+grep -q 'name: MAGDA_LLM_MODEL, value: "private-alias"' "$tmp/chart-overrides.yaml"
+grep -q 'name: ALLOWED_MODELS, value: "private-alias"' "$tmp/chart-overrides.yaml"
+grep -q 'model_name: "private-alias"' "$tmp/chart-overrides.yaml"
+grep -q 'model: "openai/private-model"' "$tmp/chart-overrides.yaml"
+grep -q 'name: MAGDA_LLM_CONTEXT_WINDOW, value: "300000"' "$tmp/chart-overrides.yaml"
+grep -q 'name: MAGDA_LLM_MAX_TOKENS, value: "60000"' "$tmp/chart-overrides.yaml"
+
+# Prove global propagation through the released top-level magda chart.
+helm template magda "$helm_root/magda" --namespace test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set global.defaultAgentModel.providerModel=openai/top-level-model \
+    --set magda-core.agent-services.llm.model=top-level-alias \
+    --set magda-core.llm-services.allowedModels=top-level-alias \
+    --set magda-core.llm-services.litellm.model.alias=top-level-alias \
+    >"$tmp/top-level.yaml"
+grep -q 'name: MAGDA_LLM_MODEL, value: "top-level-alias"' "$tmp/top-level.yaml"
+grep -q 'name: ALLOWED_MODELS, value: "top-level-alias"' "$tmp/top-level.yaml"
+grep -q 'model_name: "top-level-alias"' "$tmp/top-level.yaml"
+grep -q 'model: "openai/top-level-model"' "$tmp/top-level.yaml"
+
 for runtime in runc gvisor kata; do
     render "$tmp/$runtime.yaml" magda test \
         --set global.agentWorkspace.enabled=true \
@@ -171,6 +251,17 @@ render "$tmp/operator-secrets.yaml" magda test \
 grep -q 'name: operator-control' "$tmp/operator-secrets.yaml"
 grep -q 'name: operator-litellm' "$tmp/operator-secrets.yaml"
 
+expect_failure 'llm.model or global.defaultAgentModel.alias is required' \
+    helm template agent "$helm_root/internal-charts/agent-services"
+expect_failure 'allowedModels or global.defaultAgentModel.alias is required' \
+    helm template llm "$helm_root/internal-charts/llm-services" \
+        --set litellm.enabled=false \
+        --set backend.url=https://llm.example/v1 \
+        --set backend.masterKeySecret.name=external-key \
+        --set backend.masterKeySecret.key=key
+expect_failure 'model.alias or global.defaultAgentModel.alias is required' \
+    helm template litellm "$helm_root/internal-charts/litellm"
+
 expect_failure 'litellm.enabled=false requires backend.url' \
     helm template magda "$chart" --namespace test \
         --set global.llmServices.enabled=true \
@@ -179,6 +270,65 @@ expect_failure 'backend.* must be empty when litellm.enabled=true' \
     helm template magda "$chart" --namespace test \
         --set global.llmServices.enabled=true \
         --set llm-services.backend.url=https://unused.example
+expect_failure 'must not exceed contextWindow' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set global.defaultAgentModel.contextWindow=100 \
+        --set global.defaultAgentModel.maxTokens=101
+expect_failure 'reasoningEffort must be a non-empty string or null' \
+    helm template magda "$chart" --namespace test \
+        --set global.llmServices.enabled=true \
+        --set-json global.defaultAgentModel.reasoningEffort=true
+expect_failure 'reasoningEffort must be a non-empty string or null' \
+    helm template magda "$chart" --namespace test \
+        --set global.llmServices.enabled=true \
+        --set-string 'global.defaultAgentModel.reasoningEffort=   '
+expect_failure 'providerSecret.name and providerSecret.key must either both be set or both be empty' \
+    helm template magda "$chart" --namespace test \
+        --set global.llmServices.enabled=true \
+        --set llm-services.litellm.providerSecret.name=only-name \
+        --set llm-services.litellm.providerSecret.key=
+expect_failure 'must be included in llm-services.allowedModels' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set agent-services.llm.model=missing-agent
+expect_failure 'must be included in llm-services.allowedModels' \
+    helm template magda "$chart" --namespace test \
+        --set global.llmServices.enabled=true \
+        --set llm-services.litellm.model.alias=missing-router
+expect_failure 'must match bundled LiteLLM alias' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set agent-services.llm.model=agent-alias \
+        --set-string 'llm-services.allowedModels=agent-alias\,router-alias' \
+        --set llm-services.litellm.model.alias=router-alias
+
+render "$tmp/external-multi-model.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set agent-services.llm.model=external-agent \
+    --set-string 'llm-services.allowedModels=external-agent\,other-model' \
+    --set llm-services.litellm.enabled=false \
+    --set llm-services.backend.url=https://llm.example/v1 \
+    --set llm-services.backend.masterKeySecret.name=external-key \
+    --set llm-services.backend.masterKeySecret.key=key
+! grep -q 'Source: magda-core/charts/llm-services/charts/litellm/' "$tmp/external-multi-model.yaml"
+grep -q 'name: MAGDA_LLM_MODEL, value: "external-agent"' "$tmp/external-multi-model.yaml"
+grep -q 'name: ALLOWED_MODELS, value: "external-agent,other-model"' "$tmp/external-multi-model.yaml"
+
+render "$tmp/credentialless.yaml" magda test \
+    --set global.llmServices.enabled=true \
+    --set llm-services.litellm.providerSecret.name= \
+    --set llm-services.litellm.providerSecret.key=
+! grep -q 'LITELLM_PROVIDER_API_KEY' "$tmp/credentialless.yaml"
+! grep -q 'api_key:' "$tmp/credentialless.yaml"
+
+checksum_default="$(resource_document Deployment litellm "$tmp/model-default.yaml" | sed -n 's/.*checksum\/config: *"*\([0-9a-f]*\)"*.*/\1/p')"
+checksum_reasoning="$(resource_document Deployment litellm "$tmp/reasoning.yaml" | sed -n 's/.*checksum\/config: *"*\([0-9a-f]*\)"*.*/\1/p')"
+[[ -n "$checksum_default" && -n "$checksum_reasoning" && "$checksum_default" != "$checksum_reasoning" ]]
 
 render "$tmp/release-a.yaml" release-a magda-a \
     --set global.agentWorkspace.enabled=true \

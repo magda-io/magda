@@ -10,7 +10,7 @@ import {
     RuntimeProxy,
     upstreamHeaders
 } from "../runtimeProxy.js";
-import { ManagerConfig } from "../types.js";
+import { ManagerConfig, resolveLlmModel } from "../types.js";
 
 function proxyConfig(): ManagerConfig {
     return {
@@ -31,7 +31,6 @@ function proxyConfig(): ManagerConfig {
         bootstrapCommand: "/bootstrap",
         magdaApiUrl: "https://magda.test/api",
         llmApiUrl: "https://magda.test/api/v0/llm/v1",
-        llmProvider: "magda",
         llmModel: "model",
         llmContextWindow: 1_050_000,
         llmMaxTokens: 128_000,
@@ -44,6 +43,11 @@ function proxyConfig(): ManagerConfig {
 }
 
 describe("Agent Manager contracts", () => {
+    it("defaults DSH to the stable MAGDA model alias", () => {
+        expect(resolveLlmModel(undefined)).to.equal("magda-agent-default");
+        expect(resolveLlmModel("private-model")).to.equal("private-model");
+    });
+
     it("uses the accepted deterministic claim identity", () => {
         expect(
             claimName("00000000-0000-4000-8000-000000000123", "a1b2c3d4e5f6")

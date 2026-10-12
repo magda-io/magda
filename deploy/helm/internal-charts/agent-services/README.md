@@ -18,6 +18,7 @@ Kubernetes: `>= 1.24.0-0`
 | global.agentWorkspace.enabled | bool | `false` |  |
 | global.agentWorkspace.sandboxNamespace | string | `""` |  |
 | global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
+| global.defaultAgentModel | object | `{}` |  |
 | global.externalUrl | string | `"http://localhost:6100"` |  |
 | global.image.pullPolicy | string | `"IfNotPresent"` |  |
 | global.image.repository | string | `"ghcr.io/magda-io"` |  |
@@ -30,11 +31,9 @@ Kubernetes: `>= 1.24.0-0`
 | kasValidation.image.pullPolicy | string | `"IfNotPresent"` |  |
 | kasValidation.image.repository | string | `"alpine/k8s"` |  |
 | kasValidation.image.tag | string | `"1.31.5"` |  |
-| llm.contextWindow | int | `1050000` |  |
-| llm.maxTokens | int | `128000` |  |
-| llm.model | string | `"gpt-5.6-sol"` |  |
-| llm.provider | string | `"magda"` |  |
-| llm.reasoningEffort | string | `"medium"` |  |
+| llm.contextWindow | string | `nil` | Model context-window override. |
+| llm.maxTokens | string | `nil` | Model maximum-output-token override. |
+| llm.model | string | `""` | Stable public model alias override. |
 | llmApiUrl | string | `""` |  |
 | magdaApiUrl | string | `""` |  |
 | managedApiKeyNamePrefix | string | `"magda-agent-workspace"` |  |

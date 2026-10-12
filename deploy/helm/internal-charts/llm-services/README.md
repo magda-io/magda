@@ -16,10 +16,11 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| allowedModels | string | `"gpt-5.6-sol"` |  |
+| allowedModels | string | `""` | Optional comma-separated model allowlist override. Empty inherits global.defaultAgentModel.alias from the parent chart. |
 | backend.masterKeySecret.key | string | `""` |  |
 | backend.masterKeySecret.name | string | `""` |  |
 | backend.url | string | `""` |  |
+| global.defaultAgentModel | object | `{}` |  |
 | image.name | string | `"magda-llm-services"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `""` |  |

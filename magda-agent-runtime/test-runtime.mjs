@@ -12,6 +12,12 @@ const packageJson = JSON.parse(
 const lernaJson = JSON.parse(
     await readFile(new URL("../lerna.json", import.meta.url), "utf8")
 );
+const mgdPackageJson = JSON.parse(
+    await readFile(
+        new URL("../packages/mgd/package.json", import.meta.url),
+        "utf8"
+    )
+);
 const managedClient = await readFile(
     new URL("dsh-client-managed-profile/lib/client.js", import.meta.url),
     "utf8"
@@ -31,10 +37,19 @@ assert.match(
     "The qualified DSH release must remain pinned"
 );
 assert.equal(packageJson.version, lernaJson.version);
+assert.equal(mgdPackageJson.version, lernaJson.version);
+assert.equal(packageJson.dependencies["@magda/mgd"], `^${lernaJson.version}`);
 assert.equal(packageJson.config.docker.name, "magda-agent-runtime");
 assert.equal(packageJson.magda.language, "typescript");
 assert.equal(packageJson.magda.categories.dockerizedTool, true);
 assert.equal(packageJson.magda.categories.api, undefined);
+assert.match(packageJson.scripts.check, /bash -n entrypoint\.sh/);
+assert.equal(packageJson.scripts.build, "yarn run check");
+assert.match(
+    packageJson.scripts.test,
+    /yarn run check && node test-runtime\.mjs/
+);
+assert.match(packageJson.scripts["prepare-docker"], /packages\/mgd build/);
 assert.match(
     packageJson.scripts["docker-build-prod"],
     /create-docker-context-for-node-component/
@@ -44,11 +59,8 @@ const dockerIncludes = new Set(
     packageJson.config.docker.include.split(" ").filter(Boolean)
 );
 for (const requiredPath of [
+    "node_modules",
     "Dockerfile",
-    "../packages/mgd/package.json",
-    "../packages/mgd/esbuild.js",
-    "../packages/mgd/src",
-    "../packages/mgd/skills",
     "../magda-agent-runtime/dsh-client-managed-profile",
     "../magda-agent-runtime/magda.cordis.patch.yml",
     "../magda-agent-runtime/entrypoint.sh",
@@ -60,9 +72,31 @@ for (const requiredPath of [
         `Docker context must include ${requiredPath}`
     );
 }
-assert.ok(
-    ![...dockerIncludes].some((path) => path.includes("node_modules")),
-    "Docker context must not include local node_modules"
+for (const legacyMgdSource of [
+    "../packages/mgd/package.json",
+    "../packages/mgd/esbuild.js",
+    "../packages/mgd/src",
+    "../packages/mgd/skills"
+]) {
+    assert.ok(
+        !dockerIncludes.has(legacyMgdSource),
+        `Docker context must package @magda/mgd as a dependency, not ${legacyMgdSource}`
+    );
+}
+assert.doesNotMatch(
+    dockerfile,
+    /AS mgd-build|COPY --from=mgd-build|npm pack|\/tmp\/mgd/,
+    "The runtime must use standard dependency packaging instead of a manual mgd build stage"
+);
+assert.match(
+    dockerfile,
+    /COPY node_modules\/ \/usr\/local\/lib\/node_modules\//,
+    "The generated production dependency tree must be copied into the image"
+);
+assert.match(
+    dockerfile,
+    /ln -s \/usr\/local\/lib\/node_modules\/@magda\/mgd\/bin\/mgd\.js \/usr\/local\/bin\/mgd/,
+    "The mgd executable must remain on PATH"
 );
 assert.match(
     dockerfile,
@@ -81,6 +115,16 @@ assert.doesNotMatch(
 );
 assert.match(
     cordisPatch,
+    /process\.env\.MAGDA_LLM_MODEL \|\| 'magda-agent-default'/,
+    "The managed provider and default selection must use the stable public alias"
+);
+assert.doesNotMatch(
+    cordisPatch,
+    /gpt-5\.6-sol/,
+    "DSH configuration must not expose the provider-specific model identifier"
+);
+assert.match(
+    cordisPatch,
     /contextWindow: !!js Number\(process\.env\.MAGDA_LLM_CONTEXT_WINDOW \|\| 1050000\)/,
     "The model context window must come from managed bootstrap configuration"
 );
@@ -88,6 +132,16 @@ assert.match(
     cordisPatch,
     /maxTokens: !!js Number\(process\.env\.MAGDA_LLM_MAX_TOKENS \|\| 128000\)/,
     "The model output limit must come from managed bootstrap configuration"
+);
+assert.match(
+    cordisPatch,
+    /reasoningEffort: !!js process\.env\.MAGDA_LLM_REASONING_EFFORT \|\| undefined/,
+    "Reasoning effort must remain optional with no runtime default"
+);
+assert.doesNotMatch(
+    cordisPatch,
+    /MAGDA_LLM_REASONING_EFFORT \|\| ['\"]medium['\"]/,
+    "The runtime must not restore an omitted reasoning effort"
 );
 for (const managedLimit of [
     "MAGDA_LLM_CONTEXT_WINDOW",

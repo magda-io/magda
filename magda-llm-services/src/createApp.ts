@@ -4,6 +4,15 @@ import https from "node:https";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { ADMIN_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
+export function resolveAllowedModels(value: string | undefined): Set<string> {
+    return new Set(
+        (value || "magda-agent-default")
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+    );
+}
+
 export interface LlmServicesConfig {
     jwtSecret: string;
     authApiUrl: string;

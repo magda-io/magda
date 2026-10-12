@@ -18,6 +18,9 @@ if (
     !payload?.magda?.apiKey ||
     !payload?.llm?.baseUrl ||
     !payload?.llm?.model ||
+    (payload.llm.reasoningEffort != null &&
+        (typeof payload.llm.reasoningEffort !== "string" ||
+            !payload.llm.reasoningEffort.trim())) ||
     !Number.isSafeInteger(payload?.llm?.contextWindow) ||
     payload.llm.contextWindow <= 0 ||
     !Number.isSafeInteger(payload?.llm?.maxTokens) ||

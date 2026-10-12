@@ -9,6 +9,20 @@ global:
   llmServices:
     # -- Enable the authenticated Magda LLM facade independently of Agent Workspace.
     enabled: false
+  defaultAgentModel:
+    # -- Stable model alias exposed by MAGDA LLM Services and managed DSH.
+    alias: magda-agent-default
+    # -- LiteLLM provider model routed behind the stable MAGDA alias.
+    providerModel: openai/gpt-5.6-sol
+    # -- Optional provider reasoning effort. Keep null to use the provider's model
+    # default (medium for GPT-5.6 Sol), or set an explicit supported effort.
+    # Helm cannot reliably override a non-null global subchart default with null,
+    # so null must be the chart default for opt-out to propagate through nesting.
+    reasoningEffort: null
+    # -- Model context-window capability.
+    contextWindow: 1050000
+    # -- Model maximum output tokens, including reasoning tokens.
+    maxTokens: 128000
   searchEngine:
     semanticIndexer:
       indexName: "semantic-index"

@@ -3,7 +3,10 @@ import http, { RequestListener } from "node:http";
 import { AddressInfo } from "node:net";
 import { once } from "node:events";
 import jwt from "jsonwebtoken";
-import createApp, { LlmServicesConfig } from "../createApp.js";
+import createApp, {
+    LlmServicesConfig,
+    resolveAllowedModels
+} from "../createApp.js";
 import { ADMIN_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
 const jwtSecret = "llm-services-test-secret";
@@ -38,6 +41,17 @@ function config(overrides: Partial<LlmServicesConfig> = {}): LlmServicesConfig {
 }
 
 describe("LLM Services", () => {
+    it("defaults its allowlist to the stable MAGDA model alias", () => {
+        assert.deepEqual(
+            [...resolveAllowedModels(undefined)],
+            ["magda-agent-default"]
+        );
+        assert.deepEqual(
+            [...resolveAllowedModels("model-a, model-b")],
+            ["model-a", "model-b"]
+        );
+    });
+
     const originalFetch = global.fetch;
 
     beforeEach(() => {

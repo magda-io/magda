@@ -16,7 +16,7 @@ import {
 
 const userId = "00000000-0000-4000-8000-000000000123";
 
-function config(): ManagerConfig {
+function config(overrides: Partial<ManagerConfig> = {}): ManagerConfig {
     return {
         port: 8080,
         jwtSecret: "secret",
@@ -35,7 +35,6 @@ function config(): ManagerConfig {
         bootstrapCommand: "/bootstrap",
         magdaApiUrl: "https://magda.test/api",
         llmApiUrl: "https://magda.test/api/v0/llm/v1",
-        llmProvider: "magda",
         llmModel: "model",
         llmReasoningEffort: "medium",
         llmContextWindow: 1_050_000,
@@ -44,7 +43,8 @@ function config(): ManagerConfig {
         idleSuspendSeconds: 30 * 60,
         reconcileIntervalSeconds: 30,
         runtimeMaxBodyBytes: 1024,
-        controlPlaneSecret: "control"
+        controlPlaneSecret: "control",
+        ...overrides
     };
 }
 
@@ -224,10 +224,14 @@ class FakeProxy {
     }
 }
 
-function manager(kubernetes: FakeKubernetes, keys = new FakeApiKeys()) {
+function manager(
+    kubernetes: FakeKubernetes,
+    keys = new FakeApiKeys(),
+    configOverrides: Partial<ManagerConfig> = {}
+) {
     return {
         manager: new AgentManager(
-            config(),
+            config(configOverrides),
             kubernetes as never,
             keys as never,
             new FakeProxy() as never
@@ -253,6 +257,24 @@ describe("Agent Workspace inactivity lifecycle", () => {
             "llm.contextWindow": 1_050_000,
             "llm.maxTokens": 128_000
         });
+    });
+
+    it("omits reasoning effort when the selected model does not support it", async () => {
+        const kubernetes = new FakeKubernetes();
+        const instance = manager(kubernetes, new FakeApiKeys(), {
+            llmReasoningEffort: undefined
+        }).manager;
+
+        await instance.start(userId);
+        for (let i = 0; i < 20 && !kubernetes.bootstraps.length; i += 1) {
+            await new Promise((resolve) => setImmediate(resolve));
+        }
+
+        expect(kubernetes.bootstraps).to.have.length(1);
+        const payload = kubernetes.bootstraps[0] as {
+            llm: Record<string, unknown>;
+        };
+        expect(payload.llm).not.to.have.property("reasoningEffort");
     });
 
     it("suspends after 30 minutes even when transport sockets are open", async () => {
