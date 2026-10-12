@@ -89,6 +89,14 @@ DSH + mgd skill / optional DSH approval integration
     -> when the agent asks the user before consequential actions
 ```
 
+## Agent Workspace access permission and skill authorization (expanded MVP)
+
+**Dedicated Workspace operation:** `agentWorkspace/access`, implemented by `magda-opa/policies/agentWorkspace/allow.rego` and delegated from the OPA entrypoint. This is a **single** grantable permission controlling the current user's Workspace start/status/resume/terminate/reset, runtime HTTP proxy and WebSocket upgrade. Manager always resolves and operates on **the authenticated user's own** SandboxClaim using the user UUID + Magda installation; users (including admins through the public endpoints) cannot choose an arbitrary target. Replace the hard-coded admin-only authorization gate with this operation; retain the initial **admin-only default grant** and admin override, without making all ordinary users eligible automatically. UI visibility is only a whoami hint.
+
+**Agent Skill operations:** `object/agentSkill/create|read|update|delete`, with dedicated `magda-opa/policies/object/agentSkill/allow.rego` and typed record delegation from `object/record/allow.rego` for Registry records bearing `agent-skill`. Ensure the generic record-policy fallback does **not** bypass typed permission checks; the policy distinguishes admin-published system skills (authorized read for all authenticated eligible users, admin-only writes) from owner-scoped user skills (owner CRUD). Future sharing can build on Registry `access-control.preAuthorisedPermissionIds`. An unconstrained system-skill read grant must **not** expose private user skills.
+
+Each published system/user skill has a Registry `agent-skill` + `access-control` record. Agent Services coordinates authorized Registry API mutations and validates linked ZIPs served through **Storage API** from the existing default bucket. It propagates the trusted Gateway-originated `X-Magda-Session` current-user identity to internal Registry/Storage calls; this is not a user-supplied user-ID or an elevated Agent Services storage identity. The skill object uses `magda-record-id` linking to the Registry record. Record-linked Storage API's permission delegation is reused, while protecting the reserved skill archive prefix against direct unvalidated uploads/deletes. See [skills.md](./skills.md), #3854 (skills API/OPA) and #3858 (Workspace access OPA).
+
 ## Role/user changes
 
 Because calls go through normal Magda authentication/authorisation:
