@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import {
+    lstat,
+    mkdir,
+    mkdtemp,
+    readFile,
+    rm,
+    writeFile
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { runInNewContext } from "node:vm";
+import { zstdCompressSync, zstdDecompressSync } from "node:zlib";
 
 const dockerfile = await readFile(
     new URL("Dockerfile", import.meta.url),
@@ -20,6 +31,20 @@ const cordisPatch = await readFile(
     new URL("magda.cordis.patch.yml", import.meta.url),
     "utf8"
 );
+
+function decompressZstdFrames(source) {
+    const frames = [];
+    let offset = 0;
+    while (offset < source.length) {
+        const result = zstdDecompressSync(source.subarray(offset), {
+            info: true
+        });
+        assert.ok(result.engine.bytesWritten > 0);
+        frames.push(result.buffer.toString("utf8"));
+        offset += result.engine.bytesWritten;
+    }
+    return frames;
+}
 
 assert.match(
     dockerfile,
@@ -49,7 +74,9 @@ for (const requiredPath of [
     "../magda-agent-runtime/magda.cordis.patch.yml",
     "../magda-agent-runtime/entrypoint.sh",
     "../magda-agent-runtime/bootstrap.mjs",
-    "../magda-agent-runtime/dsh-launch.mjs"
+    "../magda-agent-runtime/dsh-launch.mjs",
+    "../magda-agent-runtime/migrate-data-paths.mjs",
+    "../magda-agent-runtime/patch-dsh-workspace-path.mjs"
 ]) {
     assert.ok(
         dockerIncludes.has(requiredPath),
@@ -60,6 +87,166 @@ assert.ok(
     ![...dockerIncludes].some((path) => path.includes("node_modules")),
     "Docker context must not include local node_modules"
 );
+assert.match(
+    dockerfile,
+    /ENV DSH_HOME=\/data\/agent-home/,
+    "DSH state must use the Agent Workspace branded home path"
+);
+assert.match(
+    dockerfile,
+    /patch-dsh-workspace-path\.mjs/,
+    "The pinned DSH default workspace path must be patched during the image build"
+);
+
+const temporaryRoot = await mkdtemp(path.join(tmpdir(), "magda-agent-paths-"));
+try {
+    const dataRoot = path.join(temporaryRoot, "data");
+    const legacyWorkspace = path.join(
+        dataRoot,
+        "workspace",
+        "deepseek-harness",
+        "default-workspace"
+    );
+    const agentWorkspace = path.join(
+        dataRoot,
+        "workspace",
+        "agent-harness",
+        "default-workspace"
+    );
+    const legacySessionGroup =
+        "--data-workspace-deepseek-harness-default-workspace--";
+    const agentSessionGroup =
+        "--data-workspace-agent-harness-default-workspace--";
+    await mkdir(
+        path.join(dataRoot, "dsh-home", "sessions", legacySessionGroup),
+        { recursive: true }
+    );
+    await writeFile(
+        path.join(dataRoot, "dsh-home", "state.json"),
+        JSON.stringify({ path: legacyWorkspace })
+    );
+    await writeFile(
+        path.join(
+            dataRoot,
+            "dsh-home",
+            "sessions",
+            legacySessionGroup,
+            "session.v4.jsonl.zstd"
+        ),
+        Buffer.concat([
+            zstdCompressSync(
+                Buffer.from(`${JSON.stringify({ cwd: legacyWorkspace })}\n`)
+            ),
+            zstdCompressSync(
+                Buffer.from(`${JSON.stringify({ event: "first turn" })}\n`)
+            ),
+            zstdCompressSync(
+                Buffer.from(`${JSON.stringify({ event: "second turn" })}\n`)
+            )
+        ])
+    );
+    await mkdir(
+        path.join(
+            dataRoot,
+            "workspace",
+            "deepseek-harness",
+            "default-workspace"
+        ),
+        { recursive: true }
+    );
+    await writeFile(
+        path.join(
+            dataRoot,
+            "workspace",
+            "deepseek-harness",
+            "default-workspace",
+            "result.txt"
+        ),
+        "result"
+    );
+    const migration = new URL("migrate-data-paths.mjs", import.meta.url);
+    const migrationEnvironment = {
+        ...process.env,
+        MAGDA_AGENT_DATA_ROOT: dataRoot
+    };
+    execFileSync(process.execPath, [migration.pathname], {
+        env: migrationEnvironment
+    });
+    // A second boot must be a no-op.
+    execFileSync(process.execPath, [migration.pathname], {
+        env: migrationEnvironment
+    });
+
+    assert.deepEqual(
+        JSON.parse(
+            await readFile(
+                path.join(dataRoot, "agent-home", "state.json"),
+                "utf8"
+            )
+        ),
+        { path: agentWorkspace }
+    );
+    assert.equal(
+        await readFile(path.join(agentWorkspace, "result.txt"), "utf8"),
+        "result"
+    );
+    const migratedFrames = decompressZstdFrames(
+        await readFile(
+            path.join(
+                dataRoot,
+                "agent-home",
+                "sessions",
+                agentSessionGroup,
+                "session.v4.jsonl.zstd"
+            )
+        )
+    ).map((frame) => JSON.parse(frame));
+    assert.deepEqual(migratedFrames, [
+        { cwd: agentWorkspace },
+        { event: "first turn" },
+        { event: "second turn" }
+    ]);
+    await assert.rejects(
+        lstat(path.join(dataRoot, "workspace", "deepseek-harness")),
+        (error) => error?.code === "ENOENT"
+    );
+    assert.equal(
+        await readFile(path.join(dataRoot, ".agent-paths-v1"), "utf8"),
+        "1\n"
+    );
+
+    const packageRoot = path.join(temporaryRoot, "workspace-controller");
+    await mkdir(path.join(packageRoot, "lib", "types"), { recursive: true });
+    await writeFile(
+        path.join(packageRoot, "lib", "index.js"),
+        'paths.join(directory, "deepseek-harness", DEFAULT_WORKSPACE_DIRECTORY)'
+    );
+    await writeFile(
+        path.join(packageRoot, "lib", "types", "default-directory.js"),
+        "paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)"
+    );
+    execFileSync(
+        process.execPath,
+        [
+            new URL("patch-dsh-workspace-path.mjs", import.meta.url).pathname,
+            packageRoot
+        ],
+        { stdio: "ignore" }
+    );
+    assert.match(
+        await readFile(path.join(packageRoot, "lib", "index.js"), "utf8"),
+        /agent-harness/
+    );
+    assert.match(
+        await readFile(
+            path.join(packageRoot, "lib", "types", "default-directory.js"),
+            "utf8"
+        ),
+        /agent-harness/
+    );
+} finally {
+    await rm(temporaryRoot, { recursive: true, force: true });
+}
 
 assert.match(
     cordisPatch,

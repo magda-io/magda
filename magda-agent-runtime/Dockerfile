@@ -20,6 +20,8 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 RUN npm install -g --no-audit --no-fund "@deepseek-ai/dsh@${DSH_VERSION}" \
   && npm cache clean --force
+COPY --chmod=0755 magda-agent-runtime/patch-dsh-workspace-path.mjs /usr/local/lib/magda-agent/patch-dsh-workspace-path.mjs
+RUN node /usr/local/lib/magda-agent/patch-dsh-workspace-path.mjs
 COPY magda-agent-runtime/dsh-client-managed-profile/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile/
 RUN chmod -R a+rX \
@@ -36,7 +38,8 @@ COPY --chmod=0644 magda-agent-runtime/magda.cordis.patch.yml /etc/magda-agent/ma
 COPY --chmod=0755 magda-agent-runtime/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
 COPY --chmod=0755 magda-agent-runtime/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
 COPY --chmod=0644 magda-agent-runtime/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
-ENV DSH_HOME=/data/dsh-home \
+COPY --chmod=0755 magda-agent-runtime/migrate-data-paths.mjs /usr/local/lib/magda-agent/migrate-data-paths.mjs
+ENV DSH_HOME=/data/agent-home \
   XDG_CONFIG_HOME=/data/config \
   DSH_TELEMETRY_MODE=DISABLED \
   DSH_TELEMETRY_DISABLED=1 \

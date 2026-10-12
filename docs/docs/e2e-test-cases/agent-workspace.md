@@ -84,7 +84,8 @@ for implementation details, key decisions, configuration, and deployment steps.
    reset/logout behavior.
 3. Select **Start Agent Workspace**. Observe `ALLOCATING`, then
    `BOOTSTRAPPING`, then the embedded stock DSH UI (`READY`). Kubernetes names
-   and addresses must not appear in the UI.
+   and addresses must not appear in the UI. The destructive replacement button
+   must be labelled **Start New Workspace**.
 4. Confirm the native DSH sidebar is visible and branded **Agent Workspace** and
    the same **M** mark appears beside the empty-chat **Agent Workspace** heading.
    New Session, the session history, Search, rename, and collapse/expand must
@@ -115,6 +116,9 @@ Run each check while watching the Settings page and Kubernetes resources:
 
 - Record the claim, PVC, and managed-key IDs, create both Sessions, then refresh
   the browser. Confirm both histories remain available and no resource ID changes.
+  From the Sandbox, confirm DSH state is under `/data/agent-home` and its default
+  working tree is `/data/workspace/agent-harness/default-workspace`. A fresh PVC
+  must not contain the former `dsh-home` or `deepseek-harness` paths.
 - Delete the DSH Pod. Confirm DSH restarts against the same PVC, the browser
   reconnects, and both Sessions remain available.
 - Patch the bound Sandbox to `spec.operatingMode: Suspended`, confirm the UI

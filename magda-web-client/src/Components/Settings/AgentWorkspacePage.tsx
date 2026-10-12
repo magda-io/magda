@@ -211,7 +211,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
             disabled={!!action}
             onClick={() => setResetOpen(true)}
         >
-            Reset / Start New Workspace
+            Start New Workspace
         </Button>
     );
 

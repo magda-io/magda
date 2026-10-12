@@ -89,6 +89,19 @@ Sessions and files survive browser refresh, Pod replacement, and suspend/resume
 because DSH state and `/data/workspace` share the PVC. Reset, Terminate, and
 logout remove all sessions and files with that single workspace.
 
+The PVC uses deployment-owned names rather than upstream product names:
+
+- `/data/agent-home` contains DSH profiles, credentials, session logs, and storage;
+- `/data/workspace/agent-harness/default-workspace` is the default working tree.
+
+The pinned DSH release hard-codes its `deepseek-harness` directory segment, so the
+runtime image applies a fail-closed, version-specific patch during its build. On
+the first boot of an existing PVC, the entrypoint renames the former `dsh-home`
+and `deepseek-harness` directories, rewrites DSH registry and projection
+metadata, rewrites compressed session headers, and renames session project
+directories. Both upgraded and newly created PVCs therefore contain only the new
+names.
+
 ## Authentication and trust boundaries
 
 - Browser cookies and Gateway session headers terminate at Agent Manager. They
