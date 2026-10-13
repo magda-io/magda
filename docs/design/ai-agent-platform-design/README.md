@@ -122,6 +122,7 @@ Runtime + credentials + network
 | DSH integration / bootstrap / routing | [dsh-integration.md](./dsh-integration.md) | #3824 — **Accepted** |
 | Authentication / sandbox credential boundary | [authentication.md](./authentication.md) | #3825 — **Accepted** |
 | Shared LLM services | [llm-services.md](./llm-services.md) | #3838 — **Proposed** |
+| Future LLM access profiles, dynamic permissions and quotas | [llm-access-profiles.md](./llm-access-profiles.md) | #3838 — **Agreed design direction; not MVP implementation** |
 | Network / security | [network-security.md](./network-security.md) | Draft |
 | Mutation confirmation | [mutation-approval.md](./mutation-approval.md) | Proposed product/DSH UX contract |
 | Skills | [skills.md](./skills.md) | Expanded MVP: Registry-backed metadata, Storage API archives, scoped OPA, `mgd`, workflow capture and catalogue UI; implementation #3854–#3857 |
@@ -156,6 +157,12 @@ The v8 alpha target uses GKE/gVisor and the experimentally qualified L4 ingress 
 
 Long-lived ingress configuration is tracked by #3847 and path-scoped DSH CSP by #3846.
 
+
+## LLM access profiles (future design; not yet in #3850)
+
+[llm-access-profiles.md](./llm-access-profiles.md) records the agreed long-term authorization model: typed Registry `llm-access-profile` + `llm-access-profile-details` records; LLM Services-owned `llm/access/create|read|update|delete` management endpoints that coordinate Registry and Authorization API operations; one dynamic `llm/access/<profile-id>/access` operation per profile; a dedicated `llm/access/*/access` OPA wildcard rule; and per-user quotas with shared deployment timezone and trusted usage data as OPA input. A request is allowed when any enabled granted profile permits the model within its limit (logical OR, no automatic quota stacking). OPA decides; LLM Services accounts/atomically enforces usage. The current admin-only LLM facade in #3850 does **not** implement this model.
+
+For #3850's immediate configuration follow-up, retain a deployment-wide model allowlist as a **YAML string array** (exactly the one bundled LiteLLM alias for the one-model router), and prefer explicit `global.defaultAgentModel.reasoningEffort: medium` with a supported `provider-default` opt-out sentinel, as described in [llm-services.md](./llm-services.md).
 
 ## Durable skill architecture (expanded MVP, staged implementation)
 
