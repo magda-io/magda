@@ -63,6 +63,8 @@ The OPA decision input is constructed by LLM Services from trusted sources: auth
 
 ## Profile management operations are owned by LLM Services
 
+Seed the **base Authorization API resource `llm/access`** and built-in management operations `llm/access/create|read|update|delete` (plus the special wildcard invocation resource/operation) via authorization migrations. Per-profile `llm/access/<profile-id>` resources and their `/access` operations are created/deleted dynamically by LLM Services when profiles are managed. All permission records and grants remain normal Authorization API objects.
+
 Prefer the user-proposed **`llm/access/create|read|update|delete`** operation family for the *public management facade* rather than requiring clients to manually coordinate `object/llmAccess/*` via Registry plus Authorization API.
 
 - `llm/access/create`: early policy check with a proposed record and `access-control` context; validate fields and record ID; LLM Services creates typed Registry record and registers the corresponding Auth API resource/operation using **trusted service authority**, not arbitrary caller Auth API create rights. No automatic grant to the creator.
