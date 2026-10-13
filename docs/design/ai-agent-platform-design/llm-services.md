@@ -46,7 +46,9 @@ Magda LLM Services:
 
 Model discovery should return only models the authenticated user is authorised to use.
 
-The exact resource/action schema is still owned by #3838.
+**Agreed future authorization direction:** [Registry-backed LLM Access Profiles](./llm-access-profiles.md) defines typed `llm-access-profile` records with `llm-access-profile-details` and `access-control`, plus LLM Services-owned `llm/access/create|read|update|delete` management endpoints that coordinate Registry and Auth API. Each created profile has a grantable `llm/access/<profile-id>/access` entitlement and a dedicated OPA wildcard rule for `llm/access/*/access`. One enabled authorized profile suffices (OR semantics), subject to the deployment model allowlist. Initial flat fields include `allowedModels`, optional per-user day/week/month token limits and `enabled`; usage counters are supplied by LLM Services as OPA inputs once measured, with atomic quota enforcement in the service, not OPA. Future entitlement/profile support is **not** implemented in #3850. Details and security constraints remain in the linked design.
+
+The ownership ticket for the future implementation and remaining API details is #3838.
 
 ## LiteLLM responsibility
 
@@ -83,7 +85,9 @@ Provider credentials and the LiteLLM internal credential never enter user sandbo
 
 Draft PR #3850 implements an independent `global.llmServices.enabled` feature flag: the LLM facade can be deployed without Agent Workspace, whereas Agent Workspace currently requires the LLM facade. The `llm-services` chart owns a nested **optional** `litellm` subchart. With bundled LiteLLM enabled, the facade derives its backend URL and master-key Secret from the subchart. With bundled LiteLLM disabled, the operator supplies an external `backend.url` and `backend.masterKeySecret.{name,key}`; configuration must not silently fall back to an unusable backend.
 
-The MVP is deliberately admin-only at the feature/model gate; **the generic per-model authorization resource/action contract below remains proposed in #3838**, not a feature already completed by the initial admin-only implementation. Do not conflate the two.
+The MVP is deliberately admin-only at the feature/model gate; the Registry/OPA profile mechanism in [llm-access-profiles.md](./llm-access-profiles.md) remains future work under #3838, **not** a feature already shipped by #3850. Do not conflate the two.
+
+For the #3850 cleanup, keep the deployment-wide `llm-services.allowedModels` gate even after per-user OPA exists. Use a Helm YAML string array (rather than comma-separated text), with an empty array falling back to `global.defaultAgentModel.alias`; the bundled one-model LiteLLM chart must expose **exactly its configured alias**, whereas external LiteLLM can expose multiple allowed aliases. Set `global.defaultAgentModel.reasoningEffort: medium` as the shipped default; support an explicit `provider-default` sentinel that templates translate to **absence of the setting** in both DSH and LiteLLM (not to a literal reasoning level). This avoids Helm's inability to reliably propagate an explicit YAML null against a non-null nested global default. These are proposed review follow-ups for #3850, not claims that the current head implements them.
 
 ## Minimal LiteLLM deployment
 
