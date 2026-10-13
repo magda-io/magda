@@ -207,7 +207,7 @@ mgd agent-skill show <scope>/<id>
 mgd agent-skill pull <scope>/<id> [--output <dir>]
 mgd agent-skill init <name> [--scope user|system]
 mgd agent-skill validate <local-dir> [--scope user|system]
-mgd agent-skill publish <local-dir> [--scope user|system] [--id <id>]
+mgd agent-skill publish <local-dir> [--scope user|system]
 mgd agent-skill delete <scope>/<id>
 mgd agent-skill sync [--scope system|user|all] [--force]
 ```
