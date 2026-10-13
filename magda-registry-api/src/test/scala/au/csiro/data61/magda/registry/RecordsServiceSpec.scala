@@ -3100,6 +3100,90 @@ class RecordsServiceSpec extends ApiSpec {
       describe("paging") {
         describe("full records") {
           pagingTests("?aspect=test&")
+
+          it(
+            "pages an Agent Skill catalogue with supported reverse keyset pagination"
+          ) { param =>
+            val skillAspect =
+              AspectDefinition("agent-skill", "Agent Skill", None)
+            val accessAspect =
+              AspectDefinition("access-control", "Access control", None)
+            List(skillAspect, accessAspect).foreach { aspect =>
+              Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
+                TENANT_1
+              ) ~> param.api(Full).routes ~> check {
+                status shouldEqual StatusCodes.OK
+              }
+            }
+
+            def skillRecord(
+                id: String,
+                scope: String,
+                state: String
+            ): Record =
+              Record(
+                id,
+                id,
+                Map(
+                  "agent-skill" -> JsObject(
+                    "scope" -> JsString(scope),
+                    "state" -> JsString(state)
+                  ),
+                  "access-control" -> JsObject(
+                    "ownerId" -> JsString("owner-id")
+                  )
+                ),
+                Some("source")
+              )
+
+            val maxSkillId =
+              s"agent-skill-00000000-0000-4000-8000-000000000123-${"a" * 46}"
+            maxSkillId.length shouldBe 95
+            val records = List(
+              skillRecord(maxSkillId, "user", "READY"),
+              skillRecord("pending", "user", "PENDING"),
+              skillRecord("matching-2", "user", "READY"),
+              skillRecord("system", "system", "READY"),
+              skillRecord("matching-3", "user", "READY")
+            )
+            records.foreach { record =>
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+                TENANT_1
+              ) ~> param.api(Full).routes ~> check {
+                status shouldEqual StatusCodes.OK
+              }
+            }
+
+            val query =
+              "aspect=agent-skill&aspect=access-control" +
+                "&aspectQuery=agent-skill.scope:user" +
+                "&aspectQuery=agent-skill.state:READY" +
+                "&reversePageTokenOrder=true&limit=2"
+            val firstPage = Get(s"/v0/records?$query") ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(role).routes ~> check {
+              status shouldEqual StatusCodes.OK
+              responseAs[RecordsPage[Record]]
+            }
+            firstPage.records.map(_.id) shouldBe List(
+              "matching-3",
+              "matching-2"
+            )
+            firstPage.hasMore shouldBe true
+            firstPage.nextPageToken should not be empty
+
+            val secondPage = Get(
+              s"/v0/records?$query&pageToken=${firstPage.nextPageToken.get}"
+            ) ~> addTenantIdHeader(TENANT_1) ~> param
+              .api(role)
+              .routes ~> check {
+              status shouldEqual StatusCodes.OK
+              responseAs[RecordsPage[Record]]
+            }
+            secondPage.records.map(_.id) shouldBe List(maxSkillId)
+            secondPage.hasMore shouldBe false
+            secondPage.nextPageToken shouldBe empty
+          }
         }
 
         describe("summaries") {

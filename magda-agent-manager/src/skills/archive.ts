@@ -12,6 +12,8 @@ import {
 const USER_FILE_PATTERN = /\.md$/i;
 const SYSTEM_FILE_PATTERN = /\.(?:md|txt|json|ya?ml|csv|tsv|sh|bash|js|mjs|cjs|ts|mts|cts|py|ps1)$/i;
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const MAX_SKILL_NAME_LENGTH = 46;
+const RESERVED_RUNTIME_SKILL_NAMES = new Set(["capture-workflow", "magda-mgd"]);
 
 export class ArchiveValidationError extends Error {}
 
@@ -77,15 +79,34 @@ export function validateAgentSkillMetadata(
     const name = typeof nameValue === "string" ? nameValue.trim() : "";
     const description =
         typeof descriptionValue === "string" ? descriptionValue.trim() : "";
-    if (!name || name.length > 64 || !SKILL_NAME_PATTERN.test(name)) {
+    if (
+        !name ||
+        name.length > MAX_SKILL_NAME_LENGTH ||
+        !SKILL_NAME_PATTERN.test(name)
+    ) {
         invalid(
-            "SKILL.md name must be 1-64 lowercase letters, digits, or single hyphen separators"
+            "SKILL.md name must be 1-46 lowercase letters, digits, or single hyphen separators"
         );
     }
     if (!description || description.length > 1024) {
         invalid("SKILL.md description must be 1-1024 characters");
     }
     return { name, description };
+}
+
+export function validateAgentSkillNameForScope(
+    name: string,
+    scope: AgentSkillScope
+): void {
+    if (RESERVED_RUNTIME_SKILL_NAMES.has(name)) {
+        invalid(`'${name}' is reserved for a runtime-bundled Agent Skill`);
+    }
+    if (scope === "system" && !name.startsWith("system-")) {
+        invalid("System Agent Skill names must start with system-");
+    }
+    if (scope === "user" && name.startsWith("system-")) {
+        invalid("User Agent Skill names must not start with system-");
+    }
 }
 
 function parseSkillMarkdown(
@@ -311,6 +332,7 @@ export async function validateAgentSkillArchive(
                     invalid("ZIP archive must contain SKILL.md at its root");
                 }
                 const metadata = parseSkillMarkdown(skillMarkdown);
+                validateAgentSkillNameForScope(metadata.name, scope);
                 settled = true;
                 resolve({
                     ...metadata,

@@ -9,7 +9,7 @@ import {
 import { AgentSkillRecord } from "../skills/types.js";
 
 const userId = "00000000-0000-4000-8000-000000000123";
-const recordId = "10000000-0000-4000-8000-000000000001";
+const recordId = `agent-skill-${userId}-useful-skill`;
 const session = "verified-session";
 
 function record(): AgentSkillRecord {
@@ -154,6 +154,56 @@ describe("Agent Skill downstream clients", () => {
             "X-Magda-Session": session,
             "X-Magda-Tenant-Id": "7"
         });
+    });
+
+    it("uses Registry-compatible keyset pagination beyond the first page", async () => {
+        let requestUrl = "";
+        globalThis.fetch = (async (url) => {
+            requestUrl = String(url);
+            return new Response(
+                JSON.stringify({
+                    records: [record()],
+                    hasMore: true,
+                    nextPageToken: "124"
+                }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                }
+            );
+        }) as typeof globalThis.fetch;
+        const registry = new HttpAgentSkillRegistry(
+            "http://registry-api/v0",
+            7
+        );
+        const result = await registry.list(
+            {
+                limit: 2,
+                pageToken: "123",
+                q: "needle",
+                scope: "user",
+                state: "READY"
+            },
+            session
+        );
+
+        const query = new URL(requestUrl).searchParams;
+        expect(query.getAll("aspect")).to.deep.equal([
+            "agent-skill",
+            "access-control"
+        ]);
+        expect(query.getAll("aspectQuery")).to.deep.equal([
+            "agent-skill.scope:user",
+            "agent-skill.state:READY"
+        ]);
+        expect(query.get("limit")).to.equal("2");
+        expect(query.get("reversePageTokenOrder")).to.equal("true");
+        expect(query.get("pageToken")).to.equal("123");
+        expect(query.get("q")).to.equal("needle");
+        expect(query.has("orderBy")).to.equal(false);
+        expect(query.has("orderByDir")).to.equal(false);
+        expect(query.has("start")).to.equal(false);
+        expect(result.nextPageToken).to.equal("124");
     });
 
     it("builds OPA input only from the trusted typed record", async () => {

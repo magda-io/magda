@@ -14,7 +14,7 @@ import { ManagerConfig } from "../types.js";
 
 const jwtSecret = "skills-test-secret";
 const userId = "00000000-0000-4000-8000-000000000123";
-const recordId = "10000000-0000-4000-8000-000000000001";
+const recordId = `agent-skill-${userId}-useful-skill`;
 
 function config(): ManagerConfig {
     return {
@@ -189,7 +189,7 @@ describe("Agent Skill authentication and API boundary", () => {
         const app = buildApp(config(), {} as AgentManager, service);
 
         const response = await request(app)
-            .post(`/v0/skills/user?id=${recordId}`)
+            .post("/v0/skills/user")
             .set("X-Magda-Session", token())
             .set("Content-Type", "application/zip")
             .send(Buffer.alloc(1024));
@@ -201,12 +201,8 @@ describe("Agent Skill authentication and API boundary", () => {
     it("publishes the stable route shape and Location header", async () => {
         let prepared = false;
         const service = ({
-            prepareCreate: async (
-                scope: string,
-                requestedId: string | undefined
-            ) => {
-                prepared = scope === "user" && requestedId === recordId;
-                return recordId;
+            prepareCreate: async (scope: string) => {
+                prepared = scope === "user";
             },
             createAuthorized: async () => ({
                 id: recordId,
@@ -226,7 +222,7 @@ describe("Agent Skill authentication and API boundary", () => {
         const app = buildApp(apiConfig, {} as AgentManager, service);
 
         const response = await request(app)
-            .post(`/v0/skills/user?id=${recordId}`)
+            .post("/v0/skills/user")
             .set("X-Magda-Session", token())
             .set("Content-Type", "application/zip")
             .send(Buffer.from("zip"));
@@ -237,6 +233,24 @@ describe("Agent Skill authentication and API boundary", () => {
             `/v0/skills/user/${recordId}`
         );
         expect(response.body.name).to.equal("useful-skill");
+    });
+
+    it("rejects caller-selected record IDs", async () => {
+        let prepareCalls = 0;
+        const service = ({
+            prepareCreate: async () => {
+                prepareCalls += 1;
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const response = await request(app)
+            .post(`/v0/skills/user?id=${encodeURIComponent(recordId)}`)
+            .set("X-Magda-Session", token())
+            .set("Content-Type", "application/zip")
+            .send(Buffer.from("zip"));
+        expect(response.status).to.equal(400);
+        expect(response.body.error.code).to.equal("CALLER_SELECTED_SKILL_ID");
+        expect(prepareCalls).to.equal(0);
     });
 
     it("supports list, metadata, ZIP, replace and delete route contracts", async () => {
@@ -344,7 +358,7 @@ describe("Agent Skill authentication and API boundary", () => {
         const app = buildApp(config(), {} as AgentManager, service);
         const startUpload = () =>
             request(app)
-                .post(`/v0/skills/user?id=${recordId}`)
+                .post("/v0/skills/user")
                 .set("X-Magda-Session", token())
                 .set("Content-Type", "application/zip")
                 .send(Buffer.from("zip"));

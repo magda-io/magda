@@ -53,6 +53,13 @@ description: A useful test skill
 
 Follow these instructions.
 `;
+const systemSkillMarkdown = skillMarkdown.replace(
+    "name: useful-skill",
+    "name: system-useful-skill"
+);
+function skillMarkdownNamed(name: string): string {
+    return `---\nname: ${name}\ndescription: Test skill\n---\n\n# Test\n`;
+}
 
 async function expectInvalid(
     archive: Buffer,
@@ -82,18 +89,78 @@ describe("Agent Skill ZIP validation", () => {
         expect(result.checksum).to.match(/^[0-9a-f]{64}$/);
     });
 
+    it("enforces deterministic namespace naming rules and reserved runtime names", async () => {
+        const maxName = "a".repeat(46);
+        expect(
+            (
+                await validateAgentSkillArchive(
+                    await zip([
+                        {
+                            name: "SKILL.md",
+                            content: skillMarkdownNamed(maxName)
+                        }
+                    ]),
+                    "user",
+                    limits
+                )
+            ).name
+        ).to.equal(maxName);
+        await expectInvalid(
+            await zip([
+                {
+                    name: "SKILL.md",
+                    content: skillMarkdownNamed("a".repeat(47))
+                }
+            ]),
+            "user",
+            "1-46"
+        );
+        await expectInvalid(
+            await zip([
+                {
+                    name: "SKILL.md",
+                    content: skillMarkdownNamed("system-private")
+                }
+            ]),
+            "user",
+            "must not start with system-"
+        );
+        await expectInvalid(
+            await zip([
+                {
+                    name: "SKILL.md",
+                    content: skillMarkdownNamed("missing-prefix")
+                }
+            ]),
+            "system",
+            "must start with system-"
+        );
+        for (const reserved of ["capture-workflow", "magda-mgd"]) {
+            await expectInvalid(
+                await zip([
+                    {
+                        name: "SKILL.md",
+                        content: skillMarkdownNamed(reserved)
+                    }
+                ]),
+                "user",
+                "reserved"
+            );
+        }
+    });
+
     it("allows approved system scripts but not arbitrary binary types", async () => {
         const valid = await zip([
-            { name: "SKILL.md", content: skillMarkdown },
+            { name: "SKILL.md", content: systemSkillMarkdown },
             { name: "scripts/check.sh", content: "#!/bin/sh\nexit 0\n" }
         ]);
         expect(
             (await validateAgentSkillArchive(valid, "system", limits)).name
-        ).to.equal("useful-skill");
+        ).to.equal("system-useful-skill");
 
         await expectInvalid(
             await zip([
-                { name: "SKILL.md", content: skillMarkdown },
+                { name: "SKILL.md", content: systemSkillMarkdown },
                 { name: "payload.bin", content: "binary" }
             ]),
             "system",

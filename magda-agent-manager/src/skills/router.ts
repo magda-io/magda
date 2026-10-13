@@ -84,14 +84,27 @@ export default function createAgentSkillRouter(
             }
             req.destroy();
         }, uploadTimeoutMs);
+        const stopBodyTimer = () => clearTimeout(timer);
+        res.locals.stopAgentSkillUploadBodyTimer = stopBodyTimer;
         const release = () => {
             if (released) return;
             released = true;
-            clearTimeout(timer);
+            stopBodyTimer();
             activeUploads -= 1;
         };
         res.once("finish", release);
         res.once("close", release);
+        next();
+    };
+    const uploadBodyReceived = (
+        _req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        const stopTimer = res.locals.stopAgentSkillUploadBodyTimer as
+            | (() => void)
+            | undefined;
+        stopTimer?.();
         next();
     };
     router.use(
@@ -170,11 +183,19 @@ export default function createAgentSkillRouter(
                 });
                 return;
             }
-            const requestedId = queryString(req.query.id, "id");
+            if (req.query.id !== undefined) {
+                res.status(400).json({
+                    error: {
+                        code: "CALLER_SELECTED_SKILL_ID",
+                        message:
+                            "Agent Skill ids are derived from the authenticated owner and SKILL.md name"
+                    }
+                });
+                return;
+            }
             res.locals.agentSkillScope = scope;
-            res.locals.agentSkillId = await options.service.prepareCreate(
+            await options.service.prepareCreate(
                 scope,
-                requestedId,
                 req.agentUser as AuthenticatedUser
             );
         }),
@@ -197,9 +218,9 @@ export default function createAgentSkillRouter(
             type: "application/zip",
             limit: options.maxCompressedBytes
         }),
+        uploadBodyReceived,
         asyncRoute(async (req, res) => {
             const result = await options.service.createAuthorized(
-                res.locals.agentSkillId as string,
                 res.locals.agentSkillScope as AgentSkillScope,
                 req.body as Buffer,
                 req.agentUser as AuthenticatedUser
@@ -289,6 +310,7 @@ export default function createAgentSkillRouter(
             type: "application/zip",
             limit: options.maxCompressedBytes
         }),
+        uploadBodyReceived,
         asyncRoute(async (req, res) => {
             res.json(
                 await options.service.replaceAuthorized(

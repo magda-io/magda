@@ -131,13 +131,30 @@ users and then enforce the separate `object/agentSkill/create|read|update|delete
 OPA operations.
 
 Agent Skill metadata is stored as Registry records with `agent-skill` and
-`access-control` aspects. The record ID is the immutable skill ID, and the
-record name and description are derived from root `SKILL.md` frontmatter rather
-than accepted as independent API input. The Registry-backed publication states
-are `PENDING`, `READY`, and `DELETING`; only READY records are catalogued.
-Generic Registry record authorization delegates typed skill records to the same
-scope-aware policy, including proposed post-update state for single and bulk
-mutations.
+`access-control` aspects. The immutable record ID is derived server-side from
+the authenticated owner and immutable root `SKILL.md` name: user skills use
+`agent-skill-<owner-uuid>-<name>` and system skills use
+`agent-skill-system-<suffix>` for a full `system-<suffix>` name. Names are at
+most 46 lowercase letters/digits with interior hyphens; user names cannot use
+the `system-` prefix, and runtime-bundled names such as `capture-workflow` and
+`magda-mgd` are reserved. Registry's primary key atomically enforces each
+owner's namespace, so the API never accepts a caller-selected ID or uses
+full-text search for uniqueness. Different users may publish the same name.
+
+The record name and description are derived from `SKILL.md` rather than accepted
+as independent API input. Replacements may update the description but must
+preserve the name; renaming creates a new skill. The Registry-backed publication
+states are `PENDING`, `READY`, and `DELETING`; only READY records are catalogued.
+Catalogue traversal uses Registry sequence-keyset pagination with
+`reversePageTokenOrder=true`, never the unsupported `orderBy` plus `pageToken`
+combination. Generic Registry record authorization delegates typed skill records
+to the same scope-aware policy, including proposed post-update state for single
+and bulk mutations. An existing deterministic ID that is not a valid source
+`agent-skill` record—including a future `agent-skill-installation`—is a generic
+409 conflict and is never overwritten or given a ZIP. A separately authorized
+generic Registry caller can therefore occupy a deterministic name as an accepted
+direct-API integrity/availability limitation; Agent Services fails closed without
+exposing the conflicting record's type or owner.
 
 Each skill has one record-linked ZIP in the existing
 `global.defaultDatasetBucket`:
@@ -158,8 +175,8 @@ Create writes PENDING before upload and marks READY only after Storage succeeds.
 Replacement validates first, hides the record as PENDING during publication, and
 restores READY after the same object is replaced. Delete marks DELETING, removes
 the ZIP, then removes the Registry record. A caller can safely retry partial
-operations with the same skill ID and archive. Downloads are bounded and are
-released only after ZIP revalidation and checksum/name/description agreement
+operations with the same scope, owner, immutable name, and archive. Downloads
+are bounded and are released only after ZIP revalidation and checksum/name/description agreement
 with Registry metadata.
 
 ZIP validation rejects malformed or encrypted archives, traversal and absolute

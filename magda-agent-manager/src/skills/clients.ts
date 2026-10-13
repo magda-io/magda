@@ -118,8 +118,7 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
         query.append("aspect", "agent-skill");
         query.append("aspect", "access-control");
         query.set("limit", String(options.limit));
-        query.set("orderBy", "agent-skill.updatedAt");
-        query.set("orderByDir", "desc");
+        query.set("reversePageTokenOrder", "true");
         if (options.pageToken) query.set("pageToken", options.pageToken);
         if (options.q) query.set("q", options.q);
         if (options.scope) {

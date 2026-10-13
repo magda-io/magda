@@ -1,6 +1,11 @@
 import { expect } from "chai";
 import { ZipFile } from "yazl";
-import { AgentSkillError, AgentSkillService } from "../skills/service.js";
+import { DownstreamServiceError } from "../skills/clients.js";
+import {
+    agentSkillRecordId,
+    AgentSkillError,
+    AgentSkillService
+} from "../skills/service.js";
 import {
     AgentSkillAuthorization,
     AgentSkillRecord,
@@ -20,7 +25,15 @@ const admin: AuthenticatedUser = {
     id: "00000000-0000-4000-8000-000000000999",
     sessionToken: "admin-token"
 };
-const recordId = "10000000-0000-4000-8000-000000000001";
+const otherOwner: AuthenticatedUser = {
+    id: "00000000-0000-4000-8000-000000000456",
+    sessionToken: "other-owner-token"
+};
+const otherAdmin: AuthenticatedUser = {
+    id: "00000000-0000-4000-8000-000000000888",
+    sessionToken: "other-admin-token"
+};
+const recordId = `agent-skill-${owner.id}-useful-skill`;
 
 async function skillZip(
     name = "useful-skill",
@@ -47,11 +60,15 @@ async function skillZip(
 
 class MemoryRegistry implements AgentSkillRegistry {
     records = new Map<string, AgentSkillRecord>();
+    occupiedIds = new Set<string>();
+    getCalls = 0;
     writes: AgentSkillRecord[] = [];
     failCreateAfterWrite = false;
+    failCreateError?: Error;
     failPutState?: "PENDING" | "READY" | "DELETING";
 
     async get(id: string): Promise<unknown | undefined> {
+        this.getCalls += 1;
         const record = this.records.get(id);
         return record ? structuredClone(record) : undefined;
     }
@@ -72,7 +89,16 @@ class MemoryRegistry implements AgentSkillRegistry {
     }
 
     async create(record: AgentSkillRecord): Promise<unknown> {
-        if (this.records.has(record.id)) throw new Error("conflict");
+        if (this.failCreateError) {
+            throw this.failCreateError;
+        }
+        if (this.records.has(record.id) || this.occupiedIds.has(record.id)) {
+            throw new DownstreamServiceError(
+                "registry",
+                400,
+                "Registry API rejected record creation"
+            );
+        }
         this.records.set(record.id, structuredClone(record));
         this.writes.push(structuredClone(record));
         if (this.failCreateAfterWrite) {
@@ -159,10 +185,14 @@ class TestAuthorization implements AgentSkillAuthorization {
     }
 }
 
-function fixture() {
-    const registry = new MemoryRegistry();
-    const storage = new MemoryStorage();
-    const authorization = new TestAuthorization();
+function fixture(shared?: {
+    registry?: MemoryRegistry;
+    storage?: MemoryStorage;
+    authorization?: TestAuthorization;
+}) {
+    const registry = shared?.registry || new MemoryRegistry();
+    const storage = shared?.storage || new MemoryStorage();
+    const authorization = shared?.authorization || new TestAuthorization();
     let tick = 0;
     const service = new AgentSkillService({
         registry,
@@ -170,7 +200,6 @@ function fixture() {
         authorization,
         tenantId: 0,
         now: () => new Date(Date.UTC(2026, 9, 13, 12, 0, tick++)),
-        idFactory: () => recordId,
         archiveLimits: {
             maxCompressedBytes: 1024 * 1024,
             maxUncompressedBytes: 2 * 1024 * 1024,
@@ -193,16 +222,41 @@ describe("Agent Skill publication state machine", () => {
         console.info = originalInfo;
     });
 
+    it("derives canonical deterministic user and system record IDs", () => {
+        const maxName = "a".repeat(46);
+        const userId = agentSkillRecordId("user", owner.id, maxName);
+        expect(userId).to.equal(`agent-skill-${owner.id}-${maxName}`);
+        expect(userId).to.have.length(95);
+        expect(
+            agentSkillRecordId(
+                "system",
+                "00000000-0000-0000-0000-000000000000",
+                "system-csv-analyser"
+            )
+        ).to.equal("agent-skill-system-csv-analyser");
+        for (const [scope, ownerId, name] of [
+            ["user", owner.id, "a".repeat(47)],
+            ["user", owner.id, "system-private"],
+            ["system", owner.id, "missing-prefix"],
+            ["user", owner.id, "capture-workflow"],
+            ["user", owner.id, "magda-mgd"],
+            ["user", "ABCDEF00-0000-4000-8000-000000000123", "valid-name"]
+        ] as const) {
+            expect(() => agentSkillRecordId(scope, ownerId, name)).to.throw(
+                AgentSkillError
+            );
+        }
+    });
+
     it("authorizes before publication and transitions PENDING to READY", async () => {
         const { service, registry, storage, authorization } = fixture();
-        const id = await service.prepareCreate("user", undefined, owner);
+        await service.prepareCreate("user", owner);
         expect(authorization.calls[0].operation).to.equal("create");
         expect(
             authorization.calls[0].record.aspects["access-control"].ownerId
         ).to.equal(owner.id);
 
         const result = await service.createAuthorized(
-            id,
             "user",
             await skillZip(),
             owner
@@ -222,14 +276,161 @@ describe("Agent Skill publication state machine", () => {
         expect(registry.records.get(recordId)?.name).to.equal("useful-skill");
     });
 
+    it("uses separate per-owner namespaces for the same user skill name", async () => {
+        const registry = new MemoryRegistry();
+        const storage = new MemoryStorage();
+        const first = fixture({ registry, storage }).service;
+        const second = fixture({ registry, storage }).service;
+        const bytes = await skillZip();
+
+        await first.prepareCreate("user", owner);
+        await second.prepareCreate("user", otherOwner);
+        const [firstResult, secondResult] = await Promise.all([
+            first.createAuthorized("user", bytes, owner),
+            second.createAuthorized("user", bytes, otherOwner)
+        ]);
+        expect(firstResult.id).to.equal(`agent-skill-${owner.id}-useful-skill`);
+        expect(secondResult.id).to.equal(
+            `agent-skill-${otherOwner.id}-useful-skill`
+        );
+        expect(registry.records.size).to.equal(2);
+    });
+
+    it("enforces duplicate names atomically across service instances", async () => {
+        const registry = new MemoryRegistry();
+        const storage = new MemoryStorage();
+        const first = fixture({ registry, storage }).service;
+        const second = fixture({ registry, storage }).service;
+        const sameBytes = await skillZip();
+
+        const sameResults = await Promise.all([
+            first.createAuthorized("user", sameBytes, owner),
+            second.createAuthorized("user", sameBytes, owner)
+        ]);
+        expect(sameResults.map((result) => result.id)).to.deep.equal([
+            recordId,
+            recordId
+        ]);
+        expect(registry.records.size).to.equal(1);
+
+        const differentName = "different-content";
+        const differentId = agentSkillRecordId("user", owner.id, differentName);
+        const third = fixture({ registry, storage }).service;
+        const fourth = fixture({ registry, storage }).service;
+        const results = await Promise.allSettled([
+            third.createAuthorized(
+                "user",
+                await skillZip(differentName, "First"),
+                owner
+            ),
+            fourth.createAuthorized(
+                "user",
+                await skillZip(differentName, "Second"),
+                owner
+            )
+        ]);
+        expect(
+            results.filter((result) => result.status === "fulfilled")
+        ).to.have.length(1);
+        const rejected = results.find(
+            (result): result is PromiseRejectedResult =>
+                result.status === "rejected"
+        );
+        expect((rejected?.reason as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_ID_CONFLICT"
+        );
+        expect(
+            registry.records.get(differentId)?.aspects["agent-skill"].state
+        ).to.equal("READY");
+    });
+
+    it("reports wrong-type deterministic ID occupancy as a non-mutating conflict", async () => {
+        const { service, registry, storage } = fixture();
+        registry.occupiedIds.add(recordId);
+        await service.prepareCreate("user", owner);
+        let error: unknown;
+        try {
+            await service.createAuthorized("user", await skillZip(), owner);
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).status).to.equal(409);
+        expect((error as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_ID_CONFLICT"
+        );
+        expect(registry.occupiedIds.has(recordId)).to.equal(true);
+        expect(registry.records.size).to.equal(0);
+        expect(storage.uploads).to.have.length(0);
+    });
+
+    it("partitions system names and conflicts across publishing admins", async () => {
+        const registry = new MemoryRegistry();
+        const storage = new MemoryStorage();
+        const first = fixture({ registry, storage }).service;
+        const second = fixture({ registry, storage }).service;
+        const bytes = await skillZip("system-reporting", "System reporting");
+        await first.prepareCreate("system", admin);
+        const created = await first.createAuthorized("system", bytes, admin);
+        expect(created.id).to.equal("agent-skill-system-reporting");
+
+        await second.prepareCreate("system", otherAdmin);
+        let error: unknown;
+        try {
+            await second.createAuthorized("system", bytes, otherAdmin);
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_ID_CONFLICT"
+        );
+        expect(registry.records.size).to.equal(1);
+    });
+
+    it("rejects arbitrary and invalid deterministic IDs before Registry reads", async () => {
+        const { service, registry } = fixture();
+        for (const id of [
+            "10000000-0000-4000-8000-000000000001",
+            `agent-skill-${owner.id}-${"a".repeat(47)}`,
+            `agent-skill-${owner.id}-system-private`
+        ]) {
+            let error: unknown;
+            try {
+                await service.prepareExisting("user", id, "read", owner);
+            } catch (caught) {
+                error = caught;
+            }
+            expect((error as AgentSkillError).status).to.equal(404);
+        }
+        expect(registry.getCalls).to.equal(0);
+    });
+
+    it("does not turn a definite Registry authorization failure into recovery", async () => {
+        const { service, registry, storage } = fixture();
+        registry.failCreateError = new DownstreamServiceError(
+            "registry",
+            403,
+            "Registry API rejected record creation"
+        );
+        let error: unknown;
+        try {
+            await service.createAuthorized("user", await skillZip(), owner);
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).status).to.equal(403);
+        expect(registry.getCalls).to.equal(1);
+        expect(registry.records.size).to.equal(0);
+        expect(storage.uploads).to.have.length(0);
+    });
+
     it("leaves failed creates PENDING and resumes deterministically", async () => {
         const { service, registry, storage } = fixture();
         const bytes = await skillZip();
-        await service.prepareCreate("user", recordId, owner);
+        await service.prepareCreate("user", owner);
         storage.failUpload = true;
         let firstError: unknown;
         try {
-            await service.createAuthorized(recordId, "user", bytes, owner);
+            await service.createAuthorized("user", bytes, owner);
         } catch (error) {
             firstError = error;
         }
@@ -239,12 +440,7 @@ describe("Agent Skill publication state machine", () => {
             registry.records.get(recordId)?.aspects["agent-skill"].state
         ).to.equal("PENDING");
 
-        const result = await service.createAuthorized(
-            recordId,
-            "user",
-            bytes,
-            owner
-        );
+        const result = await service.createAuthorized("user", bytes, owner);
         expect(result.id).to.equal(recordId);
         expect(
             registry.records.get(recordId)?.aspects["agent-skill"].state
@@ -255,9 +451,8 @@ describe("Agent Skill publication state machine", () => {
     it("recovers when Registry creates the record but its response is lost", async () => {
         const { service, registry } = fixture();
         registry.failCreateAfterWrite = true;
-        await service.prepareCreate("user", recordId, owner);
+        await service.prepareCreate("user", owner);
         const result = await service.createAuthorized(
-            recordId,
             "user",
             await skillZip(),
             owner
@@ -272,39 +467,27 @@ describe("Agent Skill publication state machine", () => {
         const { service, registry, storage } = fixture();
         const bytes = await skillZip();
         registry.failPutState = "READY";
-        await service.prepareCreate("user", recordId, owner);
+        await service.prepareCreate("user", owner);
         await service
-            .createAuthorized(recordId, "user", bytes, owner)
+            .createAuthorized("user", bytes, owner)
             .catch(() => undefined);
         expect(
             registry.records.get(recordId)?.aspects["agent-skill"].state
         ).to.equal("READY");
-        const key = registry.records.get(recordId)!.aspects["agent-skill"]
-            .archiveKey;
-        storage.archives.set(key, Buffer.from("tampered"));
+        const ready = structuredClone(registry.records.get(recordId)!);
 
-        await service.prepareCreate("user", recordId, owner);
-        const result = await service.createAuthorized(
-            recordId,
-            "user",
-            bytes,
-            owner
-        );
+        await service.prepareCreate("user", owner);
+        const result = await service.createAuthorized("user", bytes, owner);
         expect(result.id).to.equal(recordId);
-        expect(storage.uploads).to.have.length(2);
-        expect(storage.archives.get(key)?.equals(bytes)).to.equal(true);
+        expect(storage.uploads).to.have.length(1);
+        expect(registry.records.get(recordId)).to.deep.equal(ready);
     });
 
     it("repairs a failed replacement only with the same pending archive", async () => {
         const { service, registry, storage } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
-            "user",
-            await skillZip(),
-            owner
-        );
-        const replacement = await skillZip("replacement-skill", "Replacement");
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
+        const replacement = await skillZip("useful-skill", "Replacement");
         let current = await service.prepareExisting(
             "user",
             recordId,
@@ -329,7 +512,7 @@ describe("Agent Skill publication state machine", () => {
         try {
             await service.replaceAuthorized(
                 current,
-                await skillZip("different-skill", "Different"),
+                await skillZip("useful-skill", "Different"),
                 owner
             );
         } catch (error) {
@@ -344,7 +527,7 @@ describe("Agent Skill publication state machine", () => {
             replacement,
             owner
         );
-        expect(repaired.name).to.equal("replacement-skill");
+        expect(repaired.name).to.equal("useful-skill");
         expect(
             registry.records.get(recordId)?.aspects["agent-skill"].state
         ).to.equal("READY");
@@ -352,13 +535,8 @@ describe("Agent Skill publication state machine", () => {
 
     it("rejects replacement prepared against a stale record version", async () => {
         const { service, registry, storage } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
-            "user",
-            await skillZip(),
-            owner
-        );
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
         const prepared = await service.prepareExisting(
             "user",
             recordId,
@@ -392,15 +570,42 @@ describe("Agent Skill publication state machine", () => {
         expect(storage.uploads).to.have.length(1);
     });
 
-    it("preserves immutable ownership while recording the replacing publisher", async () => {
+    it("rejects replacement renames before Registry or Storage mutation", async () => {
         const { service, registry, storage } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
+        const current = await service.prepareExisting(
             "user",
-            await skillZip(),
+            recordId,
+            "update",
             owner
         );
+        const ready = structuredClone(registry.records.get(recordId)!);
+        const writes = registry.writes.length;
+        const uploads = storage.uploads.length;
+        let error: unknown;
+        try {
+            await service.replaceAuthorized(
+                current,
+                await skillZip("renamed-skill", "Renamed"),
+                owner
+            );
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).status).to.equal(409);
+        expect((error as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_NAME_IMMUTABLE"
+        );
+        expect(registry.writes).to.have.length(writes);
+        expect(storage.uploads).to.have.length(uploads);
+        expect(registry.records.get(recordId)).to.deep.equal(ready);
+    });
+
+    it("preserves immutable ownership while recording the replacing publisher", async () => {
+        const { service, registry, storage } = fixture();
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
         const current = await service.prepareExisting(
             "user",
             recordId,
@@ -409,7 +614,7 @@ describe("Agent Skill publication state machine", () => {
         );
         const result = await service.replaceAuthorized(
             current,
-            await skillZip("renamed-skill", "Updated"),
+            await skillZip("useful-skill", "Updated"),
             admin
         );
         expect(result.ownerId).to.equal(owner.id);
@@ -424,13 +629,8 @@ describe("Agent Skill publication state machine", () => {
 
     it("fails replacement safely when the original Storage object is missing", async () => {
         const { service, registry, storage } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
-            "user",
-            await skillZip(),
-            owner
-        );
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
         const current = await service.prepareExisting(
             "user",
             recordId,
@@ -454,13 +654,8 @@ describe("Agent Skill publication state machine", () => {
 
     it("leaves failed deletes DELETING and completes on retry", async () => {
         const { service, registry, storage } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
-            "user",
-            await skillZip(),
-            owner
-        );
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
         const current = await service.prepareExisting(
             "user",
             recordId,
@@ -485,14 +680,14 @@ describe("Agent Skill publication state machine", () => {
 
     it("lists only READY records that pass a per-record decision without loading ZIPs", async () => {
         const { service, registry, storage, authorization } = fixture();
-        for (const [id, recordOwner, state] of [
-            [recordId, owner.id, "READY"],
-            ["10000000-0000-4000-8000-000000000002", owner.id, "PENDING"],
-            ["10000000-0000-4000-8000-000000000003", admin.id, "READY"]
+        for (const [id, name, recordOwner, state] of [
+            [recordId, "useful-skill", owner.id, "READY"],
+            [`agent-skill-${owner.id}-skill-2`, "skill-2", owner.id, "PENDING"],
+            [`agent-skill-${admin.id}-skill-3`, "skill-3", admin.id, "READY"]
         ] as const) {
             registry.records.set(id, {
                 id,
-                name: `skill-${id.slice(-1)}`,
+                name,
                 tenantId: 0,
                 aspects: {
                     "agent-skill": {
@@ -526,13 +721,8 @@ describe("Agent Skill publication state machine", () => {
 
     it("does not expose PENDING or DELETING records through metadata reads", async () => {
         const { service, registry } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
-            "user",
-            await skillZip(),
-            owner
-        );
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
         for (const state of ["PENDING", "DELETING"] as const) {
             const current = registry.records.get(recordId)!;
             registry.records.set(recordId, {
@@ -563,13 +753,8 @@ describe("Agent Skill publication state machine", () => {
 
     it("fails closed on invalid Registry-backed derived metadata", async () => {
         const { service, registry } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
-            "user",
-            await skillZip(),
-            owner
-        );
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
         const current = registry.records.get(recordId)!;
         registry.records.set(recordId, {
             ...current,
@@ -590,13 +775,8 @@ describe("Agent Skill publication state machine", () => {
 
     it("rejects a direct-write archive checksum mismatch before download", async () => {
         const { service, storage } = fixture();
-        await service.prepareCreate("user", recordId, owner);
-        await service.createAuthorized(
-            recordId,
-            "user",
-            await skillZip(),
-            owner
-        );
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
         const record = await service.prepareExisting(
             "user",
             recordId,
@@ -622,9 +802,8 @@ describe("Agent Skill publication state machine", () => {
         const { service } = fixture();
         const logs: string[] = [];
         console.info = (...values: unknown[]) => logs.push(values.join(" "));
-        await service.prepareCreate("user", recordId, owner);
+        await service.prepareCreate("user", owner);
         await service.createAuthorized(
-            recordId,
             "user",
             await skillZip("useful-skill", "Useful", [
                 { name: "secret.md", content: "TOP-SECRET-ARCHIVE-CONTENT" }
@@ -642,7 +821,7 @@ describe("Agent Skill publication state machine", () => {
         authorization.decide = () => false;
         let error: unknown;
         try {
-            await service.prepareCreate("user", recordId, owner);
+            await service.prepareCreate("user", owner);
         } catch (caught) {
             error = caught;
         }
