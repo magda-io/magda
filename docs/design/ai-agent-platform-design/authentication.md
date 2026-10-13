@@ -121,7 +121,7 @@ DSH
   -> provider credential
 ```
 
-See [llm-services.md](./llm-services.md) / #3838.
+See [llm-services.md](./llm-services.md), the [future LLM access profiles and quota design](./llm-access-profiles.md), and #3838. The agreed future profile scheme separates *invocation entitlements* (`llm/access/<profile-id>/access`) from Registry profile-management authority (`llm/access/create|read|update|delete` through LLM Services), with explicit wildcard access and user-level accounting; it is **not yet implemented** by #3850.
 
 Any valid authenticated Magda API client may use the LLM API if the user is authorised for the requested model. The API is not restricted to the special Agent API key.
 
