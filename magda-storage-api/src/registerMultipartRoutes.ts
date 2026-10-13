@@ -4,7 +4,7 @@ import { getUserId } from "magda-typescript-common/src/authorization-api/authMid
 import ServerError from "magda-typescript-common/src/ServerError.js";
 import { isValidS3ObjectKey } from "magda-typescript-common/src/getStorageUrl.js";
 import { requireStorageObjectPermission } from "./storageAuthMiddlewares.js";
-import { StorageObjectMetaData } from "./common.js";
+import { StorageObjectMetaData, OBJECT_OWNER_ID_META_KEY } from "./common.js";
 import {
     signUploadToken,
     verifyUploadToken,
@@ -36,6 +36,13 @@ export default function registerMultipartRoutes(
         options.recommendedPartSize
     ) as number;
     const MIN_PART_SIZE = 5 * 1024 * 1024;
+
+    function getUploadSessionOwnerId(uploadSession: UploadSession) {
+        // tokens signed before v7.1.0 don't carry `ownerId`. Those uploads were initiated with the uploader as the owner.
+        return uploadSession.ownerId
+            ? uploadSession.ownerId
+            : uploadSession.userId;
+    }
 
     function requireValidUploadToken() {
         return (req: Request, res: Response, next: NextFunction) => {
@@ -91,6 +98,9 @@ export default function registerMultipartRoutes(
      * has access when:
      * - the object is (to be) associated with a record via `recordId`, and
      * - the user has `object/record/create` or `object/record/update` permission to that record.
+     *
+     * The uploader becomes the owner of a new object. When the upload replaces an
+     * existing object, the existing object's owner is kept.
      *
      * The returned `uploadId` is a signed token that binds the upload session to
      * this user, bucket, and object key; supply it on all subsequent part / list /
@@ -161,12 +171,13 @@ export default function registerMultipartRoutes(
                     : undefined;
                 const contentType = req.headers["content-type"] as string;
                 const orgUnitId = req.query.orgUnitId as string;
+                const ownerId = res.locals.storageObjectOwnerId as string;
 
                 const metaHeaders = options.objectStoreClient.toS3MetaHeaders({
                     "Content-Type": contentType,
                     "Cache-Control": req.headers["cache-control"] as string,
                     "magda-record-id": recordId,
-                    "magda-user-id": res.locals.userId,
+                    [OBJECT_OWNER_ID_META_KEY]: ownerId,
                     "magda-org-unit-id": orgUnitId
                 });
 
@@ -181,6 +192,7 @@ export default function registerMultipartRoutes(
                     objectKey,
                     s3UploadId,
                     userId: res.locals.userId,
+                    ownerId,
                     recordId,
                     orgUnitId,
                     contentType
@@ -419,6 +431,11 @@ export default function registerMultipartRoutes(
      *    {
      *        "message": "Invalid or expired uploadId: {error}"
      *    }
+     *
+     * @apiErrorExample {json} 409
+     *    {
+     *        "message": "The target object's owner has changed since the multipart upload was initiated. Please abort the upload and initiate a new one."
+     *    }
      */
     // 4. COMPLETE
     router.post(
@@ -437,7 +454,7 @@ export default function registerMultipartRoutes(
                 const metaData: StorageObjectMetaData = {
                     recordId: uploadSession.recordId,
                     contentType: uploadSession.contentType,
-                    ownerId: uploadSession.userId,
+                    ownerId: getUploadSessionOwnerId(uploadSession),
                     orgUnitId: uploadSession.orgUnitId
                 };
                 return metaData;
@@ -446,6 +463,17 @@ export default function registerMultipartRoutes(
         async (req: Request, res: Response) => {
             try {
                 const uploadSession: UploadSession = res.locals.uploadSession;
+                if (
+                    res.locals.storageObjectOwnerId !==
+                    getUploadSessionOwnerId(uploadSession)
+                ) {
+                    // the owner was persisted when the upload was initiated & can't be changed now.
+                    // i.e. the target object has been replaced by another owner's object since then.
+                    return res.status(409).send({
+                        message:
+                            "The target object's owner has changed since the multipart upload was initiated. Please abort the upload and initiate a new one."
+                    });
+                }
                 const parts = req.body?.parts;
                 if (!Array.isArray(parts) || !parts.length) {
                     return res.status(400).send({
