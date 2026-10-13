@@ -1,9 +1,6 @@
 {{- /* Render-time backend selection validation; emits no manifest. */ -}}
-{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
-{{- $allowedModels := coalesce .Values.allowedModels (get $globalModel "alias") -}}
-{{- if empty $allowedModels -}}
-{{- fail "llm-services: allowedModels or global.defaultAgentModel.alias is required" -}}
-{{- end -}}
+{{- /* Resolve once here as well so invalid allowlists fail even if Deployment rendering changes. */ -}}
+{{- $allowedModelsJson := include "llm-services.effectiveAllowedModelsJson" . -}}
 {{- $bundled := .Values.litellm.enabled -}}
 {{- $backendUrl := .Values.backend.url | default "" -}}
 {{- $secretName := .Values.backend.masterKeySecret.name | default "" -}}

@@ -16,7 +16,7 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| allowedModels | string | `""` | Optional comma-separated model allowlist override. Empty inherits global.defaultAgentModel.alias from the parent chart. |
+| allowedModels | list | `[]` | Deployment-wide model allowlist. An empty array inherits global.defaultAgentModel.alias from the parent chart. Bundled LiteLLM requires exactly one matching alias; external backends may use multiple aliases. |
 | backend.masterKeySecret.key | string | `""` |  |
 | backend.masterKeySecret.name | string | `""` |  |
 | backend.url | string | `""` |  |

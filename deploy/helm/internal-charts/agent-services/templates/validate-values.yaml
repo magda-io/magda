@@ -23,13 +23,22 @@
 {{- if empty $model -}}
 {{- fail "agent-services: llm.model or global.defaultAgentModel.alias is required" -}}
 {{- end -}}
+{{- if ne (kindOf $model) "string" -}}
+{{- fail (printf "agent-services: llm.model or global.defaultAgentModel.alias must be a non-empty string; got %s" (kindOf $model)) -}}
+{{- end -}}
+{{- if empty (trim $model) -}}
+{{- fail "agent-services: llm.model or global.defaultAgentModel.alias is required" -}}
+{{- end -}}
+{{- if ne $model (trim $model) -}}
+{{- fail "agent-services: llm.model or global.defaultAgentModel.alias must not have leading or trailing whitespace" -}}
+{{- end -}}
 
 {{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
 {{- if and (ne (kindOf $reasoningEffort) "invalid") (ne (kindOf $reasoningEffort) "string") -}}
-{{- fail (printf "global.defaultAgentModel.reasoningEffort must be a non-empty string or null; got %v (%s)" $reasoningEffort (kindOf $reasoningEffort)) -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %v (%s)" $reasoningEffort (kindOf $reasoningEffort)) -}}
 {{- end -}}
-{{- if and (eq (kindOf $reasoningEffort) "string") (empty (trim $reasoningEffort)) -}}
-{{- fail "global.defaultAgentModel.reasoningEffort must be a non-empty string or null" -}}
+{{- if and (eq (kindOf $reasoningEffort) "string") (not (has $reasoningEffort (list "" "off" "low" "medium" "high" "xhigh" "max"))) -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %q" $reasoningEffort) -}}
 {{- end -}}
 
 {{- $contextWindow := get $globalModel "contextWindow" -}}

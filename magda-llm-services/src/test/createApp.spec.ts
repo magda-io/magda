@@ -5,7 +5,7 @@ import { once } from "node:events";
 import jwt from "jsonwebtoken";
 import createApp, {
     LlmServicesConfig,
-    resolveAllowedModels
+    parseAllowedModels
 } from "../createApp.js";
 import { ADMIN_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
@@ -41,15 +41,31 @@ function config(overrides: Partial<LlmServicesConfig> = {}): LlmServicesConfig {
 }
 
 describe("LLM Services", () => {
-    it("defaults its allowlist to the stable MAGDA model alias", () => {
+    it("parses the resolved JSON-array model allowlist", () => {
         assert.deepEqual(
-            [...resolveAllowedModels(undefined)],
-            ["magda-agent-default"]
+            [...parseAllowedModels('["magda-agent-default","another-model"]')],
+            ["magda-agent-default", "another-model"]
         );
         assert.deepEqual(
-            [...resolveAllowedModels("model-a, model-b")],
-            ["model-a", "model-b"]
+            [...parseAllowedModels('[" model-with-padding "]')],
+            ["model-with-padding"]
         );
+    });
+
+    it("rejects missing, malformed, empty, invalid, and duplicate allowlists", () => {
+        for (const value of [
+            undefined,
+            "not-json",
+            "{}",
+            "[]",
+            '[""]',
+            '["   "]',
+            '["model",1]',
+            '["model","model"]',
+            '["model"," model "]'
+        ]) {
+            assert.throws(() => parseAllowedModels(value));
+        }
     });
 
     const originalFetch = global.fetch;

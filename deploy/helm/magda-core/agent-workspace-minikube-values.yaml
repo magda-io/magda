@@ -9,10 +9,6 @@ global:
     sandboxNamespace: magda-agent
   llmServices:
     enabled: true
-  # Exercise explicit reasoning-effort propagation in local qualification. The
-  # chart default is null so models without this capability remain supported.
-  defaultAgentModel:
-    reasoningEffort: medium
   image:
     pullPolicy: IfNotPresent
   openfaas:

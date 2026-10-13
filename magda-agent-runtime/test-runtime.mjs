@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 
 const dockerfile = await readFile(
@@ -152,6 +156,66 @@ for (const managedLimit of [
         new RegExp(`export ${managedLimit}=`),
         `Bootstrap must persist ${managedLimit}`
     );
+}
+
+const bootstrapRoot = await mkdtemp(
+    path.join(tmpdir(), "magda-agent-bootstrap-test-")
+);
+try {
+    const bootstrapPayload = {
+        version: 1,
+        userId: "runtime-test-user",
+        magda: {
+            baseUrl: "https://magda.example",
+            profile: "magda-agent-workspace",
+            apiKeyId: "runtime-test-key-id",
+            apiKey: "runtime-test-key"
+        },
+        llm: {
+            baseUrl: "https://magda.example/api/v0/llm/v1",
+            authorization: "runtime-test-authorization",
+            model: "magda-agent-default",
+            reasoningEffort: "medium",
+            contextWindow: 1050000,
+            maxTokens: 128000
+        }
+    };
+    const runBootstrap = (payload) => {
+        const result = spawnSync(
+            process.execPath,
+            [fileURLToPath(new URL("bootstrap.mjs", import.meta.url))],
+            {
+                input: JSON.stringify(payload),
+                encoding: "utf8",
+                env: {
+                    ...process.env,
+                    MAGDA_AGENT_BOOTSTRAP_DATA_ROOT: bootstrapRoot,
+                    MAGDA_AGENT_BOOTSTRAP_SKIP_RESTART: "1"
+                }
+            }
+        );
+        assert.equal(result.status, 0, result.stderr);
+    };
+
+    runBootstrap(bootstrapPayload);
+    const envFile = path.join(bootstrapRoot, "config/magda-agent.env");
+    assert.match(
+        await readFile(envFile, "utf8"),
+        /MAGDA_LLM_REASONING_EFFORT='medium'/
+    );
+
+    const {
+        reasoningEffort: _removed,
+        ...withoutReasoning
+    } = bootstrapPayload.llm;
+    runBootstrap({ ...bootstrapPayload, llm: withoutReasoning });
+    assert.doesNotMatch(
+        await readFile(envFile, "utf8"),
+        /MAGDA_LLM_REASONING_EFFORT/,
+        "Re-provisioning without reasoning effort must remove a stale value"
+    );
+} finally {
+    await rm(bootstrapRoot, { recursive: true, force: true });
 }
 
 assert.match(

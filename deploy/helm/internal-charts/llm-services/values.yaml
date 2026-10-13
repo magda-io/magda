@@ -6,13 +6,15 @@ image:
   tag: ""
   pullPolicy: IfNotPresent
 replicas: 1
-# -- Optional comma-separated model allowlist override. Empty inherits
-# global.defaultAgentModel.alias from the parent chart.
-allowedModels: ""
+# -- Deployment-wide model allowlist. An empty array inherits
+# global.defaultAgentModel.alias from the parent chart. Bundled LiteLLM requires
+# exactly one matching alias; external backends may use multiple aliases.
+allowedModels: []
 
 # External LiteLLM-compatible backend. Leave empty when the bundled LiteLLM
 # subchart is enabled. When bundled LiteLLM is disabled all three fields are
-# required.
+# required, and the operator must ensure every allowed model alias exists on the
+# external backend.
 backend:
   url: ""
   masterKeySecret:

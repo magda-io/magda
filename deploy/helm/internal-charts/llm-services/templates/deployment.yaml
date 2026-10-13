@@ -1,5 +1,4 @@
-{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
-{{- $allowedModels := coalesce .Values.allowedModels (get $globalModel "alias") -}}
+{{- $allowedModelsJson := include "llm-services.effectiveAllowedModelsJson" . -}}
 {{- $backendUrl := .Values.backend.url -}}
 {{- $secretName := .Values.backend.masterKeySecret.name -}}
 {{- $secretKey := .Values.backend.masterKeySecret.key -}}
@@ -37,7 +36,7 @@ spec:
                 secretKeyRef: {name: auth-secrets, key: jwt-secret}
             - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
             - {name: LITELLM_URL, value: {{ $backendUrl | quote }}}
-            - {name: ALLOWED_MODELS, value: {{ required "llm-services: allowedModels or global.defaultAgentModel.alias is required" $allowedModels | quote }}}
+            - {name: ALLOWED_MODELS, value: {{ $allowedModelsJson | quote }}}
             - name: LITELLM_MASTER_KEY
               valueFrom:
                 secretKeyRef:

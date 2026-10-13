@@ -4,13 +4,39 @@ import https from "node:https";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { ADMIN_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
-export function resolveAllowedModels(value: string | undefined): Set<string> {
-    return new Set(
-        (value || "magda-agent-default")
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean)
-    );
+export function parseAllowedModels(value: string | undefined): Set<string> {
+    if (value === undefined) {
+        throw new Error("ALLOWED_MODELS is required and must be a JSON array");
+    }
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(value);
+    } catch {
+        throw new Error("ALLOWED_MODELS must be a valid JSON array");
+    }
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+        throw new Error(
+            "ALLOWED_MODELS must be a non-empty JSON array of model IDs"
+        );
+    }
+    const models = new Set<string>();
+    parsed.forEach((model, index) => {
+        if (typeof model !== "string" || !model.trim()) {
+            throw new Error(
+                `ALLOWED_MODELS[${index}] must be a non-empty string`
+            );
+        }
+        const normalized = model.trim();
+        if (models.has(normalized)) {
+            throw new Error(
+                `ALLOWED_MODELS contains duplicate model ID ${JSON.stringify(
+                    normalized
+                )}`
+            );
+        }
+        models.add(normalized);
+    });
+    return models;
 }
 
 export interface LlmServicesConfig {

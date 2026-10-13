@@ -259,8 +259,8 @@ global:
     # Stable MAGDA/DSH-facing alias; provider upgrades do not change it.
     alias: magda-agent-default
     providerModel: openai/gpt-5.6-sol
-    # Optional. Null lets the provider choose its model default.
-    reasoningEffort: null
+    # Set to "" to omit the setting and use the provider default.
+    reasoningEffort: medium
     contextWindow: 1050000
     maxTokens: 128000
 
@@ -283,8 +283,8 @@ agent-services:
       size: 5Gi
 
 llm-services:
-  # Optional override; empty inherits global.defaultAgentModel.alias.
-  allowedModels: ""
+  # An empty list inherits global.defaultAgentModel.alias.
+  allowedModels: []
   litellm:
     enabled: true
     # Optional overrides; empty values inherit global.defaultAgentModel.
@@ -340,18 +340,37 @@ Provider credentials remain confined to LiteLLM. The bundled chart reads an
 optional provider credential from `providerSecret.name`/`providerSecret.key`
 through the fixed internal environment name `LITELLM_PROVIDER_API_KEY`; leave
 both Secret fields empty for a workload-identity or credential-free provider.
-For an external LiteLLM-compatible backend, its exposed model alias must match
-`llm-services.allowedModels` and the Agent Workspace model.
+The bundled LiteLLM configuration exposes exactly one model, so its effective
+allowlist must contain exactly one matching alias. An external
+LiteLLM-compatible backend may expose multiple aliases:
+
+```yaml
+llm-services:
+  allowedModels:
+    - magda-agent-default
+    - another-model
+  litellm:
+    enabled: false
+  backend:
+    url: https://llm.example/v1
+    masterKeySecret:
+      name: external-litellm-key
+      key: master-key
+```
+
+MAGDA cannot inspect an external backend's model catalog. The operator is
+responsible for ensuring every allowlisted alias exists there, and the Agent
+Workspace model is included in the list. This deployment-wide allowlist remains
+an independent restriction even when per-user OPA model authorization is added.
 
 The stable public alias is `magda-agent-default`; changing only
 `global.defaultAgentModel.providerModel` changes the bundled backend route
-without changing DSH or LLM Services clients. GPT-5.6 Sol's provider default is
+without changing DSH or LLM Services clients. The default explicitly selects
 `medium` reasoning, with a 1,050,000-token context window and 128,000-token
-maximum output. The chart keeps `reasoningEffort` null by default so providers
-without configurable reasoning remain usable; set it globally to request an
-explicit effort. Helm cannot reliably override a non-null global subchart
-default with YAML null, which is why the canonical chart value is null. When
-selecting another model, update `providerModel`, `contextWindow`, and `maxTokens`
+maximum output. Set `global.defaultAgentModel.reasoningEffort: ""` to omit the
+reasoning setting from both DSH and LiteLLM and let the provider choose its model
+default. This is distinct from the explicit `off` effort. When selecting another
+model, update `providerModel`, `reasoningEffort`, `contextWindow`, and `maxTokens`
 to its capabilities. See the
 [GPT-5.6 Sol model specification](https://developers.openai.com/api/docs/models/gpt-5.6-sol).
 

@@ -119,7 +119,7 @@ doc for how the CA is delivered to each workload.
 | global.defaultAgentModel.contextWindow | int | `1050000` | Model context-window capability. |
 | global.defaultAgentModel.maxTokens | int | `128000` | Model maximum output tokens, including reasoning tokens. |
 | global.defaultAgentModel.providerModel | string | `"openai/gpt-5.6-sol"` | LiteLLM provider model routed behind the stable MAGDA alias. |
-| global.defaultAgentModel.reasoningEffort | string | `nil` | Optional provider reasoning effort. Keep null to use the provider's model default (medium for GPT-5.6 Sol), or set an explicit supported effort. Helm cannot reliably override a non-null global subchart default with null, so null must be the chart default for opt-out to propagate through nesting. |
+| global.defaultAgentModel.reasoningEffort | string | `"medium"` | Provider reasoning effort. Supported values: off, low, medium, high, xhigh, and max. Set to an empty string to omit the setting and let the provider choose its model default. |
 | global.defaultDatasetBucket | string | `"magda-datasets"` | The name of the bucket to store datasets in by default |
 | global.enableLivenessProbes | bool | `false` | Whether or not enabled livenessProbes on all services |
 | global.enableMultiTenants | bool | `false` |  |

@@ -48,12 +48,14 @@ function shellQuote(value) {
 // Some CSI/KAS combinations pre-create the image WORKDIR as root even with an
 // fsGroup. Replace that unwritable directory from its writable PVC parent and
 // copy any existing content so DSH always receives a user-owned workspace.
-const workspace = "/data/workspace";
-fs.mkdirSync("/data", { recursive: true });
+// The override is used only by the executable regression test.
+const dataRoot = process.env.MAGDA_AGENT_BOOTSTRAP_DATA_ROOT || "/data";
+const workspace = path.join(dataRoot, "workspace");
+fs.mkdirSync(dataRoot, { recursive: true });
 try {
     fs.accessSync(workspace, fs.constants.W_OK);
 } catch {
-    const backup = `/data/.workspace-readonly-${Date.now()}`;
+    const backup = path.join(dataRoot, `.workspace-readonly-${Date.now()}`);
     if (fs.existsSync(workspace)) fs.renameSync(workspace, backup);
     fs.mkdirSync(workspace, { recursive: true, mode: 0o700 });
     if (fs.existsSync(backup)) {
@@ -61,7 +63,7 @@ try {
     }
 }
 
-atomicJson("/data/config/mgd/config.json", {
+atomicJson(path.join(dataRoot, "config/mgd/config.json"), {
     activeProfile: payload.magda.profile || "magda-agent-workspace",
     profiles: {
         [payload.magda.profile || "magda-agent-workspace"]: {
@@ -72,7 +74,7 @@ atomicJson("/data/config/mgd/config.json", {
     }
 });
 
-const envFile = "/data/config/magda-agent.env";
+const envFile = path.join(dataRoot, "config/magda-agent.env");
 const envTmp = `${envFile}.${process.pid}.tmp`;
 fs.writeFileSync(
     envTmp,
@@ -97,7 +99,7 @@ fs.writeFileSync(
 );
 fs.renameSync(envTmp, envFile);
 fs.chmodSync(envFile, 0o600);
-atomicJson("/data/config/magda-agent-bootstrap.json", {
+atomicJson(path.join(dataRoot, "config/magda-agent-bootstrap.json"), {
     version: payload.version,
     userId: payload.userId,
     apiKeyId: payload.magda.apiKeyId,
@@ -107,28 +109,30 @@ atomicJson("/data/config/magda-agent-bootstrap.json", {
 // DSH was started while this Sandbox was warm and unclaimed. Restart the
 // container after the secret-bearing config is persisted so the managed
 // provider consumes it. The delayed signal lets this exec return success.
-const children = fs
-    .readdirSync("/proc")
-    .filter((name) => /^\d+$/.test(name))
-    .map(Number)
-    .filter((pid) => pid > 1)
-    .filter((pid) => {
-        try {
-            return fs
-                .readFileSync(`/proc/${pid}/cmdline`, "utf8")
-                .includes("dsh-launch.mjs");
-        } catch {
-            return false;
-        }
-    });
-if (children.length) {
-    const child = children[0];
-    setTimeout(() => {
-        try {
-            process.kill(child, "SIGTERM");
-        } catch {
-            // The kubelet may already be restarting the process.
-        }
-    }, 500);
+if (process.env.MAGDA_AGENT_BOOTSTRAP_SKIP_RESTART !== "1") {
+    const children = fs
+        .readdirSync("/proc")
+        .filter((name) => /^\d+$/.test(name))
+        .map(Number)
+        .filter((pid) => pid > 1)
+        .filter((pid) => {
+            try {
+                return fs
+                    .readFileSync(`/proc/${pid}/cmdline`, "utf8")
+                    .includes("dsh-launch.mjs");
+            } catch {
+                return false;
+            }
+        });
+    if (children.length) {
+        const child = children[0];
+        setTimeout(() => {
+            try {
+                process.kill(child, "SIGTERM");
+            } catch {
+                // The kubelet may already be restarting the process.
+            }
+        }, 500);
+    }
 }
 console.log("magda-agent-bootstrap: managed configuration installed");

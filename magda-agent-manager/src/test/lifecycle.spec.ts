@@ -259,10 +259,10 @@ describe("Agent Workspace inactivity lifecycle", () => {
         });
     });
 
-    it("omits reasoning effort when the selected model does not support it", async () => {
+    it("omits an explicitly empty reasoning effort from bootstrap", async () => {
         const kubernetes = new FakeKubernetes();
         const instance = manager(kubernetes, new FakeApiKeys(), {
-            llmReasoningEffort: undefined
+            llmReasoningEffort: ""
         }).manager;
 
         await instance.start(userId);
