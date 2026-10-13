@@ -25,8 +25,8 @@ Proposed semantic fields (refine schema validation in #3854):
 
 | Field | Type / source | Rules |
 | --- | --- | --- |
-| Registry `record.id` | Stable ID generated/assigned by backend | Primary skill identifier; matches the storage object's record link, unchanged by archive updates |
-| Registry `record.name` | Parsed `SKILL.md` frontmatter `name` | Set/updated by skill publication, not edited independently through the catalogue UI |
+| Registry `record.id` | Deterministic from scope, owner UUID, and immutable SKILL.md name | Primary publication ID; links the Storage object, unchanged by ZIP replacement; never caller-chosen independently |
+| Registry `record.name` | Parsed `SKILL.md` frontmatter `name` | Immutable once published; replacing an archive must preserve the name (renaming creates a different record) |
 | `agent-skill.scope` | `system` or `user` | Immutable once created in MVP; determines policy and storage namespace |
 | `agent-skill.description` | Parsed `SKILL.md` description | Set/updated with published ZIP |
 | `agent-skill.archiveKey` | Server-generated bucket-relative object key | Internal authoritative content locator, never a user-supplied storage path |
@@ -37,11 +37,91 @@ Proposed semantic fields (refine schema validation in #3854):
 | `agent-skill.checksum` | Published ZIP checksum/ETag | Used to detect changes and sync; no mandatory application version history |
 | `agent-skill.status` | `PENDING` / `READY` / `DELETING` (or equivalent internal state) | Exclude non-`READY` records from normal catalogue and Workspace sync |
 
-Registry `access-control.ownerId` identifies the skill owner; it is **not** the same thing as `createdBy` or `updatedBy`. Initially system skill records are admin-managed and readable by all authorised users, and user skill records are owner-scoped. `access-control.preAuthorisedPermissionIds`, `orgUnitId` etc. remain available for **future sharing**, which is out of scope now.
+Registry `access-control.ownerId` identifies the skill owner; it is **not** the same thing as `createdBy` or `updatedBy`. Initially system skill records are admin-managed and readable by all authorised users, and user skill records are owner-scoped. `access-control.preAuthorisedPermissionIds`, `orgUnitId` etc. are potential future read-sharing mechanisms; sharing and installation are designed below but implemented separately under #3861.
 
-The general Registry record has no built-in created/updated timestamps, so keep explicit timestamps in the `agent-skill` aspect. The ZIP's `SKILL.md` is the content source for name/description, but Registry metadata is the **query/read model** for listing, paging, searching, sorting and permissions. **No UI fields to independently change this metadata**; updates reparse the archive. When publishing changes, preserve `id`, `scope`, `createdAt`, `createdBy` and current ownership.
+The general Registry record has no built-in created/updated timestamps, so keep explicit timestamps in the `agent-skill` aspect. The ZIP's `SKILL.md` is the content source for name/description, but Registry metadata is the **query/read model** for listing, paging, searching, sorting and permissions. **No UI fields to independently change this metadata**; updates reparse the archive and reject a changed name. When publishing changes, preserve `id`, `name`, `scope`, `createdAt`, `createdBy` and current ownership.
 
-Use existing Registry ``GET /v0/registry/records`` filtered by the `agent-skill` aspect; the endpoint already supports `pageToken`, `limit`, optional `start`/`orderBy`, full-text `q` and aspect filters. Use paginated, authorization-filtered queries; do not fetch every archive to construct the list. Never include `PENDING` or `DELETING` skills in public discovery/Workspace sync. Runtime-bundled skills do not appear in the published skill record catalogue unless a later explicit feature is added.
+Use existing Registry ``GET /v0/registry/records`` filtered by the `agent-skill` aspect; the endpoint supports `pageToken`, `limit`, optional `start`/`orderBy`, full-text `q` and aspect filters. **Registry rejects `pageToken` together with `orderBy`**: use a supported pagination strategy, e.g. `reversePageTokenOrder=true` without explicit sorting. Also, Registry `q` does **not** index `record.name`; never use `q` as an exact skill-name uniqueness check. Use paginated, authorization-filtered queries; do not fetch every archive to construct the list. Never include `PENDING` or `DELETING` skills in public discovery/Workspace sync. Runtime-bundled skills do not appear in the published skill record catalogue unless a later explicit feature is added.
+
+## Deterministic skill IDs, names and future installation compatibility
+
+**Accepted identity convention (stage #3854):** Registry `Records.recordId` is `varchar(100)`; `agent-skill-<uuid>-<name>` with a 36-character, lowercase, hyphenated owner UUID and a maximum **46-character** name uses at most **95 characters**. The owner UUID comes from the authenticated MAGDA user, not the request. Examples:
+
+```text
+Published user skill:   agent-skill-550e8400-e29b-41d4-a716-446655440000-csv-analyser
+Installed shared skill: agent-skill-11111111-2222-4333-8444-555555555555-csv-reporter
+Published system skill: agent-skill-system-csv-analyser
+```
+
+Names obey `^[a-z0-9]+(?:-[a-z0-9]+)*# Agent skills: Registry metadata, storage, access and user workflow
+
+**Status:** Agreed updated design for the expanded Agent Workspace MVP #3849, implemented incrementally in draft PR #3850; **not yet shipped**  
+**Implementation:** #3854 (Registry-backed skill API), #3855 (`mgd`/runtime bootstrap), #3856 (workflow capture), #3857 (Agent Skills catalogue UI), plus #3858 (`agentWorkspace/access` authorization)  
+**Design owner:** #3811 / epic #3810  
+**Related:** [platform overview](./README.md), [authorization](./authentication.md), [web UI](./web-ui.md), [session lifecycle](./session-lifecycle.md), general Storage API owner-metadata bug [#3853](https://github.com/magda-io/magda/issues/3853)
+
+## Product model and three categories
+
+A user has **one current disposable Agent Workspace/Sandbox per MAGDA installation** but may have **multiple DSH sessions** in it. Reusable skills persist independently of both and survive deletion/recreation of the Sandbox. The agent can guide the user in creating, modifying and publishing skills; a dedicated **Agent Skills catalogue page** introduces the feature and shows published skills without requiring an active Workspace.
+
+| Category | Authoritative location | Who publishes | Allowed archive contents | Discovery and execution |
+| --- | --- | --- | --- | --- |
+| **Runtime-bundled skills** | Pinned `magda-agent-runtime` image | MAGDA runtime maintainers | Image-bundled instructions/scripts/resources | Built into every runtime; **not** published Registry skill records |
+| **System skills** | Agent skill Registry record + ZIP in existing default storage bucket | MAGDA admin users | Root `SKILL.md` and arbitrary regular supporting files, including Python scripts and ML models | Available to all authenticated users with system-skill read permission; **run as current user** |
+| **User skills** | Agent skill Registry record + ZIP in existing default storage bucket | Owning MAGDA user | **Markdown-only regular files** (`SKILL.md` and optional Markdown references) | Initially only its owner; **run as current user** |
+
+All three execute under the current user's normal MAGDA API key, DSH tools, Sandbox and approval policy. System skills are shared tools/instructions, **not** delegated administrator privilege. Users, including admins, remain responsible for approval requests and account permissions. Runtime-bundled skills include immutable `capture-workflow` and the `mgd` usage guidance; they are not managed by published-skill CRUD. Administrators should consider download/PVC costs before publishing large system ZIPs; recommend referencing MAGDA datasets and downloading large models/assets when needed, but do not implement generalized lazy loading in the MVP.
+
+## Registry: authoritative published skill catalogue
+
+**Definition:** An **agent skill record** is a MAGDA Registry record containing the **`agent-skill`** aspect and the regular **`access-control`** aspect. Registry is authoritative for skill identity, discoverability, ownership, metadata, pagination and access controls. **Not** an extra Agent Manager database. A Registry aspect schema is added under `magda-registry-aspects/agent-skill.schema.json` and installed with the other built-in aspects.
+
+Proposed semantic fields (refine schema validation in #3854):
+
+| Field | Type / source | Rules |
+| --- | --- | --- |
+| Registry `record.id` | Deterministic from scope, owner UUID, and immutable SKILL.md name | Primary publication ID; links the Storage object, unchanged by ZIP replacement; never caller-chosen independently |
+| Registry `record.name` | Parsed `SKILL.md` frontmatter `name` | Immutable once published; replacing an archive must preserve the name (renaming creates a different record) |
+| `agent-skill.scope` | `system` or `user` | Immutable once created in MVP; determines policy and storage namespace |
+| `agent-skill.description` | Parsed `SKILL.md` description | Set/updated with published ZIP |
+| `agent-skill.archiveKey` | Server-generated bucket-relative object key | Internal authoritative content locator, never a user-supplied storage path |
+| `agent-skill.createdAt` | ISO 8601 UTC timestamp | Immutable; recorded on successful initial publication |
+| `agent-skill.createdBy` | Authenticated MAGDA user UUID | Immutable creator (can differ from owner later if sharing/delegation evolves) |
+| `agent-skill.updatedAt` | ISO 8601 UTC timestamp | Last successful published ZIP change |
+| `agent-skill.updatedBy` | Authenticated MAGDA user UUID | Last successful publisher; preferred spelling over `editedBy` |
+| `agent-skill.checksum` | Published ZIP checksum/ETag | Used to detect changes and sync; no mandatory application version history |
+| `agent-skill.status` | `PENDING` / `READY` / `DELETING` (or equivalent internal state) | Exclude non-`READY` records from normal catalogue and Workspace sync |
+
+Registry `access-control.ownerId` identifies the skill owner; it is **not** the same thing as `createdBy` or `updatedBy`. Initially system skill records are admin-managed and readable by all authorised users, and user skill records are owner-scoped. `access-control.preAuthorisedPermissionIds`, `orgUnitId` etc. are potential future read-sharing mechanisms; sharing and installation are designed below but implemented separately under #3861.
+
+The general Registry record has no built-in created/updated timestamps, so keep explicit timestamps in the `agent-skill` aspect. The ZIP's `SKILL.md` is the content source for name/description, but Registry metadata is the **query/read model** for listing, paging, searching, sorting and permissions. **No UI fields to independently change this metadata**; updates reparse the archive and reject a changed name. When publishing changes, preserve `id`, `name`, `scope`, `createdAt`, `createdBy` and current ownership.
+
+Use existing Registry ``GET /v0/registry/records`` filtered by the `agent-skill` aspect; the endpoint supports `pageToken`, `limit`, optional `start`/`orderBy`, full-text `q` and aspect filters. **Registry rejects `pageToken` together with `orderBy`**: use a supported pagination strategy, e.g. `reversePageTokenOrder=true` without explicit sorting. Also, Registry `q` does **not** index `record.name`; never use `q` as an exact skill-name uniqueness check. Use paginated, authorization-filtered queries; do not fetch every archive to construct the list. Never include `PENDING` or `DELETING` skills in public discovery/Workspace sync. Runtime-bundled skills do not appear in the published skill record catalogue unless a later explicit feature is added.
+
+ with maximum length 46. A system skill's **full `SKILL.md` name** MUST start with `system-` (`system-csv-analyser` in the last example), and the system record ID is `agent-skill-` + that full name (equivalently `agent-skill-system-<suffix>`). A user-published name or installation alias MUST NOT start with `system-`. Reserve runtime-bundled names such as `capture-workflow` separately. This prefix-based partition means no scan of all user skills is needed when an admin publishes a new system skill. Different owners may publish the same unprefixed name.
+
+User publications and recipient-owned installation records intentionally occupy the **same deterministic per-user ID/name namespace**. This atomically prevents an owner from simultaneously publishing `csv-reporter` and installing another person's shared skill under `csv-reporter`. Registry's existing primary-key conflict enforces concurrent creation; a pre-check is only for readable errors. Eliminate exact-name uniqueness checks based on Registry full-text `q`. A ZIP replacement must retain the original skill name, record ID, owner, scope and creator fields; renaming means publishing a new record. Do not accept arbitrary caller-selected IDs even if prior APIs supported UUID IDs. Update stage-1 API and tests to derive ID after ZIP validation, while preserving the **pre-body-parsing scope/actor create authorization check** (use a synthetic authorization context without a caller-chosen final ID). Retry/repair idempotently by the derived ID.
+
+Agent Services enforces complete deterministic identity/type/ZIP validation; OPA enforces actor/scope, type-exclusive record delegation, and immutable fields on update. Rego may verify simple mutation identity checks, but avoid complex expressions that break Registry OPA partial evaluation for list/read. The existing administrator bypass in OPA means ordinary Rego alone does not provide a universal structural validator. Do **not** extend generic Registry API/schema/DB functionality specifically for skills in MVP. Independently authorised direct Registry/Storage writes remain a documented integrity boundary; Agent Services and Workspace sync must fail closed on invalid records/content.
+
+## Future sharing: installation records, not duplicate publications (#3861)
+
+**Design agreed now; implementation deferred to [#3861](https://github.com/magda-io/magda/issues/3861).** Distinguish a *source publication*, a *sharing grant*, and a *recipient's installation*. Owning a published user skill does not automatically make it visible to other users; being allowed to read a shared source does **not** automatically install it.
+
+| Kind | Registry aspects | ZIP / identity | Mutability |
+| --- | --- | --- | --- |
+| Original source publication | `agent-skill` + `access-control` | Published owner-scoped ID; one authoritative Storage API ZIP | Publisher can replace contents under immutable name; controls sharing grants |
+| Recipient installation | **`agent-skill-installation`** + `access-control`; no `agent-skill` | Recipient-scoped `agent-skill-<recipient-uuid>-<effective-name>`; **no second ZIP** | Recipient can install/uninstall; cannot update source ZIP |
+
+Prefer the aspect name **`agent-skill-installation`** rather than `agent-skill-sharing`: the record describes a recipient's persistent installation, whereas the source's sharing grant belongs to authorization. Proposed minimal aspect: `{ "sourceSkillId": "agent-skill-<source-owner-uuid>-csv-analyser", "alias": "csv-reporter" }` with optional alias. `record.name` is the recipient-visible effective name (the source name without alias); source name is immutable. `access-control.ownerId` is the recipient UUID. An installed source must be a different user's authorised user publication; system skills are already globally installed by policy, not via installation records. Installation should not contain `archiveKey`, `checksum`, `agent-skill` or its own Storage object. A recipient alias change may be modelled as reinstall (delete old installation, create new ID), never as source mutation.
+
+**Sharing/access:** #3861 will design/implement concrete recipient or group grants, initially considering existing `access-control.preAuthorisedPermissionIds` and actual permission-to-user assignments. Do not assume setting an arbitrary permission ID alone authorizes a particular user. Extend typed `object/agentSkill/read` only for explicitly authorized shared user publications, preserving private-by-default semantics and system read separation. Separately protect `agent-skill-installation` Registry records with dedicated type-aware OPA delegation/permissions and **no generic `object/record/*` fallback** (including creation, aspect removal, mutation/bulk routes). Installation record access never confers source read: check original source permissions before install and on every ZIP resolution/sync; revocation/deletion removes runtime availability and leaves a safe uninstall path. Uninstall deletes only the installation record, not the original ZIP.
+
+**Unified runtime install manifest:** after current-user credential bootstrap, combine (1) READY system publications, (2) READY publications **owned by the current user**, and (3) current user's `agent-skill-installation` records resolved to authorized READY sources. They use a **single validation/extraction/reconciliation pipeline**, but may require separate paginated Registry queries. `optionalAspect=agent-skill&optionalAspect=agent-skill-installation` alone is *not* a type OR filter; use validated `aspectOrQuery`/ownership filters if implementing one query, or separate `aspect`-filtered paginated queries and merge. Do not automatically install user skills merely because their author shared read permission. For an aliased installation verify original ZIP against source metadata/checksum first, then safely transform the extracted **local** `SKILL.md` name to the effective alias; never rewrite the source ZIP. Never let stale unauthorized copies remain executable after revocation. Keep original local draft safety and atomic sync.
+
+**UI (future #3861):** Settings > Agent Workspace gains a third child **Shared Skills** (`/settings/agent-workspace/shared-skills`) next to **Open Workspace** and **Agent Skills**. The page explains sharing vs installing, that installing does not transfer ownership/copy ZIP, updates and revocation, and workspace resync. Two tabs: **All available** (default; paginated, keyword-searchable, only other users' currently shared READY source publications with Install/status) and **Installed** (recipient installation records, Uninstall/status, unavailable source diagnostics). On collision with an own skill or already-installed alias, prompt for a valid alternative alias (also prohibit `system-` and runtime-bundled names); persist the chosen alias in installation state. Show this navigation independently of Agent Workspace access when skill permissions allow it; all real authorization is server-side.
+
+**Rollout:** #3854 establishes deterministic published IDs + reserved names and fixes Registry pagination; #3855 uses an effective-install-manifest abstraction with system/own publishers and a future third installed-source type; #3857 keeps `Agent Skills` focused on own/system publications and leaves room for the third nav item; #3858 keeps Workspace access distinct from catalogue/install visibility. #3861 later implements sharing grants, installation schema/policy/API, bootstrap resolution and the Shared Skills page. Do not expand the running #3850 stage automatically to implement #3861.
 
 ## Storage: existing bucket and normal Storage API
 
@@ -148,13 +228,13 @@ All publication success claims must wait for confirmed API completion.
 
 ## Workspace claim, sync and DSH discovery
 
-A warm KAS Sandbox is unassigned and has **no** user-specific skills/credentials. Runtime-bundled skills are already in the pinned image. **After claim and user credential bootstrap, before READY**, the current user's Workspace downloads authorized published system + user ZIPs through the skill API, validates/extracts into DSH-discoverable directories on its own PVC. Sync filters Registry records via delegated per-record permissions and `READY` state; no arbitrary cross-user skills are downloaded.
+A warm KAS Sandbox is unassigned and has **no** user-specific skills/credentials. Runtime-bundled skills are already in the pinned image. **After claim and user credential bootstrap, before READY**, the current user's Workspace resolves an effective install manifest and downloads authorised READY system and own-user publications, validates/extracts into DSH-discoverable directories on its own PVC. Sharing stage #3861 extends that manifest with **explicit recipient installation records**, not every readable/shared user skill. Sync filters Registry records through delegated per-record permissions; no arbitrary cross-user skills are downloaded.
 
 Use an explicit collision-safe DSH-visible name policy across all skill roots and safe ZIP extraction with temp directories/rename. Verify DSH's pinned skill provider notices changes without restart. `mgd agent-skill sync` refreshes an existing Workspace without destroying the Sandbox/PVC/other sessions, never silently overwrites unpublished local edits, and reconciles remotely deleted skills. DSH's read-only file explorer shows local skill files; Bash may edit them locally, but changes are **not** published. Non-admin users may adapt system-skill instructions into their own Markdown-only user skills. Document large system assets/on-demand dataset references for administrators.
 
 ## User-facing Settings catalogue (no general skill editor)
 
-Under Settings navigation, create **Agent Workspace** group with second-level **Open Workspace** (`/settings/agent-workspace`) and **Agent Skills** (`/settings/agent-workspace/skills` or an equivalent unambiguous route). The group itself is non-clickable with the current `SideNavigation.tsx` implementation; use child links. Authorization/visibility is independent per child as specified above.
+Under Settings navigation, create **Agent Workspace** group with second-level **Open Workspace** (`/settings/agent-workspace`) and **Agent Skills** (`/settings/agent-workspace/skills` or an equivalent unambiguous route); reserve a third **Shared Skills** child for #3861. The group itself is non-clickable with the current `SideNavigation.tsx` implementation; use child links. Authorization/visibility is independent per child as specified above.
 
 The **Agent Skills** page is intentionally a discovery and education surface, not a new skill authoring interface. Include a prominent but concise explanation, an example of capturing a reusable workflow, and a normal link to **Open Workspace** when the current user has `agentWorkspace/access`. The introductory example should be concrete, like the CSV workflow above, **not** just “Save this workflow as a skill”. When Workspace access is unavailable, do not show an unusable action.
 
@@ -162,7 +242,7 @@ Show an authorized, paginated catalogue with **All / My Skills / System Skills**
 - Skill ID, name, description, type/scope, created at/by, updated at/by;
 - Pagination and refresh backed by filtered/paginated Registry queries;
 - **System skills:** metadata visible where authorized, **no ZIP download/upload/edit** in this UI initially;
-- **User skills:** view metadata, **Download ZIP**, **Replace ZIP** for an *existing record only*, with appropriate permission. Replacement uses the **same Agent Services validation and publish path** as `mgd` and automatically updates parsed name, description, `updatedAt` and `updatedBy`, but keeps stable ID and creator fields.
+- **User skills:** view metadata, **Download ZIP**, **Replace ZIP** for an *existing record only*, with appropriate permission. Replacement uses the **same Agent Services validation and publish path** as `mgd`, requires the original immutable skill name, and updates description, `updatedAt` and `updatedBy` while keeping stable ID, name and creator fields.
 - No Create skill upload, Delete, general metadata editor, binary system-skill editor or agent-coding interface in this UI. Creating/modifying/deleting skills through natural language and `mgd` remains the primary workflow.
 
 After successful user ZIP replacement, tell the user that an active Workspace can have a stale local copy: **“Ask your agent to resynchronise your skills, or run `mgd agent-skill sync` within Agent Workspace.”** Do not claim automatic resync unless the implementation actually performs it. Use existing MAGDA UI pagination/layout patterns, accessible file-input/error states, and responsive Settings layout. Keep security checks server-side, not in menu visibility or hidden actions.
@@ -182,6 +262,7 @@ Keep **the same draft implementation PR #3850**, test and review each stage befo
 3. **#3856 — Capture:** runtime-bundled workflow capture skill, agent-led user approval, optional local session-history support, and selective prompt suggestion.
 4. **[#3857](https://github.com/magda-io/magda/issues/3857) — Agent Skills UI:** Settings group/navigation, paginated discoverability/education, authorized user ZIP download and replace-only upload, tests. Implement after the backend API contract stabilizes.
 5. **[#3858](https://github.com/magda-io/magda/issues/3858) — Workspace authorization:** `agentWorkspace/access` OPA route, seeded admin grants, Manager HTTP and WebSocket access enforcement, whoami-driven navigation with per-user ownership. This is a separate foundational access-control change that should be developed before the UI stage.
+6. **Future [#3861](https://github.com/magda-io/magda/issues/3861) — Sharing/installation/UI:** sharing grants, recipient-owned lightweight `agent-skill-installation` records, aliases, unified effective install resolution and Shared Skills UI. Design compatibility belongs in #3854/#3855/#3857, but implementation is separate from current #3850 stage gates.
 
 No extra storage bucket or skill DB, independent metadata editor, mandatory content history, separately privileged system-skill runtime, automatic skill publishing, or new full UI-based skill authoring tool.
 
@@ -199,3 +280,4 @@ No extra storage bucket or skill DB, independent metadata editor, mandatory cont
 - [ ] Paginated Settings catalogue includes user/system filters, education, metadata, user ZIP download/replace (not create), permission-aware actions and informative sync guidance.
 - [ ] Warm pool claim then user auth/bootstrap/sync installs only permitted current user's skills; no local edit is auto-published; new Sandbox reuses published copies and multiple DSH sessions remain supported.
 - [ ] Workflow-capture agent drafts the concrete CSV-column workflow into a skill, waits for review/approval, and publishes only through authenticated API.
+
