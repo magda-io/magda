@@ -4,14 +4,36 @@ import { timingSafeEqual } from "node:crypto";
 import { createAdminAuth } from "./auth.js";
 import { AgentManager } from "./manager.js";
 import { ManagerConfig } from "./types.js";
+import createAgentSkillRouter from "./skills/router.js";
+import { AgentSkillError, AgentSkillService } from "./skills/service.js";
+import { DownstreamServiceError } from "./skills/clients.js";
 
-export default function buildApp(config: ManagerConfig, manager: AgentManager) {
+export default function buildApp(
+    config: ManagerConfig,
+    manager: AgentManager,
+    skillService?: AgentSkillService
+) {
     const app = express();
     app.disable("x-powered-by");
-    app.use(express.json({ limit: "32kb" }));
 
     app.get("/v0/status/live", (_req, res) => res.json({ status: "ok" }));
     app.get("/v0/status/ready", (_req, res) => res.json({ status: "ok" }));
+
+    // Keep Agent Skill authorization ahead of every body parser so denied create
+    // requests are rejected before ZIP bytes are buffered or parsed.
+    if (skillService) {
+        app.use(
+            "/v0/skills",
+            createAgentSkillRouter({
+                service: skillService,
+                jwtSecret: config.jwtSecret,
+                authApiUrl: config.authApiUrl,
+                maxCompressedBytes: config.skillArchiveMaxCompressedBytes
+            })
+        );
+    }
+
+    app.use(express.json({ limit: "32kb" }));
 
     const privateRouter = express.Router();
     privateRouter.use((req, res, next) => {
@@ -102,6 +124,41 @@ export default function buildApp(config: ManagerConfig, manager: AgentManager) {
             res: express.Response,
             _next: express.NextFunction
         ) => {
+            if (error instanceof AgentSkillError) {
+                res.status(error.status).json({
+                    error: {
+                        code: error.code,
+                        message: error.message,
+                        retryable: error.retryable,
+                        ...(error.recordId ? { id: error.recordId } : {})
+                    }
+                });
+                return;
+            }
+            if (error instanceof DownstreamServiceError) {
+                const status = [400, 401, 403, 404, 409].includes(error.status)
+                    ? error.status
+                    : 503;
+                res.status(status).json({
+                    error: {
+                        code: `${error.service.toUpperCase()}_ERROR`,
+                        message: error.message,
+                        retryable: status >= 500
+                    }
+                });
+                return;
+            }
+            if ((error as { type?: string }).type === "entity.too.large") {
+                res.status(413).json({
+                    error: {
+                        code: "SKILL_ARCHIVE_TOO_LARGE",
+                        message:
+                            "ZIP archive exceeds the compressed size limit",
+                        retryable: false
+                    }
+                });
+                return;
+            }
             console.error("Agent Manager request failed", error);
             res.status(500).json({
                 state: "DEGRADED",

@@ -19,6 +19,7 @@ Kubernetes: `>= 1.24.0-0`
 | global.agentWorkspace.sandboxNamespace | string | `""` |  |
 | global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
 | global.defaultAgentModel | object | `{}` |  |
+| global.defaultDatasetBucket | string | `"magda-datasets"` |  |
 | global.externalUrl | string | `"http://localhost:6100"` |  |
 | global.image.pullPolicy | string | `"IfNotPresent"` |  |
 | global.image.repository | string | `"ghcr.io/magda-io"` |  |
@@ -46,6 +47,7 @@ Kubernetes: `>= 1.24.0-0`
 | manager.resources.requests.cpu | string | `"50m"` |  |
 | manager.resources.requests.memory | string | `"96Mi"` |  |
 | reconcileIntervalSeconds | int | `30` |  |
+| registryApiUrl | string | `"http://registry-api/v0"` |  |
 | runtime.deniedCidrs | list | `[]` | Additional public destinations denied by the broad public egress rule, such as a GKE public control-plane endpoint (/32). |
 | runtime.dshVersion | string | `"0.2.1-alpha.1"` |  |
 | runtime.externalPrivateCidrs | list | `[]` |  |
@@ -73,6 +75,14 @@ Kubernetes: `>= 1.24.0-0`
 | sandboxNamespace.create | bool | `true` |  |
 | sandboxNamespace.labels | object | `{}` |  |
 | serviceAccount.name | string | `"magda-agent-manager"` |  |
+| skillArchive.maxCompressedBytes | int | `8388608` |  |
+| skillArchive.maxEntries | int | `256` |  |
+| skillArchive.maxMarkdownBytes | int | `1048576` |  |
+| skillArchive.maxNestingDepth | int | `8` |  |
+| skillArchive.maxPathLength | int | `240` |  |
+| skillArchive.maxUncompressedBytes | int | `33554432` |  |
+| storageApiUrl | string | `"http://storage-api/v0"` |  |
+| tenantId | int | `0` |  |
 | warmPool.size | int | `2` |  |
 | warmPool.type | string | `"gvisor"` |  |
 

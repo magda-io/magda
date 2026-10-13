@@ -77,6 +77,20 @@ for expected in \
     grep -Fq "$expected" "$tmp/model-default.yaml"
 done
 ! resource_document Deployment litellm "$tmp/model-default.yaml" | grep -q 'optional: true'
+for expected in \
+    'name: REGISTRY_API_URL, value: "http://registry-api/v0"' \
+    'name: STORAGE_API_URL, value: "http://storage-api/v0"' \
+    'name: DEFAULT_STORAGE_BUCKET, value: "magda-datasets"' \
+    'name: TENANT_ID, value: "0"' \
+    'name: SKILL_ARCHIVE_MAX_COMPRESSED_BYTES, value: "8388608"' \
+    'name: SKILL_ARCHIVE_MAX_UNCOMPRESSED_BYTES, value: "33554432"' \
+    'name: SKILL_ARCHIVE_MAX_ENTRIES, value: "256"' \
+    'name: SKILL_ARCHIVE_MAX_PATH_LENGTH, value: "240"' \
+    'name: SKILL_ARCHIVE_MAX_NESTING_DEPTH, value: "8"' \
+    'name: SKILL_ARCHIVE_MAX_MARKDOWN_BYTES, value: "1048576"'; do
+    grep -Fq "$expected" "$tmp/model-default.yaml"
+done
+! resource_document Deployment agent-manager "$tmp/model-default.yaml" | grep -q 'MINIO_'
 ! grep -R -q 'apiKeyEnv' "$helm_root/internal-charts/litellm"
 
 render "$tmp/provider-model.yaml" magda test \
@@ -229,6 +243,26 @@ expect_failure 'agent-services.warmPool.size must be a non-negative integer' \
         --set global.agentWorkspace.enabled=true \
         --set global.llmServices.enabled=true \
         --set-string agent-services.warmPool.size=one
+expect_failure 'agent-services.skillArchive.maxCompressedBytes must be a positive integer' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set agent-services.skillArchive.maxCompressedBytes=0
+expect_failure 'agent-services.skillArchive.maxMarkdownBytes must not exceed maxUncompressedBytes' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set agent-services.skillArchive.maxMarkdownBytes=40000000
+expect_failure 'agent-services.tenantId must be a non-negative integer' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set agent-services.tenantId=true
+expect_failure 'agent-services.tenantId must be a non-negative integer' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set-string agent-services.tenantId=zero
 
 render "$tmp/external.yaml" magda test \
     --set global.llmServices.enabled=true \

@@ -61,6 +61,16 @@ spec:
                   key: {{ .Values.controlPlaneSecret.key }}
             - {name: SYSTEM_USER_ID, value: {{ .Values.global.defaultAdminUserId | quote }}}
             - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
+            - {name: REGISTRY_API_URL, value: {{ .Values.registryApiUrl | quote }}}
+            - {name: STORAGE_API_URL, value: {{ .Values.storageApiUrl | quote }}}
+            - {name: DEFAULT_STORAGE_BUCKET, value: {{ .Values.global.defaultDatasetBucket | quote }}}
+            - {name: TENANT_ID, value: {{ .Values.tenantId | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_COMPRESSED_BYTES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxCompressedBytes) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_UNCOMPRESSED_BYTES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxUncompressedBytes) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_ENTRIES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxEntries) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_PATH_LENGTH, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxPathLength) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_NESTING_DEPTH, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxNestingDepth) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_MARKDOWN_BYTES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxMarkdownBytes) | quote }}}
             - {name: SANDBOX_NAMESPACE, value: {{ $namespace | quote }}}
             - {name: MAGDA_INSTALLATION_ID, value: {{ $installationId | quote }}}
             - {name: SANDBOX_WARM_POOL, value: {{ include "agent-services.warmPoolName" . | quote }}}

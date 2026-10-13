@@ -6,6 +6,13 @@ import { AgentKubernetesClient } from "./kubernetes.js";
 import { AgentManager } from "./manager.js";
 import { RuntimeProxy } from "./runtimeProxy.js";
 import { ManagerConfig, resolveLlmModel } from "./types.js";
+import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
+import {
+    HttpAgentSkillRegistry,
+    HttpAgentSkillStorage,
+    OpaAgentSkillAuthorization
+} from "./skills/clients.js";
+import { AgentSkillService } from "./skills/service.js";
 
 function required(name: string): string {
     const value = process.env[name];
@@ -21,6 +28,14 @@ function positiveInteger(name: string, fallback: number): number {
     return value;
 }
 
+function nonNegativeInteger(name: string, fallback: number): number {
+    const value = Number(process.env[name] ?? fallback);
+    if (!Number.isSafeInteger(value) || value < 0) {
+        throw new Error(`${name} must be a non-negative integer`);
+    }
+    return value;
+}
+
 const externalUrl = process.env.EXTERNAL_URL || "http://localhost:6100";
 const externalAuthority = new URL(externalUrl).host;
 const config: ManagerConfig = {
@@ -30,6 +45,32 @@ const config: ManagerConfig = {
     installationId: required("MAGDA_INSTALLATION_ID"),
     warmPool: process.env.SANDBOX_WARM_POOL || "magda-agent-runc",
     authApiUrl: process.env.AUTH_API_URL || "http://authorization-api/v0",
+    registryApiUrl: process.env.REGISTRY_API_URL || "http://registry-api/v0",
+    storageApiUrl: process.env.STORAGE_API_URL || "http://storage-api/v0",
+    defaultStorageBucket:
+        process.env.DEFAULT_STORAGE_BUCKET || "magda-datasets",
+    tenantId: nonNegativeInteger("TENANT_ID", 0),
+    skillArchiveMaxCompressedBytes: positiveInteger(
+        "SKILL_ARCHIVE_MAX_COMPRESSED_BYTES",
+        8 * 1024 * 1024
+    ),
+    skillArchiveMaxUncompressedBytes: positiveInteger(
+        "SKILL_ARCHIVE_MAX_UNCOMPRESSED_BYTES",
+        32 * 1024 * 1024
+    ),
+    skillArchiveMaxEntries: positiveInteger("SKILL_ARCHIVE_MAX_ENTRIES", 256),
+    skillArchiveMaxPathLength: positiveInteger(
+        "SKILL_ARCHIVE_MAX_PATH_LENGTH",
+        240
+    ),
+    skillArchiveMaxNestingDepth: positiveInteger(
+        "SKILL_ARCHIVE_MAX_NESTING_DEPTH",
+        8
+    ),
+    skillArchiveMaxMarkdownBytes: positiveInteger(
+        "SKILL_ARCHIVE_MAX_MARKDOWN_BYTES",
+        1024 * 1024
+    ),
     systemUserId: required("SYSTEM_USER_ID"),
     managedApiKeyName:
         process.env.MANAGED_API_KEY_NAME || "magda-agent-workspace",
@@ -67,6 +108,14 @@ if (config.llmMaxTokens > config.llmContextWindow) {
         "MAGDA_LLM_MAX_TOKENS must not exceed MAGDA_LLM_CONTEXT_WINDOW"
     );
 }
+if (
+    config.skillArchiveMaxMarkdownBytes >
+    config.skillArchiveMaxUncompressedBytes
+) {
+    throw new Error(
+        "SKILL_ARCHIVE_MAX_MARKDOWN_BYTES must not exceed SKILL_ARCHIVE_MAX_UNCOMPRESSED_BYTES"
+    );
+}
 if (!config.controlPlaneSecret) {
     throw new Error("CONTROL_PLANE_SECRET is required");
 }
@@ -83,7 +132,29 @@ const proxy = new RuntimeProxy(config, kubernetes, (userId, activityTime) =>
     manager.recordMeaningfulActivity(userId, activityTime)
 );
 manager = new AgentManager(config, kubernetes, apiKeys, proxy);
-const app = buildApp(config, manager);
+const skillService = new AgentSkillService({
+    registry: new HttpAgentSkillRegistry(
+        config.registryApiUrl,
+        config.tenantId
+    ),
+    storage: new HttpAgentSkillStorage(
+        config.storageApiUrl,
+        config.defaultStorageBucket
+    ),
+    authorization: new OpaAgentSkillAuthorization(
+        new AuthDecisionQueryClient(config.authApiUrl)
+    ),
+    tenantId: config.tenantId,
+    archiveLimits: {
+        maxCompressedBytes: config.skillArchiveMaxCompressedBytes,
+        maxUncompressedBytes: config.skillArchiveMaxUncompressedBytes,
+        maxEntries: config.skillArchiveMaxEntries,
+        maxPathLength: config.skillArchiveMaxPathLength,
+        maxNestingDepth: config.skillArchiveMaxNestingDepth,
+        maxSkillMarkdownBytes: config.skillArchiveMaxMarkdownBytes
+    }
+});
+const app = buildApp(config, manager, skillService);
 const server = http.createServer((req, res) => {
     if (
         req.url === config.runtimePrefix ||

@@ -30,6 +30,16 @@ export interface ManagerConfig {
     installationId: string;
     warmPool: string;
     authApiUrl: string;
+    registryApiUrl: string;
+    storageApiUrl: string;
+    defaultStorageBucket: string;
+    tenantId: number;
+    skillArchiveMaxCompressedBytes: number;
+    skillArchiveMaxUncompressedBytes: number;
+    skillArchiveMaxEntries: number;
+    skillArchiveMaxPathLength: number;
+    skillArchiveMaxNestingDepth: number;
+    skillArchiveMaxMarkdownBytes: number;
     systemUserId: string;
     managedApiKeyName: string;
     externalUrl: string;

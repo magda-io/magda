@@ -265,7 +265,8 @@ object Directives extends Protocols with SprayJsonSupport {
               input = Some(
                 JsObject(
                   "object" -> JsObject(
-                    "record" -> recordContextDataAfterUpdate
+                    "record" -> recordContextDataAfterUpdate,
+                    "originalRecord" -> currentRecordData
                   )
                 )
               )
@@ -394,7 +395,8 @@ object Directives extends Protocols with SprayJsonSupport {
               input = Some(
                 JsObject(
                   "object" -> JsObject(
-                    "record" -> recordContextDataAfterUpdate
+                    "record" -> recordContextDataAfterUpdate,
+                    "originalRecord" -> currentRecordData
                   )
                 )
               )
@@ -476,7 +478,8 @@ object Directives extends Protocols with SprayJsonSupport {
               input = Some(
                 JsObject(
                   "object" -> JsObject(
-                    "record" -> recordContextDataAfterUpdate
+                    "record" -> recordContextDataAfterUpdate,
+                    "originalRecord" -> currentRecordData
                   )
                 )
               )
@@ -486,6 +489,85 @@ object Directives extends Protocols with SprayJsonSupport {
             requireUnconditionalAuthDecision(
               authApiClient,
               AuthDecisionReqConfig("object/record/update")
+            )
+          case Failure(e: Throwable) =>
+            log.error(
+              "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+              recordId,
+              e
+            )
+            complete(
+              InternalServerError,
+              ApiError(
+                s"An error occurred while creating record context data for auth decision."
+              )
+            )
+        }
+      }
+
+  /**
+    * Require update permission on both the current record and the proposed
+    * record after selected array items are removed from one aspect.
+    */
+  def requireDeleteRecordAspectArrayItemsPermission(
+      authApiClient: AuthApiClient,
+      recordId: String,
+      aspectId: String,
+      jsonPath: String,
+      items: Seq[JsValue]
+  ): Directive0 =
+    (extractLog & extractActorSystem & requiresTenantId)
+      .tflatMap { t =>
+        val log = t._1
+        val requestActorSystem = t._2
+        val tenantId = t._3
+
+        implicit val blockingExeCtx =
+          requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
+
+        onComplete(
+          createRecordContextData(recordId, tenantId)(
+            blockingExeCtx,
+            log
+          ).map { currentRecordData =>
+            val fieldsAfterUpdate = currentRecordData.fields
+              .get(aspectId)
+              .map { currentAspectData =>
+                currentRecordData.fields + (
+                  aspectId -> JsonUtils.deleteJsonArrayItemsByJsonPath(
+                    currentAspectData,
+                    jsonPath,
+                    items
+                  )
+                )
+              }
+              .getOrElse(currentRecordData.fields)
+            (currentRecordData, JsObject(fieldsAfterUpdate))
+          }
+        ).flatMap {
+          case Success((currentRecordData, recordContextDataAfterUpdate)) =>
+            requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject("object" -> JsObject("record" -> currentRecordData))
+              )
+            ) & requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject(
+                    "record" -> recordContextDataAfterUpdate,
+                    "originalRecord" -> currentRecordData
+                  )
+                )
+              )
+            )
+          case Failure(_: NoRecordFoundException) =>
+            complete(
+              BadRequest,
+              ApiError(s"Cannot locate request record by id: ${recordId}")
             )
           case Failure(e: Throwable) =>
             log.error(

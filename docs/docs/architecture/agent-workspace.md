@@ -121,6 +121,55 @@ only the deployment-owned names.
   explicitly configured external CIDRs/ports. Private address ranges otherwise
   remain denied.
 
+## Agent Skills publication API
+
+Agent Services exposes the authenticated public surface
+`/api/v0/agent/skills` for paginated READY metadata, metadata reads, validated
+ZIP download, creation, replacement, and deletion. Workspace lifecycle routes
+remain under their existing admin gate; skill routes accept ordinary authenticated
+users and then enforce the separate `object/agentSkill/create|read|update|delete`
+OPA operations.
+
+Agent Skill metadata is stored as Registry records with `agent-skill` and
+`access-control` aspects. The record ID is the immutable skill ID, and the
+record name and description are derived from root `SKILL.md` frontmatter rather
+than accepted as independent API input. The Registry-backed publication states
+are `PENDING`, `READY`, and `DELETING`; only READY records are catalogued.
+Generic Registry record authorization delegates typed skill records to the same
+scope-aware policy, including proposed post-update state for single and bulk
+mutations.
+
+Each skill has one record-linked ZIP in the existing
+`global.defaultDatasetBucket`:
+
+```text
+agent-services/skills/system-skills/<record-id>.zip
+agent-services/skills/user-skills/<owner-uuid>/<record-id>.zip
+```
+
+Agent Services forwards the verified caller's `X-Magda-Session` to the normal
+Registry, Storage, and Authorization APIs. It does not use a direct MinIO client,
+a service-wide admin identity, a separate bucket, or an application database.
+Storage API assigns the original object owner and `magda-record-id`; replacement
+uses the same key and record ID so Storage preserves ownership while Registry
+records the current publisher in `updatedBy`.
+
+Create writes PENDING before upload and marks READY only after Storage succeeds.
+Replacement validates first, hides the record as PENDING during publication, and
+restores READY after the same object is replaced. Delete marks DELETING, removes
+the ZIP, then removes the Registry record. A caller can safely retry partial
+operations with the same skill ID and archive. Downloads are bounded and are
+released only after ZIP revalidation and checksum/name/description agreement
+with Registry metadata.
+
+ZIP validation rejects malformed or encrypted archives, traversal and absolute
+paths, duplicate/conflicting paths, links and special files, excessive size,
+entry count, path length or nesting, missing/invalid `SKILL.md`, and invalid skill
+names. User skills are Markdown-only. System skills may additionally contain an
+approved set of text resources and scripts. Audit logs contain actor, operation,
+scope, record ID, result and error code only—never session credentials or archive
+content.
+
 ## Managed DSH profile decisions
 
 The deployment, not the user, owns provider, model, plugin, permission, and

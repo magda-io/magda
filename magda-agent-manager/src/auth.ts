@@ -22,10 +22,15 @@ export class AgentAuthorizationError extends Error {
     }
 }
 
-export async function authenticateAdminToken(
+interface VerifiedUser {
+    user: AuthenticatedUser;
+    roles: Array<{ id?: string }>;
+}
+
+async function authenticateToken(
     token: string | undefined,
     options: AuthOptions
-): Promise<AuthenticatedUser> {
+): Promise<VerifiedUser> {
     if (!token) {
         throw new AgentAuthorizationError("Magda authentication required", 401);
     }
@@ -40,6 +45,7 @@ export async function authenticateAdminToken(
     if (typeof payload.userId !== "string" || !payload.userId) {
         throw new AgentAuthorizationError("Invalid Magda session", 401);
     }
+
     let response: globalThis.Response;
     try {
         response = await fetch(
@@ -52,34 +58,63 @@ export async function authenticateAdminToken(
     } catch (error) {
         console.error("Agent Manager authorization lookup failed", error);
         throw new AgentAuthorizationError(
-            "Unable to verify Agent Workspace access",
+            "Unable to verify Magda authentication",
             503
         );
     }
     if (!response.ok) {
         throw new AgentAuthorizationError(
-            "Unable to verify Agent Workspace access",
+            "Unable to verify Magda authentication",
             response.status === 401 ? 401 : 503
         );
     }
-    const user = (await response.json()) as {
+    const authenticated = (await response.json()) as {
         id?: string;
         roles?: Array<{ id?: string }>;
     };
-    const isAdmin = user.roles?.some((role) => role.id === ADMIN_USERS_ROLE_ID);
-    if (user.id !== payload.userId || !isAdmin) {
+    if (authenticated.id !== payload.userId) {
+        throw new AgentAuthorizationError("Invalid Magda session", 401);
+    }
+    return {
+        user: { id: payload.userId, sessionToken: token },
+        roles: Array.isArray(authenticated.roles) ? authenticated.roles : []
+    };
+}
+
+export async function authenticateUserToken(
+    token: string | undefined,
+    options: AuthOptions
+): Promise<AuthenticatedUser> {
+    return (await authenticateToken(token, options)).user;
+}
+
+export async function authenticateAdminToken(
+    token: string | undefined,
+    options: AuthOptions
+): Promise<AuthenticatedUser> {
+    const authenticated = await authenticateToken(token, options);
+    const isAdmin = authenticated.roles.some(
+        (role) => role.id === ADMIN_USERS_ROLE_ID
+    );
+    if (!isAdmin) {
         throw new AgentAuthorizationError(
             "Agent Workspace is currently limited to administrators",
             403
         );
     }
-    return { id: payload.userId, sessionToken: token };
+    return authenticated.user;
 }
 
-export function createAdminAuth(options: AuthOptions) {
+function createAuthMiddleware(
+    authenticate: (
+        token: string | undefined,
+        options: AuthOptions
+    ) => Promise<AuthenticatedUser>,
+    options: AuthOptions
+) {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            req.agentUser = await authenticateAdminToken(
+            req.agentUser = await authenticate(
                 req.get("X-Magda-Session"),
                 options
             );
@@ -88,9 +123,16 @@ export function createAdminAuth(options: AuthOptions) {
             const authError = error as AgentAuthorizationError;
             res.status(authError.status || 503).json({
                 message:
-                    authError.message ||
-                    "Unable to verify Agent Workspace access"
+                    authError.message || "Unable to verify Magda authentication"
             });
         }
     };
+}
+
+export function createAuthenticatedUserAuth(options: AuthOptions) {
+    return createAuthMiddleware(authenticateUserToken, options);
+}
+
+export function createAdminAuth(options: AuthOptions) {
+    return createAuthMiddleware(authenticateAdminToken, options);
 }

@@ -10,6 +10,7 @@ global:
     pullPolicy: IfNotPresent
   externalUrl: http://localhost:6100
   defaultAdminUserId: 00000000-0000-4000-8000-000000000000
+  defaultDatasetBucket: magda-datasets
 
 manager:
   image:
@@ -69,6 +70,16 @@ controlPlaneSecret:
 runtimePrefix: /v0/runtime
 magdaApiUrl: ""
 llmApiUrl: ""
+registryApiUrl: http://registry-api/v0
+storageApiUrl: http://storage-api/v0
+tenantId: 0
+skillArchive:
+  maxCompressedBytes: 8388608
+  maxUncompressedBytes: 33554432
+  maxEntries: 256
+  maxPathLength: 240
+  maxNestingDepth: 8
+  maxMarkdownBytes: 1048576
 hardDeleteSeconds: 28800
 idleSuspendSeconds: 1800
 reconcileIntervalSeconds: 30

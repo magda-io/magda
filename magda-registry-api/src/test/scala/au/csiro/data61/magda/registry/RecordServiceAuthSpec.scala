@@ -1986,6 +1986,14 @@ class RecordServiceAuthSpec extends ApiSpec {
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
+          Post(
+            "/v0/aspects",
+            AspectDefinition("agent-skill", "agent-skill", None)
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
 
           // create records
           param.authFetcher.setAuthDecision(
@@ -2033,6 +2041,26 @@ class RecordServiceAuthSpec extends ApiSpec {
               "testId3",
               "testName",
               Map("source" -> JsObject("id" -> JsString("source0"))),
+              Some("blah")
+            )
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          // Typed Agent Skills are never removed by generic source trimming,
+          // even when a direct record write adds a matching source aspect.
+          Post(
+            "/v0/records",
+            Record(
+              "testId4",
+              "skillName",
+              Map(
+                "source" -> JsObject("id" -> JsString("source1")),
+                "agent-skill" -> JsObject(
+                  "scope" -> JsString("system")
+                )
+              ),
               Some("blah")
             )
           ) ~> addUserId() ~> addTenantIdHeader(
@@ -2225,6 +2253,157 @@ class RecordServiceAuthSpec extends ApiSpec {
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
           returnedRecordIds shouldEqual List("dup-id")
+        }
+      }
+    }
+
+    describe("Bulk record mutation post-state authorization") {
+      val skillRecord = Record(
+        "bulk-skill",
+        "bulk-skill",
+        Map(
+          "agent-skill" -> JsObject(
+            "scope" -> JsString("user"),
+            "state" -> JsString("READY")
+          ),
+          "access-control" -> JsObject(
+            "ownerId" -> JsString("00000000-0000-4000-8000-000000000123"),
+            "preAuthorisedPermissionIds" -> JsArray(
+              JsString("permission-one"),
+              JsString("permission-two")
+            )
+          )
+        ),
+        Some("test")
+      )
+
+      def verifySkillScope(param: FixtureParam, expected: String): Unit = {
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          UnconditionalTrueDecision
+        )
+        Get(
+          "/v0/records/bulk-skill?aspect=agent-skill&aspect=access-control"
+        ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record]
+            .aspects("agent-skill")
+            .fields(
+              "scope"
+            ) shouldEqual JsString(expected)
+        }
+      }
+
+      it("rejects a bulk patch when the proposed record is denied") { param =>
+        settingUpTestData(param, List(skillRecord))
+        param.authFetcher.setAuthDecisionSequence(
+          "object/record/update",
+          List(UnconditionalTrueDecision, UnconditionalFalseDecision)
+        )
+
+        Patch(
+          "/v0/records",
+          PatchRecordsRequest(
+            List("bulk-skill"),
+            JsonPatch(
+              Replace(
+                Pointer.root / "aspects" / "agent-skill" / "scope",
+                JsString("system")
+              )
+            )
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.Forbidden
+          param.authFetcher
+            .callTimesByOperationUri("object/record/update") shouldBe 2
+          val postStateInput = param.authFetcher
+            .getAuthCallLogsByOperationUri("object/record/update")
+            .head
+            ._3
+            .get
+            .asJsObject
+          val authObject = postStateInput.fields("object").asJsObject
+          authObject
+            .fields("record")
+            .asJsObject
+            .fields("agent-skill")
+            .asJsObject
+            .fields("scope") shouldEqual JsString("system")
+          authObject
+            .fields("originalRecord")
+            .asJsObject
+            .fields("agent-skill")
+            .asJsObject
+            .fields("scope") shouldEqual JsString("user")
+        }
+        verifySkillScope(param, "user")
+      }
+
+      it("rejects a bulk aspect PUT when the proposed record is denied") {
+        param =>
+          settingUpTestData(param, List(skillRecord))
+          param.authFetcher.setAuthDecisionSequence(
+            "object/record/update",
+            List(UnconditionalTrueDecision, UnconditionalFalseDecision)
+          )
+
+          Put(
+            "/v0/records/aspects/agent-skill",
+            PutRecordsAspectRequest(
+              List("bulk-skill"),
+              JsObject(
+                "scope" -> JsString("system"),
+                "state" -> JsString("READY")
+              )
+            )
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(Full)
+            .routes ~> check {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/record/update") shouldBe 2
+          }
+          verifySkillScope(param, "user")
+      }
+
+      it("rejects bulk array deletion before any record is changed") { param =>
+        settingUpTestData(param, List(skillRecord))
+        param.authFetcher.setAuthDecisionSequence(
+          "object/record/update",
+          List(UnconditionalTrueDecision, UnconditionalFalseDecision)
+        )
+
+        Delete(
+          "/v0/records/aspectArrayItems/access-control",
+          DeleteRecordsAspectArrayItemsRequest(
+            List("bulk-skill"),
+            "$.preAuthorisedPermissionIds",
+            List(JsString("permission-one"))
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.Forbidden
+          param.authFetcher
+            .callTimesByOperationUri("object/record/update") shouldBe 2
+        }
+
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          UnconditionalTrueDecision
+        )
+        Get(
+          "/v0/records/bulk-skill?aspect=access-control"
+        ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record]
+            .aspects("access-control")
+            .fields("preAuthorisedPermissionIds") shouldEqual JsArray(
+            JsString("permission-one"),
+            JsString("permission-two")
+          )
         }
       }
     }
