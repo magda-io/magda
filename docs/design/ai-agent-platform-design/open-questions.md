@@ -26,14 +26,11 @@
 
 ### #3838 — Magda LLM Services
 
-The architecture is settled around a separate reusable Magda LLM Services + internal LiteLLM component. Remaining detail includes:
+The architecture is settled around reusable LLM Services + private LiteLLM. The **future authorization and quota direction is now agreed** and documented in [llm-access-profiles.md](./llm-access-profiles.md): typed `llm-access-profile` records, LLM Services-managed Registry/Auth API resource lifecycle, per-profile dynamic invoke operations, dedicated `llm/access/*/access` wildcard, any-one-profile OR access, optional per-user token quotas, one deployment-wide calendar timezone and LLM Services-generated usage snapshots for OPA. Hard quota correctness requires atomic accounting outside OPA. **This is design only, not implemented in #3850.**
 
-- exact external model APIs;
-- generic-authorisation resource/action shape;
-- model aliases/config;
-- internal LiteLLM credential lifecycle;
-- streaming/error/usage behavior;
-- HA documentation with Redis disabled.
+Immediate #3850 follow-ups: make `allowedModels` a YAML string array while retaining it as a global gate, restrict the bundled one-model LiteLLM allowlist to its actual alias, and set `global.defaultAgentModel.reasoningEffort: medium` with an explicit `provider-default` omission sentinel instead of relying on YAML null overrides.
+
+Still open for #3838: exact external model/protocol API surface; service-to-Authorization API trusted identity/reconciliation; durable usage ledger and concurrent/streaming quota reservations; provider usage normalization; internal LiteLLM credential lifecycle; streaming/error/usage propagation; multi-replica/no-Redis HA details.
 
 ## GKE / MVP design reconciliation (evidence, not silently settled contracts)
 
