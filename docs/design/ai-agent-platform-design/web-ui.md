@@ -34,42 +34,24 @@ The managed UI still hides deployment-controlled provider/model/plugin managemen
 
 ## Agent Skills catalogue and agent-led creation (expanded MVP)
 
-**Settings navigation:** the existing `Agent Workspace` entry becomes a non-clickable group (the existing `SideNavigation.tsx` behavior for parents with children):
+**Authoritative permissions, sharing and sync contract:** [skill authorization and Workspace manifest decisions](./skills-authorization-and-workspace-manifest.md). **Skill discovery is based on the intended user; skill access is based on authorization; skill synchronization is optional to Workspace availability.**
+
+Settings navigation is a non-clickable **Agent Workspace** group with independent children:
 
 ```text
 Agent Workspace
-  Open Workspace      /settings/agent-workspace
-  Agent Skills        /settings/agent-workspace/skills
-  Shared Skills       /settings/agent-workspace/shared-skills  # future #3861
+  Open Workspace    /settings/agent-workspace
+  Agent Skills      /settings/agent-workspace/skills
+  Shared Skills     /settings/agent-workspace/shared-skills  # future #3861
 ```
 
-`Open Workspace` appears if whoami includes `agentWorkspace/access` or the user has the existing administrator override; `Agent Skills` appears if whoami indicates `object/agentSkill/read` (including owner-scoped grant) or admin. The present children are independent; future **Shared Skills** will appear under its own permission/feature visibility independent of Workspace access. The parent is visible if any authorized child is available. **Server-side OPA remains authoritative**; visibility is merely a UI hint. Do not gate the catalogue on permission to start a Workspace.
+`Open Workspace` depends on `agentWorkspace/access`; `Agent Skills` visibility uses relevant `object/agentSkill/system/read` or `object/agentSkill/user/read` permission (or standard admin override). Future `Shared Skills` requires appropriate user-source read/install permissions and does not implicitly require Workspace access. Whoami navigation is **not** authoritative authorization; all endpoints enforce permission.
 
-The **Agent Skills** page is a **paginated, primarily read-only catalogue and learning surface**, not a general skill creator/editor. It shows authorized **READY** Registry records carrying the `agent-skill` aspect (system + own user skills) with a scope filter (All / My Skills / System Skills), optional search and skill ID, name, description, createdAt/by, updatedAt/by and scope. `createdBy` and `updatedBy` are user UUIDs. Registry values are derived from the published archive's `SKILL.md` (apart from owner/actor/timestamps/ID), not editable here.
+**Agent Skills** is a paginated READY-only, primarily read-only catalogue and introduction. Show user/system publication metadata derived from ZIP `SKILL.md` (name/description, `type`, immutable target `userId` where applicable, record ID and publisher history). User-owned ZIPs may be downloaded and an **existing** user skill ZIP replaced with proper typed read/update permission and immutable name/ID; do not build direct upload-to-create, arbitrary metadata edit or system-skill ZIP management UI in #3857. System skills show metadata only initially. Keep workflow-capture example encouraging user to ask DSH to turn a successful CSV-cleanup procedure into a skill and explicitly publish after review. Existing `mgd agent-skill` CLI handles local drafts, validation, publish and manual sync; published skill updates do not promise immediate live sync.
 
-- **System skills:** view general metadata only; no system ZIP download/upload in this UI, even for admin.
-- **User skills:** download their published ZIP through an **Agent Services** endpoint that proxies the authenticated Storage API response; replace the **ZIP of an existing owned skill** with the same authenticated Agent Services validation/publish endpoint used by `mgd`. All catalogue metadata reads use Agent Services -> Registry API. **Agent Services additionally checks `object/agentSkill/read` using each existing skill's Registry-fetched `scope`/owner before download/metadata return, and `object/agentSkill/update` before ZIP replacement.** Registry and Storage APIs also enforce their normal downstream OPA. Description/updatedAt/updatedBy automatically refresh; the deterministic record ID, **skill name**, owner, createdAt and createdBy are immutable. Replacements with a different SKILL.md name are rejected. Published system names must start with `system-`; user names may not. No uploading a ZIP to **create** a new skill, delete button or general metadata editor.
-- Accessible loading/empty/error/retry/pagination states; no file explorer editing or DSH session management on this page.
-- After successful replacement: **“Your skill has been updated. To use the latest copy in a running Workspace, ask your agent to resynchronise your skills, or run `mgd agent-skill sync` within Agent Workspace.”**
+**Shared Skills** (#3861) has (a) All available, listing readable READY other-user shared publications for optional Install, and (b) Installed, listing current recipient's `agent-skill-installation.userId` records, source/revocation diagnostics and Uninstall. Sharing via simplified user-UUID input/member UI should reuse Access Group components/backend ideas with typed operations, not broad `object/record/read`. Installation never copies or grants the source ZIP. Name collision asks for alias; alias rename needs uninstall+reinstall, not `install/update`. Readable does not mean installed.
 
-Prominently explain the difference between durable reusable skills and disposable conversation histories, and direct users to **ask the agent to capture a successful procedure**, with a concrete example:
-
-> “We just cleaned up a CSV with inconsistent column headings and produced a file using consistent names. I regularly receive similar CSVs from different teams. Can you capture the approach we used—matching equivalent columns, handling ambiguous headings, and checking the output—as a reusable skill for future files?”
-
-Link to **Open Workspace** for users with access; do not show a dead action when they lack `agentWorkspace/access`. The catalogue should visibly teach the feature even for users who are not authorized to run a Workspace yet.
-
-**Agent-led authoring remains the primary workflow:** the user asks DSH to create/update/delete a skill, guided by the immutable `capture-workflow` runtime skill and `mgd agent-skill` commands. Local `SKILL.md` drafts can be reviewed in DSH's existing read-only file explorer or via the agent. Local Bash edits are not published. The agent requests explicit approval before publishing; the prompt suffix occasionally suggests capture after substantial repeatable work. Published skills survive Workspace deletion and sync after claim/bootstrap. See [skills.md](./skills.md), #3854–#3857, #3858 and future sharing #3861.
-
-
-### Future Shared Skills page (#3861 — separate feature)
-
-The third Settings child is **Shared Skills** (preferred to Skill Marketplace, because it describes access without implying purchasing). Explain that another user's shared publication remains owned/updated by its publisher; **discovering** a skill does not install it, and **installing** creates a lightweight recipient-owned Registry record, not a ZIP copy. Installation can be revoked when source read permission is withdrawn.
-
-- **All available** (default): paginated and keyword-searchable READY skills published by *other users* and explicitly shared with the current user. Show publisher, name, description, installed status, and **Install** action.
-- **Installed**: paginated recipient-owned `agent-skill-installation` records, resolved source status and **Uninstall** action. If the source is gone/revoked, do not run it; permit uninstall and display a useful explanation.
-- When installing, detect same-name conflicts with the recipient's own publications, prior installations, reserved runtime names and system prefix. Prompt the user to nominate a valid alias. Installation's effective name / ID must remain unique within the recipient namespace. Installation does not permit editing the original ZIP. An alias changes only the **locally extracted** SKILL.md used by DSH after verifying the original source ZIP.
-- If a Workspace is active, explain that the new installation/removal will appear on the next sync, or ask the agent to run `mgd agent-skill sync`; do not promise automatic sync without implementation.
-- Keep Server-side Agent Services, Registry/Storage and OPA authorization separate from menu visibility. Feature #3861 owns this screen, associated share/install APIs and policy. Existing #3857 implements only the first two children but should not hardcode a two-child group.
+**Workspace skill-sync feedback:** Essential Workspace startup launches DSH even if some/all publication/installation sync fails. Prefer a simple MAGDA Settings Workspace-page banner/status above the embedded standard DSH UI, reporting `success`, `partial`, `failed` or `notAttempted`, counts, and sanitized per-skill errors. For Registry/Storage/OPA outage, show a skill-sync failure but **do not block DSH access or misreport a successful zero-skill manifest**. No new retry control/API is required for MVP; termination/restart can retry. Keep the existing best-effort manifest and revoke-on-reconciliation semantics documented in the linked design.
 
 ## Gateway/proxy
 
