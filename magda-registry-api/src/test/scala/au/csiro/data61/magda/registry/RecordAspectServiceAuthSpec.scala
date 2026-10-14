@@ -71,6 +71,16 @@ class RecordAspectServiceAuthSpec extends ApiSpec {
     param.authFetcher.resetMock()
   }
 
+  def latestRecordUpdateAuthObject(param: FixtureParam): JsObject =
+    param.authFetcher
+      .getAuthCallLogsByOperationUri("object/record/update")
+      .head
+      ._3
+      .get
+      .asJsObject
+      .fields("object")
+      .asJsObject
+
   describe("Record Aspect Service Auth Logic") {
 
     describe(
@@ -135,6 +145,19 @@ class RecordAspectServiceAuthSpec extends ApiSpec {
             // thus, 2 queries here
             param.authFetcher
               .callTimesByOperationUri("object/record/update") shouldBe 2
+            val authObject = latestRecordUpdateAuthObject(param)
+            authObject
+              .fields("record")
+              .asJsObject
+              .fields("aspectA")
+              .asJsObject
+              .fields("a") shouldEqual JsString("test data 456")
+            authObject
+              .fields("originalRecord")
+              .asJsObject
+              .fields("aspectA")
+              .asJsObject
+              .fields("a") shouldEqual JsString("test data 123")
           },
           noPermissionCheck = param => {
             status shouldEqual StatusCodes.Forbidden
@@ -206,6 +229,19 @@ class RecordAspectServiceAuthSpec extends ApiSpec {
             // thus, 2 queries here
             param.authFetcher
               .callTimesByOperationUri("object/record/update") shouldBe 2
+            val authObject = latestRecordUpdateAuthObject(param)
+            authObject
+              .fields("record")
+              .asJsObject
+              .fields("aspectA")
+              .asJsObject
+              .fields("a") shouldEqual JsString("test data 456")
+            authObject
+              .fields("originalRecord")
+              .asJsObject
+              .fields("aspectA")
+              .asJsObject
+              .fields("a") shouldEqual JsString("test data 123")
           },
           noPermissionCheck = param => {
             status shouldEqual StatusCodes.Forbidden
@@ -275,6 +311,17 @@ class RecordAspectServiceAuthSpec extends ApiSpec {
             // thus, 2 queries here
             param.authFetcher
               .callTimesByOperationUri("object/record/update") shouldBe 2
+            val authObject = latestRecordUpdateAuthObject(param)
+            authObject
+              .fields("record")
+              .asJsObject
+              .fields should not contain key("aspectA")
+            authObject
+              .fields("originalRecord")
+              .asJsObject
+              .fields("aspectA")
+              .asJsObject
+              .fields("a") shouldEqual JsString("test data 123")
           },
           noPermissionCheck = param => {
             status shouldEqual StatusCodes.Forbidden

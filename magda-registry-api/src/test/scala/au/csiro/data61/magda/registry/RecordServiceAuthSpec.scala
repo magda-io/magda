@@ -1986,7 +1986,6 @@ class RecordServiceAuthSpec extends ApiSpec {
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-
           // create records
           param.authFetcher.setAuthDecision(
             "object/record/create",
@@ -2225,6 +2224,256 @@ class RecordServiceAuthSpec extends ApiSpec {
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
           returnedRecordIds shouldEqual List("dup-id")
+        }
+      }
+    }
+
+    describe("Bulk record mutation post-state authorization") {
+      val protectedRecord = Record(
+        "bulk-record",
+        "bulk-record",
+        Map(
+          "protected-resource" -> JsObject(
+            "scope" -> JsString("user"),
+            "state" -> JsString("READY")
+          ),
+          "access-control" -> JsObject(
+            "ownerId" -> JsString("00000000-0000-4000-8000-000000000123"),
+            "preAuthorisedPermissionIds" -> JsArray(
+              JsString("permission-one"),
+              JsString("permission-two")
+            )
+          )
+        ),
+        Some("test")
+      )
+
+      def verifyProtectedResourceScope(
+          param: FixtureParam,
+          expected: String
+      ): Unit = {
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          UnconditionalTrueDecision
+        )
+        Get(
+          "/v0/records/bulk-record?aspect=protected-resource&aspect=access-control"
+        ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record]
+            .aspects("protected-resource")
+            .fields(
+              "scope"
+            ) shouldEqual JsString(expected)
+        }
+      }
+
+      it("rejects a bulk patch when the proposed record is denied") { param =>
+        settingUpTestData(param, List(protectedRecord))
+        param.authFetcher.setAuthDecisionSequence(
+          "object/record/update",
+          List(UnconditionalTrueDecision, UnconditionalFalseDecision)
+        )
+
+        Patch(
+          "/v0/records",
+          PatchRecordsRequest(
+            List("bulk-record"),
+            JsonPatch(
+              Replace(
+                Pointer.root / "aspects" / "protected-resource" / "scope",
+                JsString("system")
+              )
+            )
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.Forbidden
+          param.authFetcher
+            .callTimesByOperationUri("object/record/update") shouldBe 2
+          val postStateInput = param.authFetcher
+            .getAuthCallLogsByOperationUri("object/record/update")
+            .head
+            ._3
+            .get
+            .asJsObject
+          val authObject = postStateInput.fields("object").asJsObject
+          authObject
+            .fields("record")
+            .asJsObject
+            .fields("protected-resource")
+            .asJsObject
+            .fields("scope") shouldEqual JsString("system")
+          authObject
+            .fields("originalRecord")
+            .asJsObject
+            .fields("protected-resource")
+            .asJsObject
+            .fields("scope") shouldEqual JsString("user")
+        }
+        verifyProtectedResourceScope(param, "user")
+      }
+
+      it("rejects a bulk aspect PUT when the proposed record is denied") {
+        param =>
+          settingUpTestData(param, List(protectedRecord))
+          param.authFetcher.setAuthDecisionSequence(
+            "object/record/update",
+            List(UnconditionalTrueDecision, UnconditionalFalseDecision)
+          )
+
+          Put(
+            "/v0/records/aspects/protected-resource",
+            PutRecordsAspectRequest(
+              List("bulk-record"),
+              JsObject(
+                "scope" -> JsString("system"),
+                "state" -> JsString("READY")
+              )
+            )
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(Full)
+            .routes ~> check {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/record/update") shouldBe 2
+          }
+          verifyProtectedResourceScope(param, "user")
+      }
+
+      it("rejects bulk array deletion before any record is changed") { param =>
+        settingUpTestData(param, List(protectedRecord))
+        param.authFetcher.setAuthDecisionSequence(
+          "object/record/update",
+          List(UnconditionalTrueDecision, UnconditionalFalseDecision)
+        )
+
+        Delete(
+          "/v0/records/aspectArrayItems/access-control",
+          DeleteRecordsAspectArrayItemsRequest(
+            List("bulk-record"),
+            "$.preAuthorisedPermissionIds",
+            List(JsString("permission-one"))
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.Forbidden
+          param.authFetcher
+            .callTimesByOperationUri("object/record/update") shouldBe 2
+        }
+
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          UnconditionalTrueDecision
+        )
+        Get(
+          "/v0/records/bulk-record?aspect=access-control"
+        ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record]
+            .aspects("access-control")
+            .fields("preAuthorisedPermissionIds") shouldEqual JsArray(
+            JsString("permission-one"),
+            JsString("permission-two")
+          )
+        }
+      }
+
+      it("keeps authorization context aspects isolated by tenant") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        Post(
+          "/v0/aspects",
+          AspectDefinition(
+            "protected-resource",
+            "protected resource",
+            None
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        Post(
+          "/v0/aspects",
+          AspectDefinition("tenant-two-only", "tenant two only", None)
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_2) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        param.authFetcher.setAuthDecision(
+          "object/record/create",
+          UnconditionalTrueDecision
+        )
+        Post(
+          "/v0/records",
+          Record(
+            "shared-record-id",
+            "tenant one record",
+            Map(
+              "protected-resource" -> JsObject(
+                "scope" -> JsString("tenant-one")
+              )
+            )
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+        Post(
+          "/v0/records",
+          Record(
+            "shared-record-id",
+            "tenant two record",
+            Map("tenant-two-only" -> JsObject("value" -> JsBoolean(true)))
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_2) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        param.authFetcher.resetMock()
+        param.authFetcher.setAuthDecisionSequence(
+          "object/record/update",
+          List(UnconditionalTrueDecision, UnconditionalFalseDecision)
+        )
+        Patch(
+          "/v0/records",
+          PatchRecordsRequest(
+            List("shared-record-id"),
+            JsonPatch(
+              Replace(
+                Pointer.root / "aspects" / "protected-resource" / "scope",
+                JsString("tenant-one-proposed")
+              )
+            )
+          )
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.Forbidden
+          val postStateInput = param.authFetcher
+            .getAuthCallLogsByOperationUri("object/record/update")
+            .head
+            ._3
+            .get
+            .asJsObject
+          val authObject = postStateInput.fields("object").asJsObject
+          val proposedRecord = authObject.fields("record").asJsObject
+          val originalRecord = authObject.fields("originalRecord").asJsObject
+
+          proposedRecord.fields("tenantId") shouldEqual JsNumber(TENANT_1)
+          originalRecord.fields("tenantId") shouldEqual JsNumber(TENANT_1)
+          proposedRecord.fields should not contain key("tenant-two-only")
+          originalRecord.fields should not contain key("tenant-two-only")
         }
       }
     }

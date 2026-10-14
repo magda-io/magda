@@ -2,7 +2,7 @@
 
 Tracking issue: [#3862](https://github.com/magda-io/magda/issues/3862)
 
-Status: design investigation; no production behavior changes are proposed in this PR.
+Status: draft design plus reviewable prototype implementation; not ready to merge until compatibility and performance work is complete.
 
 ## Context
 
@@ -10,7 +10,56 @@ Registry authorization commonly evaluates a record state through `object/record/
 
 This is not specific to Agent Skills. Dataset, distribution, organization, access-group, and custom typed records may depend on similar ownership, type, and immutable-metadata rules. Any Registry-wide change therefore needs separate security, compatibility, and performance review.
 
-Agent Skill-specific business rules remain in Agent Services and its typed OPA policy. This investigation will not add an Agent Skill source-trimming exclusion or other type-specific Registry behavior.
+Agent Skill-specific business rules remain in Agent Services and its typed OPA policy. This investigation does not add an Agent Skill source-trimming exclusion or other type-specific Registry behavior.
+
+## Prototype included in this draft PR
+
+This branch carries the generic Registry implementation originally developed in
+[#3850](https://github.com/magda-io/magda/pull/3850), so it can be reviewed and
+benchmarked independently instead of being discarded. The prototype currently:
+
+- includes the trusted current record as `input.object.originalRecord` on the
+  proposed-state authorization decision for single record and aspect updates and
+  aspect deletion;
+- performs current- and proposed-state authorization for every requested record
+  before bulk record patch, bulk aspect PUT, and bulk aspect-array-item deletion;
+- preserves the existing bulk authorization decision used by persistence after
+  all per-record checks pass, so a denial occurs before the mutation transaction;
+- loads each authorization record and its aspects in one database session and
+  binds both queries to the same tenant, including when record IDs overlap across
+  tenants;
+- adds tests proving a denied proposed state leaves the stored records unchanged
+  and authorization contexts do not mix same-ID records across tenants;
+- adds a FIFO decision facility to the Registry authorization test double so the
+  same operation can return distinct current- and proposed-state decisions.
+
+The prototype deliberately leaves source trimming unchanged and contains no
+record-type-specific Registry production logic. In particular, it does not carry
+the former Agent Skill source-trimming exclusion.
+
+This is intentionally reviewable code rather than an accepted final design. It
+must not be treated as complete invariant enforcement: bundled policies do not
+yet consume `originalRecord`, and policy dispatch for a removed type marker still
+needs an explicit design. Additional known blockers and compatibility concerns
+include:
+
+- serial per-record database and OPA round trips (`2N` state decisions plus the
+  existing final bulk decision), changed decision order, larger policy inputs,
+  and no agreed batch cap or timeout budget;
+- a time-of-check/time-of-use window because authorization completes before the
+  mutation transaction; concurrent writes can invalidate the authorized states;
+- proposed-state construction that must be checked against persistence semantics,
+  including omitted `sourceTag`, generated `lastUpdate`, merge behavior, missing
+  aspects, and invalid/no-op patch paths;
+- changed missing-record and error-order behavior that may expose a `400` before
+  the former bulk decision or reveal patch-shape errors before permission denial;
+- unproven rollback behavior when persistence succeeds for an early bulk item but
+  a later item fails for a non-authorization reason.
+
+The benchmarks, policy adoption, state-parity work, concurrency strategy, caller
+inventory, and multi-record rollback tests below determine whether this
+implementation should be optimized, feature-gated, revised, or replaced before
+the PR is made ready for merge.
 
 ## Problem statements
 
@@ -198,7 +247,13 @@ The recommended design should:
 ## Next steps
 
 1. Complete the route and caller inventory.
-2. Capture baseline query/OPA behavior and batch benchmarks.
-3. Prototype the strongest viable candidates behind tests or a feature flag.
-4. Review security, performance, and compatibility results.
-5. Split approved production work into focused implementation tickets and PRs.
+2. Capture baseline query/OPA behavior and benchmark the included prototype.
+3. Make proposed-state construction exactly match persistence and define a
+   transaction/versioning strategy for concurrent changes.
+4. Add multi-record rollback, concurrency, large-batch, mixed-decision, and
+   custom-policy compatibility coverage.
+5. Design and test the policy rollout that consumes `originalRecord`, including
+   typed-marker removal and generic-policy fallback.
+6. Compare the prototype with batched authorization and other viable candidates.
+7. Review security, performance, and compatibility results before making this PR
+   ready for merge.
