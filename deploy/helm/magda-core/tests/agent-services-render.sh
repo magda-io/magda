@@ -209,6 +209,17 @@ for runtime in runc gvisor kata; do
     fi
 done
 
+# The Sandbox uses the same internal/model gateway override as Agent Manager.
+# This allows browser-facing DSH_PUBLIC_URL to retain a host-mapped local port
+# while in-cluster model traffic targets the ingress Service on standard TLS.
+render "$tmp/llm-api-override.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set global.externalUrl=https://magda.test:18443 \
+    --set agent-services.llmApiUrl=https://magda.test/api/v0/llm/v1
+[[ "$(grep -Fc 'value: "https://magda.test/api/v0/llm/v1"' "$tmp/llm-api-override.yaml")" -eq 2 ]]
+grep -q 'value: "https://magda.test:18443/api/v0/agent/runtime/"' "$tmp/llm-api-override.yaml"
+
 render "$tmp/denied-public.yaml" magda test \
     --set global.agentWorkspace.enabled=true \
     --set global.llmServices.enabled=true \

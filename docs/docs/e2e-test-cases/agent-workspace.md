@@ -45,6 +45,24 @@ for implementation details, key decisions, configuration, and deployment steps.
     --from-file=ca.crt=/tmp/magda-agent-ca.crt --dry-run=client -o yaml | kubectl apply -f -
   ```
 
+  The certificate copied into the Sandbox must also be the certificate served
+  by the ingress Service. When the local Ingress omits `tls.secretName`, make
+  `magda-test-tls` the ingress-nginx default certificate (add the argument only
+  once), then wait for the controller rollout:
+
+  ```sh
+  kubectl -n ingress-nginx get deploy ingress-nginx-controller \
+    -o jsonpath='{.spec.template.spec.containers[0].args}' | \
+    grep -- '--default-ssl-certificate=ingress-nginx/magda-test-tls' || \
+    kubectl -n ingress-nginx patch deploy ingress-nginx-controller --type=json \
+      -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--default-ssl-certificate=ingress-nginx/magda-test-tls"}]'
+  kubectl -n ingress-nginx rollout status deploy/ingress-nginx-controller
+  ```
+
+  Alternatively, set the Ingress `tls.secretName`, with the TLS Secret in the
+  same namespace as the Ingress. Do not trust a copied certificate while the
+  controller is still serving its generated fake certificate.
+
   Generate the cluster-specific Helm override (do not commit the ephemeral
   Service IP) and pass it after `agent-workspace-minikube-values.yaml`:
 
@@ -275,6 +293,46 @@ Recover a disposable local cluster as follows:
 For local lifecycle testing where gVisor itself is not under qualification, use
 `agent-services.warmPool.type=runc` instead of weakening the Sandbox security
 context or bypassing readiness checks.
+
+### Model turns fail with `Connection error`
+
+If DSH loads but every prompt retries five times and ends with **This turn
+failed — Connection error**, test the model path from the bound Sandbox. The
+browser and runtime proxy can be healthy while the Sandbox cannot reach or
+trust the LLM gateway.
+
+```sh
+POD=$(kubectl -n magda-agent get pod \
+  -l agents.x-k8s.io/claim-uid -o jsonpath='{.items[0].metadata.name}')
+kubectl -n magda-agent exec "$POD" -- getent hosts magda.test
+kubectl -n magda-agent exec "$POD" -- node -e \
+  'fetch(process.env.MAGDA_LLM_BASE_URL + "/models").then(async r => console.log(r.status, await r.text())).catch(e => { console.error(e); process.exit(1) })'
+```
+
+Expected local results are the ingress Service IP for `magda.test` and HTTP
+`401 Magda authentication required`; that response proves DNS routing and TLS
+trust work before DSH adds its lifecycle-bound credential. Interpret failures as
+follows:
+
+- `127.0.0.1` or connection refused: the live Sandbox lacks the cluster-specific
+  `runtime.hostAliases`, or `MAGDA_LLM_BASE_URL` incorrectly contains the
+  host-only Minikube port such as `:18443`. Keep `DSH_PUBLIC_URL` browser-facing,
+  but set `agent-services.llmApiUrl` to the in-cluster ingress URL on port 443.
+- `self-signed certificate`: `runtime.trustedCaSecret` is absent/stale, or
+  ingress-nginx is serving its generated fake certificate instead of the
+  certificate copied into that Secret. Compare SHA-256 fingerprints and configure
+  the controller default certificate or an Ingress `tls.secretName`.
+- HTTP 401: transport is repaired. A subsequent DSH turn should authenticate;
+  inspect LLM Services and LiteLLM only if it still fails.
+
+`SandboxTemplate` changes affect newly created Sandboxes, not a running Pod.
+Recycle only an unclaimed warm-pool Sandbox. For a bound local test workspace,
+copy the repaired template's `spec.podTemplate` to its Sandbox and suspend/resume
+that Sandbox so Kubernetes recreates the Pod while retaining the claim and PVC.
+Do not delete the claim or PVC merely to apply network/TLS configuration. A
+Sandbox restart also invalidates the Agent Manager's cached DSH cookie, so reload
+the page; if WebSocket reconnects return HTTP 409, restart Agent Manager and
+reload once more.
 
 ## GKE alpha qualification extension
 

@@ -119,7 +119,7 @@ spec:
               value: {{ (urlParse .Values.global.externalUrl).host | quote }}
             - {name: DSH_BROWSER_AUTH, value: "true"}
             - name: MAGDA_LLM_BASE_URL
-              value: "{{ .Values.global.externalUrl | trimSuffix "/" }}/api/v0/llm/v1"
+              value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (.Values.global.externalUrl | trimSuffix "/")) | quote }}
             {{- if .Values.runtime.trustedCaSecret.name }}
             - {name: NODE_EXTRA_CA_CERTS, value: /etc/magda-agent/ca/ca.crt}
             {{- end }}
