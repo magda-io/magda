@@ -5,7 +5,7 @@
 **Design owner:** #3811 / epic #3810  
 **Related:** [platform overview](./README.md), [authorization](./authentication.md), [web UI](./web-ui.md), [session lifecycle](./session-lifecycle.md), general Storage API owner-metadata bug [#3853](https://github.com/magda-io/magda/issues/3853)
 
-**Authoritative October 14 decisions:** [Skill authorization, sharing, identity and Workspace manifest](./skills-authorization-and-workspace-manifest.md). It supersedes older unsuffixed `object/agentSkill/<type>/{create,read,update,delete}` URI examples and `agent-skill.scope`/owner-derived IDs elsewhere in this design. **Skill discovery is based on the intended user; skill access is based on authorization; skill synchronization is optional to Workspace availability.**
+**Authoritative October 14 decisions:** [Skill authorization, sharing, identity and Workspace manifest](./skills-authorization-and-workspace-manifest.md). It supersedes older unsuffixed `object/agentSkill/{create,read,update,delete}` URI examples and `agent-skill.scope`/owner-derived IDs elsewhere in this design. **Skill discovery is based on the intended user; skill access is based on authorization; skill synchronization is optional to Workspace availability.**
 
 ## Product model and three categories
 
@@ -35,7 +35,7 @@ Server-selected bucket-relative keys retain the agreed convention:
 <existing-default-magda-bucket>/
   agent-services/skills/
     system-skills/<skill-record-id>.zip
-    user-skills/<owner-uuid>/<skill-record-id>.zip
+    user-skills/<userId>/<skill-record-id>.zip
 ```
 
 One published skill = **one complete ZIP object**, with a root `SKILL.md` and files allowed by the category. Replacing it is a whole-object upload; ZIP content remains easy to browse after extraction into the DSH skill directory. No application-level history or revision pointer; optional storage-provider bucket versioning is an operator choice. Checksum/ETag supports change detection and optional optimistic concurrency.
@@ -47,13 +47,11 @@ magda-record-id = <skill-registry-record-id>
 magda-owner-id  = <original-owner-user-uuid>  # assigned on creation, immutable on ordinary replacement
 ```
 
-The original storage object owner and Registry record link must be **preserved on ZIP update**, including when an authorized different publisher changes a system skill. `agent-skill.updatedBy` records the most recent publisher, not a transfer of `magda-owner-id`; Registry `access-control.ownerId` remains authoritative for skill ownership. Storage API **currently writes `magda-user-id` rather than the `magda-owner-id` read by its auth middleware** (#3853), and on replacement currently reconstructs upload metadata. Fix/qualify those creation-and-overwrite semantics as part of #3853 and #3854 before relying on them.
+The original storage object owner and Registry record link must be **preserved on ZIP update**, including when an authorized different publisher changes a system skill. `agent-skill.updatedBy` records the most recent publisher, not a transfer of `magda-owner-id`; Registry `access-control.ownerId` remains authoritative for skill ownership. The generic Storage API canonical owner metadata fix **#3853 is merged**; #3854 must verify the linked publication record ID and original object owner are preserved on replacement.
 
 **All public skill operations enter through Agent Services** (browser, DSH/`mgd`, and external API clients). Agent Services performs the complete operation by invoking **Registry API and Storage API on behalf of the current user**, forwarding the trusted, gateway-generated `X-Magda-Session` header to those internal APIs. The session header must come from trusted Gateway authentication, never a spoofable browser-provided identity or elevated service principal. Ordinary `mgd` API-key requests are translated by Gateway into this normal identity. Underlying generic Registry/Storage API endpoints retain their own authorization rules, but are not alternative, supported skill-management endpoints.
 
-**Authorization boundary:** **Every Agent Services skill endpoint** performs an explicit **scope-aware `object/agentSkill/{create|read|update|delete}` OPA check**, using `requirePermission` where a single skill/proposed skill is involved. This is an intentional type-aware service boundary **in addition to**, not instead of, the Registry API and Storage API authorization under the forwarded current-user session. The skill category is the canonical Registry attribute `agent-skill.scope` (`system` or `user`; the UI may call it 'type'), not an untrusted caller assertion. On **create**, parse the small requested scope from the route/query and check `object/agentSkill/create` against a proposed record/owner context **before accepting or parsing ZIP bytes**; the later Registry/Storage operations still authorize independently. On **read, download, update and delete**, fetch the actual `agent-skill` record through the authorized Registry API, then evaluate `requirePermission` against its **server-fetched scope, owner and record ID** before proceeding with the returned metadata, ZIP transfer or mutation. Deny when the record is not an authorized `agent-skill` record or is not in a readable/mutable state.
-
-**For list endpoints**, there is no single object on which `requirePermission` can unconditionally authorize `scope=all`: a permission may be owner-constrained and results may include both categories. Perform scope-aware prechecks for the requested categories (or per-record decisions), then retrieve **authorization-filtered, paginated Registry results** and apply actual record-level/scope authorization to each returned item. Do not interpret a global system-skill read grant as permission to list other users' private skills, bypass per-record policies, or require an unconditional check that rejects legitimately owner-scoped results.
+**Authorization boundary:** Every supported Agent Services skill endpoint performs an **early typed** `object/agentSkill/<type>/<operation>` OPA check in addition to downstream Registry/Storage authorization under the current caller's verified `X-Magda-Session`. For create, validate the proposed type/actor/target user before parsing ZIP bytes; for read/download/update/delete, load actual publication metadata and check its type, deterministic ID/userId and owner independently. List uses authorized per-record Registry pages rather than a blanket unconditional check, including owner, OrgUnit, pre-authorised and exemption cases. Installations, when implemented in #3861, use `object/agentSkill/install/<operation>` and separately reauthorize the original linked user publication. There is no `object/agentSkill/*/read` operation; Workspace startup uses the `workspace-manifest` API. Details: [skill authorization contract](./skills-authorization-and-workspace-manifest.md).
 
 **Direct generic API access (accepted MVP trade-off):** MAGDA Registry and Storage APIs remain independently callable by clients with the applicable **existing OPA permissions**; Agent Services is the **supported skill-management API**, not an exclusive gateway enforced by a new reserved-prefix restriction. Authorized direct updates could produce a valid permission decision but leave the Registry metadata out of sync with a ZIP or replace it with invalid skill content. This is an **accepted data-integrity/consistency limitation**, not automatically an access-control breach. Do **not** build a new reserved-prefix denylist, internal write capability, or Storage API special case solely to force all writes through Agent Services. However, existing Storage API rules also allow independent unconstrained/owner/storage grants, so do **not** assume that every direct Storage API caller necessarily holds `object/agentSkill/*` permission. Qualify direct-access authorization (ordinary user, other-user, system admin, broad storage grant), protect against **unauthorized access**, and make skill catalogue/Workspace sync **fail safely on mismatched, missing, invalid or untrusted ZIP content**. Optionally document repair/re-publish through Agent Services. A user who already has authorized generic API write permissions may bypass skill validation, with consistency consequences accepted for MVP.
 
@@ -78,14 +76,14 @@ A separate **`GET /api/v0/agent/skills/workspace-manifest`** (`getWorkspaceSkill
 Preserve existing `mgd skills install/uninstall` (coding-agent guidance). Add a distinct `mgd agent-skill` command family:
 
 ```shell
-mgd agent-skill list [--scope system|user|all]
-mgd agent-skill show <scope>/<id>
-mgd agent-skill pull <scope>/<id> [--output <dir>]
-mgd agent-skill init <name> [--scope user|system]
-mgd agent-skill validate <local-dir> [--scope user|system]
-mgd agent-skill publish <local-dir> [--scope user|system]
-mgd agent-skill delete <scope>/<id>
-mgd agent-skill sync [--scope system|user|all] [--force]
+mgd agent-skill list [--type system|user|all]
+mgd agent-skill show <type>/<id>
+mgd agent-skill pull <type>/<id> [--output <dir>]
+mgd agent-skill init <name> [--type user|system]
+mgd agent-skill validate <local-dir> [--type user|system]
+mgd agent-skill publish <local-dir> [--type user|system]
+mgd agent-skill delete <type>/<id>
+mgd agent-skill sync [--type system|user|all] [--force]
 ```
 
 The local directory is a **draft/working copy**; file edits do not publish to MAGDA automatically. On request, the agent creates/edits and validates locally, tells the user what it has drafted, asks them to inspect the file and explicitly approve publishing. Only then does `mgd` invoke the same skill API that the catalogue replacement upload uses. Existing user and admin role/owner rules apply. Safe manual sync should not overwrite unpublished local changes; stale remote edits should produce conflict guidance.
@@ -115,7 +113,7 @@ Under Settings navigation, create **Agent Workspace** group with second-level **
 The **Agent Skills** page is intentionally a discovery and education surface, not a new skill authoring interface. Include a prominent but concise explanation, an example of capturing a reusable workflow, and a normal link to **Open Workspace** when the current user has `agentWorkspace/access`. The introductory example should be concrete, like the CSV workflow above, **not** just “Save this workflow as a skill”. When Workspace access is unavailable, do not show an unusable action.
 
 Show an authorized, paginated catalogue with **All / My Skills / System Skills** filter, optional search and the fields:
-- Skill ID, name, description, type/scope, created at/by, updated at/by;
+- Skill ID, name, description, type, created at/by, updated at/by;
 - Pagination and refresh backed by filtered/paginated Registry queries;
 - **System skills:** metadata visible where authorized, **no ZIP download/upload/edit** in this UI initially;
 - **User skills:** view metadata, **Download ZIP**, **Replace ZIP** for an *existing record only*, with appropriate permission. Replacement uses the **same Agent Services validation and publish path** as `mgd`, requires the original immutable skill name, and updates description, `updatedAt` and `updatedBy` while keeping stable ID, name and creator fields.
@@ -133,7 +131,7 @@ Start with context and working files. DSH session history is persisted on the cu
 
 Keep **the same draft implementation PR #3850**, test and review each stage before starting the next. Recommended separation:
 
-1. **#3854 — Backend:** `agent-skill` aspect/schema, Agent Services skill-operation façade using authenticated Registry + Storage APIs, **early type/scope-aware `object/agentSkill/*` checks for all skill endpoints**, downstream OPA, existing Storage API ownership metadata fix **via #3853 before integration**, ZIP CRUD, consistency and tests. Do not add Storage API prefix restrictions solely to force use of Agent Services.
+1. **#3854 — Backend:** `agent-skill` aspect/schema, Agent Services skill-operation façade using authenticated Registry + Storage APIs, **early type-aware `object/agentSkill/*` checks for all skill endpoints**, downstream OPA, existing Storage API ownership metadata fix **via #3853 before integration**, ZIP CRUD, consistency and tests. Do not add Storage API prefix restrictions solely to force use of Agent Services.
 2. **#3855 — CLI/bootstrap:** `mgd agent-skill` commands, local draft/review/publish/sync, DSH skill discovery and user-scoped post-claim/bootstrap.
 3. **#3856 — Capture:** runtime-bundled workflow capture skill, agent-led user approval, optional local session-history support, and selective prompt suggestion.
 4. **[#3857](https://github.com/magda-io/magda/issues/3857) — Agent Skills UI:** Settings group/navigation, paginated discoverability/education, authorized user ZIP download and replace-only upload, tests. Implement after the backend API contract stabilizes.
@@ -150,7 +148,7 @@ No extra storage bucket or skill DB, independent metadata editor, mandatory cont
 - [ ] Once **#3853** fixes Storage API, its ordinary upload/update path already sets both `magda-record-id` and original `magda-owner-id` correctly; #3854 uses existing Storage API capabilities rather than implementing new storage-metadata behaviour. Verify both are preserved on replacement and cannot be spoofed into unauthorized access. **No skill-specific reserved-prefix restriction required.**
 - [ ] Created skill Registry record and ZIP share stable record ID; both linked stores have idempotent recoverable partial-failure paths; no partial skills in catalogue or sync.
 - [ ] User ZIP supports Markdown only; system ZIP may include regular scripts/models; traversal, symlink, duplicate, invalid frontmatter, decompression bomb and size/file limit tests.
-- [ ] All supported skill operations route through Agent Services, which performs **early type-aware `object/agentSkill/{operation}` OPA checks on each endpoint** (for create before ZIP body parsing; for existing skills using server-fetched Registry metadata; for list through scope-aware/record-level filtering). Registry/Storage APIs separately authorize requests using trusted `X-Magda-Session`. No raw storage credential reaches Agent Services, Sandbox or browser.
+- [ ] All supported skill operations route through Agent Services, which performs **early type-aware `object/agentSkill/<type>/<operation>` OPA checks on each endpoint** (for create before ZIP body parsing; for existing skills using server-fetched Registry metadata; for list through scope-aware/record-level filtering). Registry/Storage APIs separately authorize requests using trusted `X-Magda-Session`. No raw storage credential reaches Agent Services, Sandbox or browser.
 - [ ] Direct generic Registry/Storage calls by otherwise authorized users may create catalogue/ZIP mismatches; treat as a documented integrity limitation, not automatic access-control failure. Test ordinary/other-user/system-skill security boundaries and safe handling of invalid/missing/out-of-sync ZIPs; do not add a special Storage API prefix restriction.
 - [ ] `agentWorkspace/access` controls only one's own Sandbox HTTP CRUD/resume/runtime access and WebSocket upgrades; existing admin role continues to work, arbitrary target user denied; UI whoami filtering is not authoritative authorization.
 - [ ] Paginated Settings catalogue includes user/system filters, education, metadata, user ZIP download/replace (not create), permission-aware actions and informative sync guidance.
