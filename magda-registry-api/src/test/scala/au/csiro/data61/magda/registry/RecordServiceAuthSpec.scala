@@ -1586,6 +1586,20 @@ class RecordServiceAuthSpec extends ApiSpec {
               .get shouldEqual JsObject(
               "field2" -> JsString("value2")
             )
+            val originalRecordInProposedContext = firstCallInput.fields
+              .get("object")
+              .get
+              .asJsObject
+              .fields
+              .get("originalRecord")
+              .get
+              .asJsObject
+            originalRecordInProposedContext.fields
+              .get("name")
+              .get shouldEqual JsString("testName")
+            originalRecordInProposedContext.fields
+              .get("test")
+              .get shouldEqual JsObject("field1" -> JsString("value1"))
 
             // this is the record in "before update" context data
             // we try to make sure the user has access to the data before & after the updates

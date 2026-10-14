@@ -196,6 +196,7 @@ describe("Storage object ownership", () => {
             expect(authDecisionInputs[0].storage.object.ownerId).to.equal(
                 USER_A
             );
+            expect(authDecisionInputs[0].storage.object.exists).to.equal(true);
         });
 
         it("should keep the existing owner when another authorised user replaces the object", async () => {
@@ -211,6 +212,8 @@ describe("Storage object ownership", () => {
             expect(authDecisionInputs[1].storage.object.ownerId).to.equal(
                 USER_A
             );
+            expect(authDecisionInputs[0].storage.object.exists).to.equal(true);
+            expect(authDecisionInputs[1].storage.object.exists).to.equal(true);
             expect((await getStoredMetaData(key))["magda-owner-id"]).to.equal(
                 USER_A
             );

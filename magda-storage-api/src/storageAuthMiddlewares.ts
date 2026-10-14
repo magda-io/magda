@@ -212,7 +212,8 @@ export function requireStorageObjectPermission(
                     object: {
                         ...objectMetaData,
                         bucketName,
-                        name: objectName
+                        name: objectName,
+                        exists: stateData !== null
                     }
                 }
             };

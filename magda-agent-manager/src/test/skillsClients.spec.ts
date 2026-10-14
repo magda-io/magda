@@ -20,7 +20,8 @@ function record(): AgentSkillRecord {
         aspects: {
             "agent-skill": {
                 name: "useful-skill",
-                scope: "user",
+                type: "user",
+                userId,
                 createdAt: "2026-10-13T12:00:00.000Z",
                 createdBy: userId,
                 description: "Useful",
@@ -182,7 +183,7 @@ describe("Agent Skill downstream clients", () => {
                 limit: 2,
                 pageToken: "123",
                 q: "needle",
-                scope: "user",
+                type: "user",
                 state: "READY"
             },
             session
@@ -194,7 +195,7 @@ describe("Agent Skill downstream clients", () => {
             "access-control"
         ]);
         expect(query.getAll("aspectQuery")).to.deep.equal([
-            "agent-skill.scope:user",
+            "agent-skill.type:user",
             "agent-skill.state:READY"
         ]);
         expect(query.get("limit")).to.equal("2");
@@ -223,7 +224,7 @@ describe("Agent Skill downstream clients", () => {
         );
         expect(capturedToken).to.equal(session);
         expect(capturedConfig).to.deep.include({
-            operationUri: "object/agentSkill/update",
+            operationUri: "object/agentSkill/user/update",
             unknowns: []
         });
         const context = capturedConfig as {

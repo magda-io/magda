@@ -69,13 +69,13 @@ function skillMarkdownNamed(name: string): string {
 
 async function expectInvalid(
     archive: Buffer,
-    scope: "system" | "user",
+    type: "system" | "user",
     message: string,
     customLimits = limits
 ) {
     let error: unknown;
     try {
-        await validateAgentSkillArchive(archive, scope, customLimits);
+        await validateAgentSkillArchive(archive, type, customLimits);
     } catch (caught) {
         error = caught;
     }

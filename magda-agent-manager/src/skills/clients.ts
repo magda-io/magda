@@ -121,8 +121,8 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
         query.set("reversePageTokenOrder", "true");
         if (options.pageToken) query.set("pageToken", options.pageToken);
         if (options.q) query.set("q", options.q);
-        if (options.scope) {
-            query.append("aspectQuery", `agent-skill.scope:${options.scope}`);
+        if (options.type) {
+            query.append("aspectQuery", `agent-skill.type:${options.type}`);
         }
         if (options.state) {
             query.append("aspectQuery", `agent-skill.state:${options.state}`);
@@ -435,7 +435,7 @@ export class OpaAgentSkillAuthorization implements AgentSkillAuthorization {
         try {
             const decision = await this.client.getAuthDecision(
                 {
-                    operationUri: `object/agentSkill/${operation}`,
+                    operationUri: `object/agentSkill/${record.aspects["agent-skill"].type}/${operation}`,
                     unknowns: [],
                     input: {
                         object: {

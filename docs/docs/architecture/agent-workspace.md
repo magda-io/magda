@@ -127,18 +127,20 @@ Agent Services exposes the authenticated public surface
 `/api/v0/agent/skills` for paginated READY metadata, metadata reads, validated
 ZIP download, creation, replacement, and deletion. Workspace lifecycle routes
 remain under their existing admin gate; skill routes accept ordinary authenticated
-users and then enforce the separate `object/agentSkill/create|read|update|delete`
-OPA operations.
+users and then enforce the typed
+`object/agentSkill/{system,user}/{create,read,update,delete}` OPA operations.
 
 Agent Skill metadata is stored as Registry records with `agent-skill` and
 `access-control` aspects. The immutable record ID is derived server-side from
-the authenticated owner and immutable root `SKILL.md` name: user skills use
-`agent-skill-<owner-uuid>-<name>` and system skills use
-`agent-skill-system-<suffix>` for a full `system-<suffix>` name. Names are at
+the immutable intended-user `agent-skill.userId` and root `SKILL.md` name: user
+skills use `agent-skill-<user-uuid>-<name>` and system skills use
+`agent-skill-system-<suffix>` for a full `system-<suffix>` name. For ordinary MVP
+user publishing, `userId`, `access-control.ownerId`, and the authenticated actor
+must match; the two fields remain distinct for future explicitly delegated use. Names are at
 most 46 lowercase letters/digits with interior hyphens; user names cannot use
 the `system-` prefix, and runtime-bundled names such as `capture-workflow` and
 `magda-mgd` are reserved. Registry's primary key atomically enforces each
-owner's namespace, so the API never accepts a caller-selected ID or uses
+intended user's namespace, so the API never accepts a caller-selected ID or uses
 full-text search for uniqueness. Different users may publish the same name.
 
 The record name, `agent-skill.name`, and description are derived from `SKILL.md`
@@ -151,23 +153,43 @@ READY records are catalogued. Catalogue traversal uses Registry sequence-keyset
 pagination with `reversePageTokenOrder=true`, never the unsupported `orderBy`
 plus `pageToken` combination.
 
-Generic Registry authorization remains unchanged. The typed OPA policy governs
-the current or proposed record state presented by normal Registry CRUD, while
-Agent Services itself validates deterministic identity, equal names, immutable
-publication metadata, and archive agreement before every managed operation.
-Separately authorized direct or bulk Registry callers can bypass those
-cross-version invariants, strip the marker aspect, source-trim a record carrying
-an out-of-spec `source` aspect, or occupy a deterministic ID. These are accepted
-direct-API integrity/availability limitations: Agent Services fails closed on an
-inconsistent or wrong-type record with a non-leaking error and never overwrites
-it or attaches a ZIP.
+The typed OPA policy delegates `agent-skill` records exclusively by their actual
+or proposed `type`; generic record grants cannot read or mutate them. Read rules
+use Registry-compatible literal/existence conditions for partial authorization,
+then Agent Services validates the full deterministic identity of every returned
+record before exposing it. Typed write rules validate identity directly. Registry includes the trusted
+original record in proposed-state authorization, preventing marker removal and
+requiring both old- and new-type permission for a type switch without reserving
+otherwise-generic record IDs. Registry rejects bulk mutation of typed skill
+records or either skill marker; callers must use single-record CRUD so proposed
+state is authorized. Separately
+authorized direct Registry callers can still create integrity mismatches within
+a state or occupy a deterministic ID where current/proposed comparison is not
+available. Agent Services fails closed on an inconsistent or wrong-type record
+and never overwrites it or attaches a ZIP.
+
+Authorization migrations register separate system, user, and future-installation
+CRUD resources. The unassigned **Agent Workspace Users** stock role contains
+owner user/installation CRUD plus OrgUnit- and pre-authorised-constrained typed
+reads; both read permissions allow explicitly exempt records. The unassigned
+**Agent Skills Admins** role contains unconstrained system CRUD, allowing trusted
+staff to publish without global administrator status. Neither role is granted to
+Authenticated Users. #3858 owns `agentWorkspace/access` and attaches it to the
+existing Workspace role in a later migration, so this stage never references a
+nonexistent operation. Installation operations and their owner permission are
+registered for #3861, but no installation record, API, policy, or sharing
+functionality is activated here. Agent Services marks managed system
+publications `constraintExemption=true`, so holders of the stock system-read
+permission can discover them without inheriting the generic missing-OrgUnit
+fallback; user publications remain owner-private unless explicitly constrained
+or shared.
 
 Each skill has one record-linked ZIP in the existing
 `global.defaultDatasetBucket`:
 
 ```text
 agent-services/skills/system-skills/<record-id>.zip
-agent-services/skills/user-skills/<owner-uuid>/<record-id>.zip
+agent-services/skills/user-skills/<intended-user-uuid>/<record-id>.zip
 ```
 
 Agent Services forwards the verified caller's `X-Magda-Session` to the normal
@@ -177,11 +199,15 @@ Storage API assigns the original object owner and `magda-record-id`; replacement
 uses the same key and record ID so Storage preserves ownership while Registry
 records the current publisher in `updatedBy`.
 
-Create writes PENDING before upload and marks READY only after Storage succeeds.
+Create requires both typed create and update before accepting ZIP bytes, writes
+PENDING before upload, and marks READY only after Storage succeeds. Delete checks
+update plus delete before marking DELETING. Storage's linked-record policy uses a
+trusted object-existence flag so create cannot replace an existing archive and
+only delete can remove one.
 Replacement validates first, hides the record as PENDING during publication, and
 restores READY after the same object is replaced. Delete marks DELETING, removes
 the ZIP, then removes the Registry record. A caller can safely retry partial
-operations with the same scope, owner, immutable name, and archive. Downloads
+operations with the same type, intended user, owner, immutable name, and archive. Downloads
 are bounded and are released only after ZIP revalidation and checksum/name/description agreement
 with Registry metadata.
 
@@ -191,7 +217,7 @@ entry count, path length or nesting, missing/invalid `SKILL.md`, and invalid ski
 names. User skills are Markdown-only. System skills may contain arbitrary regular
 supporting files, including scripts, images, and model assets, subject to the same
 archive entry, path, type, CRC, count, and size limits. Audit logs contain actor,
-operation, scope, record ID, result and error code only—never session credentials
+operation, type, record ID, result and error code only—never session credentials
 or archive content.
 
 ## Managed DSH profile decisions

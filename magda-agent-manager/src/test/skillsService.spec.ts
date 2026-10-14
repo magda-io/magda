@@ -77,7 +77,7 @@ class MemoryRegistry implements AgentSkillRegistry {
         const records = [...this.records.values()].filter((record) => {
             const aspect = record.aspects["agent-skill"];
             return (
-                (!options.scope || aspect.scope === options.scope) &&
+                (!options.type || aspect.type === options.type) &&
                 (!options.state || aspect.state === options.state) &&
                 (!options.q ||
                     record.aspects["agent-skill"].name.includes(options.q))
@@ -229,13 +229,9 @@ describe("Agent Skill publication state machine", () => {
         expect(userId).to.equal(`agent-skill-${owner.id}-${maxName}`);
         expect(userId).to.have.length(95);
         expect(
-            agentSkillRecordId(
-                "system",
-                "00000000-0000-0000-0000-000000000000",
-                "system-csv-analyser"
-            )
+            agentSkillRecordId("system", undefined, "system-csv-analyser")
         ).to.equal("agent-skill-system-csv-analyser");
-        for (const [scope, ownerId, name] of [
+        for (const [type, ownerId, name] of [
             ["user", owner.id, "a".repeat(47)],
             ["user", owner.id, "system-private"],
             ["system", owner.id, "missing-prefix"],
@@ -243,7 +239,7 @@ describe("Agent Skill publication state machine", () => {
             ["user", owner.id, "magda-mgd"],
             ["user", "ABCDEF00-0000-4000-8000-000000000123", "valid-name"]
         ] as const) {
-            expect(() => agentSkillRecordId(scope, ownerId, name)).to.throw(
+            expect(() => agentSkillRecordId(type, ownerId, name)).to.throw(
                 AgentSkillError
             );
         }
@@ -252,7 +248,9 @@ describe("Agent Skill publication state machine", () => {
     it("authorizes before publication and transitions PENDING to READY", async () => {
         const { service, registry, storage, authorization } = fixture();
         await service.prepareCreate("user", owner);
-        expect(authorization.calls[0].operation).to.equal("create");
+        expect(
+            authorization.calls.slice(0, 2).map((call) => call.operation)
+        ).to.deep.equal(["create", "update"]);
         expect(
             authorization.calls[0].record.aspects["access-control"].ownerId
         ).to.equal(owner.id);
@@ -264,6 +262,7 @@ describe("Agent Skill publication state machine", () => {
         );
         expect(result.id).to.equal(recordId);
         expect(result.name).to.equal("useful-skill");
+        expect(result.userId).to.equal(owner.id);
         expect(
             registry.writes.map((record) => record.aspects["agent-skill"].state)
         ).to.deep.equal(["PENDING", "READY"]);
@@ -283,6 +282,25 @@ describe("Agent Skill publication state machine", () => {
             }
         ]);
         expect(registry.records.get(recordId)?.name).to.equal("useful-skill");
+    });
+
+    it("requires create and update before accepting publication bytes", async () => {
+        const { service, registry, storage, authorization } = fixture();
+        authorization.decide = (operation) => operation !== "update";
+        let error: unknown;
+        try {
+            await service.prepareCreate("user", owner);
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_FORBIDDEN"
+        );
+        expect(
+            authorization.calls.map((call) => call.operation)
+        ).to.deep.equal(["create", "update"]);
+        expect(registry.records.size).to.equal(0);
+        expect(storage.uploads).to.have.length(0);
     });
 
     it("uses separate per-owner namespaces for the same user skill name", async () => {
@@ -381,6 +399,14 @@ describe("Agent Skill publication state machine", () => {
         await first.prepareCreate("system", admin);
         const created = await first.createAuthorized("system", bytes, admin);
         expect(created.id).to.equal("agent-skill-system-reporting");
+        expect(created.userId).to.equal(undefined);
+        expect(
+            registry.records.get(created.id)?.aspects["agent-skill"].userId
+        ).to.equal(undefined);
+        expect(
+            registry.records.get(created.id)?.aspects["access-control"]
+                .constraintExemption
+        ).to.equal(true);
 
         await second.prepareCreate("system", otherAdmin);
         let error: unknown;
@@ -488,7 +514,8 @@ describe("Agent Skill publication state machine", () => {
         await service.prepareCreate("user", owner);
         const result = await service.createAuthorized("user", bytes, owner);
         expect(result.id).to.equal(recordId);
-        expect(storage.uploads).to.have.length(1);
+        expect(storage.uploads).to.have.length(2);
+        expect(storage.uploads[1]).to.deep.equal(storage.uploads[0]);
         expect(registry.records.get(recordId)).to.deep.equal(ready);
     });
 
@@ -611,29 +638,72 @@ describe("Agent Skill publication state machine", () => {
         expect(registry.records.get(recordId)).to.deep.equal(ready);
     });
 
-    it("preserves immutable ownership while recording the replacing publisher", async () => {
+    it("preserves system ownership while recording a different trusted publisher", async () => {
         const { service, registry, storage } = fixture();
+        const bytes = await skillZip("system-reporting", "System reporting");
+        await service.prepareCreate("system", admin);
+        const created = await service.createAuthorized("system", bytes, admin);
+        const current = await service.prepareExisting(
+            "system",
+            created.id,
+            "update",
+            otherAdmin
+        );
+        const result = await service.replaceAuthorized(
+            current,
+            await skillZip("system-reporting", "Updated"),
+            otherAdmin
+        );
+        expect(result.ownerId).to.equal(admin.id);
+        expect(result.createdBy).to.equal(admin.id);
+        expect(result.updatedBy).to.equal(otherAdmin.id);
+        expect(storage.uploads[1].key).to.equal(storage.uploads[0].key);
+        expect(storage.uploads[1].recordId).to.equal(created.id);
+        expect(
+            registry.records.get(created.id)?.aspects["access-control"].ownerId
+        ).to.equal(admin.id);
+    });
+
+    it("preserves OrgUnit, pre-authorised and exemption read constraints", async () => {
+        const { service, registry } = fixture();
         await service.prepareCreate("user", owner);
         await service.createAuthorized("user", await skillZip(), owner);
+        const ready = registry.records.get(recordId)!;
+        registry.records.set(recordId, {
+            ...ready,
+            aspects: {
+                ...ready.aspects,
+                "access-control": {
+                    ownerId: owner.id,
+                    orgUnitId: "00000000-0000-4000-8000-000000000700",
+                    preAuthorisedPermissionIds: [
+                        "00000000-0000-4000-8000-000000000701"
+                    ],
+                    constraintExemption: true
+                }
+            }
+        });
         const current = await service.prepareExisting(
             "user",
             recordId,
             "update",
-            admin
+            owner
         );
-        const result = await service.replaceAuthorized(
+        await service.replaceAuthorized(
             current,
             await skillZip("useful-skill", "Updated"),
-            admin
+            owner
         );
-        expect(result.ownerId).to.equal(owner.id);
-        expect(result.createdBy).to.equal(owner.id);
-        expect(result.updatedBy).to.equal(admin.id);
-        expect(storage.uploads[1].key).to.equal(storage.uploads[0].key);
-        expect(storage.uploads[1].recordId).to.equal(recordId);
         expect(
-            registry.records.get(recordId)?.aspects["access-control"].ownerId
-        ).to.equal(owner.id);
+            registry.records.get(recordId)?.aspects["access-control"]
+        ).to.deep.equal({
+            ownerId: owner.id,
+            orgUnitId: "00000000-0000-4000-8000-000000000700",
+            preAuthorisedPermissionIds: [
+                "00000000-0000-4000-8000-000000000701"
+            ],
+            constraintExemption: true
+        });
     });
 
     it("fails replacement safely when the original Storage object is missing", async () => {
@@ -659,6 +729,30 @@ describe("Agent Skill publication state machine", () => {
         expect(
             registry.records.get(recordId)?.aspects["agent-skill"].state
         ).to.equal("READY");
+    });
+
+    it("requires update and delete before starting deletion", async () => {
+        const { service, registry, storage, authorization } = fixture();
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
+        authorization.calls = [];
+        authorization.decide = (operation) => operation !== "update";
+        let error: unknown;
+        try {
+            await service.prepareExisting("user", recordId, "delete", owner);
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_FORBIDDEN"
+        );
+        expect(
+            authorization.calls.map((call) => call.operation)
+        ).to.deep.equal(["update"]);
+        expect(
+            registry.records.get(recordId)?.aspects["agent-skill"].state
+        ).to.equal("READY");
+        expect(storage.archives.size).to.equal(1);
     });
 
     it("leaves failed deletes DELETING and completes on retry", async () => {
@@ -701,7 +795,8 @@ describe("Agent Skill publication state machine", () => {
                 aspects: {
                     "agent-skill": {
                         name,
-                        scope: "user",
+                        type: "user",
+                        userId: recordOwner,
                         createdAt: "2026-10-13T12:00:00.000Z",
                         createdBy: recordOwner,
                         description: "test",
@@ -719,14 +814,14 @@ describe("Agent Skill publication state machine", () => {
             record.name === "authorization-check" ||
             record.aspects["access-control"].ownerId === owner.id;
 
-        const result = await service.list({ scope: "user", limit: 20 }, owner);
+        const result = await service.list({ type: "user", limit: 20 }, owner);
         expect(result.records.map((record) => record.id)).to.deep.equal([
             recordId
         ]);
         expect(storage.downloads).to.equal(0);
         expect(
             authorization.calls.filter((call) => call.operation === "read")
-        ).to.have.length(3);
+        ).to.have.length(2);
     });
 
     it("does not expose PENDING or DELETING records through metadata reads", async () => {
@@ -776,6 +871,16 @@ describe("Agent Skill publication state machine", () => {
                         name: "different-skill"
                     }
                 }
+            }),
+            (current: AgentSkillRecord): AgentSkillRecord => ({
+                ...current,
+                aspects: {
+                    ...current.aspects,
+                    "agent-skill": {
+                        ...current.aspects["agent-skill"],
+                        userId: otherOwner.id
+                    }
+                }
             })
         ]) {
             const { service, registry } = fixture();
@@ -786,7 +891,7 @@ describe("Agent Skill publication state machine", () => {
                 mutate(registry.records.get(recordId)!)
             );
             const result = await service.list(
-                { scope: "user", limit: 20 },
+                { type: "user", limit: 20 },
                 owner
             );
             expect(result.records).to.deep.equal([]);

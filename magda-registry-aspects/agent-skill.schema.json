@@ -6,7 +6,7 @@
     "additionalProperties": false,
     "required": [
         "name",
-        "scope",
+        "type",
         "createdAt",
         "createdBy",
         "description",
@@ -24,10 +24,15 @@
             "maxLength": 46,
             "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
         },
-        "scope": {
-            "description": "Immutable publication scope.",
+        "type": {
+            "description": "Immutable publication type.",
             "type": "string",
             "enum": ["system", "user"]
+        },
+        "userId": {
+            "description": "Immutable intended Workspace user for a user publication. Omitted for system publications.",
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
         },
         "createdAt": {
             "description": "Immutable UTC creation time.",
@@ -74,5 +79,15 @@
             "type": "string",
             "enum": ["PENDING", "READY", "DELETING"]
         }
-    }
+    },
+    "allOf": [
+        {
+            "if": {
+                "properties": { "type": { "const": "user" } },
+                "required": ["type"]
+            },
+            "then": { "required": ["userId"] },
+            "else": { "not": { "required": ["userId"] } }
+        }
+    ]
 }

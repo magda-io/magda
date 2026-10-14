@@ -1,9 +1,11 @@
-export type AgentSkillScope = "system" | "user";
+export type AgentSkillType = "system" | "user";
 export type AgentSkillState = "PENDING" | "READY" | "DELETING";
 
 export interface AgentSkillAspect {
     name: string;
-    scope: AgentSkillScope;
+    type: AgentSkillType;
+    /** Intended Workspace user for user publications; absent for system publications. */
+    userId?: string;
     createdAt: string;
     createdBy: string;
     description: string;
@@ -16,7 +18,9 @@ export interface AgentSkillAspect {
 
 export interface AgentSkillAccessControl {
     ownerId: string;
+    orgUnitId?: string;
     preAuthorisedPermissionIds?: string[];
+    constraintExemption?: boolean;
 }
 
 export interface AgentSkillRecord {
@@ -34,7 +38,8 @@ export interface AgentSkillMetadata {
     id: string;
     name: string;
     description: string;
-    scope: AgentSkillScope;
+    type: AgentSkillType;
+    userId?: string;
     ownerId: string;
     createdAt: string;
     createdBy: string;
@@ -51,7 +56,7 @@ export interface RegistryRecordsPage {
 }
 
 export interface RegistryListOptions {
-    scope?: AgentSkillScope;
+    type?: AgentSkillType;
     state?: AgentSkillState;
     pageToken?: string;
     limit: number;

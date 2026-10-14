@@ -5,7 +5,7 @@ import CRC32 from "crc-32";
 import yauzl, { Entry, ZipFile } from "yauzl";
 import {
     AgentSkillArchiveLimits,
-    AgentSkillScope,
+    AgentSkillType,
     ValidatedAgentSkillArchive
 } from "./types.js";
 
@@ -93,17 +93,17 @@ export function validateAgentSkillMetadata(
     return { name, description };
 }
 
-export function validateAgentSkillNameForScope(
+export function validateAgentSkillNameForType(
     name: string,
-    scope: AgentSkillScope
+    type: AgentSkillType
 ): void {
     if (RESERVED_RUNTIME_SKILL_NAMES.has(name)) {
         invalid(`'${name}' is reserved for a runtime-bundled Agent Skill`);
     }
-    if (scope === "system" && !name.startsWith("system-")) {
+    if (type === "system" && !name.startsWith("system-")) {
         invalid("System Agent Skill names must start with system-");
     }
-    if (scope === "user" && name.startsWith("system-")) {
+    if (type === "user" && name.startsWith("system-")) {
         invalid("User Agent Skill names must not start with system-");
     }
 }
@@ -176,7 +176,7 @@ function openZip(bytes: Buffer): Promise<ZipFile> {
 
 export async function validateAgentSkillArchive(
     bytes: Buffer,
-    scope: AgentSkillScope,
+    type: AgentSkillType,
     limits: AgentSkillArchiveLimits
 ): Promise<ValidatedAgentSkillArchive> {
     if (!Buffer.isBuffer(bytes) || !bytes.length) {
@@ -250,7 +250,7 @@ export async function validateAgentSkillArchive(
                     zip.readEntry();
                     return;
                 }
-                if (scope === "user" && !USER_FILE_PATTERN.test(normalized)) {
+                if (type === "user" && !USER_FILE_PATTERN.test(normalized)) {
                     invalid(
                         "User Agent Skills may contain Markdown files only"
                     );
@@ -325,7 +325,7 @@ export async function validateAgentSkillArchive(
                     invalid("ZIP archive must contain SKILL.md at its root");
                 }
                 const metadata = parseSkillMarkdown(skillMarkdown);
-                validateAgentSkillNameForScope(metadata.name, scope);
+                validateAgentSkillNameForType(metadata.name, type);
                 settled = true;
                 resolve({
                     ...metadata,

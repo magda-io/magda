@@ -2,11 +2,11 @@ import express, { NextFunction, Request, Response } from "express";
 import { createAuthenticatedUserAuth } from "../auth.js";
 import { AuthenticatedUser } from "../types.js";
 import { AgentSkillError, AgentSkillService } from "./service.js";
-import { AgentSkillRecord, AgentSkillScope } from "./types.js";
+import { AgentSkillRecord, AgentSkillType } from "./types.js";
 
-function pathScope(value: string): AgentSkillScope {
+function pathType(value: string): AgentSkillType {
     if (value !== "system" && value !== "user") {
-        throw new Error("INVALID_SCOPE");
+        throw new Error("INVALID_TYPE");
     }
     return value;
 }
@@ -117,12 +117,22 @@ export default function createAgentSkillRouter(
     router.get(
         "/",
         asyncRoute(async (req, res) => {
-            const rawScope = queryString(req.query.scope, "scope") || "all";
-            if (!(["all", "system", "user"] as string[]).includes(rawScope)) {
+            if (req.query.scope !== undefined) {
                 res.status(400).json({
                     error: {
-                        code: "INVALID_SCOPE",
-                        message: "scope must be all, system, or user"
+                        code: "INVALID_TYPE",
+                        message:
+                            "scope was replaced by type; use type=all, system, or user"
+                    }
+                });
+                return;
+            }
+            const rawType = queryString(req.query.type, "type") || "all";
+            if (!(["all", "system", "user"] as string[]).includes(rawType)) {
+                res.status(400).json({
+                    error: {
+                        code: "INVALID_TYPE",
+                        message: "type must be all, system, or user"
                     }
                 });
                 return;
@@ -151,7 +161,7 @@ export default function createAgentSkillRouter(
             }
             const result = await options.service.list(
                 {
-                    scope: rawScope as "all" | AgentSkillScope,
+                    type: rawType as "all" | AgentSkillType,
                     limit,
                     pageToken,
                     q
@@ -169,33 +179,37 @@ export default function createAgentSkillRouter(
     );
 
     router.post(
-        "/:scope",
+        "/:type",
         asyncMiddleware(async (req, res) => {
-            let scope: AgentSkillScope;
+            let type: AgentSkillType;
             try {
-                scope = pathScope(req.params.scope);
+                type = pathType(req.params.type);
             } catch {
                 res.status(400).json({
                     error: {
-                        code: "INVALID_SCOPE",
-                        message: "scope must be system or user"
+                        code: "INVALID_TYPE",
+                        message: "type must be system or user"
                     }
                 });
                 return;
             }
-            if (req.query.id !== undefined) {
+            if (
+                req.query.id !== undefined ||
+                req.query.userId !== undefined ||
+                req.query.ownerId !== undefined
+            ) {
                 res.status(400).json({
                     error: {
-                        code: "CALLER_SELECTED_SKILL_ID",
+                        code: "CALLER_SELECTED_SKILL_IDENTITY",
                         message:
-                            "Agent Skill ids are derived from the authenticated owner and SKILL.md name"
+                            "Agent Skill ids, intended users, and owners are derived from publication type, the authenticated user, and SKILL.md name"
                     }
                 });
                 return;
             }
-            res.locals.agentSkillScope = scope;
+            res.locals.agentSkillType = type;
             await options.service.prepareCreate(
-                scope,
+                type,
                 req.agentUser as AuthenticatedUser
             );
         }),
@@ -221,12 +235,12 @@ export default function createAgentSkillRouter(
         uploadBodyReceived,
         asyncRoute(async (req, res) => {
             const result = await options.service.createAuthorized(
-                res.locals.agentSkillScope as AgentSkillScope,
+                res.locals.agentSkillType as AgentSkillType,
                 req.body as Buffer,
                 req.agentUser as AuthenticatedUser
             );
             res.location(
-                `${req.baseUrl}/${result.scope}/${encodeURIComponent(
+                `/api/v0/agent/skills/${result.type}/${encodeURIComponent(
                     result.id
                 )}`
             );
@@ -235,11 +249,11 @@ export default function createAgentSkillRouter(
     );
 
     router.get(
-        "/:scope/:id/archive",
+        "/:type/:id/archive",
         asyncRoute(async (req, res) => {
-            let scope: AgentSkillScope;
+            let type: AgentSkillType;
             try {
-                scope = pathScope(req.params.scope);
+                type = pathType(req.params.type);
             } catch {
                 res.status(404).json({
                     error: {
@@ -250,7 +264,7 @@ export default function createAgentSkillRouter(
                 return;
             }
             const record = await options.service.prepareExisting(
-                scope,
+                type,
                 req.params.id,
                 "read",
                 req.agentUser as AuthenticatedUser
@@ -270,11 +284,11 @@ export default function createAgentSkillRouter(
     );
 
     router.put(
-        "/:scope/:id/archive",
+        "/:type/:id/archive",
         asyncMiddleware(async (req, res) => {
-            let scope: AgentSkillScope;
+            let type: AgentSkillType;
             try {
-                scope = pathScope(req.params.scope);
+                type = pathType(req.params.type);
             } catch {
                 res.status(404).json({
                     error: {
@@ -285,7 +299,7 @@ export default function createAgentSkillRouter(
                 return;
             }
             res.locals.agentSkillRecord = await options.service.prepareExisting(
-                scope,
+                type,
                 req.params.id,
                 "update",
                 req.agentUser as AuthenticatedUser
@@ -323,11 +337,11 @@ export default function createAgentSkillRouter(
     );
 
     router.get(
-        "/:scope/:id",
+        "/:type/:id",
         asyncRoute(async (req, res) => {
-            let scope: AgentSkillScope;
+            let type: AgentSkillType;
             try {
-                scope = pathScope(req.params.scope);
+                type = pathType(req.params.type);
             } catch {
                 res.status(404).json({
                     error: {
@@ -338,7 +352,7 @@ export default function createAgentSkillRouter(
                 return;
             }
             const record = await options.service.prepareExisting(
-                scope,
+                type,
                 req.params.id,
                 "read",
                 req.agentUser as AuthenticatedUser
@@ -348,11 +362,11 @@ export default function createAgentSkillRouter(
     );
 
     router.delete(
-        "/:scope/:id",
+        "/:type/:id",
         asyncRoute(async (req, res) => {
-            let scope: AgentSkillScope;
+            let type: AgentSkillType;
             try {
-                scope = pathScope(req.params.scope);
+                type = pathType(req.params.type);
             } catch {
                 res.status(404).json({
                     error: {
@@ -363,7 +377,7 @@ export default function createAgentSkillRouter(
                 return;
             }
             const record = await options.service.prepareExisting(
-                scope,
+                type,
                 req.params.id,
                 "delete",
                 req.agentUser as AuthenticatedUser

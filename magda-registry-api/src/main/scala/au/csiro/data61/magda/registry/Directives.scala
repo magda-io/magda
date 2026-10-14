@@ -265,7 +265,11 @@ object Directives extends Protocols with SprayJsonSupport {
               input = Some(
                 JsObject(
                   "object" -> JsObject(
-                    "record" -> recordContextDataAfterUpdate
+                    // Policies that exclusively dispatch typed records need the
+                    // trusted pre-mutation state to prevent marker removal and
+                    // require authority for both sides of a type transition.
+                    "record" -> recordContextDataAfterUpdate,
+                    "originalRecord" -> currentRecordData
                   )
                 )
               )
@@ -394,7 +398,11 @@ object Directives extends Protocols with SprayJsonSupport {
               input = Some(
                 JsObject(
                   "object" -> JsObject(
-                    "record" -> recordContextDataAfterUpdate
+                    // Policies that exclusively dispatch typed records need the
+                    // trusted pre-mutation state to prevent marker removal and
+                    // require authority for both sides of a type transition.
+                    "record" -> recordContextDataAfterUpdate,
+                    "originalRecord" -> currentRecordData
                   )
                 )
               )
@@ -476,7 +484,11 @@ object Directives extends Protocols with SprayJsonSupport {
               input = Some(
                 JsObject(
                   "object" -> JsObject(
-                    "record" -> recordContextDataAfterUpdate
+                    // Policies that exclusively dispatch typed records need the
+                    // trusted pre-mutation state to prevent marker removal and
+                    // require authority for both sides of a type transition.
+                    "record" -> recordContextDataAfterUpdate,
+                    "originalRecord" -> currentRecordData
                   )
                 )
               )

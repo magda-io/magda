@@ -2,7 +2,7 @@ import {
     ArchiveValidationError,
     validateAgentSkillArchive,
     validateAgentSkillMetadata,
-    validateAgentSkillNameForScope
+    validateAgentSkillNameForType
 } from "./archive.js";
 import { DownstreamServiceError } from "./clients.js";
 import {
@@ -11,7 +11,7 @@ import {
     AgentSkillMetadata,
     AgentSkillRecord,
     AgentSkillRegistry,
-    AgentSkillScope,
+    AgentSkillType,
     AgentSkillState,
     AgentSkillStorage,
     ValidatedAgentSkillArchive
@@ -24,13 +24,13 @@ const SYSTEM_RECORD_ID_PATTERN = /^agent-skill-system-[a-z0-9]+(?:-[a-z0-9]+)*$/
 const CHECKSUM_PATTERN = /^[0-9a-f]{64}$/;
 
 export function agentSkillRecordId(
-    scope: AgentSkillScope,
-    ownerId: string,
+    type: AgentSkillType,
+    userId: string | undefined,
     name: string
 ): string {
     try {
         validateAgentSkillMetadata(name, "identity");
-        validateAgentSkillNameForScope(name, scope);
+        validateAgentSkillNameForType(name, type);
     } catch {
         throw new AgentSkillError(
             "Agent Skill identity is invalid",
@@ -38,30 +38,36 @@ export function agentSkillRecordId(
             "INVALID_SKILL_IDENTITY"
         );
     }
-    if (!UUID_PATTERN.test(ownerId)) {
+    if (type === "system") {
+        if (userId !== undefined) {
+            throw new AgentSkillError(
+                "System Agent Skills must not have a user identity",
+                400,
+                "INVALID_SKILL_IDENTITY"
+            );
+        }
+        return `agent-skill-${name}`;
+    }
+    if (!userId || !UUID_PATTERN.test(userId)) {
         throw new AgentSkillError(
-            "Agent Skill owner identity is invalid",
+            "Agent Skill intended user identity is invalid",
             400,
             "INVALID_SKILL_IDENTITY"
         );
     }
-    return scope === "system"
-        ? `agent-skill-${name}`
-        : `agent-skill-${ownerId}-${name}`;
+    return `agent-skill-${userId}-${name}`;
 }
 
-function hasRecordIdShape(scope: AgentSkillScope, id: string): boolean {
+function hasRecordIdShape(type: AgentSkillType, id: string): boolean {
     const match =
-        scope === "system"
+        type === "system"
             ? SYSTEM_RECORD_ID_PATTERN.exec(id)
             : USER_RECORD_ID_PATTERN.exec(id);
     if (!match) return false;
-    const ownerId =
-        scope === "system" ? "00000000-0000-4000-8000-000000000000" : match[1];
-    const name =
-        scope === "system" ? id.slice("agent-skill-".length) : match[2];
+    const userId = type === "system" ? undefined : match[1];
+    const name = type === "system" ? id.slice("agent-skill-".length) : match[2];
     try {
-        return agentSkillRecordId(scope, ownerId, name) === id;
+        return agentSkillRecordId(type, userId, name) === id;
     } catch {
         return false;
     }
@@ -89,20 +95,27 @@ export interface AgentSkillServiceOptions {
 }
 
 export interface AgentSkillListRequest {
-    scope: AgentSkillScope | "all";
+    type: AgentSkillType | "all";
     pageToken?: string;
     limit: number;
     q?: string;
 }
 
 function archiveKey(
-    scope: AgentSkillScope,
-    ownerId: string,
+    type: AgentSkillType,
+    userId: string | undefined,
     recordId: string
 ): string {
-    return scope === "system"
+    if (type === "user" && !userId) {
+        throw new AgentSkillError(
+            "Agent Skill intended user identity is invalid",
+            409,
+            "INVALID_SKILL_RECORD"
+        );
+    }
+    return type === "system"
         ? `agent-services/skills/system-skills/${recordId}.zip`
-        : `agent-services/skills/user-skills/${ownerId}/${recordId}.zip`;
+        : `agent-services/skills/user-skills/${userId}/${recordId}.zip`;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -146,10 +159,21 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
         );
     }
     const id = requiredString(raw.id, "id");
-    const scope = requiredString(aspect.scope, "scope") as AgentSkillScope;
-    if (scope !== "system" && scope !== "user") {
+    const type = requiredString(aspect.type, "type") as AgentSkillType;
+    if (type !== "system" && type !== "user") {
         throw new AgentSkillError(
-            "Agent Skill record has invalid scope",
+            "Agent Skill record has invalid type",
+            409,
+            "INVALID_SKILL_RECORD"
+        );
+    }
+    const userId =
+        type === "user"
+            ? requiredString(aspect.userId, "userId", UUID_PATTERN)
+            : undefined;
+    if (type === "system" && aspect.userId !== undefined) {
+        throw new AgentSkillError(
+            "System Agent Skill records must omit userId",
             409,
             "INVALID_SKILL_RECORD"
         );
@@ -164,7 +188,7 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
             rawName,
             rawDescription
         ));
-        validateAgentSkillNameForScope(name, scope);
+        validateAgentSkillNameForType(name, type);
     } catch {
         throw new AgentSkillError(
             "Agent Skill record has invalid derived metadata",
@@ -188,7 +212,7 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
         "ownerId",
         UUID_PATTERN
     );
-    if (id !== agentSkillRecordId(scope, ownerId, name)) {
+    if (id !== agentSkillRecordId(type, userId, name)) {
         throw new AgentSkillError(
             "Agent Skill record identity is inconsistent",
             409,
@@ -230,7 +254,7 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
         "checksum",
         CHECKSUM_PATTERN
     );
-    const expectedArchiveKey = archiveKey(scope, ownerId, id);
+    const expectedArchiveKey = archiveKey(type, userId, id);
     if (aspect.archiveKey !== expectedArchiveKey) {
         throw new AgentSkillError(
             "Agent Skill record archive path is inconsistent",
@@ -251,6 +275,26 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
             "INVALID_SKILL_RECORD"
         );
     }
+    if (
+        accessControl.orgUnitId !== undefined &&
+        typeof accessControl.orgUnitId !== "string"
+    ) {
+        throw new AgentSkillError(
+            "Agent Skill record has invalid organisation unit",
+            409,
+            "INVALID_SKILL_RECORD"
+        );
+    }
+    if (
+        accessControl.constraintExemption !== undefined &&
+        typeof accessControl.constraintExemption !== "boolean"
+    ) {
+        throw new AgentSkillError(
+            "Agent Skill record has invalid constraint exemption",
+            409,
+            "INVALID_SKILL_RECORD"
+        );
+    }
     return {
         id,
         name,
@@ -258,7 +302,8 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
         aspects: {
             "agent-skill": {
                 name,
-                scope,
+                type,
+                ...(userId ? { userId } : {}),
                 createdAt,
                 createdBy,
                 description,
@@ -270,9 +315,17 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
             },
             "access-control": {
                 ownerId,
+                ...(accessControl.orgUnitId !== undefined
+                    ? { orgUnitId: accessControl.orgUnitId as string }
+                    : {}),
                 ...(accessControl.preAuthorisedPermissionIds
                     ? {
                           preAuthorisedPermissionIds: accessControl.preAuthorisedPermissionIds as string[]
+                      }
+                    : {}),
+                ...(accessControl.constraintExemption !== undefined
+                    ? {
+                          constraintExemption: accessControl.constraintExemption as boolean
                       }
                     : {})
             }
@@ -297,11 +350,16 @@ function sameRecordVersion(
         left.tenantId === right.tenantId &&
         left.aspects["access-control"].ownerId ===
             right.aspects["access-control"].ownerId &&
+        left.aspects["access-control"].orgUnitId ===
+            right.aspects["access-control"].orgUnitId &&
+        left.aspects["access-control"].constraintExemption ===
+            right.aspects["access-control"].constraintExemption &&
         leftPermissions.length === rightPermissions.length &&
         leftPermissions.every(
             (permission, index) => permission === rightPermissions[index]
         ) &&
-        leftAspect.scope === rightAspect.scope &&
+        leftAspect.type === rightAspect.type &&
+        leftAspect.userId === rightAspect.userId &&
         leftAspect.createdAt === rightAspect.createdAt &&
         leftAspect.createdBy === rightAspect.createdBy &&
         leftAspect.description === rightAspect.description &&
@@ -319,7 +377,8 @@ function metadata(record: AgentSkillRecord): AgentSkillMetadata {
         id: record.id,
         name: aspect.name,
         description: aspect.description,
-        scope: aspect.scope,
+        type: aspect.type,
+        ...(aspect.userId ? { userId: aspect.userId } : {}),
         ownerId: record.aspects["access-control"].ownerId,
         createdAt: aspect.createdAt,
         createdBy: aspect.createdBy,
@@ -393,17 +452,18 @@ export class AgentSkillService {
     }
 
     private syntheticRecord(
-        scope: AgentSkillScope,
+        type: AgentSkillType,
         ownerId: string,
         requestedName?: string
     ): AgentSkillRecord {
         const now = this.now().toISOString();
         const name =
             requestedName ||
-            (scope === "system"
+            (type === "system"
                 ? "system-authorization-check"
                 : "authorization-check");
-        const id = agentSkillRecordId(scope, ownerId, name);
+        const userId = type === "user" ? ownerId : undefined;
+        const id = agentSkillRecordId(type, userId, name);
         return {
             id,
             name,
@@ -411,11 +471,12 @@ export class AgentSkillService {
             aspects: {
                 "agent-skill": {
                     name,
-                    scope,
+                    type,
+                    ...(userId ? { userId } : {}),
                     createdAt: now,
                     createdBy: ownerId,
                     description: "Authorization check",
-                    archiveKey: archiveKey(scope, ownerId, id),
+                    archiveKey: archiveKey(type, userId, id),
                     updatedAt: now,
                     updatedBy: ownerId,
                     checksum: "0".repeat(64),
@@ -423,7 +484,8 @@ export class AgentSkillService {
                 },
                 "access-control": {
                     ownerId,
-                    preAuthorisedPermissionIds: []
+                    preAuthorisedPermissionIds: [],
+                    ...(type === "system" ? { constraintExemption: true } : {})
                 }
             }
         };
@@ -450,23 +512,23 @@ export class AgentSkillService {
     }
 
     async prepareCreate(
-        scope: AgentSkillScope,
+        type: AgentSkillType,
         user: AuthenticatedUser
     ): Promise<void> {
-        await this.requirePermission(
-            "create",
-            this.syntheticRecord(scope, user.id),
-            user
-        );
+        const proposed = this.syntheticRecord(type, user.id);
+        // Publication creates PENDING then finalizes READY, so reject before ZIP
+        // bytes are accepted unless both lifecycle operations are available.
+        await this.requirePermission("create", proposed, user);
+        await this.requirePermission("update", proposed, user);
     }
 
     async prepareExisting(
-        scope: AgentSkillScope,
+        type: AgentSkillType,
         id: string,
         operation: "read" | "update" | "delete",
         user: AuthenticatedUser
     ): Promise<AgentSkillRecord> {
-        if (!hasRecordIdShape(scope, id)) {
+        if (!hasRecordIdShape(type, id)) {
             throw new AgentSkillError(
                 "Agent Skill not found",
                 404,
@@ -482,12 +544,17 @@ export class AgentSkillService {
             );
         }
         const record = parseAgentSkillRecord(raw);
-        if (record.aspects["agent-skill"].scope !== scope) {
+        if (record.aspects["agent-skill"].type !== type) {
             throw new AgentSkillError(
                 "Agent Skill not found",
                 404,
                 "AGENT_SKILL_NOT_FOUND"
             );
+        }
+        if (operation === "delete") {
+            // Delete first marks DELETING through Registry update. Verify both
+            // operations before changing either Registry or Storage state.
+            await this.requirePermission("update", record, user);
         }
         await this.requirePermission(operation, record, user);
         return record;
@@ -495,9 +562,9 @@ export class AgentSkillService {
 
     private buildRecord(
         id: string,
-        scope: AgentSkillScope,
+        type: AgentSkillType,
         ownerId: string,
-        actorId: string,
+        userId: string | undefined,
         archive: ValidatedAgentSkillArchive,
         state: AgentSkillState,
         createdAt: string,
@@ -512,11 +579,12 @@ export class AgentSkillService {
             aspects: {
                 "agent-skill": {
                     name: archive.name,
-                    scope,
+                    type,
+                    ...(userId ? { userId } : {}),
                     createdAt,
                     createdBy,
                     description: archive.description,
-                    archiveKey: archiveKey(scope, ownerId, id),
+                    archiveKey: archiveKey(type, userId, id),
                     updatedAt,
                     updatedBy,
                     checksum: archive.checksum,
@@ -524,7 +592,8 @@ export class AgentSkillService {
                 },
                 "access-control": {
                     ownerId,
-                    preAuthorisedPermissionIds: []
+                    preAuthorisedPermissionIds: [],
+                    ...(type === "system" ? { constraintExemption: true } : {})
                 }
             }
         };
@@ -543,7 +612,7 @@ export class AgentSkillService {
                 actorId: user.id,
                 operation,
                 recordId: record.id,
-                scope: record.aspects["agent-skill"].scope,
+                type: record.aspects["agent-skill"].type,
                 result,
                 ...(code ? { code } : {})
             })
@@ -553,7 +622,7 @@ export class AgentSkillService {
     private recoverCreate(
         raw: unknown,
         id: string,
-        scope: AgentSkillScope,
+        type: AgentSkillType,
         ownerId: string,
         archive: ValidatedAgentSkillArchive
     ): AgentSkillRecord {
@@ -570,9 +639,11 @@ export class AgentSkillService {
             );
         }
         const aspect = existing.aspects["agent-skill"];
+        const userId = type === "user" ? ownerId : undefined;
         if (
             !["PENDING", "READY"].includes(aspect.state) ||
-            aspect.scope !== scope ||
+            aspect.type !== type ||
+            aspect.userId !== userId ||
             existing.aspects["access-control"].ownerId !== ownerId ||
             aspect.createdBy !== ownerId ||
             aspect.checksum !== archive.checksum ||
@@ -593,35 +664,28 @@ export class AgentSkillService {
     }
 
     async createAuthorized(
-        scope: AgentSkillScope,
+        type: AgentSkillType,
         bytes: Buffer,
         user: AuthenticatedUser
     ): Promise<AgentSkillMetadata> {
         let archive: ValidatedAgentSkillArchive;
         try {
-            archive = await validateAgentSkillArchive(
-                bytes,
-                scope,
-                this.limits
-            );
+            archive = await validateAgentSkillArchive(bytes, type, this.limits);
         } catch (error) {
             const mapped = downstreamError(error);
             this.audit(
                 "create",
-                this.syntheticRecord(scope, user.id),
+                this.syntheticRecord(type, user.id),
                 user,
                 "failure",
                 mapped.code
             );
             throw mapped;
         }
-        const id = agentSkillRecordId(scope, user.id, archive.name);
+        const userId = type === "user" ? user.id : undefined;
+        const id = agentSkillRecordId(type, userId, archive.name);
         return await this.exclusive(id, async () => {
-            let auditRecord = this.syntheticRecord(
-                scope,
-                user.id,
-                archive.name
-            );
+            let auditRecord = this.syntheticRecord(type, user.id, archive.name);
             try {
                 const existingRaw = await this.registry.get(
                     id,
@@ -632,7 +696,7 @@ export class AgentSkillService {
                     pending = this.recoverCreate(
                         existingRaw,
                         id,
-                        scope,
+                        type,
                         user.id,
                         archive
                     );
@@ -640,9 +704,9 @@ export class AgentSkillService {
                     const createdAt = this.now().toISOString();
                     pending = this.buildRecord(
                         id,
-                        scope,
+                        type,
                         user.id,
-                        user.id,
+                        userId,
                         archive,
                         "PENDING",
                         createdAt,
@@ -682,7 +746,7 @@ export class AgentSkillService {
                         pending = this.recoverCreate(
                             recovered,
                             id,
-                            scope,
+                            type,
                             user.id,
                             archive
                         );
@@ -690,6 +754,16 @@ export class AgentSkillService {
                 }
                 auditRecord = pending;
                 if (pending.aspects["agent-skill"].state === "READY") {
+                    // Registry may have committed READY before the prior response
+                    // was lost, or a direct caller may have occupied the record.
+                    // Re-upload the exact validated bytes so retry success never
+                    // asserts an archive exists without downstream confirmation.
+                    await this.storage.upload(
+                        pending.aspects["agent-skill"].archiveKey,
+                        id,
+                        bytes,
+                        user.sessionToken
+                    );
                     this.audit("create", pending, user, "success");
                     return metadata(pending);
                 }
@@ -749,7 +823,7 @@ export class AgentSkillService {
                         "AGENT_SKILL_DELETING"
                     );
                 }
-                const scope = current.aspects["agent-skill"].scope;
+                const type = current.aspects["agent-skill"].type;
                 const ownerId = current.aspects["access-control"].ownerId;
                 if (!sameRecordVersion(current, existing)) {
                     throw new AgentSkillError(
@@ -760,7 +834,7 @@ export class AgentSkillService {
                 }
                 const archive = await validateAgentSkillArchive(
                     bytes,
-                    scope,
+                    type,
                     this.limits
                 );
                 if (archive.name !== current.aspects["agent-skill"].name) {
@@ -794,9 +868,9 @@ export class AgentSkillService {
                 }
                 const nextPending = this.buildRecord(
                     current.id,
-                    scope,
+                    type,
                     ownerId,
-                    user.id,
+                    current.aspects["agent-skill"].userId,
                     archive,
                     "PENDING",
                     current.aspects["agent-skill"].createdAt,
@@ -872,8 +946,10 @@ export class AgentSkillService {
                 const current = parseAgentSkillRecord(raw);
                 await this.requirePermission("delete", current, user);
                 if (
-                    current.aspects["agent-skill"].scope !==
-                        existing.aspects["agent-skill"].scope ||
+                    current.aspects["agent-skill"].type !==
+                        existing.aspects["agent-skill"].type ||
+                    current.aspects["agent-skill"].userId !==
+                        existing.aspects["agent-skill"].userId ||
                     current.aspects["access-control"].ownerId !==
                         existing.aspects["access-control"].ownerId ||
                     current.aspects["agent-skill"].archiveKey !==
@@ -957,7 +1033,7 @@ export class AgentSkillService {
         try {
             archive = await validateAgentSkillArchive(
                 downloaded.bytes,
-                record.aspects["agent-skill"].scope,
+                record.aspects["agent-skill"].type,
                 this.limits
             );
         } catch {
@@ -989,35 +1065,16 @@ export class AgentSkillService {
         hasMore: boolean;
         nextPageToken?: string;
     }> {
-        const requestedScopes: AgentSkillScope[] =
-            request.scope === "all" ? ["system", "user"] : [request.scope];
-        const decisions = await Promise.all(
-            requestedScopes.map(async (scope) => ({
-                scope,
-                allowed: await this.authorization.can(
-                    "read",
-                    this.syntheticRecord(scope, user.id),
-                    user.sessionToken
-                )
-            }))
+        const requestedTypes = new Set<AgentSkillType>(
+            request.type === "all" ? ["system", "user"] : [request.type]
         );
-        const allowedScopes = new Set(
-            decisions.filter((item) => item.allowed).map((item) => item.scope)
-        );
-        if (!allowedScopes.size) {
-            throw new AgentSkillError(
-                "You are not permitted to list Agent Skills",
-                403,
-                "AGENT_SKILL_FORBIDDEN"
-            );
-        }
-        const queryScope =
-            allowedScopes.size === 1
-                ? ([...allowedScopes][0] as AgentSkillScope)
-                : undefined;
+        // Do not pre-authorize against a synthetic record here: OrgUnit,
+        // pre-authorised and exemption grants depend on each actual record.
+        // Registry first applies its record-level policy, then Agent Services
+        // repeats the typed decision below for every returned record.
         const result = await this.registry.list(
             {
-                scope: queryScope,
+                type: request.type === "all" ? undefined : request.type,
                 state: "READY",
                 pageToken: request.pageToken,
                 limit: request.limit,
@@ -1046,7 +1103,7 @@ export class AgentSkillService {
             const aspect = record.aspects["agent-skill"];
             if (
                 aspect.state !== "READY" ||
-                !allowedScopes.has(aspect.scope) ||
+                !requestedTypes.has(aspect.type) ||
                 !(await this.authorization.can(
                     "read",
                     record,

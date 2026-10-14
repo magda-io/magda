@@ -64,7 +64,8 @@ const metadata = {
     id: recordId,
     name: "useful-skill",
     description: "Useful",
-    scope: "user" as const,
+    type: "user" as const,
+    userId,
     ownerId: userId,
     createdAt: "2026-10-13T12:00:00.000Z",
     createdBy: userId,
@@ -81,7 +82,8 @@ function skillRecord(): AgentSkillRecord {
         aspects: {
             "agent-skill": {
                 name: metadata.name,
-                scope: "user",
+                type: "user",
+                userId,
                 createdAt: metadata.createdAt,
                 createdBy: userId,
                 description: metadata.description,
@@ -163,12 +165,29 @@ describe("Agent Skill authentication and API boundary", () => {
         } as unknown) as AgentSkillService;
         const app = buildApp(config(), {} as AgentManager, service);
 
-        const missing = await request(app).get("/v0/skills?scope=user");
+        const missing = await request(app).get("/v0/skills?type=user");
         const invalid = await request(app)
-            .get("/v0/skills?scope=user")
+            .get("/v0/skills?type=user")
             .set("X-Magda-Session", "not-a-jwt");
         expect(missing.status).to.equal(401);
         expect(invalid.status).to.equal(401);
+        expect(listCalls).to.equal(0);
+    });
+
+    it("rejects the obsolete scope query instead of silently widening it", async () => {
+        let listCalls = 0;
+        const service = ({
+            list: async () => {
+                listCalls += 1;
+                return { records: [], hasMore: false };
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const response = await request(app)
+            .get("/v0/skills?scope=user")
+            .set("X-Magda-Session", token());
+        expect(response.status).to.equal(400);
+        expect(response.body.error.code).to.equal("INVALID_TYPE");
         expect(listCalls).to.equal(0);
     });
 
@@ -202,14 +221,15 @@ describe("Agent Skill authentication and API boundary", () => {
     it("publishes the stable route shape and Location header", async () => {
         let prepared = false;
         const service = ({
-            prepareCreate: async (scope: string) => {
-                prepared = scope === "user";
+            prepareCreate: async (type: string) => {
+                prepared = type === "user";
             },
             createAuthorized: async () => ({
                 id: recordId,
                 name: "useful-skill",
                 description: "Useful",
-                scope: "user",
+                type: "user",
+                userId,
                 ownerId: userId,
                 createdAt: "2026-10-13T12:00:00.000Z",
                 createdBy: userId,
@@ -231,12 +251,14 @@ describe("Agent Skill authentication and API boundary", () => {
         expect(response.status).to.equal(201);
         expect(prepared).to.equal(true);
         expect(response.headers.location).to.equal(
-            `/v0/skills/user/${recordId}`
+            `/api/v0/agent/skills/user/${recordId}`
         );
         expect(response.body.name).to.equal("useful-skill");
+        expect(response.body.type).to.equal("user");
+        expect(response.body.userId).to.equal(userId);
     });
 
-    it("rejects caller-selected record IDs", async () => {
+    it("rejects caller-selected record, intended-user and owner identities", async () => {
         let prepareCalls = 0;
         const service = ({
             prepareCreate: async () => {
@@ -244,13 +266,21 @@ describe("Agent Skill authentication and API boundary", () => {
             }
         } as unknown) as AgentSkillService;
         const app = buildApp(config(), {} as AgentManager, service);
-        const response = await request(app)
-            .post(`/v0/skills/user?id=${encodeURIComponent(recordId)}`)
-            .set("X-Magda-Session", token())
-            .set("Content-Type", "application/zip")
-            .send(Buffer.from("zip"));
-        expect(response.status).to.equal(400);
-        expect(response.body.error.code).to.equal("CALLER_SELECTED_SKILL_ID");
+        for (const [key, value] of [
+            ["id", recordId],
+            ["userId", userId],
+            ["ownerId", userId]
+        ]) {
+            const response = await request(app)
+                .post(`/v0/skills/user?${key}=${encodeURIComponent(value)}`)
+                .set("X-Magda-Session", token())
+                .set("Content-Type", "application/zip")
+                .send(Buffer.from("zip"));
+            expect(response.status).to.equal(400);
+            expect(response.body.error.code).to.equal(
+                "CALLER_SELECTED_SKILL_IDENTITY"
+            );
+        }
         expect(prepareCalls).to.equal(0);
     });
 
@@ -268,7 +298,7 @@ describe("Agent Skill authentication and API boundary", () => {
                 };
             },
             prepareExisting: async (
-                _scope: string,
+                _type: string,
                 _id: string,
                 operation: string
             ) => {
@@ -289,7 +319,7 @@ describe("Agent Skill authentication and API boundary", () => {
         const session = token();
 
         const list = await request(app)
-            .get("/v0/skills?scope=user&limit=7&pageToken=page-1&q=useful")
+            .get("/v0/skills?type=user&limit=7&pageToken=page-1&q=useful")
             .set("X-Magda-Session", session);
         expect(list.status).to.equal(200);
         expect(list.body).to.deep.equal({
@@ -298,7 +328,7 @@ describe("Agent Skill authentication and API boundary", () => {
             nextPageToken: "page-2"
         });
         expect(listRequest).to.deep.equal({
-            scope: "user",
+            type: "user",
             limit: 7,
             pageToken: "page-1",
             q: "useful"

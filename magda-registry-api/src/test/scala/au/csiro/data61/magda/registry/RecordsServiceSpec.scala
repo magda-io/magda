@@ -3140,7 +3140,7 @@ class RecordsServiceSpec extends ApiSpec {
 
             def skillRecord(
                 id: String,
-                scope: String,
+                skillType: String,
                 state: String
             ): Record =
               Record(
@@ -3149,7 +3149,7 @@ class RecordsServiceSpec extends ApiSpec {
                 Map(
                   "agent-skill" -> JsObject(
                     "name" -> JsString(id),
-                    "scope" -> JsString(scope),
+                    "type" -> JsString(skillType),
                     "state" -> JsString(state)
                   ),
                   "access-control" -> JsObject(
@@ -3179,7 +3179,7 @@ class RecordsServiceSpec extends ApiSpec {
 
             val query =
               "aspect=agent-skill&aspect=access-control" +
-                "&aspectQuery=agent-skill.scope:user" +
+                "&aspectQuery=agent-skill.type:user" +
                 "&aspectQuery=agent-skill.state:READY" +
                 "&reversePageTokenOrder=true&limit=2"
             val firstPage = Get(s"/v0/records?$query") ~> addTenantIdHeader(
@@ -3973,6 +3973,97 @@ class RecordsServiceSpec extends ApiSpec {
   }
 
   def writeTests(role: Role) {
+    describe("Agent Skill bulk mutation guards") {
+      it("rejects bulk patches of typed records or skill markers") {
+        implicit param =>
+          insertAspectDef("agent-skill")
+          createRecord(
+            Record(
+              "typed-skill-record",
+              "typed-skill-record",
+              Map("agent-skill" -> JsObject("type" -> JsString("system"))),
+              None
+            )
+          )
+          val ordinaryPatch = JsonPatch(
+            Replace(Pointer.root / "name", JsString("changed"))
+          )
+          Patch(
+            "/v0/records",
+            PatchRecordsRequest(
+              List("typed-skill-record"),
+              ordinaryPatch
+            )
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+
+          val markerPatch = JsonPatch(
+            Add(
+              Pointer.root / "aspects" / "agent-skill",
+              JsObject("type" -> JsString("system"))
+            )
+          )
+          Patch(
+            "/v0/records",
+            PatchRecordsRequest(List("ordinary-record"), markerPatch)
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+      }
+
+      it("rejects bulk aspect writes for typed records and markers") {
+        implicit param =>
+          insertAspectDef("agent-skill")
+          insertAspectDef("access-control")
+          createRecord(
+            Record(
+              "typed-skill-record",
+              "typed-skill-record",
+              Map("agent-skill" -> JsObject("type" -> JsString("system"))),
+              None
+            )
+          )
+          Put(
+            "/v0/records/aspects/agent-skill",
+            PutRecordsAspectRequest(List("ordinary-record"), JsObject())
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+
+          Put(
+            "/v0/records/aspects/access-control",
+            PutRecordsAspectRequest(
+              List("typed-skill-record"),
+              JsObject()
+            )
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+
+          Delete(
+            "/v0/records/aspectArrayItems/access-control",
+            DeleteRecordsAspectArrayItemsRequest(
+              List("typed-skill-record"),
+              "$.preAuthorisedPermissionIds",
+              List(JsString("permission-id"))
+            )
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+      }
+    }
+
     describe("POST") {
       it("can add a new record") { param =>
         var eventId: Option[String] = None
@@ -6042,6 +6133,34 @@ class RecordsServiceSpec extends ApiSpec {
                   "source"
                 )
               }
+          }
+        }
+
+        it("does not trim typed Agent Skill records") { implicit param =>
+          insertAspectDef("source")
+          insertAspectDef("agent-skill")
+          createRecord(
+            Record(
+              "typed-skill-record",
+              "typed-skill-record",
+              buildAspects("right") + (
+                "agent-skill" -> JsObject("type" -> JsString("system"))
+              ),
+              Some("wrongtag")
+            )
+          )
+
+          Delete(
+            "/v0/records?sourceTagToPreserve=righttag&sourceId=right"
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+          Get("/v0/records/typed-skill-record") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
           }
         }
 

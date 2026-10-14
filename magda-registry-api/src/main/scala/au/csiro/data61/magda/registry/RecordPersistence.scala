@@ -1071,7 +1071,7 @@ class DefaultRecordPersistence(config: Config)
         tenantId,
         authDecision,
         Seq(),
-        Seq(),
+        Seq("agent-skill", "agent-skill-installation"),
         None,
         None,
         Some(noEmptyIds.length),
@@ -1084,6 +1084,18 @@ class DefaultRecordPersistence(config: Config)
         throw ServerError(
           "You don't have permission to all records requested",
           403
+        )
+      }
+      // Typed Agent Skills use single-record CRUD so authorization sees the
+      // trusted original and every proposed state.
+      if (result.records.exists(
+            record =>
+              record.aspects.contains("agent-skill") ||
+                record.aspects.contains("agent-skill-installation")
+          )) {
+        throw ServerError(
+          "Bulk mutation of Agent Skill records is not supported; use single-record CRUD so the proposed state is authorized.",
+          400
         )
       }
     }.flatMap { _ =>
@@ -1201,7 +1213,7 @@ class DefaultRecordPersistence(config: Config)
         tenantId,
         authDecision,
         Seq(),
-        Seq(),
+        Seq("agent-skill", "agent-skill-installation"),
         None,
         None,
         Some(noEmptyIds.length),
@@ -1214,6 +1226,18 @@ class DefaultRecordPersistence(config: Config)
         throw ServerError(
           "You don't have permission to all records requested",
           403
+        )
+      }
+      // Typed Agent Skills use single-record CRUD so authorization sees the
+      // trusted original and every proposed state.
+      if (result.records.exists(
+            record =>
+              record.aspects.contains("agent-skill") ||
+                record.aspects.contains("agent-skill-installation")
+          )) {
+        throw ServerError(
+          "Bulk mutation of Agent Skill records is not supported; use single-record CRUD so the proposed state is authorized.",
+          400
         )
       }
     }.flatMap { _ =>
@@ -1495,7 +1519,7 @@ class DefaultRecordPersistence(config: Config)
         tenantId,
         authDecision,
         Seq(),
-        Seq(),
+        Seq("agent-skill", "agent-skill-installation"),
         None,
         None,
         Some(noEmptyIds.length),
@@ -1508,6 +1532,18 @@ class DefaultRecordPersistence(config: Config)
         throw ServerError(
           "You don't have permission to all records requested",
           403
+        )
+      }
+      // Typed Agent Skills use single-record CRUD so authorization sees the
+      // trusted original and every proposed state.
+      if (result.records.exists(
+            record =>
+              record.aspects.contains("agent-skill") ||
+                record.aspects.contains("agent-skill-installation")
+          )) {
+        throw ServerError(
+          "Bulk mutation of Agent Skill records is not supported; use single-record CRUD so the proposed state is authorized.",
+          400
         )
       }
     }.flatMap { _ =>
@@ -1540,10 +1576,32 @@ class DefaultRecordPersistence(config: Config)
       logger: Option[LoggingAdapter] = None
   )(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = ${tenantId.tenantId}"
-        .map(rs => rs.string("recordId"))
-        .list
-        .apply()
+      val candidates =
+        sql"""select distinct records.recordId, sourcetag,
+             exists (
+               select 1 from recordaspects protected
+               where protected.recordid = records.recordid
+                 and protected.tenantId = records.tenantId
+                 and protected.aspectid in ('agent-skill', 'agent-skill-installation')
+             ) as protected_agent_skill
+             from Records
+             inner join recordaspects on (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId)
+             where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL)
+               and recordaspects.aspectid = 'source'
+               and recordaspects.data->>'id' = $sourceId
+               and Records.tenantId = ${tenantId.tenantId}"""
+          .map(
+            rs => (rs.string("recordId"), rs.boolean("protected_agent_skill"))
+          )
+          .list
+          .apply()
+      if (candidates.exists(_._2)) {
+        throw ServerError(
+          "Source trimming cannot delete Agent Skill records; use single-record CRUD so typed delete authorization is enforced.",
+          400
+        )
+      }
+      candidates.map(_._1)
     }
 
     val result = recordIds match {

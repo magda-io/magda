@@ -24,6 +24,7 @@ import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenant
 import au.csiro.data61.magda.model.Auth.recordToContextData
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
+import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 
@@ -75,6 +76,15 @@ class RecordsService(
       scala.concurrent.duration.SECONDS
     )
     .toInt
+
+  private def patchTouchesAgentSkillMarker(patch: JsonPatch): Boolean =
+    patch.ops.exists(
+      _.path match {
+        case "aspects" / (aspectId / _) =>
+          aspectId == "agent-skill" || aspectId == "agent-skill-installation"
+        case _ => false
+      }
+    )
 
   /**
     * @apiGroup Registry Record Service
@@ -708,42 +718,50 @@ class RecordsService(
     requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
         sanitizedJsonEntity(as[PatchRecordsRequest]) { requestData =>
-          withAuthDecision(
-            authClient,
-            AuthDecisionReqConfig("object/record/update")
-          ) { authDecision =>
-            onCompleteBlockingTask {
-              val result = DB localTx { implicit session =>
-                session.queryTimeout(this.defaultQueryTimeout)
-                recordPersistence.patchRecords(
-                  tenantId,
-                  authDecision,
-                  requestData.recordIds,
-                  requestData.jsonPath,
-                  userId
-                ) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      result
-                    )
-                  case Failure(ServerError(msg, statusCode)) =>
-                    complete(
-                      statusCode,
-                      ApiError(msg)
-                    )
-                  case Failure(e) =>
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError(e.getMessage)
-                    )
+          if (patchTouchesAgentSkillMarker(requestData.jsonPath)) {
+            complete(
+              StatusCodes.BadRequest,
+              ApiError(
+                "Bulk mutation of Agent Skill records or marker aspects is not supported; use single-record CRUD so the proposed state is authorized."
+              )
+            )
+          } else
+            withAuthDecision(
+              authClient,
+              AuthDecisionReqConfig("object/record/update")
+            ) { authDecision =>
+              onCompleteBlockingTask {
+                val result = DB localTx { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
+                  recordPersistence.patchRecords(
+                    tenantId,
+                    authDecision,
+                    requestData.recordIds,
+                    requestData.jsonPath,
+                    userId
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        result
+                      )
+                    case Failure(ServerError(msg, statusCode)) =>
+                      complete(
+                        statusCode,
+                        ApiError(msg)
+                      )
+                    case Failure(e) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(e.getMessage)
+                      )
+                  }
                 }
+                webHookActor ! WebHookActor
+                  .Process()
+                result
               }
-              webHookActor ! WebHookActor
-                .Process()
-              result
             }
-          }
         }
       }
     }
@@ -832,49 +850,58 @@ class RecordsService(
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           sanitizedJsonEntity(as[PutRecordsAspectRequest]) { requestData =>
-            parameters(
-              'merge.as[Boolean].?
-            ) { merge =>
-              withAuthDecision(
-                authClient,
-                AuthDecisionReqConfig("object/record/update")
-              ) { authDecision =>
-                onCompleteBlockingTask {
-                  val result = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    recordPersistence.putRecordsAspectById(
-                      tenantId,
-                      authDecision,
-                      requestData.recordIds,
-                      aspectId,
-                      requestData.data,
-                      userId,
-                      false,
-                      merge.getOrElse(false)
-                    ) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          result
-                        )
-                      case Failure(ServerError(msg, statusCode)) =>
-                        complete(
-                          statusCode,
-                          ApiError(msg)
-                        )
-                      case Failure(e) =>
-                        complete(
-                          StatusCodes.InternalServerError,
-                          ApiError(e.getMessage)
-                        )
+            if (aspectId == "agent-skill" ||
+                aspectId == "agent-skill-installation") {
+              complete(
+                StatusCodes.BadRequest,
+                ApiError(
+                  "Bulk mutation of Agent Skill records or marker aspects is not supported; use single-record CRUD so the proposed state is authorized."
+                )
+              )
+            } else
+              parameters(
+                'merge.as[Boolean].?
+              ) { merge =>
+                withAuthDecision(
+                  authClient,
+                  AuthDecisionReqConfig("object/record/update")
+                ) { authDecision =>
+                  onCompleteBlockingTask {
+                    val result = DB localTx { implicit session =>
+                      session.queryTimeout(this.defaultQueryTimeout)
+                      recordPersistence.putRecordsAspectById(
+                        tenantId,
+                        authDecision,
+                        requestData.recordIds,
+                        aspectId,
+                        requestData.data,
+                        userId,
+                        false,
+                        merge.getOrElse(false)
+                      ) match {
+                        case Success(result) =>
+                          complete(
+                            StatusCodes.OK,
+                            result
+                          )
+                        case Failure(ServerError(msg, statusCode)) =>
+                          complete(
+                            statusCode,
+                            ApiError(msg)
+                          )
+                        case Failure(e) =>
+                          complete(
+                            StatusCodes.InternalServerError,
+                            ApiError(e.getMessage)
+                          )
+                      }
                     }
+                    webHookActor ! WebHookActor
+                      .Process()
+                    result
                   }
-                  webHookActor ! WebHookActor
-                    .Process()
-                  result
                 }
               }
-            }
           }
         }
       }
