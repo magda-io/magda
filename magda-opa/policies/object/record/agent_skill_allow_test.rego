@@ -106,83 +106,6 @@ test_owner_cannot_transfer_user_skill_to_another_owner {
 	}
 }
 
-test_owner_cannot_change_agent_skill_created_at {
-	not allow with input as {
-		"operationUri": "object/record/update",
-		"object": {
-			"record": {
-				"id": "skill-id",
-				"name": "useful-skill",
-				"agent-skill": {
-					"scope": "user",
-					"createdAt": "2026-10-14T12:00:00Z",
-					"createdBy": "user-id",
-					"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
-				},
-				"access-control": {"ownerId": "user-id"},
-			},
-			"originalRecord": {
-				"id": "skill-id",
-				"name": "useful-skill",
-				"agent-skill": {
-					"scope": "user",
-					"createdAt": "2026-10-13T12:00:00Z",
-					"createdBy": "user-id",
-					"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
-				},
-				"access-control": {"ownerId": "user-id"},
-			},
-		},
-		"user": {"id": "user-id", "permissions": [agent_owner_permission, generic_record_permission]},
-	}
-}
-
-test_owner_cannot_rename_agent_skill_through_generic_record_update {
-	original := {
-		"id": "skill-id",
-		"name": "useful-skill",
-		"agent-skill": {
-			"scope": "user",
-			"createdAt": "2026-10-13T12:00:00Z",
-			"createdBy": "user-id",
-			"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
-		},
-		"access-control": {"ownerId": "user-id"},
-	}
-
-	not allow with input as {
-		"operationUri": "object/record/update",
-		"object": {
-			"record": object.union(original, {"name": "renamed-skill"}),
-			"originalRecord": original,
-		},
-		"user": {"id": "user-id", "permissions": [agent_owner_permission, generic_record_permission]},
-	}
-}
-
-test_owner_cannot_change_agent_skill_id_through_generic_record_update {
-	original := {
-		"id": "skill-id",
-		"name": "useful-skill",
-		"agent-skill": {
-			"scope": "user",
-			"createdAt": "2026-10-13T12:00:00Z",
-			"createdBy": "user-id",
-			"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
-		},
-		"access-control": {"ownerId": "user-id"},
-	}
-
-	not allow with input as {
-		"operationUri": "object/record/update",
-		"object": {
-			"record": object.union(original, {"id": "other-skill-id"}),
-			"originalRecord": original,
-		},
-		"user": {"id": "user-id", "permissions": [agent_owner_permission, generic_record_permission]},
-	}
-}
-
 test_agent_skill_cannot_bypass_policy_with_other_typed_markers {
 	not allow with input as {
 		"operationUri": "object/record/read",
@@ -198,8 +121,8 @@ test_agent_skill_cannot_bypass_policy_with_other_typed_markers {
 	}
 }
 
-test_agent_skill_aspect_removal_cannot_fall_through_generic_policy {
-	not allow with input as {
+test_presented_non_skill_state_uses_generic_policy_without_original_record_dependency {
+	allow with input as {
 		"operationUri": "object/record/update",
 		"object": {
 			"record": {

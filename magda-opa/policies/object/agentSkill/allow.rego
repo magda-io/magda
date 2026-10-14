@@ -37,28 +37,9 @@ verifyUserPermission(operationUri, inputObjectRefName) {
 	input.object[inputObjectRefName]["access-control"].ownerId == input.user.id
 }
 
+# Registry authorizes current and proposed update states independently. Agent
+# Services owns immutable name and publication-metadata validation; this policy
+# remains intentionally independent of an optional originalRecord context.
 verifyPermission(operationUri, inputObjectRefName) {
 	verifyUserPermission(operationUri, inputObjectRefName)
-	operationUri != "object/agentSkill/update"
-}
-
-# Registry performs one update decision against current state and one against
-# proposed state. The current-state decision has no originalRecord; the proposed
-# decision must preserve ownership and all immutable Agent Skill metadata.
-verifyPermission("object/agentSkill/update", inputObjectRefName) {
-	verifyUserPermission("object/agentSkill/update", inputObjectRefName)
-	not input.object.originalRecord
-}
-
-verifyPermission("object/agentSkill/update", inputObjectRefName) {
-	verifyUserPermission("object/agentSkill/update", inputObjectRefName)
-	original := input.object.originalRecord
-	proposed := input.object[inputObjectRefName]
-	original.id == proposed.id
-	original.name == proposed.name
-	original["agent-skill"].scope == proposed["agent-skill"].scope
-	original["access-control"].ownerId == proposed["access-control"].ownerId
-	original["agent-skill"].createdAt == proposed["agent-skill"].createdAt
-	original["agent-skill"].createdBy == proposed["agent-skill"].createdBy
-	original["agent-skill"].archiveKey == proposed["agent-skill"].archiveKey
 }

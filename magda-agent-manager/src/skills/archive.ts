@@ -10,7 +10,6 @@ import {
 } from "./types.js";
 
 const USER_FILE_PATTERN = /\.md$/i;
-const SYSTEM_FILE_PATTERN = /\.(?:md|txt|json|ya?ml|csv|tsv|sh|bash|js|mjs|cjs|ts|mts|cts|py|ps1)$/i;
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_SKILL_NAME_LENGTH = 46;
 const RESERVED_RUNTIME_SKILL_NAMES = new Set(["capture-workflow", "magda-mgd"]);
@@ -251,15 +250,9 @@ export async function validateAgentSkillArchive(
                     zip.readEntry();
                     return;
                 }
-                const allowed =
-                    scope === "user"
-                        ? USER_FILE_PATTERN.test(normalized)
-                        : SYSTEM_FILE_PATTERN.test(normalized);
-                if (!allowed) {
+                if (scope === "user" && !USER_FILE_PATTERN.test(normalized)) {
                     invalid(
-                        scope === "user"
-                            ? "User Agent Skills may contain Markdown files only"
-                            : "System Agent Skill contains an unapproved file type"
+                        "User Agent Skills may contain Markdown files only"
                     );
                 }
                 declaredTotal += entry.uncompressedSize;

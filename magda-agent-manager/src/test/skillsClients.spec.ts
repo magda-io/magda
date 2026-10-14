@@ -19,6 +19,7 @@ function record(): AgentSkillRecord {
         tenantId: 0,
         aspects: {
             "agent-skill": {
+                name: "useful-skill",
                 scope: "user",
                 createdAt: "2026-10-13T12:00:00.000Z",
                 createdBy: userId,

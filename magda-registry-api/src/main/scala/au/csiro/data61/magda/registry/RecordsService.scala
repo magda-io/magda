@@ -11,8 +11,6 @@ import akka.stream.Materializer
 import au.csiro.data61.magda.ServerError
 import au.csiro.data61.magda.client.AuthDecisionReqConfig
 import au.csiro.data61.magda.registry.Directives.{
-  requireDeleteRecordAspectArrayItemsPermission,
-  requireRecordAspectUpdatePermission,
   requireRecordPermission,
   requireRecordUpdateOrCreateWhenNonExistPermission
 }
@@ -710,48 +708,40 @@ class RecordsService(
     requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
         sanitizedJsonEntity(as[PatchRecordsRequest]) { requestData =>
-          requestData.recordIds.foldLeft(pass) { (directive, recordId) =>
-            directive & requireRecordUpdateOrCreateWhenNonExistPermission(
-              authClient,
-              recordId,
-              Right(requestData.jsonPath)
-            )
-          } {
-            withAuthDecision(
-              authClient,
-              AuthDecisionReqConfig("object/record/update")
-            ) { authDecision =>
-              onCompleteBlockingTask {
-                val result = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence.patchRecords(
-                    tenantId,
-                    authDecision,
-                    requestData.recordIds,
-                    requestData.jsonPath,
-                    userId
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        result
-                      )
-                    case Failure(ServerError(msg, statusCode)) =>
-                      complete(
-                        statusCode,
-                        ApiError(msg)
-                      )
-                    case Failure(e) =>
-                      complete(
-                        StatusCodes.InternalServerError,
-                        ApiError(e.getMessage)
-                      )
-                  }
+          withAuthDecision(
+            authClient,
+            AuthDecisionReqConfig("object/record/update")
+          ) { authDecision =>
+            onCompleteBlockingTask {
+              val result = DB localTx { implicit session =>
+                session.queryTimeout(this.defaultQueryTimeout)
+                recordPersistence.patchRecords(
+                  tenantId,
+                  authDecision,
+                  requestData.recordIds,
+                  requestData.jsonPath,
+                  userId
+                ) match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      result
+                    )
+                  case Failure(ServerError(msg, statusCode)) =>
+                    complete(
+                      statusCode,
+                      ApiError(msg)
+                    )
+                  case Failure(e) =>
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(e.getMessage)
+                    )
                 }
-                webHookActor ! WebHookActor
-                  .Process()
-                result
               }
+              webHookActor ! WebHookActor
+                .Process()
+              result
             }
           }
         }
@@ -845,53 +835,43 @@ class RecordsService(
             parameters(
               'merge.as[Boolean].?
             ) { merge =>
-              requestData.recordIds.foldLeft(pass) { (directive, recordId) =>
-                directive & requireRecordAspectUpdatePermission(
-                  authClient,
-                  recordId,
-                  aspectId,
-                  Left(requestData.data),
-                  merge.getOrElse(false)
-                )
-              } {
-                withAuthDecision(
-                  authClient,
-                  AuthDecisionReqConfig("object/record/update")
-                ) { authDecision =>
-                  onCompleteBlockingTask {
-                    val result = DB localTx { implicit session =>
-                      session.queryTimeout(this.defaultQueryTimeout)
-                      recordPersistence.putRecordsAspectById(
-                        tenantId,
-                        authDecision,
-                        requestData.recordIds,
-                        aspectId,
-                        requestData.data,
-                        userId,
-                        false,
-                        merge.getOrElse(false)
-                      ) match {
-                        case Success(result) =>
-                          complete(
-                            StatusCodes.OK,
-                            result
-                          )
-                        case Failure(ServerError(msg, statusCode)) =>
-                          complete(
-                            statusCode,
-                            ApiError(msg)
-                          )
-                        case Failure(e) =>
-                          complete(
-                            StatusCodes.InternalServerError,
-                            ApiError(e.getMessage)
-                          )
-                      }
+              withAuthDecision(
+                authClient,
+                AuthDecisionReqConfig("object/record/update")
+              ) { authDecision =>
+                onCompleteBlockingTask {
+                  val result = DB localTx { implicit session =>
+                    session.queryTimeout(this.defaultQueryTimeout)
+                    recordPersistence.putRecordsAspectById(
+                      tenantId,
+                      authDecision,
+                      requestData.recordIds,
+                      aspectId,
+                      requestData.data,
+                      userId,
+                      false,
+                      merge.getOrElse(false)
+                    ) match {
+                      case Success(result) =>
+                        complete(
+                          StatusCodes.OK,
+                          result
+                        )
+                      case Failure(ServerError(msg, statusCode)) =>
+                        complete(
+                          statusCode,
+                          ApiError(msg)
+                        )
+                      case Failure(e) =>
+                        complete(
+                          StatusCodes.InternalServerError,
+                          ApiError(e.getMessage)
+                        )
                     }
-                    webHookActor ! WebHookActor
-                      .Process()
-                    result
                   }
+                  webHookActor ! WebHookActor
+                    .Process()
+                  result
                 }
               }
             }
@@ -978,52 +958,42 @@ class RecordsService(
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[DeleteRecordsAspectArrayItemsRequest]) { requestData =>
-            requestData.recordIds.foldLeft(pass) { (directive, recordId) =>
-              directive & requireDeleteRecordAspectArrayItemsPermission(
-                authClient,
-                recordId,
-                aspectId,
-                requestData.jsonPath,
-                requestData.items
-              )
-            } {
-              withAuthDecision(
-                authClient,
-                AuthDecisionReqConfig("object/record/update")
-              ) { authDecision =>
-                onCompleteBlockingTask {
-                  val result = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    recordPersistence.deleteRecordsAspectArrayItems(
-                      tenantId,
-                      authDecision,
-                      requestData.recordIds,
-                      aspectId,
-                      requestData.jsonPath,
-                      requestData.items,
-                      userId
-                    ) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          result
-                        )
-                      case Failure(ServerError(msg, statusCode)) =>
-                        complete(
-                          statusCode,
-                          ApiError(msg)
-                        )
-                      case Failure(e) =>
-                        complete(
-                          StatusCodes.InternalServerError,
-                          ApiError(e.getMessage)
-                        )
-                    }
+            withAuthDecision(
+              authClient,
+              AuthDecisionReqConfig("object/record/update")
+            ) { authDecision =>
+              onCompleteBlockingTask {
+                val result = DB localTx { implicit session =>
+                  session.queryTimeout(this.defaultQueryTimeout)
+                  recordPersistence.deleteRecordsAspectArrayItems(
+                    tenantId,
+                    authDecision,
+                    requestData.recordIds,
+                    aspectId,
+                    requestData.jsonPath,
+                    requestData.items,
+                    userId
+                  ) match {
+                    case Success(result) =>
+                      complete(
+                        StatusCodes.OK,
+                        result
+                      )
+                    case Failure(ServerError(msg, statusCode)) =>
+                      complete(
+                        statusCode,
+                        ApiError(msg)
+                      )
+                    case Failure(e) =>
+                      complete(
+                        StatusCodes.InternalServerError,
+                        ApiError(e.getMessage)
+                      )
                   }
-                  webHookActor ! WebHookActor
-                    .Process()
-                  result
                 }
+                webHookActor ! WebHookActor
+                  .Process()
+                result
               }
             }
           }

@@ -2,6 +2,7 @@ export type AgentSkillScope = "system" | "user";
 export type AgentSkillState = "PENDING" | "READY" | "DELETING";
 
 export interface AgentSkillAspect {
+    name: string;
     scope: AgentSkillScope;
     createdAt: string;
     createdBy: string;

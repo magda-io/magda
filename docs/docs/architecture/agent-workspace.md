@@ -141,20 +141,26 @@ the `system-` prefix, and runtime-bundled names such as `capture-workflow` and
 owner's namespace, so the API never accepts a caller-selected ID or uses
 full-text search for uniqueness. Different users may publish the same name.
 
-The record name and description are derived from `SKILL.md` rather than accepted
-as independent API input. Replacements may update the description but must
-preserve the name; renaming creates a new skill. The Registry-backed publication
-states are `PENDING`, `READY`, and `DELETING`; only READY records are catalogued.
-Catalogue traversal uses Registry sequence-keyset pagination with
-`reversePageTokenOrder=true`, never the unsupported `orderBy` plus `pageToken`
-combination. Generic Registry record authorization delegates typed skill records
-to the same scope-aware policy, including proposed post-update state for single
-and bulk mutations. An existing deterministic ID that is not a valid source
-`agent-skill` record—including a future `agent-skill-installation`—is a generic
-409 conflict and is never overwritten or given a ZIP. A separately authorized
-generic Registry caller can therefore occupy a deterministic name as an accepted
-direct-API integrity/availability limitation; Agent Services fails closed without
-exposing the conflicting record's type or owner.
+The record name, `agent-skill.name`, and description are derived from `SKILL.md`
+rather than accepted as independent API input. The two name copies must match;
+the aspect copy allows Registry's existing `q` full-text search to index names,
+including the components of hyphenated names. Replacements may update the
+description but must preserve the name; renaming creates a new skill. The
+Registry-backed publication states are `PENDING`, `READY`, and `DELETING`; only
+READY records are catalogued. Catalogue traversal uses Registry sequence-keyset
+pagination with `reversePageTokenOrder=true`, never the unsupported `orderBy`
+plus `pageToken` combination.
+
+Generic Registry authorization remains unchanged. The typed OPA policy governs
+the current or proposed record state presented by normal Registry CRUD, while
+Agent Services itself validates deterministic identity, equal names, immutable
+publication metadata, and archive agreement before every managed operation.
+Separately authorized direct or bulk Registry callers can bypass those
+cross-version invariants, strip the marker aspect, source-trim a record carrying
+an out-of-spec `source` aspect, or occupy a deterministic ID. These are accepted
+direct-API integrity/availability limitations: Agent Services fails closed on an
+inconsistent or wrong-type record with a non-leaking error and never overwrites
+it or attaches a ZIP.
 
 Each skill has one record-linked ZIP in the existing
 `global.defaultDatasetBucket`:
@@ -182,10 +188,11 @@ with Registry metadata.
 ZIP validation rejects malformed or encrypted archives, traversal and absolute
 paths, duplicate/conflicting paths, links and special files, excessive size,
 entry count, path length or nesting, missing/invalid `SKILL.md`, and invalid skill
-names. User skills are Markdown-only. System skills may additionally contain an
-approved set of text resources and scripts. Audit logs contain actor, operation,
-scope, record ID, result and error code only—never session credentials or archive
-content.
+names. User skills are Markdown-only. System skills may contain arbitrary regular
+supporting files, including scripts, images, and model assets, subject to the same
+archive entry, path, type, CRC, count, and size limits. Audit logs contain actor,
+operation, scope, record ID, result and error code only—never session credentials
+or archive content.
 
 ## Managed DSH profile decisions
 

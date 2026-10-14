@@ -79,7 +79,8 @@ class MemoryRegistry implements AgentSkillRegistry {
             return (
                 (!options.scope || aspect.scope === options.scope) &&
                 (!options.state || aspect.state === options.state) &&
-                (!options.q || record.name.includes(options.q))
+                (!options.q ||
+                    record.aspects["agent-skill"].name.includes(options.q))
             );
         });
         return {
@@ -266,6 +267,14 @@ describe("Agent Skill publication state machine", () => {
         expect(
             registry.writes.map((record) => record.aspects["agent-skill"].state)
         ).to.deep.equal(["PENDING", "READY"]);
+        expect(
+            registry.writes.map((record) => record.aspects["agent-skill"].name)
+        ).to.deep.equal(["useful-skill", "useful-skill"]);
+        expect(
+            registry.writes.every(
+                (record) => record.name === record.aspects["agent-skill"].name
+            )
+        ).to.equal(true);
         expect(storage.uploads).to.deep.equal([
             {
                 key: `agent-services/skills/user-skills/${owner.id}/${recordId}.zip`,
@@ -691,6 +700,7 @@ describe("Agent Skill publication state machine", () => {
                 tenantId: 0,
                 aspects: {
                     "agent-skill": {
+                        name,
                         scope: "user",
                         createdAt: "2026-10-13T12:00:00.000Z",
                         createdBy: recordOwner,
@@ -752,25 +762,44 @@ describe("Agent Skill publication state machine", () => {
     });
 
     it("fails closed on invalid Registry-backed derived metadata", async () => {
-        const { service, registry } = fixture();
-        await service.prepareCreate("user", owner);
-        await service.createAuthorized("user", await skillZip(), owner);
-        const current = registry.records.get(recordId)!;
-        registry.records.set(recordId, {
-            ...current,
-            name: "INVALID SKILL NAME"
-        });
-        const result = await service.list({ scope: "user", limit: 20 }, owner);
-        expect(result.records).to.deep.equal([]);
-        let error: unknown;
-        try {
-            await service.prepareExisting("user", recordId, "read", owner);
-        } catch (caught) {
-            error = caught;
+        for (const mutate of [
+            (current: AgentSkillRecord): AgentSkillRecord => ({
+                ...current,
+                name: "INVALID SKILL NAME"
+            }),
+            (current: AgentSkillRecord): AgentSkillRecord => ({
+                ...current,
+                aspects: {
+                    ...current.aspects,
+                    "agent-skill": {
+                        ...current.aspects["agent-skill"],
+                        name: "different-skill"
+                    }
+                }
+            })
+        ]) {
+            const { service, registry } = fixture();
+            await service.prepareCreate("user", owner);
+            await service.createAuthorized("user", await skillZip(), owner);
+            registry.records.set(
+                recordId,
+                mutate(registry.records.get(recordId)!)
+            );
+            const result = await service.list(
+                { scope: "user", limit: 20 },
+                owner
+            );
+            expect(result.records).to.deep.equal([]);
+            let error: unknown;
+            try {
+                await service.prepareExisting("user", recordId, "read", owner);
+            } catch (caught) {
+                error = caught;
+            }
+            expect((error as AgentSkillError).code).to.equal(
+                "INVALID_SKILL_RECORD"
+            );
         }
-        expect((error as AgentSkillError).code).to.equal(
-            "INVALID_SKILL_RECORD"
-        );
     });
 
     it("rejects a direct-write archive checksum mismatch before download", async () => {

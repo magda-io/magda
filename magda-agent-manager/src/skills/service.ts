@@ -155,6 +155,7 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
         );
     }
     const rawName = requiredString(raw.name, "name");
+    const aspectName = requiredString(aspect.name, "agent-skill.name");
     const rawDescription = requiredString(aspect.description, "description");
     let name: string;
     let description: string;
@@ -171,9 +172,13 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
             "INVALID_SKILL_RECORD"
         );
     }
-    if (name !== rawName || description !== rawDescription) {
+    if (
+        name !== rawName ||
+        aspectName !== rawName ||
+        description !== rawDescription
+    ) {
         throw new AgentSkillError(
-            "Agent Skill record has non-canonical derived metadata",
+            "Agent Skill record has inconsistent derived metadata",
             409,
             "INVALID_SKILL_RECORD"
         );
@@ -252,6 +257,7 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
         ...(typeof raw.tenantId === "number" ? { tenantId: raw.tenantId } : {}),
         aspects: {
             "agent-skill": {
+                name,
                 scope,
                 createdAt,
                 createdBy,
@@ -287,6 +293,7 @@ function sameRecordVersion(
     return (
         left.id === right.id &&
         left.name === right.name &&
+        leftAspect.name === rightAspect.name &&
         left.tenantId === right.tenantId &&
         left.aspects["access-control"].ownerId ===
             right.aspects["access-control"].ownerId &&
@@ -310,7 +317,7 @@ function metadata(record: AgentSkillRecord): AgentSkillMetadata {
     const aspect = record.aspects["agent-skill"];
     return {
         id: record.id,
-        name: record.name,
+        name: aspect.name,
         description: aspect.description,
         scope: aspect.scope,
         ownerId: record.aspects["access-control"].ownerId,
@@ -403,6 +410,7 @@ export class AgentSkillService {
             tenantId: this.tenantId,
             aspects: {
                 "agent-skill": {
+                    name,
                     scope,
                     createdAt: now,
                     createdBy: ownerId,
@@ -503,6 +511,7 @@ export class AgentSkillService {
             tenantId: this.tenantId,
             aspects: {
                 "agent-skill": {
+                    name: archive.name,
                     scope,
                     createdAt,
                     createdBy,
@@ -567,7 +576,7 @@ export class AgentSkillService {
             existing.aspects["access-control"].ownerId !== ownerId ||
             aspect.createdBy !== ownerId ||
             aspect.checksum !== archive.checksum ||
-            existing.name !== archive.name ||
+            aspect.name !== archive.name ||
             aspect.description !== archive.description ||
             (existing.tenantId !== undefined &&
                 existing.tenantId !== this.tenantId)
@@ -754,7 +763,7 @@ export class AgentSkillService {
                     scope,
                     this.limits
                 );
-                if (archive.name !== current.name) {
+                if (archive.name !== current.aspects["agent-skill"].name) {
                     throw new AgentSkillError(
                         "Agent Skill names are immutable; publish a new skill to rename it",
                         409,
@@ -960,7 +969,7 @@ export class AgentSkillService {
         }
         if (
             archive.checksum !== record.aspects["agent-skill"].checksum ||
-            archive.name !== record.name ||
+            archive.name !== record.aspects["agent-skill"].name ||
             archive.description !== record.aspects["agent-skill"].description
         ) {
             throw new AgentSkillError(

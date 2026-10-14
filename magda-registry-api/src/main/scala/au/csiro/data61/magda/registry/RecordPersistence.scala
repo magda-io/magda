@@ -1540,9 +1540,7 @@ class DefaultRecordPersistence(config: Config)
       logger: Option[LoggingAdapter] = None
   )(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      // Generic source trimming must never bypass authorization for protected
-      // typed records. Agent Skills are deleted only through per-record routes.
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = ${tenantId.tenantId} and not exists (select 1 from recordaspects skill_aspect where skill_aspect.recordid = records.recordid and skill_aspect.tenantid = records.tenantid and skill_aspect.aspectid = 'agent-skill')"
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = ${tenantId.tenantId}"
         .map(rs => rs.string("recordId"))
         .list
         .apply()

@@ -5,6 +5,7 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
+        "name",
         "scope",
         "createdAt",
         "createdBy",
@@ -16,6 +17,13 @@
         "state"
     ],
     "properties": {
+        "name": {
+            "description": "Immutable canonical name derived from root SKILL.md and identical to the Registry record name.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 46,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
         "scope": {
             "description": "Immutable publication scope.",
             "type": "string",

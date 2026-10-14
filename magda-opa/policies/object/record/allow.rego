@@ -27,12 +27,10 @@ verifyPermission(operationUri) {
     verifyAgentSkillPermission(inputOperationUri, "record")
 }
 
-# Post-update decisions carry originalRecord. If the original was an Agent Skill
-# but the proposed record is not, fail closed so non-admin callers cannot strip
-# the protected type aspect and fall through to generic record permissions.
+# Registry evaluates the presented current or proposed record state. Typed Agent
+# Skills delegate exclusively whenever that state carries the marker aspect.
 verifyPermission(operationUri) {
     not input.object.record["agent-skill"]
-    not input.object.originalRecord["agent-skill"]
     verifyNonAgentSkillPermission(operationUri)
 }
 

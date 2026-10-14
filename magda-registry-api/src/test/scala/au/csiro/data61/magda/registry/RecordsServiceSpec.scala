@@ -197,6 +197,28 @@ class RecordsServiceSpec extends ApiSpec {
           testFullTextSearch(aspectId2, List(recordId1, recordId2))
           testFullTextSearch(aspectId3, List(recordId2, recordId3))
         }
+
+        it("finds a hyphenated Agent Skill name stored in aspect data") {
+          implicit param =>
+            insertAspectDef("agent-skill")
+            createRecord(
+              Record(
+                "neutral-search-record",
+                "neutral root record name",
+                Map(
+                  "agent-skill" -> JsObject(
+                    "name" -> JsString("csv-analyser"),
+                    "scope" -> JsString("user"),
+                    "state" -> JsString("READY")
+                  )
+                )
+              )
+            )
+
+            List("csv", "analyser", "csv-analyser").foreach { query =>
+              testFullTextSearch(query, List("neutral-search-record"))
+            }
+        }
       }
 
       it("starts with no records defined") { param =>
@@ -3126,6 +3148,7 @@ class RecordsServiceSpec extends ApiSpec {
                 id,
                 Map(
                   "agent-skill" -> JsObject(
+                    "name" -> JsString(id),
                     "scope" -> JsString(scope),
                     "state" -> JsString(state)
                   ),

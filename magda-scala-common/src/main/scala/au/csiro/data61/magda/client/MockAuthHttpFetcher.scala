@@ -49,22 +49,9 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
     * Can add / update authDecision for an operationUri via `setAuthDecision` method
     */
   var authDecisionList: Map[String, AuthDecision] = Map()
-  var authDecisionSequences: Map[String, List[AuthDecision]] = Map()
 
   def setAuthDecision(operationUri: String, decision: AuthDecision) = {
     authDecisionList += operationUri -> decision
-  }
-
-  /**
-    * Set a FIFO sequence for tests that need different pre- and post-state
-    * decisions for the same operation. Once exhausted, the static decision is
-    * used when one has been configured.
-    */
-  def setAuthDecisionSequence(
-      operationUri: String,
-      decisions: List[AuthDecision]
-  ) = {
-    authDecisionSequences += operationUri -> decisions
   }
 
   var presetFixedResponse: Option[(StatusCode, String)] = None
@@ -81,7 +68,6 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
 
   def resetMock() = {
     authDecisionList = Map()
-    authDecisionSequences = Map()
     authCallLog = List()
     presetFixedResponse = None
     presetError = None
@@ -114,18 +100,8 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
       val requestOperationUri = getOperationUriFromPayload(payload).getOrElse(
         urlPath.substring(baseUrl.length)
       )
-      val authDecision = authDecisionSequences
-        .get(requestOperationUri)
-        .flatMap(_.headOption)
-        .map { decision =>
-          authDecisionSequences += requestOperationUri -> authDecisionSequences(
-            requestOperationUri
-          ).tail
-          decision
-        }
-        .orElse(
-          authDecisionList.find(t => t._1 == requestOperationUri).map(_._2)
-        )
+      val authDecision =
+        authDecisionList.find(t => t._1 == requestOperationUri).map(_._2)
       if (authDecision.isEmpty) {
         throw new Exception(
           s"NockAuthHttpFetch cannot locate pre-setup authDecision for operationUri: ${requestOperationUri}"

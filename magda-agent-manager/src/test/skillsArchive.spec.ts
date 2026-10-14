@@ -16,13 +16,19 @@ const limits: AgentSkillArchiveLimits = {
 };
 
 async function zip(
-    entries: Array<{ name: string; content: string; mode?: number }>
+    entries: Array<{ name: string; content: string | Buffer; mode?: number }>
 ): Promise<Buffer> {
     const archive = new ZipFile();
     for (const entry of entries) {
-        archive.addBuffer(Buffer.from(entry.content), entry.name, {
-            ...(entry.mode ? { mode: entry.mode } : {})
-        });
+        archive.addBuffer(
+            Buffer.isBuffer(entry.content)
+                ? entry.content
+                : Buffer.from(entry.content),
+            entry.name,
+            {
+                ...(entry.mode ? { mode: entry.mode } : {})
+            }
+        );
     }
     archive.end();
     const chunks: Buffer[] = [];
@@ -149,23 +155,28 @@ describe("Agent Skill ZIP validation", () => {
         }
     });
 
-    it("allows approved system scripts but not arbitrary binary types", async () => {
+    it("allows arbitrary regular supporting files in system archives", async () => {
         const valid = await zip([
             { name: "SKILL.md", content: systemSkillMarkdown },
-            { name: "scripts/check.sh", content: "#!/bin/sh\nexit 0\n" }
+            { name: "scripts/check.sh", content: "#!/bin/sh\nexit 0\n" },
+            {
+                name: "models/classifier.pkl",
+                content: Buffer.from([0x80, 0x04])
+            },
+            { name: "models/network.onnx", content: Buffer.from([0x08, 0x01]) },
+            {
+                name: "models/weights.safetensors",
+                content: Buffer.from([0x00, 0x01, 0x02])
+            },
+            {
+                name: "images/example.png",
+                content: Buffer.from([0x89, 0x50, 0x4e, 0x47])
+            },
+            { name: "payload.bin", content: Buffer.from([0xff, 0x00]) }
         ]);
         expect(
             (await validateAgentSkillArchive(valid, "system", limits)).name
         ).to.equal("system-useful-skill");
-
-        await expectInvalid(
-            await zip([
-                { name: "SKILL.md", content: systemSkillMarkdown },
-                { name: "payload.bin", content: "binary" }
-            ]),
-            "system",
-            "unapproved file type"
-        );
     });
 
     it("enforces Markdown-only user archives", async () => {

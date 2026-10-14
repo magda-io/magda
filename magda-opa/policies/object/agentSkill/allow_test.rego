@@ -65,91 +65,20 @@ test_owner_can_update_user_skill {
 	}
 }
 
-test_owner_can_update_user_skill_with_unchanged_immutable_metadata {
+test_owner_update_does_not_depend_on_original_record_context {
 	record := {
 		"id": "agent-skill-user-id-useful-skill",
 		"name": "useful-skill",
 		"agent-skill": {
+			"name": "useful-skill",
 			"scope": "user",
-			"createdAt": "2026-10-13T12:00:00Z",
-			"createdBy": "user-id",
-			"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
 		},
 		"access-control": {"ownerId": "user-id"},
 	}
 
 	allow with input as {
 		"operationUri": "object/agentSkill/update",
-		"object": {"agentSkill": record, "originalRecord": record},
-		"user": {"id": "user-id", "permissions": [owner_permission]},
-	}
-}
-
-test_owner_cannot_change_immutable_user_skill_metadata {
-	original := {
-		"id": "agent-skill-user-id-useful-skill",
-		"name": "useful-skill",
-		"agent-skill": {
-			"scope": "user",
-			"createdAt": "2026-10-13T12:00:00Z",
-			"createdBy": "user-id",
-			"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
-		},
-		"access-control": {"ownerId": "user-id"},
-	}
-
-	not allow with input as {
-		"operationUri": "object/agentSkill/update",
-		"object": {
-			"agentSkill": object.union(original, {"agent-skill": object.union(original["agent-skill"], {"createdAt": "2026-10-14T12:00:00Z"})}),
-			"originalRecord": original,
-		},
-		"user": {"id": "user-id", "permissions": [owner_permission]},
-	}
-}
-
-test_owner_cannot_rename_user_skill {
-	original := {
-		"id": "agent-skill-user-id-useful-skill",
-		"name": "useful-skill",
-		"agent-skill": {
-			"scope": "user",
-			"createdAt": "2026-10-13T12:00:00Z",
-			"createdBy": "user-id",
-			"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
-		},
-		"access-control": {"ownerId": "user-id"},
-	}
-
-	not allow with input as {
-		"operationUri": "object/agentSkill/update",
-		"object": {
-			"agentSkill": object.union(original, {"name": "renamed-skill"}),
-			"originalRecord": original,
-		},
-		"user": {"id": "user-id", "permissions": [owner_permission]},
-	}
-}
-
-test_owner_cannot_change_user_skill_id {
-	original := {
-		"id": "agent-skill-user-id-useful-skill",
-		"name": "useful-skill",
-		"agent-skill": {
-			"scope": "user",
-			"createdAt": "2026-10-13T12:00:00Z",
-			"createdBy": "user-id",
-			"archiveKey": "agent-services/skills/user-skills/user-id/skill-id.zip",
-		},
-		"access-control": {"ownerId": "user-id"},
-	}
-
-	not allow with input as {
-		"operationUri": "object/agentSkill/update",
-		"object": {
-			"agentSkill": object.union(original, {"id": "agent-skill-user-id-other-skill"}),
-			"originalRecord": original,
-		},
+		"object": {"agentSkill": record},
 		"user": {"id": "user-id", "permissions": [owner_permission]},
 	}
 }

@@ -80,6 +80,7 @@ function skillRecord(): AgentSkillRecord {
         tenantId: 0,
         aspects: {
             "agent-skill": {
+                name: metadata.name,
                 scope: "user",
                 createdAt: metadata.createdAt,
                 createdBy: userId,
