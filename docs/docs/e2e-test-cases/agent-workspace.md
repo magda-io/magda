@@ -214,6 +214,68 @@ Each render must contain exactly one SandboxTemplate and one matching
 SandboxWarmPool. Kata is covered by the offline Helm render matrix; run the full
 journey on a Kata-capable cluster when qualifying that production runtime.
 
+## Minikube gVisor troubleshooting
+
+If the Settings page remains at **Allocating your Agent Workspace**, inspect the
+Sandbox Pod before resetting the claim or PVC:
+
+```sh
+kubectl -n magda-agent get sandboxclaims,sandboxes,pods,pvc
+kubectl -n magda-agent describe pod <sandbox-pod>
+```
+
+On ARM64 Minikube, some gVisor addon versions still download the legacy
+standalone `runsc` and `containerd-shim-runsc-v1` release files. gVisor now
+publishes a release archive containing those binaries and their required
+`gvisor-bin` sidecars. A failed legacy download can leave a small XML
+`NoSuchKey` response installed as each executable. Sandbox events then repeat
+`fork/exec ... containerd-shim-runsc-v1: exec format error` and the UI remains
+in `ALLOCATING`.
+
+Confirm the node architecture and installed runtime before changing workspace
+resources:
+
+```sh
+PROFILE=<minikube-profile>
+minikube ssh -p "$PROFILE" -- uname -m
+minikube ssh -p "$PROFILE" -- 'sudo /usr/bin/runsc --version'
+minikube ssh -p "$PROFILE" -- \
+  "sudo grep -c 'containerd.runtimes.runsc' /etc/containerd/config.toml"
+```
+
+Recover a disposable local cluster as follows:
+
+1. Disable the broken Minikube gVisor installer so a restart cannot overwrite
+   the repair. This removes its managed `RuntimeClass`, so recreate that object
+   after installing the runtime.
+2. Follow the current [gVisor installation guide](https://gvisor.dev/docs/user_guide/install/)
+   to download the checksum-verified release archive for the exact architecture.
+   Install `runsc`, `containerd-shim-runsc-v1`, and the complete sibling
+   `gvisor-bin` directory together on the Minikube node.
+3. Keep exactly one `runsc` containerd runtime stanza, restart containerd and
+   kubelet, then recreate `RuntimeClass/gvisor` with handler `runsc`. Repeated
+   addon runs can append a duplicate TOML table and prevent containerd from
+   starting.
+4. Confirm the live `SandboxTemplate` uses the intended locally loaded runtime
+   image and pull policy. A stale template that points at an unavailable
+   registry tag produces `ImagePullBackOff` after the runtime itself is fixed:
+
+   ```sh
+   kubectl -n magda-agent get sandboxtemplate -o jsonpath=\
+   '{range .items[*]}{.metadata.name}{"\t"}{.spec.podTemplate.spec.containers[0].image}{"\t"}{.spec.podTemplate.spec.containers[0].imagePullPolicy}{"\n"}{end}'
+   ```
+
+5. Recycle only unclaimed warm-pool Sandboxes so the controller copies the
+   repaired template. Do not delete a bound user claim or PVC unless the test
+   explicitly calls for a destructive workspace reset. Refresh the Settings
+   page if an earlier allocation already timed out, then start the workspace
+   again and require the claim, Sandbox, Pod, runtime proxy, and embedded DSH UI
+   all to become ready.
+
+For local lifecycle testing where gVisor itself is not under qualification, use
+`agent-services.warmPool.type=runc` instead of weakening the Sandbox security
+context or bypassing readiness checks.
+
 ## GKE alpha qualification extension
 
 The checks below are a mandatory gate in addition to the Minikube journey. They
