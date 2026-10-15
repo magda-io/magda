@@ -3141,16 +3141,19 @@ class RecordsServiceSpec extends ApiSpec {
             def skillRecord(
                 id: String,
                 skillType: String,
-                state: String
+                state: String,
+                userId: Option[String] = None
             ): Record =
               Record(
                 id,
                 id,
                 Map(
                   "agent-skill" -> JsObject(
-                    "name" -> JsString(id),
-                    "type" -> JsString(skillType),
-                    "state" -> JsString(state)
+                    Map(
+                      "name" -> JsString(id),
+                      "type" -> JsString(skillType),
+                      "state" -> JsString(state)
+                    ) ++ userId.map(value => "userId" -> JsString(value))
                   ),
                   "access-control" -> JsObject(
                     "ownerId" -> JsString("owner-id")
@@ -3162,12 +3165,14 @@ class RecordsServiceSpec extends ApiSpec {
             val maxSkillId =
               s"agent-skill-00000000-0000-4000-8000-000000000123-${"a" * 46}"
             maxSkillId.length shouldBe 95
+            val currentUser = "00000000-0000-4000-8000-000000000123"
+            val otherUser = "00000000-0000-4000-8000-000000000456"
             val records = List(
-              skillRecord(maxSkillId, "user", "READY"),
-              skillRecord("pending", "user", "PENDING"),
-              skillRecord("matching-2", "user", "READY"),
+              skillRecord(maxSkillId, "user", "READY", Some(currentUser)),
+              skillRecord("pending", "user", "PENDING", Some(currentUser)),
+              skillRecord("shared", "user", "READY", Some(otherUser)),
               skillRecord("system", "system", "READY"),
-              skillRecord("matching-3", "user", "READY")
+              skillRecord("mine", "user", "READY", Some(currentUser))
             )
             records.foreach { record =>
               Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
@@ -3179,8 +3184,9 @@ class RecordsServiceSpec extends ApiSpec {
 
             val query =
               "aspect=agent-skill&aspect=access-control" +
-                "&aspectQuery=agent-skill.type:user" +
                 "&aspectQuery=agent-skill.state:READY" +
+                "&aspectOrQuery=agent-skill.type:system" +
+                s"&aspectOrQuery=agent-skill.userId:$currentUser" +
                 "&reversePageTokenOrder=true&limit=2"
             val firstPage = Get(s"/v0/records?$query") ~> addTenantIdHeader(
               TENANT_1
@@ -3188,10 +3194,7 @@ class RecordsServiceSpec extends ApiSpec {
               status shouldEqual StatusCodes.OK
               responseAs[RecordsPage[Record]]
             }
-            firstPage.records.map(_.id) shouldBe List(
-              "matching-3",
-              "matching-2"
-            )
+            firstPage.records.map(_.id) shouldBe List("mine", "system")
             firstPage.hasMore shouldBe true
             firstPage.nextPageToken should not be empty
 
@@ -3206,6 +3209,21 @@ class RecordsServiceSpec extends ApiSpec {
             secondPage.records.map(_.id) shouldBe List(maxSkillId)
             secondPage.hasMore shouldBe false
             secondPage.nextPageToken shouldBe empty
+
+            val sharedQuery =
+              "aspect=agent-skill&aspect=access-control" +
+                "&aspectQuery=agent-skill.type:user" +
+                "&aspectQuery=agent-skill.state:READY" +
+                s"&aspectQuery=agent-skill.userId:!$currentUser" +
+                "&reversePageTokenOrder=true&limit=2"
+            Get(s"/v0/records?$sharedQuery") ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(role).routes ~> check {
+              status shouldEqual StatusCodes.OK
+              val sharedPage = responseAs[RecordsPage[Record]]
+              sharedPage.records.map(_.id) shouldBe List("shared")
+              sharedPage.hasMore shouldBe false
+            }
           }
         }
 
@@ -4059,6 +4077,59 @@ class RecordsServiceSpec extends ApiSpec {
           ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
             .api(role)
             .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+      }
+    }
+
+    describe("Agent Skill immutable identity") {
+      it("rejects a publication type switch before administrator override") {
+        implicit param =>
+          insertAspectDef("agent-skill")
+          insertAspectDef("access-control")
+          val id =
+            "agent-skill-00000000-0000-4000-8000-000000000123-useful-skill"
+          val original = Record(
+            id,
+            "useful-skill",
+            Map(
+              "agent-skill" -> JsObject(
+                "name" -> JsString("useful-skill"),
+                "type" -> JsString("user"),
+                "userId" -> JsString(
+                  "00000000-0000-4000-8000-000000000123"
+                ),
+                "createdAt" -> JsString("2026-10-15T00:00:00Z"),
+                "createdBy" -> JsString(
+                  "00000000-0000-4000-8000-000000000123"
+                ),
+                "archiveKey" -> JsString(
+                  s"agent-services/skills/user-skills/00000000-0000-4000-8000-000000000123/$id.zip"
+                )
+              ),
+              "access-control" -> JsObject(
+                "ownerId" -> JsString(
+                  "00000000-0000-4000-8000-000000000123"
+                )
+              )
+            ),
+            None
+          )
+          createRecord(original)
+          val originalSkill =
+            original.aspects("agent-skill").asInstanceOf[JsObject]
+          val switched = original.copy(
+            aspects = original.aspects.updated(
+              "agent-skill",
+              JsObject(
+                originalSkill.fields.updated("type", JsString("system"))
+              )
+            )
+          )
+
+          Put(s"/v0/records/$id", switched) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
           }
       }

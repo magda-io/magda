@@ -58,6 +58,15 @@ export interface RegistryRecordsPage {
 export interface RegistryListOptions {
     type?: AgentSkillType;
     state?: AgentSkillState;
+    userId?: {
+        operator: "eq" | "neq";
+        value: string;
+    };
+    anyOf?: Array<{
+        field: "type" | "userId";
+        operator: "eq" | "neq";
+        value: string;
+    }>;
     pageToken?: string;
     limit: number;
     q?: string;
@@ -77,10 +86,21 @@ export interface AgentSkillRegistry {
 export interface DownloadedArchive {
     bytes: Buffer;
     contentType: string;
+    recordId?: string;
+    ownerId?: string;
+}
+
+export interface StoredArchiveIdentity {
+    exists: boolean;
+    recordId?: string;
+    ownerId?: string;
 }
 
 export interface AgentSkillStorage {
-    exists(archiveKey: string, sessionToken: string): Promise<boolean>;
+    inspect(
+        archiveKey: string,
+        sessionToken: string
+    ): Promise<StoredArchiveIdentity>;
     download(
         archiveKey: string,
         sessionToken: string,

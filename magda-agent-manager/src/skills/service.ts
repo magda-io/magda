@@ -17,6 +17,8 @@ import {
     ValidatedAgentSkillArchive
 } from "./types.js";
 import { AuthenticatedUser } from "../types.js";
+import jwt from "jsonwebtoken";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const USER_RECORD_ID_PATTERN = /^agent-skill-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-([a-z0-9]+(?:-[a-z0-9]+)*)$/;
@@ -91,11 +93,13 @@ export interface AgentSkillServiceOptions {
     authorization: AgentSkillAuthorization;
     archiveLimits: AgentSkillArchiveLimits;
     tenantId: number;
+    jwtSecret: string;
     now?: () => Date;
 }
 
 export interface AgentSkillListRequest {
     type: AgentSkillType | "all";
+    userId?: "current" | "!current";
     pageToken?: string;
     limit: number;
     q?: string;
@@ -420,6 +424,7 @@ export class AgentSkillService {
     private readonly authorization: AgentSkillAuthorization;
     private readonly limits: AgentSkillArchiveLimits;
     private readonly tenantId: number;
+    private readonly jwtSecret: string;
     private readonly now: () => Date;
     private readonly mutationQueues = new Map<string, Promise<void>>();
 
@@ -429,7 +434,15 @@ export class AgentSkillService {
         this.authorization = options.authorization;
         this.limits = options.archiveLimits;
         this.tenantId = options.tenantId;
+        this.jwtSecret = options.jwtSecret;
         this.now = options.now || (() => new Date());
+    }
+
+    private internalSession(): string {
+        return jwt.sign({ userId: DEFAULT_ADMIN_USER_ID }, this.jwtSecret, {
+            algorithm: "HS256",
+            expiresIn: "2m"
+        });
     }
 
     private exclusive<T>(
@@ -449,6 +462,30 @@ export class AgentSkillService {
             }
         });
         return result;
+    }
+
+    private requireArchiveIdentity(
+        identity: {
+            exists: boolean;
+            recordId?: string;
+            ownerId?: string;
+        },
+        record: AgentSkillRecord,
+        required: boolean
+    ): void {
+        if (
+            (required && !identity.exists) ||
+            (identity.exists &&
+                (identity.recordId !== record.id ||
+                    identity.ownerId !==
+                        record.aspects["access-control"].ownerId))
+        ) {
+            throw new AgentSkillError(
+                "Published Agent Skill archive linkage is inconsistent",
+                409,
+                "AGENT_SKILL_ARCHIVE_LINK_INVALID"
+            );
+        }
     }
 
     private syntheticRecord(
@@ -516,10 +553,10 @@ export class AgentSkillService {
         user: AuthenticatedUser
     ): Promise<void> {
         const proposed = this.syntheticRecord(type, user.id);
-        // Publication creates PENDING then finalizes READY, so reject before ZIP
-        // bytes are accepted unless both lifecycle operations are available.
+        // This early admission check intentionally requires only the public
+        // operation. Internal PENDING -> READY transitions use the service's
+        // short-lived administrator session after caller authorization.
         await this.requirePermission("create", proposed, user);
-        await this.requirePermission("update", proposed, user);
     }
 
     async prepareExisting(
@@ -535,7 +572,10 @@ export class AgentSkillService {
                 "AGENT_SKILL_NOT_FOUND"
             );
         }
-        const raw = await this.registry.get(id, user.sessionToken);
+        const raw = await this.registry.get(
+            id,
+            operation === "read" ? user.sessionToken : this.internalSession()
+        );
         if (!raw) {
             throw new AgentSkillError(
                 "Agent Skill not found",
@@ -543,7 +583,25 @@ export class AgentSkillService {
                 "AGENT_SKILL_NOT_FOUND"
             );
         }
-        const record = parseAgentSkillRecord(raw);
+        let record: AgentSkillRecord;
+        try {
+            record = parseAgentSkillRecord(raw);
+        } catch {
+            // Privileged mutation lookup must not disclose malformed protected
+            // record details before the real caller is authorized.
+            if (operation !== "read") {
+                throw new AgentSkillError(
+                    "Agent Skill not found",
+                    404,
+                    "AGENT_SKILL_NOT_FOUND"
+                );
+            }
+            throw new AgentSkillError(
+                "Registry record is not a valid Agent Skill",
+                409,
+                "INVALID_SKILL_RECORD"
+            );
+        }
         if (record.aspects["agent-skill"].type !== type) {
             throw new AgentSkillError(
                 "Agent Skill not found",
@@ -551,12 +609,22 @@ export class AgentSkillService {
                 "AGENT_SKILL_NOT_FOUND"
             );
         }
-        if (operation === "delete") {
-            // Delete first marks DELETING through Registry update. Verify both
-            // operations before changing either Registry or Storage state.
-            await this.requirePermission("update", record, user);
+        try {
+            await this.requirePermission(operation, record, user);
+        } catch (error) {
+            if (
+                operation !== "read" &&
+                error instanceof AgentSkillError &&
+                error.code === "AGENT_SKILL_FORBIDDEN"
+            ) {
+                throw new AgentSkillError(
+                    "Agent Skill not found",
+                    404,
+                    "AGENT_SKILL_NOT_FOUND"
+                );
+            }
+            throw error;
         }
-        await this.requirePermission(operation, record, user);
         return record;
     }
 
@@ -646,6 +714,7 @@ export class AgentSkillService {
             aspect.userId !== userId ||
             existing.aspects["access-control"].ownerId !== ownerId ||
             aspect.createdBy !== ownerId ||
+            aspect.updatedBy !== ownerId ||
             aspect.checksum !== archive.checksum ||
             aspect.name !== archive.name ||
             aspect.description !== archive.description ||
@@ -687,9 +756,26 @@ export class AgentSkillService {
         return await this.exclusive(id, async () => {
             let auditRecord = this.syntheticRecord(type, user.id, archive.name);
             try {
+                const createdAt = this.now().toISOString();
+                const candidate = this.buildRecord(
+                    id,
+                    type,
+                    user.id,
+                    userId,
+                    archive,
+                    "PENDING",
+                    createdAt,
+                    user.id,
+                    createdAt,
+                    user.id
+                );
+                // Never perform a privileged lookup or lifecycle write unless
+                // the real caller is authorized for this exact publication.
+                await this.requirePermission("create", candidate, user);
+                const internalSession = this.internalSession();
                 const existingRaw = await this.registry.get(
                     id,
-                    user.sessionToken
+                    internalSession
                 );
                 let pending: AgentSkillRecord;
                 if (existingRaw) {
@@ -701,20 +787,9 @@ export class AgentSkillService {
                         archive
                     );
                 } else {
-                    const createdAt = this.now().toISOString();
-                    pending = this.buildRecord(
-                        id,
-                        type,
-                        user.id,
-                        userId,
-                        archive,
-                        "PENDING",
-                        createdAt,
-                        user.id,
-                        createdAt,
-                        user.id
-                    );
+                    pending = candidate;
                     try {
+                        // Initial creation remains attributed to the real actor.
                         await this.registry.create(pending, user.sessionToken);
                     } catch (error) {
                         if (
@@ -726,7 +801,7 @@ export class AgentSkillService {
                         }
                         const recovered = await this.registry.get(
                             id,
-                            user.sessionToken
+                            internalSession
                         );
                         if (!recovered) {
                             if (
@@ -753,26 +828,32 @@ export class AgentSkillService {
                     }
                 }
                 auditRecord = pending;
-                if (pending.aspects["agent-skill"].state === "READY") {
-                    // Registry may have committed READY before the prior response
-                    // was lost, or a direct caller may have occupied the record.
-                    // Re-upload the exact validated bytes so retry success never
-                    // asserts an archive exists without downstream confirmation.
-                    await this.storage.upload(
-                        pending.aspects["agent-skill"].archiveKey,
-                        id,
-                        bytes,
-                        user.sessionToken
-                    );
-                    this.audit("create", pending, user, "success");
-                    return metadata(pending);
-                }
+                // Recheck the same requested operation against authoritative
+                // state before any administrator-authorized mutation.
+                await this.requirePermission("create", pending, user);
+                const stored = await this.storage.inspect(
+                    pending.aspects["agent-skill"].archiveKey,
+                    internalSession
+                );
+                this.requireArchiveIdentity(stored, pending, false);
                 await this.storage.upload(
                     pending.aspects["agent-skill"].archiveKey,
                     id,
                     bytes,
-                    user.sessionToken
+                    stored.exists ? internalSession : user.sessionToken
                 );
+                this.requireArchiveIdentity(
+                    await this.storage.inspect(
+                        pending.aspects["agent-skill"].archiveKey,
+                        internalSession
+                    ),
+                    pending,
+                    true
+                );
+                if (pending.aspects["agent-skill"].state === "READY") {
+                    this.audit("create", pending, user, "success");
+                    return metadata(pending);
+                }
                 const ready: AgentSkillRecord = {
                     ...pending,
                     aspects: {
@@ -785,7 +866,7 @@ export class AgentSkillService {
                         }
                     }
                 };
-                await this.registry.put(ready, user.sessionToken);
+                await this.registry.put(ready, internalSession);
                 this.audit("create", ready, user, "success");
                 return metadata(ready);
             } catch (error) {
@@ -803,9 +884,10 @@ export class AgentSkillService {
     ): Promise<AgentSkillMetadata> {
         return await this.exclusive(existing.id, async () => {
             try {
+                const internalSession = this.internalSession();
                 const currentRaw = await this.registry.get(
                     existing.id,
-                    user.sessionToken
+                    internalSession
                 );
                 if (!currentRaw) {
                     throw new AgentSkillError(
@@ -854,18 +936,18 @@ export class AgentSkillService {
                         "AGENT_SKILL_PENDING_CONFLICT"
                     );
                 }
-                if (
-                    !(await this.storage.exists(
-                        current.aspects["agent-skill"].archiveKey,
-                        user.sessionToken
-                    ))
-                ) {
+                const stored = await this.storage.inspect(
+                    current.aspects["agent-skill"].archiveKey,
+                    internalSession
+                );
+                if (!stored.exists) {
                     throw new AgentSkillError(
                         "Existing Agent Skill archive is missing; replacement was not attempted",
                         409,
                         "AGENT_SKILL_ARCHIVE_MISSING"
                     );
                 }
+                this.requireArchiveIdentity(stored, current, true);
                 const nextPending = this.buildRecord(
                     current.id,
                     type,
@@ -903,6 +985,14 @@ export class AgentSkillService {
                     bytes,
                     user.sessionToken
                 );
+                this.requireArchiveIdentity(
+                    await this.storage.inspect(
+                        pending.aspects["agent-skill"].archiveKey,
+                        internalSession
+                    ),
+                    pending,
+                    true
+                );
                 const ready: AgentSkillRecord = {
                     ...pending,
                     aspects: {
@@ -932,9 +1022,10 @@ export class AgentSkillService {
     ): Promise<void> {
         await this.exclusive(existing.id, async () => {
             try {
+                const internalSession = this.internalSession();
                 const raw = await this.registry.get(
                     existing.id,
-                    user.sessionToken
+                    internalSession
                 );
                 if (!raw) {
                     throw new AgentSkillError(
@@ -961,6 +1052,11 @@ export class AgentSkillService {
                         "AGENT_SKILL_IMMUTABLE_CONFLICT"
                     );
                 }
+                const stored = await this.storage.inspect(
+                    current.aspects["agent-skill"].archiveKey,
+                    internalSession
+                );
+                this.requireArchiveIdentity(stored, current, false);
                 const deleting: AgentSkillRecord =
                     current.aspects["agent-skill"].state === "DELETING"
                         ? current
@@ -975,7 +1071,7 @@ export class AgentSkillService {
                               }
                           };
                 if (deleting !== current) {
-                    await this.registry.put(deleting, user.sessionToken);
+                    await this.registry.put(deleting, internalSession);
                 }
                 await this.storage.delete(
                     deleting.aspects["agent-skill"].archiveKey,
@@ -1019,6 +1115,15 @@ export class AgentSkillService {
             record.aspects["agent-skill"].archiveKey,
             user.sessionToken,
             this.limits.maxCompressedBytes
+        );
+        this.requireArchiveIdentity(
+            {
+                exists: true,
+                recordId: downloaded.recordId,
+                ownerId: downloaded.ownerId
+            },
+            record,
+            true
         );
         if (
             downloaded.contentType.split(";", 1)[0].trim() !== "application/zip"
@@ -1065,16 +1170,48 @@ export class AgentSkillService {
         hasMore: boolean;
         nextPageToken?: string;
     }> {
+        const userSelector =
+            request.userId ||
+            (request.type === "user" ? ("current" as const) : undefined);
         const requestedTypes = new Set<AgentSkillType>(
-            request.type === "all" ? ["system", "user"] : [request.type]
+            userSelector
+                ? ["user"]
+                : request.type === "all"
+                ? ["system", "user"]
+                : [request.type]
         );
-        // Do not pre-authorize against a synthetic record here: OrgUnit,
-        // pre-authorised and exemption grants depend on each actual record.
-        // Registry first applies its record-level policy, then Agent Services
-        // repeats the typed decision below for every returned record.
+        // Registry applies both catalogue membership and record-level OPA before
+        // keyset pagination. In particular, the default All view is one SQL
+        // query for READY (system OR current-user) records, avoiding an
+        // unmergeable pair of independent cursors.
         const result = await this.registry.list(
             {
-                type: request.type === "all" ? undefined : request.type,
+                ...(userSelector
+                    ? {
+                          type: "user" as const,
+                          userId: {
+                              operator: userSelector.startsWith("!")
+                                  ? ("neq" as const)
+                                  : ("eq" as const),
+                              value: user.id
+                          }
+                      }
+                    : request.type === "all"
+                    ? {
+                          anyOf: [
+                              {
+                                  field: "type" as const,
+                                  operator: "eq" as const,
+                                  value: "system"
+                              },
+                              {
+                                  field: "userId" as const,
+                                  operator: "eq" as const,
+                                  value: user.id
+                              }
+                          ]
+                      }
+                    : { type: request.type }),
                 state: "READY",
                 pageToken: request.pageToken,
                 limit: request.limit,
@@ -1101,9 +1238,17 @@ export class AgentSkillService {
                 continue;
             }
             const aspect = record.aspects["agent-skill"];
+            const isRequestedPublication = userSelector
+                ? aspect.type === "user" &&
+                  (userSelector === "current"
+                      ? aspect.userId === user.id
+                      : aspect.userId !== user.id)
+                : request.type === "all"
+                ? aspect.type === "system" || aspect.userId === user.id
+                : requestedTypes.has(aspect.type);
             if (
                 aspect.state !== "READY" ||
-                !requestedTypes.has(aspect.type) ||
+                !isRequestedPublication ||
                 !(await this.authorization.can(
                     "read",
                     record,

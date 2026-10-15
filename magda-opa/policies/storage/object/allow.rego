@@ -8,6 +8,16 @@ import data.common.isEmpty
 
 default allow = false
 
+linkedRecordBindingValid {
+	not input.object.record["agent-skill"]
+}
+
+linkedRecordBindingValid {
+	input.object.record["agent-skill"]
+	input.storage.object.name = input.object.record["agent-skill"].archiveKey
+	input.storage.object.ownerId = input.object.record["access-control"].ownerId
+}
+
 # Users has a unlimited permission to perform the operation on storage object will be allowed
 allow {
 	hasNoConstraintPermission(input.operationUri)
@@ -51,6 +61,7 @@ allow {
 # users with either "object/record/read" are allow to access
 allow {
 	input.storage.object.recordId = input.object.record.id
+	linkedRecordBindingValid
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
 	operationType = "read"
 	data.object.record.verifyPermission("object/record/read")
@@ -62,6 +73,7 @@ allow {
 # Keeping these cases separate prevents create-only grants overwriting archives.
 allow {
 	input.storage.object.recordId = input.object.record.id
+	linkedRecordBindingValid
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
 	operationType = "upload"
 	input.storage.object.exists == false
@@ -70,6 +82,7 @@ allow {
 
 allow {
 	input.storage.object.recordId = input.object.record.id
+	linkedRecordBindingValid
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
 	operationType = "upload"
 	input.storage.object.exists == true
@@ -80,6 +93,7 @@ allow {
 # create/update grants cannot be promoted to destructive Storage authority.
 allow {
 	input.storage.object.recordId = input.object.record.id
+	linkedRecordBindingValid
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
 	operationType = "delete"
 	data.object.record.verifyPermission("object/record/delete")

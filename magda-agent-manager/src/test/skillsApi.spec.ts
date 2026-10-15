@@ -284,6 +284,55 @@ describe("Agent Skill authentication and API boundary", () => {
         expect(prepareCalls).to.equal(0);
     });
 
+    it("accepts only server-resolved My and Shared catalogue selectors", async () => {
+        const requests: unknown[] = [];
+        const service = ({
+            list: async (options: unknown) => {
+                requests.push(options);
+                return { records: [], hasMore: false };
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const session = token();
+
+        for (const selector of ["current", "!current"]) {
+            const response = await request(app)
+                .get(`/v0/skills?userId=${encodeURIComponent(selector)}`)
+                .set("X-Magda-Session", session);
+            expect(response.status).to.equal(200);
+        }
+        expect(requests).to.deep.equal([
+            {
+                type: "all",
+                userId: "current",
+                limit: 20,
+                pageToken: undefined,
+                q: undefined
+            },
+            {
+                type: "all",
+                userId: "!current",
+                limit: 20,
+                pageToken: undefined,
+                q: undefined
+            }
+        ]);
+
+        for (const query of [
+            `userId=${userId}`,
+            "userId=!CURRENT",
+            "userId=",
+            "type=system&userId=current"
+        ]) {
+            const response = await request(app)
+                .get(`/v0/skills?${query}`)
+                .set("X-Magda-Session", session);
+            expect(response.status).to.equal(400);
+            expect(response.body.error.code).to.equal("INVALID_USERID");
+        }
+        expect(requests).to.have.length(2);
+    });
+
     it("supports list, metadata, ZIP, replace and delete route contracts", async () => {
         const calls: string[] = [];
         let listRequest: unknown;
@@ -319,7 +368,9 @@ describe("Agent Skill authentication and API boundary", () => {
         const session = token();
 
         const list = await request(app)
-            .get("/v0/skills?type=user&limit=7&pageToken=page-1&q=useful")
+            .get(
+                "/v0/skills?type=user&userId=current&limit=7&pageToken=page-1&q=useful"
+            )
             .set("X-Magda-Session", session);
         expect(list.status).to.equal(200);
         expect(list.body).to.deep.equal({
@@ -329,6 +380,7 @@ describe("Agent Skill authentication and API boundary", () => {
         });
         expect(listRequest).to.deep.equal({
             type: "user",
+            userId: "current",
             limit: 7,
             pageToken: "page-1",
             q: "useful"

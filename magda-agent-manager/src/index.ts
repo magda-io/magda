@@ -145,6 +145,7 @@ const skillService = new AgentSkillService({
         new AuthDecisionQueryClient(config.authApiUrl)
     ),
     tenantId: config.tenantId,
+    jwtSecret: config.jwtSecret,
     archiveLimits: {
         maxCompressedBytes: config.skillArchiveMaxCompressedBytes,
         maxUncompressedBytes: config.skillArchiveMaxUncompressedBytes,

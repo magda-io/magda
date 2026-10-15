@@ -86,7 +86,7 @@ describe("Agent Skill downstream clients", () => {
         );
     });
 
-    it("requires a bounded one-byte Storage range response for existence checks", async () => {
+    it("requires a bounded one-byte Storage range response and reads trusted identity metadata", async () => {
         globalThis.fetch = (async () =>
             new Response(Buffer.from("entire-object"), {
                 status: 200
@@ -97,7 +97,7 @@ describe("Agent Skill downstream clients", () => {
         );
         let error: unknown;
         try {
-            await storage.exists(
+            await storage.inspect(
                 record().aspects["agent-skill"].archiveKey,
                 session
             );
@@ -109,14 +109,45 @@ describe("Agent Skill downstream clients", () => {
         globalThis.fetch = (async () =>
             new Response(Buffer.from("x"), {
                 status: 206,
-                headers: { "Content-Range": "bytes 0-0/10" }
+                headers: {
+                    "Content-Range": "bytes 0-0/10",
+                    "x-amz-meta-magda-record-id": recordId,
+                    "x-amz-meta-magda-owner-id": userId
+                }
             })) as typeof globalThis.fetch;
         expect(
-            await storage.exists(
+            await storage.inspect(
                 record().aspects["agent-skill"].archiveKey,
                 session
             )
-        ).to.equal(true);
+        ).to.deep.equal({ exists: true, recordId, ownerId: userId });
+    });
+
+    it("returns trusted Storage linkage metadata with downloaded bytes", async () => {
+        globalThis.fetch = (async () =>
+            new Response(Buffer.from("zip"), {
+                status: 200,
+                headers: {
+                    "Content-Type": "application/zip",
+                    "x-amz-meta-magda-record-id": recordId,
+                    "x-amz-meta-magda-owner-id": userId
+                }
+            })) as typeof globalThis.fetch;
+        const storage = new HttpAgentSkillStorage(
+            "http://storage-api/v0",
+            "magda-datasets"
+        );
+        const downloaded = await storage.download(
+            record().aspects["agent-skill"].archiveKey,
+            session,
+            1024
+        );
+        expect(downloaded).to.deep.include({
+            contentType: "application/zip",
+            recordId,
+            ownerId: userId
+        });
+        expect(downloaded.bytes.toString()).to.equal("zip");
     });
 
     it("treats an already-missing Storage object as an idempotent delete", async () => {
@@ -184,7 +215,8 @@ describe("Agent Skill downstream clients", () => {
                 pageToken: "123",
                 q: "needle",
                 type: "user",
-                state: "READY"
+                state: "READY",
+                userId: { operator: "neq", value: userId }
             },
             session
         );
@@ -196,7 +228,8 @@ describe("Agent Skill downstream clients", () => {
         ]);
         expect(query.getAll("aspectQuery")).to.deep.equal([
             "agent-skill.type:user",
-            "agent-skill.state:READY"
+            "agent-skill.state:READY",
+            `agent-skill.userId:!${userId}`
         ]);
         expect(query.get("limit")).to.equal("2");
         expect(query.get("reversePageTokenOrder")).to.equal("true");
@@ -206,6 +239,45 @@ describe("Agent Skill downstream clients", () => {
         expect(query.has("orderByDir")).to.equal(false);
         expect(query.has("start")).to.equal(false);
         expect(result.nextPageToken).to.equal("124");
+    });
+
+    it("uses one Registry OR query for the default system plus own catalogue", async () => {
+        let requestUrl = "";
+        globalThis.fetch = (async (url) => {
+            requestUrl = String(url);
+            return new Response(
+                JSON.stringify({ records: [], hasMore: false }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                }
+            );
+        }) as typeof globalThis.fetch;
+        const registry = new HttpAgentSkillRegistry(
+            "http://registry-api/v0",
+            7
+        );
+        await registry.list(
+            {
+                limit: 20,
+                state: "READY",
+                anyOf: [
+                    { field: "type", operator: "eq", value: "system" },
+                    { field: "userId", operator: "eq", value: userId }
+                ]
+            },
+            session
+        );
+
+        const query = new URL(requestUrl).searchParams;
+        expect(query.getAll("aspectQuery")).to.deep.equal([
+            "agent-skill.state:READY"
+        ]);
+        expect(query.getAll("aspectOrQuery")).to.deep.equal([
+            "agent-skill.type:system",
+            `agent-skill.userId:${userId}`
+        ]);
+        expect(query.has("orderBy")).to.equal(false);
     });
 
     it("builds OPA input only from the trusted typed record", async () => {

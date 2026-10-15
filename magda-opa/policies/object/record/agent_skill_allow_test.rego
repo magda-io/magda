@@ -18,6 +18,14 @@ agent_owner_permission := {
 	],
 }
 
+broad_user_update_permission := {
+	"resourceUri": "object/agentSkill/user",
+	"userOwnershipConstraint": false,
+	"orgUnitOwnershipConstraint": false,
+	"preAuthorisedConstraint": false,
+	"operations": [{"uri": "object/agentSkill/user/update"}],
+}
+
 system_admin_permission := {
 	"resourceUri": "object/agentSkill/system",
 	"userOwnershipConstraint": false,
@@ -46,6 +54,8 @@ user_record(owner, target) = {
 		"name": "useful-skill",
 		"type": "user",
 		"userId": target,
+		"createdAt": "2026-10-15T00:00:00Z",
+		"createdBy": owner,
 		"archiveKey": sprintf("agent-services/skills/user-skills/%s/agent-skill-%s-useful-skill.zip", [target, target]),
 	},
 	"access-control": {"ownerId": owner},
@@ -79,7 +89,7 @@ test_type_switch_requires_both_typed_permissions {
 	system := {
 		"id": "agent-skill-system-useful-skill",
 		"name": "system-useful-skill",
-		"agent-skill": {"name": "system-useful-skill", "type": "system", "archiveKey": "agent-services/skills/system-skills/agent-skill-system-useful-skill.zip"},
+		"agent-skill": {"name": "system-useful-skill", "type": "system", "createdAt": "2026-10-15T00:00:00Z", "createdBy": user_id, "archiveKey": "agent-services/skills/system-skills/agent-skill-system-useful-skill.zip"},
 		"access-control": {"ownerId": user_id},
 	}
 
@@ -91,18 +101,55 @@ test_type_switch_requires_both_typed_permissions {
 	}
 }
 
-test_type_switch_with_both_typed_permissions_is_allowed {
+test_type_switch_with_both_typed_permissions_is_denied {
 	system := {
 		"id": "agent-skill-system-useful-skill",
 		"name": "system-useful-skill",
-		"agent-skill": {"name": "system-useful-skill", "type": "system", "archiveKey": "agent-services/skills/system-skills/agent-skill-system-useful-skill.zip"},
+		"agent-skill": {"name": "system-useful-skill", "type": "system", "createdAt": "2026-10-15T00:00:00Z", "createdBy": user_id, "archiveKey": "agent-services/skills/system-skills/agent-skill-system-useful-skill.zip"},
 		"access-control": {"ownerId": user_id},
 	}
 
-	allow with input as {
+	not allow with input as {
 		"operationUri": "object/record/update",
 		"object": {"record": system, "originalRecord": user_record(user_id, user_id)},
 		"user": {"id": user_id, "permissions": [agent_owner_permission, system_admin_permission]},
+	}
+}
+
+test_same_type_mutable_fields_update_is_allowed {
+	original := user_record(user_id, user_id)
+	proposed := object.union(original, {"agent-skill": object.union(original["agent-skill"], {
+		"description": "updated",
+		"checksum": "updated-checksum",
+		"state": "READY",
+		"updatedBy": user_id,
+	})})
+
+	allow with input as {
+		"operationUri": "object/record/update",
+		"object": {"record": proposed, "originalRecord": original},
+		"user": {"id": user_id, "permissions": [agent_owner_permission]},
+	}
+}
+
+test_created_by_is_immutable {
+	original := user_record(user_id, user_id)
+	proposed := object.union(original, {"agent-skill": object.union(original["agent-skill"], {"createdBy": other_id})})
+
+	not allow with input as {
+		"operationUri": "object/record/update",
+		"object": {"record": proposed, "originalRecord": original},
+		"user": {"id": user_id, "permissions": [agent_owner_permission]},
+	}
+}
+
+test_owner_is_immutable_for_unconstrained_typed_updater {
+	original := user_record(user_id, user_id)
+	proposed := object.union(original, {"access-control": {"ownerId": other_id}})
+	not allow with input as {
+		"operationUri": "object/record/update",
+		"object": {"record": proposed, "originalRecord": original},
+		"user": {"id": user_id, "permissions": [broad_user_update_permission]},
 	}
 }
 

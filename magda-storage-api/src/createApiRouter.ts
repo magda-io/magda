@@ -436,9 +436,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
         ),
         async (req: FileRequest, res: Response) => {
             try {
-                const recordId =
-                    req.query.recordId &&
-                    decodeURIComponent(req?.query?.recordId as string);
+                const recordId = res?.locals?.storageObjectRecordId as
+                    | string
+                    | undefined;
 
                 const bucket = req.params.bucket;
                 const encodeBucketname = encodeURIComponent(bucket);
@@ -560,9 +560,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const path = req.params[0];
             const bucket = req.params.bucket;
 
-            const recordId =
-                req.query.recordId &&
-                decodeURIComponent(req.query.recordId as string);
+            const recordId = res?.locals?.storageObjectRecordId as
+                | string
+                | undefined;
 
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;

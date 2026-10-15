@@ -41,6 +41,55 @@ object Directives extends Protocols with SprayJsonSupport {
       recordId: String
   ) extends Exception(s"Cannot locate record by id: ${recordId}")
 
+  private def violatesAgentSkillImmutableIdentity(
+      current: JsObject,
+      proposed: JsObject
+  ): Boolean =
+    current.fields.get("agent-skill") match {
+      case Some(currentSkill: JsObject) =>
+        proposed.fields.get("agent-skill") match {
+          case Some(proposedSkill: JsObject) =>
+            val currentAccess = current.fields
+              .get("access-control")
+              .collect { case value: JsObject => value }
+            val proposedAccess = proposed.fields
+              .get("access-control")
+              .collect { case value: JsObject => value }
+            Seq(
+              current.fields.get("id") -> proposed.fields.get("id"),
+              current.fields.get("name") -> proposed.fields.get("name"),
+              currentSkill.fields.get("name") -> proposedSkill.fields.get(
+                "name"
+              ),
+              currentSkill.fields.get("type") -> proposedSkill.fields.get(
+                "type"
+              ),
+              currentSkill.fields.get("userId") -> proposedSkill.fields.get(
+                "userId"
+              ),
+              currentSkill.fields.get("createdAt") -> proposedSkill.fields.get(
+                "createdAt"
+              ),
+              currentSkill.fields.get("createdBy") -> proposedSkill.fields.get(
+                "createdBy"
+              ),
+              currentSkill.fields.get("archiveKey") -> proposedSkill.fields.get(
+                "archiveKey"
+              ),
+              currentAccess.flatMap(_.fields.get("ownerId")) -> proposedAccess
+                .flatMap(_.fields.get("ownerId"))
+            ).exists { case (before, after) => before != after }
+          case _ => true
+        }
+      case _ => false
+    }
+
+  private def rejectAgentSkillImmutableMutation: Directive0 =
+    complete(
+      BadRequest,
+      ApiError("Agent Skill publication identity fields are immutable.")
+    )
+
   /**
     * retrieve record from DB and convert into JSON data (to be used as part of policy engine context data)
     * @param recordId
@@ -88,7 +137,10 @@ object Directives extends Protocols with SprayJsonSupport {
       }
 
       DB readOnly { implicit session =>
-        sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
+        sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId} ${tenantId match {
+          case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
+          case _                           => SQLSyntax.empty
+        }}"""
           .foreach { rs =>
             val aspectId = rs.string("aspectid")
             Try(JsonParser(rs.string("data")).asJsObject) match {
@@ -243,37 +295,43 @@ object Directives extends Protocols with SprayJsonSupport {
           }
         ).flatMap {
           case Success((currentRecordData, recordContextDataAfterUpdate)) =>
-            /*
+            if (violatesAgentSkillImmutableIdentity(
+                  currentRecordData,
+                  recordContextDataAfterUpdate
+                )) {
+              rejectAgentSkillImmutableMutation
+            } else
+              /*
           We make sure user has permission to perform "object/record/update" operation on
           - current record
           - the record after update
           i.e. A user can't modify a record's data to make it a record that he has no permission to modify.
           Useful use case would be: a user with permission to only `update` draft dataset can't modify modify the draft dataset
           to make it a publish dataset, unless he also has permission to update publish datasets.
-             */
-            requirePermission(
-              authApiClient,
-              "object/record/update",
-              input = Some(
-                JsObject(
-                  "object" -> JsObject("record" -> currentRecordData)
+               */
+              requirePermission(
+                authApiClient,
+                "object/record/update",
+                input = Some(
+                  JsObject(
+                    "object" -> JsObject("record" -> currentRecordData)
+                  )
                 )
-              )
-            ) & requirePermission(
-              authApiClient,
-              "object/record/update",
-              input = Some(
-                JsObject(
-                  "object" -> JsObject(
-                    // Policies that exclusively dispatch typed records need the
-                    // trusted pre-mutation state to prevent marker removal and
-                    // require authority for both sides of a type transition.
-                    "record" -> recordContextDataAfterUpdate,
-                    "originalRecord" -> currentRecordData
+              ) & requirePermission(
+                authApiClient,
+                "object/record/update",
+                input = Some(
+                  JsObject(
+                    "object" -> JsObject(
+                      // Typed-record policies need trusted pre-mutation state to
+                      // preserve immutable identity and authorize both the
+                      // original and proposed same-type states.
+                      "record" -> recordContextDataAfterUpdate,
+                      "originalRecord" -> currentRecordData
+                    )
                   )
                 )
               )
-            )
           case Failure(_: NoRecordFoundException) =>
             newRecordOrJsonPath match {
               case Left(newRecord) =>
@@ -379,34 +437,39 @@ object Directives extends Protocols with SprayJsonSupport {
           }
         ).flatMap {
           case Success((currentRecordData, recordContextDataAfterUpdate)) =>
-            //val recordContextDataAfterUpdate =
-            /*
+            if (violatesAgentSkillImmutableIdentity(
+                  currentRecordData,
+                  recordContextDataAfterUpdate
+                )) {
+              rejectAgentSkillImmutableMutation
+            } else
+              /*
           We make sure user has permission to perform "object/record/update" operation on
           - current record
           - the record after the aspect data update
           i.e. A user can't modify a record's data to make it a record that he has no permission to modify.
-             */
-            requirePermission(
-              authApiClient,
-              "object/record/update",
-              input = Some(
-                JsObject("object" -> JsObject("record" -> currentRecordData))
-              )
-            ) & requirePermission(
-              authApiClient,
-              "object/record/update",
-              input = Some(
-                JsObject(
-                  "object" -> JsObject(
-                    // Policies that exclusively dispatch typed records need the
-                    // trusted pre-mutation state to prevent marker removal and
-                    // require authority for both sides of a type transition.
-                    "record" -> recordContextDataAfterUpdate,
-                    "originalRecord" -> currentRecordData
+               */
+              requirePermission(
+                authApiClient,
+                "object/record/update",
+                input = Some(
+                  JsObject("object" -> JsObject("record" -> currentRecordData))
+                )
+              ) & requirePermission(
+                authApiClient,
+                "object/record/update",
+                input = Some(
+                  JsObject(
+                    "object" -> JsObject(
+                      // Typed-record policies need trusted pre-mutation state to
+                      // preserve immutable identity and authorize both the
+                      // original and proposed same-type states.
+                      "record" -> recordContextDataAfterUpdate,
+                      "originalRecord" -> currentRecordData
+                    )
                   )
                 )
               )
-            )
           case Failure(_: NoRecordFoundException) =>
             // There is no way to construct full record context data for auth decision without the original record
             // we will send out BadRequest response immediately
@@ -469,30 +532,36 @@ object Directives extends Protocols with SprayJsonSupport {
           }
         ).flatMap {
           case Success((currentRecordData, recordContextDataAfterUpdate)) =>
-            /*
+            if (violatesAgentSkillImmutableIdentity(
+                  currentRecordData,
+                  recordContextDataAfterUpdate
+                )) {
+              rejectAgentSkillImmutableMutation
+            } else
+              /*
           Make sure user has permission before & after delete the aspect
-             */
-            requirePermission(
-              authApiClient,
-              "object/record/update",
-              input = Some(
-                JsObject("object" -> JsObject("record" -> currentRecordData))
-              )
-            ) & requirePermission(
-              authApiClient,
-              "object/record/update",
-              input = Some(
-                JsObject(
-                  "object" -> JsObject(
-                    // Policies that exclusively dispatch typed records need the
-                    // trusted pre-mutation state to prevent marker removal and
-                    // require authority for both sides of a type transition.
-                    "record" -> recordContextDataAfterUpdate,
-                    "originalRecord" -> currentRecordData
+               */
+              requirePermission(
+                authApiClient,
+                "object/record/update",
+                input = Some(
+                  JsObject("object" -> JsObject("record" -> currentRecordData))
+                )
+              ) & requirePermission(
+                authApiClient,
+                "object/record/update",
+                input = Some(
+                  JsObject(
+                    "object" -> JsObject(
+                      // Typed-record policies need trusted pre-mutation state to
+                      // preserve immutable identity and authorize both the
+                      // original and proposed same-type states.
+                      "record" -> recordContextDataAfterUpdate,
+                      "originalRecord" -> currentRecordData
+                    )
                   )
                 )
               )
-            )
           case Failure(_: NoRecordFoundException) =>
             // when record cannot found, only user has unconditional record update access can proceed to this API (and potentially know the aspect has been already deleted)
             requireUnconditionalAuthDecision(

@@ -16,6 +16,8 @@ import {
     RegistryRecordsPage
 } from "../skills/types.js";
 import { AuthenticatedUser } from "../types.js";
+import jwt from "jsonwebtoken";
+import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
 const owner: AuthenticatedUser = {
     id: "00000000-0000-4000-8000-000000000123",
@@ -34,6 +36,15 @@ const otherAdmin: AuthenticatedUser = {
     sessionToken: "other-admin-token"
 };
 const recordId = `agent-skill-${owner.id}-useful-skill`;
+const jwtSecret = "agent-skill-test-secret";
+
+function expectInternalSession(token: string): void {
+    const payload = jwt.verify(token, jwtSecret, {
+        algorithms: ["HS256"]
+    }) as { userId: string; iat: number; exp: number };
+    expect(payload.userId).to.equal(DEFAULT_ADMIN_USER_ID);
+    expect(payload.exp - payload.iat).to.equal(120);
+}
 
 async function skillZip(
     name = "useful-skill",
@@ -62,25 +73,46 @@ class MemoryRegistry implements AgentSkillRegistry {
     records = new Map<string, AgentSkillRecord>();
     occupiedIds = new Set<string>();
     getCalls = 0;
+    listCalls: RegistryListOptions[] = [];
     writes: AgentSkillRecord[] = [];
+    calls: Array<{ operation: string; id: string; token: string }> = [];
     failCreateAfterWrite = false;
     failCreateError?: Error;
     failPutState?: "PENDING" | "READY" | "DELETING";
 
-    async get(id: string): Promise<unknown | undefined> {
+    async get(id: string, token: string): Promise<unknown | undefined> {
         this.getCalls += 1;
+        this.calls.push({ operation: "get", id, token });
         const record = this.records.get(id);
         return record ? structuredClone(record) : undefined;
     }
 
     async list(options: RegistryListOptions): Promise<RegistryRecordsPage> {
+        this.listCalls.push(structuredClone(options));
         const records = [...this.records.values()].filter((record) => {
             const aspect = record.aspects["agent-skill"];
+            const userMatches =
+                !options.userId ||
+                (options.userId.operator === "eq"
+                    ? aspect.userId === options.userId.value
+                    : aspect.userId !== options.userId.value);
+            const anyMatches =
+                !options.anyOf?.length ||
+                options.anyOf.some((condition) => {
+                    const actual =
+                        condition.field === "type"
+                            ? aspect.type
+                            : aspect.userId;
+                    return condition.operator === "eq"
+                        ? actual === condition.value
+                        : actual !== condition.value;
+                });
             return (
                 (!options.type || aspect.type === options.type) &&
                 (!options.state || aspect.state === options.state) &&
-                (!options.q ||
-                    record.aspects["agent-skill"].name.includes(options.q))
+                userMatches &&
+                anyMatches &&
+                (!options.q || aspect.name.includes(options.q))
             );
         });
         return {
@@ -89,7 +121,8 @@ class MemoryRegistry implements AgentSkillRegistry {
         };
     }
 
-    async create(record: AgentSkillRecord): Promise<unknown> {
+    async create(record: AgentSkillRecord, token: string): Promise<unknown> {
+        this.calls.push({ operation: "create", id: record.id, token });
         if (this.failCreateError) {
             throw this.failCreateError;
         }
@@ -109,7 +142,8 @@ class MemoryRegistry implements AgentSkillRegistry {
         return record;
     }
 
-    async put(record: AgentSkillRecord): Promise<unknown> {
+    async put(record: AgentSkillRecord, token: string): Promise<unknown> {
+        this.calls.push({ operation: "put", id: record.id, token });
         this.records.set(record.id, structuredClone(record));
         this.writes.push(structuredClone(record));
         if (record.aspects["agent-skill"].state === this.failPutState) {
@@ -119,27 +153,39 @@ class MemoryRegistry implements AgentSkillRegistry {
         return record;
     }
 
-    async delete(id: string): Promise<void> {
+    async delete(id: string, token: string): Promise<void> {
+        this.calls.push({ operation: "delete", id, token });
         this.records.delete(id);
     }
 }
 
 class MemoryStorage implements AgentSkillStorage {
     archives = new Map<string, Buffer>();
+    identities = new Map<string, { recordId: string; ownerId: string }>();
     uploads: Array<{ key: string; recordId: string; token: string }> = [];
+    inspections: Array<{ key: string; token: string }> = [];
+    deletions: Array<{ key: string; token: string }> = [];
     downloads = 0;
     failUpload = false;
     failDelete = false;
 
-    async exists(key: string): Promise<boolean> {
-        return this.archives.has(key);
+    async inspect(key: string, token: string) {
+        this.inspections.push({ key, token });
+        const identity = this.identities.get(key);
+        return identity && this.archives.has(key)
+            ? { exists: true, ...identity }
+            : { exists: false as const };
     }
 
     async download(key: string): Promise<DownloadedArchive> {
         this.downloads += 1;
         const bytes = this.archives.get(key);
         if (!bytes) throw new Error("missing");
-        return { bytes: Buffer.from(bytes), contentType: "application/zip" };
+        return {
+            bytes: Buffer.from(bytes),
+            contentType: "application/zip",
+            ...this.identities.get(key)
+        };
     }
 
     async upload(
@@ -153,15 +199,27 @@ class MemoryStorage implements AgentSkillStorage {
             this.failUpload = false;
             throw new Error("upload failed");
         }
+        if (!this.identities.has(key)) {
+            const knownUser = [owner, admin, otherOwner, otherAdmin].find(
+                (user) => user.sessionToken === token
+            )?.id;
+            const decoded = jwt.decode(token) as { userId?: string } | null;
+            this.identities.set(key, {
+                recordId: recordIdValue,
+                ownerId: knownUser || decoded?.userId || "unknown"
+            });
+        }
         this.archives.set(key, Buffer.from(bytes));
     }
 
-    async delete(key: string): Promise<void> {
+    async delete(key: string, token: string): Promise<void> {
+        this.deletions.push({ key, token });
         if (this.failDelete) {
             this.failDelete = false;
             throw new Error("delete failed");
         }
         this.archives.delete(key);
+        this.identities.delete(key);
     }
 }
 
@@ -200,6 +258,7 @@ function fixture(shared?: {
         storage,
         authorization,
         tenantId: 0,
+        jwtSecret,
         now: () => new Date(Date.UTC(2026, 9, 13, 12, 0, tick++)),
         archiveLimits: {
             maxCompressedBytes: 1024 * 1024,
@@ -249,8 +308,8 @@ describe("Agent Skill publication state machine", () => {
         const { service, registry, storage, authorization } = fixture();
         await service.prepareCreate("user", owner);
         expect(
-            authorization.calls.slice(0, 2).map((call) => call.operation)
-        ).to.deep.equal(["create", "update"]);
+            authorization.calls.map((call) => call.operation)
+        ).to.deep.equal(["create"]);
         expect(
             authorization.calls[0].record.aspects["access-control"].ownerId
         ).to.equal(owner.id);
@@ -263,6 +322,9 @@ describe("Agent Skill publication state machine", () => {
         expect(result.id).to.equal(recordId);
         expect(result.name).to.equal("useful-skill");
         expect(result.userId).to.equal(owner.id);
+        expect(result.ownerId).to.equal(owner.id);
+        expect(result.createdBy).to.equal(owner.id);
+        expect(result.updatedBy).to.equal(owner.id);
         expect(
             registry.writes.map((record) => record.aspects["agent-skill"].state)
         ).to.deep.equal(["PENDING", "READY"]);
@@ -284,23 +346,29 @@ describe("Agent Skill publication state machine", () => {
         expect(registry.records.get(recordId)?.name).to.equal("useful-skill");
     });
 
-    it("requires create and update before accepting publication bytes", async () => {
+    it("completes publication with create permission only", async () => {
         const { service, registry, storage, authorization } = fixture();
-        authorization.decide = (operation) => operation !== "update";
-        let error: unknown;
-        try {
-            await service.prepareCreate("user", owner);
-        } catch (caught) {
-            error = caught;
-        }
-        expect((error as AgentSkillError).code).to.equal(
-            "AGENT_SKILL_FORBIDDEN"
-        );
+        authorization.decide = (operation) => operation === "create";
+
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
+
         expect(
             authorization.calls.map((call) => call.operation)
-        ).to.deep.equal(["create", "update"]);
-        expect(registry.records.size).to.equal(0);
-        expect(storage.uploads).to.have.length(0);
+        ).to.deep.equal(["create", "create", "create"]);
+        expect(
+            authorization.calls.every(
+                (call) => call.token === owner.sessionToken
+            )
+        ).to.equal(true);
+        expect(
+            registry.records.get(recordId)?.aspects["agent-skill"].state
+        ).to.equal("READY");
+        expect(storage.uploads[0].token).to.equal(owner.sessionToken);
+        const readyPut = registry.calls.find(
+            (call) => call.operation === "put"
+        );
+        expectInternalSession(readyPut!.token);
     });
 
     it("uses separate per-owner namespaces for the same user skill name", async () => {
@@ -515,8 +583,36 @@ describe("Agent Skill publication state machine", () => {
         const result = await service.createAuthorized("user", bytes, owner);
         expect(result.id).to.equal(recordId);
         expect(storage.uploads).to.have.length(2);
-        expect(storage.uploads[1]).to.deep.equal(storage.uploads[0]);
+        expect(storage.uploads[1]).to.deep.include({
+            key: storage.uploads[0].key,
+            recordId: storage.uploads[0].recordId
+        });
+        expect(storage.uploads[0].token).to.equal(owner.sessionToken);
+        expectInternalSession(storage.uploads[1].token);
         expect(registry.records.get(recordId)).to.deep.equal(ready);
+    });
+
+    it("never uses create retry authority on a mislinked existing archive", async () => {
+        const { service, storage } = fixture();
+        const bytes = await skillZip();
+        await service.createAuthorized("user", bytes, owner);
+        const key = `agent-services/skills/user-skills/${owner.id}/${recordId}.zip`;
+        storage.identities.set(key, {
+            recordId: `agent-skill-${otherOwner.id}-useful-skill`,
+            ownerId: otherOwner.id
+        });
+        const uploads = storage.uploads.length;
+
+        let error: unknown;
+        try {
+            await service.createAuthorized("user", bytes, owner);
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_ARCHIVE_LINK_INVALID"
+        );
+        expect(storage.uploads).to.have.length(uploads);
     });
 
     it("repairs a failed replacement only with the same pending archive", async () => {
@@ -664,6 +760,46 @@ describe("Agent Skill publication state machine", () => {
         ).to.equal(admin.id);
     });
 
+    it("completes replacement with update permission only", async () => {
+        const { service, registry, storage, authorization } = fixture();
+        await service.createAuthorized("user", await skillZip(), owner);
+        authorization.calls = [];
+        authorization.decide = (operation) => operation === "update";
+        registry.calls = [];
+        storage.inspections = [];
+
+        const current = await service.prepareExisting(
+            "user",
+            recordId,
+            "update",
+            owner
+        );
+        const result = await service.replaceAuthorized(
+            current,
+            await skillZip("useful-skill", "Updated"),
+            owner
+        );
+
+        expect(result.description).to.equal("Updated");
+        expect(
+            authorization.calls.map((call) => call.operation)
+        ).to.deep.equal(["update", "update"]);
+        expect(
+            authorization.calls.every(
+                (call) => call.token === owner.sessionToken
+            )
+        ).to.equal(true);
+        expect(
+            registry.calls
+                .filter((call) => call.operation === "put")
+                .every((call) => call.token === owner.sessionToken)
+        ).to.equal(true);
+        storage.inspections.forEach((call) =>
+            expectInternalSession(call.token)
+        );
+        expect(storage.uploads.at(-1)?.token).to.equal(owner.sessionToken);
+    });
+
     it("preserves OrgUnit, pre-authorised and exemption read constraints", async () => {
         const { service, registry } = fixture();
         await service.prepareCreate("user", owner);
@@ -731,28 +867,89 @@ describe("Agent Skill publication state machine", () => {
         ).to.equal("READY");
     });
 
-    it("requires update and delete before starting deletion", async () => {
+    it("completes deletion with delete permission only", async () => {
         const { service, registry, storage, authorization } = fixture();
         await service.prepareCreate("user", owner);
         await service.createAuthorized("user", await skillZip(), owner);
         authorization.calls = [];
-        authorization.decide = (operation) => operation !== "update";
-        let error: unknown;
-        try {
-            await service.prepareExisting("user", recordId, "delete", owner);
-        } catch (caught) {
-            error = caught;
-        }
-        expect((error as AgentSkillError).code).to.equal(
-            "AGENT_SKILL_FORBIDDEN"
+        authorization.decide = (operation) => operation === "delete";
+        registry.calls = [];
+
+        const current = await service.prepareExisting(
+            "user",
+            recordId,
+            "delete",
+            owner
         );
+        await service.deleteAuthorized(current, owner);
+
         expect(
             authorization.calls.map((call) => call.operation)
-        ).to.deep.equal(["update"]);
+        ).to.deep.equal(["delete", "delete"]);
         expect(
-            registry.records.get(recordId)?.aspects["agent-skill"].state
-        ).to.equal("READY");
-        expect(storage.archives.size).to.equal(1);
+            authorization.calls.every(
+                (call) => call.token === owner.sessionToken
+            )
+        ).to.equal(true);
+        expect(registry.records.has(recordId)).to.equal(false);
+        const deletingPut = registry.calls.find(
+            (call) => call.operation === "put"
+        );
+        expectInternalSession(deletingPut!.token);
+        expect(
+            registry.calls.find((call) => call.operation === "delete")?.token
+        ).to.equal(owner.sessionToken);
+        expect(storage.deletions[0].token).to.equal(owner.sessionToken);
+    });
+
+    it("keeps read-only access caller-scoped and blocks privileged mutation", async () => {
+        const { service, registry, storage, authorization } = fixture();
+        await service.createAuthorized("user", await skillZip(), owner);
+        authorization.calls = [];
+        authorization.decide = (operation) => operation === "read";
+        registry.calls = [];
+        const writes = registry.writes.length;
+        const uploads = storage.uploads.length;
+
+        const readable = await service.prepareExisting(
+            "user",
+            recordId,
+            "read",
+            owner
+        );
+        await service.readAuthorized(readable);
+        await service.downloadAuthorized(readable, owner);
+        expect(registry.calls[0].token).to.equal(owner.sessionToken);
+
+        for (const operation of ["update", "delete"] as const) {
+            let error: unknown;
+            try {
+                await service.prepareExisting(
+                    "user",
+                    recordId,
+                    operation,
+                    otherOwner
+                );
+            } catch (caught) {
+                error = caught;
+            }
+            expect((error as AgentSkillError).code).to.equal(
+                "AGENT_SKILL_NOT_FOUND"
+            );
+            expect((error as AgentSkillError).status).to.equal(404);
+            expect(String((error as Error).message)).not.to.include(
+                DEFAULT_ADMIN_USER_ID
+            );
+        }
+        expect(registry.writes).to.have.length(writes);
+        expect(storage.uploads).to.have.length(uploads);
+        expect(
+            authorization.calls.every(
+                (call) =>
+                    call.token === owner.sessionToken ||
+                    call.token === otherOwner.sessionToken
+            )
+        ).to.equal(true);
     });
 
     it("leaves failed deletes DELETING and completes on retry", async () => {
@@ -781,7 +978,7 @@ describe("Agent Skill publication state machine", () => {
         expect(registry.records.has(recordId)).to.equal(false);
     });
 
-    it("lists only READY records that pass a per-record decision without loading ZIPs", async () => {
+    it("lists only the caller's READY user publications by default", async () => {
         const { service, registry, storage, authorization } = fixture();
         for (const [id, name, recordOwner, state] of [
             [recordId, "useful-skill", owner.id, "READY"],
@@ -819,9 +1016,89 @@ describe("Agent Skill publication state machine", () => {
             recordId
         ]);
         expect(storage.downloads).to.equal(0);
+        expect(registry.listCalls[0].userId).to.deep.equal({
+            operator: "eq",
+            value: owner.id
+        });
         expect(
             authorization.calls.filter((call) => call.operation === "read")
-        ).to.have.length(2);
+        ).to.have.length(1);
+    });
+
+    it("uses Registry-side predicates for default All, My, and Shared catalogues", async () => {
+        const registry = new MemoryRegistry();
+        const storage = new MemoryStorage();
+        const authorization = new TestAuthorization();
+        const ownerService = fixture({ registry, storage, authorization })
+            .service;
+        const otherService = fixture({ registry, storage, authorization })
+            .service;
+        const systemService = fixture({ registry, storage, authorization })
+            .service;
+        await ownerService.createAuthorized("user", await skillZip(), owner);
+        await otherService.createAuthorized(
+            "user",
+            await skillZip(),
+            otherOwner
+        );
+        await systemService.createAuthorized(
+            "system",
+            await skillZip("system-catalogue", "System"),
+            admin
+        );
+        registry.listCalls = [];
+        authorization.calls = [];
+
+        const all = await ownerService.list(
+            { type: "all", limit: 2, pageToken: "100" },
+            owner
+        );
+        const mine = await ownerService.list(
+            { type: "user", limit: 20 },
+            owner
+        );
+        const shared = await ownerService.list(
+            { type: "user", userId: "!current", limit: 20 },
+            owner
+        );
+
+        expect(all.records.map((item) => item.type).sort()).to.deep.equal([
+            "system",
+            "user"
+        ]);
+        expect(
+            all.records.find((item) => item.type === "user")?.userId
+        ).to.equal(owner.id);
+        expect(mine.records.map((item) => item.userId)).to.deep.equal([
+            owner.id
+        ]);
+        expect(shared.records.map((item) => item.userId)).to.deep.equal([
+            otherOwner.id
+        ]);
+        expect(registry.listCalls[0]).to.deep.include({
+            state: "READY",
+            limit: 2,
+            pageToken: "100"
+        });
+        expect(registry.listCalls[0].anyOf).to.deep.equal([
+            { field: "type", operator: "eq", value: "system" },
+            { field: "userId", operator: "eq", value: owner.id }
+        ]);
+        expect(registry.listCalls[1]).to.deep.include({
+            type: "user",
+            userId: { operator: "eq", value: owner.id }
+        });
+        expect(registry.listCalls[2]).to.deep.include({
+            type: "user",
+            userId: { operator: "neq", value: owner.id }
+        });
+        expect(
+            authorization.calls.every(
+                (call) =>
+                    call.operation === "read" &&
+                    call.token === owner.sessionToken
+            )
+        ).to.equal(true);
     });
 
     it("does not expose PENDING or DELETING records through metadata reads", async () => {
@@ -907,6 +1184,30 @@ describe("Agent Skill publication state machine", () => {
         }
     });
 
+    it("rejects a download whose trusted Storage linkage no longer matches", async () => {
+        const { service, storage } = fixture();
+        await service.createAuthorized("user", await skillZip(), owner);
+        const record = await service.prepareExisting(
+            "user",
+            recordId,
+            "read",
+            owner
+        );
+        storage.identities.set(record.aspects["agent-skill"].archiveKey, {
+            recordId: "different-record",
+            ownerId: otherOwner.id
+        });
+        let error: unknown;
+        try {
+            await service.downloadAuthorized(record, owner);
+        } catch (caught) {
+            error = caught;
+        }
+        expect((error as AgentSkillError).code).to.equal(
+            "AGENT_SKILL_ARCHIVE_LINK_INVALID"
+        );
+    });
+
     it("rejects a direct-write archive checksum mismatch before download", async () => {
         const { service, storage } = fixture();
         await service.prepareCreate("user", owner);
@@ -933,7 +1234,7 @@ describe("Agent Skill publication state machine", () => {
     });
 
     it("keeps archive content and session credentials out of audit logs", async () => {
-        const { service } = fixture();
+        const { service, registry } = fixture();
         const logs: string[] = [];
         console.info = (...values: unknown[]) => logs.push(values.join(" "));
         await service.prepareCreate("user", owner);
@@ -947,6 +1248,11 @@ describe("Agent Skill publication state machine", () => {
         expect(logs).to.have.length(1);
         expect(logs[0]).not.to.include("TOP-SECRET-ARCHIVE-CONTENT");
         expect(logs[0]).not.to.include(owner.sessionToken);
+        const internalToken = registry.calls.find(
+            (call) => call.operation === "get"
+        )!.token;
+        expectInternalSession(internalToken);
+        expect(logs[0]).not.to.include(internalToken);
         expect(logs[0]).to.include(recordId);
     });
 
@@ -960,6 +1266,17 @@ describe("Agent Skill publication state machine", () => {
             error = caught;
         }
         expect((error as AgentSkillError).status).to.equal(403);
+        expect(registry.records.size).to.equal(0);
+        expect(storage.uploads).to.have.length(0);
+
+        let directError: unknown;
+        try {
+            await service.createAuthorized("user", await skillZip(), owner);
+        } catch (caught) {
+            directError = caught;
+        }
+        expect((directError as AgentSkillError).status).to.equal(403);
+        expect(registry.getCalls).to.equal(0);
         expect(registry.records.size).to.equal(0);
         expect(storage.uploads).to.have.length(0);
     });

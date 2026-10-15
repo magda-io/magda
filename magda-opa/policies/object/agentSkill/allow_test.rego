@@ -49,6 +49,8 @@ user_record(owner, target) = {
 		"name": "useful-skill",
 		"type": "user",
 		"userId": target,
+		"createdBy": owner,
+		"updatedBy": owner,
 		"archiveKey": sprintf("agent-services/skills/user-skills/%s/agent-skill-%s-useful-skill.zip", [target, target]),
 	},
 	"access-control": {"ownerId": owner},
@@ -69,6 +71,15 @@ test_owner_can_create_self_targeted_user_skill {
 	verifyPermission("object/agentSkill/user/create", "agentSkill") with input as {
 		"operationUri": "object/agentSkill/user/create",
 		"object": {"agentSkill": user_record(user_id, user_id)},
+		"user": {"id": user_id, "permissions": [owner_permission]},
+	}
+}
+
+test_create_cannot_forge_creator_or_owner_attribution {
+	forged := object.union(user_record(user_id, user_id), {"agent-skill": object.union(user_record(user_id, user_id)["agent-skill"], {"createdBy": other_id})})
+
+	not verifyPermission("object/agentSkill/user/create", "agentSkill") with input as {
+		"object": {"agentSkill": forged},
 		"user": {"id": user_id, "permissions": [owner_permission]},
 	}
 }

@@ -43,6 +43,17 @@ writeOperation(operationUri, publicationType) {
 	operationForType(operationUri, publicationType, "delete")
 }
 
+writeAttributionValid(operationUri, publicationType, inputObjectRefName) {
+	not operationForType(operationUri, publicationType, "create")
+}
+
+writeAttributionValid(operationUri, publicationType, inputObjectRefName) {
+	operationForType(operationUri, publicationType, "create")
+	input.object[inputObjectRefName]["access-control"].ownerId == input.user.id
+	input.object[inputObjectRefName]["agent-skill"].createdBy == input.user.id
+	input.object[inputObjectRefName]["agent-skill"].updatedBy == input.user.id
+}
+
 # Read rules deliberately use only literal comparisons and existence checks so
 # Registry can convert OPA's partial decision into SQL aspect filters. Agent
 # Services validates the complete deterministic identity of every returned
@@ -116,6 +127,7 @@ verifyPermission(operationUri, inputObjectRefName) {
 	publicationType := recordPublicationType(inputObjectRefName)
 	unconstrainedWrite(operationUri, publicationType)
 	validPublicationIdentity(inputObjectRefName, publicationType)
+	writeAttributionValid(operationUri, publicationType, inputObjectRefName)
 	hasNoConstraintPermission(operationUri)
 }
 
@@ -125,6 +137,7 @@ verifyPermission(operationUri, inputObjectRefName) {
 	input.user.id
 	validPublicationIdentity(inputObjectRefName, "user")
 	operationForType(operationUri, "user", "create")
+	writeAttributionValid(operationUri, "user", inputObjectRefName)
 	hasOwnerConstraintPermission(operationUri)
 	input.object[inputObjectRefName]["access-control"].ownerId == input.user.id
 	input.object[inputObjectRefName]["agent-skill"].userId == input.user.id

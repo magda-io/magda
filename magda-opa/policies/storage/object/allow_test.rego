@@ -108,6 +108,8 @@ system_skill := {
 	"agent-skill": {
 		"name": "system-useful-skill",
 		"type": "system",
+		"createdBy": "00000000-0000-4000-8000-000000000456",
+		"updatedBy": "00000000-0000-4000-8000-000000000456",
 		"archiveKey": "agent-services/skills/system-skills/agent-skill-system-useful-skill.zip",
 	},
 	"access-control": {
@@ -151,6 +153,26 @@ linked_system_object := {
 	"exists": true,
 }
 
+test_linked_skill_storage_key_must_match_archive_key {
+	mismatched := object.union(linked_system_object, {"name": "other.zip"})
+	not allow with input as {
+		"operationUri": "storage/object/read",
+		"user": system_pre_authorised_reader,
+		"storage": {"object": mismatched},
+		"object": {"record": system_skill},
+	}
+}
+
+test_linked_skill_storage_owner_must_match_record_owner {
+	mismatched := object.union(linked_system_object, {"ownerId": "00000000-0000-4000-8000-000000000999"})
+	not allow with input as {
+		"operationUri": "storage/object/upload",
+		"user": system_publisher("update"),
+		"storage": {"object": mismatched},
+		"object": {"record": system_skill},
+	}
+}
+
 test_linked_storage_read_honours_typed_skill_preauthorisation {
 	allow with input as {
 		"operationUri": "storage/object/read",
@@ -188,12 +210,21 @@ test_create_only_grant_cannot_replace_existing_linked_archive {
 }
 
 test_create_only_grant_can_upload_new_linked_archive {
-	new_object := object.union(linked_system_object, {"exists": false})
+	creator_id := system_publisher("create").id
+	new_skill := object.union(system_skill, {
+		"agent-skill": object.union(system_skill["agent-skill"], {
+			"createdBy": creator_id,
+			"updatedBy": creator_id,
+		}),
+		"access-control": {"ownerId": creator_id},
+	})
+
+	new_object := object.union(linked_system_object, {"exists": false, "ownerId": creator_id})
 	allow with input as {
 		"operationUri": "storage/object/upload",
 		"user": system_publisher("create"),
 		"storage": {"object": new_object},
-		"object": {"record": system_skill},
+		"object": {"record": new_skill},
 	}
 }
 

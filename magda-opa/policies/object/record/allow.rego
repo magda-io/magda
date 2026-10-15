@@ -17,37 +17,52 @@ allow {
 	verifyPermission(input.operationUri)
 }
 
-originalAgentSkillStateAllowed("read") = true
+originalAgentSkillStateAllowed("read", publicationType) = true
 
-originalAgentSkillStateAllowed(operationType) {
+originalAgentSkillStateAllowed(operationType, publicationType) {
 	operationType != "read"
 	not input.object.originalRecord["agent-skill"]
 }
 
-originalAgentSkillStateAllowed(operationType) {
-	operationType != "read"
-	input.object.originalRecord["agent-skill"].type == "system"
-	inputOperationUri := concat("/", ["object", "agentSkill", "system", operationType])
-	verifyAgentSkillPermission(inputOperationUri, "originalRecord")
+sameOptionalAgentSkillUserId {
+	not input.object.originalRecord["agent-skill"].userId
+	not input.object.record["agent-skill"].userId
 }
 
-originalAgentSkillStateAllowed(operationType) {
+sameOptionalAgentSkillUserId {
+	input.object.originalRecord["agent-skill"].userId == input.object.record["agent-skill"].userId
+}
+
+immutableAgentSkillFields {
+	input.object.originalRecord.id == input.object.record.id
+	input.object.originalRecord.name == input.object.record.name
+	input.object.originalRecord["agent-skill"].name == input.object.record["agent-skill"].name
+	input.object.originalRecord["agent-skill"].type == input.object.record["agent-skill"].type
+	sameOptionalAgentSkillUserId
+	input.object.originalRecord["agent-skill"].createdAt == input.object.record["agent-skill"].createdAt
+	input.object.originalRecord["agent-skill"].createdBy == input.object.record["agent-skill"].createdBy
+	input.object.originalRecord["agent-skill"].archiveKey == input.object.record["agent-skill"].archiveKey
+	input.object.originalRecord["access-control"].ownerId == input.object.record["access-control"].ownerId
+}
+
+originalAgentSkillStateAllowed(operationType, publicationType) {
 	operationType != "read"
-	input.object.originalRecord["agent-skill"].type == "user"
-	inputOperationUri := concat("/", ["object", "agentSkill", "user", operationType])
+	input.object.originalRecord["agent-skill"].type == publicationType
+	immutableAgentSkillFields
+	inputOperationUri := concat("/", ["object", "agentSkill", publicationType, operationType])
 	verifyAgentSkillPermission(inputOperationUri, "originalRecord")
 }
 
 # Agent Skill dispatch is exclusive. Proposed Registry mutation contexts include
-# originalRecord, so type switching requires permission for both old and new
-# typed states without reserving otherwise-generic record IDs.
+# originalRecord, so immutable publication identity (including type) is
+# preserved while both old and proposed same-type states are authorized.
 verifyPermission(operationUri) {
 	input.object.record["agent-skill"].type == "system"
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	inputOperationUri := concat("/", ["object", "agentSkill", "system", operationType])
 	verifyAgentSkillPermission(inputOperationUri, "record")
-	originalAgentSkillStateAllowed(operationType)
+	originalAgentSkillStateAllowed(operationType, "system")
 }
 
 verifyPermission(operationUri) {
@@ -56,7 +71,7 @@ verifyPermission(operationUri) {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	inputOperationUri := concat("/", ["object", "agentSkill", "user", operationType])
 	verifyAgentSkillPermission(inputOperationUri, "record")
-	originalAgentSkillStateAllowed(operationType)
+	originalAgentSkillStateAllowed(operationType, "user")
 }
 
 # A mutation that presents a non-skill proposed state may not remove the marker

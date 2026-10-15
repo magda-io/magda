@@ -137,6 +137,30 @@ export default function createAgentSkillRouter(
                 });
                 return;
             }
+            const rawUserId = queryString(req.query.userId, "userId");
+            if (
+                rawUserId !== undefined &&
+                rawUserId !== "current" &&
+                rawUserId !== "!current"
+            ) {
+                res.status(400).json({
+                    error: {
+                        code: "INVALID_USERID",
+                        message: "userId must be current or !current"
+                    }
+                });
+                return;
+            }
+            if (rawType === "system" && rawUserId !== undefined) {
+                res.status(400).json({
+                    error: {
+                        code: "INVALID_USERID",
+                        message:
+                            "userId filtering applies only to user publications"
+                    }
+                });
+                return;
+            }
             const rawLimit = queryString(req.query.limit, "limit");
             const limit = rawLimit === undefined ? 20 : Number(rawLimit);
             if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
@@ -162,6 +186,11 @@ export default function createAgentSkillRouter(
             const result = await options.service.list(
                 {
                     type: rawType as "all" | AgentSkillType,
+                    ...(rawUserId
+                        ? {
+                              userId: rawUserId as "current" | "!current"
+                          }
+                        : {}),
                     limit,
                     pageToken,
                     q

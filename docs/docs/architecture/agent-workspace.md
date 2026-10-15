@@ -149,9 +149,14 @@ the aspect copy allows Registry's existing `q` full-text search to index names,
 including the components of hyphenated names. Replacements may update the
 description but must preserve the name; renaming creates a new skill. The
 Registry-backed publication states are `PENDING`, `READY`, and `DELETING`; only
-READY records are catalogued. Catalogue traversal uses Registry sequence-keyset
-pagination with `reversePageTokenOrder=true`, never the unsupported `orderBy`
-plus `pageToken` combination.
+READY records are catalogued. The default **All** query is one Registry-side
+`READY AND (type=system OR userId=<caller>)` query, **My Skills** adds
+`type=user` and `userId:<caller>`, and the future **Shared Skills** source view
+adds `type=user` and `userId:!<caller>`. Registry applies these predicates and
+OPA before sequence-keyset pagination, so other users' readable publications do
+not leak into default pages and independent cursors never need post-hoc merging.
+Catalogue traversal uses `reversePageTokenOrder=true`, never the unsupported
+`orderBy` plus `pageToken` combination.
 
 The typed OPA policy delegates `agent-skill` records exclusively by their actual
 or proposed `type`; generic record grants cannot read or mutate them. Read rules
@@ -159,14 +164,14 @@ use Registry-compatible literal/existence conditions for partial authorization,
 then Agent Services validates the full deterministic identity of every returned
 record before exposing it. Typed write rules validate identity directly. Registry includes the trusted
 original record in proposed-state authorization, preventing marker removal and
-requiring both old- and new-type permission for a type switch without reserving
-otherwise-generic record IDs. Registry rejects bulk mutation of typed skill
-records or either skill marker; callers must use single-record CRUD so proposed
-state is authorized. Separately
-authorized direct Registry callers can still create integrity mismatches within
-a state or occupy a deterministic ID where current/proposed comparison is not
-available. Agent Services fails closed on an inconsistent or wrong-type record
-and never overwrites it or attaches a ZIP.
+enforcing immutable publication type, intended user, ID/name, creator, archive
+linkage, and record owner. Registry also applies these invariants before its
+normal administrator override. Bulk mutation of typed skill records or either
+skill marker is rejected; callers must use single-record CRUD so proposed state
+is authorized. Separately authorized direct Registry callers can still create
+integrity mismatches where no prior publication state exists. Agent Services
+fails closed on an inconsistent or wrong-type record and never overwrites it or
+attaches a ZIP.
 
 Authorization migrations register separate system, user, and future-installation
 CRUD resources. The unassigned **Agent Workspace Users** stock role contains
@@ -179,10 +184,12 @@ existing Workspace role in a later migration, so this stage never references a
 nonexistent operation. Installation operations and their owner permission are
 registered for #3861, but no installation record, API, policy, or sharing
 functionality is activated here. Agent Services marks managed system
-publications `constraintExemption=true`, so holders of the stock system-read
-permission can discover them without inheriting the generic missing-OrgUnit
-fallback; user publications remain owner-private unless explicitly constrained
-or shared.
+publications `constraintExemption=true`, so holders of an applicable
+exemption-capable typed system-read permission can discover them. Here public
+means broadly available to those authorised users, never anonymous access.
+Later #3857/#3861 management may add OrgUnit and explicit-recipient grants;
+those grants remain additive while public is enabled. User publications remain
+owner-private unless explicitly constrained or shared.
 
 Each skill has one record-linked ZIP in the existing
 `global.defaultDatasetBucket`:
@@ -192,18 +199,29 @@ agent-services/skills/system-skills/<record-id>.zip
 agent-services/skills/user-skills/<intended-user-uuid>/<record-id>.zip
 ```
 
-Agent Services forwards the verified caller's `X-Magda-Session` to the normal
-Registry, Storage, and Authorization APIs. It does not use a direct MinIO client,
-a service-wide admin identity, a separate bucket, or an application database.
-Storage API assigns the original object owner and `magda-record-id`; replacement
-uses the same key and record ID so Storage preserves ownership while Registry
-records the current publisher in `updatedBy`.
+Agent Services authenticates and authorises the real caller for exactly the
+requested typed operation. Normal list/read/download and each caller OPA decision
+use only that caller's `X-Magda-Session`. For lifecycle-only lookups and state
+transitions that would otherwise imply an unrelated permission, Agent Services
+mints a two-minute HS256 session for MAGDA's existing
+`DEFAULT_ADMIN_USER_ID`; that token is confined to validated Agent Skill client
+calls and is never returned, logged, stored, or forwarded to a Workspace,
+browser, DSH, or `mgd`. The initial Registry create and Storage upload use the
+real caller, update writes use the caller's update authority, and final delete
+uses the caller's delete authority. Explicit `createdBy`, `updatedBy`, and
+`access-control.ownerId` always retain real-user attribution.
 
-Create requires both typed create and update before accepting ZIP bytes, writes
-PENDING before upload, and marks READY only after Storage succeeds. Delete checks
-update plus delete before marking DELETING. Storage's linked-record policy uses a
-trusted object-existence flag so create cannot replace an existing archive and
-only delete can remove one.
+Storage API assigns the original object owner and `magda-record-id`; replacement
+uses the same key and a trusted existing record link so neither can be rebound by
+query parameters. It preserves ownership while Registry records the current
+publisher in `updatedBy`. Typed linked access additionally requires the object
+key to equal `archiveKey` and Storage owner to equal Registry owner.
+
+Create requires only typed create, writes PENDING before the caller-owned upload,
+and uses the internal principal to mark READY after Storage succeeds. Delete
+requires only typed delete; its internal DELETING marker does not imply caller
+update authority. Storage's linked-record policy uses a trusted object-existence
+flag so create cannot replace an existing archive and only delete can remove one.
 Replacement validates first, hides the record as PENDING during publication, and
 restores READY after the same object is replaced. Delete marks DELETING, removes
 the ZIP, then removes the Registry record. A caller can safely retry partial

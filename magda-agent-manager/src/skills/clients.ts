@@ -7,7 +7,8 @@ import {
     AgentSkillStorage,
     DownloadedArchive,
     RegistryListOptions,
-    RegistryRecordsPage
+    RegistryRecordsPage,
+    StoredArchiveIdentity
 } from "./types.js";
 
 export class DownstreamServiceError extends Error {
@@ -126,6 +127,22 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
         }
         if (options.state) {
             query.append("aspectQuery", `agent-skill.state:${options.state}`);
+        }
+        if (options.userId) {
+            query.append(
+                "aspectQuery",
+                `agent-skill.userId:${
+                    options.userId.operator === "neq" ? "!" : ""
+                }${options.userId.value}`
+            );
+        }
+        for (const condition of options.anyOf || []) {
+            query.append(
+                "aspectOrQuery",
+                `agent-skill.${condition.field}:${
+                    condition.operator === "neq" ? "!" : ""
+                }${condition.value}`
+            );
         }
         const response = await this.request(
             `/records?${query.toString()}`,
@@ -260,12 +277,15 @@ export class HttpAgentSkillStorage implements AgentSkillStorage {
         }
     }
 
-    async exists(archiveKey: string, sessionToken: string): Promise<boolean> {
+    async inspect(
+        archiveKey: string,
+        sessionToken: string
+    ): Promise<StoredArchiveIdentity> {
         const response = await this.request(archiveKey, sessionToken, {
             method: "GET",
             headers: { Range: "bytes=0-0" }
         });
-        if (response.status === 404) return false;
+        if (response.status === 404) return { exists: false };
         if (response.status !== 206) {
             throw new DownstreamServiceError(
                 "storage",
@@ -300,7 +320,17 @@ export class HttpAgentSkillStorage implements AgentSkillStorage {
                 "Storage API returned an oversized range response"
             );
         }
-        return true;
+        const recordId =
+            response.headers.get("x-amz-meta-magda-record-id") ||
+            response.headers.get("magda-record-id");
+        const ownerId =
+            response.headers.get("x-amz-meta-magda-owner-id") ||
+            response.headers.get("magda-owner-id");
+        return {
+            exists: true,
+            ...(recordId ? { recordId } : {}),
+            ...(ownerId ? { ownerId } : {})
+        };
     }
 
     async download(
@@ -352,9 +382,17 @@ export class HttpAgentSkillStorage implements AgentSkillStorage {
             }
             chunks.push(Buffer.from(value));
         }
+        const recordId =
+            response.headers.get("x-amz-meta-magda-record-id") ||
+            response.headers.get("magda-record-id");
+        const ownerId =
+            response.headers.get("x-amz-meta-magda-owner-id") ||
+            response.headers.get("magda-owner-id");
         return {
             bytes: Buffer.concat(chunks),
-            contentType: response.headers.get("content-type") || ""
+            contentType: response.headers.get("content-type") || "",
+            ...(recordId ? { recordId } : {}),
+            ...(ownerId ? { ownerId } : {})
         };
     }
 
