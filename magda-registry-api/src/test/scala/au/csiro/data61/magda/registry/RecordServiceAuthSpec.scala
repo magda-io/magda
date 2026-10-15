@@ -1586,20 +1586,6 @@ class RecordServiceAuthSpec extends ApiSpec {
               .get shouldEqual JsObject(
               "field2" -> JsString("value2")
             )
-            val originalRecordInProposedContext = firstCallInput.fields
-              .get("object")
-              .get
-              .asJsObject
-              .fields
-              .get("originalRecord")
-              .get
-              .asJsObject
-            originalRecordInProposedContext.fields
-              .get("name")
-              .get shouldEqual JsString("testName")
-            originalRecordInProposedContext.fields
-              .get("test")
-              .get shouldEqual JsObject("field1" -> JsString("value1"))
 
             // this is the record in "before update" context data
             // we try to make sure the user has access to the data before & after the updates
@@ -1665,26 +1651,6 @@ class RecordServiceAuthSpec extends ApiSpec {
             Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
-              status shouldEqual StatusCodes.OK
-            }
-            // The same record/aspect IDs in another tenant must never bleed into
-            // current/originalRecord authorization context.
-            Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
-              TENANT_2
-            ) ~> param.api(Full).routes ~> check {
-              status shouldEqual StatusCodes.OK
-            }
-            Post(
-              "/v0/records",
-              record.copy(
-                name = "other tenant",
-                aspects = Map(
-                  "test" -> JsObject("field1" -> JsString("other tenant"))
-                )
-              )
-            ) ~> addUserId() ~> addTenantIdHeader(TENANT_2) ~> param
-              .api(Full)
-              .routes ~> check {
               status shouldEqual StatusCodes.OK
             }
             param.authFetcher.resetMock()
@@ -1813,26 +1779,6 @@ class RecordServiceAuthSpec extends ApiSpec {
             Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
-              status shouldEqual StatusCodes.OK
-            }
-            // The same record/aspect IDs in another tenant must never bleed into
-            // current/originalRecord authorization context.
-            Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
-              TENANT_2
-            ) ~> param.api(Full).routes ~> check {
-              status shouldEqual StatusCodes.OK
-            }
-            Post(
-              "/v0/records",
-              record.copy(
-                name = "other tenant",
-                aspects = Map(
-                  "test" -> JsObject("field1" -> JsString("other tenant"))
-                )
-              )
-            ) ~> addUserId() ~> addTenantIdHeader(TENANT_2) ~> param
-              .api(Full)
-              .routes ~> check {
               status shouldEqual StatusCodes.OK
             }
             param.authFetcher.resetMock()

@@ -158,20 +158,27 @@ not leak into default pages and independent cursors never need post-hoc merging.
 Catalogue traversal uses `reversePageTokenOrder=true`, never the unsupported
 `orderBy` plus `pageToken` combination.
 
-The typed OPA policy delegates `agent-skill` records exclusively by their actual
-or proposed `type`; generic record grants cannot read or mutate them. Read rules
-use Registry-compatible literal/existence conditions for partial authorization,
-then Agent Services validates the full deterministic identity of every returned
-record before exposing it. Typed write rules validate identity directly. Registry includes the trusted
-original record in proposed-state authorization, preventing marker removal and
-enforcing immutable publication type, intended user, ID/name, creator, archive
-linkage, and record owner. Registry also applies these invariants before its
-normal administrator override. Bulk mutation of typed skill records or either
-skill marker is rejected; callers must use single-record CRUD so proposed state
-is authorized. Separately authorized direct Registry callers can still create
-integrity mismatches where no prior publication state exists. Agent Services
-fails closed on an inconsistent or wrong-type record and never overwrites it or
-attaches a ZIP.
+The typed OPA policy delegates every concrete `agent-skill` record exclusively
+by its actual or proposed `type`; a generic `object/record` permission alone
+cannot read or mutate a valid typed publication. Read rules use
+Registry-compatible literal/existence conditions for partial authorization, then
+Agent Services validates the full deterministic identity of every returned
+record before exposing it. Typed write rules validate each concrete state.
+
+Cross-version business invariants belong to the supported Agent Services API in
+this stage. Agent Services preserves immutable publication type, intended user,
+ID/name, creator, archive key, and owner and fails closed on inconsistent or
+wrong-type records. Generic Registry clients with sufficient permissions may
+still bypass those service-owned invariants through marker removal, separately
+authorised old/new states, bulk mutation, or source trimming. That accepted MVP
+integrity limitation is not a supported Agent Skill management path; generic
+Registry mutation-context and bulk hardening are deliberately isolated for
+independent design, compatibility, concurrency, and performance review in
+#3862 and draft PR #3863. The only Registry production adjustment retained by
+this stage binds `/records/inFull/:id` aspect loading to the selected tenant.
+Storage authorization consumes that existing endpoint for trusted linked-record
+context; without the tenant predicate, equal record IDs in different tenants can
+mix aspects and make the Storage decision against the wrong publication.
 
 Authorization migrations register separate system, user, and future-installation
 CRUD resources. The unassigned **Agent Workspace Users** stock role contains
@@ -214,8 +221,23 @@ uses the caller's delete authority. Explicit `createdBy`, `updatedBy`, and
 Storage API assigns the original object owner and `magda-record-id`; replacement
 uses the same key and a trusted existing record link so neither can be rebound by
 query parameters. It preserves ownership while Registry records the current
-publisher in `updatedBy`. Typed linked access additionally requires the object
-key to equal `archiveKey` and Storage owner to equal Registry owner.
+publisher in `updatedBy`.
+
+Reads under the two reserved Agent Skill archive prefixes have a deliberately
+stronger boundary than ordinary Storage objects. Every generic Storage-read
+branch—including unconstrained, owner, matching-OrgUnit, and legacy missing or
+empty-OrgUnit access—is excluded. A read requires an existing deterministic
+Agent Skill record, exact trusted record ID/key/owner linkage, and the caller's
+corresponding typed source-read permission. Missing, malformed, or mismatched
+linkage fails closed. Public system skills remain readable through their
+exemption-capable typed system-read grant, while shared user skills require an
+applicable typed owner, OrgUnit, or explicit pre-authorised grant. The existing
+top-level global-administrator override remains unchanged and covers MAGDA's
+trusted internal lifecycle inspection; Agent Services never uses that identity
+for caller downloads.
+Ordinary standalone objects, dataset/distribution files, and their historical
+missing/empty-OrgUnit read behavior are unchanged. Generic upload/delete rules
+are also unchanged in this focused revision.
 
 Create requires only typed create, writes PENDING before the caller-owned upload,
 and uses the internal principal to mark READY after Storage succeeds. Delete

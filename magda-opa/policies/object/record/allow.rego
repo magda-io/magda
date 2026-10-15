@@ -17,52 +17,16 @@ allow {
 	verifyPermission(input.operationUri)
 }
 
-originalAgentSkillStateAllowed("read", publicationType) = true
-
-originalAgentSkillStateAllowed(operationType, publicationType) {
-	operationType != "read"
-	not input.object.originalRecord["agent-skill"]
-}
-
-sameOptionalAgentSkillUserId {
-	not input.object.originalRecord["agent-skill"].userId
-	not input.object.record["agent-skill"].userId
-}
-
-sameOptionalAgentSkillUserId {
-	input.object.originalRecord["agent-skill"].userId == input.object.record["agent-skill"].userId
-}
-
-immutableAgentSkillFields {
-	input.object.originalRecord.id == input.object.record.id
-	input.object.originalRecord.name == input.object.record.name
-	input.object.originalRecord["agent-skill"].name == input.object.record["agent-skill"].name
-	input.object.originalRecord["agent-skill"].type == input.object.record["agent-skill"].type
-	sameOptionalAgentSkillUserId
-	input.object.originalRecord["agent-skill"].createdAt == input.object.record["agent-skill"].createdAt
-	input.object.originalRecord["agent-skill"].createdBy == input.object.record["agent-skill"].createdBy
-	input.object.originalRecord["agent-skill"].archiveKey == input.object.record["agent-skill"].archiveKey
-	input.object.originalRecord["access-control"].ownerId == input.object.record["access-control"].ownerId
-}
-
-originalAgentSkillStateAllowed(operationType, publicationType) {
-	operationType != "read"
-	input.object.originalRecord["agent-skill"].type == publicationType
-	immutableAgentSkillFields
-	inputOperationUri := concat("/", ["object", "agentSkill", publicationType, operationType])
-	verifyAgentSkillPermission(inputOperationUri, "originalRecord")
-}
-
-# Agent Skill dispatch is exclusive. Proposed Registry mutation contexts include
-# originalRecord, so immutable publication identity (including type) is
-# preserved while both old and proposed same-type states are authorized.
+# Agent Skill dispatch is exclusive for every concrete current or proposed
+# record supplied by Registry. Cross-version business invariants are enforced by
+# the supported Agent Services lifecycle; generic Registry mutation hardening is
+# intentionally tracked separately in #3862/#3863.
 verifyPermission(operationUri) {
 	input.object.record["agent-skill"].type == "system"
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	inputOperationUri := concat("/", ["object", "agentSkill", "system", operationType])
 	verifyAgentSkillPermission(inputOperationUri, "record")
-	originalAgentSkillStateAllowed(operationType, "system")
 }
 
 verifyPermission(operationUri) {
@@ -71,19 +35,14 @@ verifyPermission(operationUri) {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	inputOperationUri := concat("/", ["object", "agentSkill", "user", operationType])
 	verifyAgentSkillPermission(inputOperationUri, "record")
-	originalAgentSkillStateAllowed(operationType, "user")
 }
 
-# A mutation that presents a non-skill proposed state may not remove the marker
-# from an existing Agent Skill and fall back to generic object/record grants.
+# A concrete typed publication never falls back to generic object/record grants.
+# #3861 will replace the fail-closed installation reservation with typed
+# installation dispatch after its aspect and lifecycle exist.
 verifyPermission(operationUri) {
 	not input.object.record["agent-skill"]
-	not input.object.originalRecord["agent-skill"]
-
-	# #3861 will replace this fail-closed reservation with typed installation
-	# dispatch after its aspect and lifecycle exist.
 	not input.object.record["agent-skill-installation"]
-	not input.object.originalRecord["agent-skill-installation"]
 	verifyNonAgentSkillPermission(operationUri)
 }
 

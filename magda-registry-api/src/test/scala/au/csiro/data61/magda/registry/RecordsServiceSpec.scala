@@ -197,28 +197,41 @@ class RecordsServiceSpec extends ApiSpec {
           testFullTextSearch(aspectId2, List(recordId1, recordId2))
           testFullTextSearch(aspectId3, List(recordId2, recordId3))
         }
+      }
 
-        it("finds a hyphenated Agent Skill name stored in aspect data") {
-          implicit param =>
-            insertAspectDef("agent-skill")
-            createRecord(
-              Record(
-                "neutral-search-record",
-                "neutral root record name",
-                Map(
-                  "agent-skill" -> JsObject(
-                    "name" -> JsString("csv-analyser"),
-                    "scope" -> JsString("user"),
-                    "state" -> JsString("READY")
-                  )
-                )
-              )
+      it("keeps inFull aspects isolated to the selected tenant") {
+        implicit param =>
+          val recordId = "same-id-across-tenants"
+          val aspectId = "tenant-scoped-aspect"
+          insertAspectDef(aspectId, TENANT_1)
+          insertAspectDef(aspectId, TENANT_2)
+          createRecord(
+            Record(
+              recordId,
+              "tenant one",
+              Map(aspectId -> JsObject("value" -> JsString("tenant-one")))
+            ),
+            TENANT_1
+          )
+          createRecord(
+            Record(
+              recordId,
+              "tenant two",
+              Map(aspectId -> JsObject("value" -> JsString("tenant-two")))
+            ),
+            TENANT_2
+          )
+
+          Get(s"/v0/records/inFull/$recordId") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val record = responseAs[Record]
+            record.name shouldBe "tenant one"
+            record.aspects(aspectId) shouldBe JsObject(
+              "value" -> JsString("tenant-one")
             )
-
-            List("csv", "analyser", "csv-analyser").foreach { query =>
-              testFullTextSearch(query, List("neutral-search-record"))
-            }
-        }
+          }
       }
 
       it("starts with no records defined") { param =>
@@ -3991,150 +4004,6 @@ class RecordsServiceSpec extends ApiSpec {
   }
 
   def writeTests(role: Role) {
-    describe("Agent Skill bulk mutation guards") {
-      it("rejects bulk patches of typed records or skill markers") {
-        implicit param =>
-          insertAspectDef("agent-skill")
-          createRecord(
-            Record(
-              "typed-skill-record",
-              "typed-skill-record",
-              Map("agent-skill" -> JsObject("type" -> JsString("system"))),
-              None
-            )
-          )
-          val ordinaryPatch = JsonPatch(
-            Replace(Pointer.root / "name", JsString("changed"))
-          )
-          Patch(
-            "/v0/records",
-            PatchRecordsRequest(
-              List("typed-skill-record"),
-              ordinaryPatch
-            )
-          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.BadRequest
-          }
-
-          val markerPatch = JsonPatch(
-            Add(
-              Pointer.root / "aspects" / "agent-skill",
-              JsObject("type" -> JsString("system"))
-            )
-          )
-          Patch(
-            "/v0/records",
-            PatchRecordsRequest(List("ordinary-record"), markerPatch)
-          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.BadRequest
-          }
-      }
-
-      it("rejects bulk aspect writes for typed records and markers") {
-        implicit param =>
-          insertAspectDef("agent-skill")
-          insertAspectDef("access-control")
-          createRecord(
-            Record(
-              "typed-skill-record",
-              "typed-skill-record",
-              Map("agent-skill" -> JsObject("type" -> JsString("system"))),
-              None
-            )
-          )
-          Put(
-            "/v0/records/aspects/agent-skill",
-            PutRecordsAspectRequest(List("ordinary-record"), JsObject())
-          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.BadRequest
-          }
-
-          Put(
-            "/v0/records/aspects/access-control",
-            PutRecordsAspectRequest(
-              List("typed-skill-record"),
-              JsObject()
-            )
-          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.BadRequest
-          }
-
-          Delete(
-            "/v0/records/aspectArrayItems/access-control",
-            DeleteRecordsAspectArrayItemsRequest(
-              List("typed-skill-record"),
-              "$.preAuthorisedPermissionIds",
-              List(JsString("permission-id"))
-            )
-          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.BadRequest
-          }
-      }
-    }
-
-    describe("Agent Skill immutable identity") {
-      it("rejects a publication type switch before administrator override") {
-        implicit param =>
-          insertAspectDef("agent-skill")
-          insertAspectDef("access-control")
-          val id =
-            "agent-skill-00000000-0000-4000-8000-000000000123-useful-skill"
-          val original = Record(
-            id,
-            "useful-skill",
-            Map(
-              "agent-skill" -> JsObject(
-                "name" -> JsString("useful-skill"),
-                "type" -> JsString("user"),
-                "userId" -> JsString(
-                  "00000000-0000-4000-8000-000000000123"
-                ),
-                "createdAt" -> JsString("2026-10-15T00:00:00Z"),
-                "createdBy" -> JsString(
-                  "00000000-0000-4000-8000-000000000123"
-                ),
-                "archiveKey" -> JsString(
-                  s"agent-services/skills/user-skills/00000000-0000-4000-8000-000000000123/$id.zip"
-                )
-              ),
-              "access-control" -> JsObject(
-                "ownerId" -> JsString(
-                  "00000000-0000-4000-8000-000000000123"
-                )
-              )
-            ),
-            None
-          )
-          createRecord(original)
-          val originalSkill =
-            original.aspects("agent-skill").asInstanceOf[JsObject]
-          val switched = original.copy(
-            aspects = original.aspects.updated(
-              "agent-skill",
-              JsObject(
-                originalSkill.fields.updated("type", JsString("system"))
-              )
-            )
-          )
-
-          Put(s"/v0/records/$id", switched) ~> addUserId() ~> addTenantIdHeader(
-            TENANT_1
-          ) ~> param.api(role).routes ~> check {
-            status shouldEqual StatusCodes.BadRequest
-          }
-      }
-    }
-
     describe("POST") {
       it("can add a new record") { param =>
         var eventId: Option[String] = None
@@ -6204,34 +6073,6 @@ class RecordsServiceSpec extends ApiSpec {
                   "source"
                 )
               }
-          }
-        }
-
-        it("does not trim typed Agent Skill records") { implicit param =>
-          insertAspectDef("source")
-          insertAspectDef("agent-skill")
-          createRecord(
-            Record(
-              "typed-skill-record",
-              "typed-skill-record",
-              buildAspects("right") + (
-                "agent-skill" -> JsObject("type" -> JsString("system"))
-              ),
-              Some("wrongtag")
-            )
-          )
-
-          Delete(
-            "/v0/records?sourceTagToPreserve=righttag&sourceId=right"
-          ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.BadRequest
-          }
-          Get("/v0/records/typed-skill-record") ~> addTenantIdHeader(
-            TENANT_1
-          ) ~> param.api(role).routes ~> check {
-            status shouldEqual StatusCodes.OK
           }
         }
 

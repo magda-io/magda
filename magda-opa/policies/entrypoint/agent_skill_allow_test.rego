@@ -47,6 +47,24 @@ test_entrypoint_admin_override_remains {
 	}
 }
 
+test_entrypoint_default_admin_can_inspect_reserved_skill_archive {
+	allow with input as {
+		"operationUri": "storage/object/read",
+		"storage": {"object": {
+			"name": system_record["agent-skill"].archiveKey,
+			"recordId": system_record.id,
+			"ownerId": user_id,
+			"exists": true,
+		}},
+		"object": {"record": system_record},
+		"user": {
+			"id": "00000000-0000-4000-8000-000000000000",
+			"roles": [{"id": "00000000-0000-0003-0000-000000000000"}],
+			"permissions": [],
+		},
+	}
+}
+
 test_unsuffixed_operation_is_not_delegated_to_a_grant {
 	not allow with input as {
 		"operationUri": "object/agentSkill/read",
