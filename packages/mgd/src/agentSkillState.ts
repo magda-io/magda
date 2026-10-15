@@ -1,16 +1,8 @@
 import os from "node:os";
 import path from "node:path";
-import {
-    link,
-    lstat,
-    mkdir,
-    open,
-    readFile,
-    readdir,
-    rename,
-    unlink
-} from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import { lstat, mkdir, open, readFile, rename } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { createServer } from "node:net";
 import { AgentSkillRef, AgentSkillType } from "./agentSkillTypes.js";
 
 export interface ManagedAgentSkillEntry {
@@ -148,152 +140,49 @@ export async function saveAgentSkillState(
     await rename(temporary, target);
 }
 
-interface AgentSkillLockOwner {
-    pid: number;
-    hostname: string;
-    token: string;
-    claimOrder: string;
-    createdAt: string;
-}
-
-async function readLockOwner(
-    lock: string
-): Promise<AgentSkillLockOwner | undefined> {
-    try {
-        const owner = JSON.parse(await readFile(lock, "utf8")) as Partial<
-            AgentSkillLockOwner
-        >;
-        if (
-            !Number.isSafeInteger(owner.pid) ||
-            (owner.pid as number) <= 0 ||
-            typeof owner.hostname !== "string" ||
-            typeof owner.token !== "string" ||
-            !owner.token
-        ) {
-            return undefined;
-        }
-        return owner as AgentSkillLockOwner;
-    } catch {
-        return undefined;
-    }
-}
-
-async function lockOwnerIsLive(lock: string): Promise<boolean> {
-    const owner = await readLockOwner(lock);
-    if (!owner || owner.hostname !== os.hostname()) return false;
-    try {
-        process.kill(owner.pid, 0);
-        return true;
-    } catch (error) {
-        return (error as NodeJS.ErrnoException).code === "EPERM";
-    }
-}
-
-async function sameFile(left: string, right: string): Promise<boolean> {
-    try {
-        const [leftStat, rightStat] = await Promise.all([
-            lstat(left, { bigint: true }),
-            lstat(right, { bigint: true })
-        ]);
-        return leftStat.dev === rightStat.dev && leftStat.ino === rightStat.ino;
-    } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
-        throw error;
-    }
+export function agentSkillStateLockPort(): number {
+    const digest = createHash("sha256").update(agentSkillStatePath()).digest();
+    // Use the dynamic/private range and derive a stable per-state-path port.
+    return 49152 + (digest.readUInt16BE(0) % 16384);
 }
 
 export async function withAgentSkillStateLock<T>(
     fn: () => Promise<T>
 ): Promise<T> {
-    const target = agentSkillStatePath();
-    const lock = `${target}.lock`;
-    const owner: AgentSkillLockOwner = {
-        pid: process.pid,
-        hostname: os.hostname(),
-        token: randomUUID(),
-        claimOrder: `${Date.now()
-            .toString()
-            .padStart(16, "0")}-${process.pid
-            .toString()
-            .padStart(12, "0")}-${randomUUID()}`,
-        createdAt: new Date().toISOString()
-    };
-    const candidate = `${lock}.${owner.token}.candidate`;
-    await mkdir(path.dirname(target), { recursive: true, mode: 0o700 });
-    const handle = await open(candidate, "wx", 0o600);
+    const server = createServer();
+    server.unref();
     try {
-        await handle.writeFile(JSON.stringify(owner));
-        await handle.sync();
-    } finally {
-        await handle.close();
-    }
-
-    const claimsPrefix = `${path.basename(lock)}.acquire-`;
-    const claim = path.join(
-        path.dirname(lock),
-        `${claimsPrefix}${owner.claimOrder}`
-    );
-    let acquired = false;
-    try {
-        // Publish a fully-written recovery claim atomically. All contenders can
-        // inspect the directory, but only the lexicographically oldest claim
-        // may touch the main lock pathname. Crashed claims are removable because
-        // they carry the same owner liveness metadata as the main lock.
-        await link(candidate, claim);
-        const claims = (await readdir(path.dirname(lock)))
-            .filter((name) => name.startsWith(claimsPrefix))
-            .sort();
-        for (const name of claims) {
-            const contender = path.join(path.dirname(lock), name);
-            if (contender === claim) continue;
-            if (!(await lockOwnerIsLive(contender))) {
-                await unlink(contender).catch(() => undefined);
-            }
-        }
-        const survivingClaims = (await readdir(path.dirname(lock)))
-            .filter((name) => name.startsWith(claimsPrefix))
-            .sort();
-        if (survivingClaims[0] !== path.basename(claim)) {
-            throw new Error(
-                "Another mgd agent-skill operation is already running"
-            );
-        }
-
-        try {
-            await link(candidate, lock);
-            acquired = true;
-        } catch (error) {
-            if (
-                (error as NodeJS.ErrnoException).code !== "EEXIST" ||
-                (await lockOwnerIsLive(lock))
-            ) {
-                throw new Error(
-                    "Another mgd agent-skill operation is already running"
-                );
-            }
-            if (!(await sameFile(claim, candidate))) {
-                throw new Error("Agent Skill lock recovery claim changed");
-            }
-            // No other live/recovering process may touch the lock while this
-            // oldest claim remains visible.
-            await unlink(lock);
-            await link(candidate, lock);
-            acquired = true;
-        }
-    } finally {
-        await unlink(claim).catch(() => undefined);
-        await unlink(candidate).catch(() => undefined);
-    }
-    if (!acquired) {
-        throw new Error("Another mgd agent-skill operation is already running");
-    }
-
-    try {
+        await new Promise<void>((resolve, reject) => {
+            const fail = (error: NodeJS.ErrnoException) => {
+                server.removeListener("listening", ready);
+                if (error.code === "EADDRINUSE") {
+                    reject(
+                        new Error(
+                            "Another mgd agent-skill operation is already running"
+                        )
+                    );
+                } else {
+                    reject(error);
+                }
+            };
+            const ready = () => {
+                server.removeListener("error", fail);
+                resolve();
+            };
+            server.once("error", fail);
+            server.once("listening", ready);
+            server.listen({
+                host: "127.0.0.1",
+                port: agentSkillStateLockPort(),
+                exclusive: true
+            });
+        });
         return await fn();
     } finally {
-        const current = await readLockOwner(lock);
-        if (current?.token === owner.token) {
-            await unlink(lock).catch(() => undefined);
+        if (server.listening) {
+            await new Promise<void>((resolve, reject) =>
+                server.close((error) => (error ? reject(error) : resolve()))
+            );
         }
     }
 }

@@ -2,10 +2,8 @@ import { expect } from "chai";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import {
-    agentSkillStatePath,
-    withAgentSkillStateLock
-} from "../agentSkillState.js";
+import { spawn } from "node:child_process";
+import { withAgentSkillStateLock } from "../agentSkillState.js";
 
 describe("Agent Skill state locking", () => {
     let temporaryDirectory: string;
@@ -45,52 +43,39 @@ describe("Agent Skill state locking", () => {
         );
     });
 
-    it("recovers a lock left by a terminated process", async () => {
-        const lock = `${agentSkillStatePath()}.lock`;
-        await fs.mkdir(path.dirname(lock), { recursive: true });
-        await fs.writeFile(
-            lock,
-            JSON.stringify({
-                pid: 2147483647,
-                hostname: os.hostname(),
-                token: "stale-owner",
-                claimOrder: "stale"
-            })
+    it("releases its OS-managed lock when the owner process is terminated", async () => {
+        const moduleUrl = new URL("../agentSkillState.ts", import.meta.url)
+            .href;
+        const child = spawn(
+            process.execPath,
+            [
+                "--import=tsx/esm",
+                "--input-type=module",
+                "-e",
+                `import { withAgentSkillStateLock } from ${JSON.stringify(
+                    moduleUrl
+                )}; await withAgentSkillStateLock(async () => { console.log("locked"); await new Promise(() => {}); });`
+            ],
+            { env: process.env, stdio: ["ignore", "pipe", "inherit"] }
+        );
+        await new Promise<void>((resolve, reject) => {
+            child.once("error", reject);
+            child.stdout!.once("data", (chunk) => {
+                if (String(chunk).includes("locked")) resolve();
+                else
+                    reject(new Error("child did not acquire Agent Skill lock"));
+            });
+        });
+        child.kill("SIGKILL");
+        await new Promise<void>((resolve) =>
+            child.once("exit", () => resolve())
         );
         expect(
-            await withAgentSkillStateLock(async () => "recovered stale lock")
-        ).to.equal("recovered stale lock");
+            await withAgentSkillStateLock(async () => "recovered after exit")
+        ).to.equal("recovered after exit");
     });
 
-    it("recovers a stale acquisition claim left by a terminated process", async () => {
-        const lock = `${agentSkillStatePath()}.lock`;
-        await fs.mkdir(path.dirname(lock), { recursive: true });
-        await fs.writeFile(
-            `${lock}.acquire-0000000000000000-stale`,
-            JSON.stringify({
-                pid: 2147483647,
-                hostname: os.hostname(),
-                token: "stale-claim",
-                claimOrder: "0000000000000000-stale"
-            })
-        );
-        expect(
-            await withAgentSkillStateLock(async () => "recovered stale claim")
-        ).to.equal("recovered stale claim");
-    });
-
-    it("serializes simultaneous stale-lock recovery contenders", async () => {
-        const lock = `${agentSkillStatePath()}.lock`;
-        await fs.mkdir(path.dirname(lock), { recursive: true });
-        await fs.writeFile(
-            lock,
-            JSON.stringify({
-                pid: 2147483647,
-                hostname: os.hostname(),
-                token: "stale-owner",
-                claimOrder: "stale"
-            })
-        );
+    it("serializes simultaneous contenders", async () => {
         let release!: () => void;
         const gate = new Promise<void>((resolve) => {
             release = resolve;
@@ -133,15 +118,5 @@ describe("Agent Skill state locking", () => {
         expect(await withAgentSkillStateLock(async () => "recovered")).to.equal(
             "recovered"
         );
-
-        let lockExists = true;
-        try {
-            await fs.stat(`${agentSkillStatePath()}.lock`);
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT")
-                lockExists = false;
-            else throw error;
-        }
-        expect(lockExists).to.equal(false);
     });
 });
