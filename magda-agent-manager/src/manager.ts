@@ -5,6 +5,11 @@ import {
     KEY_ID_ANNOTATION,
     LAST_ACTIVITY_ANNOTATION,
     RESET_AFTER_DELETE_ANNOTATION,
+    SKILL_SYNC_ATTEMPTED_ANNOTATION,
+    SKILL_SYNC_COMPLETED_ANNOTATION,
+    SKILL_SYNC_COUNTS_ANNOTATION,
+    SKILL_SYNC_DIAGNOSTIC_ANNOTATION,
+    SKILL_SYNC_STATUS_ANNOTATION,
     STATE_ANNOTATION,
     USER_LABEL
 } from "./kubernetes.js";
@@ -18,6 +23,7 @@ export class AgentManager {
     >();
     private readonly activityRenewals = new Map<string, Promise<void>>();
     private readonly pendingDeletes = new Map<string, number>();
+    private readonly skillSyncs = new Map<string, Promise<void>>();
 
     constructor(
         private readonly config: ManagerConfig,
@@ -115,6 +121,122 @@ export class AgentManager {
         else this.pendingDeletes.delete(userId);
     }
 
+    private parseSkillSyncResult(
+        output: string
+    ): {
+        status: "success" | "partial" | "failed";
+        counts: {
+            installed: number;
+            updated: number;
+            unchanged: number;
+            removed: number;
+            skipped: number;
+            failed: number;
+        };
+    } {
+        const parsed = JSON.parse(output) as Record<string, unknown>;
+        if (
+            (parsed.status !== "success" &&
+                parsed.status !== "partial" &&
+                parsed.status !== "failed") ||
+            !parsed.counts ||
+            typeof parsed.counts !== "object"
+        ) {
+            throw new Error("Invalid Agent Skill sync result");
+        }
+        const counts = parsed.counts as Record<string, unknown>;
+        for (const key of [
+            "installed",
+            "updated",
+            "unchanged",
+            "removed",
+            "skipped",
+            "failed"
+        ]) {
+            if (
+                !Number.isSafeInteger(counts[key]) ||
+                (counts[key] as number) < 0
+            ) {
+                throw new Error("Invalid Agent Skill sync result");
+            }
+        }
+        return {
+            status: parsed.status,
+            counts: counts as {
+                installed: number;
+                updated: number;
+                unchanged: number;
+                removed: number;
+                skipped: number;
+                failed: number;
+            }
+        };
+    }
+
+    private scheduleSkillSync(
+        userId: string,
+        claimUid: string,
+        sandbox: string
+    ): void {
+        if (this.skillSyncs.has(claimUid)) return;
+        const promise = (async () => {
+            const attemptedAt = new Date().toISOString();
+            try {
+                await this.kubernetes.patchSkillSyncAnnotations(
+                    userId,
+                    claimUid,
+                    {
+                        [SKILL_SYNC_STATUS_ANNOTATION]: "notAttempted",
+                        [SKILL_SYNC_ATTEMPTED_ANNOTATION]: attemptedAt,
+                        [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: ""
+                    }
+                );
+                const result = this.parseSkillSyncResult(
+                    await this.kubernetes.syncSkills(sandbox)
+                );
+                await this.kubernetes.patchSkillSyncAnnotations(
+                    userId,
+                    claimUid,
+                    {
+                        [SKILL_SYNC_STATUS_ANNOTATION]: result.status,
+                        [SKILL_SYNC_COMPLETED_ANNOTATION]: new Date().toISOString(),
+                        [SKILL_SYNC_COUNTS_ANNOTATION]: JSON.stringify(
+                            result.counts
+                        ),
+                        [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: ""
+                    }
+                );
+            } catch (error) {
+                const diagnostic =
+                    error instanceof Error && /timed out/i.test(error.message)
+                        ? "TIMEOUT"
+                        : error instanceof SyntaxError ||
+                          (error instanceof Error &&
+                              /Invalid Agent Skill sync result/.test(
+                                  error.message
+                              ))
+                        ? "INVALID_RESULT"
+                        : "EXEC_FAILED";
+                await this.kubernetes
+                    .patchSkillSyncAnnotations(userId, claimUid, {
+                        [SKILL_SYNC_STATUS_ANNOTATION]: "failed",
+                        [SKILL_SYNC_COMPLETED_ANNOTATION]: new Date().toISOString(),
+                        [SKILL_SYNC_COUNTS_ANNOTATION]: JSON.stringify({
+                            installed: 0,
+                            updated: 0,
+                            unchanged: 0,
+                            removed: 0,
+                            skipped: 0,
+                            failed: 1
+                        }),
+                        [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: diagnostic
+                    })
+                    .catch(() => undefined);
+            }
+        })().finally(() => this.skillSyncs.delete(claimUid));
+        this.skillSyncs.set(claimUid, promise);
+    }
+
     private bootstrapPayload(userId: string, key: { id: string; key: string }) {
         return {
             version: 1,
@@ -178,11 +300,26 @@ export class AgentManager {
                 300_000,
                 restartCount + 1
             );
-            await this.kubernetes.patchClaimAnnotations(userId, {
-                [STATE_ANNOTATION]: "READY",
-                [ERROR_ANNOTATION]: null,
-                [KEY_ID_ANNOTATION]: key.id
-            });
+            const readyClaim = await this.kubernetes.patchClaimAnnotations(
+                userId,
+                {
+                    [STATE_ANNOTATION]: "READY",
+                    [ERROR_ANNOTATION]: null,
+                    [KEY_ID_ANNOTATION]: key.id,
+                    [SKILL_SYNC_STATUS_ANNOTATION]: "notAttempted",
+                    [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: null,
+                    [SKILL_SYNC_COUNTS_ANNOTATION]: null,
+                    [SKILL_SYNC_ATTEMPTED_ANNOTATION]: null,
+                    [SKILL_SYNC_COMPLETED_ANNOTATION]: null
+                }
+            );
+            if (readyClaim.metadata.uid) {
+                this.scheduleSkillSync(
+                    userId,
+                    readyClaim.metadata.uid,
+                    sandbox
+                );
+            }
         } catch (error) {
             const claim = await this.kubernetes
                 .getClaim(userId)
@@ -516,12 +653,22 @@ export class AgentManager {
                 const userId = claim.metadata.labels?.[USER_LABEL];
                 const sandbox = claim.status?.sandbox?.name;
                 const state = claim.metadata.annotations?.[STATE_ANNOTATION];
+                const skillSyncStatus =
+                    claim.metadata.annotations?.[SKILL_SYNC_STATUS_ANNOTATION];
                 const lastActivity = Date.parse(
                     claim.metadata.annotations?.[LAST_ACTIVITY_ANNOTATION] ||
                         claim.metadata.creationTimestamp ||
                         ""
                 );
                 if (!userId || this.operations.has(userId)) return;
+                if (
+                    state === "READY" &&
+                    sandbox &&
+                    claim.metadata.uid &&
+                    (!skillSyncStatus || skillSyncStatus === "notAttempted")
+                ) {
+                    this.scheduleSkillSync(userId, claim.metadata.uid, sandbox);
+                }
                 if (
                     state &&
                     (await this.recoverTransientClaim(

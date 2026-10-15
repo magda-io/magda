@@ -14,7 +14,11 @@ import {
     AgentSkillType,
     AgentSkillState,
     AgentSkillStorage,
-    ValidatedAgentSkillArchive
+    ValidatedAgentSkillArchive,
+    WorkspaceSkillManifest,
+    WorkspaceSkillManifestItem,
+    WorkspaceSkillManifestWarning,
+    WorkspaceSkillSourceKind
 } from "./types.js";
 import { AuthenticatedUser } from "../types.js";
 import jwt from "jsonwebtoken";
@@ -880,7 +884,8 @@ export class AgentSkillService {
     async replaceAuthorized(
         existing: AgentSkillRecord,
         bytes: Buffer,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        expectedChecksum?: string
     ): Promise<AgentSkillMetadata> {
         return await this.exclusive(existing.id, async () => {
             try {
@@ -898,6 +903,16 @@ export class AgentSkillService {
                 }
                 const current = parseAgentSkillRecord(currentRaw);
                 await this.requirePermission("update", current, user);
+                if (
+                    expectedChecksum &&
+                    current.aspects["agent-skill"].checksum !== expectedChecksum
+                ) {
+                    throw new AgentSkillError(
+                        "Agent Skill changed since it was last read",
+                        412,
+                        "AGENT_SKILL_PRECONDITION_FAILED"
+                    );
+                }
                 if (current.aspects["agent-skill"].state === "DELETING") {
                     throw new AgentSkillError(
                         "Agent Skill is being deleted",
@@ -1018,7 +1033,8 @@ export class AgentSkillService {
 
     async deleteAuthorized(
         existing: AgentSkillRecord,
-        user: AuthenticatedUser
+        user: AuthenticatedUser,
+        expectedChecksum?: string
     ): Promise<void> {
         await this.exclusive(existing.id, async () => {
             try {
@@ -1036,6 +1052,16 @@ export class AgentSkillService {
                 }
                 const current = parseAgentSkillRecord(raw);
                 await this.requirePermission("delete", current, user);
+                if (
+                    expectedChecksum &&
+                    current.aspects["agent-skill"].checksum !== expectedChecksum
+                ) {
+                    throw new AgentSkillError(
+                        "Agent Skill changed since it was last read",
+                        412,
+                        "AGENT_SKILL_PRECONDITION_FAILED"
+                    );
+                }
                 if (
                     current.aspects["agent-skill"].type !==
                         existing.aspects["agent-skill"].type ||
@@ -1160,6 +1186,146 @@ export class AgentSkillService {
             );
         }
         return downloaded.bytes;
+    }
+
+    private async workspaceManifestSource(
+        sourceKind: Exclude<WorkspaceSkillSourceKind, "installation">,
+        user: AuthenticatedUser
+    ): Promise<{
+        items: WorkspaceSkillManifestItem[];
+        warnings: WorkspaceSkillManifestWarning[];
+    }> {
+        const items: WorkspaceSkillManifestItem[] = [];
+        const warnings: WorkspaceSkillManifestWarning[] = [];
+        const warn = (warning: WorkspaceSkillManifestWarning) => {
+            if (warnings.length < 100) warnings.push(warning);
+        };
+        const seenTokens = new Set<string>();
+        const seenIds = new Set<string>();
+        let pageToken: string | undefined;
+        do {
+            const page = await this.registry.list(
+                sourceKind === "system-publication"
+                    ? {
+                          type: "system",
+                          state: "READY",
+                          limit: 100,
+                          ...(pageToken ? { pageToken } : {})
+                      }
+                    : {
+                          type: "user",
+                          state: "READY",
+                          userId: { operator: "eq", value: user.id },
+                          limit: 100,
+                          ...(pageToken ? { pageToken } : {})
+                      },
+                user.sessionToken
+            );
+            for (const raw of page.records) {
+                const rawId =
+                    isObject(raw) && typeof raw.id === "string"
+                        ? raw.id
+                        : undefined;
+                let record: AgentSkillRecord;
+                try {
+                    record = parseAgentSkillRecord(raw);
+                } catch {
+                    warn({
+                        sourceKind,
+                        code: "INVALID_RECORD",
+                        ...(rawId ? { recordId: rawId } : {})
+                    });
+                    continue;
+                }
+                const aspect = record.aspects["agent-skill"];
+                const belongs =
+                    aspect.state === "READY" &&
+                    (sourceKind === "system-publication"
+                        ? aspect.type === "system" &&
+                          aspect.userId === undefined
+                        : aspect.type === "user" && aspect.userId === user.id);
+                if (!belongs) {
+                    warn({
+                        sourceKind,
+                        code: "INVALID_RECORD",
+                        recordId: record.id
+                    });
+                    continue;
+                }
+                if (seenIds.has(record.id)) {
+                    warn({
+                        sourceKind,
+                        code: "DUPLICATE_RECORD",
+                        recordId: record.id
+                    });
+                    continue;
+                }
+                seenIds.add(record.id);
+                if (
+                    !(await this.authorization.can(
+                        "read",
+                        record,
+                        user.sessionToken
+                    ))
+                ) {
+                    warn({
+                        sourceKind,
+                        code: "READ_DENIED",
+                        recordId: record.id
+                    });
+                    continue;
+                }
+                items.push({
+                    selectionId: record.id,
+                    effectiveName: aspect.name,
+                    sourceKind,
+                    source: metadata(record)
+                });
+            }
+            if (!page.hasMore) break;
+            const next = page.nextPageToken;
+            if (!next || seenTokens.has(next)) {
+                throw new DownstreamServiceError(
+                    "registry",
+                    502,
+                    "Registry returned an invalid Agent Skill manifest page"
+                );
+            }
+            seenTokens.add(next);
+            pageToken = next;
+        } while (true);
+        return { items, warnings };
+    }
+
+    async getWorkspaceSkillManifest(
+        user: AuthenticatedUser
+    ): Promise<WorkspaceSkillManifest> {
+        // Keep source traversals independent. #3861 can add an installation
+        // resolver without changing publication pagination or source authority.
+        const system = await this.workspaceManifestSource(
+            "system-publication",
+            user
+        );
+        const own = await this.workspaceManifestSource(
+            "own-user-publication",
+            user
+        );
+        const items = [...system.items, ...own.items].sort(
+            (left, right) =>
+                left.effectiveName.localeCompare(right.effectiveName) ||
+                left.selectionId.localeCompare(right.selectionId)
+        );
+        return {
+            version: 1,
+            complete: true,
+            items,
+            warnings: [...system.warnings, ...own.warnings].slice(0, 100),
+            sources: {
+                system: { complete: true, count: system.items.length },
+                user: { complete: true, count: own.items.length },
+                installations: { status: "notImplemented", count: 0 }
+            }
+        };
     }
 
     async list(

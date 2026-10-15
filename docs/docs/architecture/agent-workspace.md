@@ -260,6 +260,79 @@ archive entry, path, type, CRC, count, and size limits. Audit logs contain actor
 operation, type, record ID, result and error code only—never session credentials
 or archive content.
 
+## Agent Skill workspace manifest and synchronization
+
+`GET /api/v0/agent/skills/workspace-manifest` is an ordinary authenticated-user
+route. It independently traverses all pages of visible READY system publications
+and READY user publications whose immutable `agent-skill.userId` is the current
+user UUID. Every Registry request and typed read decision uses the caller session;
+the lifecycle-only internal administrator identity is never used. A future third
+installation source is represented in the response shape but remains unimplemented
+until #3861. A publication that belongs to another user is never selected merely
+because it is readable.
+
+Malformed, mismatched, or individually denied records are skipped with bounded
+warnings. Registry or authorization infrastructure errors fail the complete
+manifest request rather than returning a misleading successful empty set. This
+lets a synchronizer distinguish an authoritative empty manifest, which can
+remove clean stale managed copies, from an outage, which must preserve them.
+
+`mgd agent-skill` is separate from the existing bundled-guidance `mgd skills`
+commands. It supports local draft creation/validation, explicit publication,
+caller-authorized list/show/pull/delete, and reconciliation. Published ZIPs are
+validated again before extraction. Managed state is written under the existing
+`mgd` config directory and dynamic bundles are projected atomically into
+`$MGD_AGENT_SKILL_DIR`, `$DSH_HOME/skills`, or `~/.agents/skills`. Only copies
+whose current tree digest still matches managed state are replaced or removed;
+modified copies are preserved as local drafts/conflicts. Conditional replacement
+and deletion require a strong checksum `If-Match` checked inside the server's
+per-record mutation lock. Agent Manager currently deploys as one replica; this
+process-local serialization is sufficient for the MVP deployment, but a future
+multi-replica Manager must move the compare-and-swap to a Registry conditional
+mutation or distributed lock before horizontal scaling.
+
+Essential credential/DSH bootstrap is the only READY gate. After the adopted or
+cold Sandbox has restarted with its managed credential, Agent Manager records
+READY first and runs skill synchronization as detached, best-effort work. Its
+separate `success | partial | failed | notAttempted` status contains only aggregate
+counts, timestamps, and a bounded diagnostic code. Failure or total API outage
+never changes lifecycle READY or blocks the runtime iframe. Warm-pool Sandboxes
+therefore contain neither user credentials nor synchronized user skills before
+claim adoption.
+
+The pinned DSH `0.2.1-alpha.1` filesystem provider scans immediate
+`<root>/<name>/SKILL.md` bundles and watches existing and late-created roots.
+Provider experiments in the built runtime confirmed additions, metadata/body
+updates, and removals are visible on the next model step without a process restart
+or new conversation. Existing loaded tool results remain historical context. The
+Web slash-suggestion cache may require a page reconnect or new Session to display
+a changed name immediately, while a directly typed invocation and the next model
+step use current host discovery.
+
+### Stage 2 qualification procedure
+
+The Stage 2 Minikube gate builds the Manager and Runtime images from the working
+tree, publishes one current-user and one system archive through Agent Services,
+and starts a claim from a neutral warm Sandbox. Inspect both the claim's
+`agent.magda.io/skill-sync-*` annotations and `/data/agent-home/skills`: READY
+must precede a successful two-item sync, while the replacement warm Sandbox must
+have no `mgd` profile, sync state, or user skill directory. Invoke the pinned
+filesystem provider in the adopted container to confirm both names are listed.
+Then replace the user archive, delete the system publication, run
+`mgd agent-skill sync --json`, and require one update and one removal followed by
+DSH listing only the updated skill. A second user's manifest must not select the
+first user's publication.
+
+For the failure gate, make Registry unavailable and run both normal sync and the
+Manager's bounded `--workspace-status` form. Normal CLI sync must exit non-zero;
+the Manager form must return a summary-only `failed` result without making its
+exec fail. In both cases the claim stays READY, the DSH iframe remains available,
+and the previously installed tree remains unchanged. Restore Registry and require
+a subsequent sync to report the copy unchanged. The Storage API download path
+must forward the existing object's `magda-record-id` and `magda-owner-id` as
+S3-style metadata headers; Agent Services uses those trusted response headers to
+validate archive linkage before publication or download.
+
 ## Managed DSH profile decisions
 
 The deployment, not the user, owns provider, model, plugin, permission, and

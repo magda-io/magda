@@ -4,6 +4,11 @@ import {
     KEY_ID_ANNOTATION,
     LAST_ACTIVITY_ANNOTATION,
     RESET_AFTER_DELETE_ANNOTATION,
+    SKILL_SYNC_ATTEMPTED_ANNOTATION,
+    SKILL_SYNC_COMPLETED_ANNOTATION,
+    SKILL_SYNC_COUNTS_ANNOTATION,
+    SKILL_SYNC_DIAGNOSTIC_ANNOTATION,
+    SKILL_SYNC_STATUS_ANNOTATION,
     shutdownTimeForActivity,
     STATE_ANNOTATION,
     USER_LABEL
@@ -82,12 +87,17 @@ function runningStatusFrame(agentId: string): Buffer {
     return Buffer.concat([header, payload]);
 }
 
-function claim(lastActivity: Date, state = "READY"): SandboxClaim {
+function claim(
+    lastActivity: Date,
+    state = "READY",
+    uid = "claim-1"
+): SandboxClaim {
     return {
         apiVersion: "extensions.agents.x-k8s.io/v1beta1",
         kind: "SandboxClaim",
         metadata: {
             name: "claim",
+            uid,
             creationTimestamp: lastActivity.toISOString(),
             labels: { [USER_LABEL]: userId },
             annotations: {
@@ -117,8 +127,16 @@ class FakeKubernetes {
     activityFailures = 0;
     deleted = 0;
     bootstraps: unknown[] = [];
+    skillSyncCalls: string[] = [];
+    skillSyncPatches: Array<{
+        claimUid: string;
+        annotations: Record<string, string | null>;
+    }> = [];
+    skillSyncImplementations: Array<() => Promise<string>> = [];
+    rejectedSkillSyncPatches = 0;
     deleteBarrier: Promise<void> | undefined;
     annotationFailures = 0;
+    createdClaims = 0;
 
     async listClaims() {
         return this.claims;
@@ -143,6 +161,27 @@ class FakeKubernetes {
             throw new Error("Kubernetes annotation patch unavailable");
         }
         const current = this.claims[0];
+        if (!current.metadata.annotations) current.metadata.annotations = {};
+        for (const [name, value] of Object.entries(annotations)) {
+            if (value === null) delete current.metadata.annotations[name];
+            else current.metadata.annotations[name] = value;
+        }
+        return current;
+    }
+    async patchSkillSyncAnnotations(
+        _id: string,
+        claimUid: string,
+        annotations: Record<string, string | null>
+    ) {
+        const current = this.claims[0];
+        if (
+            current?.metadata.uid !== claimUid ||
+            current.metadata.annotations?.[STATE_ANNOTATION] !== "READY"
+        ) {
+            this.rejectedSkillSyncPatches += 1;
+            throw new Error("stale skill sync claim");
+        }
+        this.skillSyncPatches.push({ claimUid, annotations });
         if (!current.metadata.annotations) current.metadata.annotations = {};
         for (const [name, value] of Object.entries(annotations)) {
             if (value === null) delete current.metadata.annotations[name];
@@ -182,7 +221,10 @@ class FakeKubernetes {
         }
     }
     async createClaim() {
-        this.claims = [claim(new Date(), "ALLOCATING")];
+        this.createdClaims += 1;
+        this.claims = [
+            claim(new Date(), "ALLOCATING", `claim-${this.createdClaims}`)
+        ];
         return this.claims[0];
     }
     async waitForClaimReady() {
@@ -194,6 +236,22 @@ class FakeKubernetes {
     }
     async bootstrap(_sandbox: string, payload: unknown) {
         this.bootstraps.push(payload);
+    }
+    async syncSkills(sandbox: string) {
+        this.skillSyncCalls.push(sandbox);
+        const implementation = this.skillSyncImplementations.shift();
+        if (implementation) return await implementation();
+        return JSON.stringify({
+            status: "success",
+            counts: {
+                installed: 0,
+                updated: 0,
+                unchanged: 0,
+                removed: 0,
+                skipped: 0,
+                failed: 0
+            }
+        });
     }
     async deleteClaim() {
         this.deleted += 1;
@@ -232,6 +290,14 @@ class FakeProxy {
     async closeUserSockets() {
         this.closed += 1;
     }
+}
+
+async function waitFor(predicate: () => boolean) {
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+        if (predicate()) return;
+        await new Promise((resolve) => setImmediate(resolve));
+    }
+    throw new Error("Timed out waiting for lifecycle test condition");
 }
 
 function manager(
@@ -285,6 +351,297 @@ describe("Agent Workspace inactivity lifecycle", () => {
             llm: Record<string, unknown>;
         };
         expect(payload.llm).not.to.have.property("reasoningEffort");
+    });
+
+    it("becomes READY before a blocked Agent Skill sync completes", async () => {
+        const kubernetes = new FakeKubernetes();
+        let releaseSync!: () => void;
+        const blockedSync = new Promise<void>((resolve) => {
+            releaseSync = resolve;
+        });
+        kubernetes.skillSyncImplementations.push(async () => {
+            await blockedSync;
+            return JSON.stringify({
+                status: "success",
+                counts: {
+                    installed: 1,
+                    updated: 0,
+                    unchanged: 0,
+                    removed: 0,
+                    skipped: 0,
+                    failed: 0
+                }
+            });
+        });
+        const instance = manager(kubernetes).manager;
+
+        await instance.start(userId);
+        await waitFor(() => kubernetes.skillSyncCalls.length === 1);
+
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION]
+        ).to.equal("READY");
+        expect((await instance.start(userId)).state).to.equal("READY");
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_STATUS_ANNOTATION
+            ]
+        ).to.equal("notAttempted");
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_ATTEMPTED_ANNOTATION
+            ]
+        ).to.be.a("string");
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_COMPLETED_ANNOTATION
+            ]
+        ).to.equal(undefined);
+
+        releaseSync();
+        await waitFor(
+            () =>
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_STATUS_ANNOTATION
+                ] === "success"
+        );
+    });
+
+    it("keeps the workspace READY and records a failed Agent Skill sync", async () => {
+        const kubernetes = new FakeKubernetes();
+        kubernetes.skillSyncImplementations.push(async () => {
+            throw new Error("mgd sync failed");
+        });
+        const instance = manager(kubernetes).manager;
+
+        await instance.start(userId);
+        await waitFor(
+            () =>
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_STATUS_ANNOTATION
+                ] === "failed"
+        );
+
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION]
+        ).to.equal("READY");
+        expect((await instance.start(userId)).state).to.equal("READY");
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_DIAGNOSTIC_ANNOTATION
+            ]
+        ).to.equal("EXEC_FAILED");
+        expect(
+            JSON.parse(
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_COUNTS_ANNOTATION
+                ] || "null"
+            )
+        ).to.deep.equal({
+            installed: 0,
+            updated: 0,
+            unchanged: 0,
+            removed: 0,
+            skipped: 0,
+            failed: 1
+        });
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_COMPLETED_ANNOTATION
+            ]
+        ).to.be.a("string");
+    });
+
+    it("persists successful and partial Agent Skill sync results", async () => {
+        for (const [status, counts] of [
+            [
+                "success",
+                {
+                    installed: 2,
+                    updated: 1,
+                    unchanged: 3,
+                    removed: 4,
+                    skipped: 5,
+                    failed: 0
+                }
+            ],
+            [
+                "partial",
+                {
+                    installed: 1,
+                    updated: 0,
+                    unchanged: 2,
+                    removed: 0,
+                    skipped: 3,
+                    failed: 1
+                }
+            ]
+        ] as const) {
+            const kubernetes = new FakeKubernetes();
+            kubernetes.skillSyncImplementations.push(async () =>
+                JSON.stringify({ status, counts })
+            );
+
+            await manager(kubernetes).manager.start(userId);
+            await waitFor(
+                () =>
+                    kubernetes.claims[0].metadata.annotations?.[
+                        SKILL_SYNC_STATUS_ANNOTATION
+                    ] === status
+            );
+
+            expect(
+                JSON.parse(
+                    kubernetes.claims[0].metadata.annotations?.[
+                        SKILL_SYNC_COUNTS_ANNOTATION
+                    ] || "null"
+                ),
+                status
+            ).to.deep.equal(counts);
+            expect(
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_COMPLETED_ANNOTATION
+                ],
+                status
+            ).to.be.a("string");
+            expect(
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_DIAGNOSTIC_ANNOTATION
+                ],
+                status
+            ).to.equal("");
+        }
+    });
+
+    it("does not let a stale claim UID sync result annotate a reset replacement", async () => {
+        const kubernetes = new FakeKubernetes();
+        let releaseOldSync!: () => void;
+        let releaseReplacementSync!: () => void;
+        const oldSyncBlocked = new Promise<void>((resolve) => {
+            releaseOldSync = resolve;
+        });
+        const replacementSyncBlocked = new Promise<void>((resolve) => {
+            releaseReplacementSync = resolve;
+        });
+        kubernetes.skillSyncImplementations.push(
+            async () => {
+                await oldSyncBlocked;
+                return JSON.stringify({
+                    status: "success",
+                    counts: {
+                        installed: 99,
+                        updated: 0,
+                        unchanged: 0,
+                        removed: 0,
+                        skipped: 0,
+                        failed: 0
+                    }
+                });
+            },
+            async () => {
+                await replacementSyncBlocked;
+                return JSON.stringify({
+                    status: "success",
+                    counts: {
+                        installed: 0,
+                        updated: 0,
+                        unchanged: 1,
+                        removed: 0,
+                        skipped: 0,
+                        failed: 0
+                    }
+                });
+            }
+        );
+        const instance = manager(kubernetes).manager;
+
+        await instance.start(userId);
+        await waitFor(() => kubernetes.skillSyncCalls.length === 1);
+        const oldUid = kubernetes.claims[0].metadata.uid;
+
+        await instance.reset(userId);
+        await waitFor(
+            () =>
+                kubernetes.createdClaims === 2 &&
+                kubernetes.claims[0].metadata.annotations?.[
+                    STATE_ANNOTATION
+                ] === "READY" &&
+                kubernetes.skillSyncCalls.length === 2
+        );
+        const replacementUid = kubernetes.claims[0].metadata.uid;
+        expect(replacementUid).not.to.equal(oldUid);
+
+        releaseOldSync();
+        await waitFor(() => kubernetes.rejectedSkillSyncPatches > 0);
+
+        expect(
+            kubernetes.skillSyncPatches.some(
+                ({ claimUid, annotations }) =>
+                    claimUid === oldUid &&
+                    annotations[SKILL_SYNC_STATUS_ANNOTATION] === "success"
+            )
+        ).to.equal(false);
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_STATUS_ANNOTATION
+            ]
+        ).to.equal("notAttempted");
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_COUNTS_ANNOTATION
+            ]
+        ).to.equal(undefined);
+
+        releaseReplacementSync();
+        await waitFor(
+            () =>
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_STATUS_ANNOTATION
+                ] === "success"
+        );
+    });
+
+    it("reconciliation schedules a persisted notAttempted Agent Skill sync", async () => {
+        const kubernetes = new FakeKubernetes();
+        kubernetes.claims = [claim(new Date())];
+        kubernetes.claims[0].metadata.annotations![
+            SKILL_SYNC_STATUS_ANNOTATION
+        ] = "notAttempted";
+        let releaseSync!: () => void;
+        const blockedSync = new Promise<void>((resolve) => {
+            releaseSync = resolve;
+        });
+        kubernetes.skillSyncImplementations.push(async () => {
+            await blockedSync;
+            return JSON.stringify({
+                status: "success",
+                counts: {
+                    installed: 0,
+                    updated: 0,
+                    unchanged: 1,
+                    removed: 0,
+                    skipped: 0,
+                    failed: 0
+                }
+            });
+        });
+        const instance = manager(kubernetes).manager;
+
+        await instance.reconcileIdleWorkspaces();
+
+        expect(kubernetes.skillSyncCalls).to.deep.equal(["sandbox-1"]);
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[
+                SKILL_SYNC_ATTEMPTED_ANNOTATION
+            ]
+        ).to.be.a("string");
+        releaseSync();
+        await waitFor(
+            () =>
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_STATUS_ANNOTATION
+                ] === "success"
+        );
     });
 
     it("suspends after 30 minutes even when transport sockets are open", async () => {

@@ -122,6 +122,43 @@ const WorkspaceInformation: FunctionComponent = () => (
     </div>
 );
 
+export const AgentWorkspaceReady: FunctionComponent<{
+    skillSync?: AgentWorkspaceStatus["skillSync"];
+    terminateButton?: React.ReactNode;
+    resetButton?: React.ReactNode;
+}> = ({ skillSync, terminateButton, resetButton }) => (
+    <div className="agent-workspace-ready">
+        <div className="agent-workspace-toolbar">
+            <div className="agent-workspace-toolbar-heading">
+                <strong>Agent Workspace</strong>
+                <span>Private workspace running with your Magda authority</span>
+                {skillSync?.status === "partial" ||
+                skillSync?.status === "failed" ? (
+                    <span role="status">
+                        Some published skills could not be synchronized. The
+                        Workspace remains available; run `mgd agent-skill sync`
+                        to retry.
+                    </span>
+                ) : skillSync?.status === "notAttempted" ? (
+                    <span role="status">
+                        Published skill synchronization has not completed.
+                    </span>
+                ) : null}
+            </div>
+            <ButtonToolbar className="agent-workspace-toolbar-actions">
+                {terminateButton}
+                {resetButton}
+            </ButtonToolbar>
+        </div>
+        <iframe
+            className="agent-workspace-runtime"
+            src={AGENT_WORKSPACE_RUNTIME_URL}
+            title="Agent Workspace"
+            allow="clipboard-read; clipboard-write"
+        />
+    </div>
+);
+
 const AgentWorkspacePage: FunctionComponent = () => {
     const [status, setStatus] = useState<AgentWorkspaceStatus>();
     const [loading, setLoading] = useState(true);
@@ -299,27 +336,11 @@ const AgentWorkspacePage: FunctionComponent = () => {
 
         if (isAgentWorkspaceRunning(status.state)) {
             return (
-                <div className="agent-workspace-ready">
-                    <div className="agent-workspace-toolbar">
-                        <div className="agent-workspace-toolbar-heading">
-                            <strong>Agent Workspace</strong>
-                            <span>
-                                Private workspace running with your Magda
-                                authority
-                            </span>
-                        </div>
-                        <ButtonToolbar className="agent-workspace-toolbar-actions">
-                            {terminateButton}
-                            {resetButton}
-                        </ButtonToolbar>
-                    </div>
-                    <iframe
-                        className="agent-workspace-runtime"
-                        src={AGENT_WORKSPACE_RUNTIME_URL}
-                        title="Agent Workspace"
-                        allow="clipboard-read; clipboard-write"
-                    />
-                </div>
+                <AgentWorkspaceReady
+                    skillSync={status.skillSync}
+                    terminateButton={terminateButton}
+                    resetButton={resetButton}
+                />
             );
         }
 

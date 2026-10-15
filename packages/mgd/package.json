@@ -21,12 +21,19 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "commander": "^11.1.0"
+    "commander": "^11.1.0",
+    "crc-32": "^1.2.0",
+    "js-yaml": "^4.1.0",
+    "yauzl": "^3.2.0",
+    "yazl": "^3.3.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
+    "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.6",
     "@types/node": "^22.0.0",
+    "@types/yauzl": "^2.10.3",
+    "@types/yazl": "^2.4.5",
     "c8": "^9.0.0",
     "chai": "^5.0.0",
     "esbuild": "^0.19.10",

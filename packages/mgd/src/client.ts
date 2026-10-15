@@ -118,18 +118,31 @@ export class MagdaClient {
 
 async function toApiError(res: Response): Promise<MgdApiError> {
     let message = `${res.status} ${res.statusText}`;
+    let serverCode: string | undefined;
     try {
         const text = await res.text();
         try {
             const parsed = JSON.parse(text);
-            message = parsed?.message || parsed?.errorMessage || message;
+            message =
+                parsed?.error?.message ||
+                parsed?.message ||
+                parsed?.errorMessage ||
+                message;
+            serverCode =
+                typeof parsed?.error?.code === "string"
+                    ? parsed.error.code
+                    : undefined;
         } catch {
             if (text.trim()) message = text.trim().slice(0, 500);
         }
     } catch {
         // keep default message
     }
-    return new MgdApiError(message, res.status, codeForStatus(res.status));
+    return new MgdApiError(
+        message,
+        res.status,
+        serverCode || codeForStatus(res.status)
+    );
 }
 
 export async function clientFromProfile(): Promise<MagdaClient> {

@@ -86,7 +86,20 @@ describe("AgentWorkspaceApis", () => {
             state: "SUSPENDED" as const,
             message: "Idle workspace",
             retryable: true,
-            updatedAt: "2026-10-10T00:00:00Z"
+            updatedAt: "2026-10-10T00:00:00Z",
+            skillSync: {
+                status: "partial" as const,
+                attemptedAt: "2026-10-10T00:00:01Z",
+                completedAt: "2026-10-10T00:00:02Z",
+                counts: {
+                    installed: 1,
+                    updated: 2,
+                    unchanged: 3,
+                    removed: 4,
+                    skipped: 1,
+                    failed: 0
+                }
+            }
         };
         (global.fetch as jest.Mock).mockResolvedValue(response(200, expected));
 

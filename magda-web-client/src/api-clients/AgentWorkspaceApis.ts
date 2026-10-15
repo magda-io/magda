@@ -27,6 +27,20 @@ export interface AgentWorkspaceStatus {
     message?: string;
     retryable?: boolean;
     updatedAt?: string;
+    skillSync?: {
+        status: "success" | "partial" | "failed" | "notAttempted";
+        attemptedAt?: string;
+        completedAt?: string;
+        counts?: {
+            installed: number;
+            updated: number;
+            unchanged: number;
+            removed: number;
+            skipped: number;
+            failed: number;
+        };
+        diagnosticCode?: "EXEC_FAILED" | "TIMEOUT" | "INVALID_RESULT";
+    };
 }
 
 export class AgentWorkspaceApiError extends Error {

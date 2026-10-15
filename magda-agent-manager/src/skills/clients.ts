@@ -158,7 +158,14 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
         const data = (await parseJson(response)) as Partial<
             RegistryRecordsPage
         >;
-        if (!data || !Array.isArray(data.records)) {
+        if (
+            !data ||
+            !Array.isArray(data.records) ||
+            typeof data.hasMore !== "boolean" ||
+            (data.nextPageToken !== undefined &&
+                typeof data.nextPageToken !== "string") ||
+            (data.hasMore && !data.nextPageToken)
+        ) {
             throw new DownstreamServiceError(
                 "registry",
                 502,
@@ -170,11 +177,8 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
                 typeof data.totalCount === "number"
                     ? data.totalCount
                     : undefined,
-            hasMore: data.hasMore === true,
-            nextPageToken:
-                typeof data.nextPageToken === "string"
-                    ? data.nextPageToken
-                    : undefined,
+            hasMore: data.hasMore,
+            nextPageToken: data.nextPageToken,
             records: data.records
         };
     }

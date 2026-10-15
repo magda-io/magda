@@ -10,6 +10,13 @@ export const SEARCH_DATASETS = "/v0/search/datasets";
 export const SEMANTIC_SEARCH = "/v0/semantic-search/search";
 export const REGISTRY_RECORDS = "/v0/registry/records";
 export const REGISTRY_ASPECTS = "/v0/registry/aspects";
+export const AGENT_SKILLS = "/v0/agent/skills";
+export const AGENT_SKILL_WORKSPACE_MANIFEST = `${AGENT_SKILLS}/workspace-manifest`;
+
+export const agentSkill = (type: string, id: string) =>
+    `${AGENT_SKILLS}/${encodeURIComponent(type)}/${encodeURIComponent(id)}`;
+export const agentSkillArchive = (type: string, id: string) =>
+    `${agentSkill(type, id)}/archive`;
 
 export const registryRecord = (id: string) =>
     `${REGISTRY_RECORDS}/${encodeURIComponent(id)}`;

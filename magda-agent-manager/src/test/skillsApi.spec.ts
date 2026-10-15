@@ -8,6 +8,7 @@ import {
     authenticateAdminToken,
     authenticateUserToken
 } from "../auth.js";
+import { DownstreamServiceError } from "../skills/clients.js";
 import { AgentSkillError, AgentSkillService } from "../skills/service.js";
 import { AgentSkillRecord } from "../skills/types.js";
 import { ManagerConfig } from "../types.js";
@@ -406,6 +407,7 @@ describe("Agent Skill authentication and API boundary", () => {
         const replace = await request(app)
             .put(`/v0/skills/user/${recordId}/archive`)
             .set("X-Magda-Session", session)
+            .set("If-Match", `"${metadata.checksum}"`)
             .set("Content-Type", "application/zip")
             .send(Buffer.from("new-zip"));
         expect(replace.status).to.equal(200);
@@ -413,7 +415,8 @@ describe("Agent Skill authentication and API boundary", () => {
 
         const deleted = await request(app)
             .delete(`/v0/skills/user/${recordId}`)
-            .set("X-Magda-Session", session);
+            .set("X-Magda-Session", session)
+            .set("If-Match", `"${metadata.checksum}"`);
         expect(deleted.status).to.equal(204);
         expect(calls).to.include.members([
             "prepare:read",
@@ -422,6 +425,256 @@ describe("Agent Skill authentication and API boundary", () => {
             "replace",
             "delete"
         ]);
+    });
+
+    it("protects the workspace manifest route with ordinary-user authentication", async () => {
+        let manifestCalls = 0;
+        const service = ({
+            getWorkspaceSkillManifest: async () => {
+                manifestCalls += 1;
+                return {
+                    version: 1,
+                    complete: true,
+                    items: [],
+                    warnings: [],
+                    sources: {
+                        system: { complete: true, count: 0 },
+                        user: { complete: true, count: 0 },
+                        installations: {
+                            status: "notImplemented",
+                            count: 0
+                        }
+                    }
+                };
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+
+        const missing = await request(app).get("/v0/skills/workspace-manifest");
+        const invalid = await request(app)
+            .get("/v0/skills/workspace-manifest")
+            .set("X-Magda-Session", "not-a-jwt");
+        const accepted = await request(app)
+            .get("/v0/skills/workspace-manifest")
+            .set("X-Magda-Session", token());
+
+        expect(missing.status).to.equal(401);
+        expect(invalid.status).to.equal(401);
+        expect(accepted.status).to.equal(200);
+        expect(accepted.headers["cache-control"]).to.equal("private, no-store");
+        expect(manifestCalls).to.equal(1);
+    });
+
+    it("rejects every workspace manifest query parameter before service dispatch", async () => {
+        let manifestCalls = 0;
+        const service = ({
+            getWorkspaceSkillManifest: async () => {
+                manifestCalls += 1;
+                throw new Error("must not run");
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+
+        for (const query of ["limit=1", "pageToken=opaque", "q=skill"]) {
+            const response = await request(app)
+                .get(`/v0/skills/workspace-manifest?${query}`)
+                .set("X-Magda-Session", token());
+            expect(response.status).to.equal(400);
+            expect(response.body.error.code).to.equal(
+                "INVALID_WORKSPACE_MANIFEST_QUERY"
+            );
+        }
+        expect(manifestCalls).to.equal(0);
+    });
+
+    it("reports workspace manifest downstream outages as retryable", async () => {
+        const service = ({
+            getWorkspaceSkillManifest: async () => {
+                throw new DownstreamServiceError(
+                    "registry",
+                    503,
+                    "Registry API is unavailable"
+                );
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+
+        const response = await request(app)
+            .get("/v0/skills/workspace-manifest")
+            .set("X-Magda-Session", token());
+
+        expect(response.status).to.equal(503);
+        expect(response.body.error).to.deep.equal({
+            code: "REGISTRY_ERROR",
+            message: "Registry API is unavailable",
+            retryable: true
+        });
+    });
+
+    it("passes one strong quoted If-Match checksum to replace and delete", async () => {
+        const expectedChecksums: Array<string | undefined> = [];
+        const record = skillRecord();
+        const service = ({
+            prepareExisting: async () => record,
+            replaceAuthorized: async (
+                _existing: AgentSkillRecord,
+                _bytes: Buffer,
+                _user: unknown,
+                expectedChecksum?: string
+            ) => {
+                expectedChecksums.push(expectedChecksum);
+                return metadata;
+            },
+            deleteAuthorized: async (
+                _existing: AgentSkillRecord,
+                _user: unknown,
+                expectedChecksum?: string
+            ) => {
+                expectedChecksums.push(expectedChecksum);
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const quoted = `"${metadata.checksum}"`;
+
+        const replaced = await request(app)
+            .put(`/v0/skills/user/${recordId}/archive`)
+            .set("X-Magda-Session", token())
+            .set("Content-Type", "application/zip")
+            .set("If-Match", quoted)
+            .send(Buffer.from("zip"));
+        const deleted = await request(app)
+            .delete(`/v0/skills/user/${recordId}`)
+            .set("X-Magda-Session", token())
+            .set("If-Match", quoted);
+
+        expect(replaced.status).to.equal(200);
+        expect(deleted.status).to.equal(204);
+        expect(expectedChecksums).to.deep.equal([
+            metadata.checksum,
+            metadata.checksum
+        ]);
+    });
+
+    it("returns 412 for stale replace and delete If-Match checksums", async () => {
+        const staleChecksum = "f".repeat(64);
+        const record = skillRecord();
+        const stale = () =>
+            new AgentSkillError(
+                "Agent Skill changed since it was last read",
+                412,
+                "AGENT_SKILL_PRECONDITION_FAILED"
+            );
+        const service = ({
+            prepareExisting: async () => record,
+            replaceAuthorized: async (
+                _existing: AgentSkillRecord,
+                _bytes: Buffer,
+                _user: unknown,
+                expectedChecksum?: string
+            ) => {
+                expect(expectedChecksum).to.equal(staleChecksum);
+                throw stale();
+            },
+            deleteAuthorized: async (
+                _existing: AgentSkillRecord,
+                _user: unknown,
+                expectedChecksum?: string
+            ) => {
+                expect(expectedChecksum).to.equal(staleChecksum);
+                throw stale();
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const quoted = `"${staleChecksum}"`;
+
+        const replaced = await request(app)
+            .put(`/v0/skills/user/${recordId}/archive`)
+            .set("X-Magda-Session", token())
+            .set("Content-Type", "application/zip")
+            .set("If-Match", quoted)
+            .send(Buffer.from("zip"));
+        const deleted = await request(app)
+            .delete(`/v0/skills/user/${recordId}`)
+            .set("X-Magda-Session", token())
+            .set("If-Match", quoted);
+
+        for (const response of [replaced, deleted]) {
+            expect(response.status).to.equal(412);
+            expect(response.body.error.code).to.equal(
+                "AGENT_SKILL_PRECONDITION_FAILED"
+            );
+        }
+    });
+
+    it("requires If-Match for replacement and deletion", async () => {
+        let mutationCalls = 0;
+        const service = ({
+            prepareExisting: async () => skillRecord(),
+            replaceAuthorized: async () => {
+                mutationCalls += 1;
+                return metadata;
+            },
+            deleteAuthorized: async () => {
+                mutationCalls += 1;
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const replaced = await request(app)
+            .put(`/v0/skills/user/${recordId}/archive`)
+            .set("X-Magda-Session", token())
+            .set("Content-Type", "application/zip")
+            .send(Buffer.from("zip"));
+        const deleted = await request(app)
+            .delete(`/v0/skills/user/${recordId}`)
+            .set("X-Magda-Session", token());
+        for (const response of [replaced, deleted]) {
+            expect(response.status).to.equal(428);
+            expect(response.body.error.code).to.equal(
+                "AGENT_SKILL_PRECONDITION_REQUIRED"
+            );
+        }
+        expect(mutationCalls).to.equal(0);
+    });
+
+    it("rejects invalid If-Match syntax before replace or delete mutation", async () => {
+        let mutationCalls = 0;
+        const record = skillRecord();
+        const service = ({
+            prepareExisting: async () => record,
+            replaceAuthorized: async () => {
+                mutationCalls += 1;
+                return metadata;
+            },
+            deleteAuthorized: async () => {
+                mutationCalls += 1;
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const invalidValues = [
+            metadata.checksum,
+            `W/"${metadata.checksum}"`,
+            "*",
+            `"${"A".repeat(64)}"`,
+            `"${metadata.checksum}", "${metadata.checksum}"`
+        ];
+
+        for (const value of invalidValues) {
+            const replaced = await request(app)
+                .put(`/v0/skills/user/${recordId}/archive`)
+                .set("X-Magda-Session", token())
+                .set("Content-Type", "application/zip")
+                .set("If-Match", value)
+                .send(Buffer.from("zip"));
+            const deleted = await request(app)
+                .delete(`/v0/skills/user/${recordId}`)
+                .set("X-Magda-Session", token())
+                .set("If-Match", value);
+            for (const response of [replaced, deleted]) {
+                expect(response.status).to.equal(400);
+                expect(response.body.error.code).to.equal("INVALID_IF_MATCH");
+            }
+        }
+        expect(mutationCalls).to.equal(0);
     });
 
     it("bounds concurrent buffered uploads before service queuing", async () => {

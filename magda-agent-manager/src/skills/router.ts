@@ -11,6 +11,26 @@ function pathType(value: string): AgentSkillType {
     return value;
 }
 
+function ifMatchChecksum(req: Request): string {
+    const value = req.get("If-Match");
+    if (value === undefined) {
+        throw new AgentSkillError(
+            "If-Match is required for Agent Skill replacement and deletion",
+            428,
+            "AGENT_SKILL_PRECONDITION_REQUIRED"
+        );
+    }
+    const match = /^"([0-9a-f]{64})"$/.exec(value);
+    if (!match) {
+        throw new AgentSkillError(
+            "If-Match must contain one strong quoted Agent Skill checksum",
+            400,
+            "INVALID_IF_MATCH"
+        );
+    }
+    return match[1];
+}
+
 function queryString(value: unknown, name: string): string | undefined {
     if (value === undefined) return undefined;
     if (typeof value !== "string") {
@@ -111,6 +131,25 @@ export default function createAgentSkillRouter(
         createAuthenticatedUserAuth({
             jwtSecret: options.jwtSecret,
             authApiUrl: options.authApiUrl
+        })
+    );
+
+    router.get(
+        "/workspace-manifest",
+        asyncRoute(async (req, res) => {
+            if (Object.keys(req.query).length) {
+                throw new AgentSkillError(
+                    "Workspace manifest does not accept query parameters",
+                    400,
+                    "INVALID_WORKSPACE_MANIFEST_QUERY"
+                );
+            }
+            res.set("Cache-Control", "private, no-store");
+            res.json(
+                await options.service.getWorkspaceSkillManifest(
+                    req.agentUser as AuthenticatedUser
+                )
+            );
         })
     );
 
@@ -333,6 +372,7 @@ export default function createAgentSkillRouter(
                 "update",
                 req.agentUser as AuthenticatedUser
             );
+            res.locals.agentSkillExpectedChecksum = ifMatchChecksum(req);
         }),
         (req, res, next) => {
             if (
@@ -359,7 +399,8 @@ export default function createAgentSkillRouter(
                 await options.service.replaceAuthorized(
                     res.locals.agentSkillRecord as AgentSkillRecord,
                     req.body as Buffer,
-                    req.agentUser as AuthenticatedUser
+                    req.agentUser as AuthenticatedUser,
+                    res.locals.agentSkillExpectedChecksum as string
                 )
             );
         })
@@ -413,7 +454,8 @@ export default function createAgentSkillRouter(
             );
             await options.service.deleteAuthorized(
                 record,
-                req.agentUser as AuthenticatedUser
+                req.agentUser as AuthenticatedUser,
+                ifMatchChecksum(req)
             );
             res.status(204).end();
         })

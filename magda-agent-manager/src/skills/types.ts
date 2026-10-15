@@ -48,6 +48,36 @@ export interface AgentSkillMetadata {
     checksum: string;
 }
 
+export type WorkspaceSkillSourceKind =
+    | "system-publication"
+    | "own-user-publication"
+    | "installation";
+
+export interface WorkspaceSkillManifestItem {
+    selectionId: string;
+    effectiveName: string;
+    sourceKind: WorkspaceSkillSourceKind;
+    source: AgentSkillMetadata;
+}
+
+export interface WorkspaceSkillManifestWarning {
+    sourceKind: Exclude<WorkspaceSkillSourceKind, "installation">;
+    code: "INVALID_RECORD" | "READ_DENIED" | "DUPLICATE_RECORD";
+    recordId?: string;
+}
+
+export interface WorkspaceSkillManifest {
+    version: 1;
+    complete: true;
+    items: WorkspaceSkillManifestItem[];
+    warnings: WorkspaceSkillManifestWarning[];
+    sources: {
+        system: { complete: true; count: number };
+        user: { complete: true; count: number };
+        installations: { status: "notImplemented"; count: 0 };
+    };
+}
+
 export interface RegistryRecordsPage {
     totalCount?: number;
     hasMore: boolean;

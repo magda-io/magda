@@ -2,6 +2,7 @@ import { expect } from "chai";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import { UnconditionalTrueDecision } from "magda-typescript-common/src/opa/AuthDecision.js";
 import {
+    DownstreamServiceError,
     HttpAgentSkillRegistry,
     HttpAgentSkillStorage,
     OpaAgentSkillAuthorization
@@ -278,6 +279,94 @@ describe("Agent Skill downstream clients", () => {
             `agent-skill.userId:${userId}`
         ]);
         expect(query.has("orderBy")).to.equal(false);
+    });
+
+    it("strictly validates Registry catalogue page envelopes", async () => {
+        const invalidEnvelopes: unknown[] = [
+            null,
+            [],
+            {},
+            { records: "not-an-array", hasMore: false },
+            { records: [], hasMore: "false" },
+            { records: [], hasMore: true },
+            { records: [], hasMore: true, nextPageToken: "" },
+            { records: [], hasMore: true, nextPageToken: 123 },
+            { records: [], hasMore: false, nextPageToken: {} }
+        ];
+        const registry = new HttpAgentSkillRegistry(
+            "http://registry-api/v0",
+            7
+        );
+
+        for (const envelope of invalidEnvelopes) {
+            globalThis.fetch = (async () =>
+                new Response(JSON.stringify(envelope), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                })) as typeof globalThis.fetch;
+            let error: unknown;
+            try {
+                await registry.list({ limit: 100 }, session);
+            } catch (caught) {
+                error = caught;
+            }
+            expect(error).to.be.instanceOf(DownstreamServiceError);
+            expect((error as DownstreamServiceError).service).to.equal(
+                "registry"
+            );
+            expect((error as DownstreamServiceError).status).to.equal(502);
+            expect((error as Error).message).to.include(
+                "invalid catalogue response"
+            );
+        }
+    });
+
+    it("rejects non-JSON Registry catalogue responses as invalid pages", async () => {
+        globalThis.fetch = (async () =>
+            new Response("not json", {
+                status: 200,
+                headers: { "Content-Type": "text/plain" }
+            })) as typeof globalThis.fetch;
+        const registry = new HttpAgentSkillRegistry(
+            "http://registry-api/v0",
+            7
+        );
+
+        let error: unknown;
+        try {
+            await registry.list({ limit: 100 }, session);
+        } catch (caught) {
+            error = caught;
+        }
+        expect(error).to.be.instanceOf(DownstreamServiceError);
+        expect((error as DownstreamServiceError).service).to.equal("registry");
+        expect((error as DownstreamServiceError).status).to.equal(502);
+    });
+
+    it("accepts a complete terminal Registry catalogue page envelope", async () => {
+        globalThis.fetch = (async () =>
+            new Response(
+                JSON.stringify({
+                    totalCount: 1,
+                    records: [record()],
+                    hasMore: false
+                }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                }
+            )) as typeof globalThis.fetch;
+        const registry = new HttpAgentSkillRegistry(
+            "http://registry-api/v0",
+            7
+        );
+
+        expect(await registry.list({ limit: 100 }, session)).to.deep.equal({
+            totalCount: 1,
+            records: [record()],
+            hasMore: false,
+            nextPageToken: undefined
+        });
     });
 
     it("builds OPA input only from the trusted typed record", async () => {

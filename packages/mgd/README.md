@@ -182,8 +182,45 @@ npx @magda/mgd <command>
 Global installation is recommended when using `mgd` with a coding agent because
 the installed skill expects the command to remain available on your `PATH`.
 
-The package is self-contained (one runtime dependency) and ships the assistant
-skill files under [`skills/`](./skills/).
+The package is self-contained and ships assistant guidance under
+[`skills/`](./skills/).
+
+## Two different skill command families
+
+- `mgd skills install|uninstall` installs the package's bundled `magda-mgd`
+  guidance for coding agents. Its existing behavior is unchanged.
+- `mgd agent-skill` manages Registry-backed Agent Skill publications and local
+  drafts. It uses the active `mgd` profile and `type=system|user` terminology.
+
+```sh
+mgd agent-skill init my-skill --type user
+mgd agent-skill validate ./my-skill --type user
+mgd agent-skill publish ./my-skill --type user
+mgd agent-skill list --type all
+mgd agent-skill show user/agent-skill-<user-uuid>-my-skill
+mgd agent-skill pull user/agent-skill-<user-uuid>-my-skill -o ./review-copy
+mgd agent-skill sync --type all
+mgd agent-skill delete user/agent-skill-<user-uuid>-my-skill
+```
+
+`init`, local edits, `pull`, and `validate` never publish. Only an explicit
+`publish` creates or replaces a remote publication. A pulled or previously
+published draft records the remote checksum: ordinary publish/delete fails if the
+publication has changed since that checksum, while `--force` deliberately uses
+the newest remote checksum. A failed create is never converted into replacement.
+
+Sync validates every downloaded ZIP and its metadata again, projects managed
+copies into `$MGD_AGENT_SKILL_DIR`, `$DSH_HOME/skills`, or
+`~/.agents/skills` (in that order), and preserves locally modified copies rather
+than silently replacing or deleting them. DSH `0.2.1-alpha.1` discovers changes
+on the next model step without restart; its browser slash-suggestion cache may
+need a page reconnect or new Session after a name is added or removed.
+
+> **System bundle cost:** system skills may contain scripts, images, and other
+> regular resources. Every selected bundle must be downloaded, validated, and
+> stored on each user's persistent Workspace volume during initial sync. Large
+> bundles increase Workspace startup network, CPU, and PVC usage. Prefer a small
+> instructional skill that fetches large datasets or models on demand.
 
 ## Quick start
 
@@ -432,20 +469,20 @@ metadata tools, with a distinct `name` marking their CLI provenance.
 
 Records carry data in named **aspects**. The ones the CLI reads or writes most:
 
-| Aspect | Record | Holds / notes |
-| --- | --- | --- |
-| `dcat-dataset-strings` | dataset | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified` |
-| `dcat-distribution-strings` | distribution | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize` |
-| `publishing` | dataset & distribution | `{ "state": "draft" \| "published" }` — use `publish`/`unpublish`, don't hand-edit |
-| `dataset-distributions` | dataset | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit |
-| `version` | dataset & distribution | CLI-managed history — don't hand-edit |
-| `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
-| `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
-| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI. The value is an organisation **record id**, not a name; assign it by resolving/reusing an organisation and writing the aspect (see the skill's "Assigning a publisher" workflow). There is no `--publisher` flag by design |
-| `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
-| `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
-| `data-dictionary` | distribution | *optional* — normalized structure of the file/API: `{ "schemaVersion": "1.0", "entities": [{ "id", "name", "fields": [{ "path", "name", "type", … }] }], "provenance": { "method", "reviewStatus" } }`. Write with `dataset aspect set <distId> data-dictionary @dict.json`; don't `aspect patch` inside `entities` (arrays are combined, not merged by id). See the [Data Dictionary guide](https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md) |
-| `distribution-contract` | distribution | *optional* — how to access/query the file/API: `{ "schemaVersion": "1.0", "protocol", "endpointUrl", "authentication": { "type", … }, "operations": [{ "id", "method", "path", "parameters": [{ "name", "location", "type", … }], "response": { "dictionaryEntity", … } }], "provenance": { "method", "reviewStatus" } }`. Descriptive only: never put credentials in it. Write with `dataset aspect set <distId> distribution-contract @contract.json`; don't `aspect patch` inside `operations` (arrays are combined, not merged by id). See the [Distribution Contract guide](https://github.com/magda-io/magda/blob/main/docs/docs/distribution-contract.md) |
+| Aspect                      | Record                 | Holds / notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dcat-dataset-strings`      | dataset                | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `dcat-distribution-strings` | distribution           | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `publishing`                | dataset & distribution | `{ "state": "draft" \| "published" }` — use `publish`/`unpublish`, don't hand-edit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `dataset-distributions`     | dataset                | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `version`                   | dataset & distribution | CLI-managed history — don't hand-edit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `access-control`            | dataset                | `ownerId`, `orgUnitId`, `constraintExemption`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `source`                    | dataset                | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `dataset-publisher`         | dataset                | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI. The value is an organisation **record id**, not a name; assign it by resolving/reusing an organisation and writing the aspect (see the skill's "Assigning a publisher" workflow). There is no `--publisher` flag by design                                                                                                                                                                                                                                                                                                                                                   |
+| `temporal-coverage`         | dataset                | _optional_ — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `spatial-coverage`          | dataset                | _optional_ — bounding box / named region; set manually when the data has a spatial extent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `data-dictionary`           | distribution           | _optional_ — normalized structure of the file/API: `{ "schemaVersion": "1.0", "entities": [{ "id", "name", "fields": [{ "path", "name", "type", … }] }], "provenance": { "method", "reviewStatus" } }`. Write with `dataset aspect set <distId> data-dictionary @dict.json`; don't `aspect patch` inside `entities` (arrays are combined, not merged by id). See the [Data Dictionary guide](https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md)                                                                                                                                                                                           |
+| `distribution-contract`     | distribution           | _optional_ — how to access/query the file/API: `{ "schemaVersion": "1.0", "protocol", "endpointUrl", "authentication": { "type", … }, "operations": [{ "id", "method", "path", "parameters": [{ "name", "location", "type", … }], "response": { "dictionaryEntity", … } }], "provenance": { "method", "reviewStatus" } }`. Descriptive only: never put credentials in it. Write with `dataset aspect set <distId> distribution-contract @contract.json`; don't `aspect patch` inside `operations` (arrays are combined, not merged by id). See the [Distribution Contract guide](https://github.com/magda-io/magda/blob/main/docs/docs/distribution-contract.md) |
 
 ### Custom aspects
 

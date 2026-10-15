@@ -24,6 +24,14 @@ export const KEY_ID_ANNOTATION = "agent.magda.io/api-key-id";
 export const LAST_ACTIVITY_ANNOTATION = "agent.magda.io/last-activity";
 export const RESET_AFTER_DELETE_ANNOTATION =
     "agent.magda.io/reset-after-delete";
+export const SKILL_SYNC_STATUS_ANNOTATION = "agent.magda.io/skill-sync-status";
+export const SKILL_SYNC_ATTEMPTED_ANNOTATION =
+    "agent.magda.io/skill-sync-attempted-at";
+export const SKILL_SYNC_COMPLETED_ANNOTATION =
+    "agent.magda.io/skill-sync-completed-at";
+export const SKILL_SYNC_COUNTS_ANNOTATION = "agent.magda.io/skill-sync-counts";
+export const SKILL_SYNC_DIAGNOSTIC_ANNOTATION =
+    "agent.magda.io/skill-sync-diagnostic";
 
 const mergePatchOptions = {
     middleware: [
@@ -49,6 +57,58 @@ const jsonPatchOptions = {
 
 function isNotFound(error: unknown) {
     return error instanceof ApiException && error.code === 404;
+}
+
+function skillSyncStatus(
+    annotations: Record<string, string>
+): NonNullable<WorkspaceStatus["skillSync"]> {
+    const status = annotations[SKILL_SYNC_STATUS_ANNOTATION];
+    const normalized =
+        status === "success" ||
+        status === "partial" ||
+        status === "failed" ||
+        status === "notAttempted"
+            ? status
+            : "notAttempted";
+    let counts: NonNullable<WorkspaceStatus["skillSync"]>["counts"];
+    try {
+        const parsed = JSON.parse(
+            annotations[SKILL_SYNC_COUNTS_ANNOTATION] || "null"
+        );
+        if (
+            parsed &&
+            [
+                "installed",
+                "updated",
+                "unchanged",
+                "removed",
+                "skipped",
+                "failed"
+            ].every(
+                (key) => Number.isSafeInteger(parsed[key]) && parsed[key] >= 0
+            )
+        ) {
+            counts = parsed;
+        }
+    } catch {
+        // Treat malformed optional status as unavailable, never as lifecycle failure.
+    }
+    const diagnostic = annotations[SKILL_SYNC_DIAGNOSTIC_ANNOTATION];
+    return {
+        status: normalized,
+        ...(annotations[SKILL_SYNC_ATTEMPTED_ANNOTATION]
+            ? { attemptedAt: annotations[SKILL_SYNC_ATTEMPTED_ANNOTATION] }
+            : {}),
+        ...(annotations[SKILL_SYNC_COMPLETED_ANNOTATION]
+            ? { completedAt: annotations[SKILL_SYNC_COMPLETED_ANNOTATION] }
+            : {}),
+        ...(counts ? { counts } : {}),
+        ...(diagnostic === "EXEC_FAILED" ||
+        diagnostic === "TIMEOUT" ||
+        diagnostic === "INVALID_RESULT"
+            ? { diagnosticCode: diagnostic }
+            : {})
+    };
 }
 
 function readyCondition(resource: {
@@ -188,6 +248,45 @@ export class AgentKubernetesClient {
                 }
             },
             mergePatchOptions
+        )) as SandboxClaim;
+    }
+
+    async patchSkillSyncAnnotations(
+        userId: string,
+        claimUid: string,
+        annotations: Record<string, string | null>
+    ) {
+        const operations: Array<Record<string, unknown>> = [
+            { op: "test", path: "/metadata/uid", value: claimUid },
+            {
+                op: "test",
+                path: "/metadata/annotations/agent.magda.io~1bootstrap-state",
+                value: "READY"
+            }
+        ];
+        for (const [key, value] of Object.entries({
+            ...annotations,
+            [UPDATED_ANNOTATION]: new Date().toISOString()
+        })) {
+            const annotationPath = `/metadata/annotations/${key
+                .replace(/~/g, "~0")
+                .replace(/\//g, "~1")}`;
+            operations.push(
+                value === null
+                    ? { op: "remove", path: annotationPath }
+                    : { op: "add", path: annotationPath, value }
+            );
+        }
+        return (await this.customApi.patchNamespacedCustomObject(
+            {
+                group: EXT_GROUP,
+                version: VERSION,
+                namespace: this.options.namespace,
+                plural: CLAIMS,
+                name: claimName(userId, this.options.installationId),
+                body: operations
+            },
+            jsonPatchOptions
         )) as SandboxClaim;
     }
 
@@ -443,22 +542,25 @@ export class AgentKubernetesClient {
         podName: string,
         command: string[],
         input?: string,
-        timeoutMs = 90_000
+        timeoutMs = 90_000,
+        maxOutputBytes = 1024 * 1024
     ): Promise<string> {
         const stdoutChunks: Buffer[] = [];
         const stderrChunks: Buffer[] = [];
-        const stdout = new Writable({
-            write(chunk, _encoding, callback) {
-                stdoutChunks.push(Buffer.from(chunk));
-                callback();
-            }
-        });
-        const stderr = new Writable({
-            write(chunk, _encoding, callback) {
-                stderrChunks.push(Buffer.from(chunk));
-                callback();
-            }
-        });
+        let outputBytes = 0;
+        let outputExceeded = false;
+        const collect = (target: Buffer[]) =>
+            new Writable({
+                write(chunk, _encoding, callback) {
+                    const bytes = Buffer.from(chunk);
+                    outputBytes += bytes.length;
+                    if (outputBytes <= maxOutputBytes) target.push(bytes);
+                    else outputExceeded = true;
+                    callback();
+                }
+            });
+        const stdout = collect(stdoutChunks);
+        const stderr = collect(stderrChunks);
         const stdin = new PassThrough();
 
         return new Promise<string>(async (resolve, reject) => {
@@ -468,6 +570,8 @@ export class AgentKubernetesClient {
                 settled = true;
                 clearTimeout(timer);
                 if (error) reject(error);
+                else if (outputExceeded)
+                    reject(new Error("Kubernetes exec output exceeded limit"));
                 else resolve(Buffer.concat(stdoutChunks).toString("utf8"));
             };
             const timer = setTimeout(
@@ -517,6 +621,16 @@ export class AgentKubernetesClient {
         );
     }
 
+    async syncSkills(podName: string): Promise<string> {
+        return await this.exec(
+            podName,
+            ["mgd", "agent-skill", "sync", "--json", "--workspace-status"],
+            undefined,
+            120_000,
+            64 * 1024
+        );
+    }
+
     async readLaunchToken(podName: string): Promise<string> {
         const token = (
             await this.exec(podName, ["cat", this.options.launchTokenFile])
@@ -533,6 +647,7 @@ export class AgentKubernetesClient {
         const annotations = claim.metadata.annotations || {};
         const updatedAt =
             annotations[UPDATED_ANNOTATION] || claim.metadata.creationTimestamp;
+        const skillSync = skillSyncStatus(annotations);
         if (claim.metadata.deletionTimestamp) {
             return { state: "DELETING", updatedAt };
         }
@@ -577,7 +692,7 @@ export class AgentKubernetesClient {
             };
         }
         if (bootstrapState === "READY") {
-            return { state: "READY", updatedAt };
+            return { state: "READY", updatedAt, skillSync };
         }
         return { state: "BOOTSTRAPPING", updatedAt };
     }

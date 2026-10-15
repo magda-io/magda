@@ -1233,6 +1233,94 @@ describe("Agent Skill publication state machine", () => {
         );
     });
 
+    it("honours matching checksum preconditions for replacement and deletion", async () => {
+        const { service, registry } = fixture();
+        await service.createAuthorized("user", await skillZip(), owner);
+        const replacementTarget = await service.prepareExisting(
+            "user",
+            recordId,
+            "update",
+            owner
+        );
+        const originalChecksum =
+            replacementTarget.aspects["agent-skill"].checksum;
+
+        const replaced = await service.replaceAuthorized(
+            replacementTarget,
+            await skillZip("useful-skill", "Updated with precondition"),
+            owner,
+            originalChecksum
+        );
+        expect(replaced.checksum).not.to.equal(originalChecksum);
+
+        const deletionTarget = await service.prepareExisting(
+            "user",
+            recordId,
+            "delete",
+            owner
+        );
+        await service.deleteAuthorized(
+            deletionTarget,
+            owner,
+            deletionTarget.aspects["agent-skill"].checksum
+        );
+        expect(registry.records.has(recordId)).to.equal(false);
+    });
+
+    it("rejects stale replacement and deletion checksums with 412 before mutation", async () => {
+        for (const operation of ["update", "delete"] as const) {
+            const { service, registry, storage } = fixture();
+            await service.createAuthorized("user", await skillZip(), owner);
+            const prepared = await service.prepareExisting(
+                "user",
+                recordId,
+                operation,
+                owner
+            );
+            const writes = registry.writes.length;
+            const uploads = storage.uploads.length;
+            const deletions = storage.deletions.length;
+            const staleChecksum = "f".repeat(64);
+
+            const error = await (async (): Promise<unknown> => {
+                try {
+                    if (operation === "update") {
+                        await service.replaceAuthorized(
+                            prepared,
+                            await skillZip(
+                                "useful-skill",
+                                "Must not be installed"
+                            ),
+                            owner,
+                            staleChecksum
+                        );
+                    } else {
+                        await service.deleteAuthorized(
+                            prepared,
+                            owner,
+                            staleChecksum
+                        );
+                    }
+                    return undefined;
+                } catch (caught) {
+                    return caught;
+                }
+            })();
+
+            expect(error).to.be.instanceOf(AgentSkillError);
+            expect((error as AgentSkillError).status).to.equal(412);
+            expect((error as AgentSkillError).code).to.equal(
+                "AGENT_SKILL_PRECONDITION_FAILED"
+            );
+            expect(registry.writes).to.have.length(writes);
+            expect(storage.uploads).to.have.length(uploads);
+            expect(storage.deletions).to.have.length(deletions);
+            expect(
+                registry.records.get(recordId)?.aspects["agent-skill"].state
+            ).to.equal("READY");
+        }
+    });
+
     it("keeps archive content and session credentials out of audit logs", async () => {
         const { service, registry } = fixture();
         const logs: string[] = [];
