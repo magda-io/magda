@@ -135,6 +135,25 @@ export default function createAgentSkillRouter(
     );
 
     router.get(
+        "/local-sync-manifest",
+        asyncRoute(async (req, res) => {
+            if (Object.keys(req.query).length) {
+                throw new AgentSkillError(
+                    "Local sync manifest does not accept query parameters",
+                    400,
+                    "INVALID_LOCAL_SYNC_MANIFEST_QUERY"
+                );
+            }
+            res.set("Cache-Control", "private, no-store");
+            res.json(
+                await options.service.getLocalSkillSyncManifest(
+                    req.agentUser as AuthenticatedUser
+                )
+            );
+        })
+    );
+
+    router.get(
         "/workspace-manifest",
         asyncRoute(async (req, res) => {
             if (Object.keys(req.query).length) {

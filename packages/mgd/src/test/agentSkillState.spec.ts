@@ -8,39 +8,144 @@ import { withAgentSkillStateLock } from "../agentSkillState.js";
 describe("Agent Skill state locking", () => {
     let temporaryDirectory: string;
     let originalConfigHome: string | undefined;
+    let originalDataHome: string | undefined;
+    let originalProjectionRoot: string | undefined;
 
     beforeEach(async () => {
         temporaryDirectory = await fs.mkdtemp(
             path.join(os.tmpdir(), "mgd-agent-skill-state-")
         );
         originalConfigHome = process.env.XDG_CONFIG_HOME;
+        originalDataHome = process.env.XDG_DATA_HOME;
+        originalProjectionRoot = process.env.MGD_AGENT_SKILL_DIR;
         process.env.XDG_CONFIG_HOME = temporaryDirectory;
+        process.env.XDG_DATA_HOME = path.join(temporaryDirectory, "data");
     });
 
     afterEach(async () => {
         if (originalConfigHome === undefined)
             delete process.env.XDG_CONFIG_HOME;
         else process.env.XDG_CONFIG_HOME = originalConfigHome;
+        if (originalDataHome === undefined) delete process.env.XDG_DATA_HOME;
+        else process.env.XDG_DATA_HOME = originalDataHome;
+        if (originalProjectionRoot === undefined)
+            delete process.env.MGD_AGENT_SKILL_DIR;
+        else process.env.MGD_AGENT_SKILL_DIR = originalProjectionRoot;
         await fs.rm(temporaryDirectory, { recursive: true, force: true });
     });
 
-    it("rejects a concurrent operation and permits a later operation", async () => {
-        let concurrentError: unknown;
-        await withAgentSkillStateLock(async () => {
-            try {
-                await withAgentSkillStateLock(async () => undefined);
-            } catch (error) {
-                concurrentError = error;
-            }
-            expect(concurrentError).to.be.instanceOf(Error);
-            expect((concurrentError as Error).message).to.include(
-                "already running"
-            );
+    async function startLockHolder(env: NodeJS.ProcessEnv) {
+        const moduleUrl = new URL("../agentSkillState.ts", import.meta.url)
+            .href;
+        const child = spawn(
+            process.execPath,
+            [
+                "--import=tsx/esm",
+                "--input-type=module",
+                "-e",
+                `import { withAgentSkillStateLock } from ${JSON.stringify(
+                    moduleUrl
+                )}; await withAgentSkillStateLock(async () => { console.log("locked"); await new Promise(() => setInterval(() => {}, 1000)); });`
+            ],
+            { env, stdio: ["ignore", "pipe", "inherit"] }
+        );
+        await new Promise<void>((resolve, reject) => {
+            child.once("error", reject);
+            child.stdout!.once("data", () => resolve());
         });
+        return child;
+    }
 
+    it("permits same-operation reentrancy and a later operation", async () => {
+        expect(
+            await withAgentSkillStateLock(() =>
+                withAgentSkillStateLock(async () => "nested")
+            )
+        ).to.equal("nested");
         expect(await withAgentSkillStateLock(async () => "released")).to.equal(
             "released"
         );
+    });
+
+    it("uses one projection lock across different config homes", async () => {
+        const child = await startLockHolder({ ...process.env });
+        let caught: unknown;
+        const previous = process.env.XDG_CONFIG_HOME;
+        process.env.XDG_CONFIG_HOME = path.join(
+            temporaryDirectory,
+            "other-config"
+        );
+        try {
+            await withAgentSkillStateLock(async () => undefined);
+        } catch (error) {
+            caught = error;
+        } finally {
+            process.env.XDG_CONFIG_HOME = previous;
+            child.kill("SIGKILL");
+            await new Promise<void>((resolve) =>
+                child.once("exit", () => resolve())
+            );
+        }
+        expect(caught).to.be.instanceOf(Error);
+        expect((caught as Error).message).to.include("already running");
+    });
+
+    it("locks a shared explicit projection across different data homes", async () => {
+        process.env.MGD_AGENT_SKILL_DIR = path.join(
+            temporaryDirectory,
+            "shared-projection"
+        );
+        const child = await startLockHolder({ ...process.env });
+        let caught: unknown;
+        const previous = process.env.XDG_DATA_HOME;
+        process.env.XDG_DATA_HOME = path.join(temporaryDirectory, "other-data");
+        try {
+            await withAgentSkillStateLock(async () => undefined);
+        } catch (error) {
+            caught = error;
+        } finally {
+            process.env.XDG_DATA_HOME = previous;
+            child.kill("SIGKILL");
+            await new Promise<void>((resolve) =>
+                child.once("exit", () => resolve())
+            );
+        }
+        expect(caught).to.be.instanceOf(Error);
+        expect((caught as Error).message).to.include("already running");
+    });
+
+    it("fails closed while the lock holder event loop is blocked", async () => {
+        const moduleUrl = new URL("../agentSkillState.ts", import.meta.url)
+            .href;
+        const child = spawn(
+            process.execPath,
+            [
+                "--import=tsx/esm",
+                "--input-type=module",
+                "-e",
+                `import { withAgentSkillStateLock } from ${JSON.stringify(
+                    moduleUrl
+                )}; await withAgentSkillStateLock(async () => { console.log("locked"); const until=Date.now()+1500; while(Date.now()<until){} await new Promise(() => setInterval(() => {}, 1000)); });`
+            ],
+            { env: process.env, stdio: ["ignore", "pipe", "inherit"] }
+        );
+        await new Promise<void>((resolve, reject) => {
+            child.once("error", reject);
+            child.stdout!.once("data", () => resolve());
+        });
+        let caught: unknown;
+        try {
+            await withAgentSkillStateLock(async () => "must not run");
+        } catch (error) {
+            caught = error;
+        } finally {
+            child.kill("SIGKILL");
+            await new Promise<void>((resolve) =>
+                child.once("exit", () => resolve())
+            );
+        }
+        expect(caught).to.be.instanceOf(Error);
+        expect((caught as Error).message).to.include("lock");
     });
 
     it("releases its OS-managed lock when the owner process is terminated", async () => {
@@ -54,7 +159,7 @@ describe("Agent Skill state locking", () => {
                 "-e",
                 `import { withAgentSkillStateLock } from ${JSON.stringify(
                     moduleUrl
-                )}; await withAgentSkillStateLock(async () => { console.log("locked"); await new Promise(() => {}); });`
+                )}; await withAgentSkillStateLock(async () => { console.log("locked"); await new Promise(() => setInterval(() => {}, 1000)); });`
             ],
             { env: process.env, stdio: ["ignore", "pipe", "inherit"] }
         );

@@ -242,6 +242,49 @@ describe("Agent Skill downstream clients", () => {
         expect(result.nextPageToken).to.equal("124");
     });
 
+    it("encodes the immutable own-user manifest filter with only caller credentials", async () => {
+        let requestUrl = "";
+        let headers: HeadersInit | undefined;
+        globalThis.fetch = (async (url, init) => {
+            requestUrl = String(url);
+            headers = init?.headers;
+            return new Response(
+                JSON.stringify({ records: [], hasMore: false }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                }
+            );
+        }) as typeof globalThis.fetch;
+        const registry = new HttpAgentSkillRegistry(
+            "http://registry-api/v0",
+            7
+        );
+
+        await registry.list(
+            {
+                type: "user",
+                state: "READY",
+                userId: { operator: "eq", value: userId },
+                limit: 100
+            },
+            session
+        );
+
+        const query = new URL(requestUrl).searchParams;
+        expect(query.getAll("aspectQuery")).to.deep.equal([
+            "agent-skill.type:user",
+            "agent-skill.state:READY",
+            `agent-skill.userId:${userId}`
+        ]);
+        expect(headers).to.deep.equal({
+            "X-Magda-Session": session,
+            "X-Magda-Tenant-Id": "7"
+        });
+        expect(headers).not.to.have.property("Authorization");
+        expect(headers).not.to.have.property("X-Magda-Api-Key");
+    });
+
     it("uses one Registry OR query for the default system plus own catalogue", async () => {
         let requestUrl = "";
         globalThis.fetch = (async (url) => {

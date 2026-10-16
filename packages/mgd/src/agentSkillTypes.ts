@@ -44,6 +44,18 @@ export interface WorkspaceSkillManifest {
     }>;
 }
 
+export interface LocalSkillManifest {
+    version: 1;
+    complete: true;
+    identity: { tenantId: string; userId: string };
+    items: WorkspaceSkillManifestItem[];
+    warnings: WorkspaceSkillManifest["warnings"];
+    sources?: {
+        user: { complete: true; count: number };
+        installations: { status: "notImplemented"; count: 0 };
+    };
+}
+
 export interface AgentSkillSyncCounts {
     installed: number;
     updated: number;

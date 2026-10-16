@@ -3,6 +3,7 @@ import { AgentSkillClient } from "../agentSkillClient.js";
 import { MagdaClient } from "../client.js";
 import {
     AGENT_SKILLS,
+    AGENT_SKILL_LOCAL_SYNC_MANIFEST,
     AGENT_SKILL_WORKSPACE_MANIFEST,
     agentSkill,
     agentSkillArchive
@@ -60,6 +61,28 @@ describe("AgentSkillClient caller-auth contracts", () => {
                     ],
                     warnings: []
                 }
+            },
+            {
+                method: "GET",
+                path: `/api${AGENT_SKILL_LOCAL_SYNC_MANIFEST}`,
+                body: {
+                    version: 1,
+                    complete: true,
+                    identity: { tenantId: "0", userId },
+                    items: [
+                        {
+                            selectionId: skillId,
+                            effectiveName: metadata.name,
+                            sourceKind: "own-user-publication",
+                            source: metadata
+                        }
+                    ],
+                    warnings: [],
+                    sources: {
+                        user: { status: "complete" },
+                        installations: { status: "notImplemented" }
+                    }
+                }
             }
         ]);
         try {
@@ -80,6 +103,10 @@ describe("AgentSkillClient caller-auth contracts", () => {
             expect((await client.manifest()).items[0].source).to.deep.equal(
                 metadata
             );
+            expect((await client.localManifest()).identity).to.deep.equal({
+                tenantId: "0",
+                userId
+            });
 
             const listUrl = new URL(server.requests[0].url, server.url);
             expect(listUrl.pathname).to.equal(`/api${AGENT_SKILLS}`);
@@ -94,6 +121,9 @@ describe("AgentSkillClient caller-auth contracts", () => {
             );
             expect(server.requests[2].url).to.equal(
                 `/api${AGENT_SKILL_WORKSPACE_MANIFEST}`
+            );
+            expect(server.requests[3].url).to.equal(
+                `/api${AGENT_SKILL_LOCAL_SYNC_MANIFEST}`
             );
         } finally {
             await server.close();

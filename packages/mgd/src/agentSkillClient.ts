@@ -1,6 +1,7 @@
 import { MagdaClient } from "./client.js";
 import {
     AGENT_SKILLS,
+    AGENT_SKILL_LOCAL_SYNC_MANIFEST,
     AGENT_SKILL_WORKSPACE_MANIFEST,
     agentSkill,
     agentSkillArchive
@@ -11,10 +12,13 @@ import {
     AgentSkillPage,
     AgentSkillRef,
     AgentSkillType,
+    LocalSkillManifest,
     WorkspaceSkillManifest
 } from "./agentSkillTypes.js";
 
 const CHECKSUM = /^[0-9a-f]{64}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function assertMetadata(value: unknown): AgentSkillMetadata {
     if (!value || typeof value !== "object")
@@ -24,6 +28,8 @@ function assertMetadata(value: unknown): AgentSkillMetadata {
         typeof item.id !== "string" ||
         typeof item.name !== "string" ||
         typeof item.description !== "string" ||
+        !SKILL_NAME.test(item.name) ||
+        item.name.length > 46 ||
         (item.type !== "system" && item.type !== "user") ||
         typeof item.ownerId !== "string" ||
         typeof item.createdAt !== "string" ||
@@ -36,6 +42,14 @@ function assertMetadata(value: unknown): AgentSkillMetadata {
     )
         throw new Error("Invalid Agent Skill metadata response");
     const metadata = (item as unknown) as AgentSkillMetadata;
+    if (
+        (metadata.type === "user" &&
+            (!metadata.userId || !UUID.test(metadata.userId))) ||
+        (metadata.type === "system" && metadata.userId !== undefined) ||
+        (metadata.type === "system") !== metadata.name.startsWith("system-")
+    ) {
+        throw new Error("Invalid Agent Skill metadata identity");
+    }
     const expectedId =
         metadata.type === "system"
             ? `agent-skill-${metadata.name}`
@@ -50,6 +64,10 @@ function assertMetadata(value: unknown): AgentSkillMetadata {
 
 export class AgentSkillClient {
     constructor(private readonly client: MagdaClient) {}
+
+    get baseUrl(): string {
+        return this.client.opts.baseUrl;
+    }
 
     async list(
         options: {
@@ -124,6 +142,39 @@ export class AgentSkillClient {
                     (source.type === "system")
             ) {
                 throw new Error("Invalid Agent Skill workspace manifest item");
+            }
+            return { ...item, source };
+        });
+        return value;
+    }
+
+    async localManifest(): Promise<LocalSkillManifest> {
+        const value = await this.client.json<LocalSkillManifest>(
+            "GET",
+            AGENT_SKILL_LOCAL_SYNC_MANIFEST
+        );
+        if (
+            !value ||
+            value.version !== 1 ||
+            value.complete !== true ||
+            typeof value.identity?.tenantId !== "string" ||
+            typeof value.identity?.userId !== "string" ||
+            !value.identity.userId ||
+            !Array.isArray(value.items) ||
+            !Array.isArray(value.warnings)
+        ) {
+            throw new Error("Invalid Agent Skill local sync manifest response");
+        }
+        value.items = value.items.map((item) => {
+            const source = assertMetadata(item.source);
+            if (
+                item.sourceKind !== "own-user-publication" ||
+                source.type !== "user" ||
+                source.userId !== value.identity.userId ||
+                item.selectionId !== source.id ||
+                item.effectiveName !== source.name
+            ) {
+                throw new Error("Invalid Agent Skill local sync manifest item");
             }
             return { ...item, source };
         });

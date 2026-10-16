@@ -4,6 +4,26 @@ import { WHOAMI } from "../endpoints.js";
 import { loadConfig, saveConfig, Profile } from "../profile.js";
 import { promptText, promptHidden } from "../prompt.js";
 import { note, colors } from "../output.js";
+import {
+    commitAgentSkillProfileTransition,
+    recoverAgentSkillProfileTransition
+} from "../agentSkillProfileTransition.js";
+import { withAgentSkillStateLock } from "../agentSkillState.js";
+import type { AgentSkillSourceIdentity } from "../agentSkillLocalState.js";
+
+function cachedIdentity(
+    profile: Profile | undefined
+): AgentSkillSourceIdentity | undefined {
+    const cached = profile?.agentSkillSource;
+    return cached
+        ? {
+              key: cached.key,
+              canonicalBaseUrl: cached.canonicalBaseUrl,
+              tenantId: cached.tenantId,
+              userId: cached.userId
+          }
+        : undefined;
+}
 
 export async function normalizeBaseUrl(
     input: string,
@@ -62,6 +82,7 @@ export async function createProfile(
     name: string,
     opts: CredentialOptions
 ): Promise<void> {
+    await recoverAgentSkillProfileTransition();
     const cfg = await loadConfig();
     if (cfg.profiles[name]) {
         throw new UsageError(
@@ -78,8 +99,7 @@ export async function createProfile(
     const rawUrl = opts.url || (await promptText("MAGDA site URL: "));
     const baseUrl = await normalizeBaseUrl(rawUrl, probeApi);
     const apiKeyId =
-        opts.keyId ??
-        (await promptText("API key ID (empty for anonymous): "));
+        opts.keyId ?? (await promptText("API key ID (empty for anonymous): "));
     const apiKey = apiKeyId
         ? opts.key ?? (await promptHidden("API key: "))
         : "";
@@ -90,9 +110,28 @@ export async function createProfile(
     };
     const user = await verifyCredentials(profile);
 
-    cfg.profiles[name] = profile;
-    cfg.activeProfile = name;
-    await saveConfig(cfg);
+    await withAgentSkillStateLock(async () => {
+        await recoverAgentSkillProfileTransition({ alreadyLocked: true });
+        const latest = await loadConfig();
+        if (latest.profiles[name]) {
+            throw new UsageError(
+                `Profile "${name}" was created concurrently; retry with another name.`
+            );
+        }
+        const previousName = latest.activeProfile || "default";
+        const previousIdentity = cachedIdentity(latest.profiles[previousName]);
+        latest.profiles[name] = profile;
+        latest.activeProfile = name;
+        await commitAgentSkillProfileTransition(
+            {
+                fromProfile: previousName,
+                fromSource: previousIdentity,
+                toProfile: name,
+                finalConfig: latest
+            },
+            { alreadyLocked: true }
+        );
+    });
 
     note(
         colors.green(
@@ -120,6 +159,7 @@ export async function updateProfile(
         );
     }
 
+    await recoverAgentSkillProfileTransition();
     const cfg = await loadConfig();
     const existing = cfg.profiles[name];
     if (!existing) {
@@ -142,15 +182,40 @@ export async function updateProfile(
     }
 
     const user = await verifyCredentials(next);
+    // Credentials or URL may now resolve to another tenant/account. Never reuse
+    // a previously verified Agent Skill source until the next online sync.
+    delete next.agentSkillSource;
 
-    cfg.profiles[name] = next;
-    await saveConfig(cfg);
+    await withAgentSkillStateLock(async () => {
+        await recoverAgentSkillProfileTransition({ alreadyLocked: true });
+        const latest = await loadConfig();
+        if (
+            JSON.stringify(latest.profiles[name]) !== JSON.stringify(existing)
+        ) {
+            throw new UsageError(
+                `Profile "${name}" changed concurrently; retry the update.`
+            );
+        }
+        const updatesActive = (latest.activeProfile || "default") === name;
+        latest.profiles[name] = next;
+        if (updatesActive) {
+            await commitAgentSkillProfileTransition(
+                {
+                    fromProfile: name,
+                    fromSource: cachedIdentity(existing),
+                    toProfile: name,
+                    finalConfig: latest
+                },
+                { alreadyLocked: true }
+            );
+        } else {
+            await saveConfig(latest);
+        }
+    });
 
     note(
         colors.green(
-            `Updated profile "${name}" (${next.baseUrl}${identityLabel(
-                user
-            )}).`
+            `Updated profile "${name}" (${next.baseUrl}${identityLabel(user)}).`
         )
     );
 }

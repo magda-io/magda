@@ -1,8 +1,8 @@
 import path from "node:path";
-import { mkdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { lstat, mkdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { Command, Option } from "commander";
-import { clientFromProfile } from "../client.js";
+import { clientFor, clientFromProfile } from "../client.js";
 import { AgentSkillClient } from "../agentSkillClient.js";
 import {
     AgentSkillListType,
@@ -19,13 +19,26 @@ import {
 } from "../agentSkillArchive.js";
 import {
     ensureRealDirectory,
-    loadAgentSkillState,
-    managedChildPath,
-    saveAgentSkillState,
-    stateKey,
     withAgentSkillStateLock
 } from "../agentSkillState.js";
-import { syncAgentSkills } from "../agentSkillSync.js";
+import { syncAgentSkills as syncWorkspaceAgentSkills } from "../agentSkillSync.js";
+import { syncLocalAgentSkills } from "../agentSkillLocalSync.js";
+import { recoverAgentSkillProfileTransition } from "../agentSkillProfileTransition.js";
+import {
+    loadConfig,
+    noProfileError,
+    resolveProfileSelection,
+    saveConfig
+} from "../profile.js";
+import {
+    canonicalMagdaBaseUrl,
+    createAgentSkillSourceIdentity,
+    findTrackedAgentSkillDraft,
+    loadAgentSkillSourceState,
+    saveAgentSkillSourceState,
+    sourceStateKey
+} from "../agentSkillLocalState.js";
+import { activateAgentSkillSource } from "../agentSkillProjection.js";
 import { UsageError } from "../errors.js";
 import { note, printData, resolveMode } from "../output.js";
 
@@ -46,6 +59,74 @@ async function api(): Promise<AgentSkillClient> {
     return new AgentSkillClient(await clientFromProfile());
 }
 
+async function verifiedLocalSource(
+    client: AgentSkillClient,
+    captured?: {
+        selection: ReturnType<typeof resolveProfileSelection>;
+        expectedStoredProfile?: ReturnType<
+            typeof resolveProfileSelection
+        >["profile"];
+    }
+) {
+    const manifest = await client.localManifest();
+    const identity = createAgentSkillSourceIdentity({
+        baseUrl: client.baseUrl,
+        tenantId: manifest.identity.tenantId,
+        userId: manifest.identity.userId
+    });
+    const cfg = await loadConfig();
+    const selection = captured?.selection || resolveProfileSelection(cfg);
+    const profile = cfg.profiles[selection.name];
+    if (captured?.expectedStoredProfile) {
+        const credentials = (value: typeof profile) =>
+            value
+                ? {
+                      baseUrl: value.baseUrl,
+                      apiKeyId: value.apiKeyId,
+                      apiKey: value.apiKey
+                  }
+                : undefined;
+        if (
+            JSON.stringify(credentials(profile)) !==
+            JSON.stringify(credentials(captured.expectedStoredProfile))
+        ) {
+            throw new UsageError(
+                "Profile credentials changed while the Agent Skill operation was running; retry"
+            );
+        }
+    }
+    if (
+        profile &&
+        selection.mayPersistAgentSkillIdentity &&
+        canonicalMagdaBaseUrl(profile.baseUrl) === identity.canonicalBaseUrl
+    ) {
+        profile.agentSkillSource = {
+            ...identity,
+            verifiedAt: new Date().toISOString()
+        };
+        await saveConfig(cfg);
+    }
+    return {
+        identity,
+        state: await loadAgentSkillSourceState(identity),
+        selection
+    };
+}
+
+const WORKSPACE_RUNTIME_MARKER = "/etc/magda-agent/workspace-runtime";
+
+async function isTrustedWorkspaceRuntime(): Promise<boolean> {
+    try {
+        const marker = await lstat(WORKSPACE_RUNTIME_MARKER);
+        return (
+            marker.isFile() && marker.uid === 0 && (marker.mode & 0o022) === 0
+        );
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+        throw error;
+    }
+}
+
 async function pathExists(target: string): Promise<boolean> {
     try {
         await stat(target);
@@ -56,50 +137,47 @@ async function pathExists(target: string): Promise<boolean> {
     }
 }
 
-async function reconcileDeletedAgentSkill(ref: AgentSkillRef): Promise<void> {
-    const state = await loadAgentSkillState();
-    await ensureRealDirectory(state.managedRoot);
-    const key = stateKey(ref);
+async function reconcileDeletedAgentSkill(
+    ref: AgentSkillRef,
+    context: Awaited<ReturnType<typeof verifiedLocalSource>>
+): Promise<void> {
+    const { identity, state, selection } = context;
+    const key = sourceStateKey(ref);
     const current = state.entries[key];
-    if (
-        current &&
-        path.resolve(current.dir) !==
-            managedChildPath(state.managedRoot, current.name)
-    ) {
-        throw new Error("Agent Skill state contains an unsafe managed path");
-    }
-    if (current && (await pathExists(current.dir))) {
+    if (current && (await pathExists(current.libraryDir))) {
         let treeDigest = current.installedTreeDigest;
         let localChanged = true;
         try {
             const inspected = await validateAgentSkillDirectory(
-                current.dir,
+                current.libraryDir,
                 ref.type
             );
             treeDigest = inspected.treeDigest;
             localChanged = treeDigest !== current.installedTreeDigest;
         } catch {
-            // An invalid managed tree is still local data and must be preserved.
+            // Invalid local content remains user data and is preserved.
         }
         if (localChanged) {
-            const draftsRoot = managedChildPath(
-                state.managedRoot,
-                ".local-drafts"
+            const draftsRoot = path.join(
+                path.dirname(path.dirname(current.libraryDir)),
+                "drafts",
+                "deleted"
             );
             await ensureRealDirectory(draftsRoot);
             const draftDir = path.join(
                 draftsRoot,
                 `${current.name}-${Date.now()}-${randomUUID().slice(0, 8)}`
             );
-            await rename(current.dir, draftDir);
+            await rename(current.libraryDir, draftDir);
             state.drafts[draftDir] = {
                 type: current.ref.type,
                 name: current.name,
                 treeDigest
             };
         } else {
-            await rm(current.dir, { recursive: true, force: true });
+            await rm(current.libraryDir, { recursive: true, force: true });
         }
+        await rm(current.archiveFile, { force: true });
     }
     delete state.entries[key];
     for (const draft of Object.values(state.drafts)) {
@@ -108,7 +186,12 @@ async function reconcileDeletedAgentSkill(ref: AgentSkillRef): Promise<void> {
             delete draft.baseChecksum;
         }
     }
-    await saveAgentSkillState(state);
+    await saveAgentSkillSourceState(state);
+    if (selection.mayActivateSkills) {
+        await activateAgentSkillSource(identity, selection.name, {
+            alreadyLocked: true
+        });
+    }
 }
 
 export function registerAgentSkillCommands(program: Command): void {
@@ -214,19 +297,43 @@ export function registerAgentSkillCommands(program: Command): void {
         .action(async (directory: string, opts) => {
             await withAgentSkillStateLock(async () => {
                 const absolute = path.resolve(directory);
+                const globallyTracked = await findTrackedAgentSkillDraft(
+                    absolute
+                );
+                if (
+                    globallyTracked &&
+                    globallyTracked.draft.type !== opts.type
+                ) {
+                    throw new UsageError(
+                        `Tracked ${globallyTracked.draft.type} publication requires explicit --type ${globallyTracked.draft.type}`
+                    );
+                }
                 const candidate = await createAgentSkillArchive(
                     absolute,
                     opts.type
                 );
-                const state = await loadAgentSkillState();
-                const draft = state.drafts[absolute];
-                const tracked = !!draft?.ref && !!draft.baseChecksum;
-                if (!tracked && opts.force) {
+                if (!globallyTracked && opts.force) {
                     throw new UsageError(
                         "--force can only be used for a tracked publication"
                     );
                 }
                 const client = await api();
+                const { identity, state } = await verifiedLocalSource(client);
+                if (
+                    globallyTracked &&
+                    globallyTracked.sourceKey !== identity.key
+                ) {
+                    throw new UsageError(
+                        "This draft is tracked against another MAGDA instance/account; pull or copy it into an untracked directory before publishing here"
+                    );
+                }
+                const draft = state.drafts[absolute];
+                if (draft?.ref && draft.type !== opts.type) {
+                    throw new UsageError(
+                        `Tracked ${draft.type} publication requires explicit --type ${draft.type}`
+                    );
+                }
+                const tracked = !!draft?.ref && !!draft.baseChecksum;
                 let metadata;
                 if (draft?.ref && draft.baseChecksum) {
                     let expected = draft.baseChecksum;
@@ -248,7 +355,7 @@ export function registerAgentSkillCommands(program: Command): void {
                     baseChecksum: metadata.checksum,
                     treeDigest: candidate.treeDigest
                 };
-                await saveAgentSkillState(state);
+                await saveAgentSkillSourceState(state);
                 if (opts.json) printData("json", metadata);
                 else note(`Published ${metadata.type}/${metadata.id}.`);
             });
@@ -259,7 +366,14 @@ export function registerAgentSkillCommands(program: Command): void {
         .option("--json")
         .action(async (value: string, opts) => {
             const ref = parseAgentSkillRef(value);
-            const client = await api();
+            await recoverAgentSkillProfileTransition();
+            const initialConfig = await loadConfig();
+            const selection = resolveProfileSelection(initialConfig);
+            if (!selection.profile) throw noProfileError(initialConfig);
+            const expectedStoredProfile = !selection.oneOffOverride
+                ? { ...selection.profile }
+                : undefined;
+            const client = new AgentSkillClient(clientFor(selection.profile));
             const downloaded = await client.download(ref);
             const destination = path.resolve(
                 opts.output || downloaded.metadata.name
@@ -294,12 +408,15 @@ export function registerAgentSkillCommands(program: Command): void {
                     throw new UsageError(
                         `Destination already exists: ${destination}`
                     );
+                const { state } = await verifiedLocalSource(client, {
+                    selection,
+                    expectedStoredProfile
+                });
                 const extracted = await extractAgentSkillArchive(
                     downloaded.bytes,
                     ref.type,
                     destination
                 );
-                const state = await loadAgentSkillState();
                 state.drafts[destination] = {
                     type: ref.type,
                     name: downloaded.metadata.name,
@@ -307,7 +424,7 @@ export function registerAgentSkillCommands(program: Command): void {
                     baseChecksum: downloaded.metadata.checksum,
                     treeDigest: extracted.treeDigest
                 };
-                await saveAgentSkillState(state);
+                await saveAgentSkillSourceState(state);
             });
             const result = { ...downloaded.metadata, directory: destination };
             if (opts.json) printData("json", result);
@@ -324,7 +441,8 @@ export function registerAgentSkillCommands(program: Command): void {
             await withAgentSkillStateLock(async () => {
                 const ref = parseAgentSkillRef(value);
                 const client = await api();
-                const state = await loadAgentSkillState();
+                const context = await verifiedLocalSource(client);
+                const { state } = context;
                 const trackedChecksum =
                     Object.values(state.drafts).find(
                         (draft) =>
@@ -332,13 +450,13 @@ export function registerAgentSkillCommands(program: Command): void {
                             draft.ref.id === ref.id &&
                             draft.baseChecksum
                     )?.baseChecksum ||
-                    state.entries[stateKey(ref)]?.remoteChecksum;
+                    state.entries[sourceStateKey(ref)]?.remoteChecksum;
                 const expectedChecksum =
                     opts.force || !trackedChecksum
                         ? (await client.show(ref)).checksum
                         : trackedChecksum;
                 await client.delete(ref, expectedChecksum);
-                await reconcileDeletedAgentSkill(ref);
+                await reconcileDeletedAgentSkill(ref, context);
                 const result = {
                     ref,
                     deleted: true,
@@ -362,11 +480,50 @@ export function registerAgentSkillCommands(program: Command): void {
         )
         .action(async (opts, command) => {
             rejectScope(command);
-            const result = await syncAgentSkills(
-                await api(),
-                opts.type as AgentSkillListType,
-                !!opts.force
-            );
+            // The root-owned image marker selects the Workspace system+own-user
+            // contract. The hidden flag only requests Manager's bounded summary
+            // and exit semantics; it must not change what a manual Sandbox sync
+            // reconciles.
+            const workspaceMode = await isTrustedWorkspaceRuntime();
+            if (opts.workspaceStatus && !workspaceMode) {
+                throw new UsageError(
+                    "--workspace-status is reserved for the root-provisioned MAGDA Agent Workspace runtime"
+                );
+            }
+            if (!workspaceMode && opts.type === "system") {
+                throw new UsageError(
+                    "Local synchronization never auto-installs system skills; use `mgd agent-skill pull system/<id>` to inspect one explicitly"
+                );
+            }
+            const result = workspaceMode
+                ? await syncWorkspaceAgentSkills(
+                      await api(),
+                      opts.type as AgentSkillListType,
+                      !!opts.force
+                  )
+                : await (async () => {
+                      await recoverAgentSkillProfileTransition();
+                      const cfg = await loadConfig();
+                      const selection = resolveProfileSelection(cfg);
+                      if (!selection.profile?.baseUrl)
+                          throw noProfileError(cfg);
+                      // Bind authentication, activation alias and credential
+                      // comparison to one profile snapshot. A concurrent
+                      // profile switch must not mix two accounts.
+                      const client = new AgentSkillClient(
+                          clientFor(selection.profile)
+                      );
+                      return syncLocalAgentSkills(client, {
+                          force: !!opts.force,
+                          selectedProfile: selection.name,
+                          activate: selection.mayActivateSkills,
+                          persistProfileIdentity:
+                              selection.mayPersistAgentSkillIdentity,
+                          expectedProfile: !selection.oneOffOverride
+                              ? { ...selection.profile }
+                              : undefined
+                      });
+                  })();
             const mode = resolveMode(opts);
             if (mode === "human") {
                 note(

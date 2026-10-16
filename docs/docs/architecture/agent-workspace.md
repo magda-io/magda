@@ -280,16 +280,48 @@ remove clean stale managed copies, from an outage, which must preserve them.
 `mgd agent-skill` is separate from the existing bundled-guidance `mgd skills`
 commands. It supports local draft creation/validation, explicit publication,
 caller-authorized list/show/pull/delete, and reconciliation. Published ZIPs are
-validated again before extraction. Managed state is written under the existing
-`mgd` config directory and dynamic bundles are projected atomically into
-`$MGD_AGENT_SKILL_DIR`, `$DSH_HOME/skills`, or `~/.agents/skills`. Only copies
-whose current tree digest still matches managed state are replaced or removed;
-modified copies are preserved as local drafts/conflicts. Conditional replacement
-and deletion require a strong checksum `If-Match` checked inside the server's
-per-record mutation lock. Agent Manager currently deploys as one replica; this
-process-local serialization is sufficient for the MVP deployment, but a future
-multi-replica Manager must move the compare-and-swap to a Registry conditional
-mutation or distributed lock before horizontal scaling.
+validated again before extraction. Conditional replacement and deletion require
+a strong checksum `If-Match` checked inside the server's per-record mutation lock.
+Agent Manager currently deploys as one replica; this process-local serialization
+is sufficient for the MVP deployment, but a future multi-replica Manager must
+move the compare-and-swap to a Registry conditional mutation or distributed lock
+before horizontal scaling.
+
+Local-computer sync uses the distinct authenticated
+`GET /api/v0/agent/skills/local-sync-manifest`. It fully paginates only READY
+publications whose immutable `userId` equals the caller, returns the verified
+tenant/user identity, excludes system and merely readable foreign publications,
+and reserves an unimplemented installation source for #3861. Source libraries
+and draft/publication refs live under
+`${XDG_DATA_HOME:-~/.local/share}/mgd/agent-skills/sources/<hash>/`, where the
+hash covers canonical API URL, tenant and user UUID. This prevents identical
+record IDs or names on different instances/accounts from sharing state.
+
+The configured globally active profile alone is exposed as flat per-skill native
+harness entries. `mgd` reuses its Claude/Codex/OpenCode root resolver, includes a
+configured DSH root, deduplicates overlaps, creates one internal owned real
+verified projection copy feeding per-skill directory links or safe copies, and retains
+`MGD_AGENT_SKILL_DIR` as a Sandbox/single-target override. Kernel-released locks
+cover projection state and every resolved target root, serializing overlapping
+operations even across different XDG data homes. Copy targets are validated in a
+hidden sibling and published with an exclusive atomic directory rename.
+Persistent intent records recover interrupted creation; exact link/digest checks
+prevent adopting or removing arbitrary paths. Local projection is supported on
+macOS/Linux and requires `python3` for no-follow directory-descriptor cleanup and
+exclusive kernel rename (the Workspace Runtime image includes it). Unmanaged
+collisions and modifications are preserved, and `sync --force` moves edits to a
+source-scoped draft before restoration even when the remote checksum is unchanged.
+Legacy v1 state lacks verifiable source identity, so it is preserved under a
+migration backup and never silently attributed to the selected profile.
+
+`mgd profile use` activates a previously verified cache without network access;
+an uncached profile deactivates only old managed entries and requests explicit
+sync. `--sync-skills` opts into the network step. One-off `MGD_PROFILE`, URL or
+credential overrides can refresh their isolated source but never silently change
+the global harness projection. A durable transition journal completes an
+interrupted profile/projection switch before any later profile-backed request.
+Local CLI synchronization does not write Workspace
+claim annotations.
 
 Essential credential/DSH bootstrap is the only READY gate. After the adopted or
 cold Sandbox has restarted with its managed credential, Agent Manager records

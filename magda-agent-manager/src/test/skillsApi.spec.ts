@@ -427,6 +427,104 @@ describe("Agent Skill authentication and API boundary", () => {
         ]);
     });
 
+    it("protects the local sync manifest and returns caller identity without caching", async () => {
+        const callers: Array<{ id: string; sessionToken: string }> = [];
+        const expected = {
+            version: 1 as const,
+            complete: true as const,
+            identity: { tenantId: "0", userId },
+            items: [],
+            warnings: [],
+            sources: {
+                user: { complete: true as const, count: 0 },
+                installations: {
+                    status: "notImplemented" as const,
+                    count: 0 as const
+                }
+            }
+        };
+        const service = ({
+            getLocalSkillSyncManifest: async (caller: {
+                id: string;
+                sessionToken: string;
+            }) => {
+                callers.push(caller);
+                return expected;
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+        const session = token();
+
+        const missing = await request(app).get(
+            "/v0/skills/local-sync-manifest"
+        );
+        const invalid = await request(app)
+            .get("/v0/skills/local-sync-manifest")
+            .set("X-Magda-Session", "not-a-jwt");
+        const accepted = await request(app)
+            .get("/v0/skills/local-sync-manifest")
+            .set("X-Magda-Session", session);
+
+        expect(missing.status).to.equal(401);
+        expect(invalid.status).to.equal(401);
+        expect(accepted.status).to.equal(200);
+        expect(accepted.headers["cache-control"]).to.equal("private, no-store");
+        expect(accepted.body).to.deep.equal(expected);
+        expect(callers).to.deep.equal([{ id: userId, sessionToken: session }]);
+    });
+
+    it("rejects every local sync manifest query parameter before service dispatch", async () => {
+        let manifestCalls = 0;
+        const service = ({
+            getLocalSkillSyncManifest: async () => {
+                manifestCalls += 1;
+                throw new Error("must not run");
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+
+        for (const query of [
+            "limit=1",
+            "pageToken=opaque",
+            "type=user",
+            "userId=current",
+            "q=skill"
+        ]) {
+            const response = await request(app)
+                .get(`/v0/skills/local-sync-manifest?${query}`)
+                .set("X-Magda-Session", token());
+            expect(response.status).to.equal(400);
+            expect(response.body.error.code).to.equal(
+                "INVALID_LOCAL_SYNC_MANIFEST_QUERY"
+            );
+        }
+        expect(manifestCalls).to.equal(0);
+    });
+
+    it("reports local sync manifest downstream outages as retryable", async () => {
+        const service = ({
+            getLocalSkillSyncManifest: async () => {
+                throw new DownstreamServiceError(
+                    "authorization",
+                    503,
+                    "Authorization service is unavailable"
+                );
+            }
+        } as unknown) as AgentSkillService;
+        const app = buildApp(config(), {} as AgentManager, service);
+
+        const response = await request(app)
+            .get("/v0/skills/local-sync-manifest")
+            .set("X-Magda-Session", token());
+
+        expect(response.status).to.equal(503);
+        expect(response.body.error).to.deep.equal({
+            code: "AUTHORIZATION_ERROR",
+            message: "Authorization service is unavailable",
+            retryable: true
+        });
+    });
+
     it("protects the workspace manifest route with ordinary-user authentication", async () => {
         let manifestCalls = 0;
         const service = ({

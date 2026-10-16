@@ -14,6 +14,7 @@ import {
     AgentSkillType,
     AgentSkillState,
     AgentSkillStorage,
+    LocalSkillSyncManifest,
     ValidatedAgentSkillArchive,
     WorkspaceSkillManifest,
     WorkspaceSkillManifestItem,
@@ -1323,6 +1324,36 @@ export class AgentSkillService {
             sources: {
                 system: { complete: true, count: system.items.length },
                 user: { complete: true, count: own.items.length },
+                installations: { status: "notImplemented", count: 0 }
+            }
+        };
+    }
+
+    async getLocalSkillSyncManifest(
+        user: AuthenticatedUser
+    ): Promise<LocalSkillSyncManifest> {
+        // This source is intentionally independent from the Workspace manifest:
+        // local reconciliation must never gain system publications implicitly.
+        const own = await this.workspaceManifestSource(
+            "own-user-publication",
+            user
+        );
+        const items = own.items.sort(
+            (left, right) =>
+                left.effectiveName.localeCompare(right.effectiveName) ||
+                left.selectionId.localeCompare(right.selectionId)
+        );
+        return {
+            version: 1,
+            complete: true,
+            identity: {
+                tenantId: String(this.tenantId),
+                userId: user.id
+            },
+            items,
+            warnings: own.warnings,
+            sources: {
+                user: { complete: true, count: items.length },
                 installations: { status: "notImplemented", count: 0 }
             }
         };

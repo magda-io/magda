@@ -232,10 +232,10 @@ describe("Agent Skill sync", () => {
         ).to.equal(skillMarkdown("Local edit"));
         expect(state.drafts[draftDirectory]).to.deep.include({
             type: "user",
-            name: first.name,
-            ref,
-            baseChecksum: first.checksum
+            name: first.name
         });
+        expect(state.drafts[draftDirectory].ref).to.equal(undefined);
+        expect(state.drafts[draftDirectory].baseChecksum).to.equal(undefined);
     });
 
     it("preserves absent managed copies when manifest warnings make absence non-authoritative", async () => {

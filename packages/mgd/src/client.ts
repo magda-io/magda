@@ -8,6 +8,7 @@ import {
     Profile
 } from "./profile.js";
 import { VERSION } from "./version.js";
+import { recoverAgentSkillProfileTransition } from "./agentSkillProfileTransition.js";
 
 export interface ClientOptions {
     baseUrl: string;
@@ -146,6 +147,7 @@ async function toApiError(res: Response): Promise<MgdApiError> {
 }
 
 export async function clientFromProfile(): Promise<MagdaClient> {
+    await recoverAgentSkillProfileTransition();
     const cfg = await loadConfig();
     const { profile } = resolveProfile(cfg);
     if (!profile?.baseUrl) {

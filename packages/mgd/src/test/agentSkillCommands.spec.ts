@@ -6,11 +6,16 @@ import { Command } from "commander";
 import { registerAgentSkillCommands } from "../commands/agentSkill.js";
 import { registerSkillsCommands } from "../commands/skills.js";
 import {
-    loadAgentSkillState,
-    saveAgentSkillState,
-    stateKey
-} from "../agentSkillState.js";
-import { validateAgentSkillDirectory } from "../agentSkillArchive.js";
+    createAgentSkillSourceIdentity,
+    loadAgentSkillSourceState,
+    saveAgentSkillSourceState,
+    sourceStateKey
+} from "../agentSkillLocalState.js";
+import {
+    createAgentSkillArchive,
+    validateAgentSkillDirectory
+} from "../agentSkillArchive.js";
+import { loadConfig, saveConfig } from "../profile.js";
 import { UsageError } from "../errors.js";
 import { captureStdout } from "./captureStdout.js";
 import { startMockServer } from "./mockServer.js";
@@ -48,14 +53,16 @@ async function exists(target: string): Promise<boolean> {
     }
 }
 
+const userId = "00000000-0000-4000-8000-000000000123";
+
 function metadata(id: string, checksum: string) {
     return {
         id,
         name: "useful-skill",
         description: "A useful test skill",
         type: "user",
-        userId: "00000000-0000-4000-8000-000000000123",
-        ownerId: "00000000-0000-4000-8000-000000000123",
+        userId,
+        ownerId: userId,
         createdAt: "2025-01-01T00:00:00.000Z",
         createdBy: "u1",
         updatedAt: "2025-01-01T00:00:00.000Z",
@@ -63,6 +70,26 @@ function metadata(id: string, checksum: string) {
         checksum
     };
 }
+
+function localManifest() {
+    return {
+        version: 1,
+        complete: true,
+        identity: { tenantId: "0", userId },
+        items: [],
+        warnings: [],
+        sources: {
+            user: { status: "complete", selected: 0, warnings: 0 },
+            installations: { status: "notImplemented" }
+        }
+    };
+}
+
+const localManifestRoute = () => ({
+    method: "GET",
+    path: "/api/v0/agent/skills/local-sync-manifest",
+    body: localManifest()
+});
 
 describe("agent-skill CLI contracts", () => {
     let temporaryDirectory: string;
@@ -75,6 +102,7 @@ describe("agent-skill CLI contracts", () => {
         originalEnv = {};
         for (const key of [
             "XDG_CONFIG_HOME",
+            "XDG_DATA_HOME",
             "MGD_AGENT_SKILL_DIR",
             "MGD_BASE_URL",
             "MGD_API_KEY_ID",
@@ -85,6 +113,7 @@ describe("agent-skill CLI contracts", () => {
             delete process.env[key];
         }
         process.env.XDG_CONFIG_HOME = path.join(temporaryDirectory, "config");
+        process.env.XDG_DATA_HOME = path.join(temporaryDirectory, "data");
         process.env.MGD_AGENT_SKILL_DIR = path.join(
             temporaryDirectory,
             "managed"
@@ -219,6 +248,7 @@ describe("agent-skill CLI contracts", () => {
         const secondChecksum = "b".repeat(64);
         const currentRemoteChecksum = "c".repeat(64);
         const server = await startMockServer([
+            localManifestRoute(),
             {
                 method: "POST",
                 path: "/api/v0/agent/skills/user",
@@ -287,26 +317,36 @@ describe("agent-skill CLI contracts", () => {
 
             await run(["agent-skill", "publish", draft, "--force", "--json"]);
 
-            expect(
-                server.requests.map((request) => request.method)
-            ).to.deep.equal(["POST", "PUT", "GET", "PUT"]);
-            expect(server.requests[1].url).to.equal(
+            const mutations = server.requests.filter((request) =>
+                ["POST", "PUT"].includes(request.method)
+            );
+            expect(mutations.map((request) => request.method)).to.deep.equal([
+                "POST",
+                "PUT",
+                "PUT"
+            ]);
+            expect(mutations[1].url).to.equal(
                 "/api/v0/agent/skills/user/agent-skill-00000000-0000-4000-8000-000000000123-useful-skill/archive"
             );
-            expect(server.requests[1].headers["if-match"]).to.equal(
+            expect(mutations[1].headers["if-match"]).to.equal(
                 `"${firstChecksum}"`
             );
-            expect(server.requests[3].headers["if-match"]).to.equal(
+            expect(mutations[2].headers["if-match"]).to.equal(
                 `"${currentRemoteChecksum}"`
             );
-            expect(server.requests[0].headers["content-type"]).to.equal(
+            expect(mutations[0].headers["content-type"]).to.equal(
                 "application/zip"
             );
-            expect(server.requests[1].headers["content-type"]).to.equal(
+            expect(mutations[1].headers["content-type"]).to.equal(
                 "application/zip"
             );
 
-            const state = await loadAgentSkillState();
+            const identity = createAgentSkillSourceIdentity({
+                baseUrl: `${server.url}/api`,
+                tenantId: "0",
+                userId
+            });
+            const state = await loadAgentSkillSourceState(identity);
             expect(state.drafts[path.resolve(draft)].baseChecksum).to.equal(
                 secondChecksum
             );
@@ -315,11 +355,117 @@ describe("agent-skill CLI contracts", () => {
         }
     });
 
+    it("rejects pull provenance when profile credentials change during download", async () => {
+        const sourceDirectory = path.join(temporaryDirectory, "pull-source");
+        await fs.mkdir(sourceDirectory);
+        await fs.writeFile(
+            path.join(sourceDirectory, "SKILL.md"),
+            skillMarkdown()
+        );
+        const archive = await createAgentSkillArchive(sourceDirectory, "user");
+        const id = `agent-skill-${userId}-useful-skill`;
+        let serverUrl = "";
+        const server = await startMockServer([
+            {
+                method: "GET",
+                path: `/api/v0/agent/skills/user/${id}`,
+                body: metadata(id, archive.archiveSha256)
+            },
+            {
+                method: "GET",
+                path: `/api/v0/agent/skills/user/${id}/archive`,
+                handler: (_req, res) => {
+                    void saveConfig({
+                        activeProfile: "default",
+                        profiles: {
+                            default: {
+                                baseUrl: `${serverUrl}/api`,
+                                apiKeyId: "changed-id",
+                                apiKey: "changed-key"
+                            }
+                        }
+                    }).then(() => {
+                        res.writeHead(200, {
+                            "content-type": "application/zip"
+                        });
+                        res.end(archive.bytes);
+                    });
+                }
+            },
+            localManifestRoute()
+        ]);
+        serverUrl = server.url;
+        await saveConfig({
+            activeProfile: "default",
+            profiles: {
+                default: {
+                    baseUrl: `${server.url}/api`,
+                    apiKeyId: "original-id",
+                    apiKey: "original-key"
+                }
+            }
+        });
+        const destination = path.join(temporaryDirectory, "pulled");
+        try {
+            let caught: unknown;
+            try {
+                await run([
+                    "agent-skill",
+                    "pull",
+                    `user/${id}`,
+                    "--output",
+                    destination
+                ]);
+            } catch (error) {
+                caught = error;
+            }
+            expect(caught).to.be.instanceOf(UsageError);
+            expect((caught as Error).message).to.include("credentials changed");
+            expect(await exists(destination)).to.equal(false);
+            expect(
+                (await loadConfig()).profiles.default.agentSkillSource
+            ).to.equal(undefined);
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("requires an explicit matching type for a tracked publication", async () => {
+        const directory = path.join(temporaryDirectory, "tracked-system");
+        await fs.mkdir(directory);
+        await fs.writeFile(
+            path.join(directory, "SKILL.md"),
+            `---\nname: system-tracked\ndescription: Tracked system skill\n---\n\n# tracked\n`
+        );
+        const identity = createAgentSkillSourceIdentity({
+            baseUrl: "https://example.test/api",
+            tenantId: "0",
+            userId
+        });
+        const state = await loadAgentSkillSourceState(identity);
+        state.drafts[directory] = {
+            type: "system",
+            name: "system-tracked",
+            ref: { type: "system", id: "agent-skill-system-tracked" },
+            baseChecksum: "a".repeat(64),
+            treeDigest: "b".repeat(64)
+        };
+        await saveAgentSkillSourceState(state);
+        let caught: unknown;
+        try {
+            await run(["agent-skill", "publish", directory]);
+        } catch (error) {
+            caught = error;
+        }
+        expect(caught).to.be.instanceOf(UsageError);
+        expect((caught as Error).message).to.include("--type system");
+    });
+
     it("emits a JSONL summary first and fails the process on total sync outage", async () => {
         const server = await startMockServer([
             {
                 method: "GET",
-                path: "/api/v0/agent/skills/workspace-manifest",
+                path: "/api/v0/agent/skills/local-sync-manifest",
                 status: 503,
                 body: { error: { code: "REGISTRY_ERROR", message: "outage" } }
             }
@@ -343,37 +489,107 @@ describe("agent-skill CLI contracts", () => {
         }
     });
 
-    it("delete removes a clean managed projection and detaches tracked drafts", async () => {
+    it("rejects caller-selected Workspace mode outside the root-provisioned runtime", async () => {
+        const server = await startMockServer([]);
+        process.env.MGD_BASE_URL = `${server.url}/api`;
+        try {
+            let caught: unknown;
+            try {
+                await run([
+                    "agent-skill",
+                    "sync",
+                    "--workspace-status",
+                    "--json"
+                ]);
+            } catch (error) {
+                caught = error;
+            }
+            expect(caught).to.be.instanceOf(UsageError);
+            expect((caught as Error).message).to.include("root-provisioned");
+            expect(server.requests).to.have.length(0);
+        } finally {
+            await server.close();
+        }
+    });
+
+    it("delete removes source-scoped cached content and detaches tracked drafts", async () => {
         const checksum = "d".repeat(64);
         const ref = {
             type: "user" as const,
             id: "agent-skill-00000000-0000-4000-8000-000000000123-useful-skill"
         };
-        const managedDirectory = path.join(
-            process.env.MGD_AGENT_SKILL_DIR!,
-            "useful-skill"
+        const server = await startMockServer([
+            localManifestRoute(),
+            {
+                method: "DELETE",
+                path:
+                    "/api/v0/agent/skills/user/agent-skill-00000000-0000-4000-8000-000000000123-useful-skill",
+                body: {}
+            }
+        ]);
+        process.env.MGD_BASE_URL = `${server.url}/api`;
+        const identity = createAgentSkillSourceIdentity({
+            baseUrl: `${server.url}/api`,
+            tenantId: "0",
+            userId
+        });
+        const state = await loadAgentSkillSourceState(identity);
+        const sourceRoot = path.dirname(
+            path.dirname(
+                path.dirname(
+                    path.join(
+                        process.env.XDG_DATA_HOME!,
+                        "mgd",
+                        "agent-skills",
+                        "sources",
+                        identity.key,
+                        "state.json"
+                    )
+                )
+            )
+        );
+        const libraryDirectory = path.join(
+            process.env.XDG_DATA_HOME!,
+            "mgd",
+            "agent-skills",
+            "sources",
+            identity.key,
+            "skills",
+            ref.id
+        );
+        const archiveFile = path.join(
+            process.env.XDG_DATA_HOME!,
+            "mgd",
+            "agent-skills",
+            "sources",
+            identity.key,
+            "archives",
+            `${ref.id}.zip`
         );
         const pulledDraft = path.join(temporaryDirectory, "pulled-draft");
-        await fs.mkdir(managedDirectory, { recursive: true });
+        await fs.mkdir(libraryDirectory, { recursive: true });
         await fs.writeFile(
-            path.join(managedDirectory, "SKILL.md"),
+            path.join(libraryDirectory, "SKILL.md"),
             skillMarkdown("Installed")
         );
+        await fs.mkdir(path.dirname(archiveFile), { recursive: true });
+        await fs.writeFile(archiveFile, "archive");
         await fs.mkdir(pulledDraft);
         await fs.writeFile(
             path.join(pulledDraft, "SKILL.md"),
             skillMarkdown("Draft")
         );
         const installed = await validateAgentSkillDirectory(
-            managedDirectory,
+            libraryDirectory,
             "user"
         );
         const draft = await validateAgentSkillDirectory(pulledDraft, "user");
-        const state = await loadAgentSkillState();
-        state.entries[stateKey(ref)] = {
+        state.entries[sourceStateKey(ref)] = {
             ref,
             name: "useful-skill",
-            dir: managedDirectory,
+            description: "A useful test skill",
+            libraryDir: libraryDirectory,
+            archiveFile,
             remoteChecksum: checksum,
             installedTreeDigest: installed.treeDigest,
             updatedAt: "2025-01-01T00:00:00.000Z"
@@ -385,38 +601,25 @@ describe("agent-skill CLI contracts", () => {
             baseChecksum: checksum,
             treeDigest: draft.treeDigest
         };
-        await saveAgentSkillState(state);
+        await saveAgentSkillSourceState(state);
 
-        const server = await startMockServer([
-            {
-                method: "DELETE",
-                path:
-                    "/api/v0/agent/skills/user/agent-skill-00000000-0000-4000-8000-000000000123-useful-skill",
-                body: {}
-            }
-        ]);
-        process.env.MGD_BASE_URL = `${server.url}/api`;
         try {
             const result = JSON.parse(
-                await run([
-                    "agent-skill",
-                    "delete",
-                    "user/agent-skill-00000000-0000-4000-8000-000000000123-useful-skill",
-                    "--json"
-                ])
+                await run(["agent-skill", "delete", `user/${ref.id}`, "--json"])
             );
             expect(result).to.deep.include({
                 deleted: true,
                 localDraftsPreserved: true
             });
-            expect(server.requests[0].headers["if-match"]).to.equal(
-                `"${checksum}"`
-            );
-            expect(await exists(managedDirectory)).to.equal(false);
+            const request = server.requests.find(
+                (candidate) => candidate.method === "DELETE"
+            )!;
+            expect(request.headers["if-match"]).to.equal(`"${checksum}"`);
+            expect(await exists(libraryDirectory)).to.equal(false);
             expect(await exists(pulledDraft)).to.equal(true);
 
-            const saved = await loadAgentSkillState();
-            expect(saved.entries[stateKey(ref)]).to.equal(undefined);
+            const saved = await loadAgentSkillSourceState(identity);
+            expect(saved.entries[sourceStateKey(ref)]).to.equal(undefined);
             expect(saved.drafts[pulledDraft].ref).to.equal(undefined);
             expect(saved.drafts[pulledDraft].baseChecksum).to.equal(undefined);
             expect(saved.drafts[pulledDraft].treeDigest).to.equal(
@@ -427,79 +630,75 @@ describe("agent-skill CLI contracts", () => {
         }
     });
 
-    it("delete moves a locally modified projection to an untracked local draft", async () => {
+    it("delete preserves a modified source cache as a source-scoped draft", async () => {
         const checksum = "e".repeat(64);
         const ref = {
             type: "user" as const,
             id: "agent-skill-00000000-0000-4000-8000-000000000123-useful-skill"
         };
-        const managedDirectory = path.join(
-            process.env.MGD_AGENT_SKILL_DIR!,
-            "useful-skill"
-        );
-        await fs.mkdir(managedDirectory, { recursive: true });
-        await fs.writeFile(
-            path.join(managedDirectory, "SKILL.md"),
-            skillMarkdown("Installed")
-        );
-        const installed = await validateAgentSkillDirectory(
-            managedDirectory,
-            "user"
-        );
-        const state = await loadAgentSkillState();
-        state.entries[stateKey(ref)] = {
-            ref,
-            name: "useful-skill",
-            dir: managedDirectory,
-            remoteChecksum: checksum,
-            installedTreeDigest: installed.treeDigest,
-            updatedAt: "2025-01-01T00:00:00.000Z"
-        };
-        await saveAgentSkillState(state);
-        await fs.writeFile(
-            path.join(managedDirectory, "SKILL.md"),
-            skillMarkdown("Local edit")
-        );
-        const local = await validateAgentSkillDirectory(
-            managedDirectory,
-            "user"
-        );
-
         const server = await startMockServer([
+            localManifestRoute(),
             {
                 method: "DELETE",
-                path:
-                    "/api/v0/agent/skills/user/agent-skill-00000000-0000-4000-8000-000000000123-useful-skill",
+                path: `/api/v0/agent/skills/user/${ref.id}`,
                 body: {}
             }
         ]);
         process.env.MGD_BASE_URL = `${server.url}/api`;
+        const identity = createAgentSkillSourceIdentity({
+            baseUrl: `${server.url}/api`,
+            tenantId: "0",
+            userId
+        });
+        const state = await loadAgentSkillSourceState(identity);
+        const sourceRoot = path.join(
+            process.env.XDG_DATA_HOME!,
+            "mgd",
+            "agent-skills",
+            "sources",
+            identity.key
+        );
+        const libraryDirectory = path.join(sourceRoot, "skills", ref.id);
+        const archiveFile = path.join(sourceRoot, "archives", `${ref.id}.zip`);
+        await fs.mkdir(libraryDirectory, { recursive: true });
+        await fs.writeFile(
+            path.join(libraryDirectory, "SKILL.md"),
+            skillMarkdown("Installed")
+        );
+        await fs.mkdir(path.dirname(archiveFile), { recursive: true });
+        await fs.writeFile(archiveFile, "archive");
+        const installed = await validateAgentSkillDirectory(
+            libraryDirectory,
+            "user"
+        );
+        state.entries[sourceStateKey(ref)] = {
+            ref,
+            name: "useful-skill",
+            description: "A useful test skill",
+            libraryDir: libraryDirectory,
+            archiveFile,
+            remoteChecksum: checksum,
+            installedTreeDigest: installed.treeDigest,
+            updatedAt: "2025-01-01T00:00:00.000Z"
+        };
+        await saveAgentSkillSourceState(state);
+        await fs.writeFile(
+            path.join(libraryDirectory, "SKILL.md"),
+            skillMarkdown("Local edit")
+        );
+
         try {
-            await run([
-                "agent-skill",
-                "delete",
-                "user/agent-skill-00000000-0000-4000-8000-000000000123-useful-skill",
-                "--json"
-            ]);
-            expect(await exists(managedDirectory)).to.equal(false);
-            const draftsRoot = path.join(
-                process.env.MGD_AGENT_SKILL_DIR!,
-                ".local-drafts"
-            );
+            await run(["agent-skill", "delete", `user/${ref.id}`, "--json"]);
+            expect(await exists(libraryDirectory)).to.equal(false);
+            const draftsRoot = path.join(sourceRoot, "drafts", "deleted");
             const draftNames = await fs.readdir(draftsRoot);
             expect(draftNames).to.have.length(1);
-            const preserved = path.join(draftsRoot, draftNames[0]);
             expect(
-                await fs.readFile(path.join(preserved, "SKILL.md"), "utf8")
+                await fs.readFile(
+                    path.join(draftsRoot, draftNames[0], "SKILL.md"),
+                    "utf8"
+                )
             ).to.equal(skillMarkdown("Local edit"));
-
-            const saved = await loadAgentSkillState();
-            expect(saved.entries[stateKey(ref)]).to.equal(undefined);
-            expect(saved.drafts[preserved]).to.deep.equal({
-                type: "user",
-                name: "useful-skill",
-                treeDigest: local.treeDigest
-            });
         } finally {
             await server.close();
         }

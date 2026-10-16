@@ -12,6 +12,7 @@ export const REGISTRY_RECORDS = "/v0/registry/records";
 export const REGISTRY_ASPECTS = "/v0/registry/aspects";
 export const AGENT_SKILLS = "/v0/agent/skills";
 export const AGENT_SKILL_WORKSPACE_MANIFEST = `${AGENT_SKILLS}/workspace-manifest`;
+export const AGENT_SKILL_LOCAL_SYNC_MANIFEST = `${AGENT_SKILLS}/local-sync-manifest`;
 
 export const agentSkill = (type: string, id: string) =>
     `${AGENT_SKILLS}/${encodeURIComponent(type)}/${encodeURIComponent(id)}`;

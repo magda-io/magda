@@ -48,7 +48,10 @@ Help me install and configure the MAGDA mgd CLI for use with Claude Code.
    Only if no compatible runtime is found, explain the recommended install or
    upgrade and ask for my confirmation before changing my system, preferring my
    existing version manager or an official Node.js distribution. Do not use sudo
-   or execute a remote installation script without explicit approval.
+   or execute a remote installation script without explicit approval. Also verify
+   this is macOS or Linux and `python3 --version` succeeds; these are prerequisites
+   for safe local Agent Skill projection, and must not be installed without my
+   confirmation.
 2. Using that resolved runtime, install the CLI with `npm install -g @magda/mgd`,
    then verify it with `mgd --version` — invoke `mgd` through the same resolved
    runtime/PATH so a global install performed via a version manager is actually
@@ -91,7 +94,10 @@ Help me install and configure the MAGDA mgd CLI for use with Codex.
    Only if no compatible runtime is found, explain the recommended install or
    upgrade and ask for my confirmation before changing my system, preferring my
    existing version manager or an official Node.js distribution. Do not use sudo
-   or execute a remote installation script without explicit approval.
+   or execute a remote installation script without explicit approval. Also verify
+   this is macOS or Linux and `python3 --version` succeeds; these are prerequisites
+   for safe local Agent Skill projection, and must not be installed without my
+   confirmation.
 2. Using that resolved runtime, install the CLI with `npm install -g @magda/mgd`,
    then verify it with `mgd --version` — invoke `mgd` through the same resolved
    runtime/PATH so a global install performed via a version manager is actually
@@ -135,7 +141,10 @@ Help me install and configure the MAGDA mgd CLI for use with opencode.
    Only if no compatible runtime is found, explain the recommended install or
    upgrade and ask for my confirmation before changing my system, preferring my
    existing version manager or an official Node.js distribution. Do not use sudo
-   or execute a remote installation script without explicit approval.
+   or execute a remote installation script without explicit approval. Also verify
+   this is macOS or Linux and `python3 --version` succeeds; these are prerequisites
+   for safe local Agent Skill projection, and must not be installed without my
+   confirmation.
 2. Using that resolved runtime, install the CLI with `npm install -g @magda/mgd`,
    then verify it with `mgd --version` — invoke `mgd` through the same resolved
    runtime/PATH so a global install performed via a version manager is actually
@@ -165,8 +174,10 @@ removal, see [Installing the skill](#installing-the-skill).
 
 ### Install manually
 
-`mgd` requires **Node.js ≥ 22**. Install it globally so the `mgd` command is on
-your `PATH`:
+`mgd` requires **Node.js ≥ 22**. Local Agent Skill projection additionally
+requires **macOS or Linux with `python3` on `PATH`** for no-follow marker removal
+and the kernel's exclusive directory-rename operation; other CLI commands do not
+use Python. Install it globally so the `mgd` command is on your `PATH`:
 
 ```sh
 npm install -g @magda/mgd
@@ -209,18 +220,47 @@ published draft records the remote checksum: ordinary publish/delete fails if th
 publication has changed since that checksum, while `--force` deliberately uses
 the newest remote checksum. A failed create is never converted into replacement.
 
-Sync validates every downloaded ZIP and its metadata again, projects managed
-copies into `$MGD_AGENT_SKILL_DIR`, `$DSH_HOME/skills`, or
-`~/.agents/skills` (in that order), and preserves locally modified copies rather
-than silently replacing or deleting them. DSH `0.2.1-alpha.1` discovers changes
-on the next model step without restart; its browser slash-suggestion cache may
-need a page reconnect or new Session after a name is added or removed.
+On a local computer, `sync` validates every ZIP and metadata response again,
+downloads only the authenticated user's own READY user publications, and
+activates them immediately. It never automatically downloads system skills;
+use explicit `pull system/<id>` to inspect an authorized system publication.
+`--type all` therefore means every locally eligible skill, ready for #3861 to
+add explicitly installed shared user skills without changing this model.
+
+Caches are isolated by a hash of canonical MAGDA API URL, tenant, and verified
+user UUID under `${XDG_DATA_HOME:-~/.local/share}/mgd/agent-skills/sources/`.
+Only the configured globally active profile is projected at once. One internal
+owned real projection copy feeds flat native Claude, Codex, OpenCode and
+configured DSH directories through tested per-skill directory links or safe
+copies; overlapping roots are deduplicated. `$MGD_AGENT_SKILL_DIR` remains an explicit single-target override
+for a Workspace/Sandbox. Existing unmanaged folders, bundled `magda-mgd`, local
+edits, drafts and other profiles' source caches are never overwritten.
+
+`mgd profile use <name>` switches managed projections from verified cache while
+offline. An uncached profile safely deactivates the old managed projection and
+asks you to run `mgd agent-skill sync`; `--sync-skills` explicitly performs the
+network update after switching. One-off `MGD_PROFILE` or credential/base-URL
+overrides may update an isolated cache but do not change the machine-wide active
+projection. Profile changes use a durable transition journal so an interrupted
+selection is completed before another profile-backed request runs. Copy-mode
+projections are fully validated in a hidden sibling and published with the
+platform's exclusive atomic directory rename. `sync --force` preserves modified
+managed content as a draft before restoring the published version, including
+when the remote checksum is unchanged.
+
+DSH `0.2.1-alpha.1` discovers flat per-skill directory copies and links and sees
+add/update/delete changes on the next model step without restart; its browser
+slash-suggestion cache may need a page reconnect or new Session after a name is
+added or removed. Local CLI sync never writes a remote Workspace claim status.
+The Manager-triggered Sandbox mode remains separate: it synchronizes visible
+system plus own user skills after claim adoption and records bounded status while
+Workspace READY remains independent of sync success.
 
 > **System bundle cost:** system skills may contain scripts, images, and other
-> regular resources. Every selected bundle must be downloaded, validated, and
-> stored on each user's persistent Workspace volume during initial sync. Large
-> bundles increase Workspace startup network, CPU, and PVC usage. Prefer a small
-> instructional skill that fetches large datasets or models on demand.
+> regular resources. They are synchronized only into MAGDA Workspaces, not local
+> harnesses. Every selected Workspace bundle must still be downloaded, validated,
+> and stored on the user's persistent volume; prefer small instructional skills
+> that fetch large datasets or models on demand.
 
 ## Quick start
 
@@ -645,7 +685,8 @@ yarn test        # unit tests (Mocha + tsx)
 yarn typecheck   # type-check without emitting
 ```
 
-Node.js ≥ 22 is required (set in `engines` in `package.json`).
+Node.js ≥ 22 is required (set in `engines` in `package.json`). Agent Skill
+projection development/tests additionally require macOS or Linux and Python 3.
 
 ## License
 

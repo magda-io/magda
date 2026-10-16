@@ -13,6 +13,13 @@ export const AGENT_NAMES: readonly AgentName[] = [
 
 export type Scope = "global" | "project";
 
+export type AgentSkillProjectionMode = "symlink" | "copy";
+
+export interface AgentSkillProjectionTarget {
+    root: string;
+    mode: AgentSkillProjectionMode;
+}
+
 export interface InstallResult {
     agent: AgentName;
     scope: Scope;
@@ -41,9 +48,14 @@ function homeDir(env: NodeJS.ProcessEnv): string {
     return home;
 }
 
-// Per-agent GLOBAL skills dir (cwd-independent). Honour each tool's env override
-// so non-default homes/config roots work and tests can redirect into a temp dir.
-function globalBase(agent: AgentName, env: NodeJS.ProcessEnv): string {
+// Per-agent GLOBAL skills root (cwd-independent). Honour each tool's env
+// override so non-default homes/config roots work and tests can redirect into a
+// temp dir. This is also shared by Agent Skill projection so its harness paths
+// cannot drift from `mgd skills install`.
+export function resolveGlobalSkillRoot(
+    agent: AgentName,
+    env: NodeJS.ProcessEnv
+): string {
     switch (agent) {
         case "claude":
             return path.join(homeDir(env), ".claude", "skills");
@@ -60,6 +72,68 @@ function globalBase(agent: AgentName, env: NodeJS.ProcessEnv): string {
                 "skills"
             );
     }
+}
+
+function commandExists(command: AgentName, env: NodeJS.ProcessEnv): boolean {
+    return (env.PATH || "")
+        .split(path.delimiter)
+        .filter(Boolean)
+        .some((directory) => existsSync(path.join(directory, command)));
+}
+
+function harnessIsInstalled(
+    agent: AgentName,
+    root: string,
+    env: NodeJS.ProcessEnv
+): boolean {
+    return (
+        existsSync(root) ||
+        existsSync(path.dirname(root)) ||
+        commandExists(agent, env)
+    );
+}
+
+// Resolve the flat roots where downloaded Agent Skills should be projected.
+// A caller-provided root is the Workspace/Sandbox contract and deliberately
+// suppresses local multi-harness projection. Native harness roots can use
+// per-skill directory links; DSH gets a real-directory copy fallback. If roots
+// overlap, keep one target and prefer the safer copy mode.
+export function resolveAgentSkillProjectionTargets(opts: {
+    env: NodeJS.ProcessEnv;
+}): AgentSkillProjectionTarget[] {
+    const { env } = opts;
+    if (env.MGD_AGENT_SKILL_DIR) {
+        return [
+            {
+                root: path.resolve(env.MGD_AGENT_SKILL_DIR),
+                mode: "copy"
+            }
+        ];
+    }
+
+    const targets: AgentSkillProjectionTarget[] = AGENT_NAMES.map((agent) => ({
+        agent,
+        root: path.resolve(resolveGlobalSkillRoot(agent, env))
+    }))
+        .filter(({ agent, root }) => harnessIsInstalled(agent, root, env))
+        .map(({ root }) => ({ root, mode: "symlink" as const }));
+    if (env.DSH_HOME) {
+        targets.push({
+            root: path.resolve(env.DSH_HOME, "skills"),
+            mode: "copy"
+        });
+    }
+
+    const deduplicated = new Map<string, AgentSkillProjectionTarget>();
+    for (const target of targets) {
+        const existing = deduplicated.get(target.root);
+        if (!existing) {
+            deduplicated.set(target.root, target);
+        } else if (target.mode === "copy") {
+            existing.mode = "copy";
+        }
+    }
+    return [...deduplicated.values()];
 }
 
 // Where mgd <= 6.1.x installed the GLOBAL Codex skill: ${CODEX_HOME:-~/.codex}/skills.
@@ -93,7 +167,7 @@ export function resolveSkillDir(opts: {
 }): string {
     const base =
         opts.scope === "global"
-            ? globalBase(opts.agent, opts.env)
+            ? resolveGlobalSkillRoot(opts.agent, opts.env)
             : projectBase(opts.agent, opts.projectDir);
     return path.join(base, SKILL_SUBDIR);
 }

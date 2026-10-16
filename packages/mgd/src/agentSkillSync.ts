@@ -17,6 +17,7 @@ import {
     AgentSkillSyncResult
 } from "./agentSkillTypes.js";
 import {
+    calculateAgentSkillTreeDigest,
     extractAgentSkillArchive,
     validateAgentSkillArchive,
     validateAgentSkillDirectory
@@ -98,18 +99,21 @@ export async function syncAgentSkills(
                 let localChanged = false;
                 let currentTreeDigest = current?.installedTreeDigest;
                 if (current && currentExists) {
-                    const inspected = await validateAgentSkillDirectory(
+                    currentTreeDigest = await validateAgentSkillDirectory(
                         current.dir,
                         ref.type
+                    ).then(
+                        (inspected) => inspected.treeDigest,
+                        () => calculateAgentSkillTreeDigest(current.dir)
                     );
-                    currentTreeDigest = inspected.treeDigest;
                     localChanged =
-                        inspected.treeDigest !== current.installedTreeDigest;
+                        currentTreeDigest !== current.installedTreeDigest;
                 }
                 if (
                     current &&
                     currentExists &&
-                    current.remoteChecksum === item.source.checksum
+                    current.remoteChecksum === item.source.checksum &&
+                    (!localChanged || !force)
                 ) {
                     results.push({
                         ref,
@@ -203,7 +207,6 @@ export async function syncAgentSkills(
                             8
                         )}`
                     );
-                    await rename(current.dir, draftDir);
                     state.drafts[draftDir] = {
                         type: current.ref.type,
                         name: current.name,
@@ -213,6 +216,13 @@ export async function syncAgentSkills(
                             currentTreeDigest || current.installedTreeDigest
                     };
                     await saveAgentSkillState(state);
+                    try {
+                        await rename(current.dir, draftDir);
+                    } catch (error) {
+                        delete state.drafts[draftDir];
+                        await saveAgentSkillState(state);
+                        throw error;
+                    }
                 }
                 const extracted = await extractAgentSkillArchive(
                     downloaded.bytes,
@@ -274,11 +284,14 @@ export async function syncAgentSkills(
             }
             try {
                 if (await exists(current.dir)) {
-                    const inspected = await validateAgentSkillDirectory(
+                    const currentTreeDigest = await validateAgentSkillDirectory(
                         current.dir,
                         current.ref.type
+                    ).then(
+                        (inspected) => inspected.treeDigest,
+                        () => calculateAgentSkillTreeDigest(current.dir)
                     );
-                    if (inspected.treeDigest !== current.installedTreeDigest) {
+                    if (currentTreeDigest !== current.installedTreeDigest) {
                         await ensureRealDirectory(draftsRoot);
                         const draftDir = path.join(
                             draftsRoot,
@@ -287,14 +300,19 @@ export async function syncAgentSkills(
                                 8
                             )}`
                         );
-                        await rename(current.dir, draftDir);
                         state.drafts[draftDir] = {
                             type: current.ref.type,
                             name: current.name,
-                            ref: current.ref,
-                            baseChecksum: current.remoteChecksum,
-                            treeDigest: inspected.treeDigest
+                            treeDigest: currentTreeDigest
                         };
+                        await saveAgentSkillState(state);
+                        try {
+                            await rename(current.dir, draftDir);
+                        } catch (error) {
+                            delete state.drafts[draftDir];
+                            await saveAgentSkillState(state);
+                            throw error;
+                        }
                         results.push({
                             ref: current.ref,
                             name: current.name,

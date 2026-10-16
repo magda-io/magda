@@ -1,5 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { AgentWorkspaceReady } from "./AgentWorkspacePage";
 
 jest.mock("rsuite/Button", () => "button");
 jest.mock("rsuite/ButtonToolbar", () => "div");
@@ -20,8 +21,6 @@ jest.mock("../../api-clients/AgentWorkspaceApis", () => ({
     startAgentWorkspace: jest.fn(),
     startAgentWorkspaceStatusPolling: jest.fn()
 }));
-
-import { AgentWorkspaceReady } from "./AgentWorkspacePage";
 
 const failedSync = {
     status: "failed" as const,

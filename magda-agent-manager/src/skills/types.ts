@@ -78,6 +78,22 @@ export interface WorkspaceSkillManifest {
     };
 }
 
+/** Caller-scoped manifest for reconciling user publications to local storage. */
+export interface LocalSkillSyncManifest {
+    version: 1;
+    complete: true;
+    identity: {
+        tenantId: string;
+        userId: string;
+    };
+    items: WorkspaceSkillManifestItem[];
+    warnings: WorkspaceSkillManifestWarning[];
+    sources: {
+        user: { complete: true; count: number };
+        installations: { status: "notImplemented"; count: 0 };
+    };
+}
+
 export interface RegistryRecordsPage {
     totalCount?: number;
     hasMore: boolean;

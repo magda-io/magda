@@ -33,7 +33,8 @@ RUN groupadd --gid 10001 agent \
   && useradd --uid 10001 --gid 10001 --create-home --shell /bin/bash agent \
   && mkdir -p /data /run/magda-agent \
   && chown -R agent:agent /data /run/magda-agent \
-  && install -d -m 0755 /etc/magda-agent /usr/local/lib/magda-agent
+  && install -d -m 0755 /etc/magda-agent /usr/local/lib/magda-agent \
+  && install -o root -g root -m 0444 /dev/null /etc/magda-agent/workspace-runtime
 COPY --chmod=0644 magda-agent-runtime/magda.cordis.patch.yml /etc/magda-agent/magda.cordis.patch.yml
 COPY --chmod=0755 magda-agent-runtime/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
 COPY --chmod=0755 magda-agent-runtime/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap

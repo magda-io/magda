@@ -8,6 +8,8 @@ import {
     installSkill,
     uninstallSkill,
     resolveSkillDir,
+    resolveGlobalSkillRoot,
+    resolveAgentSkillProjectionTargets,
     parseAgents,
     packageSkillsDir,
     AGENT_NAMES
@@ -33,8 +35,14 @@ describe("skills install", () => {
         env = {
             HOME: tmp,
             CODEX_HOME: path.join(tmp, "codexhome"),
-            XDG_CONFIG_HOME: path.join(tmp, "xdg")
+            XDG_CONFIG_HOME: path.join(tmp, "xdg"),
+            PATH: ""
         };
+        await Promise.all([
+            fs.mkdir(path.join(tmp, ".claude"), { recursive: true }),
+            fs.mkdir(path.join(tmp, ".agents"), { recursive: true }),
+            fs.mkdir(path.join(tmp, "xdg", "opencode"), { recursive: true })
+        ]);
     });
     afterEach(async () => {
         await fs.rm(tmp, { recursive: true, force: true });
@@ -71,6 +79,69 @@ describe("skills install", () => {
                 env
             })
         ).to.equal(path.join(tmp, "xdg", "opencode", "skills", "magda-mgd"));
+    });
+
+    it("exposes the harness-native global skill roots", () => {
+        expect(resolveGlobalSkillRoot("claude", env)).to.equal(
+            path.join(tmp, ".claude", "skills")
+        );
+        expect(resolveGlobalSkillRoot("codex", env)).to.equal(
+            path.join(tmp, ".agents", "skills")
+        );
+        expect(resolveGlobalSkillRoot("opencode", env)).to.equal(
+            path.join(tmp, "xdg", "opencode", "skills")
+        );
+    });
+
+    it("resolves native projection roots and a configured DSH copy fallback", () => {
+        env.DSH_HOME = path.join(tmp, "dsh");
+        expect(resolveAgentSkillProjectionTargets({ env })).to.deep.equal([
+            {
+                root: path.join(tmp, ".claude", "skills"),
+                mode: "symlink"
+            },
+            {
+                root: path.join(tmp, ".agents", "skills"),
+                mode: "symlink"
+            },
+            {
+                root: path.join(tmp, "xdg", "opencode", "skills"),
+                mode: "symlink"
+            },
+            {
+                root: path.join(tmp, "dsh", "skills"),
+                mode: "copy"
+            }
+        ]);
+    });
+
+    it("deduplicates projection roots and prefers copy mode", () => {
+        env.DSH_HOME = path.join(tmp, ".agents");
+        expect(resolveAgentSkillProjectionTargets({ env })).to.deep.equal([
+            {
+                root: path.join(tmp, ".claude", "skills"),
+                mode: "symlink"
+            },
+            {
+                root: path.join(tmp, ".agents", "skills"),
+                mode: "copy"
+            },
+            {
+                root: path.join(tmp, "xdg", "opencode", "skills"),
+                mode: "symlink"
+            }
+        ]);
+    });
+
+    it("uses MGD_AGENT_SKILL_DIR as an explicit single copy target", () => {
+        env.MGD_AGENT_SKILL_DIR = path.join(tmp, "workspace-skills");
+        env.DSH_HOME = path.join(tmp, "dsh");
+        expect(resolveAgentSkillProjectionTargets({ env })).to.deep.equal([
+            {
+                root: path.join(tmp, "workspace-skills"),
+                mode: "copy"
+            }
+        ]);
     });
 
     it("resolveSkillDir: project dirs are per-tool", () => {
@@ -160,7 +231,8 @@ describe("skills install", () => {
         const src = path.join(tmp, "src-skills");
         await fs.mkdir(src, { recursive: true });
         const mdFiles = ["SKILL.md", "core.md", "extra-reference.md"];
-        for (const f of mdFiles) await fs.writeFile(path.join(src, f), `# ${f}`);
+        for (const f of mdFiles)
+            await fs.writeFile(path.join(src, f), `# ${f}`);
         // a non-markdown file must be ignored
         await fs.writeFile(path.join(src, "notes.txt"), "ignore me");
 
