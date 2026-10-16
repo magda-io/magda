@@ -1,6 +1,6 @@
 # Agent Skill authorization, sharing, identity and Workspace manifest
 
-**Status:** Accepted design decisions, 2026-10-14; authoritative on these subjects for [skills.md](./skills.md), [authentication.md](./authentication.md), [web-ui.md](./web-ui.md) and implementation tickets #3854, #3855, #3857, #3858, #3861. Stage #3854 is under review; **do not begin #3855 or silently implement #3861 in PR #3850** before its review gate. Existing Registry/Storage API stay generic; no skill-only Registry/Storage feature or shared bucket is introduced.
+**Status:** Accepted design decisions, 2026-10-14; authoritative on these subjects for [skills.md](./skills.md), [authentication.md](./authentication.md), [web-ui.md](./web-ui.md) and implementation tickets #3854, #3855, #3857, #3858, #3861. Stage #3854 has passed review and is closed; #3855's CLI/Workspace synchronization is under review in draft #3850. Do not silently implement future #3861 sharing/installations as part of #3855. Existing Registry/Storage APIs stay generic; no skill-only Registry/Storage endpoint or shared bucket is introduced. The distinct **local computer multi-profile/agent-harness** sync contract is [local-agent-skill-sync.md](./local-agent-skill-sync.md) (accepted 2026-10-16).
 
 > **Principle:** **Skill discovery is based on the intended user; skill access is based on authorization; skill synchronization is optional to Workspace availability.**
 
@@ -86,6 +86,8 @@ Stage #3861 owns Access Group generalization, sharing grant lifecycle, installat
 **Tests required for Stage #3854:** create-only user and system-skill publisher, update-only, delete-only, and read-only identities; successful PENDING/READY and DELETING lifecycle without extraneous caller grants; denied/malicious caller cannot coerce privileged admin operations; inaccessible-existing-record update/delete permission check against actual record; missing/invalid/type-switched publication and wrong userId/owner fail closed; an original publisher retains Storage `magda-owner-id` after new publish and cross-publisher replacement; failure/retry and partial operations don't leak the signed JWT or permit cross-record writes. Existing direct Registry/Storage API OPA protections remain and must not be weakened merely because Agent Services uses a trusted admin principal.
 
 ## Workspace manifest, best-effort synchronization and UI feedback
+
+**Important scope distinction:** The manifest described below is for a MAGDA-managed Agent Workspace Sandbox. It intentionally includes published **system** skills. On a user's local computer the accepted #3855 behavior is different: automatically activate **only own user publications**, and after #3861 explicitly installed shared user skills, from a per-instance/account verified library into one active profile's harness-visible projection. No automatic system-skill activation locally. See [local-agent-skill-sync.md](./local-agent-skill-sync.md).
 
 Expose **`GET /api/v0/agent/skills/workspace-manifest`**, service method `getWorkspaceSkillManifest`, for Workspace initialization. This is **not** the browseable catalogue of all readable/installable skills. Fetch with the current user's trusted session using **separate paginated, permission-filtered Registry queries**:
 
