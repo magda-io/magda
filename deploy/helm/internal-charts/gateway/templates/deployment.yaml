@@ -13,6 +13,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/effectiveConfig: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- $runtimeRoutes := dict }}
         {{- if .Values.additionalRoutes | empty | not }}
         {{- $runtimeRoutes = mergeOverwrite (deepCopy .Values.defaultRoutes) .Values.additionalRoutes }}
@@ -74,6 +75,9 @@ spec:
 {{- end }}
 {{- if .Values.registryQueryCacheMaxKeys }}
             "--registryQueryCacheMaxKeys", {{ .Values.registryQueryCacheMaxKeys | quote }},
+{{- end }}
+{{- if or .Values.agentManagerUrl (dig "agentWorkspace" "enabled" false .Values.global) }}
+            "--agentManagerUrl", {{ .Values.agentManagerUrl | default "http://agent-manager/v0" | quote }},
 {{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--webProxyRoutesJson", "/etc/config/webRoutes.json",
@@ -147,6 +151,13 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
+{{- if or .Values.agentManagerUrl (dig "agentWorkspace" "enabled" false .Values.global) }}
+        - name: AGENT_MANAGER_CONTROL_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.agentManagerControlSecret.name }}
+              key: {{ .Values.agentManagerControlSecret.key }}
+{{- end }}
 {{- if .Values.enableWebAccessControl }}
         - name: WEB_ACCESS_USERNAME
           valueFrom:

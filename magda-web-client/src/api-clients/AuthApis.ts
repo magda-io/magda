@@ -673,6 +673,8 @@ export interface APIKeyRecord {
     expiry_time?: Date;
     last_successful_attempt_time?: Date;
     last_failed_attempt_time?: Date;
+    name?: string;
+    system_managed?: boolean;
 }
 
 export async function getUserApiKeys(userId: string, noCache: boolean = true) {

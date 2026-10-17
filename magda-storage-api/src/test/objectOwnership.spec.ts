@@ -42,6 +42,7 @@ describe("Storage object ownership", () => {
     const bucketName = "magda-ownership-test-bucket";
     const rawClient = new Client(minioClientOpts);
     let app: express.Application;
+    let registryClient: AuthorizedRegistryClient;
     let authDecisionInputs: any[] = [];
 
     before(async () => {
@@ -62,6 +63,12 @@ describe("Storage object ownership", () => {
             tenantId: 0,
             maxRetries: 0
         };
+        registryClient = new AuthorizedRegistryClient(registryOptions);
+        sinon.stub(registryClient, "getRecordInFull").callsFake(async (id) => ({
+            id,
+            name: id,
+            aspects: {}
+        }));
         const authDecisionClient = sinon.createStubInstance(
             AuthDecisionQueryClient
         );
@@ -88,7 +95,7 @@ describe("Storage object ownership", () => {
                 jwtSecret,
                 objectStoreClient: new MagdaMinioClient(minioClientOpts),
                 authDecisionClient,
-                registryClient: new AuthorizedRegistryClient(registryOptions),
+                registryClient,
                 tenantId: 0,
                 uploadLimit: "100mb",
                 autoCreateBuckets: false,
@@ -105,12 +112,18 @@ describe("Storage object ownership", () => {
         return `owner-test/${crypto.randomUUID()}/${name}`;
     }
 
-    function putObject(key: string, userId: string, content = "hello") {
-        return request(app)
+    function putObject(
+        key: string,
+        userId: string,
+        content = "hello",
+        recordId?: string
+    ) {
+        const req = request(app)
             .put(`/v0/${bucketName}/${key}`)
             .set("X-Magda-Session", session(userId))
-            .set("Content-Type", "text/plain")
-            .send(content);
+            .set("Content-Type", "text/plain");
+        if (recordId) req.query({ recordId });
+        return req.send(content);
     }
 
     function getObject(key: string, userId: string) {
@@ -125,11 +138,17 @@ describe("Storage object ownership", () => {
             .set("X-Magda-Session", session(userId));
     }
 
-    async function initiateMultipart(key: string, userId: string) {
-        const res = await request(app)
+    async function initiateMultipart(
+        key: string,
+        userId: string,
+        recordId?: string
+    ) {
+        const req = request(app)
             .post(`/v0/multipart/initiate/${bucketName}/${key}`)
             .set("X-Magda-Session", session(userId))
             .set("Content-Type", "application/octet-stream");
+        if (recordId) req.query({ recordId });
+        const res = await req;
         return res;
     }
 
@@ -196,6 +215,7 @@ describe("Storage object ownership", () => {
             expect(authDecisionInputs[0].storage.object.ownerId).to.equal(
                 USER_A
             );
+            expect(authDecisionInputs[0].storage.object.exists).to.equal(true);
         });
 
         it("should keep the existing owner when another authorised user replaces the object", async () => {
@@ -211,10 +231,29 @@ describe("Storage object ownership", () => {
             expect(authDecisionInputs[1].storage.object.ownerId).to.equal(
                 USER_A
             );
+            expect(authDecisionInputs[0].storage.object.exists).to.equal(true);
+            expect(authDecisionInputs[1].storage.object.exists).to.equal(true);
             expect((await getStoredMetaData(key))["magda-owner-id"]).to.equal(
                 USER_A
             );
             await getObject(key, USER_A).expect(200, "v2");
+        });
+
+        it("should keep the existing record link when replacement proposes another record", async () => {
+            const key = randomKey("linked.txt");
+            await putObject(key, USER_A, "v1", "record-a").expect(200);
+            authDecisionInputs = [];
+            await putObject(key, ADMIN_USER, "v2", "record-b").expect(200);
+
+            const metaData = await getStoredMetaData(key);
+            expect(metaData["magda-record-id"]).to.equal("record-a");
+            expect(metaData["magda-owner-id"]).to.equal(USER_A);
+            expect(authDecisionInputs).to.have.length(2);
+            expect(authDecisionInputs[0].object.record.id).to.equal("record-a");
+            expect(authDecisionInputs[1].object.record.id).to.equal("record-a");
+            expect(authDecisionInputs[1].storage.object.recordId).to.equal(
+                "record-a"
+            );
         });
     });
 
@@ -239,6 +278,21 @@ describe("Storage object ownership", () => {
                 .expect(403);
             await deleteObject(key, USER_B).expect(403);
             await deleteObject(key, USER_A).expect(200, { deleted: true });
+        });
+
+        it("should preserve record linkage during form replacement", async () => {
+            const dir = randomKey("linked-dir");
+            const key = `${dir}/file.txt`;
+            await putObject(key, USER_A, "v1", "record-a").expect(200);
+            await request(app)
+                .post(`/v0/upload/${bucketName}/${dir}`)
+                .query({ recordId: "record-b" })
+                .set("X-Magda-Session", session(ADMIN_USER))
+                .attach("file", Buffer.from("v2"), "file.txt")
+                .expect(200);
+            expect((await getStoredMetaData(key))["magda-record-id"]).to.equal(
+                "record-a"
+            );
         });
     });
 
@@ -283,6 +337,28 @@ describe("Storage object ownership", () => {
             ).then((res) => expect(res.status).to.equal(200));
             expect((await getStoredMetaData(key))["magda-owner-id"]).to.equal(
                 USER_A
+            );
+        });
+
+        it("should preserve record linkage during multipart replacement", async () => {
+            const key = randomKey("linked.bin");
+            await putObject(key, USER_A, "v1", "record-a").expect(200);
+            const initRes = await initiateMultipart(
+                key,
+                ADMIN_USER,
+                "record-b"
+            );
+            expect(initRes.status).to.equal(200);
+            expect(
+                verifyUploadToken(initRes.body.uploadId, jwtSecret).recordId
+            ).to.equal("record-a");
+            await uploadPartAndComplete(
+                key,
+                initRes.body.uploadId,
+                ADMIN_USER
+            ).then((res) => expect(res.status).to.equal(200));
+            expect((await getStoredMetaData(key))["magda-record-id"]).to.equal(
+                "record-a"
             );
         });
 

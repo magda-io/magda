@@ -1,0 +1,91 @@
+{{- if .Values.kasValidation.enabled -}}
+{{- $id := include "agent-services.installationId" . -}}
+{{- $name := printf "magda-agent-preflight-%s" $id -}}
+{{- $runtimeType := .Values.warmPool.type | lower -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-20"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $name }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-20"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+rules:
+  - nonResourceURLs:
+      - /apis/extensions.agents.x-k8s.io/v1beta1
+      - /apis/agents.x-k8s.io/v1beta1
+    verbs: ["get"]
+  - apiGroups: ["node.k8s.io"]
+    resources: ["runtimeclasses"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $name }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-19"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+subjects:
+  - kind: ServiceAccount
+    name: {{ $name }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $name }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-10"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: magda-agent-prerequisite-check
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ $name }}
+      automountServiceAccountToken: true
+      containers:
+        - name: validate
+          image: "{{ .Values.kasValidation.image.repository }}:{{ .Values.kasValidation.image.tag }}"
+          imagePullPolicy: {{ .Values.kasValidation.image.pullPolicy }}
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              fail() { echo "Agent Workspace prerequisite check failed: $*" >&2; exit 1; }
+              extensions="$(kubectl get --raw /apis/extensions.agents.x-k8s.io/v1beta1 2>/dev/null)" || \
+                fail "Kubernetes Agent Sandbox v1beta1 extension APIs are unavailable. Install KAS v1.0.4 or newer before enabling Agent Workspace."
+              for resource in sandboxclaims sandboxtemplates sandboxwarmpools; do
+                echo "$extensions" | grep -q "\"name\":\"${resource}\"" || \
+                  fail "required KAS resource ${resource}.extensions.agents.x-k8s.io/v1beta1 is unavailable"
+              done
+              core="$(kubectl get --raw /apis/agents.x-k8s.io/v1beta1 2>/dev/null)" || \
+                fail "Kubernetes Agent Sandbox agents.x-k8s.io/v1beta1 API is unavailable"
+              echo "$core" | grep -q '"name":"sandboxes"' || \
+                fail "required KAS resource sandboxes.agents.x-k8s.io/v1beta1 is unavailable"
+              {{- if ne $runtimeType "runc" }}
+              kubectl get runtimeclass {{ get .Values.runtimeClasses $runtimeType | quote }} >/dev/null 2>&1 || \
+                fail "RuntimeClass {{ get .Values.runtimeClasses $runtimeType }} required by warmPool.type={{ $runtimeType }} is unavailable"
+              {{- end }}
+{{- end -}}

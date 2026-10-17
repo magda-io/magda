@@ -27,6 +27,11 @@ clientBodyBufferSize: 100M
 # -- Proxy body size limit. You might want to increase this limit for larger file upload.
 proxyBodySize: 100M
 
+# -- NGINX upstream timeouts in seconds. Long-lived Agent Workspace WebSockets
+# need these to exceed the normal interactive session duration.
+proxyReadTimeout:
+proxySendTimeout:
+
 # -- (string) The external hostname that the ingress resource exposes to route incoming HTTP/S traffic to the underlying service.
 # @default -- When not specified, the value of this field will be extracted from `.Values.global.externalUrl`
 hostname: 

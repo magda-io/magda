@@ -68,7 +68,8 @@ export type FeatureFlagType =
     | "datasetApprovalWorkflowOn"
     | "useStorageApi"
     | "datasetLikeButton"
-    | "enableAutoMetadataFetchButton";
+    | "enableAutoMetadataFetchButton"
+    | "agentWorkspace";
 
 export type FeatureFlagsConfigType = Partial<Record<FeatureFlagType, boolean>>;
 

@@ -625,6 +625,9 @@ buildtest:helm-charts:
 
     # The plugin<->Magda helper-contract handshake. Magda's own charts never
     # exercise it, so without this it would first run in a user's cluster.
+    - echo "chart assertions - Agent Services feature and runtime matrix"
+    - bash deploy/helm/magda-core/tests/agent-services-render.sh
+
     - echo "chart assertions - plugin compatibility handshake"
     - bash deploy/helm/magda-core/tests/compatibility-check.sh
 
@@ -776,6 +779,16 @@ dockerize:typescript:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
     - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+    - |
+      RUNTIME_IMAGE="$CI_REGISTRY/magda-data/magda/magda-agent-runtime:$CI_COMMIT_REF_SLUG"
+      RUNTIME_MANIFEST="$(docker buildx imagetools inspect "$RUNTIME_IMAGE")"
+      printf '%s\n' "$RUNTIME_MANIFEST"
+      for platform in linux/amd64 linux/arm64; do
+        if ! printf '%s\n' "$RUNTIME_MANIFEST" | grep -Eq "Platform:[[:space:]]+$platform"; then
+          echo "Runtime image $RUNTIME_IMAGE is missing platform $platform"
+          exit 1
+        fi
+      done
 
 dockerize:migrators:
   stage: buildtest

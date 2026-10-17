@@ -1,6 +1,7 @@
 # Magda Documentation
 
 - [How to build and run](./building-and-running.md)
+- [Agent Workspace architecture and deployment](./architecture/agent-workspace.md)
 - [Architecture Decision Records (ADRs)](./adrs/)
 - [How to Release a New Version](./ci-version-release.md)
 - [Testing a PR with a Preview Release Before Merging](./pr-preview-release-testing.md)

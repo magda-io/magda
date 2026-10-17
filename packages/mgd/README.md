@@ -165,8 +165,9 @@ removal, see [Installing the skill](#installing-the-skill).
 
 ### Install manually
 
-`mgd` requires **Node.js ≥ 22**. Install it globally so the `mgd` command is on
-your `PATH`:
+`mgd` requires **Node.js ≥ 22** and nothing else: Agent Skill synchronization
+uses only portable Node.js filesystem APIs (no Python, native addon or extra
+runtime). Install it globally so the `mgd` command is on your `PATH`:
 
 ```sh
 npm install -g @magda/mgd
@@ -182,8 +183,111 @@ npx @magda/mgd <command>
 Global installation is recommended when using `mgd` with a coding agent because
 the installed skill expects the command to remain available on your `PATH`.
 
-The package is self-contained (one runtime dependency) and ships the assistant
-skill files under [`skills/`](./skills/).
+The package is self-contained and ships assistant guidance under
+[`skills/`](./skills/).
+
+## Two different skill command families
+
+- `mgd skills install|uninstall` installs the package's bundled `magda-mgd`
+  guidance for coding agents. Its existing behavior is unchanged.
+- `mgd agent-skill` manages Registry-backed Agent Skill publications, explicit
+  working directories, and synchronized installations. It uses the active `mgd`
+  profile and `type=system|user` terminology.
+
+```sh
+mgd agent-skill init my-skill --type user
+mgd agent-skill validate ./my-skill --type user
+mgd agent-skill publish ./my-skill            # --type user is the default
+mgd agent-skill list --type all
+mgd agent-skill show user/agent-skill-<user-uuid>-my-skill
+mgd agent-skill pull user/agent-skill-<user-uuid>-my-skill -o ./review-copy
+mgd agent-skill sync [--force]
+mgd agent-skill delete user/agent-skill-<user-uuid>-my-skill
+```
+
+`init`, local edits, `pull`, and `validate` never publish. Only an explicit
+`publish` creates or replaces a remote publication. A `pull`ed or previously
+published working directory records the remote checksum: ordinary publish/delete
+fails if the publication has changed since that checksum, while `--force`
+deliberately uses the newest remote checksum. A failed create is never
+converted into replacement.
+
+### Synchronized installations
+
+On a local computer, `sync` downloads only the authenticated user's own READY
+user publications (never system skills; use explicit `pull system/<id>` to
+inspect one), verifies every ZIP checksum and its metadata, and installs an
+**independent real-directory copy** into every detected harness root:
+`~/.claude/skills`, `~/.agents/skills` (Codex), `$XDG_CONFIG_HOME/opencode/skills`
+and, when `DSH_HOME` is set, `$DSH_HOME/skills`. Overlapping roots are
+deduplicated; `$MGD_AGENT_SKILL_DIR` is an explicit single-target override (used
+by the Workspace Sandbox). There are no symlinks and no shared working copy:
+edit any copy freely, then `publish` it.
+
+Each installation contains a reserved `.magda-skill-install.json` (format
+version, source account key, publication id/type, installed baseline checksum
+and content digest, random installation id; never credentials). State lives
+under `${XDG_DATA_HOME:-~/.local/share}/mgd/agent-skills/`:
+
+- `sources/<key>/` — per-account verified publication snapshot and immutable
+  archives, keyed by a hash of canonical MAGDA API URL, tenant and user UUID;
+- `installation-index.json` — every managed path, its source and baseline;
+- `operation-journal.json` — present only while a change is incomplete.
+
+Only names that are desired or already tracked are ever inspected; unrelated
+skill directories are ignored. Every target is checked before anything changes:
+
+| Situation                                                     | `sync`                        | `sync --force` |
+| ------------------------------------------------------------- | ----------------------------- | -------------- |
+| Copy unchanged since installed (older version)                | updated                       | updated        |
+| Installed directory deleted manually                          | reinstalled                   | reinstalled    |
+| Deleted directory, publication also removed                   | tracking cleared              | same           |
+| Metadata missing/invalid, full content equals the publication | metadata repaired             | same           |
+| Copy edited, or same-name directory with different content    | **conflict, nothing changed** | replaced       |
+| Publication removed remotely, copy edited                     | **conflict, nothing changed** | removed        |
+| Symlink, special file, symlinked root, reserved bundled name  | refused                       | refused        |
+
+A conflict anywhere stops the whole run before any installation changes and
+lists every affected skill, harness, path and remedy (exit code 1). `--force`
+is your explicit consent to discard conflicting local content; it never bypasses
+authorization, ZIP validation, or the unsafe-path rules. Downloads and staging
+complete before any installation moves; a failed download keeps the previously
+verified version installed and cached. A remote outage never deletes anything,
+and manifest warnings make absences non-authoritative.
+
+`publish <installed-copy>` recognizes an installed own skill, excludes only its
+marker from the ZIP, replaces the same publication with `If-Match` on the
+installed baseline, then updates that copy's baseline and the local cache. It
+does **not** touch other harness copies: run `mgd agent-skill sync` afterwards,
+which updates clean copies and reports independently edited ones as conflicts.
+
+### Profiles
+
+`mgd profile use <name>` reconciles the target profile's verified cached
+snapshot with the same engine, **without network access**, and changes the
+active profile only if that succeeds. On conflict the previous profile and every
+installation stay as they were; `--force` discards the conflicting content.
+`--sync-skills` adds an explicit online refresh afterwards (combinable with
+`--force`). A profile with no verified cache deactivates the previous profile's
+managed skills. One-off `MGD_PROFILE` or credential/base-URL overrides may
+refresh an isolated cache but never change the machine-wide installations.
+
+DSH `0.2.1-alpha.1`, Claude Code, Codex and OpenCode discover these copied
+directories (including the metadata file). Local CLI sync never writes a remote
+Workspace status. The Manager-triggered Sandbox mode uses the same engine with
+visible system plus own user skills and one DSH root; Workspace READY remains
+independent of sync success.
+
+State written by pre-release builds of this feature (symlink projections,
+`projection.json`, v2 `state.json` drafts) is not migrated: it is ignored and
+never deleted. Remove `~/.local/share/mgd/agent-skills` (and any leftover
+symlinked skill paths, which `sync` reports as unsafe) to start clean.
+
+> **System bundle cost:** system skills may contain scripts, images, and other
+> regular resources. They are synchronized only into MAGDA Workspaces, not local
+> harnesses. Every selected Workspace bundle must still be downloaded, validated,
+> and stored on the user's persistent volume; prefer small instructional skills
+> that fetch large datasets or models on demand.
 
 ## Quick start
 
@@ -432,20 +536,20 @@ metadata tools, with a distinct `name` marking their CLI provenance.
 
 Records carry data in named **aspects**. The ones the CLI reads or writes most:
 
-| Aspect | Record | Holds / notes |
-| --- | --- | --- |
-| `dcat-dataset-strings` | dataset | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified` |
-| `dcat-distribution-strings` | distribution | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize` |
-| `publishing` | dataset & distribution | `{ "state": "draft" \| "published" }` — use `publish`/`unpublish`, don't hand-edit |
-| `dataset-distributions` | dataset | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit |
-| `version` | dataset & distribution | CLI-managed history — don't hand-edit |
-| `access-control` | dataset | `ownerId`, `orgUnitId`, `constraintExemption` |
-| `source` | dataset | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`) |
-| `dataset-publisher` | dataset | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI. The value is an organisation **record id**, not a name; assign it by resolving/reusing an organisation and writing the aspect (see the skill's "Assigning a publisher" workflow). There is no `--publisher` flag by design |
-| `temporal-coverage` | dataset | *optional* — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range |
-| `spatial-coverage` | dataset | *optional* — bounding box / named region; set manually when the data has a spatial extent |
-| `data-dictionary` | distribution | *optional* — normalized structure of the file/API: `{ "schemaVersion": "1.0", "entities": [{ "id", "name", "fields": [{ "path", "name", "type", … }] }], "provenance": { "method", "reviewStatus" } }`. Write with `dataset aspect set <distId> data-dictionary @dict.json`; don't `aspect patch` inside `entities` (arrays are combined, not merged by id). See the [Data Dictionary guide](https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md) |
-| `distribution-contract` | distribution | *optional* — how to access/query the file/API: `{ "schemaVersion": "1.0", "protocol", "endpointUrl", "authentication": { "type", … }, "operations": [{ "id", "method", "path", "parameters": [{ "name", "location", "type", … }], "response": { "dictionaryEntity", … } }], "provenance": { "method", "reviewStatus" } }`. Descriptive only: never put credentials in it. Write with `dataset aspect set <distId> distribution-contract @contract.json`; don't `aspect patch` inside `operations` (arrays are combined, not merged by id). See the [Distribution Contract guide](https://github.com/magda-io/magda/blob/main/docs/docs/distribution-contract.md) |
+| Aspect                      | Record                 | Holds / notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dcat-dataset-strings`      | dataset                | `title`, `description`, `keywords`, `themes`, `languages`, `issued`/`modified`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `dcat-distribution-strings` | distribution           | per-file `title`, `format`, `downloadURL`, `accessURL`, `byteSize`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `publishing`                | dataset & distribution | `{ "state": "draft" \| "published" }` — use `publish`/`unpublish`, don't hand-edit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `dataset-distributions`     | dataset                | `{ "distributions": [<distId>, …] }` — CLI-managed by `add-file`/`dist remove`; don't hand-edit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `version`                   | dataset & distribution | CLI-managed history — don't hand-edit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `access-control`            | dataset                | `ownerId`, `orgUnitId`, `constraintExemption`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `source`                    | dataset                | provenance (`id: "magda"`, `name: "Magda CLI (mgd)"`, `type`, `url`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `dataset-publisher`         | dataset                | `{ "publisher": "<organisation record id>" }` — publishing org shown in the web UI. The value is an organisation **record id**, not a name; assign it by resolving/reusing an organisation and writing the aspect (see the skill's "Assigning a publisher" workflow). There is no `--publisher` flag by design                                                                                                                                                                                                                                                                                                                                                   |
+| `temporal-coverage`         | dataset                | _optional_ — `{ "intervals": [{ "start", "end" }] }`; set manually when the data spans a time range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `spatial-coverage`          | dataset                | _optional_ — bounding box / named region; set manually when the data has a spatial extent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `data-dictionary`           | distribution           | _optional_ — normalized structure of the file/API: `{ "schemaVersion": "1.0", "entities": [{ "id", "name", "fields": [{ "path", "name", "type", … }] }], "provenance": { "method", "reviewStatus" } }`. Write with `dataset aspect set <distId> data-dictionary @dict.json`; don't `aspect patch` inside `entities` (arrays are combined, not merged by id). See the [Data Dictionary guide](https://github.com/magda-io/magda/blob/main/docs/docs/data-dictionary.md)                                                                                                                                                                                           |
+| `distribution-contract`     | distribution           | _optional_ — how to access/query the file/API: `{ "schemaVersion": "1.0", "protocol", "endpointUrl", "authentication": { "type", … }, "operations": [{ "id", "method", "path", "parameters": [{ "name", "location", "type", … }], "response": { "dictionaryEntity", … } }], "provenance": { "method", "reviewStatus" } }`. Descriptive only: never put credentials in it. Write with `dataset aspect set <distId> distribution-contract @contract.json`; don't `aspect patch` inside `operations` (arrays are combined, not merged by id). See the [Distribution Contract guide](https://github.com/magda-io/magda/blob/main/docs/docs/distribution-contract.md) |
 
 ### Custom aspects
 

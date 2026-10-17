@@ -212,7 +212,8 @@ export function requireStorageObjectPermission(
                     object: {
                         ...objectMetaData,
                         bucketName,
-                        name: objectName
+                        name: objectName,
+                        exists: stateData !== null
                     }
                 }
             };
@@ -236,10 +237,15 @@ export function requireStorageObjectPermission(
             }
 
             if (operationType == "upload") {
-                const newRecordContextData = metaData?.recordId
+                // Existing objects retain their trusted Registry linkage just as
+                // they retain their owner. A replacement query parameter cannot
+                // rebind an object to a different record.
+                const effectiveRecordId =
+                    objectMetaData?.recordId || metaData?.recordId;
+                const newRecordContextData = effectiveRecordId
                     ? await createRecordContextData(
                           registryClient,
-                          metaData.recordId
+                          effectiveRecordId
                       )
                     : {};
 
@@ -248,7 +254,10 @@ export function requireStorageObjectPermission(
                     storage: {
                         object: {
                             ...currentContextData.storage.object,
-                            ...(metaData ? metaData : {})
+                            ...(metaData ? metaData : {}),
+                            ...(effectiveRecordId
+                                ? { recordId: effectiveRecordId }
+                                : {})
                         }
                     },
                     object: {
@@ -264,6 +273,7 @@ export function requireStorageObjectPermission(
                 // the owner that upload handlers should persist (via `magda-owner-id` metadata) for the uploaded object
                 res.locals.storageObjectOwnerId =
                     newContextData.storage.object.ownerId;
+                res.locals.storageObjectRecordId = effectiveRecordId;
 
                 if (!stateData) {
                     // storage object doesn't exist, we are creating the storage object
