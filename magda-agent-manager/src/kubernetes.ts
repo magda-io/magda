@@ -181,7 +181,13 @@ export class AgentKubernetesClient {
         }
     }
 
-    async createClaim(userId: string): Promise<SandboxClaim> {
+    /**
+     * Create the user's claim. `created` is true only when this call created
+     * it; an existing claim (409) is never treated as a fresh Workspace.
+     */
+    async createClaim(
+        userId: string
+    ): Promise<{ claim: SandboxClaim; created: boolean }> {
         const now = new Date();
         const shutdownTime = shutdownTimeForActivity(
             now,
@@ -211,17 +217,18 @@ export class AgentKubernetesClient {
             }
         };
         try {
-            return (await this.customApi.createNamespacedCustomObject({
+            const claim = (await this.customApi.createNamespacedCustomObject({
                 group: EXT_GROUP,
                 version: VERSION,
                 namespace: this.options.namespace,
                 plural: CLAIMS,
                 body
             })) as SandboxClaim;
+            return { claim, created: true };
         } catch (error) {
             if (error instanceof ApiException && error.code === 409) {
                 const existing = await this.getClaim(userId);
-                if (existing) return existing;
+                if (existing) return { claim: existing, created: false };
             }
             throw error;
         }
@@ -621,10 +628,25 @@ export class AgentKubernetesClient {
         );
     }
 
-    async syncSkills(podName: string): Promise<string> {
+    /**
+     * Run Workspace skill sync in the Sandbox. `force` is only for a verified
+     * fresh, empty Sandbox (or a future user-confirmed retry, #3857); it
+     * discards conflicting skill directories without a prompt.
+     */
+    async syncSkills(
+        podName: string,
+        options: { force: boolean }
+    ): Promise<string> {
         return await this.exec(
             podName,
-            ["mgd", "agent-skill", "sync", "--json", "--workspace-status"],
+            [
+                "mgd",
+                "agent-skill",
+                "sync",
+                ...(options.force ? ["--force"] : []),
+                "--json",
+                "--workspace-status"
+            ],
             undefined,
             120_000,
             64 * 1024

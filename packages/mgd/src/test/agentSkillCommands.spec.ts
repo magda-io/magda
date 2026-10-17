@@ -8,13 +8,9 @@ import { registerSkillsCommands } from "../commands/skills.js";
 import {
     createAgentSkillSourceIdentity,
     loadAgentSkillSourceState,
-    saveAgentSkillSourceState,
-    sourceStateKey
+    saveAgentSkillSourceState
 } from "../agentSkillLocalState.js";
-import {
-    createAgentSkillArchive,
-    validateAgentSkillDirectory
-} from "../agentSkillArchive.js";
+import { createAgentSkillArchive } from "../agentSkillArchive.js";
 import { loadConfig, saveConfig } from "../profile.js";
 import { UsageError } from "../errors.js";
 import { captureStdout } from "./captureStdout.js";
@@ -347,9 +343,9 @@ describe("agent-skill CLI contracts", () => {
                 userId
             });
             const state = await loadAgentSkillSourceState(identity);
-            expect(state.drafts[path.resolve(draft)].baseChecksum).to.equal(
-                secondChecksum
-            );
+            expect(
+                state.workingDirectories[path.resolve(draft)].baseChecksum
+            ).to.equal(secondChecksum);
         } finally {
             await server.close();
         }
@@ -443,7 +439,7 @@ describe("agent-skill CLI contracts", () => {
             userId
         });
         const state = await loadAgentSkillSourceState(identity);
-        state.drafts[directory] = {
+        state.workingDirectories[directory] = {
             type: "system",
             name: "system-tracked",
             ref: { type: "system", id: "agent-skill-system-tracked" },
@@ -507,198 +503,6 @@ describe("agent-skill CLI contracts", () => {
             expect(caught).to.be.instanceOf(UsageError);
             expect((caught as Error).message).to.include("root-provisioned");
             expect(server.requests).to.have.length(0);
-        } finally {
-            await server.close();
-        }
-    });
-
-    it("delete removes source-scoped cached content and detaches tracked drafts", async () => {
-        const checksum = "d".repeat(64);
-        const ref = {
-            type: "user" as const,
-            id: "agent-skill-00000000-0000-4000-8000-000000000123-useful-skill"
-        };
-        const server = await startMockServer([
-            localManifestRoute(),
-            {
-                method: "DELETE",
-                path:
-                    "/api/v0/agent/skills/user/agent-skill-00000000-0000-4000-8000-000000000123-useful-skill",
-                body: {}
-            }
-        ]);
-        process.env.MGD_BASE_URL = `${server.url}/api`;
-        const identity = createAgentSkillSourceIdentity({
-            baseUrl: `${server.url}/api`,
-            tenantId: "0",
-            userId
-        });
-        const state = await loadAgentSkillSourceState(identity);
-        const sourceRoot = path.dirname(
-            path.dirname(
-                path.dirname(
-                    path.join(
-                        process.env.XDG_DATA_HOME!,
-                        "mgd",
-                        "agent-skills",
-                        "sources",
-                        identity.key,
-                        "state.json"
-                    )
-                )
-            )
-        );
-        const libraryDirectory = path.join(
-            process.env.XDG_DATA_HOME!,
-            "mgd",
-            "agent-skills",
-            "sources",
-            identity.key,
-            "skills",
-            ref.id
-        );
-        const archiveFile = path.join(
-            process.env.XDG_DATA_HOME!,
-            "mgd",
-            "agent-skills",
-            "sources",
-            identity.key,
-            "archives",
-            `${ref.id}.zip`
-        );
-        const pulledDraft = path.join(temporaryDirectory, "pulled-draft");
-        await fs.mkdir(libraryDirectory, { recursive: true });
-        await fs.writeFile(
-            path.join(libraryDirectory, "SKILL.md"),
-            skillMarkdown("Installed")
-        );
-        await fs.mkdir(path.dirname(archiveFile), { recursive: true });
-        await fs.writeFile(archiveFile, "archive");
-        await fs.mkdir(pulledDraft);
-        await fs.writeFile(
-            path.join(pulledDraft, "SKILL.md"),
-            skillMarkdown("Draft")
-        );
-        const installed = await validateAgentSkillDirectory(
-            libraryDirectory,
-            "user"
-        );
-        const draft = await validateAgentSkillDirectory(pulledDraft, "user");
-        state.entries[sourceStateKey(ref)] = {
-            ref,
-            name: "useful-skill",
-            description: "A useful test skill",
-            libraryDir: libraryDirectory,
-            archiveFile,
-            remoteChecksum: checksum,
-            installedTreeDigest: installed.treeDigest,
-            updatedAt: "2025-01-01T00:00:00.000Z"
-        };
-        state.drafts[pulledDraft] = {
-            type: "user",
-            name: "useful-skill",
-            ref,
-            baseChecksum: checksum,
-            treeDigest: draft.treeDigest
-        };
-        await saveAgentSkillSourceState(state);
-
-        try {
-            const result = JSON.parse(
-                await run(["agent-skill", "delete", `user/${ref.id}`, "--json"])
-            );
-            expect(result).to.deep.include({
-                deleted: true,
-                localDraftsPreserved: true
-            });
-            const request = server.requests.find(
-                (candidate) => candidate.method === "DELETE"
-            )!;
-            expect(request.headers["if-match"]).to.equal(`"${checksum}"`);
-            expect(await exists(libraryDirectory)).to.equal(false);
-            expect(await exists(pulledDraft)).to.equal(true);
-
-            const saved = await loadAgentSkillSourceState(identity);
-            expect(saved.entries[sourceStateKey(ref)]).to.equal(undefined);
-            expect(saved.drafts[pulledDraft].ref).to.equal(undefined);
-            expect(saved.drafts[pulledDraft].baseChecksum).to.equal(undefined);
-            expect(saved.drafts[pulledDraft].treeDigest).to.equal(
-                draft.treeDigest
-            );
-        } finally {
-            await server.close();
-        }
-    });
-
-    it("delete preserves a modified source cache as a source-scoped draft", async () => {
-        const checksum = "e".repeat(64);
-        const ref = {
-            type: "user" as const,
-            id: "agent-skill-00000000-0000-4000-8000-000000000123-useful-skill"
-        };
-        const server = await startMockServer([
-            localManifestRoute(),
-            {
-                method: "DELETE",
-                path: `/api/v0/agent/skills/user/${ref.id}`,
-                body: {}
-            }
-        ]);
-        process.env.MGD_BASE_URL = `${server.url}/api`;
-        const identity = createAgentSkillSourceIdentity({
-            baseUrl: `${server.url}/api`,
-            tenantId: "0",
-            userId
-        });
-        const state = await loadAgentSkillSourceState(identity);
-        const sourceRoot = path.join(
-            process.env.XDG_DATA_HOME!,
-            "mgd",
-            "agent-skills",
-            "sources",
-            identity.key
-        );
-        const libraryDirectory = path.join(sourceRoot, "skills", ref.id);
-        const archiveFile = path.join(sourceRoot, "archives", `${ref.id}.zip`);
-        await fs.mkdir(libraryDirectory, { recursive: true });
-        await fs.writeFile(
-            path.join(libraryDirectory, "SKILL.md"),
-            skillMarkdown("Installed")
-        );
-        await fs.mkdir(path.dirname(archiveFile), { recursive: true });
-        await fs.writeFile(archiveFile, "archive");
-        const installed = await validateAgentSkillDirectory(
-            libraryDirectory,
-            "user"
-        );
-        state.entries[sourceStateKey(ref)] = {
-            ref,
-            name: "useful-skill",
-            description: "A useful test skill",
-            libraryDir: libraryDirectory,
-            archiveFile,
-            remoteChecksum: checksum,
-            installedTreeDigest: installed.treeDigest,
-            updatedAt: "2025-01-01T00:00:00.000Z"
-        };
-        await saveAgentSkillSourceState(state);
-        await fs.writeFile(
-            path.join(libraryDirectory, "SKILL.md"),
-            skillMarkdown("Local edit")
-        );
-
-        try {
-            await run(["agent-skill", "delete", `user/${ref.id}`, "--json"]);
-            expect(await exists(libraryDirectory)).to.equal(false);
-            const draftsRoot = path.join(sourceRoot, "drafts", "deleted");
-            const draftNames = await fs.readdir(draftsRoot);
-            expect(draftNames).to.have.length(1);
-            expect(
-                await fs.readFile(
-                    path.join(draftsRoot, draftNames[0], "SKILL.md"),
-                    "utf8"
-                )
-            ).to.equal(skillMarkdown("Local edit"));
         } finally {
             await server.close();
         }

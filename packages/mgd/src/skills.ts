@@ -13,11 +13,17 @@ export const AGENT_NAMES: readonly AgentName[] = [
 
 export type Scope = "global" | "project";
 
-export type AgentSkillProjectionMode = "symlink" | "copy";
+export type AgentSkillTargetHarness =
+    | "claude"
+    | "codex"
+    | "opencode"
+    | "dsh"
+    | "custom";
 
-export interface AgentSkillProjectionTarget {
+/** A flat harness skill root that receives independent real-directory copies. */
+export interface AgentSkillTarget {
     root: string;
-    mode: AgentSkillProjectionMode;
+    harness: AgentSkillTargetHarness;
 }
 
 export interface InstallResult {
@@ -93,47 +99,55 @@ function harnessIsInstalled(
     );
 }
 
-// Resolve the flat roots where downloaded Agent Skills should be projected.
-// A caller-provided root is the Workspace/Sandbox contract and deliberately
-// suppresses local multi-harness projection. Native harness roots can use
-// per-skill directory links; DSH gets a real-directory copy fallback. If roots
-// overlap, keep one target and prefer the safer copy mode.
-export function resolveAgentSkillProjectionTargets(opts: {
+// Resolve the flat roots where synchronized Agent Skills are installed. Every
+// target receives its own independent real-directory copy (no links). A
+// caller-provided root is the Workspace/Sandbox contract and deliberately
+// suppresses local multi-harness installation. Overlapping roots are kept once.
+export function resolveAgentSkillTargets(opts: {
     env: NodeJS.ProcessEnv;
-}): AgentSkillProjectionTarget[] {
+}): AgentSkillTarget[] {
     const { env } = opts;
     if (env.MGD_AGENT_SKILL_DIR) {
         return [
-            {
-                root: path.resolve(env.MGD_AGENT_SKILL_DIR),
-                mode: "copy"
-            }
+            { root: path.resolve(env.MGD_AGENT_SKILL_DIR), harness: "custom" }
         ];
     }
 
-    const targets: AgentSkillProjectionTarget[] = AGENT_NAMES.map((agent) => ({
-        agent,
+    const targets: AgentSkillTarget[] = AGENT_NAMES.map((agent) => ({
+        harness: agent as AgentSkillTargetHarness,
         root: path.resolve(resolveGlobalSkillRoot(agent, env))
-    }))
-        .filter(({ agent, root }) => harnessIsInstalled(agent, root, env))
-        .map(({ root }) => ({ root, mode: "symlink" as const }));
+    })).filter(({ harness, root }) =>
+        harnessIsInstalled(harness as AgentName, root, env)
+    );
     if (env.DSH_HOME) {
         targets.push({
             root: path.resolve(env.DSH_HOME, "skills"),
-            mode: "copy"
+            harness: "dsh"
         });
     }
 
-    const deduplicated = new Map<string, AgentSkillProjectionTarget>();
+    const deduplicated = new Map<string, AgentSkillTarget>();
     for (const target of targets) {
-        const existing = deduplicated.get(target.root);
-        if (!existing) {
+        if (!deduplicated.has(target.root))
             deduplicated.set(target.root, target);
-        } else if (target.mode === "copy") {
-            existing.mode = "copy";
-        }
     }
     return [...deduplicated.values()];
+}
+
+/** The single Workspace/Sandbox DSH root selected by the trusted runtime. */
+export function resolveWorkspaceAgentSkillTarget(
+    env: NodeJS.ProcessEnv
+): AgentSkillTarget {
+    if (env.MGD_AGENT_SKILL_DIR)
+        return {
+            root: path.resolve(env.MGD_AGENT_SKILL_DIR),
+            harness: "custom"
+        };
+    if (env.DSH_HOME)
+        return { root: path.resolve(env.DSH_HOME, "skills"), harness: "dsh" };
+    throw new Error(
+        "Agent Workspace skill root is not configured (DSH_HOME or MGD_AGENT_SKILL_DIR)"
+    );
 }
 
 // Where mgd <= 6.1.x installed the GLOBAL Codex skill: ${CODEX_HOME:-~/.codex}/skills.

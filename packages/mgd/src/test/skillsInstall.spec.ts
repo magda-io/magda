@@ -9,7 +9,7 @@ import {
     uninstallSkill,
     resolveSkillDir,
     resolveGlobalSkillRoot,
-    resolveAgentSkillProjectionTargets,
+    resolveAgentSkillTargets,
     parseAgents,
     packageSkillsDir,
     AGENT_NAMES
@@ -93,53 +93,53 @@ describe("skills install", () => {
         );
     });
 
-    it("resolves native projection roots and a configured DSH copy fallback", () => {
+    it("resolves native harness roots and DSH as independent copy targets", () => {
         env.DSH_HOME = path.join(tmp, "dsh");
-        expect(resolveAgentSkillProjectionTargets({ env })).to.deep.equal([
+        expect(resolveAgentSkillTargets({ env })).to.deep.equal([
             {
                 root: path.join(tmp, ".claude", "skills"),
-                mode: "symlink"
+                harness: "claude"
             },
             {
                 root: path.join(tmp, ".agents", "skills"),
-                mode: "symlink"
+                harness: "codex"
             },
             {
                 root: path.join(tmp, "xdg", "opencode", "skills"),
-                mode: "symlink"
+                harness: "opencode"
             },
             {
                 root: path.join(tmp, "dsh", "skills"),
-                mode: "copy"
+                harness: "dsh"
             }
         ]);
     });
 
-    it("deduplicates projection roots and prefers copy mode", () => {
+    it("deduplicates overlapping harness roots", () => {
         env.DSH_HOME = path.join(tmp, ".agents");
-        expect(resolveAgentSkillProjectionTargets({ env })).to.deep.equal([
+        expect(resolveAgentSkillTargets({ env })).to.deep.equal([
             {
                 root: path.join(tmp, ".claude", "skills"),
-                mode: "symlink"
+                harness: "claude"
             },
             {
                 root: path.join(tmp, ".agents", "skills"),
-                mode: "copy"
+                harness: "codex"
             },
             {
                 root: path.join(tmp, "xdg", "opencode", "skills"),
-                mode: "symlink"
+                harness: "opencode"
             }
         ]);
     });
 
-    it("uses MGD_AGENT_SKILL_DIR as an explicit single copy target", () => {
+    it("uses MGD_AGENT_SKILL_DIR as an explicit single target", () => {
         env.MGD_AGENT_SKILL_DIR = path.join(tmp, "workspace-skills");
         env.DSH_HOME = path.join(tmp, "dsh");
-        expect(resolveAgentSkillProjectionTargets({ env })).to.deep.equal([
+        expect(resolveAgentSkillTargets({ env })).to.deep.equal([
             {
                 root: path.join(tmp, "workspace-skills"),
-                mode: "copy"
+                harness: "custom"
             }
         ]);
     });

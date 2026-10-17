@@ -13,7 +13,7 @@ import {
     AgentSkillRef,
     AgentSkillType,
     LocalSkillManifest,
-    WorkspaceSkillManifest
+    WorkspaceSkillManifestWithIdentity
 } from "./agentSkillTypes.js";
 
 const CHECKSUM = /^[0-9a-f]{64}$/;
@@ -116,15 +116,17 @@ export class AgentSkillClient {
         return item;
     }
 
-    async manifest(): Promise<WorkspaceSkillManifest> {
-        const value = await this.client.json<WorkspaceSkillManifest>(
-            "GET",
-            AGENT_SKILL_WORKSPACE_MANIFEST
-        );
+    async manifest(): Promise<WorkspaceSkillManifestWithIdentity> {
+        const value = await this.client.json<
+            WorkspaceSkillManifestWithIdentity
+        >("GET", AGENT_SKILL_WORKSPACE_MANIFEST);
         if (
             !value ||
             value.version !== 1 ||
             value.complete !== true ||
+            typeof value.identity?.tenantId !== "string" ||
+            typeof value.identity?.userId !== "string" ||
+            !value.identity.userId ||
             !Array.isArray(value.items) ||
             !Array.isArray(value.warnings)
         ) {
@@ -139,7 +141,9 @@ export class AgentSkillClient {
                 item.selectionId !== source.id ||
                 item.effectiveName !== source.name ||
                 (item.sourceKind === "system-publication") !==
-                    (source.type === "system")
+                    (source.type === "system") ||
+                (item.sourceKind === "own-user-publication" &&
+                    source.userId !== value.identity.userId)
             ) {
                 throw new Error("Invalid Agent Skill workspace manifest item");
             }

@@ -44,6 +44,11 @@ export interface WorkspaceSkillManifest {
     }>;
 }
 
+export interface WorkspaceSkillManifestWithIdentity
+    extends WorkspaceSkillManifest {
+    identity: { tenantId: string; userId: string };
+}
+
 export interface LocalSkillManifest {
     version: 1;
     complete: true;
@@ -76,6 +81,18 @@ export interface AgentSkillSyncItemResult {
         | "skipped"
         | "failed";
     code?: string;
+    /** Installation target, when the item concerns one harness copy. */
+    harness?: string;
+    path?: string;
+}
+
+export interface AgentSkillSyncConflict {
+    name: string;
+    harness: string;
+    path: string;
+    reason: string;
+    detail?: string;
+    remedy: string;
 }
 
 export interface AgentSkillSyncResult {
@@ -83,6 +100,11 @@ export interface AgentSkillSyncResult {
     counts: AgentSkillSyncCounts;
     items: AgentSkillSyncItemResult[];
     manifestWarnings: number;
+    /** True when preflight conflicts prevented every installation change. */
+    blocked?: boolean;
+    conflicts?: AgentSkillSyncConflict[];
+    /** User data intentionally left in place (legacy drafts, edited projections). */
+    retainedPaths?: string[];
 }
 
 export function parseAgentSkillRef(value: string): AgentSkillRef {

@@ -4,7 +4,7 @@ import { WHOAMI } from "../endpoints.js";
 import { loadConfig, resolveProfile, noProfileError } from "../profile.js";
 import { note, colors, printData, resolveMode } from "../output.js";
 import { createProfile } from "./profileSetup.js";
-import { recoverAgentSkillProfileTransition } from "../agentSkillProfileTransition.js";
+import { recoverAgentSkillOperations } from "../agentSkillSync.js";
 
 // Re-exported for back-compat with existing imports/tests; the implementation
 // now lives with the shared profile-setup helpers.
@@ -45,7 +45,7 @@ export function registerAuthCommands(program: Command): void {
         .description("Show the active profile and authenticated user")
         .option("--json", "output JSON")
         .action(async (opts) => {
-            await recoverAgentSkillProfileTransition();
+            await recoverAgentSkillOperations();
             const cfg = await loadConfig();
             const { name, profile } = resolveProfile(cfg);
             if (!profile?.baseUrl) {

@@ -109,6 +109,19 @@ assert.match(
 );
 assert.match(
     dockerfile,
+    /XDG_DATA_HOME=\/data\//,
+    "mgd Agent Skill installation index and verified caches must persist on the Workspace volume"
+);
+assert.doesNotMatch(
+    await readFile(
+        new URL("../packages/mgd/src/agentSkillReconcile.ts", import.meta.url),
+        "utf8"
+    ),
+    /python|child_process/,
+    "Agent Skill synchronization must use only portable Node.js filesystem APIs"
+);
+assert.match(
+    dockerfile,
     /deepseek-harness.*agent-harness/s,
     "The pinned DSH default workspace path must be renamed during the image build"
 );

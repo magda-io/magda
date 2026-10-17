@@ -5,25 +5,11 @@ import { loadConfig, saveConfig, Profile } from "../profile.js";
 import { promptText, promptHidden } from "../prompt.js";
 import { note, colors } from "../output.js";
 import {
-    commitAgentSkillProfileTransition,
-    recoverAgentSkillProfileTransition
-} from "../agentSkillProfileTransition.js";
-import { withAgentSkillStateLock } from "../agentSkillState.js";
-import type { AgentSkillSourceIdentity } from "../agentSkillLocalState.js";
-
-function cachedIdentity(
-    profile: Profile | undefined
-): AgentSkillSourceIdentity | undefined {
-    const cached = profile?.agentSkillSource;
-    return cached
-        ? {
-              key: cached.key,
-              canonicalBaseUrl: cached.canonicalBaseUrl,
-              tenantId: cached.tenantId,
-              userId: cached.userId
-          }
-        : undefined;
-}
+    activateCachedAgentSkillProfile,
+    recoverAgentSkillOperations,
+    withAgentSkillOperationLock
+} from "../agentSkillSync.js";
+import { printAgentSkillSyncResult } from "./agentSkillOutput.js";
 
 export async function normalizeBaseUrl(
     input: string,
@@ -82,7 +68,7 @@ export async function createProfile(
     name: string,
     opts: CredentialOptions
 ): Promise<void> {
-    await recoverAgentSkillProfileTransition();
+    await recoverAgentSkillOperations();
     const cfg = await loadConfig();
     if (cfg.profiles[name]) {
         throw new UsageError(
@@ -110,27 +96,25 @@ export async function createProfile(
     };
     const user = await verifyCredentials(profile);
 
-    await withAgentSkillStateLock(async () => {
-        await recoverAgentSkillProfileTransition({ alreadyLocked: true });
+    const activation = await withAgentSkillOperationLock(async () => {
         const latest = await loadConfig();
         if (latest.profiles[name]) {
             throw new UsageError(
                 `Profile "${name}" was created concurrently; retry with another name.`
             );
         }
-        const previousName = latest.activeProfile || "default";
-        const previousIdentity = cachedIdentity(latest.profiles[previousName]);
         latest.profiles[name] = profile;
+        const inactive = JSON.parse(JSON.stringify(latest));
         latest.activeProfile = name;
-        await commitAgentSkillProfileTransition(
-            {
-                fromProfile: previousName,
-                fromSource: previousIdentity,
-                toProfile: name,
-                finalConfig: latest
-            },
-            { alreadyLocked: true }
-        );
+        // The new profile has no verified Agent Skill cache: managed skills
+        // of the previous profile are deactivated, subject to preflight.
+        const switched = await activateCachedAgentSkillProfile({
+            profileName: name,
+            force: false,
+            finalConfig: latest
+        });
+        if (switched.result.blocked) await saveConfig(inactive);
+        return switched.result;
     });
 
     note(
@@ -138,6 +122,12 @@ export async function createProfile(
             `Created profile "${name}" for ${baseUrl}${identityLabel(user)}.`
         )
     );
+    if (activation.blocked) {
+        printAgentSkillSyncResult(activation, {}, "Profile activation");
+        note(
+            `Profile "${name}" was saved but not activated. Resolve the paths above, or run \`mgd profile use ${name} --force\`.`
+        );
+    }
 }
 
 /**
@@ -159,7 +149,7 @@ export async function updateProfile(
         );
     }
 
-    await recoverAgentSkillProfileTransition();
+    await recoverAgentSkillOperations();
     const cfg = await loadConfig();
     const existing = cfg.profiles[name];
     if (!existing) {
@@ -186,8 +176,7 @@ export async function updateProfile(
     // a previously verified Agent Skill source until the next online sync.
     delete next.agentSkillSource;
 
-    await withAgentSkillStateLock(async () => {
-        await recoverAgentSkillProfileTransition({ alreadyLocked: true });
+    const deactivation = await withAgentSkillOperationLock(async () => {
         const latest = await loadConfig();
         if (
             JSON.stringify(latest.profiles[name]) !== JSON.stringify(existing)
@@ -198,19 +187,20 @@ export async function updateProfile(
         }
         const updatesActive = (latest.activeProfile || "default") === name;
         latest.profiles[name] = next;
-        if (updatesActive) {
-            await commitAgentSkillProfileTransition(
-                {
-                    fromProfile: name,
-                    fromSource: cachedIdentity(existing),
-                    toProfile: name,
-                    finalConfig: latest
-                },
-                { alreadyLocked: true }
-            );
-        } else {
+        if (!updatesActive) {
             await saveConfig(latest);
+            return undefined;
         }
+        // The account may have changed: deactivate the previously verified
+        // source's installations until the next online sync verifies again.
+        const switched = await activateCachedAgentSkillProfile({
+            profileName: name,
+            force: false,
+            finalConfig: latest
+        });
+        // Credentials are saved regardless; conflicting copies stay in place.
+        if (switched.result.blocked) await saveConfig(latest);
+        return switched.result;
     });
 
     note(
@@ -218,4 +208,10 @@ export async function updateProfile(
             `Updated profile "${name}" (${next.baseUrl}${identityLabel(user)}).`
         )
     );
+    if (deactivation?.blocked) {
+        printAgentSkillSyncResult(deactivation, {}, "Agent Skill deactivation");
+        note(
+            "Previously installed Agent Skills were left in place. Run `mgd agent-skill sync` (or with --force) to reconcile them for the updated profile."
+        );
+    }
 }

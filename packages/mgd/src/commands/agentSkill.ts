@@ -1,46 +1,66 @@
 import path from "node:path";
-import { lstat, mkdir, rename, rm, stat, writeFile } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import {
+    lstat,
+    mkdir,
+    readFile,
+    realpath,
+    stat,
+    writeFile
+} from "node:fs/promises";
 import { Command, Option } from "commander";
 import { clientFor, clientFromProfile } from "../client.js";
 import { AgentSkillClient } from "../agentSkillClient.js";
 import {
     AgentSkillListType,
-    AgentSkillRef,
     AgentSkillType,
     parseAgentSkillRef
 } from "../agentSkillTypes.js";
 import {
+    AGENT_SKILL_INSTALL_MARKER,
     createAgentSkillArchive,
+    createAgentSkillArchiveFromInstallation,
     extractAgentSkillArchive,
     validateAgentSkillArchive,
     validateAgentSkillDirectory,
     validateAgentSkillNameForType
 } from "../agentSkillArchive.js";
+import { assertRealManagedAncestors } from "../agentSkillState.js";
 import {
-    ensureRealDirectory,
-    withAgentSkillStateLock
-} from "../agentSkillState.js";
-import { syncAgentSkills as syncWorkspaceAgentSkills } from "../agentSkillSync.js";
-import { syncLocalAgentSkills } from "../agentSkillLocalSync.js";
-import { recoverAgentSkillProfileTransition } from "../agentSkillProfileTransition.js";
+    cachedDesired,
+    reconcileResult,
+    recoverAgentSkillOperations,
+    syncLocalAgentSkills,
+    syncWorkspaceAgentSkills,
+    withAgentSkillOperationLock
+} from "../agentSkillSync.js";
+import {
+    reconcileAgentSkillInstallations,
+    writeInstallMarker
+} from "../agentSkillReconcile.js";
+import type { AgentSkillInstallation } from "../agentSkillLocalState.js";
+import {
+    agentSkillArchivePath,
+    canonicalMagdaBaseUrl,
+    createAgentSkillSourceIdentity,
+    findAgentSkillWorkingDirectory,
+    loadAgentSkillInstallationIndex,
+    loadAgentSkillSourceState,
+    markerMatchesInstallation,
+    saveAgentSkillInstallationIndex,
+    saveAgentSkillSourceState,
+    sourceStateKey,
+    writeFileAtomically
+} from "../agentSkillLocalState.js";
+import { resolveAgentSkillTargets } from "../skills.js";
 import {
     loadConfig,
     noProfileError,
     resolveProfileSelection,
     saveConfig
 } from "../profile.js";
-import {
-    canonicalMagdaBaseUrl,
-    createAgentSkillSourceIdentity,
-    findTrackedAgentSkillDraft,
-    loadAgentSkillSourceState,
-    saveAgentSkillSourceState,
-    sourceStateKey
-} from "../agentSkillLocalState.js";
-import { activateAgentSkillSource } from "../agentSkillProjection.js";
-import { UsageError } from "../errors.js";
+import { MgdApiError, UsageError } from "../errors.js";
 import { note, printData, resolveMode } from "../output.js";
+import { printAgentSkillSyncResult } from "./agentSkillOutput.js";
 
 const typeOption = (includeAll = false) =>
     new Option("--type <type>", "published Agent Skill type")
@@ -127,71 +147,168 @@ async function isTrustedWorkspaceRuntime(): Promise<boolean> {
     }
 }
 
-async function pathExists(target: string): Promise<boolean> {
-    try {
-        await stat(target);
-        return true;
-    } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
-        throw error;
-    }
+async function canonicalPath(target: string): Promise<string> {
+    return realpath(target).catch(() => path.resolve(target));
 }
 
-async function reconcileDeletedAgentSkill(
-    ref: AgentSkillRef,
-    context: Awaited<ReturnType<typeof verifiedLocalSource>>
+/**
+ * Recognize an installed copy: an indexed path that is a real directory with
+ * real ancestors and a regular marker exactly matching the index entry. Only
+ * then may the marker be excluded from validation and publication.
+ */
+async function recognizeInstallation(
+    directory: string
+): Promise<AgentSkillInstallation | undefined> {
+    const absolute = path.resolve(directory);
+    const actual = await canonicalPath(absolute);
+    const index = await loadAgentSkillInstallationIndex();
+    let installation: AgentSkillInstallation | undefined;
+    for (const item of Object.values(index.installations)) {
+        if (
+            item.path === absolute ||
+            (await canonicalPath(item.path)) === actual
+        ) {
+            installation = item;
+            break;
+        }
+    }
+    const marker = path.join(absolute, AGENT_SKILL_INSTALL_MARKER);
+    const markerStat = await lstat(marker).catch(() => undefined);
+    if (!installation || !markerStat) {
+        if (markerStat)
+            throw new UsageError(
+                `${absolute} contains ${AGENT_SKILL_INSTALL_MARKER} but is not a recognized installation. Run \`mgd agent-skill sync\` to repair it, or remove that file from your copy.`
+            );
+        return undefined;
+    }
+    await assertRealManagedAncestors(installation.path);
+    const directoryStat = await lstat(installation.path);
+    if (
+        directoryStat.isSymbolicLink() ||
+        !directoryStat.isDirectory() ||
+        markerStat.isSymbolicLink() ||
+        !markerStat.isFile() ||
+        !markerMatchesInstallation(await readFile(marker), installation)
+    )
+        throw new UsageError(
+            `${absolute} has stale or unsafe installation metadata. Run \`mgd agent-skill sync\` to repair it before publishing.`
+        );
+    return installation;
+}
+
+async function publishInstallation(
+    installation: AgentSkillInstallation,
+    opts: { type: AgentSkillType; force?: boolean; json?: boolean }
 ): Promise<void> {
-    const { identity, state, selection } = context;
-    const key = sourceStateKey(ref);
-    const current = state.entries[key];
-    if (current && (await pathExists(current.libraryDir))) {
-        let treeDigest = current.installedTreeDigest;
-        let localChanged = true;
-        try {
-            const inspected = await validateAgentSkillDirectory(
-                current.libraryDir,
-                ref.type
-            );
-            treeDigest = inspected.treeDigest;
-            localChanged = treeDigest !== current.installedTreeDigest;
-        } catch {
-            // Invalid local content remains user data and is preserved.
-        }
-        if (localChanged) {
-            const draftsRoot = path.join(
-                path.dirname(path.dirname(current.libraryDir)),
-                "drafts",
-                "deleted"
-            );
-            await ensureRealDirectory(draftsRoot);
-            const draftDir = path.join(
-                draftsRoot,
-                `${current.name}-${Date.now()}-${randomUUID().slice(0, 8)}`
-            );
-            await rename(current.libraryDir, draftDir);
-            state.drafts[draftDir] = {
-                type: current.ref.type,
-                name: current.name,
-                treeDigest
-            };
-        } else {
-            await rm(current.libraryDir, { recursive: true, force: true });
-        }
-        await rm(current.archiveFile, { force: true });
+    if (installation.sourceKind !== "own-user-publication") {
+        throw new UsageError(
+            installation.ref.type === "system"
+                ? `This is an installed copy of ${installation.ref.type}/${installation.ref.id}. Installed system skills are not published from their installation; use \`mgd agent-skill pull ${installation.ref.type}/${installation.ref.id}\` and publish that working directory with --type system.`
+                : "Publishing a modified installed shared skill is not supported yet."
+        );
     }
-    delete state.entries[key];
-    for (const draft of Object.values(state.drafts)) {
-        if (draft.ref?.type === ref.type && draft.ref.id === ref.id) {
-            delete draft.ref;
-            delete draft.baseChecksum;
-        }
+    if (opts.type !== "user")
+        throw new UsageError(
+            "This installed copy is your own user publication; publish it with --type user"
+        );
+    const candidate = await createAgentSkillArchiveFromInstallation(
+        installation.path,
+        "user"
+    );
+    if (candidate.name !== installation.name)
+        throw new UsageError(
+            `SKILL.md name "${candidate.name}" no longer matches the installed publication "${installation.name}". Copy the directory elsewhere (without ${AGENT_SKILL_INSTALL_MARKER}) to publish it as a new skill.`
+        );
+    const client = await api();
+    const { identity, state } = await verifiedLocalSource(client);
+    if (installation.sourceKey !== identity.key)
+        throw new UsageError(
+            "This installed copy belongs to another MAGDA instance or account; switch to that profile before publishing it"
+        );
+    let expected = installation.baselineChecksum;
+    let metadata;
+    try {
+        if (opts.force)
+            expected = (await client.show(installation.ref)).checksum;
+        metadata = await client.replace(
+            installation.ref,
+            candidate.bytes,
+            expected
+        );
+    } catch (error) {
+        if (error instanceof MgdApiError && error.status === 404)
+            throw new UsageError(
+                `The publication ${installation.ref.type}/${installation.ref.id} no longer exists remotely; it was not recreated. To publish this content as a new skill, copy the directory elsewhere without ${AGENT_SKILL_INSTALL_MARKER} and run \`mgd agent-skill publish <copy>\`.`
+            );
+        if (error instanceof MgdApiError && error.status === 412)
+            throw new UsageError(
+                "The publication changed remotely since this copy was installed. Run `mgd agent-skill sync` to review, or rerun with --force to overwrite your newer publication."
+            );
+        throw error;
     }
-    await saveAgentSkillSourceState(state);
-    if (selection.mayActivateSkills) {
-        await activateAgentSkillSource(identity, selection.name, {
-            alreadyLocked: true
+    // The server accepted the content. Local bookkeeping failures below must
+    // not make a successful publication appear to have failed.
+    let localUpdated = false;
+    try {
+        if (metadata.checksum === candidate.archiveSha256) {
+            const ref = { type: metadata.type, id: metadata.id };
+            const key = sourceStateKey(ref);
+            const archiveFile = agentSkillArchivePath(
+                identity,
+                ref,
+                metadata.checksum
+            );
+            await writeFileAtomically(archiveFile, candidate.bytes);
+            const now = new Date().toISOString();
+            if (state.snapshot?.items[key]) {
+                state.snapshot.items[key] = {
+                    ...state.snapshot.items[key],
+                    description: metadata.description,
+                    checksum: metadata.checksum,
+                    treeDigest: candidate.treeDigest,
+                    archiveFile,
+                    verifiedAt: now
+                };
+                delete state.snapshot.items[key].unresolved;
+                await saveAgentSkillSourceState(state);
+            }
+            const index = await loadAgentSkillInstallationIndex();
+            const current = Object.values(index.installations).find(
+                (item) => item.installationId === installation.installationId
+            );
+            if (current) {
+                current.baselineChecksum = metadata.checksum;
+                current.baselineTreeDigest = candidate.treeDigest;
+                current.updatedAt = now;
+                await saveAgentSkillInstallationIndex(index);
+                await writeInstallMarker(current.path, current);
+                localUpdated = true;
+            }
+        }
+    } catch {
+        localUpdated = false;
+    }
+    if (opts.json) {
+        printData("json", {
+            ...metadata,
+            installation: {
+                harness: installation.harness,
+                path: installation.path,
+                baselineUpdated: localUpdated
+            }
         });
+        return;
     }
+    note(
+        `Published ${metadata.type}/${metadata.id} from ${installation.harness} copy ${installation.path}.`
+    );
+    if (!localUpdated)
+        note(
+            "The local installation baseline could not be updated; run `mgd agent-skill sync` to repair it."
+        );
+    note(
+        "Other harness copies were not changed. Run `mgd agent-skill sync` to update them."
+    );
 }
 
 export function registerAgentSkillCommands(program: Command): void {
@@ -271,7 +388,7 @@ export function registerAgentSkillCommands(program: Command): void {
             if (opts.json) printData("json", result);
             else
                 note(
-                    `Created local Agent Skill draft at ${directory}. It has not been published.`
+                    `Created local Agent Skill working directory at ${directory}. It has not been published.`
                 );
         });
 
@@ -279,10 +396,16 @@ export function registerAgentSkillCommands(program: Command): void {
         .addOption(typeOption())
         .option("--json")
         .action(async (directory: string, opts) => {
-            const result = await validateAgentSkillDirectory(
-                path.resolve(directory),
-                opts.type
-            );
+            const installation = await recognizeInstallation(directory);
+            const result = installation
+                ? await createAgentSkillArchiveFromInstallation(
+                      installation.path,
+                      opts.type
+                  ).then(({ bytes, ...rest }) => rest)
+                : await validateAgentSkillDirectory(
+                      path.resolve(directory),
+                      opts.type
+                  );
             if (opts.json) printData("json", result);
             else
                 note(
@@ -292,20 +415,28 @@ export function registerAgentSkillCommands(program: Command): void {
 
     root.command("publish <local-dir>")
         .addOption(typeOption())
-        .option("--force", "replace a remotely changed tracked publication")
+        .option(
+            "--force",
+            "overwrite your own publication even if it changed remotely"
+        )
         .option("--json")
         .action(async (directory: string, opts) => {
-            await withAgentSkillStateLock(async () => {
+            await withAgentSkillOperationLock(async () => {
                 const absolute = path.resolve(directory);
-                const globallyTracked = await findTrackedAgentSkillDraft(
+                const installation = await recognizeInstallation(absolute);
+                if (installation) {
+                    await publishInstallation(installation, opts);
+                    return;
+                }
+                const globallyTracked = await findAgentSkillWorkingDirectory(
                     absolute
                 );
                 if (
                     globallyTracked &&
-                    globallyTracked.draft.type !== opts.type
+                    globallyTracked.directory.type !== opts.type
                 ) {
                     throw new UsageError(
-                        `Tracked ${globallyTracked.draft.type} publication requires explicit --type ${globallyTracked.draft.type}`
+                        `Tracked ${globallyTracked.directory.type} publication requires explicit --type ${globallyTracked.directory.type}`
                     );
                 }
                 const candidate = await createAgentSkillArchive(
@@ -324,23 +455,22 @@ export function registerAgentSkillCommands(program: Command): void {
                     globallyTracked.sourceKey !== identity.key
                 ) {
                     throw new UsageError(
-                        "This draft is tracked against another MAGDA instance/account; pull or copy it into an untracked directory before publishing here"
+                        "This working directory is tracked against another MAGDA instance/account; pull or copy it into an untracked directory before publishing here"
                     );
                 }
-                const draft = state.drafts[absolute];
-                if (draft?.ref && draft.type !== opts.type) {
+                const tracked = state.workingDirectories[absolute];
+                if (tracked?.ref && tracked.type !== opts.type) {
                     throw new UsageError(
-                        `Tracked ${draft.type} publication requires explicit --type ${draft.type}`
+                        `Tracked ${tracked.type} publication requires explicit --type ${tracked.type}`
                     );
                 }
-                const tracked = !!draft?.ref && !!draft.baseChecksum;
                 let metadata;
-                if (draft?.ref && draft.baseChecksum) {
-                    let expected = draft.baseChecksum;
+                if (tracked?.ref && tracked.baseChecksum) {
+                    let expected = tracked.baseChecksum;
                     if (opts.force)
-                        expected = (await client.show(draft.ref)).checksum;
+                        expected = (await client.show(tracked.ref)).checksum;
                     metadata = await client.replace(
-                        draft.ref,
+                        tracked.ref,
                         candidate.bytes,
                         expected
                     );
@@ -348,7 +478,7 @@ export function registerAgentSkillCommands(program: Command): void {
                     metadata = await client.create(opts.type, candidate.bytes);
                 }
                 const ref = { type: metadata.type, id: metadata.id };
-                state.drafts[absolute] = {
+                state.workingDirectories[absolute] = {
                     type: metadata.type,
                     name: metadata.name,
                     ref,
@@ -357,7 +487,12 @@ export function registerAgentSkillCommands(program: Command): void {
                 };
                 await saveAgentSkillSourceState(state);
                 if (opts.json) printData("json", metadata);
-                else note(`Published ${metadata.type}/${metadata.id}.`);
+                else {
+                    note(`Published ${metadata.type}/${metadata.id}.`);
+                    note(
+                        "Run `mgd agent-skill sync` to install or update it in your coding-agent harnesses."
+                    );
+                }
             });
         });
 
@@ -366,7 +501,7 @@ export function registerAgentSkillCommands(program: Command): void {
         .option("--json")
         .action(async (value: string, opts) => {
             const ref = parseAgentSkillRef(value);
-            await recoverAgentSkillProfileTransition();
+            await recoverAgentSkillOperations();
             const initialConfig = await loadConfig();
             const selection = resolveProfileSelection(initialConfig);
             if (!selection.profile) throw noProfileError(initialConfig);
@@ -391,7 +526,7 @@ export function registerAgentSkillCommands(program: Command): void {
                     "Downloaded archive does not match Agent Skill metadata"
                 );
             }
-            await withAgentSkillStateLock(async () => {
+            await withAgentSkillOperationLock(async () => {
                 if (
                     await stat(destination).then(
                         () => true,
@@ -417,7 +552,7 @@ export function registerAgentSkillCommands(program: Command): void {
                     ref.type,
                     destination
                 );
-                state.drafts[destination] = {
+                state.workingDirectories[destination] = {
                     type: ref.type,
                     name: downloaded.metadata.name,
                     ref,
@@ -430,46 +565,86 @@ export function registerAgentSkillCommands(program: Command): void {
             if (opts.json) printData("json", result);
             else
                 note(
-                    `Pulled ${value} to ${destination}. Local edits remain drafts until publish.`
+                    `Pulled ${value} to ${destination}. It is a separate working directory: edits stay local until you publish it.`
                 );
         });
 
     root.command("delete <ref>")
-        .option("--force")
+        .option("--force", "delete even if the publication changed remotely")
         .option("--json")
         .action(async (value: string, opts) => {
-            await withAgentSkillStateLock(async () => {
-                const ref = parseAgentSkillRef(value);
+            const ref = parseAgentSkillRef(value);
+            const workspaceMode = await isTrustedWorkspaceRuntime();
+            const local = await withAgentSkillOperationLock(async () => {
                 const client = await api();
-                const context = await verifiedLocalSource(client);
-                const { state } = context;
+                const {
+                    identity,
+                    state,
+                    selection
+                } = await verifiedLocalSource(client);
+                const key = sourceStateKey(ref);
                 const trackedChecksum =
-                    Object.values(state.drafts).find(
-                        (draft) =>
-                            draft.ref?.type === ref.type &&
-                            draft.ref.id === ref.id &&
-                            draft.baseChecksum
-                    )?.baseChecksum ||
-                    state.entries[sourceStateKey(ref)]?.remoteChecksum;
+                    Object.values(state.workingDirectories).find(
+                        (item) =>
+                            item.ref?.type === ref.type &&
+                            item.ref.id === ref.id &&
+                            item.baseChecksum
+                    )?.baseChecksum || state.snapshot?.items[key]?.checksum;
                 const expectedChecksum =
                     opts.force || !trackedChecksum
                         ? (await client.show(ref)).checksum
                         : trackedChecksum;
                 await client.delete(ref, expectedChecksum);
-                await reconcileDeletedAgentSkill(ref, context);
-                const result = {
-                    ref,
-                    deleted: true,
-                    localDraftsPreserved: true
-                };
-                if (opts.json) printData("json", result);
-                else note(`Deleted ${value}; local drafts were preserved.`);
+                // Working directories stay in place as untracked user data.
+                for (const item of Object.values(state.workingDirectories))
+                    if (item.ref?.type === ref.type && item.ref.id === ref.id) {
+                        delete item.ref;
+                        delete item.baseChecksum;
+                    }
+                if (state.snapshot?.items[key])
+                    delete state.snapshot.items[key];
+                await saveAgentSkillSourceState(state);
+                if (workspaceMode || !selection.mayActivateSkills)
+                    return undefined;
+                // Retire installed copies through the shared engine; edited
+                // copies are conflicts and stay in place without --force.
+                const { desired, unresolved } = cachedDesired(state);
+                const outcome = await reconcileAgentSkillInstallations({
+                    sourceKey: identity.key,
+                    desired,
+                    unresolved,
+                    force: false,
+                    targets: resolveAgentSkillTargets({ env: process.env })
+                });
+                return reconcileResult(outcome);
             });
+            const result = {
+                ref,
+                deleted: true,
+                ...(local ? { local } : {})
+            };
+            if (opts.json) printData("json", result);
+            else {
+                note(`Deleted ${value}.`);
+                if (local)
+                    printAgentSkillSyncResult(
+                        local,
+                        {},
+                        "Local installation cleanup"
+                    );
+                else
+                    note(
+                        "Run `mgd agent-skill sync` to remove installed copies of this skill."
+                    );
+            }
         });
 
     root.command("sync")
         .addOption(typeOption(true))
-        .option("--force")
+        .option(
+            "--force",
+            "discard conflicting local changes in matching skill directories"
+        )
         .option("--json")
         .option("--jsonl")
         .addOption(
@@ -502,7 +677,7 @@ export function registerAgentSkillCommands(program: Command): void {
                       !!opts.force
                   )
                 : await (async () => {
-                      await recoverAgentSkillProfileTransition();
+                      await recoverAgentSkillOperations();
                       const cfg = await loadConfig();
                       const selection = resolveProfileSelection(cfg);
                       if (!selection.profile?.baseUrl)
@@ -524,37 +699,11 @@ export function registerAgentSkillCommands(program: Command): void {
                               : undefined
                       });
                   })();
-            const mode = resolveMode(opts);
-            if (mode === "human") {
-                note(
-                    `Agent Skill sync ${result.status}: ${JSON.stringify(
-                        result.counts
-                    )}`
-                );
-            } else if (mode === "jsonl") {
-                printData(mode, result, [
-                    {
-                        kind: "summary",
-                        status: result.status,
-                        counts: result.counts,
-                        manifestWarnings: result.manifestWarnings
-                    },
-                    ...result.items
-                ]);
-            } else {
-                printData(
-                    mode,
-                    opts.workspaceStatus
-                        ? {
-                              status: result.status,
-                              counts: result.counts,
-                              manifestWarnings: result.manifestWarnings
-                          }
-                        : result,
-                    result.items
-                );
-            }
-            if (result.status === "failed" && !opts.workspaceStatus) {
+            printAgentSkillSyncResult(result, opts);
+            if (
+                (result.status === "failed" || result.blocked) &&
+                !opts.workspaceStatus
+            ) {
                 process.exitCode = 1;
             }
         });

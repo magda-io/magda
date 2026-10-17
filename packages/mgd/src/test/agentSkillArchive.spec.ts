@@ -4,9 +4,12 @@ import os from "node:os";
 import path from "node:path";
 import { ZipFile } from "yazl";
 import {
+    AGENT_SKILL_INSTALL_MARKER,
     AgentSkillArchiveError,
     DEFAULT_AGENT_SKILL_ARCHIVE_LIMITS,
     createAgentSkillArchive,
+    createAgentSkillArchiveFromInstallation,
+    inspectInstalledAgentSkill,
     extractAgentSkillArchiveAtomically,
     parseAgentSkillMarkdown,
     validateAgentSkillArchive,
@@ -671,5 +674,135 @@ describe("Agent Skill archive", () => {
             "parent"
         );
         expect(await fs.readdir(outside)).to.deep.equal([]);
+    });
+
+    describe("reserved local installation marker", () => {
+        async function skillDirectory(
+            name: string,
+            markdown: string,
+            extra: Record<string, string> = {}
+        ) {
+            const directory = path.join(temporaryDirectory, name);
+            await fs.mkdir(directory, { recursive: true });
+            await fs.writeFile(path.join(directory, "SKILL.md"), markdown);
+            for (const [file, content] of Object.entries(extra)) {
+                await fs.mkdir(path.dirname(path.join(directory, file)), {
+                    recursive: true
+                });
+                await fs.writeFile(path.join(directory, file), content);
+            }
+            return directory;
+        }
+
+        async function rejects(promise: Promise<unknown>, pattern: RegExp) {
+            let caught: unknown;
+            try {
+                await promise;
+            } catch (error) {
+                caught = error;
+            }
+            expect(caught).to.be.instanceOf(AgentSkillArchiveError);
+            expect((caught as Error).message).to.match(pattern);
+        }
+
+        it("rejects the marker in raw directories of either type, in any case", async () => {
+            const user = await skillDirectory("user", userSkill, {
+                [AGENT_SKILL_INSTALL_MARKER]: "{}"
+            });
+            const system = await skillDirectory("system", systemSkill, {
+                ".MAGDA-Skill-Install.json": "{}"
+            });
+            await rejects(
+                validateAgentSkillDirectory(user, "user"),
+                /reserved/
+            );
+            await rejects(createAgentSkillArchive(user, "user"), /reserved/);
+            await rejects(
+                validateAgentSkillDirectory(system, "system"),
+                /reserved/
+            );
+        });
+
+        it("rejects remotely supplied ZIPs carrying the marker", async () => {
+            for (const [type, markdown] of [
+                ["user", userSkill],
+                ["system", systemSkill]
+            ] as const) {
+                const archive = await zip([
+                    { name: "SKILL.md", content: markdown },
+                    { name: AGENT_SKILL_INSTALL_MARKER, content: "{}" }
+                ]);
+                await rejects(
+                    validateAgentSkillArchive(archive, type),
+                    /must not contain/
+                );
+            }
+        });
+
+        it("excludes exactly the root marker of a recognized installation", async () => {
+            const plain = await skillDirectory("plain", userSkill, {
+                "reference.md": "# Ref"
+            });
+            const installed = await skillDirectory("installed", userSkill, {
+                "reference.md": "# Ref",
+                [AGENT_SKILL_INSTALL_MARKER]: "{}"
+            });
+            const expected = await createAgentSkillArchive(plain, "user");
+            const actual = await createAgentSkillArchiveFromInstallation(
+                installed,
+                "user"
+            );
+            expect(actual.archiveSha256).to.equal(expected.archiveSha256);
+            expect(actual.entries).to.deep.equal(["SKILL.md", "reference.md"]);
+
+            const nested = await skillDirectory("nested", systemSkill, {
+                [`docs/${AGENT_SKILL_INSTALL_MARKER}`]: "{}",
+                [AGENT_SKILL_INSTALL_MARKER]: "{}"
+            });
+            const withNested = await createAgentSkillArchiveFromInstallation(
+                nested,
+                "system"
+            );
+            expect(withNested.entries).to.deep.equal([
+                "SKILL.md",
+                `docs/${AGENT_SKILL_INSTALL_MARKER}`
+            ]);
+        });
+
+        it("inspects installed content with the publication digest, never following links", async function () {
+            const installed = await skillDirectory("installed", userSkill, {
+                "reference.md": "# Ref",
+                [AGENT_SKILL_INSTALL_MARKER]: '{"x":1}'
+            });
+            const published = await createAgentSkillArchiveFromInstallation(
+                installed,
+                "user"
+            );
+            const inspected = await inspectInstalledAgentSkill(
+                installed,
+                "user"
+            );
+            expect(inspected).to.deep.equal({
+                kind: "content",
+                digest: published.treeDigest,
+                marker: Buffer.from('{"x":1}')
+            });
+
+            await fs.writeFile(path.join(installed, "notes.txt"), "extra");
+            const extra = await inspectInstalledAgentSkill(installed, "user");
+            expect(extra.kind).to.equal("content");
+            expect((extra as { digest?: string }).digest).not.to.equal(
+                published.treeDigest
+            );
+
+            await fs.rm(path.join(installed, AGENT_SKILL_INSTALL_MARKER));
+            await fs.symlink(
+                path.join(installed, "reference.md"),
+                path.join(installed, AGENT_SKILL_INSTALL_MARKER)
+            );
+            expect(
+                (await inspectInstalledAgentSkill(installed, "user")).kind
+            ).to.equal("unsafe");
+        });
     });
 });

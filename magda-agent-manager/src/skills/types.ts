@@ -69,6 +69,11 @@ export interface WorkspaceSkillManifestWarning {
 export interface WorkspaceSkillManifest {
     version: 1;
     complete: true;
+    /** Authenticated caller; the CLI derives its account-isolated cache key. */
+    identity: {
+        tenantId: string;
+        userId: string;
+    };
     items: WorkspaceSkillManifestItem[];
     warnings: WorkspaceSkillManifestWarning[];
     sources: {

@@ -15,7 +15,8 @@
 #                      (default 2000); used only by the ingress-timeout counterfactual
 set -euo pipefail
 
-mkdir -p "$DSH_HOME" /data/workspace "${XDG_CONFIG_HOME:-/data/config}"
+mkdir -p "$DSH_HOME" /data/workspace "${XDG_CONFIG_HOME:-/data/config}" \
+  "${XDG_DATA_HOME:-/data/local/share}"
 
 # The profile loader resolves out-of-tree plugins from the profile directory.
 # Keep the deployment-owned client plugin immutable in the image and expose it

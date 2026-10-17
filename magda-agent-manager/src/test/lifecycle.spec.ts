@@ -128,6 +128,7 @@ class FakeKubernetes {
     deleted = 0;
     bootstraps: unknown[] = [];
     skillSyncCalls: string[] = [];
+    skillSyncForce: boolean[] = [];
     skillSyncPatches: Array<{
         claimUid: string;
         annotations: Record<string, string | null>;
@@ -225,7 +226,7 @@ class FakeKubernetes {
         this.claims = [
             claim(new Date(), "ALLOCATING", `claim-${this.createdClaims}`)
         ];
-        return this.claims[0];
+        return { claim: this.claims[0], created: true };
     }
     async waitForClaimReady() {
         return this.claims[0];
@@ -237,8 +238,9 @@ class FakeKubernetes {
     async bootstrap(_sandbox: string, payload: unknown) {
         this.bootstraps.push(payload);
     }
-    async syncSkills(sandbox: string) {
+    async syncSkills(sandbox: string, options: { force: boolean }) {
         this.skillSyncCalls.push(sandbox);
+        this.skillSyncForce.push(options.force);
         const implementation = this.skillSyncImplementations.shift();
         if (implementation) return await implementation();
         return JSON.stringify({
@@ -377,6 +379,8 @@ describe("Agent Workspace inactivity lifecycle", () => {
 
         await instance.start(userId);
         await waitFor(() => kubernetes.skillSyncCalls.length === 1);
+        // A claim this provisioning call created is a fresh, empty Sandbox.
+        expect(kubernetes.skillSyncForce).to.deep.equal([true]);
 
         expect(
             kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION]
@@ -570,6 +574,8 @@ describe("Agent Workspace inactivity lifecycle", () => {
         );
         const replacementUid = kubernetes.claims[0].metadata.uid;
         expect(replacementUid).not.to.equal(oldUid);
+        // Reset provisions a brand-new claim/PVC, so both syncs are forced.
+        expect(kubernetes.skillSyncForce).to.deep.equal([true, true]);
 
         releaseOldSync();
         await waitFor(() => kubernetes.rejectedSkillSyncPatches > 0);
@@ -601,6 +607,21 @@ describe("Agent Workspace inactivity lifecycle", () => {
         );
     });
 
+    it("never forces skill sync when provisioning reattaches an existing claim", async () => {
+        const kubernetes = new FakeKubernetes();
+        const createClaim = kubernetes.createClaim.bind(kubernetes);
+        kubernetes.createClaim = async () => ({
+            ...(await createClaim()),
+            created: false
+        });
+        const instance = manager(kubernetes).manager;
+
+        await instance.start(userId);
+        await waitFor(() => kubernetes.skillSyncCalls.length === 1);
+
+        expect(kubernetes.skillSyncForce).to.deep.equal([false]);
+    });
+
     it("reconciliation schedules a persisted notAttempted Agent Skill sync", async () => {
         const kubernetes = new FakeKubernetes();
         kubernetes.claims = [claim(new Date())];
@@ -630,6 +651,8 @@ describe("Agent Workspace inactivity lifecycle", () => {
         await instance.reconcileIdleWorkspaces();
 
         expect(kubernetes.skillSyncCalls).to.deep.equal(["sandbox-1"]);
+        // Recovery of an existing claim never force-discards local edits.
+        expect(kubernetes.skillSyncForce).to.deep.equal([false]);
         expect(
             kubernetes.claims[0].metadata.annotations?.[
                 SKILL_SYNC_ATTEMPTED_ANNOTATION

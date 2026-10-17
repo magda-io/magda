@@ -51,6 +51,7 @@ describe("AgentSkillClient caller-auth contracts", () => {
                 body: {
                     version: 1,
                     complete: true,
+                    identity: { tenantId: "0", userId },
                     items: [
                         {
                             selectionId: skillId,

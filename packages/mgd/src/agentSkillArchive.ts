@@ -79,11 +79,23 @@ interface InspectedArchive {
     files: TreeFile[];
 }
 
+/**
+ * Reserved local installation metadata. Publications and raw skill directories
+ * must never contain it; only a recognized local installation may exclude it.
+ */
+export const AGENT_SKILL_INSTALL_MARKER = ".magda-skill-install.json";
+const INSTALL_MARKER_MAX_BYTES = 64 * 1024;
+
 const USER_FILE_PATTERN = /\.md$/i;
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_SKILL_NAME_LENGTH = 46;
 const MAX_SKILL_DESCRIPTION_LENGTH = 1024;
 const RESERVED_RUNTIME_SKILL_NAMES = new Set(["capture-workflow", "magda-mgd"]);
+
+/** Image-bundled/runtime skill names that synchronization never claims. */
+export function isReservedAgentSkillName(name: string): boolean {
+    return RESERVED_RUNTIME_SKILL_NAMES.has(name);
+}
 const TREE_DIGEST_DOMAIN = Buffer.from("magda-agent-skill-tree-v1\0", "utf8");
 // ZIP's DOS timestamp has a two-second resolution and begins in 1980. Constructing
 // this in local time plus forceDosTimestamp makes the encoded bytes timezone-free.
@@ -355,10 +367,15 @@ async function readRegularFileWithoutFollowing(
     );
 }
 
+function isReservedInstallMarker(normalized: string): boolean {
+    return canonicalPath(normalized) === AGENT_SKILL_INSTALL_MARKER;
+}
+
 async function collectLocalFiles(
     rootDirectory: string,
     type: AgentSkillType,
-    limits: AgentSkillArchiveLimits
+    limits: AgentSkillArchiveLimits,
+    excludeInstallMarker = false
 ): Promise<TreeFile[]> {
     let rootStat;
     try {
@@ -410,6 +427,11 @@ async function collectLocalFiles(
                     true,
                     limits
                 );
+                if (isReservedInstallMarker(normalized.replace(/\/$/, ""))) {
+                    invalid(
+                        `${AGENT_SKILL_INSTALL_MARKER} is reserved for local installation metadata`
+                    );
+                }
                 assertNewTreePath(normalized, true, explicitPaths);
                 await visit(absolute, normalized);
                 continue;
@@ -424,6 +446,20 @@ async function collectLocalFiles(
             }
 
             const normalized = validatePortablePath(rawRelative, false, limits);
+            if (isReservedInstallMarker(normalized)) {
+                // Only the exact marker of a caller-recognized installation is
+                // excluded; any other spelling or context remains an error.
+                if (
+                    excludeInstallMarker &&
+                    normalized === AGENT_SKILL_INSTALL_MARKER
+                ) {
+                    entryCount -= 1;
+                    continue;
+                }
+                invalid(
+                    `${AGENT_SKILL_INSTALL_MARKER} is reserved for local installation metadata`
+                );
+            }
             assertNewTreePath(normalized, false, explicitPaths);
             if (type === "user" && !USER_FILE_PATTERN.test(normalized)) {
                 invalid("User Agent Skills may contain Markdown files only");
@@ -565,6 +601,163 @@ export async function createAgentSkillArchive(
 
 export const createDeterministicAgentSkillArchive = createAgentSkillArchive;
 
+/**
+ * Build a publication ZIP from a directory the caller has already recognized
+ * as a local installation (index + marker + safe path). Exactly the root-level
+ * installation marker is excluded; every other rule is unchanged.
+ */
+export async function createAgentSkillArchiveFromInstallation(
+    directory: string,
+    type: AgentSkillType,
+    limitOverrides: Partial<AgentSkillArchiveLimits> = {}
+): Promise<CreatedAgentSkillArchive> {
+    validateType(type);
+    const limits = resolvedLimits(limitOverrides);
+    const files = await collectLocalFiles(
+        path.resolve(directory),
+        type,
+        limits,
+        true
+    );
+    const tree = validateTree(files, type);
+    const bytes = await zipFiles(files);
+    if (bytes.length > limits.maxCompressedBytes) {
+        invalid("Agent Skill ZIP exceeds the compressed size limit");
+    }
+    const archiveSha256 = sha256Hex(bytes);
+    return {
+        ...tree,
+        bytes,
+        compressedBytes: bytes.length,
+        archiveSha256,
+        checksum: archiveSha256
+    };
+}
+
+export type InstalledAgentSkillInspection =
+    | { kind: "unsafe"; reason: string }
+    | {
+          kind: "content";
+          /**
+           * Full content digest excluding only the root installation marker,
+           * using the same path/mode/byte rules as publication tree digests.
+           * Undefined when the tree cannot be canonicalized (limits, invalid
+           * names), which can never equal a verified publication.
+           */
+          digest?: string;
+          marker?: Buffer;
+      };
+
+/**
+ * Inspect an installed skill directory without following links. Symlinks and
+ * special files are unsafe (never traversed or replaced, even with --force);
+ * any other difference is ordinary content that simply fails to match.
+ */
+export async function inspectInstalledAgentSkill(
+    directory: string,
+    type: AgentSkillType,
+    limitOverrides: Partial<AgentSkillArchiveLimits> = {}
+): Promise<InstalledAgentSkillInspection> {
+    validateType(type);
+    const limits = resolvedLimits(limitOverrides);
+    const root = path.resolve(directory);
+    const rootStat = await fs.lstat(root);
+    if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) {
+        return { kind: "unsafe", reason: "not a real directory" };
+    }
+    const files: TreeFile[] = [];
+    let marker: Buffer | undefined;
+    let canonical = true;
+    let entryCount = 0;
+    let totalBytes = 0;
+    const visit = async (
+        absoluteDirectory: string,
+        relativeDirectory: string,
+        depth: number
+    ): Promise<string | undefined> => {
+        const names = (await fs.readdir(absoluteDirectory)).sort(comparePaths);
+        for (const name of names) {
+            const absolute = path.join(absoluteDirectory, name);
+            const relative = relativeDirectory
+                ? `${relativeDirectory}/${name}`
+                : name;
+            const stat = await fs.lstat(absolute, { bigint: true });
+            if (stat.isSymbolicLink())
+                return `contains a symbolic link: ${relative}`;
+            if (!relativeDirectory && name === AGENT_SKILL_INSTALL_MARKER) {
+                if (!stat.isFile())
+                    return `${AGENT_SKILL_INSTALL_MARKER} is not a regular file`;
+                if (stat.size <= BigInt(INSTALL_MARKER_MAX_BYTES)) {
+                    try {
+                        marker = await readRegularFileWithoutFollowing(
+                            absolute,
+                            stat.dev,
+                            stat.ino,
+                            INSTALL_MARKER_MAX_BYTES
+                        );
+                    } catch {
+                        return `${AGENT_SKILL_INSTALL_MARKER} could not be read safely`;
+                    }
+                }
+                continue;
+            }
+            entryCount += 1;
+            if (entryCount > limits.maxEntries) canonical = false;
+            if (stat.isDirectory()) {
+                try {
+                    validatePortablePath(`${relative}/`, true, limits);
+                } catch {
+                    canonical = false;
+                }
+                const nested = await visit(absolute, relative, depth + 1);
+                if (nested) return nested;
+                continue;
+            }
+            if (!stat.isFile()) return `contains a special file: ${relative}`;
+            if (!canonical) continue;
+            let normalized: string;
+            try {
+                normalized = validatePortablePath(relative, false, limits);
+            } catch {
+                canonical = false;
+                continue;
+            }
+            if (
+                (stat.mode & 0o7000n) !== 0n ||
+                stat.size > BigInt(limits.maxUncompressedBytes - totalBytes)
+            ) {
+                canonical = false;
+                continue;
+            }
+            let content: Buffer;
+            try {
+                content = await readRegularFileWithoutFollowing(
+                    absolute,
+                    stat.dev,
+                    stat.ino,
+                    limits.maxUncompressedBytes - totalBytes
+                );
+            } catch {
+                return `could not be read safely: ${relative}`;
+            }
+            totalBytes += content.length;
+            files.push({
+                path: normalized,
+                content,
+                mode: safeRegularFileMode(type, Number(stat.mode))
+            });
+        }
+        return undefined;
+    };
+    const unsafe = await visit(root, "", 0);
+    if (unsafe) return { kind: "unsafe", reason: unsafe };
+    return {
+        kind: "content",
+        ...(canonical ? { digest: digestFiles(files) } : {}),
+        ...(marker ? { marker } : {})
+    };
+}
+
 /** Inspect a local tree and include its deterministic archive checksum. */
 export async function inspectAgentSkillDirectory(
     directory: string,
@@ -682,6 +875,11 @@ async function inspectAgentSkillArchive(
                     directory,
                     limits
                 );
+                if (isReservedInstallMarker(normalized)) {
+                    invalid(
+                        `Agent Skill ZIP must not contain ${AGENT_SKILL_INSTALL_MARKER}`
+                    );
+                }
                 assertNewTreePath(normalized, directory, explicitPaths);
                 const sourceMode = validateZipEntryType(entry, directory);
                 if (
@@ -835,6 +1033,32 @@ export async function validateAgentSkillArchive(
     limitOverrides: Partial<AgentSkillArchiveLimits> = {}
 ): Promise<ValidatedAgentSkillArchive> {
     return (await inspectAgentSkillArchive(bytes, type, limitOverrides)).result;
+}
+
+export interface AgentSkillArchiveFile {
+    path: string;
+    content: Buffer;
+    mode: number;
+}
+
+/** Validate a ZIP and return its sanitized files for caller-controlled staging. */
+export async function readAgentSkillArchiveFiles(
+    bytes: Buffer | Uint8Array,
+    type: AgentSkillType,
+    limitOverrides: Partial<AgentSkillArchiveLimits> = {}
+): Promise<{
+    result: ValidatedAgentSkillArchive;
+    files: AgentSkillArchiveFile[];
+}> {
+    const inspected = await inspectAgentSkillArchive(
+        bytes,
+        type,
+        limitOverrides
+    );
+    return {
+        result: inspected.result,
+        files: inspected.files.map((file) => ({ ...file }))
+    };
 }
 
 async function pathExists(value: string): Promise<boolean> {

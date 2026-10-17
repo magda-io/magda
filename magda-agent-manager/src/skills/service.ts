@@ -1319,6 +1319,10 @@ export class AgentSkillService {
         return {
             version: 1,
             complete: true,
+            identity: {
+                tenantId: String(this.tenantId),
+                userId: user.id
+            },
             items,
             warnings: [...system.warnings, ...own.warnings].slice(0, 100),
             sources: {

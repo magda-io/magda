@@ -232,6 +232,38 @@ Each render must contain exactly one SandboxTemplate and one matching
 SandboxWarmPool. Kata is covered by the offline Helm render matrix; run the full
 journey on a Kata-capable cluster when qualifying that production runtime.
 
+## Agent Skill synchronization checks
+
+Publish one system skill and one current-user skill, then:
+
+- **Fresh Workspace:** start a Workspace with no existing claim. Agent Manager
+  logs a single `mgd agent-skill sync --force --json --workspace-status` exec;
+  the claim reaches READY independently and its `agent.magda.io/skill-sync-*`
+  annotations record `success` with two installs. In the Sandbox, both
+  `/data/agent-home/skills/<name>/` entries are real directories containing
+  `.magda-skill-install.json`, and `$XDG_DATA_HOME/mgd/agent-skills/` (on
+  `/data`) holds `installation-index.json` and `sources/<key>/`.
+- **Existing Workspace:** edit the user skill's `SKILL.md`, restart Agent
+  Manager (or reset the claim's sync status to `notAttempted`). The recovery
+  sync is non-forced: status becomes `partial`, the edit survives, READY and the
+  DSH iframe stay available.
+- **Manual Sandbox CLI:** delete a skill directory and corrupt the other's
+  marker, then run `mgd agent-skill sync --json`: the deleted skill is
+  reinstalled and the marker repaired without `--force`. With an edited copy,
+  ordinary sync reports `LOCAL_MODIFICATION` with the exact path and changes
+  nothing; `mgd agent-skill sync --force --json` resets it. Neither manual run
+  changes the claim's Manager-owned sync annotations.
+- **No Python:** run `mgd agent-skill sync --json` with `PATH` containing only
+  `node` and `mgd`; it succeeds.
+- **Outage:** with the API unreachable, both forms report `failed` and the
+  installed tree is byte-for-byte unchanged.
+- **DSH discovery:** instantiate the pinned
+  `@deepseek-ai/dsh-skill-filesystem` provider in the Sandbox and list skills;
+  exactly the synchronized names (plus image-bundled ones) appear, with no entry
+  for the marker or `.magda-skill-staging/`.
+- **Status isolation:** a local-computer `mgd agent-skill sync` against the
+  same user never changes any claim annotation.
+
 ## Minikube gVisor troubleshooting
 
 If the Settings page remains at **Allocating your Agent Workspace**, inspect the

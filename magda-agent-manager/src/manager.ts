@@ -173,10 +173,18 @@ export class AgentManager {
         };
     }
 
+    /**
+     * Detached, best-effort Workspace skill sync; never gates READY/DSH.
+     * `fresh` is true only from the provisioning call that itself created the
+     * claim and bootstrapped its new Sandbox, where no user-authored skill can
+     * exist yet. Reconnect, restart recovery and reattachment use ordinary,
+     * non-forced reconciliation so existing edits survive.
+     */
     private scheduleSkillSync(
         userId: string,
         claimUid: string,
-        sandbox: string
+        sandbox: string,
+        fresh: boolean
     ): void {
         if (this.skillSyncs.has(claimUid)) return;
         const promise = (async () => {
@@ -192,7 +200,7 @@ export class AgentManager {
                     }
                 );
                 const result = this.parseSkillSyncResult(
-                    await this.kubernetes.syncSkills(sandbox)
+                    await this.kubernetes.syncSkills(sandbox, { force: fresh })
                 );
                 await this.kubernetes.patchSkillSyncAnnotations(
                     userId,
@@ -268,7 +276,9 @@ export class AgentManager {
             // Persist a recoverable claim before issuing the raw credential. If
             // the Manager exits after rotation, startup reconciliation can find
             // this installation-scoped claim and destroy both resources.
-            await this.kubernetes.createClaim(userId);
+            const { created: freshClaim } = await this.kubernetes.createClaim(
+                userId
+            );
             key = await this.apiKeys.rotate(
                 userId,
                 new Date(Date.now() + this.config.hardDeleteSeconds * 1000)
@@ -317,7 +327,8 @@ export class AgentManager {
                 this.scheduleSkillSync(
                     userId,
                     readyClaim.metadata.uid,
-                    sandbox
+                    sandbox,
+                    freshClaim
                 );
             }
         } catch (error) {
@@ -667,7 +678,14 @@ export class AgentManager {
                     claim.metadata.uid &&
                     (!skillSyncStatus || skillSyncStatus === "notAttempted")
                 ) {
-                    this.scheduleSkillSync(userId, claim.metadata.uid, sandbox);
+                    // Status `notAttempted` alone never implies an empty
+                    // Sandbox: recovery is always non-forced.
+                    this.scheduleSkillSync(
+                        userId,
+                        claim.metadata.uid,
+                        sandbox,
+                        false
+                    );
                 }
                 if (
                     state &&

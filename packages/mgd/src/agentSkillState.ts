@@ -1,53 +1,11 @@
 import os from "node:os";
 import path from "node:path";
-import { lstat, mkdir, open, readFile, rename } from "node:fs/promises";
-import { createHash, randomUUID } from "node:crypto";
+import { lstat, mkdir } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { resolveAgentSkillProjectionTargets } from "./skills.js";
+import { resolveAgentSkillTargets } from "./skills.js";
 import type { Server } from "node:net";
 import { createConnection, createServer } from "node:net";
-import { AgentSkillRef, AgentSkillType } from "./agentSkillTypes.js";
-
-export interface ManagedAgentSkillEntry {
-    ref: AgentSkillRef;
-    name: string;
-    dir: string;
-    remoteChecksum: string;
-    installedTreeDigest: string;
-    updatedAt: string;
-}
-
-export interface AgentSkillDraftState {
-    type: AgentSkillType;
-    name: string;
-    ref?: AgentSkillRef;
-    baseChecksum?: string;
-    treeDigest: string;
-}
-
-export interface AgentSkillStateV1 {
-    version: 1;
-    managedRoot: string;
-    entries: Record<string, ManagedAgentSkillEntry>;
-    drafts: Record<string, AgentSkillDraftState>;
-}
-
-export const stateKey = (ref: AgentSkillRef) => `${ref.type}/${ref.id}`;
-
-export function agentSkillStatePath(): string {
-    const configHome =
-        process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
-    return path.join(configHome, "mgd", "agent-skills-v1.json");
-}
-
-export function managedAgentSkillRoot(): string {
-    return path.resolve(
-        process.env.MGD_AGENT_SKILL_DIR ||
-            (process.env.DSH_HOME
-                ? path.join(process.env.DSH_HOME, "skills")
-                : path.join(os.homedir(), ".agents", "skills"))
-    );
-}
 
 function managedPathAnchor(target: string): string {
     const candidates = [process.env.HOME, os.tmpdir()]
@@ -124,70 +82,17 @@ export function managedChildPath(root: string, name: string): string {
     return child;
 }
 
-function emptyState(): AgentSkillStateV1 {
-    return {
-        version: 1,
-        managedRoot: managedAgentSkillRoot(),
-        entries: {},
-        drafts: {}
-    };
-}
-
-export async function loadAgentSkillState(): Promise<AgentSkillStateV1> {
-    const file = agentSkillStatePath();
-    let parsed: unknown;
-    try {
-        parsed = JSON.parse(await readFile(file, "utf8"));
-    } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT")
-            return emptyState();
-        throw new Error(
-            `Could not read Agent Skill state: ${(error as Error).message}`
-        );
-    }
-    if (
-        !parsed ||
-        typeof parsed !== "object" ||
-        (parsed as any).version !== 1 ||
-        typeof (parsed as any).managedRoot !== "string" ||
-        !(parsed as any).entries ||
-        typeof (parsed as any).entries !== "object" ||
-        !(parsed as any).drafts ||
-        typeof (parsed as any).drafts !== "object"
-    ) {
-        throw new Error(
-            "Agent Skill state has an unsupported or invalid format"
-        );
-    }
-    const state = parsed as AgentSkillStateV1;
-    // A caller may deliberately move the managed projection through the
-    // environment; do not apply old state to the new root.
-    if (path.resolve(state.managedRoot) !== managedAgentSkillRoot()) {
-        return emptyState();
-    }
-    return state;
-}
-
-export async function saveAgentSkillState(
-    state: AgentSkillStateV1
-): Promise<void> {
-    const target = agentSkillStatePath();
-    await mkdir(path.dirname(target), { recursive: true, mode: 0o700 });
-    const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`;
-    const handle = await open(temporary, "wx", 0o600);
-    try {
-        await handle.writeFile(JSON.stringify(state, null, 2) + "\n", "utf8");
-        await handle.sync();
-    } finally {
-        await handle.close();
-    }
-    await rename(temporary, target);
-}
-
-function agentSkillProjectionStateIdentity(): string {
+function agentSkillInstallationIndexIdentity(): string {
     const dataHome =
-        process.env.XDG_DATA_HOME || path.join(os.homedir(), ".local", "share");
-    return path.resolve(dataHome, "mgd", "agent-skills", "projection.json");
+        process.env.XDG_DATA_HOME && process.env.XDG_DATA_HOME.trim()
+            ? process.env.XDG_DATA_HOME
+            : path.join(os.homedir(), ".local", "share");
+    return path.resolve(
+        dataHome,
+        "mgd",
+        "agent-skills",
+        "installation-index.json"
+    );
 }
 
 function lockDigest(identity: string): Buffer {
@@ -196,8 +101,8 @@ function lockDigest(identity: string): Buffer {
 
 function agentSkillLockIdentities(): string[] {
     return [
-        `state:${agentSkillProjectionStateIdentity()}`,
-        ...resolveAgentSkillProjectionTargets({ env: process.env }).map(
+        `state:${agentSkillInstallationIndexIdentity()}`,
+        ...resolveAgentSkillTargets({ env: process.env }).map(
             ({ root }) => `root:${path.resolve(root)}`
         )
     ]
@@ -205,9 +110,15 @@ function agentSkillLockIdentities(): string[] {
         .sort();
 }
 
+// Loopback lock ports live below every common OS ephemeral range (Linux
+// 32768+, macOS/Windows 49152+). Ports there can be taken by unrelated
+// outgoing or port-0 listeners, which the fail-closed probe must reject.
+const LOCK_PORT_BASE = 20000;
+const LOCK_PORT_SPAN = 10000;
+
 export function agentSkillStateLockPort(): number {
-    const digest = lockDigest(`state:${agentSkillProjectionStateIdentity()}`);
-    return 49152 + (digest.readUInt16BE(0) % 16384);
+    const digest = lockDigest(`state:${agentSkillInstallationIndexIdentity()}`);
+    return LOCK_PORT_BASE + (digest.readUInt16BE(0) % LOCK_PORT_SPAN);
 }
 
 async function existingLockStatus(
@@ -250,7 +161,8 @@ async function acquireAgentSkillStateLock(
     const digest = lockDigest(lockIdentity);
     const identity = digest.toString("hex");
     for (let offset = 0; offset < 16; offset += 2) {
-        const port = 49152 + (digest.readUInt16BE(offset) % 16384);
+        const port =
+            LOCK_PORT_BASE + (digest.readUInt16BE(offset) % LOCK_PORT_SPAN);
         const server = createServer((socket) => socket.end(identity));
         server.unref();
         try {

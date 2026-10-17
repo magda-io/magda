@@ -41,6 +41,7 @@ COPY --chmod=0755 magda-agent-runtime/bootstrap.mjs /usr/local/bin/magda-agent-b
 COPY --chmod=0644 magda-agent-runtime/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
 ENV DSH_HOME=/data/agent-home \
   XDG_CONFIG_HOME=/data/config \
+  XDG_DATA_HOME=/data/local/share \
   DSH_TELEMETRY_MODE=DISABLED \
   DSH_TELEMETRY_DISABLED=1 \
   DSH_PERMISSION_MODE=workspace-write
