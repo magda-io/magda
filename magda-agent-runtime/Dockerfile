@@ -23,8 +23,10 @@ RUN set -eu; \
   sed -i "s/paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)/paths.join(directory, 'agent-harness', DEFAULT_WORKSPACE_DIRECTORY)/" "$typed"
 COPY magda-agent-runtime/dsh-client-managed-profile/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile/
-RUN chmod -R a+rX \
-  /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile
+COPY magda-agent-runtime/dsh-workflow-capture-guidance/ \
+  /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-workflow-capture-guidance/
+RUN chown -R root:root /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda \
+  && chmod -R a+rX,go-w /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda
 COPY node_modules/ /usr/local/lib/node_modules/
 RUN test -x /usr/local/lib/node_modules/@magda/mgd/bin/mgd.js \
   && ln -s /usr/local/lib/node_modules/@magda/mgd/bin/mgd.js /usr/local/bin/mgd \
@@ -39,12 +41,20 @@ COPY --chmod=0644 magda-agent-runtime/magda.cordis.patch.yml /etc/magda-agent/ma
 COPY --chmod=0755 magda-agent-runtime/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
 COPY --chmod=0755 magda-agent-runtime/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
 COPY --chmod=0644 magda-agent-runtime/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
+# Runtime-bundled Agent Skills: immutable, root-owned and independent of
+# Registry/Storage publications. DSH discovers them through DSH_BUNDLED_SKILL_DIR.
+COPY magda-agent-runtime/skills/ /usr/local/lib/magda-agent/skills/
+COPY --chmod=0755 magda-agent-runtime/session-history.mjs /usr/local/lib/magda-agent/session-history.mjs
+RUN chown -R root:root /usr/local/lib/magda-agent/skills /usr/local/lib/magda-agent/session-history.mjs \
+  && chmod -R a+rX,go-w /usr/local/lib/magda-agent/skills \
+  && ln -s /usr/local/lib/magda-agent/session-history.mjs /usr/local/bin/magda-session-history
 ENV DSH_HOME=/data/agent-home \
   XDG_CONFIG_HOME=/data/config \
   XDG_DATA_HOME=/data/local/share \
   DSH_TELEMETRY_MODE=DISABLED \
   DSH_TELEMETRY_DISABLED=1 \
-  DSH_PERMISSION_MODE=workspace-write
+  DSH_PERMISSION_MODE=workspace-write \
+  DSH_BUNDLED_SKILL_DIR=/usr/local/lib/magda-agent/skills
 USER 10001:10001
 RUN mgd skills install --agent codex
 WORKDIR /data/workspace

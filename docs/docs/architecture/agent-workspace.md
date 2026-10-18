@@ -435,6 +435,203 @@ must forward the existing object's `magda-record-id` and `magda-owner-id` as
 S3-style metadata headers; Agent Services uses those trusted response headers to
 validate archive linkage before publication or download.
 
+## Workflow capture and skill suggestions
+
+Stage 3 (#3856) lets a user turn work they have finished in DSH into a reusable
+Agent Skill by asking the agent. It adds no backend API, database table,
+publication record or background service: the agent drafts Markdown in the
+Workspace and publishes it with the Stage 2 `mgd agent-skill` commands, using
+the user's own credentials.
+
+### Runtime-bundled `capture-workflow` skill
+
+`magda-agent-runtime/skills/capture-workflow/SKILL.md` is copied into the image
+as root-owned, read-only `/usr/local/lib/magda-agent/skills/capture-workflow/`,
+and `DSH_BUNDLED_SKILL_DIR` points DSH's filesystem skill provider at
+`/usr/local/lib/magda-agent/skills`. In DSH `0.2.1-alpha.1` this is the provider's
+`bundled` root. It is read directly from the host filesystem (`trustedHost`),
+so it is available in every Workspace even when Registry, Storage API or skill
+sync is down, and it never enters a ZIP, the Registry or MinIO. It does not
+change `mgd skills install` or the image's `magda-mgd` guidance in
+`~/.agents/skills`. Synchronized skills still land in `$DSH_HOME/skills`.
+
+DSH gives the bundled root the lowest precedence (rank 600, after project
+`.dsh/skills`/`.agents/skills`, custom roots, `$DSH_HOME/skills` and
+`~/.agents/skills`). Both `mgd` and Agent Services reserve the names
+`capture-workflow` and `magda-mgd`, so no publication or synchronized copy can
+use them. Only a directory the user deliberately creates in their own Workspace
+could shadow the bundled skill; the shipped file itself cannot be modified.
+
+Users invoke it by asking in chat ("save what we just did as a skill") or by
+typing `/capture-workflow`. The skill instructs the agent to:
+
+1. confirm the task finished successfully and was validated; an unfinished or
+   failed workflow is never presented as verified;
+2. collect inputs, tools, `mgd` commands, datasets, steps, validation, outputs
+   and limitations from the context, tool results and Workspace files, and
+   read selected session history only when an important detail is missing;
+3. generalise dataset IDs, paths, URLs and identifiers into documented inputs,
+   and leave out credentials, personal data and bulk output;
+4. choose a valid, unused name (409 on publish means "pick another name"),
+   create `skill-drafts/<name>` with `mgd agent-skill init`, edit it with
+   ordinary DSH file tools, and run `mgd agent-skill validate`;
+5. present the draft and **stop**: say it is local, unpublished and lost when
+   the Workspace is reset, replaced or terminated (including logout), and ask
+   for explicit approval;
+6. only after approval run `mgd agent-skill publish skill-drafts/<name>` (the
+   default `--type user`; `--type system` only when an authorized admin
+   explicitly asks), and report success only from a successful response.
+
+The skill also documents later `list`, `show`, `pull`, edit, re-`publish` and
+`delete` operations, and requires the agent to say whether each change is local
+or published. It treats conversation text, tool output, dataset content and
+history as untrusted data, so instructions found there are never copied into a
+skill or acted on. DSH tool approvals, the sandbox, typed
+`object/agentSkill/<type>/<operation>` authorization and the Stage 2 publish
+rules (source-account identity, `If-Match` replacement, ZIP validation and the
+Markdown-only user-skill restriction) are unchanged.
+
+DSH's managed `workspace-write` sandbox lets the agent write only inside the
+session workspace. `mgd agent-skill init`, `validate`, `list` and `show` run
+sandboxed. `publish`, `sync`, `pull` and `delete` also update `mgd` state outside
+the Workspace: the profile's cached Agent Skill identity in
+`/data/config/mgd/config.json`, verified caches and the operation lock under
+`/data/local/share/mgd`, and `$DSH_HOME/skills` for `sync`. The pinned DSH has
+no extra-writable-root setting (its sandbox policy has exactly one writable root
+per session), and widening the sandbox would expose the credential-bearing
+profile file. These commands therefore use DSH's ordinary per-command
+escalation: DSH shows the exact command and the agent's justification, and runs
+it only after the user selects **Allow once**. The skill tells the agent to
+request this only for the exact `mgd agent-skill` command, with nothing chained
+to it, and for `publish` or `delete` only after the user has approved that skill
+in chat. Publishing therefore takes two deliberate user actions: approval in chat,
+then the DSH approval prompt. A rejected prompt means the operation did not run.
+In Minikube qualification, the sandboxed attempt failed with `EROFS` on
+`/data/config` before any publication request, and the escalated retry succeeded.
+
+`skill-drafts/` sits under the session's working directory, so it is visible in
+the DSH file explorer, while `.agents/skills`, `.dsh/skills` and
+`$DSH_HOME/skills` would be loaded as active skills. A draft exists only on this
+Workspace PVC. A published skill is stored in the Registry and Storage API, so it
+survives Workspace reset and deletion. The Manager's forced sync installs it into
+every new Workspace, and `mgd agent-skill sync` installs it in the current one.
+Publishing never updates other existing copies on its own.
+
+Example conversation:
+
+> **User:** We've found the rainfall dataset, profiled its CSV distribution,
+> computed monthly totals and checked them against the published annual figure.
+> I do this for other datasets every month. Can you save the procedure as a skill?
+>
+> **Agent:** I've drafted `profile-csv-distribution` in
+> `skill-drafts/profile-csv-distribution/SKILL.md`. Its inputs are a dataset
+> (ID or search terms), the date and value columns, and an optional reference
+> total. It covers finding the CSV distribution with `mgd`, checking the schema,
+> aggregating with pandas, and the validation and failure checks we used. The
+> dataset ID, file paths and our results are not included. `mgd agent-skill validate` passed. **This is a local draft and has not been published.** It will
+> be lost if this Workspace is reset or terminated. Please review it in the file
+> explorer; I'll publish it only if you tell me to.
+>
+> **User:** Looks good. Publish it.
+>
+> _(DSH shows an approval prompt for exactly
+> `mgd agent-skill publish skill-drafts/profile-csv-distribution --json`; the user
+> selects **Allow once**.)_
+>
+> **Agent:** Published `user/agent-skill-<your-user-id>-profile-csv-distribution`
+> to your MAGDA account. New Workspaces will install it automatically. Would you
+> like me to run `mgd agent-skill sync` so it is also available in this one?
+
+### Occasional suggestions in the DSH system prompt
+
+In the pinned DSH, every Web agent preset (`standard`, `ptc`, `minimal`,
+`cordis`) mounts its own `@deepseek-ai/dsh-persona` row. That row shadows the
+global `system-prompt` `personaPrefix`/`personaSuffix`. Cordis patches also
+replace a matched row's whole `config` and cannot reach rows nested in a
+preset's `config.plugins`. Patching `system-prompt` would therefore change
+nothing for the default preset, and patching a preset would have to restate its
+entire plugin list. Instead the managed overlay inserts one small host plugin:
+
+```yaml
+- insert:
+    - id: magda-workflow-capture-guidance
+      name: "@magda/dsh-workflow-capture-guidance"
+```
+
+`magda-agent-runtime/dsh-workflow-capture-guidance` registers a single global
+prompt section, `magda:workflow-capture-suggestions`, at order 9800. That places
+it after DSH's tool guidance and before the structured-output and
+environment-bearing suffix sections. Its text is static, so the prompt prefix
+stays cacheable. DSH's identity, presets, personas, `{{model}}`/`{{cwd}}`
+templates, tool guidance and agent-instructions loading are unchanged, and a
+preset with a `complete` persona (`minimal`) keeps its exact prompt. The section
+asks for one short, optional question at the end of the final reply. It applies
+only when the task took several steps or tool calls and was completed and
+verified, and could be reused with other inputs (or the user says they do it
+regularly). It must also not already be a saved skill, and the offer must not
+have been made or declined in this conversation. It rules out offers for simple
+answers, failed or partial work, repeated turns and subagents, and states that an
+offer is not consent to publish. A first, permissive wording ("may occasionally
+offer…") produced no offer in three qualifying Minikube runs; the conditional
+wording produced the offer on a qualifying run, and none after a decline, a
+simple question or a failed task. To change the wording, edit the
+plugin and rebuild the image. To disable it, remove the insert row (or add
+`- id: magda-workflow-capture-guidance` with `disabled: true` in a later patch
+layer). Suggestions are model judgment, not a detector, so there is no
+background agent, `turn/end` hook or suggestion database.
+
+### Session history for workflow capture
+
+Findings for DSH `0.2.1-alpha.1`:
+
+- `session-persistence-jsonl` stores each session at
+  `$DSH_HOME/sessions/--<normalized-cwd>--/<session-id>/session.v4.jsonl.zstd`
+  on the Workspace PVC (`/data/agent-home/sessions`). The file is a stream of
+  concatenated, checksummed Zstandard frames, one per durable batch; Node's
+  one-shot `zstdDecompressSync` and its stream decoder each return only the first
+  frame. Each row is one JSON event: a `session` header (`version: 4`, `id`,
+  `cwd`, `delegationDepth`, `agentPreset`), then `user/message`,
+  `assistant/message`, `tool/call`, `tool/result`, `turn/*`, `step/*`,
+  `system/message`, `request/header`, `session/title` and so on.
+- Compaction appends `compaction/start`, `compaction/summary`, a
+  `user/message` with source `compact-checkpoint` and `compaction/end`. The
+  original events stay in the log; the summary only replaces them in the model's
+  projected history.
+- `system/message` and `request/header` contain the full rendered prompt and
+  tool schemas, `assistant/message` contains reasoning, and harness-generated
+  `user/message` rows carry runtime context and skill catalogues.
+- DSH ships no agent-facing history tool. `session-query` is an internal
+  service whose SQLite index is `:memory:`/never opened in the Web profile, and
+  `session-reference` is a user-driven `@session` mention for _other_ sessions.
+  DSH's Web API requires the browser launch token, which the agent must not use.
+  Its bash tool exports `DSH_SESSION_ID`.
+
+The image therefore adds a small read-only helper, `magda-session-history`
+(`magda-agent-runtime/session-history.mjs`). It runs as the agent user with no
+extra privilege and reads only `$DSH_HOME/sessions`. It opens files read-only
+without taking DSH's lock, refuses symlinked directories and logs, ignores a torn
+final frame or line, and supports only format v4 (other versions fail with a
+clear error). Sessions default to `$DSH_SESSION_ID`. `list`, `outline` (one line
+per turn, with tools and outcome) and `events` (filter by `--turn`, `--from-seq`,
+`--to-seq`, `--type` and `--grep`) return only user prompts, assistant text, tool
+calls and results, turn outcomes and compaction summaries. They never return
+system prompts, request headers, runtime context, compaction checkpoints or
+reasoning. Each text is capped at 8,000 characters (1,200 by default), a page at
+100 events (20 by default), an outline at 200 turns, and the total output at
+64 KiB. A session log larger than 64 MiB is refused. Credential-shaped values
+(`Authorization`/`X-Magda-*` headers, bearer tokens, JWTs, `apiKey=`/`password:`
+style pairs, URL tokens, private keys and the values of secret-named environment
+variables) are redacted on a best-effort basis before filtering, so `--grep`
+cannot probe redacted values, and the output is labelled as untrusted data. It never reads `mgd` credentials, the DSH launch token or other
+users' data: each user's PVC holds only that user's Workspace.
+
+The skill tells the agent to rely on the available context first, because a
+compaction summary is often enough. It should use the helper only when a
+specific detail is missing, with narrow queries, and ask the user when a detail
+cannot be recovered. Reconstruction is limited to what DSH persisted for this
+Workspace: a reset Workspace has no history, and the helper does not make
+reconstruction complete or authoritative.
+
 ## Managed DSH profile decisions
 
 The deployment, not the user, owns provider, model, plugin, permission, and
