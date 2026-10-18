@@ -250,9 +250,8 @@ describe("scan-based Agent Skill reconciliation", () => {
         );
     });
 
-    it("updates older clean copies, keeps genuine edits, and holds destructive changes while conflicted", async () => {
+    it("updates an older clean copy but keeps a genuine edit", async () => {
         await remote.publish("alpha", "v1");
-        await remote.publish("beta", "v1");
         await sync();
         await remote.publish("alpha", "v2");
         expect((await sync()).counts.updated).to.equal(4);
@@ -262,8 +261,6 @@ describe("scan-based Agent Skill reconciliation", () => {
             skillMarkdown("alpha", "my codex edit")
         );
         await remote.publish("alpha", "v3");
-        await remote.publish("beta", "v2");
-        await remote.publish("gamma", "new");
         const normal = await sync();
         expect(normal.status).to.equal("partial");
         expect(
@@ -273,25 +270,68 @@ describe("scan-based Agent Skill reconciliation", () => {
         expect(await readSkill(dir("codex"))).to.equal(
             skillMarkdown("alpha", "my codex edit")
         );
-        // Replacements wait for the conflict; new installs do not.
-        expect(codes(normal, "HELD_FOR_CONFLICTS")).to.have.length(7);
-        expect(await readSkill(dir("claude", "beta"))).to.equal(
-            skillMarkdown("beta", "v1")
+        // The conflict blocks only that installation.
+        expect(await readSkill(dir("claude"))).to.equal(
+            skillMarkdown("alpha", "v3")
         );
-        expect(await readSkill(dir("dsh", "gamma"))).to.equal(
-            skillMarkdown("gamma", "new")
+        expect((await sync(true)).status).to.equal("success");
+        expect(await readSkill(dir("codex"))).to.equal(
+            skillMarkdown("alpha", "v3")
+        );
+    });
+
+    it("applies independent safe operations while another skill has a conflict", async () => {
+        for (const name of ["skill-a", "skill-b", "skill-c", "skill-e"])
+            await remote.publish(name, "v1");
+        await sync();
+        // A: unpublished edit; B: newer remote; C: removed remotely;
+        // D: new remote skill; E: identical content, metadata missing.
+        await fs.writeFile(
+            path.join(dir("claude", "skill-a"), "SKILL.md"),
+            skillMarkdown("skill-a", "unpublished edit")
+        );
+        await remote.publish("skill-a", "v2");
+        await remote.publish("skill-b", "v2");
+        remote.remove("skill-c");
+        await remote.publish("skill-d", "v1");
+        await fs.rm(
+            path.join(dir("claude", "skill-e"), AGENT_SKILL_INSTALL_MARKER)
+        );
+        const markerStat = await fs.stat(
+            path.join(dir("claude", "skill-e"), "SKILL.md")
         );
 
-        const forced = await sync(true);
-        expect(forced.status).to.equal("success");
-        for (const harness of HARNESSES) {
-            expect(await readSkill(dir(harness))).to.equal(
-                skillMarkdown("alpha", "v3")
+        const result = await sync();
+        expect(result.status).to.equal("partial");
+        expect(
+            result.conflicts!.map((c) => `${c.harness}:${c.name}:${c.reason}`)
+        ).to.deep.equal(["claude:skill-a:LOCAL_MODIFICATION"]);
+        const claude = (name: string) =>
+            result.items.find(
+                (item) => item.harness === "claude" && item.name === name
             );
-            expect(await readSkill(dir(harness, "beta"))).to.equal(
-                skillMarkdown("beta", "v2")
-            );
-        }
+        expect(claude("skill-b")?.action).to.equal("updated");
+        expect(claude("skill-c")?.action).to.equal("removed");
+        expect(claude("skill-d")?.action).to.equal("installed");
+        expect(claude("skill-e")?.code).to.equal("ADOPTED");
+        expect(await readSkill(dir("claude", "skill-a"))).to.equal(
+            skillMarkdown("skill-a", "unpublished edit")
+        );
+        expect(await readSkill(dir("claude", "skill-b"))).to.equal(
+            skillMarkdown("skill-b", "v2")
+        );
+        expect(await pathExists(dir("claude", "skill-c"))).to.equal(false);
+        expect(await readSkill(dir("claude", "skill-d"))).to.equal(
+            skillMarkdown("skill-d", "v1")
+        );
+        expect(
+            (await fs.stat(path.join(dir("claude", "skill-e"), "SKILL.md")))
+                .mtimeMs
+        ).to.equal(markerStat.mtimeMs);
+        // Other harnesses have no conflict and are fully reconciled.
+        expect(await readSkill(dir("codex", "skill-a"))).to.equal(
+            skillMarkdown("skill-a", "v2")
+        );
     });
 
     it("removes remotely deleted clean marked copies; edited ones need --force", async () => {
@@ -318,39 +358,107 @@ describe("scan-based Agent Skill reconciliation", () => {
             expect(await pathExists(dir(harness))).to.equal(false);
     });
 
-    it("never deletes on an outage, manifest warnings or failed downloads", async () => {
-        const first = await remote.publish("alpha", "v1");
-        await sync();
-        remote.failManifest = true;
-        expect((await sync()).status).to.equal("failed");
-        remote.failManifest = false;
+    describe("global remote preparation", () => {
+        const snapshotChecksum = async (id: string) => {
+            const identity = createAgentSkillSourceIdentity({
+                baseUrl: remote.baseUrl,
+                tenantId: "7",
+                userId: remote.userId
+            });
+            return (await loadAgentSkillSourceState(identity)).snapshot?.items[
+                `user/${id}`
+            ]?.checksum;
+        };
 
-        remote.remove("alpha");
-        remote.warnings = [
-            { sourceKind: "own-user-publication", code: "READ_DENIED" }
-        ];
-        const warned = await sync();
-        expect(warned.status).to.equal("partial");
-        expect(codes(warned, "SOURCE_UNRESOLVED")).to.have.length(4);
+        it("never substitutes cached v1 when v2 cannot be downloaded, even with --force", async () => {
+            const v1 = await remote.publish("alpha", "v1");
+            await remote.publish("beta", "v1");
+            await sync();
+            await fs.writeFile(
+                path.join(dir("claude"), "SKILL.md"),
+                skillMarkdown("alpha", "unpublished edit")
+            );
+            remote.remove("beta");
+            const v2 = await remote.publish("alpha", "v2");
+            remote.failDownloads.add("alpha");
 
-        remote.warnings = [];
-        await remote.publish("alpha", "v2");
-        remote.failDownloads.add("alpha");
-        const failedDownload = await sync();
-        expect(failedDownload.status).to.not.equal("success");
-        expect(codes(failedDownload, "DOWNLOAD_FAILED")).to.have.length(1);
-        for (const harness of HARNESSES)
-            expect(await readSkill(dir(harness))).to.equal(
+            const forced = await sync(true);
+            expect(forced.status).to.equal("failed");
+            expect(forced.remoteSourceFailed).to.equal(true);
+            expect(
+                codes(forced, "DOWNLOAD_FAILED").map((i) => i.name)
+            ).to.deep.equal(["alpha"]);
+            // Nothing local changed: the edit, other copies and even the
+            // remotely removed skill stay until a verified sync succeeds.
+            expect(await readSkill(dir("claude"))).to.equal(
+                skillMarkdown("alpha", "unpublished edit")
+            );
+            for (const harness of ["codex", "opencode", "dsh"] as Harness[]) {
+                expect(await readSkill(dir(harness))).to.equal(
+                    skillMarkdown("alpha", "v1")
+                );
+                expect(await pathExists(dir(harness, "beta"))).to.equal(true);
+            }
+            // The prior complete snapshot is retained; v2 is not recorded.
+            expect(await snapshotChecksum(v1.meta.id)).to.equal(
+                v1.meta.checksum
+            );
+            expect(await snapshotChecksum(v1.meta.id)).to.not.equal(
+                v2.meta.checksum
+            );
+
+            remote.failDownloads.clear();
+            const retried = await sync(true);
+            expect(retried.status).to.equal("success");
+            expect(await readSkill(dir("claude"))).to.equal(
+                skillMarkdown("alpha", "v2")
+            );
+        });
+
+        it("stops on a manifest outage, a material warning or an invalid ZIP", async () => {
+            await remote.publish("alpha", "v1");
+            await sync();
+            remote.failManifest = true;
+            expect((await sync(true)).status).to.equal("failed");
+            remote.failManifest = false;
+
+            remote.remove("alpha");
+            remote.warnings = [
+                { sourceKind: "own-user-publication", code: "READ_DENIED" }
+            ];
+            const warned = await sync(true);
+            expect(warned.status).to.equal("failed");
+            expect(warned.remoteSourceFailed).to.equal(true);
+            for (const harness of HARNESSES)
+                expect(await pathExists(dir(harness))).to.equal(true);
+
+            remote.warnings = [];
+            const v2 = await remote.publish("alpha", "v2");
+            // The archive bytes no longer match the manifest checksum.
+            remote.items.set(v2.meta.id, {
+                meta: v2.meta,
+                bytes: (await remote.publish("alpha", "tampered")).archive.bytes
+            });
+            remote.items.get(v2.meta.id)!.meta = v2.meta;
+            const invalid = await sync(true);
+            expect(invalid.status).to.equal("failed");
+            for (const harness of HARNESSES)
+                expect(await readSkill(dir(harness))).to.equal(
+                    skillMarkdown("alpha", "v1")
+                );
+        });
+
+        it("reuses a checksum-identical cached ZIP instead of downloading again", async () => {
+            await remote.publish("alpha", "v1");
+            await sync();
+            const downloads = remote.downloads;
+            await fs.rm(dir("codex"), { recursive: true });
+            expect((await sync()).status).to.equal("success");
+            expect(remote.downloads).to.equal(downloads);
+            expect(await readSkill(dir("codex"))).to.equal(
                 skillMarkdown("alpha", "v1")
             );
-        const identity = createAgentSkillSourceIdentity({
-            baseUrl: remote.baseUrl,
-            tenantId: "7",
-            userId: remote.userId
         });
-        const cached = (await loadAgentSkillSourceState(identity)).snapshot!
-            .items[`user/${first.meta.id}`];
-        expect(cached.checksum).to.equal(first.meta.checksum);
     });
 
     it("keeps successful harness updates when a later harness fails, then converges", async () => {
@@ -425,6 +533,43 @@ describe("scan-based Agent Skill reconciliation", () => {
             expect(
                 await pathExists(path.join(env.roots.claude, STAGING_DIRECTORY))
             ).to.equal(false);
+        });
+
+        it("retains the backup when the new tree has the right id but incomplete content", async () => {
+            await remote.publish("alpha", "v1");
+            await sync();
+            const staging = path.join(env.roots.claude, STAGING_DIRECTORY);
+            const operation = path.join(staging, "op-partial");
+            await fs.mkdir(path.join(operation, "old"), { recursive: true });
+            await fs.writeFile(
+                path.join(operation, "old", "SKILL.md"),
+                "the only good copy"
+            );
+            await fs.writeFile(
+                path.join(operation, "operation.json"),
+                JSON.stringify({
+                    version: 1,
+                    kind: "replace",
+                    name: "alpha",
+                    newInstallationId: (await readMarker(dir("claude")))
+                        .installationId
+                })
+            );
+            // The final tree carries the expected id but lost content.
+            await fs.writeFile(path.join(dir("claude"), "SKILL.md"), "trunc");
+
+            const result = await sync();
+            const retained = result.conflicts!.find(
+                (c) => c.reason === "RECOVERY_RETAINED"
+            )!;
+            expect(retained.path).to.equal(path.join(operation, "old"));
+            expect(retained.detail).to.include("incomplete or corrupted");
+            expect(
+                await fs.readFile(
+                    path.join(operation, "old", "SKILL.md"),
+                    "utf8"
+                )
+            ).to.equal("the only good copy");
         });
 
         it("keeps the backup when the skill path becomes occupied mid-replacement", async () => {
@@ -663,8 +808,12 @@ describe("scan-based Agent Skill reconciliation", () => {
             await remote.publish("system-guide", "system v2", {}, "system");
             const conflicted = await wsync();
             expect(conflicted.status).to.equal("partial");
+            // The user-skill conflict does not hold back the system update.
             expect(await readSkill(path.join(root, "system-guide"))).to.equal(
-                skillMarkdown("system-guide", "system v1")
+                skillMarkdown("system-guide", "system v2")
+            );
+            expect(await readSkill(path.join(root, "alpha"))).to.equal(
+                skillMarkdown("alpha", "sandbox edit")
             );
             const forced = await wsync(true);
             expect(forced.status).to.equal("success");
@@ -673,6 +822,25 @@ describe("scan-based Agent Skill reconciliation", () => {
             );
             expect(await readSkill(path.join(root, "system-guide"))).to.equal(
                 skillMarkdown("system-guide", "system v2")
+            );
+        });
+
+        it("stops a forced Sandbox sync before any change when a required download fails", async () => {
+            await wsync(true);
+            await fs.writeFile(
+                path.join(root, "alpha", "SKILL.md"),
+                skillMarkdown("alpha", "sandbox edit")
+            );
+            await remote.publish("system-guide", "system v2", {}, "system");
+            remote.failDownloads.add("system-guide");
+            const result = await wsync(true);
+            expect(result.status).to.equal("failed");
+            expect(result.remoteSourceFailed).to.equal(true);
+            expect(await readSkill(path.join(root, "alpha"))).to.equal(
+                skillMarkdown("alpha", "sandbox edit")
+            );
+            expect(await readSkill(path.join(root, "system-guide"))).to.equal(
+                skillMarkdown("system-guide", "system v1")
             );
         });
 

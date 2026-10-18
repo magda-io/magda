@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { spawn } from "node:child_process";
 import { Command } from "commander";
 import { registerProfileCommands } from "../commands/profileCmd.js";
 import { AGENT_SKILL_INSTALL_MARKER } from "../agentSkillArchive.js";
@@ -317,6 +318,107 @@ describe("commit-first Agent Skill profile switching", () => {
             expect(await readSkill(dir(harness))).to.equal(
                 skillMarkdown("alpha", "dev alpha")
             );
+    });
+
+    describe("serialization with the operation lock", () => {
+        const program = () => {
+            const command = new Command();
+            command.exitOverride();
+            registerProfileCommands(command);
+            return command;
+        };
+
+        async function assertConsistent() {
+            const active = (await loadConfig()).activeProfile as "dev" | "prod";
+            const remote = active === "dev" ? dev : prod;
+            const key = createAgentSkillSourceIdentity({
+                baseUrl: remote.baseUrl,
+                tenantId: "7",
+                userId: remote.userId
+            }).key;
+            for (const harness of HARNESSES) {
+                expect((await readMarker(dir(harness))).sourceKey).to.equal(
+                    key
+                );
+                expect(await readSkill(dir(harness))).to.equal(
+                    skillMarkdown("alpha", `${active} alpha`)
+                );
+            }
+        }
+
+        it("never interleaves two concurrent profile switches", async () => {
+            const originalStdout = process.stdout.write;
+            const originalStderr = process.stderr.write;
+            (process.stdout as any).write = () => true;
+            (process.stderr as any).write = () => true;
+            const previous = process.exitCode;
+            let results: PromiseSettledResult<unknown>[];
+            try {
+                results = await Promise.allSettled([
+                    program().parseAsync(["profile", "use", "prod"], {
+                        from: "user"
+                    }),
+                    program().parseAsync(["profile", "use", "dev"], {
+                        from: "user"
+                    })
+                ]);
+            } finally {
+                process.stdout.write = originalStdout;
+                process.stderr.write = originalStderr;
+                process.exitCode = previous;
+            }
+            expect(results.some((r) => r.status === "fulfilled")).to.equal(
+                true
+            );
+            for (const result of results)
+                if (result.status === "rejected")
+                    expect(String(result.reason)).to.match(
+                        /already running|lock/i
+                    );
+            await assertConsistent();
+        });
+
+        it("refuses while another process holds the lock, and recovers when it dies", async () => {
+            const moduleUrl = new URL("../agentSkillState.ts", import.meta.url)
+                .href;
+            const child = spawn(
+                process.execPath,
+                [
+                    "--import=tsx/esm",
+                    "--input-type=module",
+                    "-e",
+                    `import { withAgentSkillStateLock } from ${JSON.stringify(
+                        moduleUrl
+                    )}; await withAgentSkillStateLock(async () => { console.log("locked"); await new Promise(() => setInterval(() => {}, 1000)); });`
+                ],
+                { env: process.env, stdio: ["ignore", "pipe", "inherit"] }
+            );
+            await new Promise<void>((resolve, reject) => {
+                child.once("error", reject);
+                child.stdout!.once("data", (chunk) =>
+                    String(chunk).includes("locked")
+                        ? resolve()
+                        : reject(new Error("child did not acquire the lock"))
+                );
+            });
+            let refused: unknown;
+            try {
+                await profile(["use", "prod"]);
+            } catch (error) {
+                refused = error;
+            }
+            expect(String(refused)).to.match(/already running|lock/i);
+            // The selection write happens inside the lock, so nothing changed.
+            expect((await loadConfig()).activeProfile).to.equal("dev");
+            await assertConsistent();
+
+            child.kill("SIGKILL");
+            await new Promise<void>((resolve) =>
+                child.once("exit", () => resolve())
+            );
+            expect((await profile(["use", "prod"])).code).to.equal(undefined);
+            await assertConsistent();
+        });
     });
 
     it("switches a zero-skill profile with no python3 on PATH", async () => {

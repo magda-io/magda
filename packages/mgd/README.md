@@ -251,20 +251,28 @@ and marker have both been removed; delete such a folder yourself if needed.
 | Unmarked directory whose name is not desired                                    | ignored                            | ignored        |
 | Symlink, special file, symlinked root, reserved bundled name                    | refused                            | refused        |
 
-Every predictable conflict is found before anything destructive happens. While
-one exists, ordinary sync installs missing skills and repairs metadata but holds
-replacements and removals, and reports every skill, harness, path, installed
-source and remedy. `--force` is your explicit consent to discard conflicting
-local content; it never bypasses authorization, ZIP validation or the
-unsafe-path rules. Each skill is then updated independently: a new tree is
-staged complete (marker included) beside the root, the old one moves to a
-per-skill backup, and the new one is renamed into place. If one harness hits a
-disk error, the skills already updated elsewhere stay updated; the result is
-`partial` with exact paths, and the next sync converges. A crash leaves a
-recognizable `.magda-skill-staging/` entry that the next sync restores or
-completes; anything ambiguous is kept and reported, never deleted. Removals
-require a complete verified manifest: an outage, manifest warning or failed
-download never deletes anything. Any result other than `success` exits nonzero.
+An online sync works in two phases. First it fetches the complete current
+manifest and obtains every required publication ZIP, verified against the
+manifest checksum. A cached ZIP is reused only when its checksum matches
+exactly, e.g. one this machine just published. If the manifest is unavailable
+or carries a warning, or any required download or validation fails, the sync
+stops **before any installed skill changes, even with `--force`**. It never
+falls back to an older cached version, keeps the previously verified snapshot,
+and asks you to retry later.
+
+Only then are local installations reconciled. Every conflict is reported (skill,
+harness, path, installed source and remedy) and blocks only that installation;
+all other clean updates, clean removals, installs and metadata repairs proceed.
+`--force` is your explicit consent to discard conflicting local content; it never
+bypasses remote verification, authorization or the unsafe-path rules. Each skill
+is updated independently: a new tree is staged complete (marker included) beside
+the root, the old one moves to a per-skill backup, and the new one is renamed into
+place. If one harness hits a disk error, the skills already updated elsewhere stay
+updated; the result is `partial` with exact paths, and the next sync converges. A
+crash leaves a recognizable `.magda-skill-staging/` entry that the next sync
+restores, or completes only after checking the new tree's full content digest;
+anything ambiguous is kept and reported, never deleted. Any result other than
+`success` exits nonzero.
 
 `publish <installed-copy>` publishes to **the account recorded in the copy's
 marker**, whatever profile is active: it finds a configured profile whose
@@ -272,9 +280,12 @@ credentials authenticate as exactly that instance, tenant and user, excludes
 only the marker from the ZIP, and replaces the same publication with `If-Match`
 on the installed baseline (`--force` overwrites a newer version of your own
 publication). If no such credentials work, it refuses; it never falls back to
-another account. Only that copy's baseline and the account's cache are updated;
-run `mgd agent-skill sync` to update other harness copies. `pull` working
-directories likewise publish back to the account they came from.
+another account. Only that copy's baseline is updated; run `mgd agent-skill sync`
+to update other harness copies. `pull` working directories likewise publish back
+to the account they came from. Every publish caches the exact ZIP the server
+acknowledged, so a later sync reuses it instead of downloading it again; this
+does not mark the rest of the manifest as freshly verified. If that local
+bookkeeping fails, the command says the remote publication still succeeded.
 
 ### Profiles
 
@@ -296,8 +307,12 @@ Agent Skill sync: PARTIAL
 `--force` forces that reconciliation; `--sync-skills` adds an explicit online
 sync (combinable with `--force`). A profile with no verified cache is selected,
 but nothing is reconciled or removed until you run `mgd agent-skill sync`.
-`profile create/update/remove` change configuration only and never delete
-installed skills. One-off `MGD_PROFILE` or credential/base-URL overrides may
+`profile use` (both its selection write and reconciliation) and
+`profile create/update/remove` run under the same operation lock as sync and
+publish, so they never interleave; a concurrent operation fails fast with a
+retryable "already running" error, and the lock is released automatically if
+a process exits or crashes. `profile create/update/remove` change configuration
+only and never delete installed skills. One-off `MGD_PROFILE` or credential/base-URL overrides may
 refresh an isolated cache but never change the machine-wide installations.
 
 DSH `0.2.1-alpha.1`, Claude Code, Codex and OpenCode discover these copied

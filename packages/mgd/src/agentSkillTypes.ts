@@ -109,6 +109,11 @@ export interface AgentSkillSyncResult {
     manifestWarnings: number;
     /** Unresolved conflicts, unsafe paths and failures, with remedies. */
     conflicts?: AgentSkillSyncConflict[];
+    /**
+     * The remote manifest or a required publication could not be verified;
+     * no installed skill was changed.
+     */
+    remoteSourceFailed?: true;
 }
 
 export function parseAgentSkillRef(value: string): AgentSkillRef {

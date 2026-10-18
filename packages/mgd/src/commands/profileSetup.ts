@@ -4,6 +4,7 @@ import { WHOAMI } from "../endpoints.js";
 import { loadConfig, saveConfig, Profile } from "../profile.js";
 import { promptText, promptHidden } from "../prompt.js";
 import { note, colors } from "../output.js";
+import { withAgentSkillOperationLock } from "../agentSkillSync.js";
 
 export async function normalizeBaseUrl(
     input: string,
@@ -89,9 +90,19 @@ export async function createProfile(
     };
     const user = await verifyCredentials(profile);
 
-    cfg.profiles[name] = profile;
-    cfg.activeProfile = name;
-    await saveConfig(cfg);
+    // Re-read and write under the operation lock so this cannot interleave
+    // with profile use, sync or publish. Configuration only: never deletes
+    // installed skills.
+    await withAgentSkillOperationLock(async () => {
+        const latest = await loadConfig();
+        if (latest.profiles[name])
+            throw new UsageError(
+                `Profile "${name}" was created concurrently; retry with another name.`
+            );
+        latest.profiles[name] = profile;
+        latest.activeProfile = name;
+        await saveConfig(latest);
+    });
 
     note(
         colors.green(
@@ -146,8 +157,15 @@ export async function updateProfile(
     // never deletes installed skills.
     delete next.agentSkillSource;
 
-    cfg.profiles[name] = next;
-    await saveConfig(cfg);
+    await withAgentSkillOperationLock(async () => {
+        const latest = await loadConfig();
+        if (JSON.stringify(latest.profiles[name]) !== JSON.stringify(existing))
+            throw new UsageError(
+                `Profile "${name}" changed concurrently; retry the update.`
+            );
+        latest.profiles[name] = next;
+        await saveConfig(latest);
+    });
 
     note(
         colors.green(

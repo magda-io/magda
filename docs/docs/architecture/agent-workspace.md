@@ -331,17 +331,25 @@ verified desired set. Edited content is a conflict. Symlinks, special files,
 symlinked roots/ancestors and reserved bundled names are unsafe even with
 `--force`.
 
-All predictable conflicts are found before anything destructive runs. While any
-exist, ordinary sync still installs absent skills and repairs metadata, but
-holds replacements and removals; `--force` discards safe conflicting copies.
-Each skill is then applied independently using portable Node.js `fs`: the new
+Online sync has two phases. **Global remote preparation** fetches the
+complete manifest and obtains every required ZIP verified against its
+checksum, reusing a cached ZIP only on an exact checksum match. Any manifest
+failure or warning, or any download or validation failure, aborts the whole
+online sync before any installed skill changes, even with `--force`. It never
+substitutes older cached content, and the previous verified snapshot stays as
+it was. **Independent local reconciliation** follows. All predictable
+conflicts are reported, each blocking only its own installation; every other
+clean update, clean removal, install and metadata repair proceeds, and
+`--force` discards safe conflicting copies. Each skill is applied independently using portable Node.js `fs`: the new
 tree, marker included, is staged under `<root>/.magda-skill-staging/<op>/new`,
 the old tree moves to `<op>/old`, the new tree is renamed into place and the
 backup is dropped. A failed rename restores that one skill. An unexpected
 failure in one harness leaves completed skills elsewhere in place and yields
 `partial` (nonzero CLI exit). The next sync converges from the actual
-directories, first restoring or completing recognizable per-skill leftovers;
-ambiguous backups are retained and reported. A kernel-released loopback lock
+directories, first restoring or completing recognizable per-skill leftovers. A
+backup is dropped only when the new tree's marker id, verified source and full
+content digest all match; ambiguous or incomplete cases retain the backup and
+report it. A kernel-released loopback lock
 (ports below the OS ephemeral ranges) serializes operations. Cross-harness
 atomicity and hostile same-user syscall races are out of scope.
 
@@ -349,8 +357,11 @@ atomicity and hostile same-user syscall races are out of scope.
 active profile. It resolves the verified identity for that source key, finds a
 configured profile whose credentials authenticate as exactly that instance,
 tenant and user, and replaces the same publication with `If-Match` on that
-copy's baseline. It then updates only that copy's marker and the account cache;
-other harness copies reconcile on a later explicit sync. Missing or mismatched
+copy's baseline. It then updates only that copy's marker. Every publish path
+(installed copy, `pull` working directory, new skill) caches the exact
+acknowledged ZIP for that account, updating only that entry of an existing
+snapshot without refreshing its verification time. Other harness copies
+reconcile on a later explicit sync. Missing or mismatched
 credentials are refused, with no fallback. `pull` working directories keep
 their originating account the same way.
 
@@ -360,7 +371,9 @@ reconciles that profile's previously verified snapshot offline (`--force` and
 They are reported with each copy's installed source, the command exits nonzero,
 and older-profile copies may remain discoverable until resolved. An uncached
 profile is selected without reconciliation, so nothing is removed on an assumed
-empty set. `profile create/update/remove` change configuration only. One-off
+empty set. The selection write and its reconciliation, and every
+`profile create/update/remove` write, run under the same cross-process lock as
+sync and publish. `profile create/update/remove` change configuration only. One-off
 `MGD_PROFILE`, URL or credential overrides never change global installations.
 Local CLI synchronization does not write Workspace claim annotations.
 

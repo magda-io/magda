@@ -19,6 +19,7 @@ import {
 } from "../agentSkillArchive.js";
 import { assertRealManagedAncestors } from "../agentSkillState.js";
 import {
+    cacheAcknowledgedPublication,
     cachedDesired,
     clientForSourceAccount,
     reconcileResult,
@@ -33,15 +34,13 @@ import {
 } from "../agentSkillReconcile.js";
 import type { AgentSkillInstallMarker } from "../agentSkillLocalState.js";
 import {
-    agentSkillArchivePath,
     canonicalMagdaBaseUrl,
     createAgentSkillSourceIdentity,
     findAgentSkillWorkingDirectory,
     loadAgentSkillSourceState,
     saveAgentSkillSourceState,
     sourceStateKey,
-    verifiedMarkerSource,
-    writeFileAtomically
+    verifiedMarkerSource
 } from "../agentSkillLocalState.js";
 import { resolveAgentSkillTargets } from "../skills.js";
 import {
@@ -220,46 +219,31 @@ async function publishInstallation(
     }
     // The server accepted the content. Local bookkeeping failures below must
     // not make a successful publication appear to have failed.
-    let localUpdated = false;
-    try {
-        if (metadata.checksum === candidate.archiveSha256) {
-            const key = sourceStateKey(ref);
-            const archiveFile = agentSkillArchivePath(
-                source.identity,
-                ref,
-                metadata.checksum
-            );
-            await writeFileAtomically(archiveFile, candidate.bytes);
-            const { state } = source;
-            if (state.snapshot?.items[key]) {
-                state.snapshot.items[key] = {
-                    ...state.snapshot.items[key],
-                    description: metadata.description,
-                    checksum: metadata.checksum,
-                    treeDigest: candidate.treeDigest,
-                    archiveFile,
-                    verifiedAt: new Date().toISOString()
-                };
-                delete state.snapshot.items[key].unresolved;
-                await saveAgentSkillSourceState(state);
-            }
+    const local = await recordAcknowledgedPublication(
+        source.state,
+        metadata,
+        candidate
+    );
+    let baselineUpdated = false;
+    if (local.cache === "updated")
+        try {
             await writeInstallMarker(installation.path, {
                 ...marker,
                 baselineChecksum: metadata.checksum,
                 baselineTreeDigest: candidate.treeDigest
             });
-            localUpdated = true;
+            baselineUpdated = true;
+        } catch (error) {
+            local.error = local.error || (error as Error).message;
         }
-    } catch {
-        localUpdated = false;
-    }
     if (opts.json) {
         printData("json", {
             ...metadata,
+            localCache: local.cache,
             installation: {
                 path: installation.path,
                 sourceProfile: source.profileName,
-                baselineUpdated: localUpdated
+                baselineUpdated
             }
         });
         return;
@@ -267,13 +251,30 @@ async function publishInstallation(
     note(
         `Published ${metadata.type}/${metadata.id} from ${installation.path} using profile "${source.profileName}" (the account that installed it).`
     );
-    if (!localUpdated)
+    if (local.cache !== "updated" || !baselineUpdated)
         note(
-            "The remote publication succeeded, but this copy's local baseline could not be updated; run `mgd agent-skill sync` with that profile to repair it. Do not publish it again as a new skill."
+            `The remote publication succeeded, but local bookkeeping failed (${local.error}). Do not publish it again as a new skill; run \`mgd agent-skill sync\` with that profile to repair the local copy and cache.`
         );
     note(
         "Other harness copies were not changed. Run `mgd agent-skill sync` to update them."
     );
+}
+
+/**
+ * After server acknowledgement, cache the exact published ZIP in the account's
+ * verified cache. Failures are reported, never turned into publish failures.
+ */
+async function recordAcknowledgedPublication(
+    state: Parameters<typeof cacheAcknowledgedPublication>[0],
+    metadata: Parameters<typeof cacheAcknowledgedPublication>[1],
+    archive: Parameters<typeof cacheAcknowledgedPublication>[2]
+): Promise<{ cache: "updated" | "failed"; error?: string }> {
+    try {
+        await cacheAcknowledgedPublication(state, metadata, archive);
+        return { cache: "updated" };
+    } catch (error) {
+        return { cache: "failed", error: (error as Error).message };
+    }
 }
 
 export function registerAgentSkillCommands(program: Command): void {
@@ -436,18 +437,32 @@ export function registerAgentSkillCommands(program: Command): void {
                 } else {
                     metadata = await client.create(opts.type, candidate.bytes);
                 }
-                const ref = { type: metadata.type, id: metadata.id };
-                state.workingDirectories[absolute] = {
-                    type: metadata.type,
-                    name: metadata.name,
-                    ref,
-                    baseChecksum: metadata.checksum,
-                    treeDigest: candidate.treeDigest
-                };
-                await saveAgentSkillSourceState(state);
-                if (opts.json) printData("json", metadata);
+                const local = await recordAcknowledgedPublication(
+                    state,
+                    metadata,
+                    candidate
+                );
+                try {
+                    state.workingDirectories[absolute] = {
+                        type: metadata.type,
+                        name: metadata.name,
+                        ref: { type: metadata.type, id: metadata.id },
+                        baseChecksum: metadata.checksum,
+                        treeDigest: candidate.treeDigest
+                    };
+                    await saveAgentSkillSourceState(state);
+                } catch (error) {
+                    local.cache = "failed";
+                    local.error = local.error || (error as Error).message;
+                }
+                if (opts.json)
+                    printData("json", { ...metadata, localCache: local.cache });
                 else {
                     note(`Published ${metadata.type}/${metadata.id}.`);
+                    if (local.cache !== "updated")
+                        note(
+                            `The remote publication succeeded, but local bookkeeping failed (${local.error}). Do not publish it again as a new skill; a later \`mgd agent-skill sync\` downloads it normally.`
+                        );
                     note(
                         "Run `mgd agent-skill sync` to install or update it in your coding-agent harnesses."
                     );

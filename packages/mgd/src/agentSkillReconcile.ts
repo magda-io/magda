@@ -51,11 +51,14 @@ import type { AgentSkillTarget } from "./skills.js";
  *            names plus directories carrying a valid installation marker
  *   classify each candidate against its marker baseline and the verified
  *            desired publication; collect every predictable conflict first
- *   apply    each skill independently. Ordinary sync performs no replacement
- *            or removal while a predictable conflict exists; installs into
- *            absent paths and metadata-only repairs still proceed. An
- *            unexpected I/O failure affects only that skill: completed work in
- *            other skills/harnesses stays, and the next sync converges.
+ *   apply    each skill independently. A conflict blocks only that
+ *            installation; clean installs, updates, removals and metadata
+ *            repairs elsewhere proceed. An unexpected I/O failure affects
+ *            only that skill: completed work in other skills/harnesses stays,
+ *            and the next sync converges.
+ *
+ * Callers run this only after global remote preparation has verified the
+ * complete desired set; a remote-source failure never reaches this engine.
  *
  * There is no installation index, global journal or cross-harness rollback.
  * Each replacement stages the complete new tree (marker included) beside the
@@ -313,6 +316,33 @@ export async function readInstallMarker(
 }
 
 /**
+ * Prove an interrupted operation's new tree is the complete installation it
+ * staged: a real directory whose valid marker carries the operation's new
+ * installation id, names a verified source, and whose full content digest
+ * equals the marker baseline. An id match alone is never enough.
+ */
+async function verifyReplacement(
+    final: string,
+    name: string,
+    newInstallationId: string
+): Promise<"complete" | "incomplete" | "other"> {
+    const found = await lstatOrUndefined(final);
+    if (!found || found.isSymbolicLink() || !found.isDirectory())
+        return "other";
+    const marker = await readInstallMarker(final, name);
+    if (marker?.installationId !== newInstallationId) return "other";
+    if (!(await verifiedMarkerSource(marker))) return "incomplete";
+    const inspected = await inspectInstalledAgentSkill(
+        final,
+        marker.source.type
+    );
+    return inspected.kind === "content" &&
+        inspected.digest === marker.baselineTreeDigest
+        ? "complete"
+        : "incomplete";
+}
+
+/**
  * Recover interrupted per-skill operations in one root. Only this tool's
  * reserved staging directory is enumerated, and nothing is followed through
  * a link. A backup is restored when the skill path is free, dropped only when
@@ -386,13 +416,15 @@ async function recoverRoot(
             harness: target.harness,
             path: final
         };
-        if (
-            record.newInstallationId &&
-            finalStat?.isDirectory() &&
-            !finalStat.isSymbolicLink() &&
-            (await readInstallMarker(final, record.name))?.installationId ===
-                record.newInstallationId
-        ) {
+        const replacement =
+            record.newInstallationId && finalStat
+                ? await verifyReplacement(
+                      final,
+                      record.name,
+                      record.newInstallationId
+                  )
+                : "absent";
+        if (replacement === "complete") {
             await finishOperation(operation);
             items.push({
                 ...base,
@@ -413,7 +445,10 @@ async function recoverRoot(
                 harness: target.harness,
                 path: old,
                 reason: "RECOVERY_RETAINED",
-                detail: `${final} is occupied by other content`,
+                detail:
+                    replacement === "incomplete"
+                        ? `the replacement at ${final} is incomplete or corrupted`
+                        : `${final} is occupied by other content`,
                 remedy: remedyFor("RECOVERY_RETAINED", old)
             });
         }
@@ -797,10 +832,8 @@ export async function reconcileAgentSkillInstallations(
         }
     }
 
-    // Every predictable conflict is known before anything destructive runs.
-    // Without --force, existing directories stay as they are until resolved;
-    // installs into absent paths and metadata-only repairs still proceed.
-    const holdDestructive = !request.force && problems.length > 0;
+    // Every predictable conflict was classified and reported above; each
+    // blocks only its own installation. All other safe operations proceed.
     for (const step of planned) {
         const { candidate, kind } = step;
         const base = {
@@ -809,14 +842,6 @@ export async function reconcileAgentSkillInstallations(
             harness: candidate.target.harness,
             path: candidate.path
         };
-        if (holdDestructive && (kind === "replace" || kind === "remove")) {
-            items.push({
-                ...base,
-                action: "skipped",
-                code: "HELD_FOR_CONFLICTS"
-            });
-            continue;
-        }
         try {
             await apply(kind, candidate, request.sourceKey, step.expected);
             items.push({

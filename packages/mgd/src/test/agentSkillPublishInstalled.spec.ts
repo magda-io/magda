@@ -8,6 +8,11 @@ import {
     sha256Hex,
     validateAgentSkillArchive
 } from "../agentSkillArchive.js";
+import {
+    agentSkillArchivePath,
+    createAgentSkillSourceIdentity,
+    loadAgentSkillSourceState
+} from "../agentSkillLocalState.js";
 import { loadConfig, saveConfig } from "../profile.js";
 import { UsageError } from "../errors.js";
 import { captureStdout } from "./captureStdout.js";
@@ -84,6 +89,38 @@ async function startInstance(scratch: string) {
                     };
                     remote.items.set(id, { meta, bytes: recorded.body });
                     res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify(meta));
+                })().catch((error) => {
+                    res.writeHead(400, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ message: String(error) }));
+                });
+            }
+        },
+        {
+            method: "POST",
+            path: "/api/v0/agent/skills/user",
+            handler: (_req, res, recorded) => {
+                void (async () => {
+                    const validated = await validateAgentSkillArchive(
+                        recorded.body,
+                        "user"
+                    );
+                    const id = remote.idFor(validated.name);
+                    const meta = {
+                        id,
+                        name: validated.name,
+                        description: validated.description,
+                        type: "user" as const,
+                        userId: remote.userId,
+                        ownerId: remote.userId,
+                        createdAt: "2025-01-01T00:00:00.000Z",
+                        createdBy: remote.userId,
+                        updatedAt: "2025-01-01T00:00:00.000Z",
+                        updatedBy: remote.userId,
+                        checksum: sha256Hex(recorded.body)
+                    };
+                    remote.items.set(id, { meta, bytes: recorded.body });
+                    res.writeHead(201, { "content-type": "application/json" });
                     res.end(JSON.stringify(meta));
                 })().catch((error) => {
                     res.writeHead(400, { "content-type": "application/json" });
@@ -346,14 +383,161 @@ describe("publishing and deleting installed Agent Skill copies", () => {
         expect(
             result.local.conflicts.map((c: any) => [c.harness, c.reason])
         ).to.deep.equal([["opencode", "NOT_DESIRED_LOCAL_MODIFICATION"]]);
-        // Removals of the clean copies are held while a conflict exists.
-        for (const harness of ["claude", "codex", "opencode", "dsh"] as const)
-            expect(await pathExists(dir(harness))).to.equal(true);
+        // Clean copies are removed; only the edited one is kept.
+        for (const harness of ["claude", "codex", "dsh"] as const)
+            expect(await pathExists(dir(harness))).to.equal(false);
+        expect(await pathExists(dir("opencode"))).to.equal(true);
 
         const forced = JSON.parse(
             await run(["agent-skill", "sync", "--force", "--json"])
         );
-        expect(forced.counts.removed).to.equal(4);
+        expect(forced.counts.removed).to.equal(1);
         expect(await pathExists(dir("opencode"))).to.equal(false);
+    });
+
+    describe("publication cache", () => {
+        const archiveDownloads = () =>
+            dev.server.requests.filter(
+                (r) => r.method === "GET" && r.url.endsWith("/archive")
+            ).length;
+        const sourceState = async () =>
+            loadAgentSkillSourceState(
+                createAgentSkillSourceIdentity({
+                    baseUrl: dev.remote.baseUrl,
+                    tenantId: "7",
+                    userId: dev.remote.userId
+                })
+            );
+        const cachedBytes = async (id: string, checksum: string) =>
+            fs.readFile(
+                agentSkillArchivePath(
+                    (await sourceState()).identity,
+                    { type: "user", id },
+                    checksum
+                )
+            );
+
+        it("caches the acknowledged ZIP of an installed copy without re-verifying the manifest", async () => {
+            const before = (await sourceState()).snapshot!;
+            await fs.writeFile(
+                path.join(dir("claude"), "SKILL.md"),
+                skillMarkdown("alpha", "published from claude")
+            );
+            const published = JSON.parse(
+                await run(["agent-skill", "publish", dir("claude"), "--json"])
+            );
+            expect(published.localCache).to.equal("updated");
+            const put = dev.puts()[0];
+            expect(
+                (await cachedBytes(published.id, published.checksum)).equals(
+                    put.body
+                )
+            ).to.equal(true);
+            const after = (await sourceState()).snapshot!;
+            // One publication does not make the whole manifest fresh.
+            expect(after.verifiedAt).to.equal(before.verifiedAt);
+            expect(Object.keys(after.items)).to.deep.equal(
+                Object.keys(before.items)
+            );
+
+            const downloads = archiveDownloads();
+            const synced = JSON.parse(
+                await run(["agent-skill", "sync", "--json"])
+            );
+            expect(synced.counts.updated).to.equal(3);
+            expect(archiveDownloads()).to.equal(downloads);
+        });
+
+        it("caches a newly published skill and a pulled working directory", async () => {
+            const before = (await sourceState()).snapshot!;
+            const fresh = path.join(env.tmp, "fresh-skill");
+            await run([
+                "agent-skill",
+                "init",
+                "fresh-skill",
+                "-o",
+                fresh,
+                "--description",
+                "Skill fresh-skill"
+            ]);
+            await fs.writeFile(
+                path.join(fresh, "SKILL.md"),
+                skillMarkdown("fresh-skill", "brand new")
+            );
+            const created = JSON.parse(
+                await run(["agent-skill", "publish", fresh, "--json"])
+            );
+            expect(created.localCache).to.equal("updated");
+            // Cached as a blob only; no single-item snapshot is invented.
+            expect((await sourceState()).snapshot!.items).to.not.have.property(
+                `user/${created.id}`
+            );
+            expect((await sourceState()).snapshot!.verifiedAt).to.equal(
+                before.verifiedAt
+            );
+
+            const working = path.join(env.tmp, "working-alpha");
+            await run([
+                "agent-skill",
+                "pull",
+                `user/${dev.remote.idFor("alpha")}`,
+                "-o",
+                working
+            ]);
+            await fs.writeFile(
+                path.join(working, "SKILL.md"),
+                skillMarkdown("alpha", "authored in working dir")
+            );
+            const updated = JSON.parse(
+                await run(["agent-skill", "publish", working, "--json"])
+            );
+            expect(updated.localCache).to.equal("updated");
+            expect(
+                (await cachedBytes(updated.id, updated.checksum)).length
+            ).to.be.greaterThan(0);
+
+            const downloads = archiveDownloads();
+            const synced = JSON.parse(
+                await run(["agent-skill", "sync", "--json"])
+            );
+            expect(synced.status).to.equal("success");
+            expect(synced.counts).to.deep.include({ installed: 4, updated: 4 });
+            expect(archiveDownloads()).to.equal(downloads);
+        });
+
+        it("reports a local cache failure without claiming the publication failed", async () => {
+            const archives = path.dirname(
+                agentSkillArchivePath(
+                    (await sourceState()).identity,
+                    { type: "user", id: dev.remote.idFor("alpha") },
+                    "0".repeat(64)
+                )
+            );
+            await fs.chmod(archives, 0o500);
+            try {
+                await fs.writeFile(
+                    path.join(dir("claude"), "SKILL.md"),
+                    skillMarkdown("alpha", "edit")
+                );
+                const published = JSON.parse(
+                    await run([
+                        "agent-skill",
+                        "publish",
+                        dir("claude"),
+                        "--json"
+                    ])
+                );
+                expect(published.checksum).to.match(/^[0-9a-f]{64}$/);
+                expect(published.localCache).to.equal("failed");
+                expect(published.installation.baselineUpdated).to.equal(false);
+                expect(dev.puts()).to.have.length(1);
+                expect(
+                    dev.remote.items.get(dev.remote.idFor("alpha"))!.meta
+                        .checksum
+                ).to.equal(published.checksum);
+            } finally {
+                await fs.chmod(archives, 0o700);
+            }
+        });
     });
 });

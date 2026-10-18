@@ -250,8 +250,13 @@ Publish one system skill and one current-user skill, then:
 - **Manual Sandbox CLI:** delete a skill directory and corrupt the other's
   marker, then run `mgd agent-skill sync --json`: the deleted skill is
   reinstalled and the marker repaired without `--force`. With an edited copy,
-  ordinary sync reports `LOCAL_MODIFICATION` with the exact path and holds
-  replacements/removals; `mgd agent-skill sync --force --json` resets it. Neither manual run
+  ordinary sync reports `LOCAL_MODIFICATION` with the exact path while other
+  clean skills still update; `mgd agent-skill sync --force --json` resets it.
+- **Required download failure:** make one current publication undownloadable
+  (e.g. stop the Storage API) and rerun the Manager sync or a manual
+  `mgd agent-skill sync --force`: the result is `failed`, every installed
+  skill (including unpublished edits) is unchanged, and READY/DSH stay
+  available. Neither manual run
   changes the claim's Manager-owned sync annotations.
 - **No Python:** run `mgd agent-skill sync --json` with `PATH` containing only
   `node` and `mgd`; it succeeds.

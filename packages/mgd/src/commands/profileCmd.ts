@@ -6,7 +6,8 @@ import { AgentSkillClient } from "../agentSkillClient.js";
 import {
     cachedProfileIdentity,
     reconcileCachedAgentSkillProfile,
-    syncLocalAgentSkills
+    syncLocalAgentSkills,
+    withAgentSkillOperationLock
 } from "../agentSkillSync.js";
 import { note, printData, resolveMode } from "../output.js";
 import { printAgentSkillSyncResult } from "./agentSkillOutput.js";
@@ -83,13 +84,18 @@ export function registerProfileCommands(program: Command): void {
         .description("Delete a profile")
         .action(async (name: string | undefined) => {
             const target = requireName(name, "mgd profile remove <name>");
-            const cfg = await loadConfig();
-            if (!cfg.profiles[target])
-                throw new UsageError(`No such profile: ${target}`);
-            const removedActive = (cfg.activeProfile || "default") === target;
-            delete cfg.profiles[target];
-            if (removedActive) delete cfg.activeProfile;
-            await saveConfig(cfg);
+            const removedActive = await withAgentSkillOperationLock(
+                async () => {
+                    const cfg = await loadConfig();
+                    if (!cfg.profiles[target])
+                        throw new UsageError(`No such profile: ${target}`);
+                    const active = (cfg.activeProfile || "default") === target;
+                    delete cfg.profiles[target];
+                    if (active) delete cfg.activeProfile;
+                    await saveConfig(cfg);
+                    return active;
+                }
+            );
             note(`Removed profile "${target}".`);
             // Installed skills are never deleted for a config change; the next
             // sync of the active profile reconciles them.
@@ -113,51 +119,58 @@ export function registerProfileCommands(program: Command): void {
             "also fetch Agent Skill updates online after switching"
         )
         .action(async (name: string, opts) => {
-            // Step 1: the profile selection is committed first and is never
-            // rolled back because of skill synchronization.
-            const cfg = await loadConfig();
-            const selected = cfg.profiles[name];
-            if (!selected) throw new UsageError(`No such profile: ${name}`);
-            cfg.activeProfile = name;
-            await saveConfig(cfg);
-            note(`Active profile: ${name}`);
-            // Step 2: ordinary (or --force) offline reconciliation.
-            const offline = await reconcileCachedAgentSkillProfile({
-                identity: cachedProfileIdentity(selected),
-                force: !!opts.force
-            });
-            let incomplete = false;
-            if (!offline) {
-                note(
-                    `No verified Agent Skill cache exists for "${name}", so its skills cannot be synchronized offline yet. Installed skills were left unchanged; run \`mgd agent-skill sync\`.`
-                );
-                incomplete = !opts.syncSkills;
-            } else {
-                printAgentSkillSyncResult(offline, {}, "Agent Skill sync");
-                if (offline.status !== "success") {
-                    incomplete = true;
+            // The selection write and its reconciliation run under the one
+            // cross-process operation lock, so two profile operations cannot
+            // interleave. A concurrent operation fails fast with a retryable
+            // lock error; the socket lock is released even on a crash.
+            const incomplete = await withAgentSkillOperationLock(async () => {
+                // Step 1: the profile selection is committed first and is
+                // never rolled back because of skill synchronization.
+                const cfg = await loadConfig();
+                const selected = cfg.profiles[name];
+                if (!selected) throw new UsageError(`No such profile: ${name}`);
+                cfg.activeProfile = name;
+                await saveConfig(cfg);
+                note(`Active profile: ${name}`);
+                // Step 2: ordinary (or --force) offline reconciliation.
+                const offline = await reconcileCachedAgentSkillProfile({
+                    identity: cachedProfileIdentity(selected),
+                    force: !!opts.force
+                });
+                let unfinished = false;
+                if (!offline) {
                     note(
-                        `The active profile is "${name}", but synchronization is incomplete: skills from a previous profile may still be visible to your coding agents until the paths above are resolved.`
+                        `No verified Agent Skill cache exists for "${name}", so its skills cannot be synchronized offline yet. Installed skills were left unchanged; run \`mgd agent-skill sync\`.`
                     );
-                }
-            }
-            if (opts.syncSkills) {
-                const online = await syncLocalAgentSkills(
-                    new AgentSkillClient(clientFor(selected)),
-                    {
-                        selectedProfile: name,
-                        activate: true,
-                        force: !!opts.force,
-                        expectedProfile: { ...selected }
+                    unfinished = !opts.syncSkills;
+                } else {
+                    printAgentSkillSyncResult(offline, {}, "Agent Skill sync");
+                    if (offline.status !== "success") {
+                        unfinished = true;
+                        note(
+                            `The active profile is "${name}", but synchronization is incomplete: skills from a previous profile may still be visible to your coding agents until the paths above are resolved.`
+                        );
                     }
-                );
-                printAgentSkillSyncResult(
-                    online,
-                    {},
-                    "Online Agent Skill sync"
-                );
-                incomplete = online.status !== "success";
-            }
+                }
+                if (opts.syncSkills) {
+                    const online = await syncLocalAgentSkills(
+                        new AgentSkillClient(clientFor(selected)),
+                        {
+                            selectedProfile: name,
+                            activate: true,
+                            force: !!opts.force,
+                            expectedProfile: { ...selected }
+                        }
+                    );
+                    printAgentSkillSyncResult(
+                        online,
+                        {},
+                        "Online Agent Skill sync"
+                    );
+                    unfinished = online.status !== "success";
+                }
+                return unfinished;
+            });
             if (incomplete) process.exitCode = 1;
         });
 }

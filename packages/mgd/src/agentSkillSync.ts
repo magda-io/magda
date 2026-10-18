@@ -1,6 +1,5 @@
 import path from "node:path";
-import { readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import { readFile, readdir, rm } from "node:fs/promises";
 import { sha256Hex, validateAgentSkillArchive } from "./agentSkillArchive.js";
 import type {
     AgentSkillSourceIdentity,
@@ -15,7 +14,8 @@ import {
     loadAgentSkillSourceState,
     loadAgentSkillSourceStateByKey,
     saveAgentSkillSourceState,
-    sourceStateKey
+    sourceStateKey,
+    writeFileAtomically
 } from "./agentSkillLocalState.js";
 import type { ReconcileOutcome } from "./agentSkillReconcile.js";
 import { reconcileAgentSkillInstallations } from "./agentSkillReconcile.js";
@@ -28,6 +28,7 @@ import {
 } from "./agentSkillState.js";
 import type {
     AgentSkillListType,
+    AgentSkillMetadata,
     AgentSkillSyncItemResult,
     AgentSkillSyncResult,
     AgentSkillType,
@@ -85,12 +86,7 @@ const SYSTEM_FAILURES = new Set(["UNSAFE_PATH", "OPERATION_FAILED"]);
  */
 export function reconcileResult(
     outcome: ReconcileOutcome,
-    extra: {
-        failures?: AgentSkillSyncItemResult[];
-        manifestWarnings?: number;
-        desiredCount?: number;
-        notes?: AgentSkillSyncItemResult[];
-    } = {}
+    extra: { notes?: AgentSkillSyncItemResult[] } = {}
 ): AgentSkillSyncResult {
     const recordedFailures = new Set(
         outcome.items
@@ -99,7 +95,6 @@ export function reconcileResult(
     );
     const items = [
         ...(extra.notes || []),
-        ...(extra.failures || []),
         ...outcome.items,
         ...outcome.problems
             .filter(
@@ -126,130 +121,151 @@ export function reconcileResult(
     for (const item of items) counts[item.action] += 1;
     const progressed =
         counts.installed + counts.updated + counts.removed + counts.unchanged;
-    const downloadFailures = extra.failures?.length || 0;
-    const troubled =
-        outcome.problems.length +
-            downloadFailures +
-            counts.skipped +
-            (extra.manifestWarnings || 0) >
-        0;
+    const troubled = outcome.problems.length + counts.skipped > 0;
     const status: AgentSkillSyncResult["status"] = !troubled
         ? "success"
         : progressed === 0 &&
-          ((downloadFailures > 0 && downloadFailures === extra.desiredCount) ||
-              outcome.problems.some((problem) =>
-                  SYSTEM_FAILURES.has(problem.reason)
-              ))
+          outcome.problems.some((problem) =>
+              SYSTEM_FAILURES.has(problem.reason)
+          )
         ? "failed"
         : "partial";
     return {
         status,
         counts,
         items,
-        manifestWarnings: extra.manifestWarnings || 0,
+        manifestWarnings: 0,
         ...(outcome.problems.length ? { conflicts: outcome.problems } : {})
     };
 }
 
-async function writeArchiveAtomically(
-    target: string,
-    bytes: Buffer
-): Promise<void> {
-    await ensureRealDirectory(path.dirname(target));
-    const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`;
-    await writeFile(temporary, bytes, { mode: 0o600, flag: "wx" });
-    await rename(temporary, target);
-}
-
-async function archiveMatches(
-    item: VerifiedAgentSkillPublication
-): Promise<boolean> {
+/**
+ * Load a content-addressed cached archive and prove it is exactly the
+ * expected publication. Returns its tree digest, or undefined if absent or
+ * not an exact match (which then requires a fresh authenticated download).
+ */
+async function verifiedCachedArchive(
+    archiveFile: string,
+    expected: {
+        type: AgentSkillType;
+        checksum: string;
+        name: string;
+        description: string;
+    }
+): Promise<string | undefined> {
+    let bytes: Buffer;
     try {
-        return sha256Hex(await readFile(item.archiveFile)) === item.checksum;
+        bytes = await readFile(archiveFile);
     } catch {
-        return false;
+        return undefined;
+    }
+    if (sha256Hex(bytes) !== expected.checksum) return undefined;
+    try {
+        const validated = await validateAgentSkillArchive(bytes, expected.type);
+        return validated.name === expected.name &&
+            validated.description === expected.description
+            ? validated.treeDigest
+            : undefined;
+    } catch {
+        return undefined;
     }
 }
 
-export interface RefreshedSnapshot {
-    state: AgentSkillSourceStateV3;
-    desired: VerifiedAgentSkillPublication[];
-    unresolved: Set<string>;
-    failures: AgentSkillSyncItemResult[];
-    desiredCount: number;
-}
+export type PreparedSnapshot =
+    | {
+          ok: true;
+          state: AgentSkillSourceStateV3;
+          desired: VerifiedAgentSkillPublication[];
+          reused: number;
+          downloaded: number;
+      }
+    | { ok: false; failures: AgentSkillSyncItemResult[] };
 
 /**
- * Download and verify every manifest publication not already cached, then
- * persist the new verified snapshot. No installation is touched here. A
- * failed download keeps the previously verified version (if any); manifest
- * warnings keep prior absent entries as unresolved instead of deleting them.
+ * Global remote preparation: obtain and verify every publication of the
+ * complete current manifest before any installed skill may change. A cached
+ * archive is reused only when its checksum exactly matches the manifest
+ * (e.g. bytes this machine just published). Any manifest warning, failed
+ * download or validation failure aborts the whole online sync and leaves the
+ * previous verified snapshot untouched; already validated blobs may remain
+ * cached as immutable content, but no partial snapshot is committed.
  */
-export async function refreshVerifiedSnapshot(
+export async function prepareVerifiedSnapshot(
     client: AgentSkillClient,
     identity: AgentSkillSourceIdentity,
-    manifest: { items: WorkspaceSkillManifestItem[]; warnings: unknown[] },
+    manifest: {
+        items: WorkspaceSkillManifestItem[];
+        warnings: Array<{
+            sourceKind?: string;
+            code?: string;
+            recordId?: string;
+        }>;
+    },
     type?: AgentSkillType
-): Promise<RefreshedSnapshot> {
+): Promise<PreparedSnapshot> {
+    const failures: AgentSkillSyncItemResult[] = manifest.warnings.map(
+        (warning) => ({
+            ref: { type: "user", id: warning.recordId || "manifest" },
+            name: warning.recordId || warning.sourceKind || "manifest",
+            action: "failed",
+            code: `MANIFEST_WARNING_${warning.code || "UNKNOWN"}`
+        })
+    );
+    if (failures.length) return { ok: false, failures };
     const state = await loadAgentSkillSourceState(identity);
     await ensureRealDirectory(agentSkillSourceRoot(identity));
-    const previous = state.snapshot?.items || {};
     const items: Record<string, VerifiedAgentSkillPublication> = {};
-    const failures: AgentSkillSyncItemResult[] = [];
-    const now = new Date().toISOString();
-    const selected = manifest.items.filter(
-        (item) => !type || item.source.type === type
-    );
-    for (const [key, item] of Object.entries(previous))
+    // A type-scoped Workspace sync keeps other types' verified entries.
+    for (const [key, item] of Object.entries(state.snapshot?.items || {}))
         if (type && item.ref.type !== type) items[key] = item;
-    for (const item of selected) {
+    const now = new Date().toISOString();
+    let reused = 0;
+    let downloaded = 0;
+    for (const item of manifest.items) {
+        if (type && item.source.type !== type) continue;
         const ref = { type: item.source.type, id: item.source.id };
-        const key = sourceStateKey(ref);
-        const prior = previous[key];
-        if (
-            prior &&
-            prior.checksum === item.source.checksum &&
-            prior.name === item.effectiveName &&
-            (await archiveMatches(prior))
-        ) {
-            items[key] = {
-                ...prior,
-                description: item.source.description,
-                sourceKind: item.sourceKind
-            };
-            delete items[key].unresolved;
-            continue;
-        }
+        const expected = {
+            type: ref.type,
+            checksum: item.source.checksum,
+            name: item.effectiveName,
+            description: item.source.description
+        };
+        const archiveFile = agentSkillArchivePath(
+            identity,
+            ref,
+            item.source.checksum
+        );
         try {
-            const downloaded = await client.download(ref);
-            const validated = await validateAgentSkillArchive(
-                downloaded.bytes,
-                ref.type
-            );
-            if (
-                downloaded.metadata.checksum !== item.source.checksum ||
-                validated.checksum !== item.source.checksum ||
-                validated.name !== item.effectiveName ||
-                validated.description !== item.source.description ||
-                (item.sourceKind === "own-user-publication" &&
-                    downloaded.metadata.userId !== identity.userId)
-            )
-                throw new Error(
-                    "Downloaded Agent Skill does not match manifest"
+            let treeDigest = await verifiedCachedArchive(archiveFile, expected);
+            if (treeDigest) reused += 1;
+            else {
+                const fetched = await client.download(ref);
+                const validated = await validateAgentSkillArchive(
+                    fetched.bytes,
+                    ref.type
                 );
-            const archiveFile = agentSkillArchivePath(
-                identity,
-                ref,
-                item.source.checksum
-            );
-            await writeArchiveAtomically(archiveFile, downloaded.bytes);
-            items[key] = {
+                if (
+                    fetched.metadata.checksum !== item.source.checksum ||
+                    validated.checksum !== item.source.checksum ||
+                    validated.name !== item.effectiveName ||
+                    validated.description !== item.source.description ||
+                    (item.sourceKind === "own-user-publication" &&
+                        fetched.metadata.userId !== identity.userId)
+                )
+                    throw new Error(
+                        "Downloaded Agent Skill does not match manifest"
+                    );
+                await writeFileAtomically(archiveFile, fetched.bytes);
+                treeDigest = validated.treeDigest;
+                downloaded += 1;
+            }
+            items[sourceStateKey(ref)] = {
                 ref,
                 name: item.effectiveName,
                 description: item.source.description,
                 sourceKind: item.sourceKind,
                 checksum: item.source.checksum,
-                treeDigest: validated.treeDigest,
+                treeDigest,
                 archiveFile,
                 verifiedAt: now
             };
@@ -260,39 +276,37 @@ export async function refreshVerifiedSnapshot(
                 action: "failed",
                 code: "DOWNLOAD_FAILED"
             });
-            if (prior && (await archiveMatches(prior))) items[key] = prior;
         }
     }
-    // A publication still listed but not downloadable is not a deletion.
-    const unresolved = new Set<string>(
-        failures
-            .map((item) => sourceStateKey(item.ref))
-            .filter((key) => !items[key])
-    );
-    if (manifest.warnings.length > 0) {
-        for (const [key, item] of Object.entries(previous)) {
-            if (items[key] || (type && item.ref.type !== type)) continue;
-            items[key] = { ...item, unresolved: true };
-        }
-    }
-    for (const [key, item] of Object.entries(items))
-        if (item.unresolved && (!type || item.ref.type === type))
-            unresolved.add(key);
-    state.snapshot = {
-        verifiedAt: now,
-        warnings: manifest.warnings.length,
-        items
-    };
+    if (failures.length) return { ok: false, failures };
+    state.snapshot = { verifiedAt: now, warnings: 0, items };
     await saveAgentSkillSourceState(state);
     await collectUnreferencedArchives(identity, items);
     return {
+        ok: true,
         state,
         desired: Object.values(items).filter(
-            (item) => !item.unresolved && (!type || item.ref.type === type)
+            (item) => !type || item.ref.type === type
         ),
-        unresolved,
-        failures,
-        desiredCount: selected.length
+        reused,
+        downloaded
+    };
+}
+
+/** A remote-source failure: nothing local was changed; retry later. */
+export function remoteFailureResult(
+    failures: AgentSkillSyncItemResult[]
+): AgentSkillSyncResult {
+    const counts = emptyCounts();
+    counts.failed = failures.length;
+    return {
+        status: "failed",
+        counts,
+        items: failures,
+        manifestWarnings: failures.filter((item) =>
+            item.code?.startsWith("MANIFEST_WARNING_")
+        ).length,
+        remoteSourceFailed: true
     };
 }
 
@@ -315,6 +329,53 @@ async function collectUnreferencedArchives(
         const file = path.join(directory, name);
         if (name.endsWith(".zip") && !keep.has(file))
             await rm(file, { force: true });
+    }
+}
+
+/**
+ * Cache the exact ZIP bytes the server just acknowledged for one publication.
+ * Only that publication's entry is updated if a complete snapshot already
+ * contains it; the snapshot's own verification time is never advanced and no
+ * snapshot is invented from a single publication. Throws on mismatch so the
+ * caller can report a local bookkeeping problem separately from the publish.
+ */
+export async function cacheAcknowledgedPublication(
+    state: AgentSkillSourceStateV3,
+    metadata: AgentSkillMetadata,
+    archive: {
+        bytes: Buffer;
+        archiveSha256: string;
+        treeDigest: string;
+        name: string;
+    }
+): Promise<void> {
+    if (
+        metadata.checksum !== archive.archiveSha256 ||
+        metadata.name !== archive.name
+    )
+        throw new Error(
+            "The server acknowledged different content than was published"
+        );
+    const ref = { type: metadata.type, id: metadata.id };
+    const archiveFile = agentSkillArchivePath(
+        state.identity,
+        ref,
+        metadata.checksum
+    );
+    await writeFileAtomically(archiveFile, archive.bytes);
+    const key = sourceStateKey(ref);
+    const existing = state.snapshot?.items[key];
+    if (state.snapshot && existing) {
+        state.snapshot.items[key] = {
+            ...existing,
+            description: metadata.description,
+            checksum: metadata.checksum,
+            treeDigest: archive.treeDigest,
+            archiveFile,
+            verifiedAt: new Date().toISOString()
+        };
+        delete state.snapshot.items[key].unresolved;
+        await saveAgentSkillSourceState(state);
     }
 }
 
@@ -402,22 +463,21 @@ export async function syncLocalAgentSkills(
         });
         if (options.persistProfileIdentity !== false)
             await cacheIdentityForProfile(options.selectedProfile, identity);
-        const refreshed = await refreshVerifiedSnapshot(
+        // Phase A: the whole current desired set, verified, or nothing.
+        const prepared = await prepareVerifiedSnapshot(
             client,
             identity,
             manifest
         );
+        if (!prepared.ok) return remoteFailureResult(prepared.failures);
         const latest = await loadConfig();
         if (
             !options.activate ||
             (latest.activeProfile || "default") !== options.selectedProfile
         ) {
-            const result = reconcileResult(
+            return reconcileResult(
                 { items: [], problems: [] },
                 {
-                    failures: refreshed.failures,
-                    manifestWarnings: manifest.warnings.length,
-                    desiredCount: refreshed.desiredCount,
                     notes: [
                         {
                             ref: { type: "user", id: "profile" },
@@ -428,20 +488,15 @@ export async function syncLocalAgentSkills(
                     ]
                 }
             );
-            return result;
         }
+        // Phase B: independent local reconciliation.
         const outcome = await reconcileAgentSkillInstallations({
             targets: resolveAgentSkillTargets({ env: process.env }),
             sourceKey: identity.key,
-            desired: refreshed.desired,
-            unresolved: refreshed.unresolved,
+            desired: prepared.desired,
             force: !!options.force
         });
-        return reconcileResult(outcome, {
-            failures: refreshed.failures,
-            manifestWarnings: manifest.warnings.length,
-            desiredCount: refreshed.desiredCount
-        });
+        return reconcileResult(outcome);
     });
 }
 
@@ -467,25 +522,22 @@ export async function syncWorkspaceAgentSkills(
             userId: manifest.identity.userId
         });
         const type = selectedType === "all" ? undefined : selectedType;
-        const refreshed = await refreshVerifiedSnapshot(
+        const prepared = await prepareVerifiedSnapshot(
             client,
             identity,
             manifest,
             type
         );
+        // A remote-source failure blocks every local change, even --force.
+        if (!prepared.ok) return remoteFailureResult(prepared.failures);
         const outcome = await reconcileAgentSkillInstallations({
             targets: [resolveWorkspaceAgentSkillTarget(process.env)],
             sourceKey: identity.key,
-            desired: refreshed.desired,
-            unresolved: refreshed.unresolved,
+            desired: prepared.desired,
             force,
             type
         });
-        return reconcileResult(outcome, {
-            failures: refreshed.failures,
-            manifestWarnings: manifest.warnings.length,
-            desiredCount: refreshed.desiredCount
-        });
+        return reconcileResult(outcome);
     });
 }
 
@@ -512,7 +564,7 @@ export async function reconcileCachedAgentSkillProfile(options: {
             unresolved,
             force: options.force
         });
-        return reconcileResult(outcome, { desiredCount: desired.length });
+        return reconcileResult(outcome);
     });
 }
 

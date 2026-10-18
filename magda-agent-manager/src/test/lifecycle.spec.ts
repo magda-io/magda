@@ -456,6 +456,47 @@ describe("Agent Workspace inactivity lifecycle", () => {
         ).to.be.a("string");
     });
 
+    it("records a structured remote-source failure from mgd as failed while READY", async () => {
+        const kubernetes = new FakeKubernetes();
+        // `mgd agent-skill sync --force --workspace-status` exits 0 with a
+        // bounded summary when a required ZIP download fails.
+        kubernetes.skillSyncImplementations.push(async () =>
+            JSON.stringify({
+                status: "failed",
+                counts: {
+                    installed: 0,
+                    updated: 0,
+                    unchanged: 0,
+                    removed: 0,
+                    skipped: 0,
+                    failed: 1
+                },
+                manifestWarnings: 0
+            })
+        );
+        const instance = manager(kubernetes).manager;
+
+        await instance.start(userId);
+        await waitFor(
+            () =>
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_STATUS_ANNOTATION
+                ] === "failed"
+        );
+        expect(kubernetes.skillSyncForce).to.deep.equal([true]);
+        expect(
+            kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION]
+        ).to.equal("READY");
+        expect((await instance.start(userId)).state).to.equal("READY");
+        expect(
+            JSON.parse(
+                kubernetes.claims[0].metadata.annotations?.[
+                    SKILL_SYNC_COUNTS_ANNOTATION
+                ] || "null"
+            ).failed
+        ).to.equal(1);
+    });
+
     it("persists successful and partial Agent Skill sync results", async () => {
         for (const [status, counts] of [
             [
