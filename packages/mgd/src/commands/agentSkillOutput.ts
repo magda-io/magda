@@ -14,8 +14,7 @@ export function printAgentSkillSyncResult(
                 kind: "summary",
                 status: result.status,
                 counts: result.counts,
-                manifestWarnings: result.manifestWarnings,
-                ...(result.blocked ? { blocked: true } : {})
+                manifestWarnings: result.manifestWarnings
             },
             ...(result.conflicts || []).map((conflict) => ({
                 kind: "conflict",
@@ -39,22 +38,38 @@ export function printAgentSkillSyncResult(
         );
         return;
     }
-    note(`${label} ${result.status}: ${JSON.stringify(result.counts)}`);
+    note(
+        `${label}: ${result.status.toUpperCase()} ${JSON.stringify(
+            result.counts
+        )}`
+    );
+    const held = result.items.filter(
+        (item) => item.code === "HELD_FOR_CONFLICTS"
+    ).length;
     if (result.conflicts?.length) {
-        note(
-            result.blocked
-                ? `No installed skill was changed because ${result.conflicts.length} path(s) need attention:`
-                : `${result.conflicts.length} path(s) need attention:`
-        );
+        note(`${result.conflicts.length} path(s) need attention:`);
         for (const conflict of result.conflicts) {
+            const source = conflict.source
+                ? `\n    Installed source: ${
+                      conflict.source.profiles?.join(", ") ||
+                      [conflict.source.baseUrl, conflict.source.userId]
+                          .filter(Boolean)
+                          .join(" user ") ||
+                      conflict.source.key.slice(0, 12)
+                  }`
+                : "";
             note(
-                `  - ${conflict.name} [${conflict.harness}] ${conflict.path}\n` +
+                `  - ${conflict.name} [${conflict.harness}] ${conflict.path}${source}\n` +
                     `    ${conflict.reason}${
                         conflict.detail ? ` (${conflict.detail})` : ""
                     }: ${conflict.remedy}`
             );
         }
     }
+    if (held)
+        note(
+            `${held} replacement/removal(s) were held until these conflicts are resolved (or rerun with --force).`
+        );
     for (const item of result.items) {
         if (item.code === "DOWNLOAD_FAILED")
             note(
@@ -64,9 +79,5 @@ export function printAgentSkillSyncResult(
             note(
                 `  Profile "${item.name}" is not the globally active profile (or a one-off override is set); skills were cached but not installed.`
             );
-    }
-    if (result.retainedPaths?.length) {
-        note("Retained user data (not deleted; review and remove manually):");
-        for (const item of result.retainedPaths) note(`  - ${item}`);
     }
 }

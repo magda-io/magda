@@ -92,6 +92,13 @@ export interface AgentSkillSyncConflict {
     path: string;
     reason: string;
     detail?: string;
+    /** Source account recorded by the installation, when known. */
+    source?: {
+        key: string;
+        baseUrl?: string;
+        userId?: string;
+        profiles?: string[];
+    };
     remedy: string;
 }
 
@@ -100,11 +107,8 @@ export interface AgentSkillSyncResult {
     counts: AgentSkillSyncCounts;
     items: AgentSkillSyncItemResult[];
     manifestWarnings: number;
-    /** True when preflight conflicts prevented every installation change. */
-    blocked?: boolean;
+    /** Unresolved conflicts, unsafe paths and failures, with remedies. */
     conflicts?: AgentSkillSyncConflict[];
-    /** User data intentionally left in place (legacy drafts, edited projections). */
-    retainedPaths?: string[];
 }
 
 export function parseAgentSkillRef(value: string): AgentSkillRef {

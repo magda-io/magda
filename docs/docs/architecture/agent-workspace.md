@@ -300,60 +300,69 @@ record IDs or names on different instances/accounts from sharing state. The
 Workspace manifest returns the same server-derived tenant/user identity so the
 Sandbox cache is keyed identically.
 
-Installations follow the accepted copy-only design
-([local-agent-skill-sync.md](https://github.com/magda-io/magda/blob/design/3811-ai-agent-platform/docs/design/ai-agent-platform-design/local-agent-skill-sync.md)).
-Every selected harness root (detected Claude Code, Codex and OpenCode roots plus
-a configured DSH root locally; the single DSH root in a Workspace) receives an
-**independent real-directory copy** containing a reserved
+Installations follow the accepted scan-based design
+([local-agent-skill-sync.md](https://github.com/magda-io/magda/blob/design/3811-ai-agent-platform/docs/design/ai-agent-platform-design/local-agent-skill-sync.md),
+2026-10-18). Every selected harness root (detected Claude Code, Codex and
+OpenCode roots plus a configured DSH root locally; the single DSH root in a
+Workspace) receives an **independent real-directory copy** whose root-level
 `.magda-skill-install.json` (source key, publication identity, installed
-baseline checksum/content digest, random installation id; no credentials). A
-global `installation-index.json` pairs each managed path with that id and
-baseline. Marker presence is never authority on its own: verified snapshots,
-verified bytes and the index provide provenance. Raw skill directories and
-every publication ZIP must not contain the marker; only a recognized
-installation excludes exactly that file when digesting or publishing.
+baseline checksum/content digest, random installation id; no credentials) is
+the sole durable record of that installation. There is no installation index,
+operation journal or cross-harness transaction. The remaining durable state is
+the `mgd` profile configuration and each verified account's snapshot/archive
+cache and explicit `pull` provenance. Raw skill directories and every
+publication ZIP must not contain the marker; only a recognized installation
+excludes exactly that file when digesting or publishing.
 
 One reconciliation engine serves online local sync, offline `profile use` and
 Workspace sync; they differ only in the verified desired snapshot and target
-roots. Candidates are only desired names and index-tracked names, so unrelated
-directories are never inspected. Each candidate is classified against its
-_previous installed baseline_ (so an unchanged older version is clean and
-updates normally) and, when metadata is missing or invalid, against the full
-desired content tree (an exact match is a metadata-only repair). A missing
-directory is absence, never a conflict: desired skills are reinstalled and
-obsolete tracking is cleared. Present-but-different content is a conflict;
-symlinks, special files, symlinked roots/ancestors and reserved bundled names
-are unsafe. Any unsafe path, or any conflict without `--force`, stops the run
-before a single installation or profile write and reports every skill, harness,
-path and remedy. `--force` discards only safe, matching regular directories.
+roots. Each run enumerates the immediate children of every selected root. The
+candidates are the desired names plus every directory with a valid marker,
+regardless of which profile installed it. An unmarked directory whose name is
+not desired is unrelated and ignored, even a former MAGDA skill whose
+publication and marker were both removed. A marker is a provenance hint
+corroborated against this machine's verified account cache. Clean-ness is
+judged against the marker's recorded baseline, so an unchanged older version
+updates normally. A missing desired directory is reinstalled. Missing,
+malformed or stale metadata with a full tree equal to the desired publication
+is repaired without touching skill files. A clean marked copy no longer desired
+(remotely deleted, or from another profile) is removed, but only on a complete
+verified desired set. Edited content is a conflict. Symlinks, special files,
+symlinked roots/ancestors and reserved bundled names are unsafe even with
+`--force`.
 
-Downloads, verification and staging (a hidden `.magda-skill-staging/` beside
-each root, same filesystem) complete before any installation moves. A small
-journal records each rename; old trees move to temporary rollback paths and
-`SKILL.md` is placed last. The index write is the commit point, followed by any
-profile config. Recovery rolls back an interrupted commit and rolls forward a
-committed one; rollback ownership is proven by unique installation ids and
-rollback paths rather than by journal state alone. Everything uses portable
-Node.js `fs` APIs (no Python, native addon or OS-specific rename primitive). A
-kernel-released loopback lock (ports below the OS ephemeral ranges) covers the
-index and every target root. Exact cross-directory atomicity and hostile
-same-user syscall races are out of scope.
+All predictable conflicts are found before anything destructive runs. While any
+exist, ordinary sync still installs absent skills and repairs metadata, but
+holds replacements and removals; `--force` discards safe conflicting copies.
+Each skill is then applied independently using portable Node.js `fs`: the new
+tree, marker included, is staged under `<root>/.magda-skill-staging/<op>/new`,
+the old tree moves to `<op>/old`, the new tree is renamed into place and the
+backup is dropped. A failed rename restores that one skill. An unexpected
+failure in one harness leaves completed skills elsewhere in place and yields
+`partial` (nonzero CLI exit). The next sync converges from the actual
+directories, first restoring or completing recognizable per-skill leftovers;
+ambiguous backups are retained and reported. A kernel-released loopback lock
+(ports below the OS ephemeral ranges) serializes operations. Cross-harness
+atomicity and hostile same-user syscall races are out of scope.
 
-`publish <installed-copy>` replaces the same own publication with `If-Match` on
-that copy's baseline, then updates only its baseline and the verified cache;
-other harness copies reconcile on a later explicit sync. Remote deletion keeps
-removal intent in the verified snapshot, so a later offline switch cannot
-resurrect it. Pre-release state from the superseded symlink/draft design is not
-migrated; it is ignored and never deleted.
+`publish <installed-copy>` targets the account recorded in the marker, not the
+active profile. It resolves the verified identity for that source key, finds a
+configured profile whose credentials authenticate as exactly that instance,
+tenant and user, and replaces the same publication with `If-Match` on that
+copy's baseline. It then updates only that copy's marker and the account cache;
+other harness copies reconcile on a later explicit sync. Missing or mismatched
+credentials are refused, with no fallback. `pull` working directories keep
+their originating account the same way.
 
-`mgd profile use` reconciles a previously verified cache without network access
-and commits the active profile only after success; on conflict the previous
-profile and installations remain. `--force` discards conflicting content
-offline, and `--sync-skills` opts into a network refresh afterwards. An
-uncached profile deactivates only old managed entries. One-off `MGD_PROFILE`,
-URL or credential overrides can refresh their isolated source but never change
-global installations. Local CLI synchronization does not write Workspace claim
-annotations.
+`mgd profile use` is commit-first: it saves the new active profile, then
+reconciles that profile's previously verified snapshot offline (`--force` and
+`--sync-skills` optional). Conflicts or errors never roll back the selection.
+They are reported with each copy's installed source, the command exits nonzero,
+and older-profile copies may remain discoverable until resolved. An uncached
+profile is selected without reconciliation, so nothing is removed on an assumed
+empty set. `profile create/update/remove` change configuration only. One-off
+`MGD_PROFILE`, URL or credential overrides never change global installations.
+Local CLI synchronization does not write Workspace claim annotations.
 
 Essential credential/DSH bootstrap is the only READY gate. After the adopted or
 cold Sandbox has restarted with its managed credential, Agent Manager records
@@ -395,11 +404,12 @@ Then replace the user archive, delete the system publication, run
 DSH listing only the updated skill. A second user's manifest must not select the
 first user's publication.
 
-Copy-only checks: the fresh claim's sync must be the forced form and install
+Scan-based checks: the fresh claim's sync must be the forced form and install
 real directories with markers; an edited copy must survive a Manager restart
 (non-forced recovery, `partial`); a manual ordinary sync must reinstall a
 deleted directory and repair a corrupted marker; `--force` must reset an edit;
-and sync must succeed with no `python3` on `PATH`. See the E2E test cases for
+and sync must succeed with no `python3` on `PATH`. No installation index or
+journal may appear under the Sandbox's `$XDG_DATA_HOME/mgd/agent-skills`. See the E2E test cases for
 the full list.
 
 For the failure gate, make Registry unavailable and run both normal sync and the

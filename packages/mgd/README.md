@@ -224,52 +224,80 @@ deduplicated; `$MGD_AGENT_SKILL_DIR` is an explicit single-target override (used
 by the Workspace Sandbox). There are no symlinks and no shared working copy:
 edit any copy freely, then `publish` it.
 
-Each installation contains a reserved `.magda-skill-install.json` (format
-version, source account key, publication id/type, installed baseline checksum
-and content digest, random installation id; never credentials). State lives
-under `${XDG_DATA_HOME:-~/.local/share}/mgd/agent-skills/`:
+Each installed skill is self-describing. Its root-level
+`.magda-skill-install.json` (format version, source account key, publication
+id/type, installed baseline checksum and content digest, random installation
+id; never credentials) is the **only record of that installation**. `mgd`
+finds installations by scanning each harness root, so there is no installation
+index or journal. The only other state is your profile configuration and, under
+`${XDG_DATA_HOME:-~/.local/share}/mgd/agent-skills/sources/<key>/`, each
+verified account's publication snapshot, immutable archives and `pull`
+working-directory provenance (key = hash of canonical MAGDA API URL, tenant and
+user UUID).
 
-- `sources/<key>/` — per-account verified publication snapshot and immutable
-  archives, keyed by a hash of canonical MAGDA API URL, tenant and user UUID;
-- `installation-index.json` — every managed path, its source and baseline;
-- `operation-journal.json` — present only while a change is incomplete.
+A sync considers the names in the current profile's verified manifest plus
+every directory carrying a valid marker, whichever profile installed it.
+Everything else is ignored, including a former MAGDA skill whose publication
+and marker have both been removed; delete such a folder yourself if needed.
 
-Only names that are desired or already tracked are ever inspected; unrelated
-skill directories are ignored. Every target is checked before anything changes:
+| Situation                                                                       | `sync`                             | `sync --force` |
+| ------------------------------------------------------------------------------- | ---------------------------------- | -------------- |
+| Desired skill missing (e.g. deleted manually)                                   | installed                          | installed      |
+| Marked copy unchanged since installed, newer version published                  | updated                            | updated        |
+| Metadata missing/invalid/stale, full content equals the publication             | metadata repaired, files untouched | same           |
+| Marked copy edited, or same-name directory with different content               | **conflict, kept**                 | replaced       |
+| Marked clean copy no longer desired (removed remotely, or from another profile) | removed                            | removed        |
+| Marked edited copy no longer desired                                            | **conflict, kept**                 | removed        |
+| Unmarked directory whose name is not desired                                    | ignored                            | ignored        |
+| Symlink, special file, symlinked root, reserved bundled name                    | refused                            | refused        |
 
-| Situation                                                     | `sync`                        | `sync --force` |
-| ------------------------------------------------------------- | ----------------------------- | -------------- |
-| Copy unchanged since installed (older version)                | updated                       | updated        |
-| Installed directory deleted manually                          | reinstalled                   | reinstalled    |
-| Deleted directory, publication also removed                   | tracking cleared              | same           |
-| Metadata missing/invalid, full content equals the publication | metadata repaired             | same           |
-| Copy edited, or same-name directory with different content    | **conflict, nothing changed** | replaced       |
-| Publication removed remotely, copy edited                     | **conflict, nothing changed** | removed        |
-| Symlink, special file, symlinked root, reserved bundled name  | refused                       | refused        |
+Every predictable conflict is found before anything destructive happens. While
+one exists, ordinary sync installs missing skills and repairs metadata but holds
+replacements and removals, and reports every skill, harness, path, installed
+source and remedy. `--force` is your explicit consent to discard conflicting
+local content; it never bypasses authorization, ZIP validation or the
+unsafe-path rules. Each skill is then updated independently: a new tree is
+staged complete (marker included) beside the root, the old one moves to a
+per-skill backup, and the new one is renamed into place. If one harness hits a
+disk error, the skills already updated elsewhere stay updated; the result is
+`partial` with exact paths, and the next sync converges. A crash leaves a
+recognizable `.magda-skill-staging/` entry that the next sync restores or
+completes; anything ambiguous is kept and reported, never deleted. Removals
+require a complete verified manifest: an outage, manifest warning or failed
+download never deletes anything. Any result other than `success` exits nonzero.
 
-A conflict anywhere stops the whole run before any installation changes and
-lists every affected skill, harness, path and remedy (exit code 1). `--force`
-is your explicit consent to discard conflicting local content; it never bypasses
-authorization, ZIP validation, or the unsafe-path rules. Downloads and staging
-complete before any installation moves; a failed download keeps the previously
-verified version installed and cached. A remote outage never deletes anything,
-and manifest warnings make absences non-authoritative.
-
-`publish <installed-copy>` recognizes an installed own skill, excludes only its
-marker from the ZIP, replaces the same publication with `If-Match` on the
-installed baseline, then updates that copy's baseline and the local cache. It
-does **not** touch other harness copies: run `mgd agent-skill sync` afterwards,
-which updates clean copies and reports independently edited ones as conflicts.
+`publish <installed-copy>` publishes to **the account recorded in the copy's
+marker**, whatever profile is active: it finds a configured profile whose
+credentials authenticate as exactly that instance, tenant and user, excludes
+only the marker from the ZIP, and replaces the same publication with `If-Match`
+on the installed baseline (`--force` overwrites a newer version of your own
+publication). If no such credentials work, it refuses; it never falls back to
+another account. Only that copy's baseline and the account's cache are updated;
+run `mgd agent-skill sync` to update other harness copies. `pull` working
+directories likewise publish back to the account they came from.
 
 ### Profiles
 
-`mgd profile use <name>` reconciles the target profile's verified cached
-snapshot with the same engine, **without network access**, and changes the
-active profile only if that succeeds. On conflict the previous profile and every
-installation stay as they were; `--force` discards the conflicting content.
-`--sync-skills` adds an explicit online refresh afterwards (combinable with
-`--force`). A profile with no verified cache deactivates the previous profile's
-managed skills. One-off `MGD_PROFILE` or credential/base-URL overrides may
+`mgd profile use <name>` first **saves the new active profile**, then reconciles
+its previously verified snapshot with the same engine, **without network
+access**. Synchronization problems never undo the switch: the command reports
+them (with the installed source of each conflicting copy), exits nonzero, and
+older-profile copies may stay visible to your coding agents until resolved:
+
+```text
+Active profile: prod
+Agent Skill sync: PARTIAL
+  - analyse-csv [claude] ~/.claude/skills/analyse-csv
+    Installed source: dev
+    LOCAL_MODIFICATION: Publish it with `mgd agent-skill publish ~/.claude/skills/analyse-csv`,
+    or discard and reconcile with `mgd agent-skill sync --force`.
+```
+
+`--force` forces that reconciliation; `--sync-skills` adds an explicit online
+sync (combinable with `--force`). A profile with no verified cache is selected,
+but nothing is reconciled or removed until you run `mgd agent-skill sync`.
+`profile create/update/remove` change configuration only and never delete
+installed skills. One-off `MGD_PROFILE` or credential/base-URL overrides may
 refresh an isolated cache but never change the machine-wide installations.
 
 DSH `0.2.1-alpha.1`, Claude Code, Codex and OpenCode discover these copied
@@ -279,9 +307,9 @@ visible system plus own user skills and one DSH root; Workspace READY remains
 independent of sync success.
 
 State written by pre-release builds of this feature (symlink projections,
-`projection.json`, v2 `state.json` drafts) is not migrated: it is ignored and
-never deleted. Remove `~/.local/share/mgd/agent-skills` (and any leftover
-symlinked skill paths, which `sync` reports as unsafe) to start clean.
+`projection.json`, `installation-index.json`, `operation-journal.json`) is
+ignored and never deleted. Remove those files and any leftover symlinked skill
+paths (which `sync` reports as unsafe) to start clean.
 
 > **System bundle cost:** system skills may contain scripts, images, and other
 > regular resources. They are synchronized only into MAGDA Workspaces, not local

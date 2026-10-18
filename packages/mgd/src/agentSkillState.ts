@@ -82,17 +82,13 @@ export function managedChildPath(root: string, name: string): string {
     return child;
 }
 
-function agentSkillInstallationIndexIdentity(): string {
+/** One lock per Agent Skill data root (verified caches) plus target roots. */
+function agentSkillDataIdentity(): string {
     const dataHome =
         process.env.XDG_DATA_HOME && process.env.XDG_DATA_HOME.trim()
             ? process.env.XDG_DATA_HOME
             : path.join(os.homedir(), ".local", "share");
-    return path.resolve(
-        dataHome,
-        "mgd",
-        "agent-skills",
-        "installation-index.json"
-    );
+    return path.resolve(dataHome, "mgd", "agent-skills");
 }
 
 function lockDigest(identity: string): Buffer {
@@ -101,7 +97,7 @@ function lockDigest(identity: string): Buffer {
 
 function agentSkillLockIdentities(): string[] {
     return [
-        `state:${agentSkillInstallationIndexIdentity()}`,
+        `state:${agentSkillDataIdentity()}`,
         ...resolveAgentSkillTargets({ env: process.env }).map(
             ({ root }) => `root:${path.resolve(root)}`
         )
@@ -117,7 +113,7 @@ const LOCK_PORT_BASE = 20000;
 const LOCK_PORT_SPAN = 10000;
 
 export function agentSkillStateLockPort(): number {
-    const digest = lockDigest(`state:${agentSkillInstallationIndexIdentity()}`);
+    const digest = lockDigest(`state:${agentSkillDataIdentity()}`);
     return LOCK_PORT_BASE + (digest.readUInt16BE(0) % LOCK_PORT_SPAN);
 }
 

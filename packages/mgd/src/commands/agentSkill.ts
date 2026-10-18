@@ -1,12 +1,5 @@
 import path from "node:path";
-import {
-    lstat,
-    mkdir,
-    readFile,
-    realpath,
-    stat,
-    writeFile
-} from "node:fs/promises";
+import { lstat, mkdir, stat, writeFile } from "node:fs/promises";
 import { Command, Option } from "commander";
 import { clientFor, clientFromProfile } from "../client.js";
 import { AgentSkillClient } from "../agentSkillClient.js";
@@ -27,28 +20,27 @@ import {
 import { assertRealManagedAncestors } from "../agentSkillState.js";
 import {
     cachedDesired,
+    clientForSourceAccount,
     reconcileResult,
-    recoverAgentSkillOperations,
     syncLocalAgentSkills,
     syncWorkspaceAgentSkills,
     withAgentSkillOperationLock
 } from "../agentSkillSync.js";
 import {
+    readInstallMarker,
     reconcileAgentSkillInstallations,
     writeInstallMarker
 } from "../agentSkillReconcile.js";
-import type { AgentSkillInstallation } from "../agentSkillLocalState.js";
+import type { AgentSkillInstallMarker } from "../agentSkillLocalState.js";
 import {
     agentSkillArchivePath,
     canonicalMagdaBaseUrl,
     createAgentSkillSourceIdentity,
     findAgentSkillWorkingDirectory,
-    loadAgentSkillInstallationIndex,
     loadAgentSkillSourceState,
-    markerMatchesInstallation,
-    saveAgentSkillInstallationIndex,
     saveAgentSkillSourceState,
     sourceStateKey,
+    verifiedMarkerSource,
     writeFileAtomically
 } from "../agentSkillLocalState.js";
 import { resolveAgentSkillTargets } from "../skills.js";
@@ -147,66 +139,54 @@ async function isTrustedWorkspaceRuntime(): Promise<boolean> {
     }
 }
 
-async function canonicalPath(target: string): Promise<string> {
-    return realpath(target).catch(() => path.resolve(target));
+interface RecognizedInstallation {
+    path: string;
+    marker: AgentSkillInstallMarker;
 }
 
 /**
- * Recognize an installed copy: an indexed path that is a real directory with
- * real ancestors and a regular marker exactly matching the index entry. Only
- * then may the marker be excluded from validation and publication.
+ * Recognize an installed copy from its own marker: a real directory with real
+ * ancestors and a regular, valid `.magda-skill-install.json` naming a source
+ * account verified on this computer. Only then may the marker be excluded
+ * from validation and publication.
  */
 async function recognizeInstallation(
     directory: string
-): Promise<AgentSkillInstallation | undefined> {
+): Promise<RecognizedInstallation | undefined> {
     const absolute = path.resolve(directory);
-    const actual = await canonicalPath(absolute);
-    const index = await loadAgentSkillInstallationIndex();
-    let installation: AgentSkillInstallation | undefined;
-    for (const item of Object.values(index.installations)) {
-        if (
-            item.path === absolute ||
-            (await canonicalPath(item.path)) === actual
-        ) {
-            installation = item;
-            break;
-        }
-    }
-    const marker = path.join(absolute, AGENT_SKILL_INSTALL_MARKER);
-    const markerStat = await lstat(marker).catch(() => undefined);
-    if (!installation || !markerStat) {
-        if (markerStat)
-            throw new UsageError(
-                `${absolute} contains ${AGENT_SKILL_INSTALL_MARKER} but is not a recognized installation. Run \`mgd agent-skill sync\` to repair it, or remove that file from your copy.`
-            );
-        return undefined;
-    }
-    await assertRealManagedAncestors(installation.path);
-    const directoryStat = await lstat(installation.path);
-    if (
-        directoryStat.isSymbolicLink() ||
-        !directoryStat.isDirectory() ||
-        markerStat.isSymbolicLink() ||
-        !markerStat.isFile() ||
-        !markerMatchesInstallation(await readFile(marker), installation)
-    )
+    const markerPath = path.join(absolute, AGENT_SKILL_INSTALL_MARKER);
+    const markerStat = await lstat(markerPath).catch(() => undefined);
+    if (!markerStat) return undefined;
+    await assertRealManagedAncestors(absolute);
+    const directoryStat = await lstat(absolute);
+    const marker =
+        !directoryStat.isSymbolicLink() &&
+        directoryStat.isDirectory() &&
+        !markerStat.isSymbolicLink() &&
+        markerStat.isFile()
+            ? await readInstallMarker(absolute)
+            : undefined;
+    if (!marker || !(await verifiedMarkerSource(marker)))
         throw new UsageError(
-            `${absolute} has stale or unsafe installation metadata. Run \`mgd agent-skill sync\` to repair it before publishing.`
+            `${absolute} contains ${AGENT_SKILL_INSTALL_MARKER} but it is not valid installation metadata for a verified account. Run \`mgd agent-skill sync\` to repair it, or remove that file from your copy.`
         );
-    return installation;
+    return { path: absolute, marker };
 }
 
 async function publishInstallation(
-    installation: AgentSkillInstallation,
+    installation: RecognizedInstallation,
     opts: { type: AgentSkillType; force?: boolean; json?: boolean }
 ): Promise<void> {
-    if (installation.sourceKind !== "own-user-publication") {
+    const { marker } = installation;
+    const ref = { type: marker.source.type, id: marker.source.id };
+    if (marker.source.kind === "installation")
         throw new UsageError(
-            installation.ref.type === "system"
-                ? `This is an installed copy of ${installation.ref.type}/${installation.ref.id}. Installed system skills are not published from their installation; use \`mgd agent-skill pull ${installation.ref.type}/${installation.ref.id}\` and publish that working directory with --type system.`
-                : "Publishing a modified installed shared skill is not supported yet."
+            "This is an installed copy of a skill shared by another publisher, whose publication is never modified. Publishing it as your own skill (`publish --force`) arrives with installed shared skills; it is not available yet."
         );
-    }
+    if (marker.source.kind !== "own-user-publication")
+        throw new UsageError(
+            `This is an installed copy of ${ref.type}/${ref.id}. Installed system skills are not published from their installation; use \`mgd agent-skill pull ${ref.type}/${ref.id}\` and publish that working directory with --type system.`
+        );
     if (opts.type !== "user")
         throw new UsageError(
             "This installed copy is your own user publication; publish it with --type user"
@@ -215,30 +195,22 @@ async function publishInstallation(
         installation.path,
         "user"
     );
-    if (candidate.name !== installation.name)
+    if (candidate.name !== marker.name)
         throw new UsageError(
-            `SKILL.md name "${candidate.name}" no longer matches the installed publication "${installation.name}". Copy the directory elsewhere (without ${AGENT_SKILL_INSTALL_MARKER}) to publish it as a new skill.`
+            `SKILL.md name "${candidate.name}" no longer matches the installed publication "${marker.name}". Copy the directory elsewhere (without ${AGENT_SKILL_INSTALL_MARKER}) to publish it as a new skill.`
         );
-    const client = await api();
-    const { identity, state } = await verifiedLocalSource(client);
-    if (installation.sourceKey !== identity.key)
-        throw new UsageError(
-            "This installed copy belongs to another MAGDA instance or account; switch to that profile before publishing it"
-        );
-    let expected = installation.baselineChecksum;
+    // The recorded source account, not the active profile, is the target.
+    const source = await clientForSourceAccount(marker.sourceKey);
     let metadata;
     try {
-        if (opts.force)
-            expected = (await client.show(installation.ref)).checksum;
-        metadata = await client.replace(
-            installation.ref,
-            candidate.bytes,
-            expected
-        );
+        const expected = opts.force
+            ? (await source.client.show(ref)).checksum
+            : marker.baselineChecksum;
+        metadata = await source.client.replace(ref, candidate.bytes, expected);
     } catch (error) {
         if (error instanceof MgdApiError && error.status === 404)
             throw new UsageError(
-                `The publication ${installation.ref.type}/${installation.ref.id} no longer exists remotely; it was not recreated. To publish this content as a new skill, copy the directory elsewhere without ${AGENT_SKILL_INSTALL_MARKER} and run \`mgd agent-skill publish <copy>\`.`
+                `The publication ${ref.type}/${ref.id} no longer exists remotely; it was not recreated. To publish this content as a new skill, copy the directory elsewhere without ${AGENT_SKILL_INSTALL_MARKER} and run \`mgd agent-skill publish <copy>\`.`
             );
         if (error instanceof MgdApiError && error.status === 412)
             throw new UsageError(
@@ -251,15 +223,14 @@ async function publishInstallation(
     let localUpdated = false;
     try {
         if (metadata.checksum === candidate.archiveSha256) {
-            const ref = { type: metadata.type, id: metadata.id };
             const key = sourceStateKey(ref);
             const archiveFile = agentSkillArchivePath(
-                identity,
+                source.identity,
                 ref,
                 metadata.checksum
             );
             await writeFileAtomically(archiveFile, candidate.bytes);
-            const now = new Date().toISOString();
+            const { state } = source;
             if (state.snapshot?.items[key]) {
                 state.snapshot.items[key] = {
                     ...state.snapshot.items[key],
@@ -267,23 +238,17 @@ async function publishInstallation(
                     checksum: metadata.checksum,
                     treeDigest: candidate.treeDigest,
                     archiveFile,
-                    verifiedAt: now
+                    verifiedAt: new Date().toISOString()
                 };
                 delete state.snapshot.items[key].unresolved;
                 await saveAgentSkillSourceState(state);
             }
-            const index = await loadAgentSkillInstallationIndex();
-            const current = Object.values(index.installations).find(
-                (item) => item.installationId === installation.installationId
-            );
-            if (current) {
-                current.baselineChecksum = metadata.checksum;
-                current.baselineTreeDigest = candidate.treeDigest;
-                current.updatedAt = now;
-                await saveAgentSkillInstallationIndex(index);
-                await writeInstallMarker(current.path, current);
-                localUpdated = true;
-            }
+            await writeInstallMarker(installation.path, {
+                ...marker,
+                baselineChecksum: metadata.checksum,
+                baselineTreeDigest: candidate.treeDigest
+            });
+            localUpdated = true;
         }
     } catch {
         localUpdated = false;
@@ -292,19 +257,19 @@ async function publishInstallation(
         printData("json", {
             ...metadata,
             installation: {
-                harness: installation.harness,
                 path: installation.path,
+                sourceProfile: source.profileName,
                 baselineUpdated: localUpdated
             }
         });
         return;
     }
     note(
-        `Published ${metadata.type}/${metadata.id} from ${installation.harness} copy ${installation.path}.`
+        `Published ${metadata.type}/${metadata.id} from ${installation.path} using profile "${source.profileName}" (the account that installed it).`
     );
     if (!localUpdated)
         note(
-            "The local installation baseline could not be updated; run `mgd agent-skill sync` to repair it."
+            "The remote publication succeeded, but this copy's local baseline could not be updated; run `mgd agent-skill sync` with that profile to repair it. Do not publish it again as a new skill."
         );
     note(
         "Other harness copies were not changed. Run `mgd agent-skill sync` to update them."
@@ -428,49 +393,43 @@ export function registerAgentSkillCommands(program: Command): void {
                     await publishInstallation(installation, opts);
                     return;
                 }
-                const globallyTracked = await findAgentSkillWorkingDirectory(
-                    absolute
-                );
-                if (
-                    globallyTracked &&
-                    globallyTracked.directory.type !== opts.type
-                ) {
+                const tracked = await findAgentSkillWorkingDirectory(absolute);
+                if (tracked && tracked.directory.type !== opts.type) {
                     throw new UsageError(
-                        `Tracked ${globallyTracked.directory.type} publication requires explicit --type ${globallyTracked.directory.type}`
+                        `Tracked ${tracked.directory.type} publication requires explicit --type ${tracked.directory.type}`
                     );
                 }
                 const candidate = await createAgentSkillArchive(
                     absolute,
                     opts.type
                 );
-                if (!globallyTracked && opts.force) {
+                const trackedRef =
+                    tracked?.directory.ref && tracked.directory.baseChecksum
+                        ? tracked.directory
+                        : undefined;
+                if (!trackedRef && opts.force) {
                     throw new UsageError(
                         "--force can only be used for a tracked publication"
                     );
                 }
-                const client = await api();
-                const { identity, state } = await verifiedLocalSource(client);
-                if (
-                    globallyTracked &&
-                    globallyTracked.sourceKey !== identity.key
-                ) {
-                    throw new UsageError(
-                        "This working directory is tracked against another MAGDA instance/account; pull or copy it into an untracked directory before publishing here"
-                    );
-                }
-                const tracked = state.workingDirectories[absolute];
-                if (tracked?.ref && tracked.type !== opts.type) {
-                    throw new UsageError(
-                        `Tracked ${tracked.type} publication requires explicit --type ${tracked.type}`
-                    );
-                }
+                // A pulled/published working directory goes back to the
+                // account it came from; only a new skill uses the active one.
+                const source = tracked
+                    ? await clientForSourceAccount(tracked.sourceKey)
+                    : await (async () => {
+                          const client = await api();
+                          const local = await verifiedLocalSource(client);
+                          return { client, state: local.state };
+                      })();
+                const { client, state } = source;
                 let metadata;
-                if (tracked?.ref && tracked.baseChecksum) {
-                    let expected = tracked.baseChecksum;
+                if (trackedRef) {
+                    let expected = trackedRef.baseChecksum!;
                     if (opts.force)
-                        expected = (await client.show(tracked.ref)).checksum;
+                        expected = (await client.show(trackedRef.ref!))
+                            .checksum;
                     metadata = await client.replace(
-                        tracked.ref,
+                        trackedRef.ref!,
                         candidate.bytes,
                         expected
                     );
@@ -501,7 +460,6 @@ export function registerAgentSkillCommands(program: Command): void {
         .option("--json")
         .action(async (value: string, opts) => {
             const ref = parseAgentSkillRef(value);
-            await recoverAgentSkillOperations();
             const initialConfig = await loadConfig();
             const selection = resolveProfileSelection(initialConfig);
             if (!selection.profile) throw noProfileError(initialConfig);
@@ -604,7 +562,11 @@ export function registerAgentSkillCommands(program: Command): void {
                 if (state.snapshot?.items[key])
                     delete state.snapshot.items[key];
                 await saveAgentSkillSourceState(state);
-                if (workspaceMode || !selection.mayActivateSkills)
+                if (
+                    workspaceMode ||
+                    !selection.mayActivateSkills ||
+                    !state.snapshot
+                )
                     return undefined;
                 // Retire installed copies through the shared engine; edited
                 // copies are conflicts and stay in place without --force.
@@ -677,7 +639,6 @@ export function registerAgentSkillCommands(program: Command): void {
                       !!opts.force
                   )
                 : await (async () => {
-                      await recoverAgentSkillOperations();
                       const cfg = await loadConfig();
                       const selection = resolveProfileSelection(cfg);
                       if (!selection.profile?.baseUrl)
@@ -700,10 +661,9 @@ export function registerAgentSkillCommands(program: Command): void {
                       });
                   })();
             printAgentSkillSyncResult(result, opts);
-            if (
-                (result.status === "failed" || result.blocked) &&
-                !opts.workspaceStatus
-            ) {
+            // Any unresolved conflict, partial or failed result is nonzero so
+            // scripts never treat a partly reconciled source as installed.
+            if (result.status !== "success" && !opts.workspaceStatus) {
                 process.exitCode = 1;
             }
         });

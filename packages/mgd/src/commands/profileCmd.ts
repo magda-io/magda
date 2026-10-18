@@ -4,11 +4,9 @@ import { loadConfig, saveConfig } from "../profile.js";
 import { clientFor } from "../client.js";
 import { AgentSkillClient } from "../agentSkillClient.js";
 import {
-    activateCachedAgentSkillProfile,
     cachedProfileIdentity,
-    recoverAgentSkillOperations,
-    syncLocalAgentSkills,
-    withAgentSkillOperationLock
+    reconcileCachedAgentSkillProfile,
+    syncLocalAgentSkills
 } from "../agentSkillSync.js";
 import { note, printData, resolveMode } from "../output.js";
 import { printAgentSkillSyncResult } from "./agentSkillOutput.js";
@@ -29,7 +27,6 @@ export function registerProfileCommands(program: Command): void {
         .description("List profiles")
         .option("--json", "output JSON")
         .action(async (opts) => {
-            await recoverAgentSkillOperations();
             const cfg = await loadConfig();
             const rows = Object.entries(cfg.profiles).map(([name, p]) => ({
                 name,
@@ -84,100 +81,68 @@ export function registerProfileCommands(program: Command): void {
     profile
         .command("remove [name]")
         .description("Delete a profile")
-        .option(
-            "--force",
-            "discard conflicting local skill changes when removing the active profile"
-        )
-        .action(async (name: string | undefined, opts) => {
+        .action(async (name: string | undefined) => {
             const target = requireName(name, "mgd profile remove <name>");
-            const deactivation = await withAgentSkillOperationLock(async () => {
-                const cfg = await loadConfig();
-                if (!cfg.profiles[target])
-                    throw new UsageError(`No such profile: ${target}`);
-                const removedActive =
-                    (cfg.activeProfile || "default") === target;
-                delete cfg.profiles[target];
-                if (!removedActive) {
-                    await saveConfig(cfg);
-                    return undefined;
-                }
-                delete cfg.activeProfile;
-                const switched = await activateCachedAgentSkillProfile({
-                    profileName: "default",
-                    identity: cachedProfileIdentity(cfg.profiles.default),
-                    force: !!opts.force,
-                    finalConfig: cfg
-                });
-                return switched.result;
-            });
-            if (deactivation?.blocked) {
-                printAgentSkillSyncResult(deactivation, {}, "Profile removal");
-                note(
-                    `Profile "${target}" was not removed. Resolve the paths above or rerun with --force.`
-                );
-                process.exitCode = 1;
-                return;
-            }
+            const cfg = await loadConfig();
+            if (!cfg.profiles[target])
+                throw new UsageError(`No such profile: ${target}`);
+            const removedActive = (cfg.activeProfile || "default") === target;
+            delete cfg.profiles[target];
+            if (removedActive) delete cfg.activeProfile;
+            await saveConfig(cfg);
             note(`Removed profile "${target}".`);
+            // Installed skills are never deleted for a config change; the next
+            // sync of the active profile reconciles them.
+            if (removedActive)
+                note(
+                    "Agent Skills installed for it remain until the next `mgd agent-skill sync` or `mgd profile use` reconciles them."
+                );
         });
 
     profile
         .command("use <name>")
         .description(
-            "Set the active profile and install its verified cached Agent Skills (offline)"
+            "Set the active profile, then reconcile its verified cached Agent Skills offline"
         )
         .option(
             "--force",
-            "discard conflicting local skill changes to complete the switch"
+            "discard conflicting local skill changes while reconciling"
         )
         .option(
             "--sync-skills",
-            "explicitly fetch Agent Skill updates after the offline switch"
+            "also fetch Agent Skill updates online after switching"
         )
         .action(async (name: string, opts) => {
-            let selected!: Awaited<
-                ReturnType<typeof loadConfig>
-            >["profiles"][string];
-            // Same preflight/commit engine as `agent-skill sync`: conflicts
-            // abort before the active profile or any installation changes.
-            const switched = await withAgentSkillOperationLock(async () => {
-                const cfg = await loadConfig();
-                selected = cfg.profiles[name];
-                if (!selected) throw new UsageError(`No such profile: ${name}`);
-                cfg.activeProfile = name;
-                return activateCachedAgentSkillProfile({
-                    profileName: name,
-                    identity: cachedProfileIdentity(selected),
-                    force: !!opts.force,
-                    finalConfig: cfg
-                });
+            // Step 1: the profile selection is committed first and is never
+            // rolled back because of skill synchronization.
+            const cfg = await loadConfig();
+            const selected = cfg.profiles[name];
+            if (!selected) throw new UsageError(`No such profile: ${name}`);
+            cfg.activeProfile = name;
+            await saveConfig(cfg);
+            note(`Active profile: ${name}`);
+            // Step 2: ordinary (or --force) offline reconciliation.
+            const offline = await reconcileCachedAgentSkillProfile({
+                identity: cachedProfileIdentity(selected),
+                force: !!opts.force
             });
-            if (switched.result.blocked) {
-                printAgentSkillSyncResult(
-                    switched.result,
-                    {},
-                    "Profile switch"
-                );
+            let incomplete = false;
+            if (!offline) {
                 note(
-                    `Active profile was not changed. Resolve the paths above, or rerun \`mgd profile use ${name} --force\` to discard them.`
+                    `No verified Agent Skill cache exists for "${name}", so its skills cannot be synchronized offline yet. Installed skills were left unchanged; run \`mgd agent-skill sync\`.`
                 );
-                process.exitCode = 1;
-                return;
-            }
-            note(`Active profile set to "${name}".`);
-            if (!switched.cached) {
-                note(
-                    `No verified Agent Skill cache exists for "${name}"; previously managed skills were deactivated. Run \`mgd agent-skill sync\`.`
-                );
+                incomplete = !opts.syncSkills;
             } else {
-                printAgentSkillSyncResult(
-                    switched.result,
-                    {},
-                    "Offline Agent Skill activation"
-                );
+                printAgentSkillSyncResult(offline, {}, "Agent Skill sync");
+                if (offline.status !== "success") {
+                    incomplete = true;
+                    note(
+                        `The active profile is "${name}", but synchronization is incomplete: skills from a previous profile may still be visible to your coding agents until the paths above are resolved.`
+                    );
+                }
             }
             if (opts.syncSkills) {
-                const result = await syncLocalAgentSkills(
+                const online = await syncLocalAgentSkills(
                     new AgentSkillClient(clientFor(selected)),
                     {
                         selectedProfile: name,
@@ -186,11 +151,13 @@ export function registerProfileCommands(program: Command): void {
                         expectedProfile: { ...selected }
                     }
                 );
-                printAgentSkillSyncResult(result, {});
-                // The offline switch stands; an online failure is degraded,
-                // never a rollback to another profile's skills.
-                if (result.status === "failed" || result.blocked)
-                    process.exitCode = 1;
+                printAgentSkillSyncResult(
+                    online,
+                    {},
+                    "Online Agent Skill sync"
+                );
+                incomplete = online.status !== "success";
             }
+            if (incomplete) process.exitCode = 1;
         });
 }

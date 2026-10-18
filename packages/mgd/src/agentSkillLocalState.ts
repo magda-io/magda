@@ -13,17 +13,17 @@ import {
 } from "./agentSkillState.js";
 
 /*
- * Copy-only Agent Skill state (design 2026-10-17):
+ * Agent Skill state (scan-based design, 2026-10-18). The only durable state is:
  *
- *   <data>/mgd/agent-skills/
- *     sources/<source-key>/state.json      verified publication snapshot (v3)
- *     sources/<source-key>/archives/*.zip  immutable verified publication ZIPs
- *     installation-index.json              owned installation paths + baselines
- *     operation-journal.json               only while a transaction is incomplete
+ *   - the existing `mgd` profile configuration (active profile);
+ *   - <data>/mgd/agent-skills/sources/<source-key>/ — each verified account's
+ *     publication snapshot, immutable archives and explicit `pull` provenance;
+ *   - `.magda-skill-install.json` inside each installed skill directory, the
+ *     sole record of that installation (see AgentSkillInstallMarker).
  *
- * Each installed skill directory additionally carries .magda-skill-install.json
- * (see AgentSkillInstallMarker). Marker presence alone is never authority: the
- * verified snapshot, verified bytes and this index provide provenance.
+ * There is no installation index or operation journal: installations are found
+ * by scanning harness roots. A marker is a provenance hint that is validated
+ * against the verified source cache, never authorization on its own.
  */
 
 export interface AgentSkillSourceIdentity {
@@ -85,39 +85,11 @@ export type AgentSkillHarness =
     | "dsh"
     | "custom";
 
-export interface AgentSkillInstallation {
-    /** Random token shared with the directory's installation marker. */
-    installationId: string;
-    harness: AgentSkillHarness;
-    root: string;
-    name: string;
-    path: string;
-    /** Verified source identity key. */
-    sourceKey: string;
-    ref: AgentSkillRef;
-    sourceKind: AgentSkillSourceKind;
-    /** Previous installed baseline: published checksum and content digest. */
-    baselineChecksum: string;
-    baselineTreeDigest: string;
-    installedAt: string;
-    updatedAt: string;
-    /** Future #3861: Registry installation record and recipient alias. */
-    installationRecordId?: string;
-    alias?: string;
-}
-
-export interface AgentSkillInstallationIndexV1 {
-    version: 1;
-    activeProfile?: string;
-    activeSourceKey?: string;
-    installations: Record<string, AgentSkillInstallation>;
-    /** Rollback data an interrupted commit could not restore; never deleted. */
-    retainedPaths?: string[];
-}
-
+/** Root-level `.magda-skill-install.json`; never contains credentials. */
 export interface AgentSkillInstallMarker {
     format: "magda-agent-skill-installation";
     version: 1;
+    /** Random per-installation id; also identifies per-skill staging. */
     installationId: string;
     sourceKey: string;
     source: { type: AgentSkillType; id: string; kind: AgentSkillSourceKind };
@@ -125,6 +97,7 @@ export interface AgentSkillInstallMarker {
     baselineChecksum: string;
     baselineTreeDigest: string;
     installedAt: string;
+    /** Future #3861: Registry installation record and recipient alias. */
     installationRecordId?: string;
     alias?: string;
 }
@@ -184,10 +157,6 @@ export function sourceStateKey(ref: AgentSkillRef): string {
     return `${ref.type}/${ref.id}`;
 }
 
-export function installationKey(root: string, name: string): string {
-    return `${path.resolve(root)}\0${name}`;
-}
-
 export function agentSkillSourceRoot(
     identity: Pick<AgentSkillSourceIdentity, "key">,
     env: NodeJS.ProcessEnv = process.env
@@ -213,12 +182,6 @@ export function agentSkillArchivePath(
         "archives",
         `${ref.id}-${checksum}.zip`
     );
-}
-
-export function agentSkillInstallationIndexPath(
-    env: NodeJS.ProcessEnv = process.env
-): string {
-    return path.join(agentSkillDataRoot(env), "installation-index.json");
 }
 
 /** Write JSON through an fsynced private temporary file and atomic rename. */
@@ -360,116 +323,105 @@ export async function saveAgentSkillSourceState(
     });
 }
 
-function assertInstallation(key: string, item: AgentSkillInstallation): void {
-    if (
-        !item ||
-        !UUID.test(item.installationId) ||
-        !["claude", "codex", "opencode", "dsh", "custom"].includes(
-            item.harness
-        ) ||
-        typeof item.root !== "string" ||
-        !path.isAbsolute(item.root) ||
-        !SKILL_NAME.test(item.name) ||
-        item.path !== path.join(path.resolve(item.root), item.name) ||
-        key !== installationKey(item.root, item.name) ||
-        !HEX64.test(item.sourceKey) ||
-        !isRef(item.ref) ||
-        !SOURCE_KINDS.has(item.sourceKind) ||
-        !HEX64.test(item.baselineChecksum) ||
-        !HEX64.test(item.baselineTreeDigest)
-    ) {
-        throw new Error(
-            "Agent Skill installation index contains an unsafe entry"
-        );
-    }
-}
-
-export function emptyInstallationIndex(): AgentSkillInstallationIndexV1 {
-    return { version: 1, installations: {} };
-}
-
-export async function loadAgentSkillInstallationIndex(
-    env: NodeJS.ProcessEnv = process.env
-): Promise<AgentSkillInstallationIndexV1> {
-    await assertRealManagedAncestors(agentSkillDataRoot(env));
-    const value = (await readJsonIfPresent(
-        agentSkillInstallationIndexPath(env)
-    )) as AgentSkillInstallationIndexV1 | undefined;
-    if (value === undefined) return emptyInstallationIndex();
-    if (
-        value.version !== 1 ||
-        !value.installations ||
-        typeof value.installations !== "object" ||
-        (value.activeSourceKey !== undefined &&
-            !HEX64.test(value.activeSourceKey))
-    ) {
-        throw new Error("Agent Skill installation index is invalid");
-    }
-    for (const [key, item] of Object.entries(value.installations))
-        assertInstallation(key, item);
-    return value;
-}
-
-export async function saveAgentSkillInstallationIndex(
-    index: AgentSkillInstallationIndexV1,
-    env: NodeJS.ProcessEnv = process.env
-): Promise<void> {
-    await writeJsonAtomically(agentSkillInstallationIndexPath(env), index);
-}
-
-export function markerForInstallation(
-    item: AgentSkillInstallation
+export function createInstallMarker(
+    sourceKey: string,
+    publication: VerifiedAgentSkillPublication,
+    installedAt = new Date().toISOString()
 ): AgentSkillInstallMarker {
     return {
         format: "magda-agent-skill-installation",
         version: 1,
-        installationId: item.installationId,
-        sourceKey: item.sourceKey,
-        source: { type: item.ref.type, id: item.ref.id, kind: item.sourceKind },
-        name: item.name,
-        baselineChecksum: item.baselineChecksum,
-        baselineTreeDigest: item.baselineTreeDigest,
-        installedAt: item.installedAt,
-        ...(item.installationRecordId
-            ? { installationRecordId: item.installationRecordId }
-            : {}),
-        ...(item.alias ? { alias: item.alias } : {})
+        installationId: randomUUID(),
+        sourceKey,
+        source: {
+            type: publication.ref.type,
+            id: publication.ref.id,
+            kind: publication.sourceKind
+        },
+        name: publication.name,
+        baselineChecksum: publication.checksum,
+        baselineTreeDigest: publication.treeDigest,
+        installedAt
     };
 }
 
-export function serializeInstallMarker(item: AgentSkillInstallation): string {
-    return JSON.stringify(markerForInstallation(item), null, 2) + "\n";
+export function serializeInstallMarker(
+    marker: AgentSkillInstallMarker
+): string {
+    return JSON.stringify(marker, null, 2) + "\n";
 }
 
-/** True only when the marker exactly describes this indexed installation. */
-export function markerMatchesInstallation(
+/**
+ * Parse a marker read from `<root>/<directoryName>/`. Returns undefined unless
+ * every field is well formed and it describes a skill of exactly that name.
+ */
+export function parseInstallMarker(
     raw: Buffer | undefined,
-    item: AgentSkillInstallation | undefined
-): boolean {
-    if (!raw || !item) return false;
-    let parsed: AgentSkillInstallMarker;
+    directoryName: string
+): AgentSkillInstallMarker | undefined {
+    if (!raw) return undefined;
+    let value: AgentSkillInstallMarker;
     try {
-        parsed = JSON.parse(raw.toString("utf8"));
+        value = JSON.parse(raw.toString("utf8"));
     } catch {
-        return false;
+        return undefined;
     }
-    const expected = markerForInstallation(item);
-    return (
-        parsed?.format === expected.format &&
-        parsed.version === expected.version &&
-        parsed.installationId === expected.installationId &&
-        parsed.sourceKey === expected.sourceKey &&
-        parsed.source?.type === expected.source.type &&
-        parsed.source?.id === expected.source.id &&
-        parsed.source?.kind === expected.source.kind &&
-        parsed.name === expected.name &&
-        parsed.baselineChecksum === expected.baselineChecksum &&
-        parsed.baselineTreeDigest === expected.baselineTreeDigest
-    );
+    const ref = { type: value?.source?.type, id: value?.source?.id };
+    if (
+        value?.format !== "magda-agent-skill-installation" ||
+        value.version !== 1 ||
+        typeof value.installationId !== "string" ||
+        !UUID.test(value.installationId) ||
+        typeof value.sourceKey !== "string" ||
+        !HEX64.test(value.sourceKey) ||
+        !isRef(ref) ||
+        !SOURCE_KINDS.has(value.source.kind) ||
+        value.name !== directoryName ||
+        !SKILL_NAME.test(value.name) ||
+        typeof value.baselineChecksum !== "string" ||
+        !HEX64.test(value.baselineChecksum) ||
+        typeof value.baselineTreeDigest !== "string" ||
+        !HEX64.test(value.baselineTreeDigest) ||
+        typeof value.installedAt !== "string" ||
+        // Without a #3861 alias, the publication id must name this skill.
+        (value.alias === undefined &&
+            ref.id !== `agent-skill-${value.name}` &&
+            !ref.id.endsWith(`-${value.name}`))
+    )
+        return undefined;
+    return value;
 }
 
-export function newInstallationId(): string {
-    return randomUUID();
+/**
+ * Corroborate a marker with this machine's verified account cache: its source
+ * must be a previously verified identity, and an own-user publication must
+ * belong to that identity's user.
+ */
+export async function verifiedMarkerSource(
+    marker: AgentSkillInstallMarker,
+    env: NodeJS.ProcessEnv = process.env
+): Promise<AgentSkillSourceStateV3 | undefined> {
+    let state: AgentSkillSourceStateV3 | undefined;
+    try {
+        state = await loadAgentSkillSourceStateByKey(marker.sourceKey, env);
+    } catch {
+        return undefined;
+    }
+    if (!state) return undefined;
+    if (
+        marker.source.kind === "own-user-publication" &&
+        (marker.source.type !== "user" ||
+            marker.source.id !==
+                `agent-skill-${state.identity.userId}-${marker.name}`)
+    )
+        return undefined;
+    if (
+        marker.source.kind === "system-publication" &&
+        (marker.source.type !== "system" ||
+            marker.source.id !== `agent-skill-${marker.name}`)
+    )
+        return undefined;
+    return state;
 }
 
 /** Write bytes through an fsynced private temporary file and atomic rename. */

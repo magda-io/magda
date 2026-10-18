@@ -1,7 +1,6 @@
 import path from "node:path";
 import { readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import type { AgentSkillClient } from "./agentSkillClient.js";
 import { sha256Hex, validateAgentSkillArchive } from "./agentSkillArchive.js";
 import type {
     AgentSkillSourceIdentity,
@@ -14,15 +13,15 @@ import {
     canonicalMagdaBaseUrl,
     createAgentSkillSourceIdentity,
     loadAgentSkillSourceState,
+    loadAgentSkillSourceStateByKey,
     saveAgentSkillSourceState,
     sourceStateKey
 } from "./agentSkillLocalState.js";
 import type { ReconcileOutcome } from "./agentSkillReconcile.js";
-import {
-    hasPendingAgentSkillOperation,
-    reconcileAgentSkillInstallations,
-    recoverAgentSkillOperation
-} from "./agentSkillReconcile.js";
+import { reconcileAgentSkillInstallations } from "./agentSkillReconcile.js";
+import { AgentSkillClient } from "./agentSkillClient.js";
+import { clientFor } from "./client.js";
+import { UsageError } from "./errors.js";
 import {
     ensureRealDirectory,
     withAgentSkillStateLock
@@ -34,31 +33,18 @@ import type {
     AgentSkillType,
     WorkspaceSkillManifestItem
 } from "./agentSkillTypes.js";
-import type { ConfigFile, Profile } from "./profile.js";
-import { loadConfig, saveConfig } from "./profile.js";
-import type { AgentSkillTarget } from "./skills.js";
+import type { Profile } from "./profile.js";
+import { loadConfig, resolveProfile, saveConfig } from "./profile.js";
 import {
     resolveAgentSkillTargets,
     resolveWorkspaceAgentSkillTarget
 } from "./skills.js";
 
-/** Run under the cross-process lock after completing any interrupted journal. */
-export async function withAgentSkillOperationLock<T>(
-    fn: () => Promise<T>,
-    env: NodeJS.ProcessEnv = process.env
+/** Run under the cross-process Agent Skill lock. */
+export function withAgentSkillOperationLock<T>(
+    fn: () => Promise<T>
 ): Promise<T> {
-    return withAgentSkillStateLock(async () => {
-        await recoverAgentSkillOperation(env);
-        return fn();
-    });
-}
-
-/** Cheap check for profile-backed commands; locks only if recovery is needed. */
-export async function recoverAgentSkillOperations(
-    env: NodeJS.ProcessEnv = process.env
-): Promise<void> {
-    if (!(await hasPendingAgentSkillOperation(env))) return;
-    await withAgentSkillStateLock(() => recoverAgentSkillOperation(env));
+    return withAgentSkillStateLock(fn);
 }
 
 function emptyCounts() {
@@ -90,7 +76,13 @@ export function failedSyncResult(
     };
 }
 
-/** One result format for sync and profile switching. */
+const SYSTEM_FAILURES = new Set(["UNSAFE_PATH", "OPERATION_FAILED"]);
+
+/**
+ * One result format for sync and profile switching. `success` means every
+ * eligible target reconciled; `partial` means problems remain (conflicts,
+ * held or failed skills, warnings); `failed` means nothing could proceed.
+ */
 export function reconcileResult(
     outcome: ReconcileOutcome,
     extra: {
@@ -100,46 +92,62 @@ export function reconcileResult(
         notes?: AgentSkillSyncItemResult[];
     } = {}
 ): AgentSkillSyncResult {
+    const recordedFailures = new Set(
+        outcome.items
+            .filter((item) => item.action === "failed")
+            .map((item) => item.path)
+    );
     const items = [
         ...(extra.notes || []),
         ...(extra.failures || []),
         ...outcome.items,
-        ...outcome.conflicts.map(
-            (conflict): AgentSkillSyncItemResult => ({
-                ref: { type: "user", id: conflict.name },
-                name: conflict.name,
-                action:
-                    conflict.reason === "UNSAFE_PATH" ? "failed" : "skipped",
-                code: conflict.reason,
-                harness: conflict.harness,
-                path: conflict.path
-            })
-        )
+        ...outcome.problems
+            .filter(
+                (problem) =>
+                    !(
+                        problem.reason === "OPERATION_FAILED" &&
+                        recordedFailures.has(problem.path)
+                    )
+            )
+            .map(
+                (problem): AgentSkillSyncItemResult => ({
+                    ref: { type: "user", id: problem.name },
+                    name: problem.name,
+                    action: SYSTEM_FAILURES.has(problem.reason)
+                        ? "failed"
+                        : "skipped",
+                    code: problem.reason,
+                    harness: problem.harness,
+                    path: problem.path
+                })
+            )
     ];
     const counts = emptyCounts();
     for (const item of items) counts[item.action] += 1;
-    const unsafe = outcome.conflicts.some(
-        (conflict) => conflict.reason === "UNSAFE_PATH"
-    );
-    const failures = extra.failures?.length || 0;
-    const status: AgentSkillSyncResult["status"] =
-        (outcome.blocked && unsafe) ||
-        (failures > 0 && failures === extra.desiredCount)
-            ? "failed"
-            : outcome.blocked ||
-              counts.skipped + counts.failed + (extra.manifestWarnings || 0) > 0
-            ? "partial"
-            : "success";
+    const progressed =
+        counts.installed + counts.updated + counts.removed + counts.unchanged;
+    const downloadFailures = extra.failures?.length || 0;
+    const troubled =
+        outcome.problems.length +
+            downloadFailures +
+            counts.skipped +
+            (extra.manifestWarnings || 0) >
+        0;
+    const status: AgentSkillSyncResult["status"] = !troubled
+        ? "success"
+        : progressed === 0 &&
+          ((downloadFailures > 0 && downloadFailures === extra.desiredCount) ||
+              outcome.problems.some((problem) =>
+                  SYSTEM_FAILURES.has(problem.reason)
+              ))
+        ? "failed"
+        : "partial";
     return {
         status,
         counts,
         items,
         manifestWarnings: extra.manifestWarnings || 0,
-        ...(outcome.blocked ? { blocked: true } : {}),
-        ...(outcome.conflicts.length ? { conflicts: outcome.conflicts } : {}),
-        ...(outcome.retainedPaths.length
-            ? { retainedPaths: outcome.retainedPaths }
-            : {})
+        ...(outcome.problems.length ? { conflicts: outcome.problems } : {})
     };
 }
 
@@ -328,16 +336,6 @@ export function cachedDesired(
     };
 }
 
-function reconcileTargets(
-    targets: AgentSkillTarget[],
-    request: Omit<
-        Parameters<typeof reconcileAgentSkillInstallations>[0],
-        "targets"
-    >
-): Promise<ReconcileOutcome> {
-    return reconcileAgentSkillInstallations({ ...request, targets });
-}
-
 async function cacheIdentityForProfile(
     profileName: string,
     identity: AgentSkillSourceIdentity
@@ -415,12 +413,7 @@ export async function syncLocalAgentSkills(
             (latest.activeProfile || "default") !== options.selectedProfile
         ) {
             const result = reconcileResult(
-                {
-                    blocked: false,
-                    items: [],
-                    conflicts: [],
-                    retainedPaths: []
-                },
+                { items: [], problems: [] },
                 {
                     failures: refreshed.failures,
                     manifestWarnings: manifest.warnings.length,
@@ -437,16 +430,13 @@ export async function syncLocalAgentSkills(
             );
             return result;
         }
-        const outcome = await reconcileTargets(
-            resolveAgentSkillTargets({ env: process.env }),
-            {
-                sourceKey: identity.key,
-                desired: refreshed.desired,
-                unresolved: refreshed.unresolved,
-                force: !!options.force,
-                activeProfile: options.selectedProfile
-            }
-        );
+        const outcome = await reconcileAgentSkillInstallations({
+            targets: resolveAgentSkillTargets({ env: process.env }),
+            sourceKey: identity.key,
+            desired: refreshed.desired,
+            unresolved: refreshed.unresolved,
+            force: !!options.force
+        });
         return reconcileResult(outcome, {
             failures: refreshed.failures,
             manifestWarnings: manifest.warnings.length,
@@ -483,16 +473,14 @@ export async function syncWorkspaceAgentSkills(
             manifest,
             type
         );
-        const outcome = await reconcileTargets(
-            [resolveWorkspaceAgentSkillTarget(process.env)],
-            {
-                sourceKey: identity.key,
-                desired: refreshed.desired,
-                unresolved: refreshed.unresolved,
-                force,
-                type
-            }
-        );
+        const outcome = await reconcileAgentSkillInstallations({
+            targets: [resolveWorkspaceAgentSkillTarget(process.env)],
+            sourceKey: identity.key,
+            desired: refreshed.desired,
+            unresolved: refreshed.unresolved,
+            force,
+            type
+        });
         return reconcileResult(outcome, {
             failures: refreshed.failures,
             manifestWarnings: manifest.warnings.length,
@@ -502,36 +490,92 @@ export async function syncWorkspaceAgentSkills(
 }
 
 /**
- * Offline profile activation: reconcile the target profile's verified cached
- * snapshot and commit `finalConfig` only if every installation succeeded.
- * Caller holds the lock. A missing cache means an empty desired set.
+ * Offline reconciliation against a profile's previously verified snapshot,
+ * run after the profile selection itself has been saved. Without a verified
+ * snapshot nothing is reconciled: an unknown desired set is never treated as
+ * an empty one, so no installed skill is removed on that basis.
  */
-export async function activateCachedAgentSkillProfile(options: {
-    profileName: string;
+export async function reconcileCachedAgentSkillProfile(options: {
     identity?: AgentSkillSourceIdentity;
     force: boolean;
-    finalConfig: ConfigFile;
-}): Promise<{ result: AgentSkillSyncResult; cached: boolean }> {
-    const state = options.identity
-        ? await loadAgentSkillSourceState(options.identity)
-        : undefined;
-    const cached = !!state?.snapshot;
-    const { desired, unresolved } = cachedDesired(state);
-    const outcome = await reconcileTargets(
-        resolveAgentSkillTargets({ env: process.env }),
-        {
-            sourceKey: cached ? options.identity!.key : undefined,
+}): Promise<AgentSkillSyncResult | undefined> {
+    return withAgentSkillOperationLock(async () => {
+        const state = options.identity
+            ? await loadAgentSkillSourceState(options.identity)
+            : undefined;
+        if (!state?.snapshot) return undefined;
+        const { desired, unresolved } = cachedDesired(state);
+        const outcome = await reconcileAgentSkillInstallations({
+            targets: resolveAgentSkillTargets({ env: process.env }),
+            sourceKey: state.identity.key,
             desired,
             unresolved,
-            force: options.force,
-            activeProfile: options.profileName,
-            finalConfig: options.finalConfig
+            force: options.force
+        });
+        return reconcileResult(outcome, { desiredCount: desired.length });
+    });
+}
+
+/**
+ * Credentials for a recorded source account, independent of the active
+ * profile. Every configured profile on that canonical MAGDA instance is tried
+ * (the one last verified as this account first) and accepted only if it
+ * authenticates as exactly that tenant and user. There is no fallback.
+ */
+export async function clientForSourceAccount(
+    sourceKey: string
+): Promise<{
+    client: AgentSkillClient;
+    profileName: string;
+    identity: AgentSkillSourceIdentity;
+    state: AgentSkillSourceStateV3;
+}> {
+    const state = await loadAgentSkillSourceStateByKey(sourceKey);
+    if (!state)
+        throw new UsageError(
+            "The account recorded for this skill has never been verified on this computer; mgd will not publish it under another account."
+        );
+    const { identity } = state;
+    const cfg = await loadConfig();
+    const onInstance = (profile: Profile) => {
+        try {
+            return (
+                !!profile.baseUrl &&
+                canonicalMagdaBaseUrl(profile.baseUrl) ===
+                    identity.canonicalBaseUrl
+            );
+        } catch {
+            return false;
         }
-    );
-    return {
-        result: reconcileResult(outcome, { desiredCount: desired.length }),
-        cached
     };
+    const candidates: Array<[string, Profile]> = Object.entries(cfg.profiles)
+        .filter(([, profile]) => onInstance(profile))
+        .sort(
+            ([, a], [, b]) =>
+                Number(b.agentSkillSource?.key === sourceKey) -
+                Number(a.agentSkillSource?.key === sourceKey)
+        );
+    // Explicit one-off credentials (MGD_BASE_URL/MGD_API_KEY*) are also
+    // tried, subject to the same identity check.
+    const current = resolveProfile(cfg);
+    if (current.profile && onInstance(current.profile))
+        candidates.push([current.name, current.profile]);
+    for (const [profileName, profile] of candidates) {
+        const client = new AgentSkillClient(clientFor(profile));
+        try {
+            const manifest = await client.localManifest();
+            if (
+                manifest.identity.tenantId === identity.tenantId &&
+                manifest.identity.userId === identity.userId
+            )
+                return { client, profileName, identity, state };
+        } catch {
+            // Expired, revoked or unreachable credentials: try the next one.
+        }
+    }
+    throw new UsageError(
+        `No configured profile currently authenticates as the account that owns this skill (${identity.canonicalBaseUrl}, tenant ${identity.tenantId}, user ${identity.userId}). Create or update a profile for that account; mgd never publishes it under another account.`
+    );
 }
 
 /** The last online-verified source identity cached on a named profile. */

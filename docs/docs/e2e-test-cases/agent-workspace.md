@@ -242,7 +242,7 @@ Publish one system skill and one current-user skill, then:
   annotations record `success` with two installs. In the Sandbox, both
   `/data/agent-home/skills/<name>/` entries are real directories containing
   `.magda-skill-install.json`, and `$XDG_DATA_HOME/mgd/agent-skills/` (on
-  `/data`) holds `installation-index.json` and `sources/<key>/`.
+  `/data`) holds only `sources/<key>/` (no installation index or journal).
 - **Existing Workspace:** edit the user skill's `SKILL.md`, restart Agent
   Manager (or reset the claim's sync status to `notAttempted`). The recovery
   sync is non-forced: status becomes `partial`, the edit survives, READY and the
@@ -250,8 +250,8 @@ Publish one system skill and one current-user skill, then:
 - **Manual Sandbox CLI:** delete a skill directory and corrupt the other's
   marker, then run `mgd agent-skill sync --json`: the deleted skill is
   reinstalled and the marker repaired without `--force`. With an edited copy,
-  ordinary sync reports `LOCAL_MODIFICATION` with the exact path and changes
-  nothing; `mgd agent-skill sync --force --json` resets it. Neither manual run
+  ordinary sync reports `LOCAL_MODIFICATION` with the exact path and holds
+  replacements/removals; `mgd agent-skill sync --force --json` resets it. Neither manual run
   changes the claim's Manager-owned sync annotations.
 - **No Python:** run `mgd agent-skill sync --json` with `PATH` containing only
   `node` and `mgd`; it succeeds.

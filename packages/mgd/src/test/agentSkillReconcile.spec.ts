@@ -4,20 +4,16 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { AGENT_SKILL_INSTALL_MARKER } from "../agentSkillArchive.js";
 import {
+    agentSkillDataRoot,
     createAgentSkillSourceIdentity,
-    loadAgentSkillInstallationIndex,
     loadAgentSkillSourceState,
-    markerMatchesInstallation,
-    saveAgentSkillInstallationIndex,
-    installationKey
+    parseInstallMarker
 } from "../agentSkillLocalState.js";
 import {
-    agentSkillOperationJournalPath,
-    agentSkillReconcileTestHooks,
-    STAGING_DIRECTORY
+    STAGING_DIRECTORY,
+    agentSkillReconcileTestHooks
 } from "../agentSkillReconcile.js";
 import {
-    recoverAgentSkillOperations,
     syncLocalAgentSkills,
     syncWorkspaceAgentSkills
 } from "../agentSkillSync.js";
@@ -36,11 +32,25 @@ import {
 type Harness = "claude" | "codex" | "opencode" | "dsh";
 const HARNESSES: Harness[] = ["claude", "codex", "opencode", "dsh"];
 
-function codes(result: AgentSkillSyncResult, code: string) {
-    return result.items.filter((item) => item.code === code);
+const codes = (result: AgentSkillSyncResult, code: string) =>
+    result.items.filter((item) => item.code === code);
+
+async function listFiles(directory: string): Promise<string[]> {
+    const found: string[] = [];
+    const walk = async (current: string) => {
+        for (const entry of await fs.readdir(current, {
+            withFileTypes: true
+        })) {
+            const child = path.join(current, entry.name);
+            found.push(child);
+            if (entry.isDirectory()) await walk(child);
+        }
+    };
+    if (await pathExists(directory)) await walk(directory);
+    return found;
 }
 
-describe("copy-only Agent Skill reconciliation", () => {
+describe("scan-based Agent Skill reconciliation", () => {
     let env: HarnessEnvironment;
     let remote: FakeAgentSkillRemote;
     const dir = (harness: Harness, name = "alpha") =>
@@ -51,6 +61,8 @@ describe("copy-only Agent Skill reconciliation", () => {
             activate: true,
             force
         });
+    const crash = () =>
+        Object.assign(new Error("simulated crash"), { simulatedCrash: true });
 
     beforeEach(async () => {
         env = await createHarnessEnvironment("mgd-reconcile-");
@@ -65,18 +77,18 @@ describe("copy-only Agent Skill reconciliation", () => {
     });
 
     afterEach(async () => {
-        delete agentSkillReconcileTestHooks.afterOperation;
-        delete agentSkillReconcileTestHooks.afterIndexCommit;
+        delete agentSkillReconcileTestHooks.afterBackup;
+        delete agentSkillReconcileTestHooks.beforeOperation;
         await env.restore();
     });
 
-    it("installs an independent real-directory copy with metadata in every harness", async () => {
+    it("installs self-describing copies and rediscovers them by scanning, with no central state", async () => {
         const { meta } = await remote.publish("alpha", "v1", {
             "reference.md": "# Reference\n"
         });
-        const result = await sync();
-        expect(result.status).to.equal("success");
-        expect(result.counts.installed).to.equal(4);
+        const first = await sync();
+        expect(first.status).to.equal("success");
+        expect(first.counts.installed).to.equal(4);
         const identity = createAgentSkillSourceIdentity({
             baseUrl: remote.baseUrl,
             tenantId: "7",
@@ -90,90 +102,81 @@ describe("copy-only Agent Skill reconciliation", () => {
             expect(await readSkill(dir(harness))).to.equal(
                 skillMarkdown("alpha", "v1")
             );
-            expect(
-                await fs.readFile(
-                    path.join(dir(harness), "reference.md"),
-                    "utf8"
-                )
-            ).to.equal("# Reference\n");
             const marker = await readMarker(dir(harness));
             expect(marker).to.include({
                 format: "magda-agent-skill-installation",
-                version: 1,
                 sourceKey: identity.key,
                 name: "alpha",
                 baselineChecksum: meta.checksum
-            });
-            expect(marker.source).to.deep.equal({
-                type: "user",
-                id: meta.id,
-                kind: "own-user-publication"
             });
             expect(JSON.stringify(marker)).not.to.match(/apiKey|secret/i);
             ids.add(marker.installationId);
         }
         expect(ids.size).to.equal(4);
-        const index = await loadAgentSkillInstallationIndex();
-        expect(Object.keys(index.installations)).to.have.length(4);
-        expect(index.activeSourceKey).to.equal(identity.key);
 
-        // Copies are independent: editing one never changes another.
-        await fs.writeFile(
-            path.join(dir("claude"), "SKILL.md"),
-            skillMarkdown("alpha", "edited")
+        const again = await sync();
+        expect(again.status).to.equal("success");
+        expect(again.counts.unchanged).to.equal(4);
+        // The only durable state is profile config, the verified source cache
+        // and each skill's own marker; nothing is left in staging.
+        const dataFiles = (await listFiles(agentSkillDataRoot())).map((file) =>
+            path.relative(agentSkillDataRoot(), file)
         );
-        expect(await readSkill(dir("codex"))).to.equal(
-            skillMarkdown("alpha", "v1")
+        expect(dataFiles.every((file) => file.startsWith("sources"))).to.equal(
+            true
         );
-        // No staging or journal is left behind after a successful commit.
         for (const harness of HARNESSES)
             expect(
                 await pathExists(
                     path.join(env.roots[harness], STAGING_DIRECTORY)
                 )
             ).to.equal(false);
-        expect(await pathExists(agentSkillOperationJournalPath())).to.equal(
-            false
-        );
     });
 
-    it("reinstalls a manually deleted installation on ordinary sync", async () => {
+    it("ignores unrelated directories, including an orphan whose source and marker were removed", async () => {
+        await remote.publish("alpha", "v1");
+        await sync();
+        const unrelated = path.join(env.roots.claude, "my-own");
+        await fs.mkdir(unrelated);
+        await fs.writeFile(path.join(unrelated, "SKILL.md"), "mine");
+        await fs.rm(path.join(dir("codex"), AGENT_SKILL_INSTALL_MARKER));
+        await fs.writeFile(
+            path.join(dir("opencode"), AGENT_SKILL_INSTALL_MARKER),
+            "{malformed"
+        );
+        remote.remove("alpha");
+
+        const forced = await sync(true);
+        expect(forced.status).to.equal("success");
+        // Marked clean copies are removed; unmarked/malformed ones are not
+        // proof of MAGDA ownership once the name is no longer desired.
+        expect(await pathExists(dir("claude"))).to.equal(false);
+        expect(await pathExists(dir("dsh"))).to.equal(false);
+        expect(await readSkill(dir("codex"))).to.equal(
+            skillMarkdown("alpha", "v1")
+        );
+        expect(await pathExists(dir("opencode"))).to.equal(true);
+        expect(await readSkill(unrelated)).to.equal("mine");
+    });
+
+    it("reinstalls a manually deleted directory on ordinary sync", async () => {
         await remote.publish("alpha", "v1");
         await sync();
         await fs.rm(dir("codex"), { recursive: true });
 
         const result = await sync();
         expect(result.status).to.equal("success");
-        expect(result.blocked).to.equal(undefined);
         expect(
-            codes(result, "REINSTALLED").map((item) => item.harness)
+            result.items
+                .filter((item) => item.action === "installed")
+                .map((item) => item.harness)
         ).to.deep.equal(["codex"]);
         expect(await readSkill(dir("codex"))).to.equal(
             skillMarkdown("alpha", "v1")
         );
-        expect(result.counts.unchanged).to.equal(3);
     });
 
-    it("forgets a deleted installation whose publication was removed", async () => {
-        await remote.publish("alpha", "v1");
-        await sync();
-        await fs.rm(dir("claude"), { recursive: true });
-        remote.remove("alpha");
-
-        const result = await sync();
-        expect(result.status).to.equal("success");
-        expect(
-            codes(result, "TRACKING_CLEARED").map((i) => i.harness)
-        ).to.deep.equal(["claude"]);
-        expect(result.counts.removed).to.equal(4);
-        for (const harness of HARNESSES)
-            expect(await pathExists(dir(harness))).to.equal(false);
-        expect(
-            (await loadAgentSkillInstallationIndex()).installations
-        ).to.deep.equal({});
-    });
-
-    it("repairs missing, malformed and stale metadata only when the full tree matches", async () => {
+    it("repairs missing, malformed and stale metadata without touching skill files", async () => {
         const { meta } = await remote.publish("alpha", "v1");
         await sync();
         const markerPath = (harness: Harness) =>
@@ -182,69 +185,59 @@ describe("copy-only Agent Skill reconciliation", () => {
         await fs.writeFile(markerPath("codex"), "{not json");
         const stale = await readMarker(dir("opencode"));
         stale.baselineChecksum = "f".repeat(64);
+        stale.baselineTreeDigest = "e".repeat(64);
         await fs.writeFile(markerPath("opencode"), JSON.stringify(stale));
+        const repaired = ["claude", "codex", "opencode"] as Harness[];
         const before = await Promise.all(
-            ["claude", "codex", "opencode"].map((harness) =>
-                fs.stat(path.join(dir(harness as Harness), "SKILL.md"))
+            repaired.map((harness) =>
+                fs.stat(path.join(dir(harness), "SKILL.md"))
             )
         );
 
         const result = await sync();
         expect(result.status).to.equal("success");
         expect(
-            codes(result, "METADATA_REPAIRED")
-                .map((item) => item.harness)
+            result.items
+                .filter((item) => item.action === "updated")
+                .map((item) => `${item.harness}:${item.code}`)
                 .sort()
-        ).to.deep.equal(["claude", "codex", "opencode"]);
-        const index = await loadAgentSkillInstallationIndex();
-        for (const [position, harness] of ([
-            "claude",
-            "codex",
-            "opencode"
-        ] as Harness[]).entries()) {
+        ).to.deep.equal([
+            "claude:ADOPTED",
+            "codex:METADATA_REPAIRED",
+            "opencode:BASELINE_UPDATED"
+        ]);
+        for (const [position, harness] of repaired.entries()) {
             const after = await fs.stat(path.join(dir(harness), "SKILL.md"));
-            // Skill content files are left untouched; only metadata changes.
             expect(after.ino).to.equal(before[position].ino);
             expect(after.mtimeMs).to.equal(before[position].mtimeMs);
-            const installation =
-                index.installations[
-                    installationKey(env.roots[harness], "alpha")
-                ];
-            expect(installation.baselineChecksum).to.equal(meta.checksum);
-            expect(
-                markerMatchesInstallation(
-                    await fs.readFile(markerPath(harness)),
-                    installation
-                )
-            ).to.equal(true);
+            const marker = parseInstallMarker(
+                await fs.readFile(markerPath(harness)),
+                "alpha"
+            );
+            expect(marker?.baselineChecksum).to.equal(meta.checksum);
         }
     });
 
-    it("never adopts a matching SKILL.md alone: other content conflicts until --force", async () => {
+    it("conflicts on a same-name directory with different content until --force", async () => {
         await remote.publish("alpha", "v1");
-        await sync();
-        await fs.rm(path.join(dir("claude"), AGENT_SKILL_INSTALL_MARKER));
-        await fs.writeFile(path.join(dir("claude"), "extra.md"), "# Mine\n");
-        const indexBefore = await loadAgentSkillInstallationIndex();
+        await fs.mkdir(dir("claude"), { recursive: true });
+        await fs.writeFile(
+            path.join(dir("claude"), "SKILL.md"),
+            skillMarkdown("alpha", "v1")
+        );
+        await fs.writeFile(path.join(dir("claude"), "extra.md"), "# mine\n");
 
         const normal = await sync();
         expect(normal.status).to.equal("partial");
-        expect(normal.blocked).to.equal(true);
-        expect(normal.conflicts).to.deep.equal([
-            {
-                name: "alpha",
-                harness: "claude",
-                path: dir("claude"),
-                reason: "UNRECOGNIZED_DIRECTORY",
-                detail: "installation metadata is missing",
-                remedy: normal.conflicts![0].remedy
-            }
-        ]);
+        expect(
+            normal.conflicts!.map((c) => [c.harness, c.reason])
+        ).to.deep.equal([["claude", "UNRECOGNIZED_DIRECTORY"]]);
         expect(await pathExists(path.join(dir("claude"), "extra.md"))).to.equal(
             true
         );
-        expect(await loadAgentSkillInstallationIndex()).to.deep.equal(
-            indexBefore
+        // Installs into absent paths are not destructive and still proceed.
+        expect(await readSkill(dir("codex"))).to.equal(
+            skillMarkdown("alpha", "v1")
         );
 
         const forced = await sync(true);
@@ -255,242 +248,53 @@ describe("copy-only Agent Skill reconciliation", () => {
         expect(await pathExists(path.join(dir("claude"), "extra.md"))).to.equal(
             false
         );
-        expect(await readMarker(dir("claude"))).to.have.property(
-            "installationId"
-        );
     });
 
-    it("updates an older clean copy, but treats a genuine edit as a conflict", async () => {
+    it("updates older clean copies, keeps genuine edits, and holds destructive changes while conflicted", async () => {
         await remote.publish("alpha", "v1");
+        await remote.publish("beta", "v1");
         await sync();
         await remote.publish("alpha", "v2");
-
-        const updated = await sync();
-        expect(updated.status).to.equal("success");
-        expect(updated.counts.updated).to.equal(4);
-        for (const harness of HARNESSES)
-            expect(await readSkill(dir(harness))).to.equal(
-                skillMarkdown("alpha", "v2")
-            );
+        expect((await sync()).counts.updated).to.equal(4);
 
         await fs.writeFile(
             path.join(dir("codex"), "SKILL.md"),
             skillMarkdown("alpha", "my codex edit")
         );
         await remote.publish("alpha", "v3");
-        const blocked = await sync();
-        expect(blocked.blocked).to.equal(true);
+        await remote.publish("beta", "v2");
+        await remote.publish("gamma", "new");
+        const normal = await sync();
+        expect(normal.status).to.equal("partial");
         expect(
-            blocked.conflicts!.map((c) => [c.harness, c.reason])
+            normal.conflicts!.map((c) => [c.harness, c.reason])
         ).to.deep.equal([["codex", "LOCAL_MODIFICATION"]]);
-        // No destructive partial update while any conflict is unresolved.
-        for (const harness of ["claude", "opencode", "dsh"] as Harness[])
-            expect(await readSkill(dir(harness))).to.equal(
-                skillMarkdown("alpha", "v2")
-            );
+        expect(normal.conflicts![0].source?.profiles).to.deep.equal(["dev"]);
+        expect(await readSkill(dir("codex"))).to.equal(
+            skillMarkdown("alpha", "my codex edit")
+        );
+        // Replacements wait for the conflict; new installs do not.
+        expect(codes(normal, "HELD_FOR_CONFLICTS")).to.have.length(7);
+        expect(await readSkill(dir("claude", "beta"))).to.equal(
+            skillMarkdown("beta", "v1")
+        );
+        expect(await readSkill(dir("dsh", "gamma"))).to.equal(
+            skillMarkdown("gamma", "new")
+        );
 
         const forced = await sync(true);
         expect(forced.status).to.equal("success");
-        for (const harness of HARNESSES)
+        for (const harness of HARNESSES) {
             expect(await readSkill(dir(harness))).to.equal(
                 skillMarkdown("alpha", "v3")
             );
-    });
-
-    it("reports every conflicting harness before changing anything", async () => {
-        await remote.publish("alpha", "v1");
-        await remote.publish("beta", "v1");
-        await sync();
-        await fs.writeFile(
-            path.join(dir("claude"), "SKILL.md"),
-            skillMarkdown("alpha", "claude edit")
-        );
-        await fs.writeFile(path.join(dir("opencode", "beta"), "added.md"), "x");
-        await remote.publish("alpha", "v2");
-        await remote.publish("gamma", "new");
-        const indexBefore = await loadAgentSkillInstallationIndex();
-
-        const result = await sync();
-        expect(result.blocked).to.equal(true);
-        expect(
-            result.conflicts!.map((c) => `${c.harness}:${c.name}`).sort()
-        ).to.deep.equal(["claude:alpha", "opencode:beta"]);
-        expect(result.counts.installed + result.counts.updated).to.equal(0);
-        expect(await readSkill(dir("codex"))).to.equal(
-            skillMarkdown("alpha", "v1")
-        );
-        expect(await pathExists(dir("dsh", "gamma"))).to.equal(false);
-        expect(await loadAgentSkillInstallationIndex()).to.deep.equal(
-            indexBefore
-        );
-        // The verified remote snapshot is still recorded (no network-derived
-        // resurrection later), even though installations were not changed.
-        const identity = createAgentSkillSourceIdentity({
-            baseUrl: remote.baseUrl,
-            tenantId: "7",
-            userId: remote.userId
-        });
-        const snapshot = (await loadAgentSkillSourceState(identity)).snapshot!;
-        expect(Object.keys(snapshot.items)).to.have.length(3);
-    });
-
-    it("ignores unrelated names and adopts or conflicts on unfamiliar matching names", async () => {
-        await remote.publish("alpha", "v1");
-        const unrelated = path.join(env.roots.claude, "my-own");
-        await fs.mkdir(unrelated, { recursive: true });
-        await fs.writeFile(
-            path.join(unrelated, "SKILL.md"),
-            skillMarkdown("my-own", "mine")
-        );
-        await fs.mkdir(dir("codex"), { recursive: true });
-        await fs.writeFile(
-            path.join(dir("codex"), "SKILL.md"),
-            skillMarkdown("alpha", "v1")
-        );
-        await fs.mkdir(dir("opencode"), { recursive: true });
-        await fs.writeFile(
-            path.join(dir("opencode"), "SKILL.md"),
-            skillMarkdown("alpha", "independently authored")
-        );
-
-        const normal = await sync();
-        expect(normal.blocked).to.equal(true);
-        expect(
-            normal.conflicts!.map((c) => [c.harness, c.reason])
-        ).to.deep.equal([["opencode", "UNRECOGNIZED_DIRECTORY"]]);
-
-        const forced = await sync(true);
-        expect(forced.status).to.equal("success");
-        expect(codes(forced, "ADOPTED").map((i) => i.harness)).to.deep.equal([
-            "codex"
-        ]);
-        expect(
-            codes(forced, "FORCED_REPLACE").map((i) => i.harness)
-        ).to.deep.equal(["opencode"]);
-        expect(await readSkill(unrelated)).to.equal(
-            skillMarkdown("my-own", "mine")
-        );
-        expect(
-            await pathExists(path.join(unrelated, AGENT_SKILL_INSTALL_MARKER))
-        ).to.equal(false);
-    });
-
-    it("refuses a symlinked skill directory even with --force", async () => {
-        await remote.publish("alpha", "v1");
-        const outside = path.join(env.tmp, "outside");
-        await fs.mkdir(outside);
-        await fs.writeFile(path.join(outside, "SKILL.md"), "precious");
-        await fs.mkdir(env.roots.claude, { recursive: true });
-        await fs.symlink(outside, dir("claude"));
-
-        const forced = await sync(true);
-        expect(forced.status).to.equal("failed");
-        expect(forced.blocked).to.equal(true);
-        expect(
-            forced.conflicts!.map((c) => [c.harness, c.detail])
-        ).to.deep.equal([["claude", "symbolic link"]]);
-        expect((await fs.lstat(dir("claude"))).isSymbolicLink()).to.equal(true);
-        expect(
-            await fs.readFile(path.join(outside, "SKILL.md"), "utf8")
-        ).to.equal("precious");
-        // Unsafe paths block every harness, not only the unsafe one.
-        expect(await pathExists(dir("codex"))).to.equal(false);
-    });
-
-    it("refuses nested links, special files, symlinked roots and reserved names even with --force", async () => {
-        await remote.publish("alpha", "v1");
-        await sync();
-        await fs.symlink("/etc", path.join(dir("codex"), "escape"));
-        execFileSync("/usr/bin/mkfifo", [path.join(dir("dsh"), "pipe.md")]);
-        const realOpencode = path.join(env.tmp, "real-opencode");
-        await fs.rename(env.roots.opencode, realOpencode);
-        await fs.symlink(realOpencode, env.roots.opencode);
-        const index = await loadAgentSkillInstallationIndex();
-        const reserved = path.join(env.roots.claude, "magda-mgd");
-        await fs.mkdir(reserved);
-        await fs.writeFile(path.join(reserved, "SKILL.md"), "bundled");
-        const template =
-            index.installations[installationKey(env.roots.claude, "alpha")];
-        index.installations[installationKey(env.roots.claude, "magda-mgd")] = {
-            ...template,
-            installationId: "11111111-1111-4111-8111-111111111111",
-            name: "magda-mgd",
-            path: reserved
-        };
-        await saveAgentSkillInstallationIndex(index);
-        remote.remove("alpha");
-
-        const forced = await sync(true);
-        expect(forced.blocked).to.equal(true);
-        expect(
-            forced.conflicts!.map((c) => `${c.harness}:${c.name}`).sort()
-        ).to.deep.equal([
-            "claude:magda-mgd",
-            "codex:alpha",
-            "dsh:alpha",
-            "opencode:alpha"
-        ]);
-        expect(
-            forced.conflicts!.every((c) => c.reason === "UNSAFE_PATH")
-        ).to.equal(true);
-        expect(await readSkill(reserved)).to.equal("bundled");
-        expect(await pathExists(dir("claude"))).to.equal(true);
-        expect(
-            (await fs.lstat(path.join(dir("codex"), "escape"))).isSymbolicLink()
-        ).to.equal(true);
-    });
-
-    it("keeps installations and the verified cache when a download fails", async () => {
-        const first = await remote.publish("alpha", "v1");
-        await sync();
-        await remote.publish("alpha", "v2");
-        await remote.publish("beta", "new");
-        remote.failDownloads.add("alpha");
-        remote.failDownloads.add("beta");
-
-        const result = await sync();
-        expect(result.status).to.equal("failed");
-        expect(codes(result, "DOWNLOAD_FAILED")).to.have.length(2);
-        for (const harness of HARNESSES) {
-            expect(await readSkill(dir(harness))).to.equal(
-                skillMarkdown("alpha", "v1")
+            expect(await readSkill(dir(harness, "beta"))).to.equal(
+                skillMarkdown("beta", "v2")
             );
-            expect(await pathExists(dir(harness, "beta"))).to.equal(false);
         }
-        const identity = createAgentSkillSourceIdentity({
-            baseUrl: remote.baseUrl,
-            tenantId: "7",
-            userId: remote.userId
-        });
-        const item = (await loadAgentSkillSourceState(identity)).snapshot!
-            .items[`user/${first.meta.id}`];
-        expect(item.checksum).to.equal(first.meta.checksum);
-        expect(await pathExists(item.archiveFile)).to.equal(true);
     });
 
-    it("changes nothing during a manifest outage and never deletes on warnings", async () => {
-        await remote.publish("alpha", "v1");
-        await sync();
-        const indexBefore = await loadAgentSkillInstallationIndex();
-        remote.failManifest = true;
-        expect((await sync()).status).to.equal("failed");
-        expect(await loadAgentSkillInstallationIndex()).to.deep.equal(
-            indexBefore
-        );
-
-        remote.failManifest = false;
-        remote.remove("alpha");
-        remote.warnings = [
-            { sourceKind: "own-user-publication", code: "READ_DENIED" }
-        ];
-        const warned = await sync();
-        expect(warned.status).to.equal("partial");
-        expect(codes(warned, "SOURCE_UNRESOLVED")).to.have.length(4);
-        for (const harness of HARNESSES)
-            expect(await pathExists(dir(harness))).to.equal(true);
-    });
-
-    it("removes clean copies of a deleted publication; modified ones need --force", async () => {
+    it("removes remotely deleted clean marked copies; edited ones need --force", async () => {
         await remote.publish("alpha", "v1");
         await sync();
         await fs.writeFile(
@@ -500,136 +304,305 @@ describe("copy-only Agent Skill reconciliation", () => {
         remote.remove("alpha");
 
         const normal = await sync();
-        expect(normal.blocked).to.equal(true);
+        expect(normal.status).to.equal("partial");
         expect(
             normal.conflicts!.map((c) => [c.harness, c.reason])
-        ).to.deep.equal([["dsh", "REMOVED_REMOTE_LOCAL_MODIFICATION"]]);
-        for (const harness of HARNESSES)
-            expect(await pathExists(dir(harness))).to.equal(true);
+        ).to.deep.equal([["dsh", "NOT_DESIRED_LOCAL_MODIFICATION"]]);
+        expect(await readSkill(dir("dsh"))).to.equal(
+            skillMarkdown("alpha", "dsh edit")
+        );
 
         const forced = await sync(true);
         expect(forced.status).to.equal("success");
-        expect(forced.counts.removed).to.equal(4);
         for (const harness of HARNESSES)
             expect(await pathExists(dir(harness))).to.equal(false);
     });
 
-    describe("interrupted commits", () => {
-        const crash = () => {
-            const error = new Error("simulated crash") as Error & {
-                simulatedCrash: boolean;
-            };
-            error.simulatedCrash = true;
-            return error;
+    it("never deletes on an outage, manifest warnings or failed downloads", async () => {
+        const first = await remote.publish("alpha", "v1");
+        await sync();
+        remote.failManifest = true;
+        expect((await sync()).status).to.equal("failed");
+        remote.failManifest = false;
+
+        remote.remove("alpha");
+        remote.warnings = [
+            { sourceKind: "own-user-publication", code: "READ_DENIED" }
+        ];
+        const warned = await sync();
+        expect(warned.status).to.equal("partial");
+        expect(codes(warned, "SOURCE_UNRESOLVED")).to.have.length(4);
+
+        remote.warnings = [];
+        await remote.publish("alpha", "v2");
+        remote.failDownloads.add("alpha");
+        const failedDownload = await sync();
+        expect(failedDownload.status).to.not.equal("success");
+        expect(codes(failedDownload, "DOWNLOAD_FAILED")).to.have.length(1);
+        for (const harness of HARNESSES)
+            expect(await readSkill(dir(harness))).to.equal(
+                skillMarkdown("alpha", "v1")
+            );
+        const identity = createAgentSkillSourceIdentity({
+            baseUrl: remote.baseUrl,
+            tenantId: "7",
+            userId: remote.userId
+        });
+        const cached = (await loadAgentSkillSourceState(identity)).snapshot!
+            .items[`user/${first.meta.id}`];
+        expect(cached.checksum).to.equal(first.meta.checksum);
+    });
+
+    it("keeps successful harness updates when a later harness fails, then converges", async () => {
+        await remote.publish("alpha", "v1");
+        await sync();
+        await remote.publish("alpha", "v2");
+        agentSkillReconcileTestHooks.beforeOperation = async (
+            _kind,
+            harness
+        ) => {
+            if (harness === "codex")
+                throw new Error("EIO: simulated disk error");
         };
 
-        it("rolls back a replacement interrupted after the old copy moved aside", async () => {
+        const partial = await sync();
+        expect(partial.status).to.equal("partial");
+        expect(
+            partial.items
+                .filter((item) => item.name === "alpha")
+                .map((item) => `${item.harness}:${item.action}`)
+                .sort()
+        ).to.deep.equal([
+            "claude:updated",
+            "codex:failed",
+            "dsh:updated",
+            "opencode:updated"
+        ]);
+        expect(partial.conflicts).to.deep.include({
+            name: "alpha",
+            harness: "codex",
+            path: dir("codex"),
+            reason: "OPERATION_FAILED",
+            detail: "EIO: simulated disk error",
+            remedy: partial.conflicts![0].remedy
+        });
+        expect(await readSkill(dir("claude"))).to.equal(
+            skillMarkdown("alpha", "v2")
+        );
+        expect(await readSkill(dir("codex"))).to.equal(
+            skillMarkdown("alpha", "v1")
+        );
+
+        delete agentSkillReconcileTestHooks.beforeOperation;
+        const converged = await sync();
+        expect(converged.status).to.equal("success");
+        expect(converged.counts).to.deep.include({ updated: 1, unchanged: 3 });
+    });
+
+    describe("per-skill crash recovery", () => {
+        it("restores the old copy after a crash between backup and replacement", async () => {
             await remote.publish("alpha", "v1");
             await sync();
-            const indexBefore = await loadAgentSkillInstallationIndex();
             await remote.publish("alpha", "v2");
-            agentSkillReconcileTestHooks.afterOperation = async (
-                kind,
-                state
-            ) => {
-                if (kind === "replace" && state === "oldMoved") throw crash();
-            };
-            let caught: unknown;
-            try {
-                await sync();
-            } catch (error) {
-                caught = error;
-            }
-            expect((caught as Error).message).to.equal("simulated crash");
-            delete agentSkillReconcileTestHooks.afterOperation;
-            expect(await pathExists(agentSkillOperationJournalPath())).to.equal(
-                true
-            );
-            expect(await pathExists(dir("claude"))).to.equal(false);
-
-            await recoverAgentSkillOperations();
-            expect(await pathExists(agentSkillOperationJournalPath())).to.equal(
-                false
-            );
-            for (const harness of HARNESSES) {
-                expect(await readSkill(dir(harness))).to.equal(
-                    skillMarkdown("alpha", "v1")
-                );
-                expect(
-                    await pathExists(
-                        path.join(env.roots[harness], STAGING_DIRECTORY)
-                    )
-                ).to.equal(false);
-            }
-            expect(await loadAgentSkillInstallationIndex()).to.deep.equal(
-                indexBefore
-            );
-            // The next ordinary sync completes the update normally.
-            expect((await sync()).counts.updated).to.equal(4);
-        });
-
-        it("rolls back several completed operations and an interrupted deletion", async () => {
-            await remote.publish("alpha", "v1");
-            await sync();
-            remote.remove("alpha");
-            let completed = 0;
-            agentSkillReconcileTestHooks.afterOperation = async (
-                kind,
-                state
-            ) => {
-                if (kind === "remove" && state === "done" && ++completed === 2)
-                    throw crash();
-            };
-            try {
-                await sync();
-            } catch {
-                // simulated crash
-            }
-            delete agentSkillReconcileTestHooks.afterOperation;
-            await recoverAgentSkillOperations();
-            for (const harness of HARNESSES)
-                expect(await readSkill(dir(harness))).to.equal(
-                    skillMarkdown("alpha", "v1")
-                );
-            // Removal intent survives: the verified snapshot already lacks it.
-            const result = await sync();
-            expect(result.counts.removed).to.equal(4);
-        });
-
-        it("rolls forward the profile config after the index commit point", async () => {
-            await remote.publish("alpha", "v1");
-            await sync();
-            const {
-                withAgentSkillOperationLock,
-                activateCachedAgentSkillProfile
-            } = await import("../agentSkillSync.js");
-            agentSkillReconcileTestHooks.afterIndexCommit = async () => {
+            agentSkillReconcileTestHooks.afterBackup = async () => {
                 throw crash();
             };
             try {
-                await withAgentSkillOperationLock(() =>
-                    activateCachedAgentSkillProfile({
-                        profileName: "other",
-                        force: false,
-                        finalConfig: {
-                            activeProfile: "other",
-                            profiles: {
-                                dev: { baseUrl: "https://dev.example/api" },
-                                other: { baseUrl: "https://other.example/api" }
-                            }
-                        }
-                    })
-                );
-            } catch {
-                // simulated crash
+                await sync();
+            } catch (error) {
+                expect((error as Error).message).to.equal("simulated crash");
             }
-            delete agentSkillReconcileTestHooks.afterIndexCommit;
-            const { loadConfig } = await import("../profile.js");
-            expect((await loadConfig()).activeProfile).to.equal("dev");
-            await recoverAgentSkillOperations();
-            expect((await loadConfig()).activeProfile).to.equal("other");
+            delete agentSkillReconcileTestHooks.afterBackup;
+            expect(await pathExists(dir("claude"))).to.equal(false);
+
+            const recovered = await sync();
+            expect(recovered.status).to.equal("success");
+            expect(codes(recovered, "RECOVERED_RESTORED")).to.have.length(1);
             for (const harness of HARNESSES)
-                expect(await pathExists(dir(harness))).to.equal(false);
+                expect(await readSkill(dir(harness))).to.equal(
+                    skillMarkdown("alpha", "v2")
+                );
+            expect(
+                await pathExists(path.join(env.roots.claude, STAGING_DIRECTORY))
+            ).to.equal(false);
+        });
+
+        it("keeps the backup when the skill path becomes occupied mid-replacement", async () => {
+            await remote.publish("alpha", "v1");
+            await sync();
+            await fs.writeFile(path.join(dir("claude"), "notes.md"), "my edit");
+            await remote.publish("alpha", "v2");
+            let first = true;
+            agentSkillReconcileTestHooks.afterBackup = async () => {
+                if (!first) return;
+                first = false;
+                // Another process creates a file at the skill path.
+                await fs.writeFile(dir("claude"), "intruder");
+            };
+            const result = await sync(true);
+            delete agentSkillReconcileTestHooks.afterBackup;
+            expect(result.status).to.equal("partial");
+            expect(
+                result.conflicts!.map((c) => [c.harness, c.reason])
+            ).to.deep.equal([["claude", "OPERATION_FAILED"]]);
+
+            await fs.rm(dir("claude"));
+            await fs.writeFile(dir("claude"), "still occupied");
+            const next = await sync();
+            const retained = next.conflicts!.find(
+                (c) => c.reason === "RECOVERY_RETAINED"
+            )!;
+            expect(
+                await fs.readFile(path.join(retained.path, "notes.md"), "utf8")
+            ).to.equal("my edit");
+        });
+
+        it("drops the backup after a completed replacement and retains an ambiguous one", async () => {
+            await remote.publish("alpha", "v1");
+            await remote.publish("beta", "v1");
+            await sync();
+            const staging = path.join(env.roots.claude, STAGING_DIRECTORY);
+            const completed = path.join(staging, "op-completed");
+            await fs.mkdir(path.join(completed, "old"), { recursive: true });
+            await fs.writeFile(
+                path.join(completed, "old", "SKILL.md"),
+                "previous version"
+            );
+            await fs.writeFile(
+                path.join(completed, "operation.json"),
+                JSON.stringify({
+                    version: 1,
+                    kind: "replace",
+                    name: "alpha",
+                    newInstallationId: (await readMarker(dir("claude")))
+                        .installationId
+                })
+            );
+            const ambiguous = path.join(staging, "op-ambiguous");
+            await fs.mkdir(path.join(ambiguous, "old"), { recursive: true });
+            await fs.writeFile(
+                path.join(ambiguous, "old", "SKILL.md"),
+                "user data"
+            );
+            await fs.writeFile(
+                path.join(ambiguous, "operation.json"),
+                JSON.stringify({
+                    version: 1,
+                    kind: "replace",
+                    name: "beta",
+                    newInstallationId: "11111111-1111-4111-8111-111111111111"
+                })
+            );
+            const unidentified = path.join(staging, "op-unknown");
+            await fs.mkdir(path.join(unidentified, "old"), { recursive: true });
+
+            const result = await sync();
+            expect(result.status).to.equal("partial");
+            expect(codes(result, "RECOVERED_COMPLETED")).to.have.length(1);
+            expect(await pathExists(completed)).to.equal(false);
+            expect(
+                result.conflicts!.map((c) => [c.reason, c.path]).sort()
+            ).to.deep.equal([
+                ["RECOVERY_RETAINED", path.join(ambiguous, "old")],
+                ["RECOVERY_RETAINED", path.join(unidentified, "old")]
+            ]);
+            expect(
+                await fs.readFile(
+                    path.join(ambiguous, "old", "SKILL.md"),
+                    "utf8"
+                )
+            ).to.equal("user data");
+        });
+    });
+
+    describe("unsafe paths", () => {
+        it("refuses a symlinked skill directory even with --force", async () => {
+            await remote.publish("alpha", "v1");
+            const outside = path.join(env.tmp, "outside");
+            await fs.mkdir(outside);
+            await fs.writeFile(path.join(outside, "SKILL.md"), "precious");
+            await fs.mkdir(env.roots.claude, { recursive: true });
+            await fs.symlink(outside, dir("claude"));
+
+            const forced = await sync(true);
+            expect(forced.status).to.equal("partial");
+            expect(
+                forced.conflicts!.map((c) => [c.harness, c.detail])
+            ).to.deep.equal([["claude", "symbolic link"]]);
+            expect((await fs.lstat(dir("claude"))).isSymbolicLink()).to.equal(
+                true
+            );
+            expect(
+                await fs.readFile(path.join(outside, "SKILL.md"), "utf8")
+            ).to.equal("precious");
+            // Other harnesses are independent and still installed.
+            expect(await readSkill(dir("codex"))).to.equal(
+                skillMarkdown("alpha", "v1")
+            );
+        });
+
+        it("refuses nested links, special files, symlinked roots and reserved names", async () => {
+            await remote.publish("alpha", "v1");
+            await sync();
+            await fs.symlink("/etc", path.join(dir("codex"), "escape"));
+            execFileSync("/usr/bin/mkfifo", [path.join(dir("dsh"), "pipe.md")]);
+            const realOpencode = path.join(env.tmp, "real-opencode");
+            await fs.rename(env.roots.opencode, realOpencode);
+            await fs.symlink(realOpencode, env.roots.opencode);
+            const reserved = path.join(env.roots.claude, "magda-mgd");
+            await fs.mkdir(reserved);
+            await fs.writeFile(path.join(reserved, "SKILL.md"), "bundled");
+            const marker = await readMarker(dir("claude"));
+            await fs.writeFile(
+                path.join(reserved, AGENT_SKILL_INSTALL_MARKER),
+                JSON.stringify({
+                    ...marker,
+                    name: "magda-mgd",
+                    source: {
+                        ...marker.source,
+                        id: `agent-skill-${remote.userId}-magda-mgd`
+                    }
+                })
+            );
+            remote.remove("alpha");
+
+            const forced = await sync(true);
+            expect(
+                forced
+                    .conflicts!.map((c) => `${c.harness}:${c.name}:${c.reason}`)
+                    .sort()
+            ).to.deep.equal([
+                "claude:magda-mgd:UNSAFE_PATH",
+                "codex:alpha:UNSAFE_PATH",
+                "dsh:alpha:UNSAFE_PATH",
+                "opencode:*:UNSAFE_PATH"
+            ]);
+            expect(await readSkill(reserved)).to.equal("bundled");
+            expect(
+                (
+                    await fs.lstat(path.join(dir("codex"), "escape"))
+                ).isSymbolicLink()
+            ).to.equal(true);
+            // The safe, recognized, clean copy is still removed.
+            expect(await pathExists(dir("claude"))).to.equal(false);
+        });
+
+        it("treats a marker naming an unverified account as ambiguous", async () => {
+            await remote.publish("alpha", "v1");
+            await sync();
+            const marker = await readMarker(dir("claude"));
+            await fs.writeFile(
+                path.join(dir("claude"), AGENT_SKILL_INSTALL_MARKER),
+                JSON.stringify({ ...marker, sourceKey: "9".repeat(64) })
+            );
+            remote.remove("alpha");
+            const normal = await sync();
+            expect(
+                normal.conflicts!.map((c) => [c.harness, c.reason])
+            ).to.deep.equal([["claude", "UNVERIFIED_SOURCE"]]);
+            expect(await pathExists(dir("claude"))).to.equal(true);
+            expect((await sync(true)).status).to.equal("success");
+            expect(await pathExists(dir("claude"))).to.equal(false);
         });
     });
 
@@ -656,27 +629,23 @@ describe("copy-only Agent Skill reconciliation", () => {
             await remote.publish("alpha", "user v1");
         });
 
-        it("bootstraps a fresh Sandbox with force, leaving bundled skills untouched", async () => {
+        it("bootstraps a fresh Sandbox with force into the single DSH root", async () => {
             const result = await wsync(true);
             expect(result.status).to.equal("success");
             expect(result.counts.installed).to.equal(2);
-            expect(await readSkill(path.join(root, "system-guide"))).to.equal(
-                skillMarkdown("system-guide", "system v1")
-            );
             expect(
-                (await readMarker(path.join(root, "alpha"))).source.kind
-            ).to.equal("own-user-publication");
+                (await readMarker(path.join(root, "system-guide"))).source.kind
+            ).to.equal("system-publication");
             expect(
                 await fs.readFile(
                     path.join(root, "magda-mgd", "SKILL.md"),
                     "utf8"
                 )
             ).to.equal("bundled");
-            // Only the single Workspace root is a target.
             expect(await pathExists(env.roots.claude)).to.equal(false);
         });
 
-        it("uses ordinary reconciliation for manual sync and explicit --force", async () => {
+        it("uses the same ordinary and forced semantics as local sync", async () => {
             await wsync(true);
             await fs.rm(path.join(root, "alpha"), { recursive: true });
             await fs.rm(
@@ -684,16 +653,16 @@ describe("copy-only Agent Skill reconciliation", () => {
             );
             const ordinary = await wsync();
             expect(ordinary.status).to.equal("success");
-            expect(codes(ordinary, "REINSTALLED")).to.have.length(1);
-            expect(codes(ordinary, "METADATA_REPAIRED")).to.have.length(1);
+            expect(ordinary.counts.installed).to.equal(1);
+            expect(codes(ordinary, "ADOPTED")).to.have.length(1);
 
             await fs.writeFile(
                 path.join(root, "alpha", "SKILL.md"),
                 skillMarkdown("alpha", "sandbox edit")
             );
             await remote.publish("system-guide", "system v2", {}, "system");
-            const blocked = await wsync();
-            expect(blocked.blocked).to.equal(true);
+            const conflicted = await wsync();
+            expect(conflicted.status).to.equal("partial");
             expect(await readSkill(path.join(root, "system-guide"))).to.equal(
                 skillMarkdown("system-guide", "system v1")
             );
@@ -710,8 +679,7 @@ describe("copy-only Agent Skill reconciliation", () => {
         it("leaves publications outside a selected --type untouched", async () => {
             await wsync(true);
             remote.remove("alpha");
-            const result = await wsync(false, "system");
-            expect(result.status).to.equal("success");
+            expect((await wsync(false, "system")).status).to.equal("success");
             expect(await pathExists(path.join(root, "alpha"))).to.equal(true);
             expect((await wsync(false, "user")).counts.removed).to.equal(1);
             expect(await pathExists(path.join(root, "alpha"))).to.equal(false);

@@ -6,18 +6,22 @@ import { registerProfileCommands } from "../commands/profileCmd.js";
 import { AGENT_SKILL_INSTALL_MARKER } from "../agentSkillArchive.js";
 import {
     createAgentSkillSourceIdentity,
-    loadAgentSkillInstallationIndex,
     loadAgentSkillSourceState
 } from "../agentSkillLocalState.js";
-import { syncLocalAgentSkills } from "../agentSkillSync.js";
+import { agentSkillReconcileTestHooks } from "../agentSkillReconcile.js";
+import {
+    cachedProfileIdentity,
+    reconcileCachedAgentSkillProfile,
+    syncLocalAgentSkills
+} from "../agentSkillSync.js";
 import { loadConfig, saveConfig } from "../profile.js";
-import { captureStdout } from "./captureStdout.js";
 import { startMockServer } from "./mockServer.js";
 import {
     FakeAgentSkillRemote,
     HarnessEnvironment,
     createHarnessEnvironment,
     pathExists,
+    readMarker,
     readSkill,
     skillMarkdown
 } from "./agentSkillFixtures.js";
@@ -25,21 +29,35 @@ import {
 type Harness = "claude" | "codex" | "opencode" | "dsh";
 const HARNESSES: Harness[] = ["claude", "codex", "opencode", "dsh"];
 
-async function profile(argv: string[]): Promise<number | undefined> {
+/** Run `mgd profile ...`; returns the exit code and captured stderr notes. */
+async function profile(
+    argv: string[]
+): Promise<{ code: number | undefined; notes: string }> {
     const previous = process.exitCode;
     process.exitCode = undefined;
-    const program = new Command();
-    program.exitOverride();
-    registerProfileCommands(program);
-    await captureStdout(() =>
-        program.parseAsync(["profile", ...argv], { from: "user" })
-    );
-    const code = process.exitCode;
+    const originalStdout = process.stdout.write;
+    const originalStderr = process.stderr.write;
+    let notes = "";
+    (process.stdout as any).write = () => true;
+    (process.stderr as any).write = (chunk: any) => {
+        notes += String(chunk);
+        return true;
+    };
+    try {
+        const program = new Command();
+        program.exitOverride();
+        registerProfileCommands(program);
+        await program.parseAsync(["profile", ...argv], { from: "user" });
+    } finally {
+        process.stdout.write = originalStdout;
+        process.stderr.write = originalStderr;
+    }
+    const code = process.exitCode as number | undefined;
     process.exitCode = previous;
-    return code as number | undefined;
+    return { code, notes };
 }
 
-describe("offline Agent Skill profile switching", () => {
+describe("commit-first Agent Skill profile switching", () => {
     let env: HarnessEnvironment;
     let dev: FakeAgentSkillRemote;
     let prod: FakeAgentSkillRemote;
@@ -47,6 +65,12 @@ describe("offline Agent Skill profile switching", () => {
     let fetches = 0;
     const dir = (harness: Harness, name = "alpha") =>
         path.join(env.roots[harness], name);
+    const devKey = () =>
+        createAgentSkillSourceIdentity({
+            baseUrl: dev.baseUrl,
+            tenantId: "7",
+            userId: dev.userId
+        }).key;
 
     async function syncAs(name: "dev" | "prod") {
         const cfg = await loadConfig();
@@ -72,6 +96,7 @@ describe("offline Agent Skill profile switching", () => {
             path.join(env.tmp, "prod")
         );
         await dev.publish("alpha", "dev alpha");
+        await dev.publish("devonly", "dev only");
         await prod.publish("alpha", "prod alpha");
         await prod.publish("beta", "prod beta");
         await saveConfig({
@@ -82,8 +107,8 @@ describe("offline Agent Skill profile switching", () => {
                 fresh: { baseUrl: "https://fresh.example/api" }
             }
         });
-        await syncAs("dev");
         await syncAs("prod");
+        await syncAs("dev");
         originalFetch = globalThis.fetch;
         fetches = 0;
         globalThis.fetch = (async () => {
@@ -96,28 +121,15 @@ describe("offline Agent Skill profile switching", () => {
 
     afterEach(async () => {
         globalThis.fetch = originalFetch;
+        delete agentSkillReconcileTestHooks.beforeOperation;
         await env.restore();
     });
 
-    it("switches between verified account caches without network access", async () => {
-        expect(await profile(["use", "dev"])).to.equal(undefined);
-        expect((await loadConfig()).activeProfile).to.equal("dev");
-        for (const harness of HARNESSES) {
-            expect(await readSkill(dir(harness))).to.equal(
-                skillMarkdown("alpha", "dev alpha")
-            );
-            expect(await pathExists(dir(harness, "beta"))).to.equal(false);
-        }
-        const devKey = createAgentSkillSourceIdentity({
-            baseUrl: dev.baseUrl,
-            tenantId: "7",
-            userId: dev.userId
-        }).key;
-        expect(
-            (await loadAgentSkillInstallationIndex()).activeSourceKey
-        ).to.equal(devKey);
-
-        expect(await profile(["use", "prod"])).to.equal(undefined);
+    it("switches between verified account caches offline and cleans old-profile marked skills", async () => {
+        const result = await profile(["use", "prod"]);
+        expect(result.code).to.equal(undefined);
+        expect(result.notes).to.include("Active profile: prod");
+        expect((await loadConfig()).activeProfile).to.equal("prod");
         for (const harness of HARNESSES) {
             expect(await readSkill(dir(harness))).to.equal(
                 skillMarkdown("alpha", "prod alpha")
@@ -125,120 +137,172 @@ describe("offline Agent Skill profile switching", () => {
             expect(await readSkill(dir(harness, "beta"))).to.equal(
                 skillMarkdown("beta", "prod beta")
             );
+            // Dev's marked clean skill was discovered by scan and removed.
+            expect(await pathExists(dir(harness, "devonly"))).to.equal(false);
+        }
+
+        expect((await profile(["use", "dev"])).code).to.equal(undefined);
+        for (const harness of HARNESSES) {
+            expect(await readSkill(dir(harness))).to.equal(
+                skillMarkdown("alpha", "dev alpha")
+            );
+            expect(await pathExists(dir(harness, "beta"))).to.equal(false);
         }
         expect(fetches).to.equal(0);
-        // Both accounts' verified caches survive switching.
-        const prodState = await loadAgentSkillSourceState(
-            createAgentSkillSourceIdentity({
-                baseUrl: prod.baseUrl,
-                tenantId: "7",
-                userId: prod.userId
-            })
-        );
-        expect(Object.keys(prodState.snapshot!.items)).to.have.length(2);
     });
 
-    it("keeps the previous profile and installations on conflict; --force completes", async () => {
+    it("keeps the new profile active after a conflict, names the old source, and exits nonzero", async () => {
         await fs.writeFile(
-            path.join(dir("claude"), "SKILL.md"),
-            skillMarkdown("alpha", "prod edit")
+            path.join(dir("claude", "devonly"), "SKILL.md"),
+            skillMarkdown("devonly", "dev edit")
         );
-        const indexBefore = await loadAgentSkillInstallationIndex();
 
-        expect(await profile(["use", "dev"])).to.equal(1);
+        const result = await profile(["use", "prod"]);
+        expect(result.code).to.equal(1);
         expect((await loadConfig()).activeProfile).to.equal("prod");
-        expect(await loadAgentSkillInstallationIndex()).to.deep.equal(
-            indexBefore
+        expect(result.notes).to.include("Active profile: prod");
+        expect(result.notes).to.include("PARTIAL");
+        expect(result.notes).to.include(dir("claude", "devonly"));
+        expect(result.notes).to.include("Installed source: dev");
+        expect(result.notes).to.include(
+            `mgd agent-skill publish ${dir("claude", "devonly")}`
         );
-        expect(await readSkill(dir("claude"))).to.equal(
-            skillMarkdown("alpha", "prod edit")
+        expect(await readSkill(dir("claude", "devonly"))).to.equal(
+            skillMarkdown("devonly", "dev edit")
         );
+        // New Prod installs are not destructive and proceed meanwhile.
         expect(await readSkill(dir("codex", "beta"))).to.equal(
             skillMarkdown("beta", "prod beta")
         );
 
-        expect(await profile(["use", "dev", "--force"])).to.equal(undefined);
-        expect((await loadConfig()).activeProfile).to.equal("dev");
+        // A later forced reconciliation cleans the old-profile marked skill.
+        const forced = await reconcileCachedAgentSkillProfile({
+            identity: cachedProfileIdentity((await loadConfig()).profiles.prod),
+            force: true
+        });
+        expect(forced!.status).to.equal("success");
+        for (const harness of HARNESSES) {
+            expect(await pathExists(dir(harness, "devonly"))).to.equal(false);
+            expect(await readSkill(dir(harness))).to.equal(
+                skillMarkdown("alpha", "prod alpha")
+            );
+        }
+        expect(fetches).to.equal(0);
+    });
+
+    it("keeps the new profile active after a filesystem error during reconciliation", async () => {
+        agentSkillReconcileTestHooks.beforeOperation = async (
+            _kind,
+            harness
+        ) => {
+            if (harness === "opencode") throw new Error("EIO: disk error");
+        };
+        const result = await profile(["use", "prod"]);
+        expect(result.code).to.equal(1);
+        expect((await loadConfig()).activeProfile).to.equal("prod");
+        expect(result.notes).to.include("EIO: disk error");
         expect(await readSkill(dir("claude"))).to.equal(
+            skillMarkdown("alpha", "prod alpha")
+        );
+        expect(await readSkill(dir("opencode"))).to.equal(
             skillMarkdown("alpha", "dev alpha")
+        );
+    });
+
+    it("--force reconciles the switch without a prompt", async () => {
+        await fs.writeFile(
+            path.join(dir("dsh"), "SKILL.md"),
+            skillMarkdown("alpha", "dev edit")
+        );
+        expect((await profile(["use", "prod", "--force"])).code).to.equal(
+            undefined
+        );
+        expect(await readSkill(dir("dsh"))).to.equal(
+            skillMarkdown("alpha", "prod alpha")
         );
         expect(fetches).to.equal(0);
     });
 
     it("reinstalls missing directories and repairs exact-content metadata offline", async () => {
         await fs.rm(dir("codex"), { recursive: true });
-        await fs.rm(
-            path.join(dir("claude", "beta"), AGENT_SKILL_INSTALL_MARKER)
-        );
+        await fs.rm(path.join(dir("claude"), AGENT_SKILL_INSTALL_MARKER));
 
-        expect(await profile(["use", "prod"])).to.equal(undefined);
+        expect((await profile(["use", "dev"])).code).to.equal(undefined);
         expect(await readSkill(dir("codex"))).to.equal(
-            skillMarkdown("alpha", "prod alpha")
+            skillMarkdown("alpha", "dev alpha")
         );
-        expect(
-            await pathExists(
-                path.join(dir("claude", "beta"), AGENT_SKILL_INSTALL_MARKER)
-            )
-        ).to.equal(true);
+        expect((await readMarker(dir("claude"))).sourceKey).to.equal(devKey());
         expect(fetches).to.equal(0);
     });
 
-    it("deactivates managed skills when the target has no verified cache", async () => {
-        const unrelated = path.join(env.roots.codex, "my-own");
-        await fs.mkdir(unrelated);
-        await fs.writeFile(path.join(unrelated, "SKILL.md"), "mine");
-
-        expect(await profile(["use", "fresh"])).to.equal(undefined);
+    it("switches to an uncached profile without purging installed skills", async () => {
+        const result = await profile(["use", "fresh"]);
+        expect(result.code).to.equal(1);
         expect((await loadConfig()).activeProfile).to.equal("fresh");
-        for (const harness of HARNESSES) {
-            expect(await pathExists(dir(harness))).to.equal(false);
-            expect(await pathExists(dir(harness, "beta"))).to.equal(false);
-        }
-        expect(await readSkill(unrelated)).to.equal("mine");
-        const index = await loadAgentSkillInstallationIndex();
-        expect(index.installations).to.deep.equal({});
-        expect(index.activeSourceKey).to.equal(undefined);
+        expect(result.notes).to.include("No verified Agent Skill cache");
+        for (const harness of HARNESSES)
+            expect(await readSkill(dir(harness))).to.equal(
+                skillMarkdown("alpha", "dev alpha")
+            );
         expect(fetches).to.equal(0);
     });
 
     it("never resurrects a remotely deleted skill on a later offline switch", async () => {
         globalThis.fetch = originalFetch;
-        prod.remove("beta");
-        await syncAs("prod");
-        expect(await pathExists(dir("claude", "beta"))).to.equal(false);
-        expect(await profile(["use", "dev"])).to.equal(undefined);
-        expect(await profile(["use", "prod"])).to.equal(undefined);
+        dev.remove("devonly");
+        await syncAs("dev");
+        expect(await pathExists(dir("claude", "devonly"))).to.equal(false);
+        await profile(["use", "prod"]);
+        await profile(["use", "dev"]);
         for (const harness of HARNESSES)
-            expect(await pathExists(dir(harness, "beta"))).to.equal(false);
+            expect(await pathExists(dir(harness, "devonly"))).to.equal(false);
+        const state = await loadAgentSkillSourceState(
+            createAgentSkillSourceIdentity({
+                baseUrl: dev.baseUrl,
+                tenantId: "7",
+                userId: dev.userId
+            })
+        );
+        expect(Object.keys(state.snapshot!.items)).to.have.length(1);
     });
 
-    it("applies --force to both the offline switch and the explicit --sync-skills refresh", async () => {
+    it("applies --force to the offline switch and the explicit --sync-skills refresh", async () => {
         globalThis.fetch = originalFetch;
         const live = new FakeAgentSkillRemote("", path.join(env.tmp, "live"));
         const server = await startMockServer(live.routes());
         try {
             live.baseUrl = `${server.url}/api`;
-            await live.publish("gamma", "live gamma");
+            await live.publish("alpha", "live alpha");
             const cfg = await loadConfig();
             cfg.profiles.live = { baseUrl: live.baseUrl };
             await saveConfig(cfg);
             await fs.writeFile(
                 path.join(dir("dsh"), "SKILL.md"),
-                skillMarkdown("alpha", "prod edit")
+                skillMarkdown("alpha", "dev edit")
             );
 
-            expect(await profile(["use", "live", "--sync-skills"])).to.equal(1);
-            expect((await loadConfig()).activeProfile).to.equal("prod");
-            expect(server.requests).to.have.length(0);
-
-            expect(
-                await profile(["use", "live", "--force", "--sync-skills"])
-            ).to.equal(undefined);
+            // Uncached: the offline phase changes nothing; the online phase
+            // reports the conflict; the profile still switches.
+            const ordinary = await profile(["use", "live", "--sync-skills"]);
+            expect(ordinary.code).to.equal(1);
             expect((await loadConfig()).activeProfile).to.equal("live");
+            expect(await readSkill(dir("dsh"))).to.equal(
+                skillMarkdown("alpha", "dev edit")
+            );
+
+            const forced = await profile([
+                "use",
+                "live",
+                "--force",
+                "--sync-skills"
+            ]);
+            expect(forced.code).to.equal(undefined);
             for (const harness of HARNESSES) {
-                expect(await pathExists(dir(harness))).to.equal(false);
-                expect(await readSkill(dir(harness, "gamma"))).to.equal(
-                    skillMarkdown("gamma", "live gamma")
+                expect(await readSkill(dir(harness))).to.equal(
+                    skillMarkdown("alpha", "live alpha")
+                );
+                expect(await pathExists(dir(harness, "devonly"))).to.equal(
+                    false
                 );
             }
         } finally {
@@ -246,11 +310,33 @@ describe("offline Agent Skill profile switching", () => {
         }
     });
 
+    it("removes and updates profiles without deleting installed skills", async () => {
+        expect((await profile(["remove", "dev"])).code).to.equal(undefined);
+        expect((await loadConfig()).profiles.dev).to.equal(undefined);
+        for (const harness of HARNESSES)
+            expect(await readSkill(dir(harness))).to.equal(
+                skillMarkdown("alpha", "dev alpha")
+            );
+    });
+
     it("switches a zero-skill profile with no python3 on PATH", async () => {
         expect(process.env.PATH).to.equal(path.join(env.tmp, "empty-bin"));
         expect(await fs.readdir(process.env.PATH!)).to.deep.equal([]);
-        expect(await profile(["use", "fresh"])).to.equal(undefined);
-        expect(await profile(["use", "fresh"])).to.equal(undefined);
-        expect((await loadConfig()).activeProfile).to.equal("fresh");
+        const empty = new FakeAgentSkillRemote(
+            "https://empty.example/api",
+            path.join(env.tmp, "empty")
+        );
+        globalThis.fetch = originalFetch;
+        const cfg = await loadConfig();
+        cfg.profiles.empty = { baseUrl: empty.baseUrl };
+        cfg.activeProfile = "empty";
+        await saveConfig(cfg);
+        await syncLocalAgentSkills(empty.client(), {
+            selectedProfile: "empty",
+            activate: true,
+            force: true
+        });
+        expect((await profile(["use", "empty"])).code).to.equal(undefined);
+        expect((await loadConfig()).activeProfile).to.equal("empty");
     });
 });
