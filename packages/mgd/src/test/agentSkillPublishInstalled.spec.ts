@@ -513,7 +513,12 @@ describe("publishing and deleting installed Agent Skill copies", () => {
                     "0".repeat(64)
                 )
             );
-            await fs.chmod(archives, 0o500);
+            // A regular file where the cache directory belongs makes the
+            // write fail regardless of user (CI runs as root, which ignores
+            // permission bits).
+            const aside = `${archives}.aside`;
+            await fs.rename(archives, aside);
+            await fs.writeFile(archives, "not a directory");
             try {
                 await fs.writeFile(
                     path.join(dir("claude"), "SKILL.md"),
@@ -536,7 +541,8 @@ describe("publishing and deleting installed Agent Skill copies", () => {
                         .checksum
                 ).to.equal(published.checksum);
             } finally {
-                await fs.chmod(archives, 0o700);
+                await fs.rm(archives, { force: true });
+                await fs.rename(aside, archives);
             }
         });
     });
