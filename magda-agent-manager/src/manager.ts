@@ -9,12 +9,34 @@ import {
     SKILL_SYNC_COMPLETED_ANNOTATION,
     SKILL_SYNC_COUNTS_ANNOTATION,
     SKILL_SYNC_DIAGNOSTIC_ANNOTATION,
+    SKILL_SYNC_PROBLEMS_ANNOTATION,
     SKILL_SYNC_STATUS_ANNOTATION,
     STATE_ANNOTATION,
-    USER_LABEL
+    USER_LABEL,
+    skillSyncStatus
 } from "./kubernetes.js";
 import { RuntimeProxy } from "./runtimeProxy.js";
-import { ManagerConfig, WorkspaceStatus } from "./types.js";
+import { parseSkillSyncSummary } from "./skillSyncSummary.js";
+import { ManagerConfig, SkillSyncStatus, WorkspaceStatus } from "./types.js";
+
+/** A user-facing Workspace request that cannot proceed in the current state. */
+export class WorkspaceRequestError extends Error {
+    constructor(
+        message: string,
+        public readonly status: number,
+        public readonly code: string
+    ) {
+        super(message);
+    }
+}
+
+export interface SkillSyncRetryResult {
+    // The attempt finished within the request; otherwise poll GET /session.
+    completed: boolean;
+    // A forced Manager attempt for this claim was already running.
+    deduplicated: boolean;
+    skillSync: SkillSyncStatus;
+}
 
 export class AgentManager {
     private readonly operations = new Map<
@@ -23,7 +45,12 @@ export class AgentManager {
     >();
     private readonly activityRenewals = new Map<string, Promise<void>>();
     private readonly pendingDeletes = new Map<string, number>();
-    private readonly skillSyncs = new Map<string, Promise<void>>();
+    // Manager-owned skill sync attempts by claim UID. Agent Manager runs as a
+    // single replica, so this serializes all Manager attempts for a claim.
+    private readonly skillSyncs = new Map<
+        string,
+        { userId: string; force: boolean; promise: Promise<void> }
+    >();
 
     constructor(
         private readonly config: ManagerConfig,
@@ -42,6 +69,18 @@ export class AgentManager {
             return {
                 state: operation.state,
                 updatedAt: new Date().toISOString()
+            };
+        }
+        // Read-only: a status request never starts or re-checks a sync.
+        if (
+            status.skillSync &&
+            [...this.skillSyncs.values()].some(
+                (attempt) => attempt.userId === userId
+            )
+        ) {
+            return {
+                ...status,
+                skillSync: { ...status.skillSync, inProgress: true }
             };
         }
         return status;
@@ -121,128 +160,175 @@ export class AgentManager {
         else this.pendingDeletes.delete(userId);
     }
 
-    private parseSkillSyncResult(
-        output: string
-    ): {
-        status: "success" | "partial" | "failed";
-        counts: {
-            installed: number;
-            updated: number;
-            unchanged: number;
-            removed: number;
-            skipped: number;
-            failed: number;
-        };
-    } {
-        const parsed = JSON.parse(output) as Record<string, unknown>;
-        if (
-            (parsed.status !== "success" &&
-                parsed.status !== "partial" &&
-                parsed.status !== "failed") ||
-            !parsed.counts ||
-            typeof parsed.counts !== "object"
-        ) {
-            throw new Error("Invalid Agent Skill sync result");
-        }
-        const counts = parsed.counts as Record<string, unknown>;
-        for (const key of [
-            "installed",
-            "updated",
-            "unchanged",
-            "removed",
-            "skipped",
-            "failed"
-        ]) {
-            if (
-                !Number.isSafeInteger(counts[key]) ||
-                (counts[key] as number) < 0
-            ) {
-                throw new Error("Invalid Agent Skill sync result");
-            }
-        }
-        return {
-            status: parsed.status,
-            counts: counts as {
-                installed: number;
-                updated: number;
-                unchanged: number;
-                removed: number;
-                skipped: number;
-                failed: number;
-            }
-        };
-    }
-
     /**
      * Detached, best-effort Workspace skill sync; never gates READY/DSH.
-     * `fresh` is true only from the provisioning call that itself created the
-     * claim and bootstrapped its new Sandbox, where no user-authored skill can
-     * exist yet. Reconnect, restart recovery and reattachment use ordinary,
-     * non-forced reconciliation so existing edits survive.
+     * `force` is true for the provisioning call that itself created the claim
+     * and bootstrapped its new Sandbox, where no user-authored skill can exist
+     * yet, and for a user-confirmed Retry / Re-check. Reconnect, restart
+     * recovery and reattachment use ordinary, non-forced reconciliation so
+     * existing edits survive.
+     *
+     * Attempts for one claim never overlap. A request is satisfied by a
+     * running attempt unless it needs `force` and the running one is not
+     * forced; then the forced attempt runs after the current one finishes.
      */
     private scheduleSkillSync(
         userId: string,
         claimUid: string,
         sandbox: string,
-        fresh: boolean
-    ): void {
-        if (this.skillSyncs.has(claimUid)) return;
-        const promise = (async () => {
-            const attemptedAt = new Date().toISOString();
-            try {
-                await this.kubernetes.patchSkillSyncAnnotations(
-                    userId,
-                    claimUid,
-                    {
-                        [SKILL_SYNC_STATUS_ANNOTATION]: "notAttempted",
-                        [SKILL_SYNC_ATTEMPTED_ANNOTATION]: attemptedAt,
-                        [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: ""
-                    }
-                );
-                const result = this.parseSkillSyncResult(
-                    await this.kubernetes.syncSkills(sandbox, { force: fresh })
-                );
-                await this.kubernetes.patchSkillSyncAnnotations(
-                    userId,
-                    claimUid,
-                    {
-                        [SKILL_SYNC_STATUS_ANNOTATION]: result.status,
-                        [SKILL_SYNC_COMPLETED_ANNOTATION]: new Date().toISOString(),
-                        [SKILL_SYNC_COUNTS_ANNOTATION]: JSON.stringify(
-                            result.counts
-                        ),
-                        [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: ""
-                    }
-                );
-            } catch (error) {
-                const diagnostic =
-                    error instanceof Error && /timed out/i.test(error.message)
-                        ? "TIMEOUT"
-                        : error instanceof SyntaxError ||
-                          (error instanceof Error &&
-                              /Invalid Agent Skill sync result/.test(
-                                  error.message
-                              ))
-                        ? "INVALID_RESULT"
-                        : "EXEC_FAILED";
-                await this.kubernetes
-                    .patchSkillSyncAnnotations(userId, claimUid, {
-                        [SKILL_SYNC_STATUS_ANNOTATION]: "failed",
-                        [SKILL_SYNC_COMPLETED_ANNOTATION]: new Date().toISOString(),
-                        [SKILL_SYNC_COUNTS_ANNOTATION]: JSON.stringify({
-                            installed: 0,
-                            updated: 0,
-                            unchanged: 0,
-                            removed: 0,
-                            skipped: 0,
-                            failed: 1
-                        }),
-                        [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: diagnostic
-                    })
-                    .catch(() => undefined);
+        force: boolean
+    ): Promise<void> {
+        const running = this.skillSyncs.get(claimUid);
+        if (running && (running.force || !force)) return running.promise;
+        const attempt = {
+            userId,
+            force,
+            promise: Promise.resolve()
+        };
+        attempt.promise = (async () => {
+            await running?.promise.catch(() => undefined);
+            await this.runSkillSync(userId, claimUid, sandbox, force);
+        })().finally(() => {
+            if (this.skillSyncs.get(claimUid) === attempt) {
+                this.skillSyncs.delete(claimUid);
             }
-        })().finally(() => this.skillSyncs.delete(claimUid));
-        this.skillSyncs.set(claimUid, promise);
+        });
+        this.skillSyncs.set(claimUid, attempt);
+        return attempt.promise;
+    }
+
+    /**
+     * One Manager-owned attempt. Every status write is guarded by the claim UID
+     * and READY state, so a reset, deletion or replacement during the attempt
+     * leaves the newer claim untouched. Never throws.
+     */
+    private async runSkillSync(
+        userId: string,
+        claimUid: string,
+        sandbox: string,
+        force: boolean
+    ): Promise<void> {
+        const attemptedAt = new Date().toISOString();
+        try {
+            await this.kubernetes.patchSkillSyncAnnotations(userId, claimUid, {
+                [SKILL_SYNC_STATUS_ANNOTATION]: "notAttempted",
+                [SKILL_SYNC_ATTEMPTED_ANNOTATION]: attemptedAt,
+                [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: "",
+                [SKILL_SYNC_PROBLEMS_ANNOTATION]: ""
+            });
+            const result = parseSkillSyncSummary(
+                await this.kubernetes.syncSkills(sandbox, { force })
+            );
+            await this.kubernetes.patchSkillSyncAnnotations(userId, claimUid, {
+                [SKILL_SYNC_STATUS_ANNOTATION]: result.status,
+                [SKILL_SYNC_COMPLETED_ANNOTATION]: new Date().toISOString(),
+                [SKILL_SYNC_COUNTS_ANNOTATION]: JSON.stringify(result.counts),
+                [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: result.remoteSourceFailed
+                    ? "REMOTE_SOURCE_FAILED"
+                    : "",
+                [SKILL_SYNC_PROBLEMS_ANNOTATION]:
+                    result.problems.length || result.problemsTruncated
+                        ? JSON.stringify({
+                              items: result.problems,
+                              truncated: result.problemsTruncated
+                          })
+                        : ""
+            });
+        } catch (error) {
+            const diagnostic =
+                error instanceof Error && /timed out/i.test(error.message)
+                    ? "TIMEOUT"
+                    : error instanceof SyntaxError ||
+                      (error instanceof Error &&
+                          /Invalid Agent Skill sync result/.test(error.message))
+                    ? "INVALID_RESULT"
+                    : "EXEC_FAILED";
+            await this.kubernetes
+                .patchSkillSyncAnnotations(userId, claimUid, {
+                    [SKILL_SYNC_STATUS_ANNOTATION]: "failed",
+                    [SKILL_SYNC_COMPLETED_ANNOTATION]: new Date().toISOString(),
+                    [SKILL_SYNC_COUNTS_ANNOTATION]: JSON.stringify({
+                        installed: 0,
+                        updated: 0,
+                        unchanged: 0,
+                        removed: 0,
+                        skipped: 0,
+                        failed: 1
+                    }),
+                    [SKILL_SYNC_DIAGNOSTIC_ANNOTATION]: diagnostic,
+                    [SKILL_SYNC_PROBLEMS_ANNOTATION]: ""
+                })
+                .catch(() => undefined);
+        }
+    }
+
+    /**
+     * User-confirmed Retry / Re-check skill sync (#3857). Runs a forced sync
+     * in the caller's own current READY Sandbox. The target comes only from
+     * the authenticated user ID; the result is what the Sandbox reported and
+     * the Manager validated, never a client-supplied outcome.
+     */
+    async retrySkillSync(userId: string): Promise<SkillSyncRetryResult> {
+        if (this.operations.has(userId)) {
+            throw new WorkspaceRequestError(
+                "Another Agent Workspace operation is in progress",
+                409,
+                "WORKSPACE_BUSY"
+            );
+        }
+        const claim = await this.kubernetes.getClaim(userId);
+        const claimUid = claim?.metadata.uid;
+        const sandbox = claim?.status?.sandbox?.name;
+        if (
+            !claim ||
+            !claimUid ||
+            !sandbox ||
+            claim.metadata.deletionTimestamp ||
+            claim.metadata.labels?.[USER_LABEL] !== userId ||
+            claim.metadata.annotations?.[STATE_ANNOTATION] !== "READY"
+        ) {
+            throw new WorkspaceRequestError(
+                "Agent Workspace must be ready before skills can be re-checked",
+                409,
+                "WORKSPACE_NOT_READY"
+            );
+        }
+        const deduplicated = !!this.skillSyncs.get(claimUid)?.force;
+        const attempt = this.scheduleSkillSync(userId, claimUid, sandbox, true);
+        let timer: NodeJS.Timeout | undefined;
+        const completed = await Promise.race([
+            attempt.then(() => true),
+            new Promise<boolean>((resolve) => {
+                timer = setTimeout(
+                    () => resolve(false),
+                    this.config.skillSyncRetryWaitMs ?? 25_000
+                );
+            })
+        ]).finally(() => clearTimeout(timer));
+        // A reset, deletion or replacement during the attempt means its result
+        // (if any) was not recorded for the caller's current Workspace.
+        const current = await this.kubernetes.getClaim(userId);
+        if (
+            !current ||
+            current.metadata.uid !== claimUid ||
+            current.metadata.deletionTimestamp ||
+            current.metadata.annotations?.[STATE_ANNOTATION] !== "READY" ||
+            this.operations.has(userId)
+        ) {
+            throw new WorkspaceRequestError(
+                "Agent Workspace changed while skills were being re-checked",
+                409,
+                "WORKSPACE_CHANGED"
+            );
+        }
+        return {
+            completed,
+            deduplicated,
+            skillSync: {
+                ...skillSyncStatus(current.metadata.annotations || {}),
+                ...(this.skillSyncs.has(claimUid) ? { inProgress: true } : {})
+            }
+        };
     }
 
     private bootstrapPayload(userId: string, key: { id: string; key: string }) {

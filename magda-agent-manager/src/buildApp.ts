@@ -2,7 +2,7 @@ import express from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { timingSafeEqual } from "node:crypto";
 import { createWorkspaceAuth } from "./auth.js";
-import { AgentManager } from "./manager.js";
+import { AgentManager, WorkspaceRequestError } from "./manager.js";
 import { ManagerConfig } from "./types.js";
 import createAgentSkillRouter from "./skills/router.js";
 import { AgentSkillError, AgentSkillService } from "./skills/service.js";
@@ -107,6 +107,18 @@ export default function buildApp(
             next(error);
         }
     });
+    // User-confirmed Retry / Re-check skill sync. The request body is ignored:
+    // the target is the caller's own current Workspace and the outcome comes
+    // from the Sandbox, never from the browser.
+    router.post("/session/skill-sync/retry", async (req, res, next) => {
+        try {
+            const result = await manager.retrySkillSync(req.agentUser!.id);
+            res.set("Cache-Control", "no-store");
+            res.status(result.completed ? 200 : 202).json(result);
+        } catch (error) {
+            next(error);
+        }
+    });
     router.delete("/session", async (req, res, next) => {
         try {
             const wait = req.query.wait === "true";
@@ -126,6 +138,17 @@ export default function buildApp(
             res: express.Response,
             _next: express.NextFunction
         ) => {
+            if (error instanceof WorkspaceRequestError) {
+                res.status(error.status).json({
+                    message: error.message,
+                    error: {
+                        code: error.code,
+                        message: error.message,
+                        retryable: true
+                    }
+                });
+                return;
+            }
             if (error instanceof AgentSkillError) {
                 res.status(error.status).json({
                     error: {

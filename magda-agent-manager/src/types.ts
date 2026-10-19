@@ -16,19 +16,36 @@ export type AgentWorkspaceState =
     | "FAILED"
     | "DEGRADED";
 
+export interface SkillSyncCounts {
+    installed: number;
+    updated: number;
+    unchanged: number;
+    removed: number;
+    skipped: number;
+    failed: number;
+}
+
+/** A sanitized per-skill problem: safe name and stable reason code only. */
+export interface SkillSyncProblem {
+    name: string;
+    action: "failed" | "skipped";
+    code: string;
+}
+
 export interface SkillSyncStatus {
     status: "success" | "partial" | "failed" | "notAttempted";
     attemptedAt?: string;
     completedAt?: string;
-    counts?: {
-        installed: number;
-        updated: number;
-        unchanged: number;
-        removed: number;
-        skipped: number;
-        failed: number;
-    };
-    diagnosticCode?: "EXEC_FAILED" | "TIMEOUT" | "INVALID_RESULT";
+    counts?: SkillSyncCounts;
+    diagnosticCode?:
+        | "EXEC_FAILED"
+        | "TIMEOUT"
+        | "INVALID_RESULT"
+        | "REMOTE_SOURCE_FAILED";
+    problems?: SkillSyncProblem[];
+    problemsTruncated?: boolean;
+    // A Manager-owned attempt is running for this user's current claim.
+    inProgress?: boolean;
 }
 
 export interface WorkspaceStatus {
@@ -77,6 +94,8 @@ export interface ManagerConfig {
     runtimeMaxBodyBytes: number;
     // How often open DSH WebSockets re-check `agentWorkspace/access`.
     runtimeAuthRecheckSeconds?: number;
+    // How long a Retry request waits for its sync before answering 202.
+    skillSyncRetryWaitMs?: number;
     controlPlaneSecret: string;
 }
 

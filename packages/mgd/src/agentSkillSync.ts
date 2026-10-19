@@ -62,7 +62,10 @@ function emptyCounts() {
 export function failedSyncResult(
     code = "MANIFEST_UNAVAILABLE"
 ): AgentSkillSyncResult {
+    // An unavailable manifest stops before any installed skill changes.
+    const remoteSourceFailed = code === "MANIFEST_UNAVAILABLE";
     return {
+        ...(remoteSourceFailed ? { remoteSourceFailed: true as const } : {}),
         status: "failed",
         counts: { ...emptyCounts(), failed: 1 },
         items: [

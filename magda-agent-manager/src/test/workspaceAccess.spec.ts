@@ -132,7 +132,15 @@ function recordingManager() {
             start: record("start"),
             resume: record("resume"),
             reset: record("reset"),
-            delete: record("delete")
+            delete: record("delete"),
+            retrySkillSync: async (userId: string) => {
+                calls.push({ method: "retrySkillSync", userId });
+                return {
+                    completed: true,
+                    deduplicated: false,
+                    skillSync: { status: "success" }
+                };
+            }
         } as unknown) as AgentManager
     };
 }
@@ -142,7 +150,8 @@ const lifecycleRoutes: Array<["get" | "post" | "delete", string, string]> = [
     ["post", "/v0/session", "start"],
     ["post", "/v0/session/resume", "resume"],
     ["post", "/v0/session/reset", "reset"],
-    ["delete", "/v0/session", "delete"]
+    ["delete", "/v0/session", "delete"],
+    ["post", "/v0/session/skill-sync/retry", "retrySkillSync"]
 ];
 
 describe("agentWorkspace/access on lifecycle routes", () => {

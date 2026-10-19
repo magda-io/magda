@@ -6,8 +6,13 @@ import {
     ManagerConfig,
     Sandbox,
     SandboxClaim,
+    SkillSyncProblem,
     WorkspaceStatus
 } from "./types.js";
+import {
+    parseSkillSyncCounts,
+    sanitizeSkillSyncProblems
+} from "./skillSyncSummary.js";
 
 const EXT_GROUP = "extensions.agents.x-k8s.io";
 const SANDBOX_GROUP = "agents.x-k8s.io";
@@ -32,6 +37,8 @@ export const SKILL_SYNC_COMPLETED_ANNOTATION =
 export const SKILL_SYNC_COUNTS_ANNOTATION = "agent.magda.io/skill-sync-counts";
 export const SKILL_SYNC_DIAGNOSTIC_ANNOTATION =
     "agent.magda.io/skill-sync-diagnostic";
+export const SKILL_SYNC_PROBLEMS_ANNOTATION =
+    "agent.magda.io/skill-sync-problems";
 
 const mergePatchOptions = {
     middleware: [
@@ -59,7 +66,7 @@ function isNotFound(error: unknown) {
     return error instanceof ApiException && error.code === 404;
 }
 
-function skillSyncStatus(
+export function skillSyncStatus(
     annotations: Record<string, string>
 ): NonNullable<WorkspaceStatus["skillSync"]> {
     const status = annotations[SKILL_SYNC_STATUS_ANNOTATION];
@@ -71,27 +78,23 @@ function skillSyncStatus(
             ? status
             : "notAttempted";
     let counts: NonNullable<WorkspaceStatus["skillSync"]>["counts"];
+    let problems: SkillSyncProblem[] = [];
+    let problemsTruncated = false;
     try {
-        const parsed = JSON.parse(
-            annotations[SKILL_SYNC_COUNTS_ANNOTATION] || "null"
+        counts = parseSkillSyncCounts(
+            JSON.parse(annotations[SKILL_SYNC_COUNTS_ANNOTATION] || "null")
         );
-        if (
-            parsed &&
-            [
-                "installed",
-                "updated",
-                "unchanged",
-                "removed",
-                "skipped",
-                "failed"
-            ].every(
-                (key) => Number.isSafeInteger(parsed[key]) && parsed[key] >= 0
-            )
-        ) {
-            counts = parsed;
-        }
     } catch {
         // Treat malformed optional status as unavailable, never as lifecycle failure.
+    }
+    try {
+        const parsed = JSON.parse(
+            annotations[SKILL_SYNC_PROBLEMS_ANNOTATION] || "null"
+        );
+        problems = sanitizeSkillSyncProblems(parsed?.items);
+        problemsTruncated = parsed?.truncated === true;
+    } catch {
+        // Optional detail; ignore malformed values.
     }
     const diagnostic = annotations[SKILL_SYNC_DIAGNOSTIC_ANNOTATION];
     return {
@@ -105,9 +108,12 @@ function skillSyncStatus(
         ...(counts ? { counts } : {}),
         ...(diagnostic === "EXEC_FAILED" ||
         diagnostic === "TIMEOUT" ||
-        diagnostic === "INVALID_RESULT"
+        diagnostic === "INVALID_RESULT" ||
+        diagnostic === "REMOTE_SOURCE_FAILED"
             ? { diagnosticCode: diagnostic }
-            : {})
+            : {}),
+        ...(problems.length ? { problems } : {}),
+        ...(problemsTruncated ? { problemsTruncated } : {})
     };
 }
 

@@ -1,6 +1,38 @@
 import type { AgentSkillSyncResult } from "../agentSkillTypes.js";
 import { note, printData, resolveMode } from "../output.js";
 
+/** Upper bound on per-skill problems reported to Agent Manager. */
+export const WORKSPACE_STATUS_MAX_PROBLEMS = 20;
+const SAFE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+const SAFE_CODE = /^[A-Z][A-Z0-9_]{0,63}$/;
+
+/**
+ * The bounded summary Agent Manager stores as the Workspace's last-run skill
+ * sync status. It carries no local paths, harness names, conflict details or
+ * remote messages: only counts, whether remote preparation failed (so no
+ * installed skill changed), and up to WORKSPACE_STATUS_MAX_PROBLEMS skill
+ * names with a stable reason code.
+ */
+export function workspaceStatusSummary(result: AgentSkillSyncResult) {
+    const problems = result.items
+        .filter((item) => item.action === "failed" || item.action === "skipped")
+        .map((item) => ({
+            name: SAFE_NAME.test(item.name) ? item.name : "unnamed",
+            action: item.action as "failed" | "skipped",
+            code: item.code && SAFE_CODE.test(item.code) ? item.code : "UNKNOWN"
+        }));
+    return {
+        status: result.status,
+        counts: result.counts,
+        manifestWarnings: result.manifestWarnings,
+        ...(result.remoteSourceFailed ? { remoteSourceFailed: true } : {}),
+        problems: problems.slice(0, WORKSPACE_STATUS_MAX_PROBLEMS),
+        ...(problems.length > WORKSPACE_STATUS_MAX_PROBLEMS
+            ? { problemsTruncated: true }
+            : {})
+    };
+}
+
 /** Shared sync/profile-switch reporting, so both use one conflict format. */
 export function printAgentSkillSyncResult(
     result: AgentSkillSyncResult,
@@ -27,13 +59,7 @@ export function printAgentSkillSyncResult(
     if (mode !== "human") {
         printData(
             mode,
-            opts.workspaceStatus
-                ? {
-                      status: result.status,
-                      counts: result.counts,
-                      manifestWarnings: result.manifestWarnings
-                  }
-                : result,
+            opts.workspaceStatus ? workspaceStatusSummary(result) : result,
             result.items
         );
         return;
