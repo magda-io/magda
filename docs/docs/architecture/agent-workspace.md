@@ -435,8 +435,12 @@ run the non-forced form, so existing edits survive and are reported as a
 `partial` result. A manual `mgd agent-skill sync [--force]` in the Sandbox uses
 the same engine and never updates Manager-owned status. Its
 separate `success | partial | failed | notAttempted` status contains only aggregate
-counts, timestamps, and a bounded diagnostic code. Failure or total API outage
-never changes lifecycle READY or blocks the runtime iframe. Warm-pool Sandboxes
+counts, timestamps, a bounded diagnostic code (`EXEC_FAILED`, `TIMEOUT`,
+`INVALID_RESULT` or `REMOTE_SOURCE_FAILED`), and up to 20 sanitized per-skill
+problems (skill name plus a stable reason code; no paths, messages or conflict
+details). Failure or total API outage never changes lifecycle READY or blocks
+the runtime iframe. The user can rerun a Manager-owned attempt with
+[Retry / Re-check](#workspace-skill-sync-status-and-retry--re-check). Warm-pool Sandboxes
 therefore contain neither user credentials nor synchronized user skills before
 claim adoption.
 
@@ -450,6 +454,82 @@ or new conversation. Existing loaded tool results remain historical context. The
 Web slash-suggestion cache may require a page reconnect or new Session to display
 a changed name immediately, while a directly typed invocation and the next model
 step use current host discovery.
+
+## Settings: Agent Skills catalogue (#3857)
+
+Settings has a non-clickable **Agent Workspace** group. Its children are
+checked independently from `whoami` permissions, and the group appears when any
+child is available:
+
+| Child          | Route                                     | Shown when                                                                                      |
+| -------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Open Workspace | `/settings/agent-workspace`               | `agentWorkspace/access`                                                                         |
+| Agent Skills   | `/settings/agent-workspace/skills`        | `object/agentSkill/system/read` **or** `object/agentSkill/user/read` (constrained grants count) |
+| Shared Skills  | `/settings/agent-workspace/shared-skills` | reserved for #3861; not shown                                                                   |
+
+Both routes are behind the existing `agentWorkspace` feature flag and their own
+route guard. Menu visibility is a hint; the APIs enforce access. A user can
+browse the catalogue without Workspace access, and the page then omits the
+**Open Workspace** link.
+
+The **Agent Skills** page explains skills, the capture → review → publish flow
+with a concrete CSV example, and lists published READY skills through the
+existing `GET /api/v0/agent/skills`:
+
+- **All** (`type=all`): READY system skills plus the caller's READY user
+  skills, as one Registry query.
+- **My Skills** (`type=user&userId=current`) and **System Skills**
+  (`type=system`).
+- Pages use the Registry keyset `pageToken` only (no `orderBy`); the browser
+  keeps previous tokens for **Previous**. Changing filter or search returns to
+  the first page. Nothing is filtered in the browser.
+- Keyword search passes `q` to the Registry full-text condition, applied in SQL
+  before paging. It matches whole words in skill metadata such as names and
+  descriptions; it is not an exact name search.
+
+Each entry shows the name, description, publication ID, type, intended user
+(user skills), owner, and created/updated time and user as published. System
+entries are metadata only. User entries offer **Download ZIP** and, when the
+caller holds `object/agentSkill/user/update` for their own publication,
+**Replace ZIP**. Replacement uses the same `PUT .../archive` path as `mgd`:
+Agent Services re-validates the archive, typed permission and immutable name,
+and the listed checksum is sent as `If-Match`. Invalid archive, name change,
+permission, conflict, size and network errors each have specific messages.
+After success the page says a running Workspace is not updated automatically:
+ask the agent to resynchronise skills, or run `mgd agent-skill sync` in the
+Workspace. There is no create, delete, metadata editing or system ZIP action.
+
+## Workspace skill-sync status and Retry / Re-check
+
+**Open Workspace** shows the Manager-owned status above the embedded DSH:
+status, counts, sanitized per-skill reasons and, for a remote-source failure,
+that no installed skill changed. `GET /api/v0/agent/session` is read-only and
+reports `skillSync.inProgress` while a Manager attempt runs.
+
+After `partial` or `failed`, **Retry / Re-check skill sync** opens one
+confirmation that the forced sync may replace or remove locally edited or
+same-named installed skill folders. Cancel sends nothing. Confirm calls
+`POST /api/v0/agent/session/skill-sync/retry` with no body:
+
+1. The route requires `agentWorkspace/access`; the target is the verified
+   caller's own claim, never a request value.
+2. The claim must exist, carry the caller's user label, not be deleting, and
+   be READY, and no lifecycle operation may be running (`409` otherwise).
+3. Attempts for a claim are serialized in the single-replica Manager. A second
+   Retry joins a running forced attempt (`deduplicated: true`); a running
+   non-forced recovery sync finishes before the forced attempt starts.
+4. The Manager runs `mgd agent-skill sync --force --json --workspace-status` in
+   the Sandbox, validates the bounded summary, and writes status only with the
+   claim-UID + READY JSON Patch tests. A reset or replacement during the attempt
+   leaves the newer claim untouched, and the request returns `409 WORKSPACE_CHANGED`.
+5. It waits up to 25 seconds (`skillSyncRetryWaitMs`) and returns `200` with
+   the result, or `202` with `inProgress: true`; the page then polls status
+   every 2 seconds.
+
+Forced sync never bypasses remote preparation: an unavailable Registry or
+Storage aborts before local changes. Skill-sync failure never affects READY or
+DSH. Manual `mgd agent-skill sync` and the `magda_agent_skill_sync` tool remain
+separate and never update this status.
 
 ### Stage 2 qualification procedure
 

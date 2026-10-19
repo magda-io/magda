@@ -39,12 +39,15 @@ const failedSync = {
 describe("AgentWorkspaceReady", () => {
     it("keeps the runtime iframe available while surfacing sync failure guidance", () => {
         const html = renderToStaticMarkup(
-            <AgentWorkspaceReady skillSync={failedSync} />
+            <AgentWorkspaceReady
+                skillSync={failedSync}
+                onRetrySkillSync={() => undefined}
+            />
         );
         expect(html).toContain('title="Agent Workspace"');
         expect(html).toContain("/api/v0/agent/runtime/");
         expect(html).toContain("Workspace remains available");
-        expect(html).toContain("mgd agent-skill sync");
+        expect(html).toContain("Retry / Re-check skill sync");
     });
 
     it("does not show recovery guidance after successful sync", () => {

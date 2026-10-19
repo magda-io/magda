@@ -184,8 +184,9 @@ Read the result's `outcome` and follow its `guidance`:
 After a successful publication, explain:
 
 - the skill is saved in their MAGDA account and will be synchronized into **new** Workspaces when they start;
-- publishing does not update copies already installed elsewhere, so you can run `magda_agent_skill_sync` to install it in this Workspace under `$DSH_HOME/skills/<name>` (offer to do this); and
-- `skill-drafts/<name>` remains a tracked working copy, and later edits there are local until they are published again.
+- publishing does not update copies already installed elsewhere, so you can run `magda_agent_skill_sync` to install it in this Workspace under `$DSH_HOME/skills/<name>` (offer to do this);
+- `skill-drafts/<name>` remains a tracked working copy, and later edits there are local until they are published again; and
+- they can view their published skills, and download or replace a skill's ZIP, in MAGDA under **Settings → Agent Workspace → Agent Skills**.
 
 ## Later: update, republish or delete an existing skill
 

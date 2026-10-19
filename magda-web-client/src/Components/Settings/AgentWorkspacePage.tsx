@@ -15,6 +15,7 @@ import Breadcrumb from "./Breadcrumb";
 import SideNavigation from "./SideNavigation";
 import {
     AGENT_WORKSPACE_RUNTIME_URL,
+    AgentWorkspaceSkillSync,
     AgentWorkspaceStatus,
     AgentWorkspaceState,
     deleteAgentWorkspace,
@@ -23,6 +24,7 @@ import {
     isAgentWorkspaceRunning,
     resetAgentWorkspace,
     resumeAgentWorkspace,
+    retryAgentWorkspaceSkillSync,
     startAgentWorkspace,
     startAgentWorkspaceStatusPolling
 } from "../../api-clients/AgentWorkspaceApis";
@@ -123,34 +125,220 @@ const WorkspaceInformation: FunctionComponent = () => (
     </div>
 );
 
+const PROBLEM_REASONS: Record<string, string> = {
+    LOCAL_MODIFICATION:
+        "edited in this Workspace, so the installed copy was kept",
+    UNVERIFIED_SOURCE:
+        "a folder with this name wasn't installed from Magda, so it was kept",
+    UNRECOGNIZED_DIRECTORY:
+        "an unrecognised folder uses this name, so it was kept",
+    RECOVERY_RETAINED: "an interrupted update was kept for recovery",
+    UNSAFE_PATH: "the installation path is unsafe",
+    OPERATION_FAILED: "the installed copy couldn't be updated",
+    DOWNLOAD_FAILED: "the published skill couldn't be downloaded",
+    SOURCE_UNRESOLVED: "the published source couldn't be resolved",
+    MANIFEST_UNAVAILABLE: "the list of published skills couldn't be loaded"
+};
+
+function problemReason(code: string) {
+    if (PROBLEM_REASONS[code]) return PROBLEM_REASONS[code];
+    if (code.startsWith("MANIFEST_WARNING_")) {
+        return "the list of published skills couldn't be fully verified";
+    }
+    return `reason code ${code}`;
+}
+
+function countSummary(counts?: AgentWorkspaceSkillSync["counts"]) {
+    if (!counts) return undefined;
+    const parts = ([
+        ["installed", counts.installed],
+        ["updated", counts.updated],
+        ["unchanged", counts.unchanged],
+        ["removed", counts.removed],
+        ["kept or skipped", counts.skipped],
+        ["failed", counts.failed]
+    ] as Array<[string, number]>)
+        .filter(([, count]) => count > 0)
+        .map(([label, count]) => `${count} ${label}`);
+    return parts.length ? parts.join(", ") : "no published skills";
+}
+
+/**
+ * Manager-owned skill sync status, shown above DSH. It never blocks the
+ * Workspace. Retry / Re-check is offered after a partial or failed sync.
+ */
+export const SkillSyncStatusBanner: FunctionComponent<{
+    skillSync?: AgentWorkspaceSkillSync;
+    retrying?: boolean;
+    retryError?: string;
+    onRetry?: () => void;
+}> = ({ skillSync, retrying, retryError, onRetry }) => {
+    if (!skillSync) return null;
+    const inProgress = retrying || skillSync.inProgress;
+    const counts = countSummary(skillSync.counts);
+    const canRetry =
+        !inProgress &&
+        !!onRetry &&
+        (skillSync.status === "partial" || skillSync.status === "failed");
+    let tone: "success" | "warning" | "info" = "info";
+    let summary: string;
+    if (inProgress) {
+        summary = "Checking your published skills…";
+    } else if (skillSync.status === "success") {
+        tone = "success";
+        summary = "Your published skills are up to date.";
+    } else if (skillSync.status === "partial") {
+        tone = "warning";
+        summary = "Some published skills need attention.";
+    } else if (skillSync.status === "failed") {
+        tone = "warning";
+        summary =
+            skillSync.diagnosticCode === "REMOTE_SOURCE_FAILED"
+                ? "Published skills couldn't be checked because Magda's skill service was unavailable. No installed skills were changed."
+                : skillSync.diagnosticCode === "TIMEOUT"
+                ? "Skill synchronisation took too long and was stopped."
+                : skillSync.diagnosticCode
+                ? "Skill synchronisation couldn't run in this Workspace."
+                : "Published skills couldn't be synchronised.";
+    } else {
+        summary = "Published skills haven't been synchronised yet.";
+    }
+    return (
+        <section
+            className={`agent-workspace-skill-sync tone-${tone}`}
+            aria-label="Published skill synchronisation"
+        >
+            <div className="agent-workspace-skill-sync-main">
+                <div role="status" aria-live="polite">
+                    {inProgress ? <Loader size="xs" /> : null}
+                    <strong>{summary}</strong>
+                    {!inProgress && counts ? (
+                        <span className="agent-workspace-skill-sync-counts">
+                            {" "}
+                            ({counts})
+                        </span>
+                    ) : null}
+                    {!inProgress && skillSync.status !== "success" ? (
+                        <span> Your Workspace remains available.</span>
+                    ) : null}
+                </div>
+                {canRetry ? (
+                    <Button size="sm" appearance="ghost" onClick={onRetry}>
+                        Retry / Re-check skill sync
+                    </Button>
+                ) : null}
+            </div>
+            {!inProgress && skillSync.problems?.length ? (
+                <ul className="agent-workspace-skill-sync-problems">
+                    {skillSync.problems.map((problem, index) => (
+                        <li key={`${problem.name}-${index}`}>
+                            <code>{problem.name}</code>:{" "}
+                            {problemReason(problem.code)}
+                        </li>
+                    ))}
+                    {skillSync.problemsTruncated ? (
+                        <li>More skills need attention.</li>
+                    ) : null}
+                </ul>
+            ) : null}
+            {!inProgress && skillSync.status === "partial" ? (
+                <p className="agent-workspace-skill-sync-hint">
+                    To keep your local changes, ask your agent to resynchronise
+                    your skills, or run <code>mgd agent-skill sync</code> within
+                    Agent Workspace.
+                </p>
+            ) : null}
+            {retryError ? (
+                <p role="alert" className="agent-workspace-skill-sync-error">
+                    {retryError}
+                </p>
+            ) : null}
+        </section>
+    );
+};
+
+export const SkillSyncRetryDialog: FunctionComponent<{
+    open: boolean;
+    onConfirm: () => void;
+    onCancel: () => void;
+}> = ({ open, onConfirm, onCancel }) => (
+    <Modal
+        role="alertdialog"
+        aria-labelledby="skill-sync-retry-title"
+        backdrop="static"
+        open={open}
+        onClose={onCancel}
+        size="sm"
+    >
+        <Modal.Header>
+            <Modal.Title id="skill-sync-retry-title">
+                Re-check skills and replace local changes?
+            </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+            <p>
+                This runs a forced skill synchronisation in your current Agent
+                Workspace. Installed copies of your published skills and the
+                system skills available to you are replaced with their published
+                versions.
+            </p>
+            <p>
+                <strong>
+                    Local changes to those installed skill folders, including
+                    unpublished edits and folders with the same name as a
+                    published skill, may be replaced or removed.
+                </strong>{" "}
+                To keep them, ask your agent to publish them, or copy them
+                elsewhere, before continuing.
+            </p>
+            <p>
+                If Magda can't download the published skills, nothing is
+                changed. Your Workspace stays available either way.
+            </p>
+        </Modal.Body>
+        <Modal.Footer>
+            <Button appearance="primary" color="red" onClick={onConfirm}>
+                Replace local changes and re-check
+            </Button>
+            <Button appearance="subtle" onClick={onCancel}>
+                Cancel
+            </Button>
+        </Modal.Footer>
+    </Modal>
+);
+
 export const AgentWorkspaceReady: FunctionComponent<{
     skillSync?: AgentWorkspaceStatus["skillSync"];
     terminateButton?: React.ReactNode;
     resetButton?: React.ReactNode;
-}> = ({ skillSync, terminateButton, resetButton }) => (
+    retryingSkillSync?: boolean;
+    skillSyncRetryError?: string;
+    onRetrySkillSync?: () => void;
+}> = ({
+    skillSync,
+    terminateButton,
+    resetButton,
+    retryingSkillSync,
+    skillSyncRetryError,
+    onRetrySkillSync
+}) => (
     <div className="agent-workspace-ready">
         <div className="agent-workspace-toolbar">
             <div className="agent-workspace-toolbar-heading">
                 <strong>Agent Workspace</strong>
                 <span>Private workspace running with your Magda authority</span>
-                {skillSync?.status === "partial" ||
-                skillSync?.status === "failed" ? (
-                    <span role="status">
-                        Some published skills could not be synchronized. The
-                        Workspace remains available; run `mgd agent-skill sync`
-                        to retry.
-                    </span>
-                ) : skillSync?.status === "notAttempted" ? (
-                    <span role="status">
-                        Published skill synchronization has not completed.
-                    </span>
-                ) : null}
             </div>
             <ButtonToolbar className="agent-workspace-toolbar-actions">
                 {terminateButton}
                 {resetButton}
             </ButtonToolbar>
         </div>
+        <SkillSyncStatusBanner
+            skillSync={skillSync}
+            retrying={retryingSkillSync}
+            retryError={skillSyncRetryError}
+            onRetry={onRetrySkillSync}
+        />
         <iframe
             className="agent-workspace-runtime"
             src={AGENT_WORKSPACE_RUNTIME_URL}
@@ -169,6 +357,9 @@ const AgentWorkspacePage: FunctionComponent = () => {
     const [requestError, setRequestError] = useState<string>();
     const [terminateOpen, setTerminateOpen] = useState(false);
     const [resetOpen, setResetOpen] = useState(false);
+    const [retryOpen, setRetryOpen] = useState(false);
+    const [retryingSkillSync, setRetryingSkillSync] = useState(false);
+    const [skillSyncRetryError, setSkillSyncRetryError] = useState<string>();
     const [pageVisible, setPageVisible] = useState(
         typeof document === "undefined" || document.visibilityState !== "hidden"
     );
@@ -232,13 +423,42 @@ const AgentWorkspacePage: FunctionComponent = () => {
 
         // Transitions need quick feedback, while stable READY polling is slower
         // to avoid continuous Kubernetes API load from open workspace tabs.
+        // A running skill re-check also gets quick feedback.
         return startAgentWorkspaceStatusPolling(
             refresh,
-            status?.state === "READY"
+            status?.state === "READY" && !status?.skillSync?.inProgress
                 ? READY_POLL_INTERVAL_MS
                 : TRANSITION_POLL_INTERVAL_MS
         );
-    }, [action, pageVisible, refresh, status?.state]);
+    }, [
+        action,
+        pageVisible,
+        refresh,
+        status?.state,
+        status?.skillSync?.inProgress
+    ]);
+
+    // Called only after the user confirmed the forced re-check.
+    const retrySkillSync = async () => {
+        setRetryOpen(false);
+        setRetryingSkillSync(true);
+        setSkillSyncRetryError(undefined);
+        // Ignore any status response already in flight from before the retry.
+        requestSequence.current += 1;
+        try {
+            const result = await retryAgentWorkspaceSkillSync();
+            setStatus((current) =>
+                current ? { ...current, skillSync: result.skillSync } : current
+            );
+        } catch (error) {
+            setSkillSyncRetryError(
+                `Skill re-check failed: ${errorMessage(error)}`
+            );
+            refresh();
+        } finally {
+            setRetryingSkillSync(false);
+        }
+    };
 
     const runAction = async (
         nextAction: "start" | "resume" | "terminate" | "reset",
@@ -341,6 +561,9 @@ const AgentWorkspacePage: FunctionComponent = () => {
                     skillSync={status.skillSync}
                     terminateButton={terminateButton}
                     resetButton={resetButton}
+                    retryingSkillSync={retryingSkillSync}
+                    skillSyncRetryError={skillSyncRetryError}
+                    onRetrySkillSync={() => setRetryOpen(true)}
                 />
             );
         }
@@ -406,7 +629,12 @@ const AgentWorkspacePage: FunctionComponent = () => {
         <div className="flex-main-container setting-page-main-container agent-workspace-page">
             <SideNavigation />
             <main className="main-content-container">
-                <Breadcrumb items={[{ title: "Agent Workspace" }]} />
+                <Breadcrumb
+                    items={[
+                        { title: "Agent Workspace" },
+                        { title: "Open Workspace" }
+                    ]}
+                />
                 {requestError ? (
                     <Message
                         className="agent-workspace-request-error"
@@ -421,6 +649,12 @@ const AgentWorkspacePage: FunctionComponent = () => {
                 ) : null}
                 {renderContent()}
             </main>
+
+            <SkillSyncRetryDialog
+                open={retryOpen}
+                onConfirm={retrySkillSync}
+                onCancel={() => setRetryOpen(false)}
+            />
 
             <Modal
                 role="alertdialog"

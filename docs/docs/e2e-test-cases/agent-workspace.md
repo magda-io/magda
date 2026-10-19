@@ -99,7 +99,8 @@ for implementation details, key decisions, configuration, and deployment steps.
 
 ## Browser journey
 
-1. Log in as an administrator and open **Settings -> Agent Workspace**.
+1. Log in as an administrator and open **Settings -> Agent Workspace -> Open
+   Workspace**.
 2. Confirm the introduction states one workspace per user, user authority,
    suspend/resume behavior, temporary-file durability, and destructive
    reset/logout behavior.
@@ -407,6 +408,68 @@ exact text. Record the session ID, and the publication ID where there is one.
 - **Regression:** DSH launches, the managed UI is unchanged, the model and
   provider configuration is unchanged, READY is independent of skill sync, and
   Stage 2 manual and forced `mgd agent-skill sync` still pass.
+
+## Agent Skills catalogue checks (#3857)
+
+1. **Navigation:** with `agentWorkspace/access` only, the **Agent Workspace**
+   group shows **Open Workspace** only. With only a typed skill read permission
+   (`object/agentSkill/system/read` or `.../user/read`), it shows **Agent
+   Skills** only, and `/settings/agent-workspace` redirects with a permission
+   error. With both, or as an administrator, both appear. Without either the
+   group is hidden. No **Shared Skills** item appears.
+2. **Introduction:** the page explains skills and shows the CSV example. The
+   **Open Workspace** link appears only with Workspace access.
+3. **Listing:** publish more than one page of user skills (page size 10) and at
+   least one system skill. **All** shows READY system + own user skills;
+   **My Skills** only own user skills; **System Skills** only system skills.
+   **Next**/**Previous** walk the keyset pages without duplicates or gaps;
+   changing filter or search returns to page 1. PENDING or DELETING records
+   never appear. Another user's user skill never appears.
+4. **Search:** a keyword from one skill's description finds it on page 1; an
+   unmatched keyword shows the empty state.
+5. **Metadata:** each entry shows the name, description, publication ID, type,
+   intended user (user skills), owner, and created/updated time and user from
+   the Registry record.
+6. **System entries** have no Download, Replace, Delete or edit control, even
+   for an administrator.
+7. **Download ZIP** of an own user skill matches `mgd agent-skill pull`.
+8. **Replace ZIP:** a valid archive with the same `SKILL.md` name succeeds and
+   updates description/`updatedAt`/`updatedBy` while ID, name, type, intended
+   user, owner and creator stay unchanged. The success text gives the
+   resynchronise guidance. Check the errors: a non-ZIP or invalid archive, a
+   changed `name`, a user without `object/agentSkill/user/update` (no Replace
+   button; a direct `PUT` returns 403), a stale `If-Match` after another
+   replacement from `mgd` (conflict message), and an offline network.
+9. **Responsive/accessibility:** at phone width the list has no horizontal
+   scroll; filters expose `aria-pressed`; the page is usable by keyboard;
+   loading, empty and error states are announced.
+
+## Retry / Re-check skill sync checks (#3857)
+
+Read the claim's `agent.magda.io/skill-sync-*` annotations and poll
+`ps -eo args` in the Sandbox to see the Manager's exec.
+
+1. **Partial:** edit an installed published skill in the Workspace, then make
+   the Manager record `partial` (for example, replace that skill's ZIP and
+   restart the Manager for a non-forced recovery). The banner shows counts and
+   the skill with "edited in this Workspace" and offers **Retry / Re-check
+   skill sync**.
+2. **Cancel** closes the dialog with no request (Manager log and Sandbox
+   `ps` show no sync).
+3. **Confirm** runs exactly one `mgd agent-skill sync --force --json --workspace-status`. The edited copy is replaced, the status becomes
+   `success`, and DSH stays loaded and usable throughout.
+4. **Duplicates:** two quick Retry calls produce one exec; the second response
+   has `deduplicated: true`.
+5. **Outage:** scale Registry or Storage API to 0 and Retry. The result is
+   `failed` with "No installed skills were changed", local files are unchanged,
+   and the Workspace stays READY. Restore and Retry again for `success`.
+6. **Reset during Retry:** start a Retry, then **Start New Workspace**. The old
+   attempt never writes the new claim's status; the request returns `409`.
+7. **Status ownership:** a manual `mgd agent-skill sync` or the
+   `magda_agent_skill_sync` tool does not change the annotations; a status GET
+   alone never starts an exec.
+8. **Authorization:** Retry needs `agentWorkspace/access` and targets only the
+   caller's claim, whatever body, query or headers are sent.
 
 ## Minikube gVisor troubleshooting
 

@@ -39,8 +39,31 @@ export interface AgentWorkspaceStatus {
             skipped: number;
             failed: number;
         };
-        diagnosticCode?: "EXEC_FAILED" | "TIMEOUT" | "INVALID_RESULT";
+        diagnosticCode?:
+            | "EXEC_FAILED"
+            | "TIMEOUT"
+            | "INVALID_RESULT"
+            | "REMOTE_SOURCE_FAILED";
+        // Sanitized per-skill problems: skill name and a stable reason code.
+        problems?: Array<{
+            name: string;
+            action: "failed" | "skipped";
+            code: string;
+        }>;
+        problemsTruncated?: boolean;
+        // A Manager-owned sync attempt is running for this Workspace.
+        inProgress?: boolean;
     };
+}
+
+export type AgentWorkspaceSkillSync = NonNullable<
+    AgentWorkspaceStatus["skillSync"]
+>;
+
+export interface AgentWorkspaceSkillSyncRetryResult {
+    completed: boolean;
+    deduplicated: boolean;
+    skillSync: AgentWorkspaceSkillSync;
 }
 
 export class AgentWorkspaceApiError extends Error {
@@ -173,4 +196,55 @@ export function resetAgentWorkspace(): Promise<AgentWorkspaceStatus> {
 
 export function deleteAgentWorkspace(): Promise<AgentWorkspaceStatus> {
     return lifecycleRequest("DELETE");
+}
+
+/**
+ * Ask Agent Manager to run a forced skill sync in the caller's own current
+ * Workspace. Call only after the user confirmed that conflicting local skill
+ * edits may be replaced or removed. Sends no body: the target and the
+ * outcome are decided server-side.
+ */
+export async function retryAgentWorkspaceSkillSync(): Promise<
+    AgentWorkspaceSkillSyncRetryResult
+> {
+    const headers = new Headers(config.commonFetchRequestOptions.headers);
+    headers.set("Accept", "application/json");
+    let response: Response;
+    try {
+        response = await fetch(
+            `${AGENT_WORKSPACE_SESSION_URL}/skill-sync/retry`,
+            {
+                ...config.commonFetchRequestOptions,
+                method: "POST",
+                headers,
+                cache: "no-store"
+            }
+        );
+    } catch (_) {
+        throw new AgentWorkspaceApiError(
+            "Could not reach Magda. Check your connection and try again.",
+            0
+        );
+    }
+    let body: any;
+    try {
+        body = await response.json();
+    } catch (_) {
+        body = undefined;
+    }
+    if (!response.ok) {
+        throw new AgentWorkspaceApiError(
+            typeof body?.message === "string" && body.message.trim()
+                ? body.message
+                : `Skill re-check failed (${response.status})`,
+            response.status
+        );
+    }
+    if (typeof body?.skillSync?.status !== "string") {
+        throw new AgentWorkspaceApiError(
+            "Agent Workspace returned an invalid skill sync response.",
+            response.status
+        );
+    }
+    return body as AgentWorkspaceSkillSyncRetryResult;
 }

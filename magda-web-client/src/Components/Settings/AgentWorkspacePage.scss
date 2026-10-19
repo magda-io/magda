@@ -141,6 +141,59 @@
     gap: 8px;
 }
 
+.agent-workspace-skill-sync {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-bottom: 1px solid #d9dce3;
+    font-size: 14px;
+    color: #30384d;
+
+    &.tone-success {
+        background: #f3faf3;
+    }
+
+    &.tone-warning {
+        background: #fff8e6;
+    }
+
+    &.tone-info {
+        background: #f3f6fc;
+    }
+
+    .agent-workspace-skill-sync-main {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 16px;
+
+        .rs-loader-wrapper {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    }
+
+    .agent-workspace-skill-sync-counts {
+        color: #555f73;
+    }
+
+    .agent-workspace-skill-sync-problems {
+        margin: 6px 0 0;
+        padding-left: 20px;
+        max-height: 96px;
+        overflow-y: auto;
+    }
+
+    .agent-workspace-skill-sync-hint,
+    .agent-workspace-skill-sync-error {
+        margin: 6px 0 0;
+    }
+
+    .agent-workspace-skill-sync-error {
+        color: #a12c1f;
+    }
+}
+
 .agent-workspace-runtime {
     display: block;
     flex: 1 1 auto;
