@@ -32,6 +32,12 @@ The initial #3850 snapshot crops the entire DSH navigation column, although DSH 
 
 The managed UI still hides deployment-controlled provider/model/plugin management and the persistent Full Access selector. CSS hiding is **not** a security boundary: runtime and Magda server authorization remain authoritative. The stock DSH sidebar/plugin customizations should be implemented through the managed profile where possible, replacing the iframe-crop workaround, with responsive/reconnect tests.
 
+## Stage-3 Agent Skill publication confirmation (2026-10-19)
+
+**Authoritative:** [Workflow capture and single-approval design](./workflow-capture.md). The existing per-command DSH sandbox escalation UI remains available to other tools, but **is not the normal Agent Skill publication confirmation mechanism**. An agent's explicit `mgd agent-skill publish` intent should execute through a small trusted, typed deployment DSH tool, in the same nonroot user's Kubernetes Sandbox, preserving normal Bash sandboxing. **One user decision**: if the agent judges the user clearly approved the specific reviewed draft in chat (`userApproved: true`), publish directly; otherwise the typed tool itself invokes `ctx.userQuestions.ask()` and displays a selectable **Publish / Cancel** card, continuing within the same tool invocation after Publish. No custom modal required for the MVP; no extra model turn between UI approval and operation. Cancelling or absent question UI does not publish.
+
+**The same selectable UI for system and user publications.** A user skill dialog states it is saved to that user's account and reused in later Workspaces. A system skill dialog explicitly explains broader visibility: other authorised MAGDA users and Workspaces may gain access, subject to backend access controls; system publication is not anonymously/public-internet accessible. **Do not add a second system-specific dialog or permission mechanism.** Existing typed Agent Services system/user authorization is authoritative. No new Settings skill editor or publish UI in #3857 is required by Stage 3.
+
 ## Agent Skills catalogue and agent-led creation (expanded MVP)
 
 **Authoritative permissions, sharing and sync contract:** [skill authorization and Workspace manifest decisions](./skills-authorization-and-workspace-manifest.md). **Skill discovery is based on the intended user; skill access is based on authorization; skill synchronization is optional to Workspace availability.**
