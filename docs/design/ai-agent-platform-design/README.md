@@ -127,6 +127,7 @@ Runtime + credentials + network
 | Mutation confirmation | [mutation-approval.md](./mutation-approval.md) | Proposed product/DSH UX contract |
 | Skills | [skills.md](./skills.md) | Expanded MVP: Registry-backed metadata, Storage API archives, scoped OPA, `mgd`, workflow capture and catalogue UI; implementation #3854–#3857 |
 | Local Agent Skill sync / multiple MAGDA profiles | [local-agent-skill-sync.md](./local-agent-skill-sync.md) | **Revised 2026-10-18**; scan-based independent copy installs, inline authoritative marker, no central inventory/journal/rollback, commit-first profile switch, source-account publishing, per-skill recovery, non-blocking Workspace sync (#3855/#3857/#3861) |
+| Agent workflow capture / trusted skill tools / session history | [workflow-capture.md](./workflow-capture.md) | **Accepted 2026-10-19**; Stage 3 #3856, one approval via chat-model judgment or DSH Publish/Cancel UI, same system/user flow with clearer system warning, typed host-tool calling existing `mgd`, source-aware publication errors, incremental bounded history processing, selective prompts |
 | Web/product integration | [web-ui.md](./web-ui.md) | Draft |
 | Deployment / Helm | [deployment.md](./deployment.md) | Draft |
 | Observability / audit | [observability.md](./observability.md) | Draft |
