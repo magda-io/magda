@@ -83,7 +83,8 @@ for implementation details, key decisions, configuration, and deployment steps.
   pre-creates the namespace. They also set the in-Sandbox API URLs and select
   `magda-agent-trusted-ca` with `agent-services.runtime.trustedCaSecret`.
 
-- An admin login. `magda-auth-internal` is not a `magda-core` dependency; install
+- An admin login, plus a non-admin login for the access checks below.
+  `magda-auth-internal` is not a `magda-core` dependency; install
   it as a separate release or include it in an umbrella chart if password login
   is desired.
 - For a real model response, create the provider secret before deployment:
@@ -200,8 +201,7 @@ Run each check while watching the Settings page and Kubernetes resources:
 - Open a DSH WebSocket and log out. Confirm the socket closes promptly and all
   workspace resources and the managed API key are deleted before logout
   completes.
-- Log in as a non-admin. Confirm the navigation item is hidden and direct Agent
-  Manager and LLM requests return 403.
+- Run the [Workspace access checks](#workspace-access-checks).
 - In a disposable cluster without KAS, attempt an enabled Helm install and confirm
   the pre-install hook fails with the missing KAS v1beta1 API message before
   normal Agent resources are installed.
@@ -231,6 +231,39 @@ Repeat the core browser, `mgd`, LLM streaming, refresh and reset journey with:
 Each render must contain exactly one SandboxTemplate and one matching
 SandboxWarmPool. Kata is covered by the offline Helm render matrix; run the full
 journey on a Kata-capable cluster when qualifying that production runtime.
+
+## Workspace access checks
+
+`agentWorkspace/access` (#3858) is the only Workspace permission. Use a
+non-admin user `U` and an administrator `A`, each with an API key (gateway
+headers `X-Magda-API-Key-Id`/`X-Magda-API-Key`). Lifecycle endpoints are
+`GET/POST/DELETE /api/v0/agent/session` and `POST /api/v0/agent/session/{resume,reset}`;
+the runtime proxy is `/api/v0/agent/runtime/`; the model route is
+`/api/v0/llm/v1/models`.
+
+1. **Anonymous:** every lifecycle route, a runtime GET and a runtime WebSocket
+   upgrade (`Connection: Upgrade`, `Upgrade: websocket`) return 401.
+2. **Unassigned `U`:** `whoami` has no `agentWorkspace/access`; Settings hides
+   **Agent Workspace**; the direct route redirects with a permission error; all
+   lifecycle routes, runtime HTTP, the WebSocket upgrade and the LLM route
+   return 403; no SandboxClaim is created for `U`.
+3. **Grant:** assign **Agent Workspace Users** to `U`. Settings shows the item;
+   `U` can start, use (DSH HTTP and WebSocket, model turns), reset and delete
+   their own Workspace. The claim carries `U`'s user-hash label.
+4. **Cross-user:** while `A` has a READY Workspace, `U` adds `?userId=<A>`, a
+   body `{"userId":"<A>"}`, `X-Magda-User-Id: <A>` or `A`'s Sandbox name to
+   lifecycle and runtime requests. Every request acts only on `U`'s claim, and
+   `A`'s claim annotations and Sandbox are unchanged.
+5. **Forged identity:** a JWT signed with another secret, or an
+   `X-Magda-Session` copied from another environment, returns 401.
+6. **Administrator:** `A` keeps access to their own Workspace without any
+   explicit grant (policy administrator override).
+7. **Revocation:** with `U`'s DSH WebSocket open, remove the role. The next
+   runtime/lifecycle/LLM request returns 403, and the open WebSocket closes
+   within `RUNTIME_AUTH_RECHECK_SECONDS` (default 60).
+8. **Skill permissions are independent:** a user with only typed skill read
+   permissions can call `/api/v0/agent/skills` but receives 403 from the
+   Workspace routes.
 
 ## Agent Skill synchronization checks
 
@@ -770,4 +803,5 @@ Use an evidence table for sign-off:
 All transitions are visible and recoverable, the same-origin DSH iframe and
 `/api/remote.mux` WebSocket work through the gateway, persisted state survives
 restart/suspend, destructive transitions remove credentials and storage, and
-both backend services independently reject non-admin users.
+both backend services independently reject users without
+`agentWorkspace/access`.

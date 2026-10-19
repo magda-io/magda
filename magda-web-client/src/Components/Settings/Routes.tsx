@@ -24,7 +24,7 @@ import PagesSettingsPage from "./Content/PagesSettingsPage";
 import HomeSettingsPage from "./Content/HomeSettingsPage";
 import UiTextSettingsPage from "./Content/UiTextSettingsPage";
 import AgentWorkspacePage from "./AgentWorkspacePage";
-import RequireAdmin from "Components/RequireAdmin";
+import { requireAgentWorkspaceAccess } from "./agentWorkspaceAccess";
 import { config } from "../../config";
 
 function SettingsRedirect() {
@@ -74,7 +74,7 @@ const Routes = () => {
                         <Route
                             exact
                             path="/settings/agent-workspace"
-                            component={RequireAdmin(
+                            component={requireAgentWorkspaceAccess(
                                 withHeader(AgentWorkspacePage, {
                                     noContainerClass: true
                                 })

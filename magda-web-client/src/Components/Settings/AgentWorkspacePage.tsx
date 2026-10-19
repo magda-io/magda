@@ -116,8 +116,9 @@ const WorkspaceInformation: FunctionComponent = () => (
                 Magda, or by copying them to another durable destination.
             </li>
         </ul>
-        <p className="agent-workspace-admin-note">
-            Agent Workspace is currently available to administrators only.
+        <p className="agent-workspace-access-note">
+            Agent Workspace access is granted through your Magda roles. You can
+            only open your own workspace.
         </p>
     </div>
 );

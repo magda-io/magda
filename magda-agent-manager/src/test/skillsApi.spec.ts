@@ -5,8 +5,8 @@ import { AgentManager } from "../manager.js";
 import buildApp from "../buildApp.js";
 import {
     AgentAuthorizationError,
-    authenticateAdminToken,
-    authenticateUserToken
+    authenticateUserToken,
+    authenticateWorkspaceToken
 } from "../auth.js";
 import { DownstreamServiceError } from "../skills/clients.js";
 import { AgentSkillError, AgentSkillService } from "../skills/service.js";
@@ -108,18 +108,26 @@ describe("Agent Skill authentication and API boundary", () => {
         originalFetch = globalThis.fetch;
         roles = [{ id: "00000000-0000-0002-0000-000000000000" }];
         whoamiId = userId;
-        globalThis.fetch = (async () =>
-            new Response(JSON.stringify({ id: whoamiId, roles }), {
-                status: 200,
-                headers: { "Content-Type": "application/json" }
-            })) as typeof globalThis.fetch;
+        globalThis.fetch = (async (url: string | URL | Request) =>
+            new Response(
+                JSON.stringify(
+                    String(url).includes("/opa/decision/")
+                        ? // An ordinary user holds no `agentWorkspace/access`.
+                          { hasResidualRules: false, result: false }
+                        : { id: whoamiId, roles }
+                ),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                }
+            )) as typeof globalThis.fetch;
     });
 
     afterEach(() => {
         globalThis.fetch = originalFetch;
     });
 
-    it("accepts a verified ordinary user without weakening admin authentication", async () => {
+    it("accepts a verified ordinary user without granting Workspace access", async () => {
         expect(
             (
                 await authenticateUserToken(token(), {
@@ -131,7 +139,7 @@ describe("Agent Skill authentication and API boundary", () => {
 
         let error: unknown;
         try {
-            await authenticateAdminToken(token(), {
+            await authenticateWorkspaceToken(token(), {
                 jwtSecret,
                 authApiUrl: "http://authorization-api/v0"
             });
@@ -813,7 +821,7 @@ describe("Agent Skill authentication and API boundary", () => {
         );
     });
 
-    it("keeps lifecycle endpoints admin-only for ordinary users", async () => {
+    it("keeps lifecycle endpoints closed to users without agentWorkspace/access", async () => {
         const app = buildApp(config(), {} as AgentManager);
         const response = await request(app)
             .get("/v0/session")

@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { ADMIN_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 import { AuthenticatedUser } from "./types.js";
 
 declare global {
@@ -16,21 +15,24 @@ export interface AuthOptions {
     authApiUrl: string;
 }
 
+/**
+ * The single grantable operation for a user's **own** Agent Workspace (#3858).
+ * Lifecycle, runtime HTTP/WebSocket and skill-sync retry all require it. The
+ * target Sandbox is always derived from the authenticated user, never from the
+ * request, so the operation never reaches another user's Workspace.
+ */
+export const AGENT_WORKSPACE_ACCESS_OPERATION = "agentWorkspace/access";
+
 export class AgentAuthorizationError extends Error {
     constructor(message: string, public readonly status: number) {
         super(message);
     }
 }
 
-interface VerifiedUser {
-    user: AuthenticatedUser;
-    roles: Array<{ id?: string }>;
-}
-
-async function authenticateToken(
+export async function authenticateUserToken(
     token: string | undefined,
     options: AuthOptions
-): Promise<VerifiedUser> {
+): Promise<AuthenticatedUser> {
     if (!token) {
         throw new AgentAuthorizationError("Magda authentication required", 401);
     }
@@ -68,41 +70,67 @@ async function authenticateToken(
             response.status === 401 ? 401 : 503
         );
     }
-    const authenticated = (await response.json()) as {
-        id?: string;
-        roles?: Array<{ id?: string }>;
-    };
+    const authenticated = (await response.json()) as { id?: string };
     if (authenticated.id !== payload.userId) {
         throw new AgentAuthorizationError("Invalid Magda session", 401);
     }
-    return {
-        user: { id: payload.userId, sessionToken: token },
-        roles: Array.isArray(authenticated.roles) ? authenticated.roles : []
-    };
+    return { id: payload.userId, sessionToken: token };
 }
 
-export async function authenticateUserToken(
-    token: string | undefined,
+/**
+ * Ask the policy engine whether the verified session holds
+ * `agentWorkspace/access`. The decision carries no object input: the operation
+ * is self-only and the caller never selects a Workspace. Global administrators
+ * are allowed by the existing entrypoint administrator override.
+ */
+async function hasAgentWorkspaceAccess(
+    token: string,
     options: AuthOptions
-): Promise<AuthenticatedUser> {
-    return (await authenticateToken(token, options)).user;
-}
-
-export async function authenticateAdminToken(
-    token: string | undefined,
-    options: AuthOptions
-): Promise<AuthenticatedUser> {
-    const authenticated = await authenticateToken(token, options);
-    const isAdmin = authenticated.roles.some(
-        (role) => role.id === ADMIN_USERS_ROLE_ID
-    );
-    if (!isAdmin) {
+): Promise<boolean> {
+    let response: globalThis.Response;
+    try {
+        // `unknowns=` requests a full (not partial) evaluation.
+        response = await fetch(
+            `${options.authApiUrl.replace(
+                /\/$/,
+                ""
+            )}/opa/decision/${AGENT_WORKSPACE_ACCESS_OPERATION}?unknowns=`,
+            {
+                headers: { "X-Magda-Session": token },
+                signal: AbortSignal.timeout(10_000)
+            }
+        );
+    } catch (error) {
+        console.error("Agent Workspace authorization lookup failed", error);
         throw new AgentAuthorizationError(
-            "Agent Workspace is currently limited to administrators",
+            "Unable to verify Agent Workspace access",
+            503
+        );
+    }
+    if (!response.ok) {
+        throw new AgentAuthorizationError(
+            "Unable to verify Agent Workspace access",
+            503
+        );
+    }
+    const decision = (await response.json().catch(() => undefined)) as
+        | { hasResidualRules?: boolean; result?: unknown }
+        | undefined;
+    return decision?.hasResidualRules === false && decision.result === true;
+}
+
+export async function authenticateWorkspaceToken(
+    token: string | undefined,
+    options: AuthOptions
+): Promise<AuthenticatedUser> {
+    const user = await authenticateUserToken(token, options);
+    if (!(await hasAgentWorkspaceAccess(user.sessionToken, options))) {
+        throw new AgentAuthorizationError(
+            "You do not have permission to access Agent Workspace",
             403
         );
     }
-    return authenticated.user;
+    return user;
 }
 
 function createAuthMiddleware(
@@ -133,6 +161,6 @@ export function createAuthenticatedUserAuth(options: AuthOptions) {
     return createAuthMiddleware(authenticateUserToken, options);
 }
 
-export function createAdminAuth(options: AuthOptions) {
-    return createAuthMiddleware(authenticateAdminToken, options);
+export function createWorkspaceAuth(options: AuthOptions) {
+    return createAuthMiddleware(authenticateWorkspaceToken, options);
 }

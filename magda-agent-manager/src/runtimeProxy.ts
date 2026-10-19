@@ -4,9 +4,9 @@ import { AgentKubernetesClient } from "./kubernetes.js";
 import {
     AgentAuthorizationError,
     AuthOptions,
-    authenticateAdminToken
+    authenticateWorkspaceToken
 } from "./auth.js";
-import { ManagerConfig, SandboxClaim } from "./types.js";
+import { AuthenticatedUser, ManagerConfig, SandboxClaim } from "./types.js";
 import type { ActivitySnapshotToken } from "./webSocketActivity.js";
 import {
     DshSessionStatusFrameParser,
@@ -117,6 +117,12 @@ export class RuntimeProxy {
     private readonly activityWrites = new Map<string, Promise<void>>();
     private readonly authOptions: AuthOptions;
     private readonly foregroundActivity: ForegroundActivityTracker;
+    // Browser-side WebSocket -> the user whose `agentWorkspace/access` admitted
+    // it. Long-lived streams are re-authorized periodically so revocation (or a
+    // deleted user) closes them, not only new HTTP requests.
+    private readonly authorizedSockets = new Map<Duplex, AuthenticatedUser>();
+    private socketAuthTimer: NodeJS.Timeout | undefined;
+    private socketAuthCheck: Promise<void> | undefined;
 
     constructor(
         private readonly config: ManagerConfig,
@@ -177,7 +183,7 @@ export class RuntimeProxy {
         const path = this.stripRuntimePrefix(req.url);
         if (!path) throw new AgentAuthorizationError("Not found", 404);
         const token = req.headers["x-magda-session"];
-        const user = await authenticateAdminToken(
+        const user = await authenticateWorkspaceToken(
             Array.isArray(token) ? token[0] : token,
             this.authOptions
         );
@@ -498,6 +504,59 @@ export class RuntimeProxy {
         });
     }
 
+    private trackAuthorizedSocket(socket: Duplex, user: AuthenticatedUser) {
+        this.authorizedSockets.set(socket, user);
+        socket.once("close", () => {
+            this.authorizedSockets.delete(socket);
+            if (!this.authorizedSockets.size && this.socketAuthTimer) {
+                clearInterval(this.socketAuthTimer);
+                this.socketAuthTimer = undefined;
+            }
+        });
+        if (!this.socketAuthTimer) {
+            this.socketAuthTimer = setInterval(
+                () => void this.recheckSocketAuthorization(),
+                (this.config.runtimeAuthRecheckSeconds || 60) * 1000
+            );
+            this.socketAuthTimer.unref();
+        }
+    }
+
+    /**
+     * Re-run the same session + `agentWorkspace/access` check for every open
+     * DSH WebSocket. A definitive denial (401/403) closes that user's streams;
+     * a transient authorization outage keeps them until the next check.
+     */
+    recheckSocketAuthorization(): Promise<void> {
+        if (this.socketAuthCheck) return this.socketAuthCheck;
+        this.socketAuthCheck = (async () => {
+            const byToken = new Map<string, Duplex[]>();
+            for (const [socket, user] of this.authorizedSockets) {
+                const sockets = byToken.get(user.sessionToken) || [];
+                sockets.push(socket);
+                byToken.set(user.sessionToken, sockets);
+            }
+            await Promise.all(
+                [...byToken].map(async ([token, sockets]) => {
+                    try {
+                        await authenticateWorkspaceToken(
+                            token,
+                            this.authOptions
+                        );
+                    } catch (error) {
+                        const status = (error as AgentAuthorizationError)
+                            .status;
+                        if (status !== 401 && status !== 403) return;
+                        sockets.forEach((socket) => socket.destroy());
+                    }
+                })
+            );
+        })().finally(() => {
+            this.socketAuthCheck = undefined;
+        });
+        return this.socketAuthCheck;
+    }
+
     private connectWebSocket(
         req: IncomingMessage,
         socket: Duplex,
@@ -546,6 +605,7 @@ export class RuntimeProxy {
             if (head.length) upstreamSocket.write(head);
             upstreamSocket.pipe(socket).pipe(upstreamSocket);
             this.trackSocket(auth.target.sandbox, socket, upstreamSocket);
+            this.trackAuthorizedSocket(socket, auth.user);
         });
         upstream.on("response", async (response) => {
             response.resume();
@@ -618,6 +678,9 @@ export class RuntimeProxy {
     }
 
     closeAll() {
+        if (this.socketAuthTimer) clearInterval(this.socketAuthTimer);
+        this.socketAuthTimer = undefined;
+        this.authorizedSockets.clear();
         this.sockets.forEach((sockets) =>
             sockets.forEach((socket) => socket.destroy())
         );

@@ -42,10 +42,12 @@ export async function deleteAllTables(pool: pg.Pool) {
  *
  * @param pool
  * @param deleteAllTable
+ * @param maxVersion only run migrations up to and including this version
  */
 export default async function runMigrationSql(
     pool: pg.Pool,
-    deleteAllTable: boolean = false
+    deleteAllTable: boolean = false,
+    maxVersion: number = Infinity
 ) {
     const migrationSqlDir = path.resolve(
         __dirname,
@@ -57,7 +59,7 @@ export default async function runMigrationSql(
             path: f,
             version: getVersionNumber(path.basename(f))
         }))
-        .filter((f) => f.version !== 1.2)
+        .filter((f) => f.version !== 1.2 && f.version <= maxVersion)
         .sort((a, b) => a.version - b.version);
 
     if (!fileObjects.length)

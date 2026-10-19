@@ -7,7 +7,6 @@ import createApp, {
     LlmServicesConfig,
     parseAllowedModels
 } from "../createApp.js";
-import { ADMIN_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
 const jwtSecret = "llm-services-test-secret";
 const userId = "00000000-0000-4000-8000-000000000001";
@@ -69,19 +68,31 @@ describe("LLM Services", () => {
     });
 
     const originalFetch = global.fetch;
+    // The current `agentWorkspace/access` decision for the test user.
+    let workspaceAccess: boolean | "unavailable";
+    let decisionUrls: string[];
 
     beforeEach(() => {
-        global.fetch = async () =>
-            new Response(
-                JSON.stringify({
-                    id: userId,
-                    roles: [{ id: ADMIN_USERS_ROLE_ID }]
-                }),
-                {
-                    status: 200,
-                    headers: { "content-type": "application/json" }
+        workspaceAccess = true;
+        decisionUrls = [];
+        global.fetch = async (input) => {
+            const url = String(input);
+            if (url.includes("/opa/decision/")) {
+                decisionUrls.push(url);
+                if (workspaceAccess === "unavailable") {
+                    return new Response("unavailable", { status: 500 });
                 }
-            );
+                return Response.json({
+                    hasResidualRules: false,
+                    result: workspaceAccess
+                });
+            }
+            // An ordinary (non-admin) user; access comes only from the policy.
+            return Response.json({
+                id: userId,
+                roles: [{ id: "00000000-0000-0002-0000-000000000000" }]
+            });
+        };
     });
 
     afterEach(() => {
@@ -101,7 +112,7 @@ describe("LLM Services", () => {
         }
     });
 
-    it("requires an authenticated administrator", async () => {
+    it("requires an authenticated user", async () => {
         const running = await listen(createApp(config()));
         try {
             const response = await originalFetch(
@@ -110,6 +121,49 @@ describe("LLM Services", () => {
             assert.equal(response.status, 401);
             assert.match(await response.text(), /authentication required/i);
         } finally {
+            await close(running.server);
+        }
+    });
+
+    it("requires agentWorkspace/access instead of the administrator role", async () => {
+        const running = await listen(createApp(config()));
+        try {
+            workspaceAccess = false;
+            const denied = await originalFetch(
+                new URL("/v0/v1/models", running.url),
+                { headers: { "X-Magda-Session": session } }
+            );
+            assert.equal(denied.status, 403);
+            assert.match(await denied.text(), /Agent Workspace access/);
+
+            workspaceAccess = true;
+            const granted = await originalFetch(
+                new URL("/v0/v1/models", running.url),
+                { headers: { "X-Magda-Session": session } }
+            );
+            assert.equal(granted.status, 200);
+            assert.deepEqual(decisionUrls, [
+                "http://authorization-api.test/v0/opa/decision/agentWorkspace/access?unknowns=",
+                "http://authorization-api.test/v0/opa/decision/agentWorkspace/access?unknowns="
+            ]);
+        } finally {
+            await close(running.server);
+        }
+    });
+
+    it("fails closed when the policy engine is unavailable", async () => {
+        const running = await listen(createApp(config()));
+        const originalError = console.error;
+        console.error = () => undefined;
+        try {
+            workspaceAccess = "unavailable";
+            const response = await originalFetch(
+                new URL("/v0/v1/models", running.url),
+                { headers: { "X-Magda-Session": session } }
+            );
+            assert.equal(response.status, 503);
+        } finally {
+            console.error = originalError;
             await close(running.server);
         }
     });

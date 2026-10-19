@@ -75,6 +75,8 @@ export interface ManagerConfig {
     idleSuspendSeconds: number;
     reconcileIntervalSeconds: number;
     runtimeMaxBodyBytes: number;
+    // How often open DSH WebSockets re-check `agentWorkspace/access`.
+    runtimeAuthRecheckSeconds?: number;
     controlPlaneSecret: string;
 }
 

@@ -21,7 +21,9 @@ describe("Agent Skill authorization migration", function (this: Mocha.Suite) {
         await adminPool.query(`CREATE DATABASE "${testDbName}"`);
         await adminPool.end();
         pool = new pg.Pool({ ...dbConfig, database: testDbName });
-        await runMigrationSql(pool);
+        // Stage-1 (#3854) state only; V2_5 (#3858) is covered by
+        // AgentWorkspaceAccessMigration.spec.ts.
+        await runMigrationSql(pool, false, 2.4);
     });
 
     after(async () => {

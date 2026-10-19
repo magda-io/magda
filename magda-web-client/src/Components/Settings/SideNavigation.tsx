@@ -29,6 +29,7 @@ import uniq from "lodash/uniq";
 import { User } from "reducers/userManagementReducer";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
 import { config } from "../../config";
+import { AGENT_WORKSPACE_ACCESS_OPERATION } from "./agentWorkspaceAccess";
 import {
     getUrlWithPopUpQueryString,
     showSideNav
@@ -88,7 +89,7 @@ const defaultMenuItems: MenuItem[] = [
                   title: "Agent Workspace",
                   path: "/settings/agent-workspace",
                   icon: <MdSmartToy />,
-                  requireRoleIds: [ADMIN_USERS_ROLE_ID]
+                  requireOperationUris: [AGENT_WORKSPACE_ACCESS_OPERATION]
               }
           ]
         : []),

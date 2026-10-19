@@ -1,7 +1,7 @@
 import express from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { timingSafeEqual } from "node:crypto";
-import { createAdminAuth } from "./auth.js";
+import { createWorkspaceAuth } from "./auth.js";
 import { AgentManager } from "./manager.js";
 import { ManagerConfig } from "./types.js";
 import createAgentSkillRouter from "./skills/router.js";
@@ -71,8 +71,10 @@ export default function buildApp(
     app.use("/v0/private", privateRouter);
 
     const router = express.Router();
+    // Every user-facing lifecycle route requires `agentWorkspace/access` and
+    // only ever acts on the authenticated user's own Workspace.
     router.use(
-        createAdminAuth({
+        createWorkspaceAuth({
             jwtSecret: config.jwtSecret,
             authApiUrl: config.authApiUrl
         })

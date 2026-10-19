@@ -2,7 +2,11 @@ import express, { NextFunction, Request, Response } from "express";
 import http from "node:http";
 import https from "node:https";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { ADMIN_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
+
+// Agent Workspace model access uses the same grantable self-only operation as
+// the Workspace itself (#3858); administrators are allowed by the policy
+// engine's administrator override.
+const AGENT_WORKSPACE_ACCESS_OPERATION = "agentWorkspace/access";
 
 export function parseAllowedModels(value: string | undefined): Set<string> {
     if (value === undefined) {
@@ -56,7 +60,7 @@ export default function createApp(config: LlmServicesConfig) {
         allowedModels
     } = config;
 
-    async function requireAdmin(
+    async function requireWorkspaceAccess(
         req: Request,
         res: Response,
         next: NextFunction
@@ -80,28 +84,43 @@ export default function createApp(config: LlmServicesConfig) {
             return;
         }
         try {
-            const response = await fetch(
-                `${authApiUrl.replace(/\/$/, "")}/public/users/whoami`,
-                {
-                    headers: { "X-Magda-Session": token },
-                    signal: AbortSignal.timeout(10_000)
-                }
-            );
+            const base = authApiUrl.replace(/\/$/, "");
+            const headers = { "X-Magda-Session": token };
+            const response = await fetch(`${base}/public/users/whoami`, {
+                headers,
+                signal: AbortSignal.timeout(10_000)
+            });
             const user = response.ok
-                ? ((await response.json()) as {
-                      id?: string;
-                      roles?: Array<{ id?: string }>;
-                  })
+                ? ((await response.json()) as { id?: string })
                 : undefined;
-            if (
-                !user ||
-                user.id !== payload.userId ||
-                !user.roles?.some((role) => role.id === ADMIN_USERS_ROLE_ID)
-            ) {
+            if (!user || user.id !== payload.userId) {
                 res.status(response.status === 401 ? 401 : 403).json({
+                    error: { message: "Invalid Magda session" }
+                });
+                return;
+            }
+            // `unknowns=` requests a full (not partial) policy evaluation.
+            const decisionResponse = await fetch(
+                `${base}/opa/decision/${AGENT_WORKSPACE_ACCESS_OPERATION}?unknowns=`,
+                { headers, signal: AbortSignal.timeout(10_000) }
+            );
+            if (!decisionResponse.ok) {
+                throw new Error(
+                    `Policy decision failed with HTTP ${decisionResponse.status}`
+                );
+            }
+            const decision = (await decisionResponse.json()) as {
+                hasResidualRules?: boolean;
+                result?: unknown;
+            };
+            if (
+                decision?.hasResidualRules !== false ||
+                decision.result !== true
+            ) {
+                res.status(403).json({
                     error: {
                         message:
-                            "Magda LLM access is currently limited to administrators"
+                            "Magda LLM access requires Agent Workspace access"
                     }
                 });
                 return;
@@ -181,7 +200,7 @@ export default function createApp(config: LlmServicesConfig) {
     app.disable("x-powered-by");
     app.get("/v0/status/live", (_req, res) => res.json({ status: "ok" }));
     app.get("/v0/status/ready", (_req, res) => res.json({ status: "ok" }));
-    app.use("/v0/v1", requireAdmin);
+    app.use("/v0/v1", requireWorkspaceAccess);
 
     app.get("/v0/v1/models", (_req, res) => {
         res.json({

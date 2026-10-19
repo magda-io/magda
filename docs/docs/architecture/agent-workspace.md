@@ -8,7 +8,8 @@ Harness (DSH) Web under **Settings → Agent Workspace**, bundles the `mgd` CLI,
 and connects the agent to Magda using the current user's authority.
 
 The feature is disabled by default with `global.agentWorkspace.enabled=false`.
-The MVP additionally restricts access to members of Magda's **Admin Users** role.
+Access requires the grantable `agentWorkspace/access` permission, which is
+assigned through ordinary Magda roles (see [Workspace access](#workspace-access)).
 It supports one current workspace per user.
 
 ## Architecture
@@ -21,12 +22,13 @@ credentials remain in the Magda namespace.
 
 ### Components
 
-- **Magda Web** exposes the feature-flagged, admin-only Settings route and renders
+- **Magda Web** exposes the feature-flagged Settings route to users whose
+  `whoami` permissions include `agentWorkspace/access`, and renders
   lifecycle state. When ready, it embeds the runtime through
   `/api/v0/agent/runtime/` with DSH's native responsive sidebar, session history,
   Search, and collapse/expand navigation.
-- **Agent Manager** is stateless. It authenticates the Gateway session, checks
-  current role membership through `whoami`, manages Kubernetes resources,
+- **Agent Manager** is stateless. It authenticates the Gateway session through
+  `whoami`, checks the `agentWorkspace/access` policy decision, manages Kubernetes resources,
   bootstraps the runtime, proxies DSH HTTP/WebSocket traffic, and reconciles idle
   workspaces.
 - **Kubernetes Agent Sandbox** provides the per-user execution boundary. The
@@ -102,6 +104,52 @@ building the image. This pre-release path rename deliberately has no PVC migrati
 reset local test workspaces after deploying it so the new workspace starts with
 only the deployment-owned names.
 
+## Workspace access
+
+One grantable OPA operation, `agentWorkspace/access` (#3858), lets an
+authenticated user operate their **own** Agent Workspace: start, status,
+resume, reset, terminate, the DSH runtime HTTP proxy, DSH WebSocket upgrades,
+and the Workspace's model access through LLM Services. There are no
+action-specific Workspace operations.
+
+- **Registration:** authorization migration `V2_5__agent_workspace_access.sql`
+  registers the `agentWorkspace` resource, the operation, and one unconstrained
+  permission, **Access Own Agent Workspace**. It attaches the permission to the
+  unassigned stock role **Agent Workspace Users** from `V2_4`. It is not granted
+  to Authenticated Users, and **Agent Skills Admins** does not imply it.
+- **Policy:** `magda-opa/policies/agentWorkspace/allow.rego`, reached from the
+  entrypoint only for the exact URI `agentWorkspace/access`. It allows a
+  non-anonymous user holding an unconstrained permission on the `agentWorkspace`
+  resource. Global administrators keep access to their own Workspace through the
+  existing entrypoint administrator override. No role is hard-coded in Agent
+  Manager or LLM Services.
+- **Self-only:** the decision carries no object input. Agent Manager derives the
+  SandboxClaim from the verified session user and installation, never from a
+  request body, query, header, user ID, claim name or pod name. Granting the
+  permission (even to an administrator) never reaches another user's Sandbox.
+- **Enforcement:** Agent Manager verifies the Gateway-issued `X-Magda-Session`
+  JWT, confirms it with `whoami`, then requests a full-evaluation decision from
+  `GET /v0/opa/decision/agentWorkspace/access?unknowns=`. Missing or invalid
+  sessions return 401, a denial returns 403, and an unavailable policy engine
+  returns 503 (fail closed). This applies to every lifecycle route and to every
+  runtime HTTP request and WebSocket upgrade. LLM Services applies the same
+  decision, because the Workspace calls the model with the user's own
+  lifecycle-bound key.
+- **Revocation:** each new lifecycle or runtime request is decided again. Open
+  DSH WebSockets are re-checked every `RUNTIME_AUTH_RECHECK_SECONDS` (default
+  60). A 401/403 closes them; a transient policy outage keeps them until the
+  next check. Revocation does not delete the Workspace; an operator or the
+  normal idle lifecycle does that.
+- **Navigation:** `whoami` permissions are only a hint for showing **Open
+  Workspace**. The route and API remain the authorization boundary.
+- **Independence from skills:** `agentWorkspace/access` grants no Agent Skill
+  permission, and the typed `object/agentSkill/{system,user}/read` permissions
+  grant no Workspace access.
+
+To let a user open their Workspace, assign them **Agent Workspace Users** (which
+also grants the typed own/visible skill permissions) or add **Access Own Agent
+Workspace** to another role.
+
 ## Authentication and trust boundaries
 
 - Browser cookies and Gateway session headers terminate at Agent Manager. They
@@ -126,7 +174,7 @@ only the deployment-owned names.
 Agent Services exposes the authenticated public surface
 `/api/v0/agent/skills` for paginated READY metadata, metadata reads, validated
 ZIP download, creation, replacement, and deletion. Workspace lifecycle routes
-remain under their existing admin gate; skill routes accept ordinary authenticated
+require `agentWorkspace/access`; skill routes accept ordinary authenticated
 users and then enforce the typed
 `object/agentSkill/{system,user}/{create,read,update,delete}` OPA operations.
 
@@ -186,9 +234,9 @@ owner user/installation CRUD plus OrgUnit- and pre-authorised-constrained typed
 reads; both read permissions allow explicitly exempt records. The unassigned
 **Agent Skills Admins** role contains unconstrained system CRUD, allowing trusted
 staff to publish without global administrator status. Neither role is granted to
-Authenticated Users. #3858 owns `agentWorkspace/access` and attaches it to the
-existing Workspace role in a later migration, so this stage never references a
-nonexistent operation. Installation operations and their owner permission are
+Authenticated Users. #3858's later `V2_5` migration registers
+`agentWorkspace/access` and attaches it to Agent Workspace Users, so `V2_4` never
+references a nonexistent operation. Installation operations and their owner permission are
 registered for #3861, but no installation record, API, policy, or sharing
 functionality is activated here. Agent Services marks managed system
 publications `constraintExemption=true`, so holders of an applicable
@@ -1066,8 +1114,9 @@ stale alias or reasoning effort is not retained.
    and the selected gVisor/Kata RuntimeClass. The hook runs only during a real
    installation, so offline `helm lint` and `helm template` continue to work.
 
-3. A Magda authentication plugin or another way to establish an administrator
-   session. `magda-auth-internal` is not a dependency of `magda-core`.
+3. A Magda authentication plugin or another way to establish a user session,
+   and a role assignment granting `agentWorkspace/access` to Workspace users
+   (administrators already have it). `magda-auth-internal` is not a dependency of `magda-core`.
 4. Images for Agent Manager, Agent Runtime, LLM Services, Authorization API,
    Gateway, Web Server, and Authorization DB Migrator published to a registry
    accessible by the cluster.
@@ -1370,7 +1419,8 @@ kubectl -n magda rollout status deploy/litellm
 kubectl -n magda-agent get sandboxclaims,sandboxes,pods
 ```
 
-Log in as an administrator, open **Settings → Agent Workspace**, start the
+Log in as an administrator or a user with **Agent Workspace Users**, open
+**Settings → Agent Workspace**, start the
 workspace, and wait for `READY`. Verify the managed DSH UI, a real model/tool
 response through `/api/v0/llm/v1/responses`, `mgd auth status`, a Registry read,
 and destructive cleanup of the claim and managed key.

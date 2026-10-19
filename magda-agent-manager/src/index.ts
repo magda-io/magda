@@ -101,6 +101,10 @@ const config: ManagerConfig = {
     runtimeMaxBodyBytes: Number(
         process.env.RUNTIME_MAX_BODY_BYTES || 16 * 1024 * 1024
     ),
+    runtimeAuthRecheckSeconds: Math.max(
+        5,
+        Number(process.env.RUNTIME_AUTH_RECHECK_SECONDS || 60)
+    ),
     controlPlaneSecret: process.env.CONTROL_PLANE_SECRET || ""
 };
 if (config.llmMaxTokens > config.llmContextWindow) {

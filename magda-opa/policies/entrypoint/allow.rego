@@ -21,6 +21,12 @@ allow {
 }
 
 allow {
+    ## delegate the self-only Agent Workspace operation to its own rules
+    input.operationUri == "agentWorkspace/access"
+    data.agentWorkspace.allow
+}
+
+allow {
     ## delegate dataset related decision to dataset_allow
     startswith(input.operationUri, "object/dataset/")
     data.object.dataset.allow
