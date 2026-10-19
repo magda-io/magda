@@ -260,7 +260,10 @@ the runtime proxy is `/api/v0/agent/runtime/`; the model route is
    explicit grant (policy administrator override).
 7. **Revocation:** with `U`'s DSH WebSocket open, remove the role. The next
    runtime/lifecycle/LLM request returns 403, and the open WebSocket closes
-   within `RUNTIME_AUTH_RECHECK_SECONDS` (default 60).
+   within `RUNTIME_AUTH_RECHECK_SECONDS` (default 60); the Manager logs
+   `agent-websocket-access-revoked`. Use a real WebSocket client (browser or
+   Node's `WebSocket`): DSH closes a raw upgraded socket that never sends
+   WebSocket frames after a few seconds, which hides the revocation result.
 8. **Skill permissions are independent:** a user with only typed skill read
    permissions can call `/api/v0/agent/skills` but receives 403 from the
    Workspace routes.

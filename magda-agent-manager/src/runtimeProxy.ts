@@ -546,7 +546,22 @@ export class RuntimeProxy {
                     } catch (error) {
                         const status = (error as AgentAuthorizationError)
                             .status;
-                        if (status !== 401 && status !== 403) return;
+                        if (status !== 401 && status !== 403) {
+                            console.warn(
+                                "Could not re-authorize Agent Workspace WebSockets; keeping them open",
+                                status
+                            );
+                            return;
+                        }
+                        console.log(
+                            JSON.stringify({
+                                event: "agent-websocket-access-revoked",
+                                userId: this.authorizedSockets.get(sockets[0])
+                                    ?.id,
+                                sockets: sockets.length,
+                                status
+                            })
+                        );
                         sockets.forEach((socket) => socket.destroy());
                     }
                 })

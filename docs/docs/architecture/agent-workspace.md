@@ -137,8 +137,8 @@ action-specific Workspace operations.
   lifecycle-bound key.
 - **Revocation:** each new lifecycle or runtime request is decided again. Open
   DSH WebSockets are re-checked every `RUNTIME_AUTH_RECHECK_SECONDS` (default
-  60). A 401/403 closes them; a transient policy outage keeps them until the
-  next check. Revocation does not delete the Workspace; an operator or the
+  60). A 401/403 closes them and logs `agent-websocket-access-revoked`; a
+  transient policy outage keeps them until the next check. Revocation does not delete the Workspace; an operator or the
   normal idle lifecycle does that.
 - **Navigation:** `whoami` permissions are only a hint for showing **Open
   Workspace**. The route and API remain the authorization boundary.
