@@ -48,6 +48,10 @@ const scenario = JSON.parse(fs.readFileSync(${JSON.stringify(
         scenarioFile
     )}, "utf8"));
 const step = scenario[process.argv[3]] || { stdout: "{}" };
+if (step.createOutput) {
+    const argv = process.argv.slice(2);
+    fs.mkdirSync(argv[argv.indexOf("--output") + 1]);
+}
 const finish = () => {
     if (step.stdout) process.stdout.write(typeof step.stdout === "string" ? step.stdout : JSON.stringify(step.stdout));
     if (step.stderr) process.stderr.write(JSON.stringify(step.stderr) + "\\n");
@@ -504,6 +508,78 @@ try {
     assert.equal(result.error.code, "invalid-input");
     assert.deepEqual(calls(), []);
 
+    // --- Overwriting a newer remote version: same single question, explicit wording.
+    scenario({
+        validate: validated,
+        publish: { stdout: { ...publication, localCache: "updated" } }
+    });
+    ui = asker(choose("Publish"));
+    result = await ops().publish(
+        { path: draft, overwriteRemoteChanges: true },
+        { cwd, ask: ui.ask }
+    );
+    assert.equal(result.outcome, "published");
+    assert.equal(ui.asked.length, 1, "Still a single confirmation");
+    assert.match(
+        ui.asked[0][0].question,
+        /Publish "good" and overwrite the newer version currently stored in MAGDA\? Any changes made to that published version since your copy was created will be lost\./
+    );
+    assert.deepEqual(
+        ui.asked[0][0].options.map((o) => o.label),
+        ["Publish", "Cancel"]
+    );
+    assert.deepEqual(calls()[1], [
+        "agent-skill",
+        "publish",
+        draft,
+        "--type",
+        "user",
+        "--json",
+        "--force"
+    ]);
+    scenario({
+        validate: { stdout: { name: "system-guide" } },
+        publish: { stdout: publication }
+    });
+    ui = asker(choose("Cancel"));
+    result = await ops().publish(
+        { path: draft, type: "system", overwriteRemoteChanges: true },
+        { cwd, ask: ui.ask }
+    );
+    assert.equal(result.outcome, "cancelled");
+    assert.match(ui.asked[0][0].question, /overwrite the newer version/);
+    assert.match(ui.asked[0][0].question, /This is a system skill/);
+    assert.ok(!calls().some(([, command]) => command === "publish"));
+    scenario({
+        validate: validated,
+        publish: { stdout: { ...publication, localCache: "updated" } }
+    });
+    ui = asker(choose("Cancel"));
+    result = await ops().publish(
+        { path: draft, overwriteRemoteChanges: true, userApproved: true },
+        { cwd, ask: ui.ask }
+    );
+    assert.equal(result.outcome, "published");
+    assert.equal(
+        ui.asked.length,
+        0,
+        "Explicit chat approval still skips the question"
+    );
+    scenario({ delete: { stdout: { deleted: true, localCache: "updated" } } });
+    ui = asker(choose("Delete"));
+    result = await ops().delete(
+        { ref: `user/${publication.id}`, overwriteRemoteChanges: true },
+        { cwd, ask: ui.ask }
+    );
+    assert.equal(result.outcome, "deleted");
+    assert.match(
+        ui.asked[0][0].question,
+        /even though it has changed in MAGDA since this Workspace last saw it\? The published skill, including those newer changes, will be removed\./
+    );
+    assert.deepEqual(calls(), [
+        ["agent-skill", "delete", `user/${publication.id}`, "--json", "--force"]
+    ]);
+
     // --- Delete: same confirmation rule.
     scenario({
         delete: {
@@ -625,6 +701,43 @@ try {
             "--json"
         ]
     ]);
+    // A failed pull says whether a (possibly complete) copy was left behind.
+    scenario({
+        pull: {
+            code: 1,
+            createOutput: true,
+            stderr: {
+                error: { code: "error", message: "EIO: state write failed" }
+            }
+        }
+    });
+    result = await ops().pull(
+        { ref: `user/${publication.id}`, output: "skill-drafts/partial" },
+        { cwd }
+    );
+    assert.equal(result.outcome, "failed");
+    assert.equal(result.directoryCreated, true);
+    assert.match(
+        result.guidance,
+        /now exists and may already contain the downloaded skill/
+    );
+    scenario({
+        pull: {
+            code: 1,
+            stderr: {
+                error: { code: "not-found", status: 404, message: "Not found" }
+            }
+        }
+    });
+    result = await ops().pull(
+        { ref: `user/${publication.id}`, output: "skill-drafts/never" },
+        { cwd }
+    );
+    assert.equal(result.directoryCreated, false);
+    assert.match(
+        result.guidance,
+        /Nothing was pulled; the output directory was not created/
+    );
     for (const bad of [
         "skill-drafts/good",
         outside + "/new",

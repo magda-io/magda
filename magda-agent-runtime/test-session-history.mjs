@@ -418,7 +418,7 @@ try {
     assert.deepEqual(windowed.events, late.events);
     result = query(["list", "--json"], limits({ readWindowBytes: 64 }));
     assert.equal(
-        result.json().find((s) => s.id === "long").title,
+        result.json().sessions.find((s) => s.id === "long").title,
         "Conversation long"
     );
 
@@ -491,7 +491,7 @@ try {
         ...limits({ maxDecodedBytesPerQuery: 50_000 }),
         DSH_SESSION_ID: "long"
     });
-    const longEntry = result.json().find((s) => s.id === "long");
+    const longEntry = result.json().sessions.find((s) => s.id === "long");
     assert.equal(longEntry.title, "Conversation long");
     assert.equal(longEntry.current, true);
 
@@ -512,9 +512,111 @@ try {
         })
     );
     assert.equal(
-        result.json().find((s) => s.id === "early-title").title,
+        result.json().sessions.find((s) => s.id === "early-title").title,
         "Early title"
     );
+
+    // Output above 64 KiB: whole events are dropped from the end, the JSON
+    // stays valid, and the result is explicitly incomplete with a cursor.
+    const bigRows = [header("big-output")];
+    for (let i = 0; i < 30; i++)
+        bigRows.push(
+            event(i, "user/message", {
+                content: text(`big ${i} ${"é".repeat(9000)}`),
+                source: { kind: "user" }
+            })
+        );
+    writeSession("big-output", bigRows);
+    result = query([
+        "events",
+        "--session",
+        "big-output",
+        "--limit",
+        "30",
+        "--max-chars",
+        "8000",
+        "--json"
+    ]);
+    assert.equal(result.status, 3, "An output-trimmed page exits 3");
+    assert.ok(Buffer.byteLength(result.stdout) <= 65536);
+    const trimmed = JSON.parse(result.stdout);
+    assert.equal(trimmed.complete, false);
+    assert.match(trimmed.incomplete.reason, /65536-byte output limit/);
+    assert.ok(trimmed.events.length > 0 && trimmed.events.length < 30);
+    assert.equal(trimmed.incomplete.resumeFromSeq, trimmed.events.length);
+    assert.equal(trimmed.nextFromSeq, trimmed.events.length);
+    const pagedBig = [];
+    for (let cursor = 0, page = 0; cursor !== undefined && page < 30; page++) {
+        const pageResult = JSON.parse(
+            query([
+                "events",
+                "--session",
+                "big-output",
+                "--from-seq",
+                String(cursor),
+                "--limit",
+                "30",
+                "--max-chars",
+                "8000",
+                "--json"
+            ]).stdout
+        );
+        pagedBig.push(...pageResult.events.map((e) => e.seq));
+        cursor = pageResult.nextFromSeq;
+    }
+    assert.deepEqual(
+        pagedBig,
+        Array.from({ length: 30 }, (_, i) => i),
+        "Following the cursor returns every event exactly once"
+    );
+    result = query([
+        "events",
+        "--session",
+        "big-output",
+        "--limit",
+        "30",
+        "--max-chars",
+        "8000"
+    ]);
+    assert.equal(result.status, 3);
+    assert.ok(Buffer.byteLength(result.stdout) <= 65536);
+    assert.match(
+        result.stdout,
+        /# INCOMPLETE RESULT: the 65536-byte output limit was reached\. Continue with --from-seq \d+\./
+    );
+    assert.doesNotMatch(result.stdout, /output truncated at/);
+
+    // The same budget applies to outline turns and list entries.
+    result = query(
+        ["outline", "--session", "long", "--limit", "200", "--json"],
+        limits({ maxOutputBytes: 4000 })
+    );
+    assert.equal(result.status, 3);
+    assert.ok(Buffer.byteLength(result.stdout) <= 4000);
+    const shortOutline = JSON.parse(result.stdout);
+    assert.equal(shortOutline.complete, false);
+    assert.equal(
+        shortOutline.incomplete.resumeFromTurn,
+        shortOutline.turns.length + 1
+    );
+    assert.equal(shortOutline.more, 3000 - shortOutline.turns.length);
+    result = query(["list", "--json"], limits({ maxOutputBytes: 600 }));
+    assert.equal(result.status, 3);
+    const shortList = JSON.parse(result.stdout);
+    assert.equal(shortList.complete, false);
+    assert.ok(shortList.incomplete.omittedSessions > 0);
+
+    // A work budget that stops a listed session from being inspected makes
+    // the list incomplete.
+    result = query(
+        ["list", "--json"],
+        limits({ maxDecodedBytesPerQuery: 200 })
+    );
+    assert.equal(result.status, 3);
+    const budgetedList = JSON.parse(result.stdout);
+    assert.equal(budgetedList.complete, false);
+    assert.match(budgetedList.incomplete.reason, /decoded-work budget/);
+    assert.ok(budgetedList.sessions.some((s) => /incomplete/.test(s.error)));
 
     // Limits can only be lowered.
     result = query(

@@ -452,7 +452,8 @@ try {
 
     const list = runHelper("list", "--json");
     assert.equal(list.status, 0, list.stderr);
-    const listed = list.json();
+    const listed = list.json().sessions;
+    assert.equal(list.json().complete, true);
     assert.deepEqual(
         listed.map((s) => s.id).sort(),
         ["session-current", "session-future", "session-raw"],
@@ -584,7 +585,7 @@ try {
     );
     assert.match(textOutput.stdout, /^# Untrusted historical session data/);
     assert.ok(
-        Buffer.byteLength(textOutput.stdout) <= 64 * 1024 + 200,
+        Buffer.byteLength(textOutput.stdout) <= 64 * 1024,
         "Total output is capped"
     );
 
@@ -630,7 +631,10 @@ try {
         env: { ...env, DSH_HOME: path.join(home, "missing") }
     });
     assert.equal(noHistory.status, 0);
-    assert.deepEqual(JSON.parse(noHistory.stdout), []);
+    assert.deepEqual(JSON.parse(noHistory.stdout), {
+        sessions: [],
+        complete: true
+    });
 
     assert.deepEqual(
         snapshot(),

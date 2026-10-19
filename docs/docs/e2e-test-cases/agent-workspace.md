@@ -317,6 +317,9 @@ exact text. Record the session ID, and the publication ID where there is one.
   system create permission, the same call returns
   `outcome: rejected`, `status: 403` (`AGENT_SKILL_FORBIDDEN`). A chat-approved
   `magda_agent_skill_delete` of the system skill runs without a card.
+- **Overwrite wording:** `overwriteRemoteChanges: true` without chat approval
+  shows the same single card, saying the newer version stored in MAGDA will be
+  overwritten (or deleted with its newer changes).
 - **Ordinary Bash stays sandboxed:** `touch /data/config/x` from Bash fails with
   `Read-only file system … workspace-write`; the overlay contains no
   `danger-full-access`.
@@ -361,7 +364,10 @@ exact text. Record the session ID, and the publication ID where there is one.
   unchanged. A late `events --from-seq` query reports only a few
   `stats.framesDecoded`. Run `node magda-agent-runtime/bench-session-history.mjs`
   in the Sandbox to compare time and peak RSS against the previous helper; a
-  budget-limited query starts with `# INCOMPLETE RESULT` and exits 3.
+  budget-limited query starts with `# INCOMPLETE RESULT` and exits 3. Request
+  100 events at `--max-chars 8000` from a long session: both text and `--json`
+  output stay within 64 KiB, the JSON parses, and the result is
+  `complete: false` with a `--from-seq` cursor that pages on without gaps.
 - **Regression:** DSH launches, the managed UI is unchanged, the model and
   provider configuration is unchanged, READY is independent of skill sync, and
   Stage 2 manual and forced `mgd agent-skill sync` still pass.

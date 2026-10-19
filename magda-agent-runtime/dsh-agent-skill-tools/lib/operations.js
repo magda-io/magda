@@ -102,6 +102,40 @@ const CONFIRMATION = {
             cancelDescription: "Keep the published skill."
         })
     },
+    /**
+     * The same single question when the caller asked to override optimistic
+     * concurrency (`mgd --force`): it must say that newer remote changes are lost.
+     */
+    overwrite: {
+        publish: (type, name) => ({
+            header:
+                type === "system"
+                    ? "Overwrite system skill"
+                    : "Overwrite skill",
+            question: `Publish "${name}" and overwrite the newer version currently stored in MAGDA? Any changes made to that published version since your copy was created will be lost.${
+                type === "system"
+                    ? " This is a system skill, available to other authorised MAGDA users and their Agent Workspaces, subject to system-skill visibility settings; it is never available to anonymous users."
+                    : ""
+            }`,
+            confirm: "Publish",
+            confirmDescription: `Overwrite the published "${name}" with this copy.`,
+            cancelDescription: "Do not publish. Nothing is overwritten."
+        }),
+        delete: (type, ref) => ({
+            header:
+                type === "system"
+                    ? "Delete changed system skill"
+                    : "Delete changed skill",
+            question: `Delete ${ref} even though it has changed in MAGDA since this Workspace last saw it? The published skill, including those newer changes, will be removed.${
+                type === "system"
+                    ? " This is a system skill; it will be removed for every authorised MAGDA user and their future Agent Workspaces."
+                    : ""
+            }`,
+            confirm: "Delete",
+            confirmDescription: `Delete ${ref}, including its newer remote changes.`,
+            cancelDescription: "Keep the published skill."
+        })
+    },
     forceSync: () => ({
         header: "Replace local changes",
         question:
@@ -485,7 +519,9 @@ export function createAgentSkillOperations(options = {}) {
             if (args?.userApproved !== true) {
                 const decision = await confirmAction(
                     context.ask,
-                    CONFIRMATION.publish[type](name)
+                    args?.overwriteRemoteChanges === true
+                        ? CONFIRMATION.overwrite.publish(type, name)
+                        : CONFIRMATION.publish[type](name)
                 );
                 if (!decision.confirmed)
                     return cancelled(operation, decision, { name, type });
@@ -538,7 +574,9 @@ export function createAgentSkillOperations(options = {}) {
             if (args?.userApproved !== true) {
                 const decision = await confirmAction(
                     context.ask,
-                    CONFIRMATION.delete[target.type](target.ref)
+                    args?.overwriteRemoteChanges === true
+                        ? CONFIRMATION.overwrite.delete(target.type, target.ref)
+                        : CONFIRMATION.delete[target.type](target.ref)
                 );
                 if (!decision.confirmed)
                     return cancelled(operation, decision, { ref: target.ref });
@@ -650,11 +688,23 @@ export function createAgentSkillOperations(options = {}) {
                         "This is a tracked working copy. Edits stay local until the user approves publishing it again."
                 };
             const error = parseJson(run.stderr)?.error;
+            // mgd extracts before it records pull provenance, so a failure can
+            // leave a complete copy behind.
+            let created = false;
+            try {
+                await fs.lstat(output);
+                created = true;
+            } catch {
+                // not created
+            }
             return {
                 operation,
                 outcome: "failed",
                 error: errorSummary(error),
-                guidance: "Nothing was pulled."
+                directoryCreated: created,
+                guidance: created
+                    ? `mgd reported a failure, but ${output} now exists and may already contain the downloaded skill (a later local bookkeeping step can fail after extraction). Inspect it before trying again; retry into a different output directory, or remove that one first.`
+                    : "Nothing was pulled; the output directory was not created."
             };
         }
     };

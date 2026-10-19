@@ -567,6 +567,13 @@ There is no system-only dialog or role check in the tool: Agent Services' typed
 `object/agentSkill/system/create` decision alone decides, and a refusal comes
 back as a `rejected` 403.
 
+`overwriteRemoteChanges: true` (`mgd --force`) bypasses optimistic concurrency.
+The same single question then says so, for example "Publish "<name>" and
+overwrite the newer version currently stored in MAGDA? Any changes made to that
+published version since your copy was created will be lost.", or that a delete
+removes the skill "including those newer changes". With explicit chat approval
+the model's judgment applies as before.
+
 ### Publication outcomes
 
 A failed `mgd` write is not proof that nothing was published. `mgd` now labels
@@ -583,6 +590,9 @@ failed mutating requests, and the tool maps them to outcomes:
 For an `unknown` write, `mgd --json` includes `details.target` (operation, type,
 deterministic ID, name and the local archive's SHA-256), so a later check can
 compare against the intended publication. `mgd` never retries a write itself.
+`mgd agent-skill pull` extracts the skill before recording its provenance, so a
+failed pull reports `directoryCreated`. If the directory exists, the agent
+inspects it before retrying instead of assuming nothing was pulled.
 
 `skill-drafts/` sits under the session's working directory, so it is visible in
 the DSH file explorer, while `.agents/skills`, `.dsh/skills` and
@@ -734,10 +744,20 @@ whole file:
 | Outline turns                                        |      200 (default 30) |
 | Discovered sessions                                  |                   500 |
 
-A skipped oversized row or frame, or an exhausted work budget, makes the result
-explicitly incomplete. JSON has `complete: false` and `incomplete.reason`, with
-`resumeFromSeq` or `scannedThroughSeq`. Text starts with `# INCOMPLETE RESULT`,
-and the exit status is 3. `MAGDA_SESSION_HISTORY_LIMITS` can only lower limits,
+A skipped oversized row or frame, an exhausted work budget, or the output
+limit makes the result explicitly incomplete:
+
+- JSON has `complete: false` and `incomplete.reason`, with `resumeFromSeq`,
+  `resumeFromTurn`, `scannedThroughSeq` or `omittedSessions`.
+- Text starts with `# INCOMPLETE RESULT`.
+- The exit status is 3.
+
+The 64 KiB output limit is applied while building the result. Whole events,
+outline turns or `list` entries are dropped from the end (the largest prefix
+that fits, banner included), the cursor points at the first dropped item, and
+JSON stays valid; the output is never cut mid-value. `list --json` returns
+`{ sessions, complete }`. A budget that stops a listed session from being
+inspected makes the list incomplete. `MAGDA_SESSION_HISTORY_LIMITS` can only lower limits,
 for tests.
 
 Benchmark: `node magda-agent-runtime/bench-session-history.mjs`, run in a
