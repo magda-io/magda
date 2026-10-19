@@ -205,7 +205,17 @@ async function publishInstallation(
         const expected = opts.force
             ? (await source.client.show(ref)).checksum
             : marker.baselineChecksum;
-        metadata = await source.client.replace(ref, candidate.bytes, expected);
+        metadata = await source.client
+            .replace(ref, candidate.bytes, expected)
+            .catch((error) => {
+                throw withWriteTarget(error, {
+                    operation: "replace",
+                    type: ref.type,
+                    id: ref.id,
+                    name: candidate.name,
+                    checksum: candidate.checksum
+                });
+            });
     } catch (error) {
         if (error instanceof MgdApiError && error.status === 404)
             throw new UsageError(
@@ -275,6 +285,37 @@ async function recordAcknowledgedPublication(
     } catch (error) {
         return { cache: "failed", error: (error as Error).message };
     }
+}
+
+/** The deterministic ID Agent Services assigns to a new publication. */
+function expectedPublicationId(
+    type: AgentSkillType,
+    name: string,
+    userId: string
+): string {
+    return type === "system"
+        ? `agent-skill-${name}`
+        : `agent-skill-${userId}-${name}`;
+}
+
+/**
+ * Name the publication a write targeted when its outcome is unknown, so it
+ * can be verified later (type, ID and expected archive checksum) instead of
+ * being resent.
+ */
+function withWriteTarget(
+    error: unknown,
+    target: {
+        operation: "create" | "replace" | "delete";
+        type: AgentSkillType;
+        id: string;
+        name?: string;
+        checksum: string;
+    }
+): unknown {
+    return error instanceof MgdApiError && error.outcome === "unknown"
+        ? error.withDetails({ target })
+        : error;
 }
 
 export function registerAgentSkillCommands(program: Command): void {
@@ -429,13 +470,33 @@ export function registerAgentSkillCommands(program: Command): void {
                     if (opts.force)
                         expected = (await client.show(trackedRef.ref!))
                             .checksum;
-                    metadata = await client.replace(
-                        trackedRef.ref!,
-                        candidate.bytes,
-                        expected
-                    );
+                    metadata = await client
+                        .replace(trackedRef.ref!, candidate.bytes, expected)
+                        .catch((error) => {
+                            throw withWriteTarget(error, {
+                                operation: "replace",
+                                type: trackedRef.ref!.type,
+                                id: trackedRef.ref!.id,
+                                name: candidate.name,
+                                checksum: candidate.checksum
+                            });
+                        });
                 } else {
-                    metadata = await client.create(opts.type, candidate.bytes);
+                    metadata = await client
+                        .create(opts.type, candidate.bytes)
+                        .catch((error) => {
+                            throw withWriteTarget(error, {
+                                operation: "create",
+                                type: opts.type,
+                                id: expectedPublicationId(
+                                    opts.type,
+                                    candidate.name,
+                                    state.identity.userId
+                                ),
+                                name: candidate.name,
+                                checksum: candidate.checksum
+                            });
+                        });
                 }
                 const local = await recordAcknowledgedPublication(
                     state,
@@ -548,7 +609,7 @@ export function registerAgentSkillCommands(program: Command): void {
         .action(async (value: string, opts) => {
             const ref = parseAgentSkillRef(value);
             const workspaceMode = await isTrustedWorkspaceRuntime();
-            const local = await withAgentSkillOperationLock(async () => {
+            const deletion = await withAgentSkillOperationLock(async () => {
                 const client = await api();
                 const {
                     identity,
@@ -567,22 +628,38 @@ export function registerAgentSkillCommands(program: Command): void {
                     opts.force || !trackedChecksum
                         ? (await client.show(ref)).checksum
                         : trackedChecksum;
-                await client.delete(ref, expectedChecksum);
-                // Working directories stay in place as untracked user data.
-                for (const item of Object.values(state.workingDirectories))
-                    if (item.ref?.type === ref.type && item.ref.id === ref.id) {
-                        delete item.ref;
-                        delete item.baseChecksum;
-                    }
-                if (state.snapshot?.items[key])
-                    delete state.snapshot.items[key];
-                await saveAgentSkillSourceState(state);
+                await client.delete(ref, expectedChecksum).catch((error) => {
+                    throw withWriteTarget(error, {
+                        operation: "delete",
+                        type: ref.type,
+                        id: ref.id,
+                        checksum: expectedChecksum
+                    });
+                });
+                // The server deleted it. Local bookkeeping failures below
+                // must not make the deletion appear to have failed.
+                try {
+                    // Working directories stay in place as untracked user data.
+                    for (const item of Object.values(state.workingDirectories))
+                        if (
+                            item.ref?.type === ref.type &&
+                            item.ref.id === ref.id
+                        ) {
+                            delete item.ref;
+                            delete item.baseChecksum;
+                        }
+                    if (state.snapshot?.items[key])
+                        delete state.snapshot.items[key];
+                    await saveAgentSkillSourceState(state);
+                } catch (error) {
+                    return { cacheError: (error as Error).message };
+                }
                 if (
                     workspaceMode ||
                     !selection.mayActivateSkills ||
                     !state.snapshot
                 )
-                    return undefined;
+                    return {};
                 // Retire installed copies through the shared engine; edited
                 // copies are conflicts and stay in place without --force.
                 const { desired, unresolved } = cachedDesired(state);
@@ -593,16 +670,25 @@ export function registerAgentSkillCommands(program: Command): void {
                     force: false,
                     targets: resolveAgentSkillTargets({ env: process.env })
                 });
-                return reconcileResult(outcome);
+                return { local: reconcileResult(outcome) };
             });
+            const { local, cacheError } = deletion as {
+                local?: ReturnType<typeof reconcileResult>;
+                cacheError?: string;
+            };
             const result = {
                 ref,
                 deleted: true,
+                localCache: cacheError ? "failed" : "updated",
                 ...(local ? { local } : {})
             };
             if (opts.json) printData("json", result);
             else {
                 note(`Deleted ${value}.`);
+                if (cacheError)
+                    note(
+                        `The remote deletion succeeded, but local bookkeeping failed (${cacheError}). A later \`mgd agent-skill sync\` repairs it.`
+                    );
                 if (local)
                     printAgentSkillSyncResult(
                         local,

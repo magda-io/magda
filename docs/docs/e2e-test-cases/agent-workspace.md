@@ -298,15 +298,33 @@ exact text. Record the session ID, and the publication ID where there is one.
   `/data/...` path or user ID), a passing `mgd agent-skill validate`, and an
   explanation that the draft is local, unpublished, lost on reset or logout, and
   needs approval. `mgd agent-skill list --type user` must not show it yet.
-- **Approval and publish:** reply with explicit approval. The agent requests
-  DSH's one-command escalation for exactly
-  `mgd agent-skill publish skill-drafts/<name> --json`, because `mgd` state lies
-  outside the `workspace-write` sandbox. Select **Allow once**. The agent reports
-  `user/agent-skill-<user-uuid>-<name>` only after the command succeeds, and
-  offers `mgd agent-skill sync` for the current Workspace (allow that escalation
-  too). After the sync, `$DSH_HOME/skills/<name>` contains a marked copy and
-  DSH lists it. Repeat the request and select **Reject**: the agent reports that
-  nothing was published and does not retry.
+- **Approval in chat (one approval):** reply "Publish it." The agent calls
+  `magda_agent_skill_publish` with `path: "skill-drafts/<name>"`, `type: "user"`,
+  `userApproved: true`. No question card, DSH approval prompt or Bash call
+  appears. The session log has no `approval/asked` event for that turn, and
+  the tool result is `{"outcome":"published", "publication":{type,id,name,checksum,…}, "localCache":"updated"}`
+  with no credential or raw `mgd` output. Asking it to synchronise calls
+  `magda_agent_skill_sync`, again without prompts, and DSH lists the skill.
+- **Question card path:** with a reviewed draft but no chat approval (for
+  example "use the publish confirmation so I can decide"), the same tool call
+  shows DSH's question card **Publish skill** with **Publish / Cancel**. Cancel →
+  `outcome: cancelled`, nothing published; Publish → `outcome: published`
+  within the same call (one tool call per turn, no further model step).
+- **System skill:** as an authorized admin, ask for a `system-…` skill. The same
+  tool and card appear, and the text says it can become available to other
+  authorised MAGDA users and their Workspaces, subject to system-skill
+  visibility, and never to anonymous users. Publish succeeds. As a user without
+  system create permission, the same call returns
+  `outcome: rejected`, `status: 403` (`AGENT_SKILL_FORBIDDEN`). A chat-approved
+  `magda_agent_skill_delete` of the system skill runs without a card.
+- **Ordinary Bash stays sandboxed:** `touch /data/config/x` from Bash fails with
+  `Read-only file system … workspace-write`; the overlay contains no
+  `danger-full-access`.
+- **Uncertain outcome:** with a write interrupted after sending (deterministically,
+  a mock that drops the connection after the POST), the tool returns
+  `outcome: uncertain` with `target {type, id, name, checksum}`, `mgd` sends the
+  write once, and no `show`/`list` follows automatically. A 409/403 returns
+  `rejected`, an unreachable service `failed`.
 - **Fresh Workspace:** select **Start New Workspace**. The new claim's forced
   sync reports success, and `/data/agent-home/skills/<name>` exists with
   identical content while `skill-drafts/` does not. A new session can load the
@@ -331,13 +349,19 @@ exact text. Record the session ID, and the publication ID where there is one.
   optional one-sentence offer to save it is acceptable (it is not required on
   every run). After simple questions, single commands, failed tasks, a declined
   offer, or a workflow that was just published, no offer is made.
+- **Credentials:** as the test operator, compare the profile's API key, key ID
+  and the LLM key with every decoded session row: no row, including tool results
+  and history output, contains them.
 - **Compaction or missing context:** run `/compact` after a workflow (or start
   capture in a new turn after compaction), then ask to capture it. The agent
   uses the summary and, only when a detail is missing, narrow
   `magda-session-history outline` or `events` queries. The helper returns only
   this Workspace's sessions, refuses symlinks, caps output, never prints system
   prompts or reasoning, and leaves `/data/agent-home/sessions` byte-for-byte
-  unchanged.
+  unchanged. A late `events --from-seq` query reports only a few
+  `stats.framesDecoded`. Run `node magda-agent-runtime/bench-session-history.mjs`
+  in the Sandbox to compare time and peak RSS against the previous helper; a
+  budget-limited query starts with `# INCOMPLETE RESULT` and exits 3.
 - **Regression:** DSH launches, the managed UI is unchanged, the model and
   provider configuration is unchanged, READY is independent of skill sync, and
   Stage 2 manual and forced `mgd agent-skill sync` still pass.

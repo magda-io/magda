@@ -25,6 +25,8 @@ COPY magda-agent-runtime/dsh-client-managed-profile/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile/
 COPY magda-agent-runtime/dsh-workflow-capture-guidance/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-workflow-capture-guidance/
+COPY magda-agent-runtime/dsh-agent-skill-tools/ \
+  /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-agent-skill-tools/
 RUN chown -R root:root /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda \
   && chmod -R a+rX,go-w /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda
 COPY node_modules/ /usr/local/lib/node_modules/

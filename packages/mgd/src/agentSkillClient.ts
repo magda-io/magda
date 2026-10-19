@@ -1,4 +1,5 @@
 import { MagdaClient } from "./client.js";
+import { MgdApiError } from "./errors.js";
 import {
     AGENT_SKILLS,
     AGENT_SKILL_LOCAL_SYNC_MANIFEST,
@@ -201,17 +202,19 @@ export class AgentSkillClient {
         type: AgentSkillType,
         bytes: Buffer
     ): Promise<AgentSkillMetadata> {
-        const item = assertMetadata(
-            await this.client.json("POST", `${AGENT_SKILLS}/${type}`, {
-                headers: { "content-type": "application/zip" },
-                body: bytes
-            })
-        );
-        if (item.type !== type)
-            throw new Error(
-                "Agent Skill response type does not match the request"
+        return afterWrite(async () => {
+            const item = assertMetadata(
+                await this.client.json("POST", `${AGENT_SKILLS}/${type}`, {
+                    headers: { "content-type": "application/zip" },
+                    body: bytes
+                })
             );
-        return item;
+            if (item.type !== type)
+                throw new Error(
+                    "Agent Skill response type does not match the request"
+                );
+            return item;
+        });
     }
 
     async replace(
@@ -219,25 +222,55 @@ export class AgentSkillClient {
         bytes: Buffer,
         expectedChecksum: string
     ): Promise<AgentSkillMetadata> {
-        const item = assertMetadata(
-            await this.client.json("PUT", agentSkillArchive(ref.type, ref.id), {
-                headers: {
-                    "content-type": "application/zip",
-                    "if-match": `"${expectedChecksum}"`
-                },
-                body: bytes
-            })
-        );
-        if (item.id !== ref.id || item.type !== ref.type)
-            throw new Error(
-                "Agent Skill response identity does not match the request"
+        return afterWrite(async () => {
+            const item = assertMetadata(
+                await this.client.json(
+                    "PUT",
+                    agentSkillArchive(ref.type, ref.id),
+                    {
+                        headers: {
+                            "content-type": "application/zip",
+                            "if-match": `"${expectedChecksum}"`
+                        },
+                        body: bytes
+                    }
+                )
             );
-        return item;
+            if (item.id !== ref.id || item.type !== ref.type)
+                throw new Error(
+                    "Agent Skill response identity does not match the request"
+                );
+            return item;
+        });
     }
 
     async delete(ref: AgentSkillRef, expectedChecksum: string): Promise<void> {
-        await this.client.request("DELETE", agentSkill(ref.type, ref.id), {
-            headers: { "if-match": `"${expectedChecksum}"` }
-        });
+        await afterWrite(() =>
+            this.client.request("DELETE", agentSkill(ref.type, ref.id), {
+                headers: { "if-match": `"${expectedChecksum}"` }
+            })
+        );
+    }
+}
+
+/**
+ * Run one write request. Anything other than a classified HTTP/transport
+ * failure happens after the server answered (e.g. an invalid response), so
+ * the write may have been applied: report its outcome as unknown.
+ */
+async function afterWrite<T>(write: () => Promise<T>): Promise<T> {
+    try {
+        return await write();
+    } catch (error) {
+        if (error instanceof MgdApiError) throw error;
+        throw new MgdApiError(
+            `The server's response to this change could not be confirmed: ${
+                (error as Error).message
+            }`,
+            0,
+            "response-invalid",
+            undefined,
+            "unknown"
+        );
     }
 }

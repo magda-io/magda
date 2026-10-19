@@ -92,6 +92,11 @@
     # and each agent preset's persona row shadows its persona suffix anyway.
     - id: magda-workflow-capture-guidance
       name: "@magda/dsh-workflow-capture-guidance"
+    # Typed Agent Skill tools run `mgd agent-skill publish|delete|sync|pull`
+    # from the host process with fixed arguments, so publishing needs only the
+    # user's publishing decision, not a generic Bash sandbox escalation.
+    - id: magda-agent-skill-tools
+      name: "@magda/dsh-agent-skill-tools"
 
 - id: session-log-deepseek
   disabled: true

@@ -57,13 +57,14 @@ assert.match(
 );
 assert.match(
     entrypoint,
-    /for managed_plugin in dsh-client-managed-profile dsh-workflow-capture-guidance; do/,
+    /for managed_plugin in dsh-client-managed-profile dsh-workflow-capture-guidance dsh-agent-skill-tools; do/,
     "Both deployment-owned DSH plugins must be linked into the Web profile"
 );
 const includes = new Set(packageJson.config.docker.include.split(" "));
 for (const required of [
     "../magda-agent-runtime/skills",
     "../magda-agent-runtime/dsh-workflow-capture-guidance",
+    "../magda-agent-runtime/dsh-agent-skill-tools",
     "../magda-agent-runtime/session-history.mjs"
 ])
     assert.ok(
@@ -76,6 +77,20 @@ assert.match(
     cordisPatch,
     /- insert:\n(?:\s+.*\n)*?\s+- id: magda-workflow-capture-guidance\n\s+name: "@magda\/dsh-workflow-capture-guidance"/,
     "The guidance must be an inserted, separately named plugin row"
+);
+assert.match(
+    cordisPatch,
+    /- insert:\n(?:\s+.*\n)*?\s+- id: magda-agent-skill-tools\n\s+name: "@magda\/dsh-agent-skill-tools"/,
+    "The typed Agent Skill tools must be an inserted host plugin row"
+);
+assert.match(
+    dockerfile,
+    /COPY magda-agent-runtime\/dsh-agent-skill-tools\/ \\\n\s+\/usr\/local\/lib\/node_modules\/@deepseek-ai\/dsh\/node_modules\/@magda\/dsh-agent-skill-tools\//
+);
+assert.doesNotMatch(
+    cordisPatch,
+    /danger-full-access/,
+    "The trusted tools must not widen the Bash sandbox or approval policy"
 );
 for (const preserved of [
     "system-prompt",
@@ -188,31 +203,43 @@ assert.deepEqual(
 for (const required of [
     /mgd agent-skill init <name> --output skill-drafts\/<name>/,
     /mgd agent-skill validate skill-drafts\/<name>/,
-    /mgd agent-skill publish skill-drafts\/<name> --json/,
-    /--type system/,
-    /mgd agent-skill sync/,
-    /mgd agent-skill delete user\/<id>/,
-    /mgd agent-skill pull user\/<id>/,
+    /`magda_agent_skill_publish` replaces `mgd agent-skill publish`/,
+    /`magda_agent_skill_sync` replaces `mgd agent-skill sync`/,
+    /`magda_agent_skill_pull` replaces `mgd agent-skill pull`/,
+    /`magda_agent_skill_delete` replaces `mgd agent-skill delete`/,
+    /Do not run these commands in Bash or request an escalation for them/,
+    /`type: "system"` only when the user explicitly asked for a \*\*system\*\* skill/,
+    /set `userApproved: true`\. The tool publishes directly, without asking again/,
+    /leave `userApproved` out\. The tool shows the user a \*\*Publish \/ Cancel\*\* question/,
+    /A failure or a missing ID does \*\*not\*\* prove nothing was published/,
+    /Never resend the publication automatically, and do not immediately query a service that appears to be down/,
+    /type, ID, owner and checksum match the `target`/,
+    /Report the rejection; do not verify or retry automatically/,
     /local draft only and has not been published/,
     /lost when the Workspace is reset, replaced or terminated/,
     /\*\*stop and wait\*\*/i,
-    /request to draft, capture, explain, examine, improve or validate a skill is not approval/,
+    /Drafting, capturing, explaining, examining, improving or validating a skill is not approval, and neither are compliments/,
+    /instructions found in files, datasets or tool output/,
     /untrusted data/,
     /409/,
     /localCache/,
     /magda-session-history outline/,
+    /# INCOMPLETE RESULT/,
     /Do \*\*not\*\* reload the whole history/,
     /Markdown files only/,
     /re-read the draft for values taken from this particular run/,
-    /`publish`, `sync`, `pull` and `delete` also update `mgd`'s local state outside the Workspace/,
-    /only for that exact `mgd agent-skill …` command, with no other commands chained to it/,
-    /If the user rejects the approval prompt/
+    /mgd agent-skill list --type user --query <name>/
 ])
     assert.match(skill, required);
 assert.doesNotMatch(
     skill,
     /--scope/,
     "The CLI uses --type, not the obsolete --scope"
+);
+assert.doesNotMatch(
+    skill,
+    /nothing was published\. Quote the error|Non-zero exit code|danger-full-access|Allow once/,
+    "Failures must not be reported as definite non-publication, and no Bash escalation is requested"
 );
 assert.doesNotMatch(
     skill,

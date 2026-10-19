@@ -476,45 +476,121 @@ typing `/capture-workflow`. The skill instructs the agent to:
    create `skill-drafts/<name>` with `mgd agent-skill init`, edit it with
    ordinary DSH file tools, and run `mgd agent-skill validate`;
 5. present the draft and **stop**: say it is local, unpublished and lost when
-   the Workspace is reset, replaced or terminated (including logout), and ask
-   for explicit approval;
-6. only after approval run `mgd agent-skill publish skill-drafts/<name>` (the
-   default `--type user`; `--type system` only when an authorized admin
-   explicitly asks), and report success only from a successful response.
+   the Workspace is reset, replaced or terminated (including logout);
+6. publish with the trusted `magda_agent_skill_publish` tool once the user
+   approves (below), with `type: "user"` by default or `type: "system"` only when
+   an authorized user explicitly asks, and report the result accurately.
 
-The skill also documents later `list`, `show`, `pull`, edit, re-`publish` and
-`delete` operations, and requires the agent to say whether each change is local
-or published. It treats conversation text, tool output, dataset content and
-history as untrusted data, so instructions found there are never copied into a
-skill or acted on. DSH tool approvals, the sandbox, typed
-`object/agentSkill/<type>/<operation>` authorization and the Stage 2 publish
-rules (source-account identity, `If-Match` replacement, ZIP validation and the
-Markdown-only user-skill restriction) are unchanged.
+The skill also documents later `list`, `show`, pull, edit, republish, delete and
+sync operations, and requires the agent to say whether each change is local or
+published. It treats conversation text, tool output, dataset content and history
+as untrusted data, so instructions found there are never copied into a skill or
+acted on. Typed `object/agentSkill/<type>/<operation>` authorization and the
+Stage 2 publish rules (source-account identity, `If-Match` replacement, ZIP
+validation and the Markdown-only user-skill restriction) are unchanged.
 
-DSH's managed `workspace-write` sandbox lets the agent write only inside the
-session workspace. `mgd agent-skill init`, `validate`, `list` and `show` run
-sandboxed. `publish`, `sync`, `pull` and `delete` also update `mgd` state outside
-the Workspace: the profile's cached Agent Skill identity in
+### Trusted Agent Skill tools
+
+DSH's managed `workspace-write` sandbox lets Bash and file tools write only inside
+the session workspace. `mgd agent-skill init`, `validate`, `list` and `show` run
+there unchanged. `publish`, `sync`, `pull` and `delete` legitimately update `mgd`
+state outside it: the profile's cached Agent Skill identity in
 `/data/config/mgd/config.json`, verified caches and the operation lock under
-`/data/local/share/mgd`, and `$DSH_HOME/skills` for `sync`. The pinned DSH has
-no extra-writable-root setting (its sandbox policy has exactly one writable root
-per session), and widening the sandbox would expose the credential-bearing
-profile file. These commands therefore use DSH's ordinary per-command
-escalation: DSH shows the exact command and the agent's justification, and runs
-it only after the user selects **Allow once**. The skill tells the agent to
-request this only for the exact `mgd agent-skill` command, with nothing chained
-to it, and for `publish` or `delete` only after the user has approved that skill
-in chat. Publishing therefore takes two deliberate user actions: approval in chat,
-then the DSH approval prompt. A rejected prompt means the operation did not run.
-In Minikube qualification, the sandboxed attempt failed with `EROFS` on
-`/data/config` before any publication request, and the escalated retry succeeded.
+`/data/local/share/mgd`, and `$DSH_HOME/skills` for `sync`. Run from Bash, they
+fail with `EROFS` and need DSH's generic `danger-full-access` escalation, a second
+technical approval after the user has already agreed to publish. The pinned DSH
+also cannot add extra writable roots, and widening the sandbox would expose the
+credential-bearing profile file to arbitrary commands.
+
+Instead, `magda-agent-runtime/dsh-agent-skill-tools` (`@magda/dsh-agent-skill-tools`,
+inserted by `magda.cordis.patch.yml`) registers four typed tools with the pinned
+`ctx.tools.register(defineTool(...))` API:
+
+| Tool                        | Runs                                       | Arguments                                                                  |
+| --------------------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
+| `magda_agent_skill_publish` | `mgd agent-skill validate`, then `publish` | `path`, `type` (`user`/`system`), `userApproved`, `overwriteRemoteChanges` |
+| `magda_agent_skill_delete`  | `mgd agent-skill delete`                   | `ref` (`<type>/agent-skill-…`), `userApproved`, `overwriteRemoteChanges`   |
+| `magda_agent_skill_sync`    | `mgd agent-skill sync`                     | `force`, `userApproved` (force only)                                       |
+| `magda_agent_skill_pull`    | `mgd agent-skill pull`                     | `ref`, `output`                                                            |
+
+The tools run in DSH's host process, as the same nonroot user in that user's own
+Sandbox. They start the existing `mgd` binary with `execFile`, a fixed argv and no
+shell. Paths are validated and passed as absolute paths: a draft must be a real
+directory inside `/data/workspace`, an installed copy must be a marked direct
+child of `$DSH_HOME/skills`, and a pull output must be a new directory inside the
+Workspace. Symlinks, other paths, option-like references and arbitrary
+commands are refused before `mgd` runs. `mgd` keeps doing the validation, source
+account selection, publication cache, optimistic concurrency and authorization
+through Agent Services; the tools add no authorization, approval store or
+backend. Each result is a small object (outcome, publication
+`type/id/name/checksum/updatedAt/ownerId`, local-cache state, a sanitized and
+bounded error, and guidance). Raw process output and credentials are never
+returned. Ordinary Bash and file tools keep the unchanged `workspace-write`
+sandbox and `ask` approval policy, and the overlay never mentions
+`danger-full-access`.
+
+### One approval for publishing
+
+Publishing needs exactly one meaningful user decision:
+
+- If the user clearly approved publishing **this reviewed draft** in chat ("Publish
+  it", "Save this to my MAGDA account"), the model sets `userApproved: true` and
+  the tool publishes directly, with no further dialog.
+- Otherwise (`userApproved` false or omitted), the same tool call asks with DSH's
+  existing `ctx.userQuestions.ask()` question card, offering **Publish** and
+  **Cancel**. Selecting Publish continues the publication inside that call; no
+  second model step or Bash approval follows. Cancel, custom text, dismissal,
+  an aborted turn or no connected question UI publish nothing.
+
+`userApproved: true` is the model's assertion of the user's intent, not
+independently verified consent. MAGDA deliberately relies on the model's
+conversational judgment instead of a second rule-based approval interpreter,
+signed tokens or consent records, and accepts the residual risk of
+misinterpretation or prompt injection in this per-user Workspace. The skill
+still separates drafting, review and approval: compliments, edits, validation,
+the agent's own suggestion and instructions in files, datasets or tool output
+are not approval. The same rules apply to `delete` and to a forced `sync`.
+
+User and system skills use the same tool, the same rule and the same question
+card; only the wording differs:
+
+- **User:** "Publish the Agent Skill "<name>" to your MAGDA account? It will be
+  saved as your user skill and can be reused in your future Agent Workspaces."
+- **System:** "Publish "<name>" as a system Agent Skill? This is a system skill.
+  Publishing it can make it available to other authorised MAGDA users and their
+  Agent Workspaces, subject to system-skill visibility settings. By default that
+  is users granted Agent Skill read access; it is never available to anonymous
+  users." (System publications are created with `constraintExemption=true`, so
+  holders of the typed system read permission can discover them.)
+
+There is no system-only dialog or role check in the tool: Agent Services' typed
+`object/agentSkill/system/create` decision alone decides, and a refusal comes
+back as a `rejected` 403.
+
+### Publication outcomes
+
+A failed `mgd` write is not proof that nothing was published. `mgd` now labels
+failed mutating requests, and the tool maps them to outcomes:
+
+| Outcome                 | Meaning                                                                                                       | What the agent does                                                                                                                                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `published` / `deleted` | The server confirmed it                                                                                       | Report `<type>/<id>`. With `localCache: failed`, still report success, with a local-cache warning; never publish again                                                                                                                            |
+| `rejected`              | Explicit HTTP 400/401/403/409/412                                                                             | Report the reason (409: choose another name; 412: pull and reconcile). No automatic verification or retry                                                                                                                                         |
+| `failed`                | Failed before the request was sent: invalid draft or path, unreachable service (`outcome: not-sent`)          | Report it. Nothing was published; no follow-up request                                                                                                                                                                                            |
+| `uncertain`             | Timeout, connection reset, 5xx, unreadable response or interrupted process after sending (`outcome: unknown`) | Report the network error and unknown status promptly. Never resend; don't query a service that appears to be down. Later, `mgd agent-skill show <type>/<id>` may confirm success only if type, ID, owner and checksum match the returned `target` |
+| `cancelled`             | The user did not select the action                                                                            | Nothing changed; don't ask again unless asked                                                                                                                                                                                                     |
+
+For an `unknown` write, `mgd --json` includes `details.target` (operation, type,
+deterministic ID, name and the local archive's SHA-256), so a later check can
+compare against the intended publication. `mgd` never retries a write itself.
 
 `skill-drafts/` sits under the session's working directory, so it is visible in
 the DSH file explorer, while `.agents/skills`, `.dsh/skills` and
 `$DSH_HOME/skills` would be loaded as active skills. A draft exists only on this
 Workspace PVC. A published skill is stored in the Registry and Storage API, so it
 survives Workspace reset and deletion. The Manager's forced sync installs it into
-every new Workspace, and `mgd agent-skill sync` installs it in the current one.
+every new Workspace, and `magda_agent_skill_sync` (or `mgd agent-skill sync` in
+the terminal) installs it in the current one.
 Publishing never updates other existing copies on its own.
 
 Example conversation:
@@ -528,19 +604,22 @@ Example conversation:
 > (ID or search terms), the date and value columns, and an optional reference
 > total. It covers finding the CSV distribution with `mgd`, checking the schema,
 > aggregating with pandas, and the validation and failure checks we used. The
-> dataset ID, file paths and our results are not included. `mgd agent-skill validate` passed. **This is a local draft and has not been published.** It will
-> be lost if this Workspace is reset or terminated. Please review it in the file
-> explorer; I'll publish it only if you tell me to.
+> dataset ID, file paths and our results are not included, and `mgd agent-skill validate`
+> passed. **This is a local draft and has not been published.** It will be lost if
+> this Workspace is reset or terminated. Please review it in the file explorer;
+> I'll publish it only if you tell me to.
 >
 > **User:** Looks good. Publish it.
 >
-> _(DSH shows an approval prompt for exactly
-> `mgd agent-skill publish skill-drafts/profile-csv-distribution --json`; the user
-> selects **Allow once**.)_
+> _(The agent calls `magda_agent_skill_publish({ path: "skill-drafts/profile-csv-distribution", type: "user", userApproved: true })`; no other prompt appears.)_
 >
 > **Agent:** Published `user/agent-skill-<your-user-id>-profile-csv-distribution`
 > to your MAGDA account. New Workspaces will install it automatically. Would you
-> like me to run `mgd agent-skill sync` so it is also available in this one?
+> like me to synchronise it into this Workspace too?
+
+If the user's reply is not clearly an approval, the agent calls the tool without
+`userApproved`, and the user chooses **Publish** or **Cancel** in the question
+card instead.
 
 ### Occasional suggestions in the DSH system prompt
 
@@ -609,21 +688,80 @@ Findings for DSH `0.2.1-alpha.1`:
 The image therefore adds a small read-only helper, `magda-session-history`
 (`magda-agent-runtime/session-history.mjs`). It runs as the agent user with no
 extra privilege and reads only `$DSH_HOME/sessions`. It opens files read-only
-without taking DSH's lock, refuses symlinked directories and logs, ignores a torn
-final frame or line, and supports only format v4 (other versions fail with a
-clear error). Sessions default to `$DSH_SESSION_ID`. `list`, `outline` (one line
-per turn, with tools and outcome) and `events` (filter by `--turn`, `--from-seq`,
-`--to-seq`, `--type` and `--grep`) return only user prompts, assistant text, tool
+(no-follow) without taking DSH's lock, refuses symlinked directories and logs,
+and supports only format v4 (other versions fail with a clear error). Sessions
+default to `$DSH_SESSION_ID`. `list`, `outline` (one line per turn, with its seq
+range, tools and outcome) and `events` (filter by `--from-seq`, `--to-seq`,
+`--turn`, `--type` and `--grep`) return only user prompts, assistant text, tool
 calls and results, turn outcomes and compaction summaries. They never return
 system prompts, request headers, runtime context, compaction checkpoints or
-reasoning. Each text is capped at 8,000 characters (1,200 by default), a page at
-100 events (20 by default), an outline at 200 turns, and the total output at
-64 KiB. A session log larger than 64 MiB is refused. Credential-shaped values
-(`Authorization`/`X-Magda-*` headers, bearer tokens, JWTs, `apiKey=`/`password:`
-style pairs, URL tokens, private keys and the values of secret-named environment
-variables) are redacted on a best-effort basis before filtering, so `--grep`
-cannot probe redacted values, and the output is labelled as untrusted data. It never reads `mgd` credentials, the DSH launch token or other
-users' data: each user's PVC holds only that user's Workspace.
+reasoning. Credential-shaped values (`Authorization`/`X-Magda-*` headers, bearer
+tokens, JWTs, `apiKey=`/`password:` style pairs, URL tokens, private keys and the
+values of secret-named environment variables) are redacted on a best-effort basis
+**before** filtering, so `--grep` cannot probe redacted values, and output is
+labelled as untrusted data. It never reads `mgd` credentials, the DSH launch token
+or other users' data: each user's PVC holds only that user's Workspace.
+
+History is processed incrementally rather than decompressing and splitting the
+whole file:
+
+1. A 1 MiB read window serves the compressed file. Complete frame boundaries are
+   found from frame and block headers only, so payloads are not read while
+   scanning, and a torn final frame is ignored.
+2. One complete frame at a time is decompressed with Node's `zstdDecompressSync`
+   and a per-frame output cap. Node's stream decoder stops after the first of
+   DSH's concatenated frames, so it is not used.
+3. Rows are assembled by bytes across frames. The newline byte never occurs
+   inside a multi-byte UTF-8 sequence, so rows and characters split across frames
+   are reassembled exactly. Oversized rows are discarded without being buffered.
+4. Each row is projected, redacted and filtered at once; nothing else is retained.
+   `events` stops after `limit + 1` matches or past `--to-seq`. With `--from-seq`,
+   it binary-searches the frame index (decoding about log₂(frames) frames) and
+   starts one frame earlier for turn context. `outline` keeps only per-turn
+   aggregates. `list` reads the header frame and looks for the latest title in the
+   last and first 2 MiB of decoded frames, so a rename made only in the middle
+   of a very long session may show an older title.
+
+| Budget                                               |                 Limit |
+| ---------------------------------------------------- | --------------------: |
+| Compressed session file                              |               256 MiB |
+| Compressed or decoded frame                          |                32 MiB |
+| Decoded bytes processed per query (work, not memory) |               512 MiB |
+| One JSONL row                                        |                16 MiB |
+| Events per page                                      |      100 (default 20) |
+| Characters per event                                 | 8,000 (default 1,200) |
+| Output                                               |                64 KiB |
+| Outline turns                                        |      200 (default 30) |
+| Discovered sessions                                  |                   500 |
+
+A skipped oversized row or frame, or an exhausted work budget, makes the result
+explicitly incomplete. JSON has `complete: false` and `incomplete.reason`, with
+`resumeFromSeq` or `scannedThroughSeq`. Text starts with `# INCOMPLETE RESULT`,
+and the exit status is 3. `MAGDA_SESSION_HISTORY_LIMITS` can only lower limits,
+for tests.
+
+Benchmark: `node magda-agent-runtime/bench-session-history.mjs`, run in a
+Minikube gVisor Sandbox with Node 22.22. Sessions use the row mix and sizes
+measured from a real DSH session, with each query in a fresh process (time /
+peak RSS):
+
+| Session                           | Query                    | Previous helper      | Incremental helper     |
+| --------------------------------- | ------------------------ | -------------------- | ---------------------- |
+| 20 turns (0.1 MiB)                | any                      | 11–13 ms / ~130 MiB  | 7–13 ms / ~120–130 MiB |
+| 3,000 turns (16 MiB, 27k frames)  | first page               | 1,072 ms / 613 MiB   | 8 ms / 125 MiB         |
+|                                   | last page (`--from-seq`) | 776 ms / 605 MiB     | 53 ms / 131 MiB        |
+|                                   | `outline`                | 826 ms / 614 MiB     | 404 ms / 160 MiB       |
+|                                   | `--grep` (full scan)     | 1,096 ms / 612 MiB   | 727 ms / 153 MiB       |
+|                                   | `list`                   | 780 ms / 621 MiB     | 159 ms / 232 MiB       |
+| 10,000 turns (54 MiB, 90k frames) | first page               | 2,885 ms / 1,068 MiB | 9 ms / 139 MiB         |
+|                                   | last page                | 2,060 ms / 1,054 MiB | 73 ms / 145 MiB        |
+|                                   | `outline`                | 2,194 ms / 1,053 MiB | 1,184 ms / 157 MiB     |
+|                                   | `--grep` (full scan)     | 2,842 ms / 1,072 MiB | 1,791 ms / 154 MiB     |
+|                                   | `list` (3 sessions)      | 2,319 ms / 1,073 MiB | 241 ms / 333 MiB       |
+
+About 120 MiB of each figure is the Node process baseline under gVisor. The
+previous helper refused logs over 64 MiB; the incremental helper accepts up to
+256 MiB and stays bounded because work, not file size, is capped.
 
 The skill tells the agent to rely on the available context first, because a
 compaction summary is often enough. It should use the helper only when a

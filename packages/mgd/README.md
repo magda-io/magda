@@ -212,6 +212,21 @@ fails if the publication has changed since that checksum, while `--force`
 deliberately uses the newest remote checksum. A failed create is never
 converted into replacement.
 
+With `--json`, a failed `publish` or `delete` says what is known about the
+write in its error object:
+
+- an HTTP 4xx `status` with no `outcome` is a confirmed rejection;
+- `"outcome": "not-sent"` means the request could not be delivered;
+- `"outcome": "unknown"` (a timeout, dropped connection, 5xx or unreadable
+  response after sending) means the server may already have applied it.
+  `details.target` then names the intended `type`, `id`, `name` and archive
+  `checksum`.
+
+Never resend an unknown write blindly: once the service is reachable, compare
+`mgd agent-skill show <type>/<id>` with the target. Neither command retries a
+write itself. A delete confirmed by the server but followed by a local
+bookkeeping failure reports `"deleted": true, "localCache": "failed"`.
+
 ### Synchronized installations
 
 On a local computer, `sync` downloads only the authenticated user's own READY
