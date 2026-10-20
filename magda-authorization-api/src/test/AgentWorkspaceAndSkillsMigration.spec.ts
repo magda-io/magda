@@ -1,6 +1,9 @@
 import "mocha";
 import pg from "pg";
 import { expect } from "chai";
+import fse from "fs-extra";
+import path from "path";
+import { fileURLToPath } from "url";
 import getTestDBConfig from "./getTestDBConfig.js";
 import runMigrationSql from "./runMigrationSql.js";
 
@@ -11,6 +14,80 @@ const AUTHENTICATED_ROLE_ID = "00000000-0000-0002-0000-000000000000";
 
 // The last migration released before this feature.
 const BASELINE_VERSION = 2.2;
+
+const MIGRATION_FILE = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../../magda-migrator-authorization-db/sql/V2_4__agent_workspace_and_skills.sql"
+);
+
+// Permission and role IDs are fixed, administrator-referenced contracts.
+// Resource and operation IDs are generated and identified by their URI.
+const EXPECTED_PERMISSIONS: Record<
+    string,
+    { name: string; resource: string }
+> = {
+    "00000000-3854-4100-8000-000000000001": {
+        name: "Read System Agent Skills by Organisation",
+        resource: "object/agentSkill/system"
+    },
+    "00000000-3854-4100-8000-000000000002": {
+        name: "Read Pre-authorised System Agent Skills",
+        resource: "object/agentSkill/system"
+    },
+    "00000000-3854-4100-8000-000000000003": {
+        name: "Manage Own User Agent Skills",
+        resource: "object/agentSkill/user"
+    },
+    "00000000-3854-4100-8000-000000000004": {
+        name: "Read User Agent Skills by Organisation",
+        resource: "object/agentSkill/user"
+    },
+    "00000000-3854-4100-8000-000000000005": {
+        name: "Read Pre-authorised User Agent Skills",
+        resource: "object/agentSkill/user"
+    },
+    "00000000-3854-4100-8000-000000000006": {
+        name: "Manage Own Installed Agent Skills",
+        resource: "object/agentSkill/install"
+    },
+    "00000000-3854-4100-8000-000000000007": {
+        name: "Manage System Agent Skills",
+        resource: "object/agentSkill/system"
+    },
+    "00000000-3858-4100-8000-000000000001": {
+        name: "Access Own Agent Workspace",
+        resource: "agentWorkspace"
+    }
+};
+
+const EXPECTED_PERMISSION_OPERATIONS: [string, string][] = [
+    ["00000000-3854-4100-8000-000000000001", "object/agentSkill/system/read"],
+    ["00000000-3854-4100-8000-000000000002", "object/agentSkill/system/read"],
+    ...["create", "read", "update", "delete"].map((op): [string, string] => [
+        "00000000-3854-4100-8000-000000000003",
+        `object/agentSkill/user/${op}`
+    ]),
+    ["00000000-3854-4100-8000-000000000004", "object/agentSkill/user/read"],
+    ["00000000-3854-4100-8000-000000000005", "object/agentSkill/user/read"],
+    ...["create", "read", "update", "delete"].map((op): [string, string] => [
+        "00000000-3854-4100-8000-000000000006",
+        `object/agentSkill/install/${op}`
+    ]),
+    ...["create", "read", "update", "delete"].map((op): [string, string] => [
+        "00000000-3854-4100-8000-000000000007",
+        `object/agentSkill/system/${op}`
+    ]),
+    ["00000000-3858-4100-8000-000000000001", "agentWorkspace/access"]
+];
+
+const EXPECTED_ROLE_PERMISSIONS: [string, string][] = [
+    ...Object.keys(EXPECTED_PERMISSIONS)
+        .filter((id) => id !== "00000000-3854-4100-8000-000000000007")
+        .map((id): [string, string] => [WORKSPACE_ROLE_ID, id]),
+    [SKILLS_ADMIN_ROLE_ID, "00000000-3854-4100-8000-000000000007"]
+];
+
+const AGENT_RESOURCE_FILTER = `(r.uri LIKE 'object/agentSkill/%' OR r.uri = 'agentWorkspace')`;
 
 const AUTH_TABLES = [
     "resources",
@@ -259,6 +336,124 @@ describe("Agent Workspace and Skills authorization migration (V2_4)", function (
             [[ANONYMOUS_ROLE_ID, AUTHENTICATED_ROLE_ID]]
         );
         expect(agentGrants.rows).to.deep.equal([]);
+    });
+
+    it("links every operation to the resource named by its URI", async () => {
+        const rows = (
+            await pool.query(
+                `SELECT o.uri, r.uri AS resource_uri
+                   FROM operations o
+                   JOIN resources r ON r.id = o.resource_id
+                  WHERE ${AGENT_RESOURCE_FILTER}
+                  ORDER BY o.uri`
+            )
+        ).rows;
+        expect(rows).to.have.lengthOf(13);
+        for (const row of rows) {
+            expect(row.resource_uri, row.uri).to.equal(
+                row.uri.slice(0, row.uri.lastIndexOf("/"))
+            );
+        }
+    });
+
+    it("keeps the fixed permission IDs on their intended resources", async () => {
+        const rows = (
+            await pool.query(
+                `SELECT p.id, p.name, r.uri AS resource
+                   FROM permissions p
+                   JOIN resources r ON r.id = p.resource_id
+                  WHERE ${AGENT_RESOURCE_FILTER}`
+            )
+        ).rows;
+        expect(
+            Object.fromEntries(
+                rows.map((row) => [
+                    row.id,
+                    { name: row.name, resource: row.resource }
+                ])
+            )
+        ).to.deep.equal(EXPECTED_PERMISSIONS);
+    });
+
+    it("associates each permission with exactly its expected operation URIs", async () => {
+        const rows = (
+            await pool.query(
+                `SELECT po.permission_id, o.uri
+                   FROM permission_operations po
+                   JOIN operations o ON o.id = po.operation_id
+                   JOIN resources r ON r.id = o.resource_id
+                  WHERE ${AGENT_RESOURCE_FILTER}
+                     OR po.permission_id = ANY($1::uuid[])`,
+                [Object.keys(EXPECTED_PERMISSIONS)]
+            )
+        ).rows;
+        const actual = rows
+            .map((row) => `${row.permission_id} ${row.uri}`)
+            .sort();
+        const expected = EXPECTED_PERMISSION_OPERATIONS.map(
+            ([permission, operation]) => `${permission} ${operation}`
+        ).sort();
+        expect(actual).to.deep.equal(expected);
+    });
+
+    it("keeps the fixed stock role IDs and their permission grants", async () => {
+        const roles = (
+            await pool.query(
+                `SELECT id, name FROM roles WHERE id = ANY($1::uuid[]) ORDER BY id`,
+                [[WORKSPACE_ROLE_ID, SKILLS_ADMIN_ROLE_ID]]
+            )
+        ).rows;
+        expect(roles).to.deep.equal([
+            { id: WORKSPACE_ROLE_ID, name: "Agent Workspace Users" },
+            { id: SKILLS_ADMIN_ROLE_ID, name: "Agent Skills Admins" }
+        ]);
+        const grants = (
+            await pool.query(
+                `SELECT role_id, permission_id FROM role_permissions
+                  WHERE role_id = ANY($1::uuid[])
+                     OR permission_id = ANY($2::uuid[])`,
+                [
+                    [WORKSPACE_ROLE_ID, SKILLS_ADMIN_ROLE_ID],
+                    Object.keys(EXPECTED_PERMISSIONS)
+                ]
+            )
+        ).rows;
+        expect(
+            grants.map((row) => `${row.role_id} ${row.permission_id}`).sort()
+        ).to.deep.equal(
+            EXPECTED_ROLE_PERMISSIONS.map(
+                ([role, permission]) => `${role} ${permission}`
+            ).sort()
+        );
+    });
+
+    it("hardcodes only permission and role IDs; resource and operation IDs are generated", async () => {
+        const sql = await fse.readFile(MIGRATION_FILE, "utf-8");
+        const literals = new Set(
+            sql.match(
+                /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi
+            ) ?? []
+        );
+        expect([...literals].sort()).to.deep.equal(
+            [
+                ...Object.keys(EXPECTED_PERMISSIONS),
+                WORKSPACE_ROLE_ID,
+                SKILLS_ADMIN_ROLE_ID
+            ].sort()
+        );
+        const generated = (
+            await pool.query(
+                `SELECT r.id FROM resources r WHERE ${AGENT_RESOURCE_FILTER}
+                 UNION ALL
+                 SELECT o.id FROM operations o
+                   JOIN resources r ON r.id = o.resource_id
+                  WHERE ${AGENT_RESOURCE_FILTER}`
+            )
+        ).rows.map((row) => row.id);
+        expect(generated).to.have.lengthOf(17);
+        for (const id of generated) {
+            expect(literals.has(id), id).to.equal(false);
+        }
     });
 
     it("has no duplicate or dangling references", async () => {

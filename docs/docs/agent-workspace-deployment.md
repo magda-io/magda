@@ -265,6 +265,13 @@ When converting an existing pre-release development cluster to this profile:
   `V2_4__agent_skills.sql`/`V2_5__agent_workspace_access.sql` migrations.
   They are replaced by `V2_4__agent_workspace_and_skills.sql`, and Flyway
   rejects the changed `2.4` checksum. Pre-release state is not migrated.
+- An Authorization DB that applied an earlier revision of
+  `V2_4__agent_workspace_and_skills.sql` (with hardcoded resource and
+  operation IDs) also fails Flyway validation with a `2.4` checksum mismatch.
+  That revision creates the same authorization rows, so a disposable
+  development database can either be reset or, after confirming the `2.4`
+  history row is the consolidated migration, realigned with `flyway repair`,
+  which updates only the stored checksum.
 
 The supplied values expect local `localhost:5000/*:latest` images loaded into
 Minikube. For each required local image:
