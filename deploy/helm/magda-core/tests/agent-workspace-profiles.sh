@@ -104,8 +104,8 @@ grep -Fq 'authPlugins.json: "[{\"baseUrl\":\"http://magda-auth-internal\",\"key\
 
 # Nested component values reach their charts.
 for image in magda-agent-manager magda-agent-runtime magda-llm-services \
-    magda-authorization-api magda-migrator-authorization-db magda-gateway \
-    magda-web-server; do
+    magda-authorization-api magda-opa magda-migrator-authorization-db \
+    magda-gateway magda-storage-api magda-web-server; do
     grep -q "image: \"localhost:5000/$image:latest\"" "$tmp/minikube.yaml"
 done
 [[ "$(count_kind SandboxTemplate "$tmp/minikube.yaml")" == 1 ]]

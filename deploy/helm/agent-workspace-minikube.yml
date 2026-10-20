@@ -130,6 +130,20 @@ magda:
         repository: localhost:5000
         tag: latest
         pullPolicy: Never
+      # The OPA sidecar carries the agentWorkspace and Agent Skill policies.
+      opa:
+        image:
+          repository: localhost:5000
+          tag: latest
+          pullPolicy: Never
+
+    # Agent Skill archive ownership checks. The published registry-api image is
+    # sufficient for this single-tenant profile.
+    storage-api:
+      image:
+        repository: localhost:5000
+        tag: latest
+        pullPolicy: Never
 
     authorization-db:
       image:
