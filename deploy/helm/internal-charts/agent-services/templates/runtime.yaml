@@ -114,12 +114,12 @@ spec:
             - {name: dsh, containerPort: 3080}
           env:
             - name: DSH_PUBLIC_URL
-              value: "{{ .Values.global.externalUrl | trimSuffix "/" }}/api/v0/agent/runtime/"
+              value: "{{ include "agent-services.externalUrl" . | trimSuffix "/" }}/api/v0/agent/runtime/"
             - name: DSH_TRUSTED_HOSTS
-              value: {{ (urlParse .Values.global.externalUrl).host | quote }}
+              value: {{ (urlParse (include "agent-services.externalUrl" .)).host | quote }}
             - {name: DSH_BROWSER_AUTH, value: "true"}
             - name: MAGDA_LLM_BASE_URL
-              value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (.Values.global.externalUrl | trimSuffix "/")) | quote }}
+              value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}
             {{- if .Values.runtime.trustedCaSecret.name }}
             - {name: NODE_EXTRA_CA_CERTS, value: /etc/magda-agent/ca/ca.crt}
             {{- end }}

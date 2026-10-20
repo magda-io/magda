@@ -1,16 +1,9 @@
-global:
-  agentWorkspace:
-    enabled: false
-    sandboxNamespace: ""
-  llmServices:
-    enabled: false
-  defaultAgentModel: {}
-  image:
-    repository: ghcr.io/magda-io
-    pullPolicy: IfNotPresent
-  externalUrl: http://localhost:6100
-  defaultAdminUserId: 00000000-0000-4000-8000-000000000000
-  defaultDatasetBucket: magda-datasets
+# -- Global values are owned and defaulted by the parent `magda-core` chart.
+# This chart requires `global.externalUrl`, `global.defaultAdminUserId`,
+# `global.defaultDatasetBucket`, `global.defaultAgentModel` and
+# `global.image` from its parent and fails rendering when a required value is
+# absent.
+global: {}
 
 manager:
   image:

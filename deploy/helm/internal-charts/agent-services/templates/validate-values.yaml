@@ -89,7 +89,7 @@
 {{- if gt (float64 .Values.skillArchive.maxMarkdownBytes) (float64 .Values.skillArchive.maxUncompressedBytes) -}}
 {{- fail "agent-services.skillArchive.maxMarkdownBytes must not exceed maxUncompressedBytes" -}}
 {{- end -}}
-{{- if or (empty (trim .Values.registryApiUrl)) (empty (trim .Values.storageApiUrl)) (empty (trim .Values.global.defaultDatasetBucket)) -}}
+{{- if or (empty (trim .Values.registryApiUrl)) (empty (trim .Values.storageApiUrl)) (empty (get .Values.global "defaultDatasetBucket" | default "" | toString | trim)) -}}
 {{- fail "agent-services registryApiUrl, storageApiUrl, and global.defaultDatasetBucket must be non-empty" -}}
 {{- end -}}
 {{- $tenantIdKind := kindOf .Values.tenantId -}}

@@ -15,15 +15,7 @@ Kubernetes: `>= 1.24.0-0`
 | controlPlaneSecret.create | bool | `true` |  |
 | controlPlaneSecret.key | string | `"token"` |  |
 | controlPlaneSecret.name | string | `"magda-agent-control"` |  |
-| global.agentWorkspace.enabled | bool | `false` |  |
-| global.agentWorkspace.sandboxNamespace | string | `""` |  |
-| global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
-| global.defaultAgentModel | object | `{}` |  |
-| global.defaultDatasetBucket | string | `"magda-datasets"` |  |
-| global.externalUrl | string | `"http://localhost:6100"` |  |
-| global.image.pullPolicy | string | `"IfNotPresent"` |  |
-| global.image.repository | string | `"ghcr.io/magda-io"` |  |
-| global.llmServices.enabled | bool | `false` |  |
+| global | object | `{}` | Global values are owned and defaulted by the parent `magda-core` chart. This chart requires `global.externalUrl`, `global.defaultAdminUserId`, `global.defaultDatasetBucket`, `global.defaultAgentModel` and `global.image` from its parent and fails rendering when a required value is absent. |
 | hardDeleteSeconds | int | `28800` |  |
 | idleSuspendSeconds | int | `1800` |  |
 | ingressController.namespace | string | `"ingress-nginx"` |  |

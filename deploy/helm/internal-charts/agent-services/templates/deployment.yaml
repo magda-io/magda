@@ -59,7 +59,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.controlPlaneSecret.name }}
                   key: {{ .Values.controlPlaneSecret.key }}
-            - {name: SYSTEM_USER_ID, value: {{ .Values.global.defaultAdminUserId | quote }}}
+            - {name: SYSTEM_USER_ID, value: {{ required "agent-services: global.defaultAdminUserId is required (normally supplied by the magda-core parent chart)" .Values.global.defaultAdminUserId | quote }}}
             - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
             - {name: REGISTRY_API_URL, value: {{ .Values.registryApiUrl | quote }}}
             - {name: STORAGE_API_URL, value: {{ .Values.storageApiUrl | quote }}}
@@ -75,9 +75,9 @@ spec:
             - {name: MAGDA_INSTALLATION_ID, value: {{ $installationId | quote }}}
             - {name: SANDBOX_WARM_POOL, value: {{ include "agent-services.warmPoolName" . | quote }}}
             - {name: MANAGED_API_KEY_NAME, value: {{ printf "%s-%s" .Values.managedApiKeyNamePrefix $installationId | quote }}}
-            - {name: EXTERNAL_URL, value: {{ .Values.global.externalUrl | quote }}}
-            - {name: MAGDA_API_URL, value: {{ .Values.magdaApiUrl | default (printf "%s/api" (.Values.global.externalUrl | trimSuffix "/")) | quote }}}
-            - {name: MAGDA_LLM_API_URL, value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (.Values.global.externalUrl | trimSuffix "/")) | quote }}}
+            - {name: EXTERNAL_URL, value: {{ include "agent-services.externalUrl" . | quote }}}
+            - {name: MAGDA_API_URL, value: {{ .Values.magdaApiUrl | default (printf "%s/api" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}}
+            - {name: MAGDA_LLM_API_URL, value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}}
             - {name: RUNTIME_PREFIX, value: {{ .Values.runtimePrefix | quote }}}
             - {name: HARD_DELETE_SECONDS, value: {{ .Values.hardDeleteSeconds | quote }}}
             - {name: IDLE_SUSPEND_SECONDS, value: {{ .Values.idleSuspendSeconds | quote }}}

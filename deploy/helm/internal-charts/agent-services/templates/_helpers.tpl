@@ -53,3 +53,11 @@ agent.magda.io/installation-id: {{ include "agent-services.installationId" . | q
 {{- define "agent-services.runtimeImagePullPolicy" -}}
 {{- include "magda.imagePullPolicy" (dict "Values" .Values "Chart" .Chart "Release" .Release "image" .Values.runtime.image) -}}
 {{- end -}}
+
+{{- define "agent-services.externalUrl" -}}
+{{- $url := get .Values.global "externalUrl" | default "" | toString -}}
+{{- if not (trim $url) -}}
+{{- fail "agent-services: global.externalUrl is required (normally supplied by the magda-core parent chart)" -}}
+{{- end -}}
+{{- $url -}}
+{{- end -}}
