@@ -90,11 +90,17 @@ export default function createApp(config: LlmServicesConfig) {
                 headers,
                 signal: AbortSignal.timeout(10_000)
             });
+            if (!response.ok && response.status !== 401) {
+                // Authorization API unavailable: not an access decision.
+                throw new Error(
+                    `Session verification failed with HTTP ${response.status}`
+                );
+            }
             const user = response.ok
                 ? ((await response.json()) as { id?: string })
                 : undefined;
             if (!user || user.id !== payload.userId) {
-                res.status(response.status === 401 ? 401 : 403).json({
+                res.status(401).json({
                     error: { message: "Invalid Magda session" }
                 });
                 return;

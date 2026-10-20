@@ -168,6 +168,53 @@ describe("LLM Services", () => {
         }
     });
 
+    it("reports an Authorization API outage as 503, not an invalid session", async () => {
+        const running = await listen(createApp(config()));
+        const originalError = console.error;
+        console.error = () => undefined;
+        global.fetch = async (input) =>
+            String(input).includes("/whoami")
+                ? new Response("unavailable", { status: 503 })
+                : Response.json({ hasResidualRules: false, result: true });
+        try {
+            const response = await originalFetch(
+                new URL("/v0/v1/models", running.url),
+                { headers: { "X-Magda-Session": session } }
+            );
+            assert.equal(response.status, 503);
+            assert.match(await response.text(), /Unable to verify/);
+        } finally {
+            console.error = originalError;
+            await close(running.server);
+        }
+    });
+
+    it("rejects a session whoami cannot verify or that names another user", async () => {
+        const running = await listen(createApp(config()));
+        try {
+            for (const whoami of [
+                () => new Response("{}", { status: 401 }),
+                () => Response.json({ id: "someone-else" })
+            ]) {
+                global.fetch = async (input) =>
+                    String(input).includes("/whoami")
+                        ? whoami()
+                        : Response.json({
+                              hasResidualRules: false,
+                              result: true
+                          });
+                const response = await originalFetch(
+                    new URL("/v0/v1/models", running.url),
+                    { headers: { "X-Magda-Session": session } }
+                );
+                assert.equal(response.status, 401);
+                assert.match(await response.text(), /Invalid Magda session/);
+            }
+        } finally {
+            await close(running.server);
+        }
+    });
+
     it("lists only deployment-allowed models", async () => {
         const running = await listen(createApp(config()));
         try {
