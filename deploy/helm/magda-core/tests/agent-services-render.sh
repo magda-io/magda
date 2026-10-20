@@ -6,6 +6,12 @@ helm_root="$(dirname "$chart")"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
+# `! cmd` does not trigger `set -e`, so negative assertions use this helper.
+refuted() {
+    echo "Assertion failed: unexpected match at $0 line $1" >&2
+    exit 1
+}
+
 render() {
     local output="$1" release="$2" namespace="$3"
     shift 3
@@ -46,17 +52,17 @@ expect_failure() {
 render "$tmp/disabled.yaml" magda test
 [[ "$(count_kind SandboxTemplate "$tmp/disabled.yaml")" == 0 ]]
 [[ "$(count_kind SandboxWarmPool "$tmp/disabled.yaml")" == 0 ]]
-! grep -q 'Source: magda-core/charts/llm-services/' "$tmp/disabled.yaml"
-! grep -q 'Source: magda-core/charts/agent-services/' "$tmp/disabled.yaml"
+if grep -q 'Source: magda-core/charts/llm-services/' "$tmp/disabled.yaml"; then refuted $LINENO; fi
+if grep -q 'Source: magda-core/charts/agent-services/' "$tmp/disabled.yaml"; then refuted $LINENO; fi
 
 render "$tmp/llm-only.yaml" magda test \
     --set global.llmServices.enabled=true
 
 grep -q 'Source: magda-core/charts/llm-services/templates/deployment.yaml' "$tmp/llm-only.yaml"
 grep -q 'Source: magda-core/charts/llm-services/charts/litellm/templates/deployment.yaml' "$tmp/llm-only.yaml"
-! grep -q 'Source: magda-core/charts/agent-services/' "$tmp/llm-only.yaml"
+if grep -q 'Source: magda-core/charts/agent-services/' "$tmp/llm-only.yaml"; then refuted $LINENO; fi
 grep -q '\\"llm\\"' "$tmp/llm-only.yaml"
-! grep -q '\\"agent\\"' "$tmp/llm-only.yaml"
+if grep -q '\\"agent\\"' "$tmp/llm-only.yaml"; then refuted $LINENO; fi
 
 # One global model definition drives Agent Manager, LLM Services, and nested
 # LiteLLM. The public alias stays stable when only the provider model changes.
@@ -76,7 +82,7 @@ for expected in \
     'name: LITELLM_PROVIDER_API_KEY'; do
     grep -Fq "$expected" "$tmp/model-default.yaml"
 done
-! resource_document Deployment litellm "$tmp/model-default.yaml" | grep -q 'optional: true'
+if resource_document Deployment litellm "$tmp/model-default.yaml" | grep -q 'optional: true'; then refuted $LINENO; fi
 for expected in \
     'name: REGISTRY_API_URL, value: "http://registry-api/v0"' \
     'name: STORAGE_API_URL, value: "http://storage-api/v0"' \
@@ -90,8 +96,8 @@ for expected in \
     'name: SKILL_ARCHIVE_MAX_MARKDOWN_BYTES, value: "1048576"'; do
     grep -Fq "$expected" "$tmp/model-default.yaml"
 done
-! resource_document Deployment agent-manager "$tmp/model-default.yaml" | grep -q 'MINIO_'
-! grep -R -q 'apiKeyEnv' "$helm_root/internal-charts/litellm"
+if resource_document Deployment agent-manager "$tmp/model-default.yaml" | grep -q 'MINIO_'; then refuted $LINENO; fi
+if grep -R -q 'apiKeyEnv' "$helm_root/internal-charts/litellm"; then refuted $LINENO; fi
 
 render "$tmp/provider-model.yaml" magda test \
     --set global.llmServices.enabled=true \
@@ -111,8 +117,8 @@ render "$tmp/no-reasoning.yaml" magda test \
     --set global.agentWorkspace.enabled=true \
     --set global.llmServices.enabled=true \
     --set-string global.defaultAgentModel.reasoningEffort=
-! grep -q 'MAGDA_LLM_REASONING_EFFORT' "$tmp/no-reasoning.yaml"
-! grep -q 'reasoning_effort:' "$tmp/no-reasoning.yaml"
+if grep -q 'MAGDA_LLM_REASONING_EFFORT' "$tmp/no-reasoning.yaml"; then refuted $LINENO; fi
+if grep -q 'reasoning_effort:' "$tmp/no-reasoning.yaml"; then refuted $LINENO; fi
 
 render "$tmp/capabilities.yaml" magda test \
     --set global.agentWorkspace.enabled=true \
@@ -159,8 +165,8 @@ helm template magda "$helm_root/magda" --namespace test \
     --set global.llmServices.enabled=true \
     --set-string global.defaultAgentModel.reasoningEffort= \
     >"$tmp/top-level-no-reasoning.yaml"
-! grep -q 'MAGDA_LLM_REASONING_EFFORT' "$tmp/top-level-no-reasoning.yaml"
-! grep -q 'reasoning_effort:' "$tmp/top-level-no-reasoning.yaml"
+if grep -q 'MAGDA_LLM_REASONING_EFFORT' "$tmp/top-level-no-reasoning.yaml"; then refuted $LINENO; fi
+if grep -q 'reasoning_effort:' "$tmp/top-level-no-reasoning.yaml"; then refuted $LINENO; fi
 
 for runtime in runc gvisor kata; do
     render "$tmp/$runtime.yaml" magda test \
@@ -203,7 +209,7 @@ for runtime in runc gvisor kata; do
     grep -q 'Kubernetes Agent Sandbox v1beta1 extension APIs are unavailable' "$tmp/$runtime.yaml"
     grep -q '^    type: Recreate$' "$tmp/$runtime.yaml"
     if [[ "$runtime" == runc ]]; then
-        ! grep -q 'runtimeClassName:' "$tmp/$runtime.yaml"
+        if grep -q 'runtimeClassName:' "$tmp/$runtime.yaml"; then refuted $LINENO; fi
     else
         grep -q "runtimeClassName: \"$runtime\"" "$tmp/$runtime.yaml"
     fi
@@ -281,7 +287,7 @@ render "$tmp/external.yaml" magda test \
     --set llm-services.backend.url=https://litellm.example/v1 \
     --set llm-services.backend.masterKeySecret.name=external-litellm \
     --set llm-services.backend.masterKeySecret.key=api-key
-! grep -q 'charts/litellm/templates/' "$tmp/external.yaml"
+if grep -q 'charts/litellm/templates/' "$tmp/external.yaml"; then refuted $LINENO; fi
 grep -q 'value: "https://litellm.example/v1"' "$tmp/external.yaml"
 
 # Generated credentials are retained, reused through lookup, and rendered only
@@ -301,10 +307,29 @@ render "$tmp/operator-secrets.yaml" magda test \
     --set agent-services.controlPlaneSecret.name=operator-control \
     --set llm-services.litellm.masterKeySecret.create=false \
     --set llm-services.litellm.masterKeySecret.name=operator-litellm
-! grep -q 'Source: magda-core/charts/agent-services/templates/control-secret.yaml' "$tmp/operator-secrets.yaml"
-! grep -q 'Source: magda-core/charts/llm-services/charts/litellm/templates/secret.yaml' "$tmp/operator-secrets.yaml"
+if grep -q 'Source: magda-core/charts/agent-services/templates/control-secret.yaml' "$tmp/operator-secrets.yaml"; then refuted $LINENO; fi
+if grep -q 'Source: magda-core/charts/llm-services/charts/litellm/templates/secret.yaml' "$tmp/operator-secrets.yaml"; then refuted $LINENO; fi
 grep -q 'name: operator-control' "$tmp/operator-secrets.yaml"
 grep -q 'name: operator-litellm' "$tmp/operator-secrets.yaml"
+
+# Global defaults are owned by magda-core only; the child chart declares an
+# empty map and fails clearly when its parent omits a required global value.
+grep -qx 'global: {}' "$helm_root/internal-charts/agent-services/values.yaml"
+expect_failure 'agent-services: global.externalUrl is required' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set-string global.externalUrl=
+expect_failure 'global.defaultAdminUserId is required' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set-string global.defaultAdminUserId=
+expect_failure 'global.defaultDatasetBucket must be non-empty' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set-string global.defaultDatasetBucket=
 
 expect_failure 'llm.model or global.defaultAgentModel.alias is required' \
     helm template agent "$helm_root/internal-charts/agent-services"
@@ -404,7 +429,7 @@ render "$tmp/external-multi-model.yaml" magda test \
     --set llm-services.backend.url=https://llm.example/v1 \
     --set llm-services.backend.masterKeySecret.name=external-key \
     --set llm-services.backend.masterKeySecret.key=key
-! grep -q 'Source: magda-core/charts/llm-services/charts/litellm/' "$tmp/external-multi-model.yaml"
+if grep -q 'Source: magda-core/charts/llm-services/charts/litellm/' "$tmp/external-multi-model.yaml"; then refuted $LINENO; fi
 grep -q 'name: MAGDA_LLM_MODEL, value: "external-agent"' "$tmp/external-multi-model.yaml"
 grep -Fq 'name: ALLOWED_MODELS, value: "[\"external-agent\",\"other-model\"]"' "$tmp/external-multi-model.yaml"
 
@@ -412,8 +437,8 @@ render "$tmp/credentialless.yaml" magda test \
     --set global.llmServices.enabled=true \
     --set llm-services.litellm.providerSecret.name= \
     --set llm-services.litellm.providerSecret.key=
-! grep -q 'LITELLM_PROVIDER_API_KEY' "$tmp/credentialless.yaml"
-! grep -q 'api_key:' "$tmp/credentialless.yaml"
+if grep -q 'LITELLM_PROVIDER_API_KEY' "$tmp/credentialless.yaml"; then refuted $LINENO; fi
+if grep -q 'api_key:' "$tmp/credentialless.yaml"; then refuted $LINENO; fi
 
 checksum_default="$(resource_document Deployment litellm "$tmp/model-default.yaml" | sed -n 's/.*checksum\/config: *"*\([0-9a-f]*\)"*.*/\1/p')"
 checksum_reasoning="$(resource_document Deployment litellm "$tmp/reasoning.yaml" | sed -n 's/.*checksum\/config: *"*\([0-9a-f]*\)"*.*/\1/p')"
@@ -463,14 +488,14 @@ grep -q '^  namespace: shared-agents$' <<<"$sa_doc_a"
 grep -q '^  namespace: shared-agents$' <<<"$sa_doc_b"
 grep -q '^automountServiceAccountToken: false$' <<<"$sa_doc_a"
 grep -q '^automountServiceAccountToken: false$' <<<"$sa_doc_b"
-! grep -q 'iam.gke.io/gcp-service-account' <<<"$sa_doc_a"
-! grep -q 'iam.gke.io/gcp-service-account' <<<"$sa_doc_b"
+if grep -q 'iam.gke.io/gcp-service-account' <<<"$sa_doc_a"; then refuted $LINENO; fi
+if grep -q 'iam.gke.io/gcp-service-account' <<<"$sa_doc_b"; then refuted $LINENO; fi
 grep -q "^      serviceAccountName: $sandbox_sa_a$" "$tmp/release-a.yaml"
 grep -q "^      serviceAccountName: $sandbox_sa_b$" "$tmp/release-b.yaml"
-! resources_of_kind RoleBinding "$tmp/release-a.yaml" | grep -q "name: $sandbox_sa_a"
-! resources_of_kind RoleBinding "$tmp/release-b.yaml" | grep -q "name: $sandbox_sa_b"
-! resources_of_kind ClusterRoleBinding "$tmp/release-a.yaml" | grep -q "name: $sandbox_sa_a"
-! resources_of_kind ClusterRoleBinding "$tmp/release-b.yaml" | grep -q "name: $sandbox_sa_b"
+if resources_of_kind RoleBinding "$tmp/release-a.yaml" | grep -q "name: $sandbox_sa_a"; then refuted $LINENO; fi
+if resources_of_kind RoleBinding "$tmp/release-b.yaml" | grep -q "name: $sandbox_sa_b"; then refuted $LINENO; fi
+if resources_of_kind ClusterRoleBinding "$tmp/release-a.yaml" | grep -q "name: $sandbox_sa_a"; then refuted $LINENO; fi
+if resources_of_kind ClusterRoleBinding "$tmp/release-b.yaml" | grep -q "name: $sandbox_sa_b"; then refuted $LINENO; fi
 
 long_namespace="this-is-a-valid-but-deliberately-long-release-namespace-for-magda"
 render "$tmp/long-namespace.yaml" magda "$long_namespace" \
@@ -480,5 +505,96 @@ render "$tmp/long-namespace.yaml" magda "$long_namespace" \
 derived_namespace="$(awk '/^kind: SandboxTemplate$/{found=1} found && /^  namespace:/{print $2; exit}' "$tmp/long-namespace.yaml")"
 [[ ${#derived_namespace} -le 63 ]]
 [[ "$derived_namespace" =~ -[0-9a-f]{8}$ ]]
+
+# #3846: the scoped DSH CSP in the rendered gateway-config ConfigMap must equal
+# the fixture that magda-gateway/src/test/agentWorkspaceCsp.spec.ts runs
+# through the real Gateway path matching. Regenerate the fixture from this
+# render when the chart policy changes intentionally.
+gateway_config_json() {
+    node -e '
+        const text = require("fs").readFileSync(process.argv[1], "utf8");
+        const doc = text.split(/^---$/m).find((d) =>
+            /^kind: ConfigMap$/m.test(d) && /^  name: "?gateway-config"?$/m.test(d));
+        const data = {};
+        for (const key of ["routes", "helmet", "helmetPerPath", "csp"]) {
+            const m = doc.match(new RegExp(`^  ${key}\\.json: (".*")$`, "m"));
+            data[key] = JSON.parse(JSON.parse(m[1]));
+        }
+        process.stdout.write(JSON.stringify(data));
+    ' "$1"
+}
+gateway_fixture="$helm_root/../../magda-gateway/src/test/fixtures/agentWorkspaceGatewayConfig.json"
+gateway_config_json "$tmp/model-default.yaml" >"$tmp/gateway-enabled.json"
+node -e '
+    const assert = require("assert");
+    const fs = require("fs");
+    const rendered = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    const fixture = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+    assert.deepStrictEqual(
+        {
+            agentRoute: rendered.routes.agent,
+            helmet: rendered.helmet,
+            csp: rendered.csp,
+            helmetPerPath: rendered.helmetPerPath
+        },
+        fixture,
+        "rendered gateway-config differs from the Gateway CSP test fixture"
+    );
+' "$tmp/gateway-enabled.json" "$gateway_fixture"
+for file in disabled llm-only; do
+    gateway_config_json "$tmp/$file.yaml" >"$tmp/gateway-$file.json"
+    node -e '
+        const assert = require("assert");
+        const config = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+        assert.strictEqual(config.routes.agent, undefined);
+        assert.strictEqual(config.helmetPerPath["/api/v0/agent/runtime"], undefined);
+        assert.ok(!Object.keys(config.helmetPerPath).some((path) => path.startsWith("/api/")));
+    ' "$tmp/gateway-$file.json"
+done
+# The helmet mount and the Agent route share the same prefix, so Gateway path
+# matching cannot relax a sibling of the proxied runtime mount.
+node -e '
+    const assert = require("assert");
+    const config = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+    assert.strictEqual(config.routes.agent.to, "http://agent-manager/v0");
+    const relaxed = Object.keys(config.helmetPerPath).filter((path) =>
+        path.startsWith("/api/") &&
+        (config.helmetPerPath[path].contentSecurityPolicy.directives.scriptSrc || [])
+            .includes("\x27unsafe-inline\x27"));
+    assert.deepStrictEqual(relaxed, ["/api/v0/agent/runtime"]);
+    assert.deepStrictEqual(config.helmet.contentSecurityPolicy.directives.scriptSrc, ["\x27self\x27"]);
+' "$tmp/gateway-enabled.json"
+
+# #3847: ingress-nginx WebSocket timeouts.
+ingress_annotations() {
+    resource_document Ingress ingress "$1" | sed -n '/^  annotations:$/,/^  [a-z]/p'
+}
+render "$tmp/ingress-disabled.yaml" magda test --set tags.ingress=true
+render "$tmp/ingress-llm-only.yaml" magda test --set tags.ingress=true \
+    --set global.llmServices.enabled=true
+render "$tmp/ingress-enabled.yaml" magda test --set tags.ingress=true \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true
+render "$tmp/ingress-override.yaml" magda test --set tags.ingress=true \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set ingress.proxyReadTimeout=7200 \
+    --set ingress.proxySendTimeout=1800
+render "$tmp/ingress-disabled-explicit.yaml" magda test --set tags.ingress=true \
+    --set ingress.proxyReadTimeout=120
+for file in ingress-disabled ingress-llm-only; do
+    [[ "$(count_kind Ingress "$tmp/$file.yaml")" == 1 ]]
+    if ingress_annotations "$tmp/$file.yaml" | grep -q 'proxy-read-timeout'; then refuted $LINENO; fi
+    if ingress_annotations "$tmp/$file.yaml" | grep -q 'proxy-send-timeout'; then refuted $LINENO; fi
+done
+ingress_annotations "$tmp/ingress-enabled.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"'
+ingress_annotations "$tmp/ingress-enabled.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"'
+ingress_annotations "$tmp/ingress-override.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-read-timeout: "7200"'
+ingress_annotations "$tmp/ingress-override.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"'
+ingress_annotations "$tmp/ingress-disabled-explicit.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"'
+if ingress_annotations "$tmp/ingress-disabled-explicit.yaml" | grep -q 'proxy-send-timeout'; then refuted $LINENO; fi
+# Other annotations are unchanged by the Workspace flag.
+diff <(ingress_annotations "$tmp/ingress-disabled.yaml") \
+    <(ingress_annotations "$tmp/ingress-enabled.yaml" | grep -v 'proxy-read-timeout\|proxy-send-timeout')
 
 printf 'Agent Services render matrix passed\n'

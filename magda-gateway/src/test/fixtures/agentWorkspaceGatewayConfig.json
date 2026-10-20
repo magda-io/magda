@@ -1,0 +1,84 @@
+{
+    "agentRoute": {
+        "auth": true,
+        "redirectTrailingSlash": true,
+        "to": "http://agent-manager/v0",
+        "websocket": true
+    },
+    "helmet": {
+        "contentSecurityPolicy": {
+            "directives": {
+                "connectSrc": ["'self'", "https://tiles.magda.io"],
+                "defaultSrc": null,
+                "fontSrc": null,
+                "imgSrc": ["'self'", "data:", "https://tile.openstreetmap.org"],
+                "scriptSrc": ["'self'"],
+                "scriptSrcAttr": null,
+                "styleSrc": null,
+                "workerSrc": ["'self'", "blob:"]
+            }
+        },
+        "originAgentCluster": false,
+        "referrerPolicy": {
+            "policy": "strict-origin-when-cross-origin"
+        },
+        "strictTransportSecurity": false,
+        "xContentTypeOptions": false,
+        "xDnsPrefetchControl": false,
+        "xDownloadOptions": false,
+        "xFrameOptions": false,
+        "xPermittedCrossDomainPolicies": false
+    },
+    "csp": {},
+    "helmetPerPath": {
+        "/api/v0/agent/runtime": {
+            "contentSecurityPolicy": {
+                "directives": {
+                    "connectSrc": ["'self'"],
+                    "frameAncestors": ["'self'"],
+                    "frameSrc": ["'self'", "blob:"],
+                    "imgSrc": ["'self'", "data:", "blob:"],
+                    "scriptSrc": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+                    "workerSrc": ["'self'", "blob:"]
+                }
+            }
+        },
+        "/assets/alasql.html": {
+            "contentSecurityPolicy": {
+                "directives": {
+                    "scriptSrc": ["'self'", "'unsafe-eval'"]
+                }
+            }
+        },
+        "/preview-map/*": {
+            "contentSecurityPolicy": {
+                "directives": {
+                    "connectSrc": [
+                        "'self'",
+                        "*.cesium.com",
+                        "https://tile.openstreetmap.org",
+                        "https://*.tile.openstreetmap.org",
+                        "blob:",
+                        "https://tiles.terria.io",
+                        "https://vector-tiles.terria.io",
+                        "https://storage.googleapis.com/terria-datasets-public/"
+                    ],
+                    "imgSrc": ["*", "data:"],
+                    "scriptSrc": [
+                        "'self'",
+                        "'unsafe-eval'",
+                        "'unsafe-inline'",
+                        "blob:"
+                    ],
+                    "styleSrc": [
+                        "'self'",
+                        "blob:",
+                        "'unsafe-inline'",
+                        "fonts.googleapis.com"
+                    ],
+                    "workerSrc": ["'self'", "blob:"]
+                }
+            }
+        }
+    }
+}
