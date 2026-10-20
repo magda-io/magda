@@ -12,8 +12,10 @@ DSH / mgd -> external gateway -> Magda APIs / Magda LLM Services -> LiteLLM
 
 This case covers the user-visible lifecycle, the trusted-header boundary, stock
 DSH launch-token hand-off, persistent workspace behavior and both local runtime
-profiles. See [Agent Workspace architecture and deployment](../architecture/agent-workspace.md)
-for implementation details, key decisions, configuration, and deployment steps.
+profiles. See [Agent Workspace architecture](../architecture/agent-workspace.md) for
+component contracts, [deployment and operations](../agent-workspace-deployment.md)
+for installation, and [Agent Skills architecture](../architecture/agent-skills.md)
+for publication and synchronization details.
 
 ## Prerequisites
 
@@ -31,7 +33,12 @@ for implementation details, key decisions, configuration, and deployment steps.
   loaded into Minikube. Reset any workspace created by an earlier development
   image before qualification: bootstrap configuration is PVC-backed and an
   existing claim is not reprovisioned by a Helm upgrade.
-- `global.agentWorkspace.enabled=true` in the Magda Helm values. For a local
+- The [local qualification overlay](../../../deploy/helm/agent-workspace-minikube.yml)
+  enables `global.agentWorkspace.enabled=true` and targets
+  `deploy/helm/local-deployment` (`local-deployment → magda → magda-core`).
+  Component values are under `magda.magda-core`, while shared `global` values
+  remain at the overlay root. Install with the documented
+  [umbrella Helm command](../agent-workspace-deployment.md#minikube-specific-setup). For a local
   self-signed ingress, route the in-Sandbox API URL through the ingress service
   and copy its CA into the Sandbox namespace before installing:
 
@@ -64,29 +71,34 @@ for implementation details, key decisions, configuration, and deployment steps.
   controller is still serving its generated fake certificate.
 
   Generate the cluster-specific Helm override (do not commit the ephemeral
-  Service IP) and pass it after `agent-workspace-minikube-values.yaml`:
+  Service IP) and pass it after `deploy/helm/agent-workspace-minikube.yml`:
 
   ```sh
   cat >/tmp/agent-workspace-ingress-values.yaml <<EOF
-  agent-services:
-    runtime:
-      hostAliases:
-        - ip: ${INGRESS_IP}
-          hostnames: [magda.test]
-      externalPrivateCidrs: [${INGRESS_IP}/32]
-      externalPrivatePorts: [443]
+  magda:
+    magda-core:
+      agent-services:
+        runtime:
+          hostAliases:
+            - ip: ${INGRESS_IP}
+              hostnames: [magda.test]
+          externalPrivateCidrs: [${INGRESS_IP}/32]
+          externalPrivatePorts: [443]
   EOF
   ```
 
   The committed local values set
-  `agent-services.sandboxNamespace.create=false` because this procedure
-  pre-creates the namespace. They also set the in-Sandbox API URLs and select
-  `magda-agent-trusted-ca` with `agent-services.runtime.trustedCaSecret`.
+  `magda.magda-core.agent-services.sandboxNamespace.create=false` because
+  this procedure pre-creates the namespace. They also set the in-Sandbox API
+  URLs and select `magda-agent-trusted-ca` using
+  `magda.magda-core.agent-services.runtime.trustedCaSecret`.
 
 - An admin login, plus a non-admin login for the access checks below.
-  `magda-auth-internal` is not a `magda-core` dependency; install
-  it as a separate release or include it in an umbrella chart if password login
-  is desired.
+  The `local-deployment` umbrella includes the `magda-auth-internal` dependency;
+  verify it is enabled and registered at `/auth/plugins`. Do **not** install
+  a second independent plugin release over the umbrella-owned deployment.
+  Standalone `magda-core` and custom parent deployments configure their own
+  authentication plugins separately.
 - For a real model response, create the provider secret before deployment:
 
   ```sh
@@ -96,6 +108,18 @@ for implementation details, key decisions, configuration, and deployment steps.
 
   Without this secret, the lifecycle and DSH paths remain testable and LLM calls
   should return a useful provider-credential error.
+
+
+Before the browser checks, verify that the rendered local umbrella is using
+**nested** `magda.magda-core.agent-services`/LLM/Gateway/Ingress overrides,
+that the internal auth plugin appears at `/auth/plugins`, and that no old
+`deploy/helm/magda-core/agent-workspace-*-values.yaml` file is used. Re-run
+both runc and gVisor qualification after this overlay migration; unchanged
+manifests are not proof that the different parent chart receives the intended
+values. The separate GKE reference
+[`deploy/helm/agent-workspace-gke-magda-core.yml`](../../../deploy/helm/agent-workspace-gke-magda-core.yml)
+continues to use the **direct magda-core** values shape and is not a
+`local-deployment` overlay. Its security gates are below.
 
 ## Browser journey
 
