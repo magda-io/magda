@@ -67,9 +67,22 @@ Route names may evolve; semantics remain one workspace, visible provisioning/rea
 
 ## Activity tracking and failure semantics
 
-30 minutes of **meaningful** inactivity -> suspend; eight hours -> hard delete. **Open transport, polling and heartbeat do not count.** #3850 currently counts successful explicit HTTP DSH mutation RPCs plus resume; original design includes actively executing foreground tools. The >30-minute foreground-tool case is **unresolved**: decide if and how verified active work renews state without letting a permanently idle WebSocket keep Sandboxes alive (see [session-lifecycle.md](./session-lifecycle.md)).
+30 minutes of **meaningful** inactivity -> suspend; eight hours -> hard
+delete. Open transport, polling and heartbeat do **not** count. Draft #3850
+implements a bounded foreground-activity tracker for genuinely running DSH
+turns via `api-session/status` and connection-scoped running-session
+snapshots, in addition to authenticated allowlisted mutation RPCs and resume.
+This meets the intended >30-minute active foreground-turn contract while not
+turning an idle-open WebSocket into activity. See
+[session-lifecycle.md](./session-lifecycle.md) for exact caveats.
 
-The claim activity/deadline write and Authorization DB key-expiry extension are **two separate writes**. The current MVP's parallel call is **not atomic**. The target invariant is a monotonic durable last-activity time and expiry/deletion deadline with retries after transient failure, no regression from stale/concurrent requests, and reconciliation after a Manager restart. A failed activity write must not be irreversibly suppressed by an in-memory debounce timestamp. This is pending implementation hardening in #3850, not already established by the code.
+The claim's last-activity/deletion deadline and managed-key expiry require
+**two separate writes**, not a distributed atomic transaction. At the
+reviewed #3850 head the Manager persists the monotonic claim lease first,
+retries key extension and reconciles partial success from the durable
+claim after restart. Failed lease persistence prevents dispatch of a
+qualifying DSH mutation. This closes the earlier *missing-retry/debounce*
+finding; indefinite upstream outages remain an operational failure boundary.
 
 ## Concurrency, restarts and cleanup
 
