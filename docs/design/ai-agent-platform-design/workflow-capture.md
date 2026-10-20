@@ -1,6 +1,6 @@
 # Agent Workspace Stage 3 — workflow capture, publication consent and history retrieval
 
-**Status:** Accepted final Stage-3 design decisions (2026-10-19), for [#3856](https://github.com/magda-io/magda/issues/3856) within **draft** implementation [#3850](https://github.com/magda-io/magda/pull/3850). This supplements [skills.md](./skills.md) and supersedes earlier Stage-3 descriptions where inconsistent. **Do not silently implement Stage 4 #3857 or sharing #3861.**
+**Status:** Accepted final Stage-3 design decisions (2026-10-19); implementation reviewed and #3856 closed, in still-draft [#3850](https://github.com/magda-io/magda/pull/3850). Original implementation owner: [#3856](https://github.com/magda-io/magda/issues/3856) within **draft** implementation [#3850](https://github.com/magda-io/magda/pull/3850). This supplements [skills.md](./skills.md) and supersedes earlier Stage-3 descriptions where inconsistent. **Do not silently implement Stage 4 #3857 or sharing #3861.**
 
 ## 1. Product contract and scope
 
@@ -97,7 +97,7 @@ Keep the **existing Stage-3 MAGDA Cordis system-prompt section** (`@magda/dsh-wo
 - Typed plugin cannot execute arbitrary CLI commands or publish arbitrary host paths; behaves with the same nonroot credentials and backend authorization; preserve Stage-2 `mgd` cache/source account behavior. Existing approval for draft creation/editing remains as needed, but not generic escalation for intended skill lifecycle operations.
 - Ambiguous post-request network failure doesn't trigger blind retry/lookup on a down server; confirmed server rejection returns promptly; verified remote result after service recovery is source/type/ID/checksum-aware. Cache-after-publish failure remains an accurate successful publication with warning.
 - Incremental history parsing/filters, no prompt/reasoning leaks, redaction before grep, long/multi-frame logs, torn tails, row/frame/work budgets, early pagination and realistic memory/latency measurements; no unnecessary new compressor library.
-- Update user-facing runtime architecture/E2E documentation, deterministic runtime tests, realistic pinned DSH/gVisor Minikube interactions, `mgd`/Manager regressions and CI. **Keep #3850 draft** and request Stage-3 review before #3857/#3861.
+- Update user-facing runtime architecture/E2E documentation, deterministic runtime tests, realistic pinned DSH/gVisor Minikube interactions, `mgd`/Manager regressions and CI. **Keep #3850 draft** until the final integrated review; Stage-3 and Stage-4 focused reviews have now been accepted, while #3861 remains out of MVP scope.
 
 ## 7. Deliberately rejected complexity and trade-offs
 
