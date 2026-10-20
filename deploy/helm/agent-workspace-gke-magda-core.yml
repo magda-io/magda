@@ -1,5 +1,15 @@
 # Alpha reference values for the partially qualified GKE Standard + GKE
 # Sandbox/gVisor + community ingress-nginx + regional L4 passthrough NLB path.
+#
+# Values shape: direct `magda-core` chart. Apply as-is to a `magda-core`
+# release. When `magda-core` is a dependency of a parent chart, keep `global`
+# at the top level and nest every other top-level key below under the
+# dependency's path, for example `magda-core.agent-services` for the published
+# `magda` umbrella, or `magda.magda-core.agent-services` for
+# `local-deployment`.
+#
+# Not production-qualified: separate NetworkPolicy enforcement, IAM/Workload
+# Identity and provider qualification (#3848) must pass first.
 # These values do not install KAS, a gVisor node pool, ingress-nginx/NLB,
 # NetworkPolicy enforcement, certificates, provider secrets, or Google IAM
 # policy. Complete the GKE qualification gate in the deployment guide before

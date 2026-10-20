@@ -1,0 +1,173 @@
+# Local Minikube qualification profile for the integrated Agent Workspace MVP.
+#
+# Apply to the `deploy/helm/local-deployment` umbrella chart:
+#
+#   local-deployment
+#     ├── magda
+#     │    └── magda-core
+#     │         ├── agent-services
+#     │         └── llm-services
+#     └── magda-auth-internal
+#
+# Shared Helm `global` values and `tags` stay at the top level. Magda core
+# component values are nested under `magda.magda-core`. This file is not
+# portable to a direct `magda-core` release; see
+# `agent-workspace-gke-magda-core.yml` for the direct `magda-core` shape.
+#
+# Images tagged localhost:5000/*:latest must be loaded into the Minikube node.
+# The LiteLLM provider Secret and the cluster-specific ingress Service IP
+# override are created separately; see docs/docs/agent-workspace-deployment.md.
+global:
+  externalUrl: https://magda.test:18443
+  useCombinedDb: true
+  enableLivenessProbes: true
+  agentWorkspace:
+    enabled: true
+    sandboxNamespace: magda-agent
+  llmServices:
+    enabled: true
+  image:
+    pullPolicy: IfNotPresent
+  openfaas:
+    enabled: false
+  searchEngine:
+    hybridSearch:
+      enabled: false
+
+# Helm enables a chart when ANY of its tags is true, so `all: true` cannot be
+# narrowed by setting individual tags to false. Disable `all` and allowlist
+# the components this profile needs. Optional connectors, minions, URL
+# processors, semantic indexers and the Google/ArcGIS/Facebook auth plugins
+# stay disabled.
+tags:
+  all: false
+  # magda-core
+  authorization-api: true
+  authorization-db: true
+  combined-db: true
+  content-api: true
+  content-db: true
+  gateway: true
+  ingress: true
+  registry-api: true
+  registry-db: true
+  session-db: true
+  storage-api: true
+  web-server: true
+  # Dataset search used by the E2E `mgd` read checks.
+  indexer: true
+  opensearch: true
+  search-api: true
+  # Charts tagged without `all` are enabled unless explicitly disabled.
+  correspondence-api: false
+  elasticsearch: false
+  priorities: false
+  rds-dev-proxy: false
+  search-api-node: false
+  semantic-search-api: false
+  # magda umbrella: its chart defaults turn these tags on individually.
+  minions: false
+  minion-broken-link: false
+  minion-ckan-exporter: false
+  minion-format: false
+  minion-linked-data-rating: false
+  minion-visualization: false
+  pdf-semantic-indexer: false
+  csv-semantic-indexer: false
+  magda-pdf-semantic-indexer: false
+  magda-csv-semantic-indexer: false
+  # local-deployment
+  connectors: false
+  magda-auth-internal: true
+
+magda:
+  magda-core:
+    agent-services:
+      manager:
+        image:
+          repository: localhost:5000
+          tag: latest
+          pullPolicy: Never
+      warmPool:
+        type: runc
+        size: 1
+      sandboxNamespace:
+        # The E2E setup pre-creates this namespace to install the local ingress CA.
+        create: false
+      magdaApiUrl: https://magda.test/api
+      llmApiUrl: https://magda.test/api/v0/llm/v1
+      runtime:
+        image:
+          repository: localhost:5000
+          tag: latest
+          pullPolicy: Never
+        storage:
+          size: 1Gi
+        # Supply hostAliases and externalPrivateCidrs from the ingress Service's
+        # current ClusterIP as shown in the deployment guide; Minikube assigns it
+        # dynamically.
+        hostAliases: []
+        externalPrivateCidrs: []
+        externalPrivatePorts: [443]
+        trustedCaSecret:
+          name: magda-agent-trusted-ca
+          key: ca.crt
+
+    llm-services:
+      image:
+        repository: localhost:5000
+        tag: latest
+        pullPolicy: Never
+      # The provider secret is deliberately not committed. Create
+      # `litellm-provider` from OPENAI_API_KEY before deployment.
+      litellm:
+        resources:
+          requests: {cpu: 50m, memory: 128Mi}
+          limits: {cpu: 500m, memory: 1Gi}
+
+    authorization-api:
+      image:
+        repository: localhost:5000
+        tag: latest
+        pullPolicy: Never
+
+    authorization-db:
+      image:
+        repository: localhost:5000
+        tag: latest
+        pullPolicy: Never
+
+    gateway:
+      image:
+        repository: localhost:5000
+        tag: latest
+        pullPolicy: Never
+      enableAuthEndpoint: true
+      enableCkanRedirection: false
+      # The umbrella installs `magda-auth-internal`; this entry makes Gateway
+      # discover it. Do not install a second plugin release.
+      authPlugins:
+        - key: internal
+          baseUrl: http://magda-auth-internal
+      cookie:
+        secure: auto
+
+    web-server:
+      image:
+        repository: localhost:5000
+        tag: latest
+        pullPolicy: Never
+
+    ingress:
+      hostname: magda.test
+      ingressClass: nginx
+      enableTls: true
+      useDefaultCertificate: true
+
+    combined-db:
+      magda-postgres:
+        postgresql:
+          primary:
+            resources:
+              requests: {cpu: 100m, memory: 256Mi}
+              limits: {memory: 1Gi}

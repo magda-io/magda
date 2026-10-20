@@ -628,6 +628,9 @@ buildtest:helm-charts:
     - echo "chart assertions - Agent Services feature and runtime matrix"
     - bash deploy/helm/magda-core/tests/agent-services-render.sh
 
+    - echo "chart assertions - Agent Workspace Minikube and GKE deployment profiles"
+    - bash deploy/helm/magda-core/tests/agent-workspace-profiles.sh
+
     - echo "chart assertions - plugin compatibility handshake"
     - bash deploy/helm/magda-core/tests/compatibility-check.sh
 
