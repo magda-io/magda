@@ -1,6 +1,6 @@
 # Registry-backed LLM Access Profiles and usage quotas
 
-**Status:** Agreed *future* design direction, proposed under [#3838](https://github.com/magda-io/magda/issues/3838); **not implemented** by the admin-only LLM facade in draft [#3850](https://github.com/magda-io/magda/pull/3850).
+**Status:** Agreed *future* design direction, proposed under [#3838](https://github.com/magda-io/magda/issues/3838); **not implemented** by the grantable self-only Workspace-access-gated LLM facade in draft [#3850](https://github.com/magda-io/magda/pull/3850).
 **Related:** [llm-services.md](./llm-services.md), [authentication.md](./authentication.md), [open-questions.md](./open-questions.md).
 **Owner:** Magda LLM Services (not Agent Manager, DSH, Registry API or LiteLLM).
 
@@ -8,9 +8,9 @@
 
 Magda LLM Services is the user-facing, authenticated facade and policy decision/enforcement point. Registry stores the definitions of reusable LLM entitlement profiles; Authorization API stores *who is granted an entitlement* through resources, operations, permissions and roles; OPA makes access decisions. Usage accounting, per-user quota enforcement and model allowlist enforcement remain LLM Services responsibilities. LiteLLM is the internal model router and holds provider credentials.
 
-Retain a **deployment-wide model allowlist** even after OPA becomes available: this constrains which model aliases the installation exposes at all. OPA then narrows which listed models a specific user is permitted to invoke. The MVP uses a simple allowlist and admin gate; **none of the profile/usage/OPA design below is claimed as shipped by #3850**.
+Retain a **deployment-wide model allowlist** even after OPA becomes available: this constrains which model aliases the installation exposes at all. OPA then narrows which listed models a specific user is permitted to invoke. The MVP uses a simple allowlist plus a grantable `agentWorkspace/access` OPA decision (initially administrator-granted), not model-specific entitlement; **none of the profile/usage/OPA design below is claimed as shipped by #3850**.
 
-For #3850's current single-model bundled LiteLLM chart, `llm-services.allowedModels` should become a YAML **string array**, not a comma-delimited string. An empty list defaults to `global.defaultAgentModel.alias`. When bundled LiteLLM configures only one alias, the resolved allowlist must be **exactly that alias**, rather than advertising models which the bundled router cannot serve. External LiteLLM deployments may allow multiple aliases; actual model availability still comes from the external router.
+For #3850's current single-model bundled LiteLLM chart, `llm-services.allowedModels` is implemented as a YAML **string array**, not a comma-delimited string. An empty list defaults to `global.defaultAgentModel.alias`. When bundled LiteLLM configures only one alias, the resolved allowlist must be **exactly that alias**, rather than advertising models which the bundled router cannot serve. External LiteLLM deployments may allow multiple aliases; actual model availability still comes from the external router.
 
 ## Registry record: `llm-access-profile`
 
