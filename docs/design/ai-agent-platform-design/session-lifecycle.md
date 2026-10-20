@@ -1,6 +1,6 @@
 # Session lifecycle design
 
-**Status:** Accepted foundation (#3822), with explicit MVP implementation details and one unresolved foreground-work semantics question  
+**Status:** Accepted foundation (#3822), reconciled with draft MVP #3850 at `ae8c2f268` (2026-10-20); full GKE/provider qualification remains separate  
 **Owner ticket:** #3822; implementation PR #3850  
 **Depends on:** [sandbox-runtime.md](./sandbox-runtime.md), [authentication.md](./authentication.md)  
 **Blocks:** Agent Manager and web lifecycle UX
@@ -63,18 +63,36 @@ An open WebSocket, DSH heartbeat/ping-pong, passive browser polling, static read
 
 **#3850 implementation evidence (not necessarily final semantic contract):** successful, authenticated explicit DSH HTTP mutation operations such as prompt/session/terminal creation, rename, write, cancel and delete, plus an explicit resume, count as activity. HTTP method alone does not count: DSH uses POST for both reads and mutations. The Manager rate-limits claim activity writes. Browser/WebSocket Remote streams and keepalives are excluded. A successful qualifying operation updates the claim's `agent.magda.io/last-activity` annotation and `SandboxClaim.spec.lifecycle.shutdownTime`, and extends the managed API-key expiry to the same activity-relative deadline. KAS's shutdown deadline provides cleanup even when the Manager is absent; Manager reconciliation handles idle suspension.
 
-**Unresolved accepted-design vs MVP semantics:** the original #3822 design included **an actively executing foreground agent turn/tool flow** as meaningful activity. A tool or inference executing for over 30 minutes might produce only WebSocket/Remote stream events after its initial HTTP prompt. If #3850 treats only that initial prompt as activity, reconciliation could suspend **active foreground work**. We must decide and test either:
-
-- preserve foreground activity while a **verified active** turn/tool is still executing (without treating any open socket or background heartbeat as active); or
-- explicitly scope alpha semantics to interaction-based inactivity and warn that long-running foreground work can be interrupted.
-
-Do **not** silently substitute one definition for the other. Test a foreground operation longer than the suspension threshold, plus an idle-open-WS control case, before considering this semantic decision settled.
+**Implemented MVP foreground-activity contract (#3850):** In addition to
+authenticated, allowlisted DSH mutation RPCs and explicit resume, an **actively
+executing foreground turn** renews activity while DSH reports it running. The
+Agent Manager observes the pinned DSH `api-session/status` Remote events,
+corroborates running sessions with connection-epoch/sequence-tagged
+`session/list` snapshots, and renews activity on a bounded timer. An idle
+WebSocket, background transport stream or ping/pong alone does **not** renew
+activity. Per-socket ownership, a short disconnect/reconnect grace, and
+out-of-order snapshot suppression prevent stale status from indefinitely
+keeping an abandoned Sandbox alive. A >30-minute running turn and idle-open
+WebSocket are covered by the draft MVP tests; this resolves the earlier
+design-vs-implementation mismatch. Changes to the pinned DSH protocol require
+requalification before relying on those event semantics.
 
 ## Persistence consistency and partial failures
 
 The **intended invariant** is that after a recorded meaningful event, both the KAS deletion deadline and managed key expiry reflect the same monotonic activity-based deadline. Both stores must resist replay of older activity timestamps, be idempotent on retries and reconcile independently after restart/partial error.
 
-**Implementation gap to resolve in #3850:** `RuntimeProxy.touchActivity` currently stores the in-memory rate-limit timestamp *before* an asynchronous write completes; failure is logged without an immediate retry. The Manager currently renews claim deadline and API-key expiry with `Promise.all`, so one can succeed while the other fails. This is **not an atomic two-store update**. Add tests for partial update success, concurrent/late writes, near-expiry renewal and Manager restart. Until a retry/reconciliation policy is implemented, do not describe this as fully fail-safe inactivity renewal.
+**Implemented in draft #3850:** These remain two distinct durable stores,
+not an atomic distributed transaction, but the Manager persists the monotonic
+claim activity/`shutdownTime` first and then extends the system-managed key
+expiry with bounded retries. `RuntimeProxy.touchActivity` now advances the
+in-memory successful-write throttle only **after** persistence completes;
+failed writes retain a pending timestamp and the corresponding DSH mutation is
+not executed. Per-user renewal serialization prevents stale requests reducing
+the deadline. On restart/periodic reconciliation the persisted claim timestamp
+is reread and any partial key extension is repaired. The implementation has
+retry/partial-failure, concurrent/late write, foreground and restart tests.
+This is compensating reconciliation, **not** a claim of atomicity or immunity
+to indefinite external dependency outages.
 
 The Manager must recover persisted SUSPENDING/RESUMING/DELETING states after process restart. An interrupted bootstrap should destroy the incomplete workspace fail-closed. Failed credential revocation must retain a visible/retryable DELETING state and claim/PVC; do not first destroy the only evidence needed for cleanup.
 
