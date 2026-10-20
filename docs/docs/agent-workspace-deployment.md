@@ -146,6 +146,25 @@ PVC-backed workspaces are intentionally not rebootstraped during a Helm upgrade;
 reset development or pre-release workspaces after changing these settings so a
 stale alias or reasoning effort is not retained.
 
+## Scoped DSH Content Security Policy
+
+The managed DSH Web app currently requires
+`script-src 'self' 'unsafe-inline' 'unsafe-eval'`. **Do not relax Magda's
+global CSP to accommodate DSH.** The Gateway Helm ConfigMap adds a
+`helmetPerPath` policy for exactly the managed
+`/api/v0/agent/runtime` mount, including descendant DSH requests, leaving
+unrelated Magda routes under their existing stricter `script-src 'self'`
+policy. The exception is an MVP compatibility constraint, **not** a desirable
+general security setting.
+
+When changing the Gateway mount or CSP configuration, verify the generated
+policy and request-level behaviour: the DSH route works with its required
+scripts, an ordinary Magda page retains the strict policy, and a near-match
+or sibling prefix does not inherit the relaxed directives. See
+[the E2E procedure](./e2e-test-cases/agent-workspace.md) and #3846.
+Long-term removal of `unsafe-inline`/`unsafe-eval` depends on upstream DSH
+compatibility improvements.
+
 ## Deployment
 
 ### Prerequisites
