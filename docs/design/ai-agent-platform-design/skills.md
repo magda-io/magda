@@ -1,6 +1,6 @@
 # Agent skills: Registry metadata, storage, access and user workflow
 
-**Status:** Agreed updated design for the expanded Agent Workspace MVP #3849, implemented incrementally in draft PR #3850; **not yet shipped**  
+**Status:** Accepted expanded MVP skill design, implemented in reviewed/closed stages #3854–#3858 in still-draft PR #3850; **not yet merged or shipped**  
 **Implementation:** #3854 (Registry-backed skill API), #3855 (`mgd`/runtime bootstrap), #3856 (workflow capture), #3857 (Agent Skills catalogue UI), plus #3858 (`agentWorkspace/access` authorization)  
 **Design owner:** #3811 / epic #3810  
 **Related:** [platform overview](./README.md), [authorization](./authentication.md), [web UI](./web-ui.md), [session lifecycle](./session-lifecycle.md), general Storage API owner-metadata bug [#3853](https://github.com/magda-io/magda/issues/3853)
@@ -146,13 +146,13 @@ After successful user ZIP replacement, tell the user that an active Workspace ca
 
 ## MVP implementation sequencing
 
-Keep **the same draft implementation PR #3850**, test and review each stage before starting the next. Recommended separation:
+Keep **the same draft implementation PR #3850**. All Stage 1–4 and Workspace authorization foundation reviews are complete; the following separation was used:
 
 1. **#3854 — Backend:** `agent-skill` aspect/schema, Agent Services skill-operation façade using authenticated Registry + Storage APIs, **early type-aware `object/agentSkill/*` checks for all skill endpoints**, downstream OPA, existing Storage API ownership metadata fix **via #3853 before integration**, ZIP CRUD, consistency and tests. Do not add Storage API prefix restrictions solely to force use of Agent Services.
 2. **#3855 — CLI/bootstrap:** `mgd agent-skill` commands, local draft/review/publish/sync, DSH skill discovery and user-scoped post-claim/bootstrap.
 3. **#3856 — Capture:** runtime-bundled workflow capture skill, agent-led user approval, optional local session-history support, and selective prompt suggestion.
 4. **[#3857](https://github.com/magda-io/magda/issues/3857) — Agent Skills UI:** Settings group/navigation, paginated discoverability/education, authorized user ZIP download and replace-only upload, tests. Implement after the backend API contract stabilizes.
-5. **[#3858](https://github.com/magda-io/magda/issues/3858) — Workspace authorization:** `agentWorkspace/access` OPA route, seeded admin grants, Manager HTTP and WebSocket access enforcement, whoami-driven navigation with per-user ownership. This is a separate foundational access-control change that should be developed before the UI stage.
+5. **[#3858](https://github.com/magda-io/magda/issues/3858) — Workspace authorization:** `agentWorkspace/access` OPA route, seeded admin grants, Manager HTTP and WebSocket access enforcement, whoami-driven navigation with per-user ownership. This foundational access-control change was reviewed/closed before the UI stage.
 6. **Future [#3861](https://github.com/magda-io/magda/issues/3861) — Sharing/installation/UI:** sharing grants, recipient-owned lightweight `agent-skill-installation` records, aliases, unified effective install resolution and Shared Skills UI. Design compatibility belongs in #3854/#3855/#3857, but implementation is separate from current #3850 stage gates.
 
 No extra storage bucket or skill DB, independent metadata editor, mandatory content history, separately privileged system-skill runtime, automatic skill publishing, or new full UI-based skill authoring tool.
