@@ -48,6 +48,35 @@ describe("skills install", () => {
         await fs.rm(tmp, { recursive: true, force: true });
     });
 
+    it("SKILL.md routes to every bundled reference, including agent-skills.md", async () => {
+        const skill = await fs.readFile(
+            path.join(SKILLS_DIR, "SKILL.md"),
+            "utf8"
+        );
+        const references = expectedBundle().filter((f) => f !== "SKILL.md");
+        expect(references).to.include("agent-skills.md");
+        for (const reference of references) {
+            expect(skill, reference).to.include(`\`${reference}\``);
+        }
+        // Both the command table and the task-routing table name the
+        // Agent Skills reference, and keep the two command families distinct.
+        const routes = skill
+            .split("\n")
+            .filter((line) => line.includes("`agent-skills.md`"));
+        expect(routes.some((line) => line.includes("agent-skill init"))).to.be
+            .true;
+        expect(routes.some((line) => line.includes("skills install"))).to.be
+            .true;
+        expect(routes.some((line) => /reusable Agent Skill/i.test(line))).to.be
+            .true;
+        const reference = await fs.readFile(
+            path.join(SKILLS_DIR, "agent-skills.md"),
+            "utf8"
+        );
+        expect(reference).to.include("mgd skills install");
+        expect(reference).to.include("mgd agent-skill");
+    });
+
     it("packageSkillsDir finds the shipped skills folder", () => {
         expect(existsSync(path.join(packageSkillsDir(), "SKILL.md"))).to.equal(
             true
