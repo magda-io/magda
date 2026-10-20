@@ -76,9 +76,12 @@ owner user/installation CRUD plus OrgUnit- and pre-authorised-constrained typed
 reads; both read permissions allow explicitly exempt records. The unassigned
 **Agent Skills Admins** role contains unconstrained system CRUD, allowing trusted
 staff to publish without global administrator status. Neither role is granted to
-Authenticated Users. #3858's later `V2_5` migration registers
-`agentWorkspace/access` and attaches it to Agent Workspace Users, so `V2_4` never
-references a nonexistent operation. Installation operations and their owner permission are
+Authenticated Users. The premerge, consolidated
+`V2_4__agent_workspace_and_skills.sql` migration registers both Agent Skill
+permissions and #3858's `agentWorkspace/access` operation and attaches its
+permission to Agent Workspace Users in the same file. The separate `V2_3`
+migration remains responsible for system-managed API-key table structure.
+Installation operations and their owner permission are
 registered for #3861, but no installation record, API, policy, or sharing
 functionality is activated here. Agent Services marks managed system
 publications `constraintExemption=true`, so holders of an applicable
