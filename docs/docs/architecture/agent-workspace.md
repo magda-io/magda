@@ -112,10 +112,11 @@ resume, reset, terminate, the DSH runtime HTTP proxy, DSH WebSocket upgrades,
 and the Workspace's model access through LLM Services. There are no
 action-specific Workspace operations.
 
-- **Registration:** authorization migration `V2_5__agent_workspace_access.sql`
-  registers the `agentWorkspace` resource, the operation, and one unconstrained
-  permission, **Access Own Agent Workspace**. It attaches the permission to the
-  unassigned stock role **Agent Workspace Users** from `V2_4`. It is not granted
+- **Registration:** the consolidated authorization migration
+  `V2_4__agent_workspace_and_skills.sql` registers the `agentWorkspace`
+  resource, operation and unconstrained **Access Own Agent Workspace**
+  permission together with the Agent Skill resources and unassigned stock
+  **Agent Workspace Users** role. It is not granted
   to Authenticated Users, and **Agent Skills Admins** does not imply it.
 - **Policy:** `magda-opa/policies/agentWorkspace/allow.rego`, reached from the
   entrypoint only for the exact URI `agentWorkspace/access`. It allows a
