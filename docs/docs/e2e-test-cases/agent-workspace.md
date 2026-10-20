@@ -257,6 +257,26 @@ Each render must contain exactly one SandboxTemplate and one matching
 SandboxWarmPool. Kata is covered by the offline Helm render matrix; run the full
 journey on a Kata-capable cluster when qualifying that production runtime.
 
+## Gateway CSP and ingress WebSocket regression checks
+
+In the **rendered local umbrella** (not only source templates), check that
+Gateway's `helmetPerPath` allows
+`script-src 'self' 'unsafe-inline' 'unsafe-eval'` only for the DSH
+`/api/v0/agent/runtime` mount. Exercise the actual response headers for a
+DSH resource, an ordinary Magda page and a sibling-prefix/near-match route;
+only DSH may inherit the relaxed policy (#3846). Verify that the Ingress
+annotations `nginx.ingress.kubernetes.io/proxy-read-timeout` and
+`nginx.ingress.kubernetes.io/proxy-send-timeout` render as 3600 seconds
+with Workspace enabled, remain absent without Workspace unless explicitly
+configured, and honor deliberate overrides (#3847).
+
+On a real local ingress path, keep a DSH WSS connection alive beyond the
+old default timeout, deliberately close/restart the Gateway or Manager,
+and verify browser reconnect rather than a permanently hung socket.
+Controller config reloads may terminate WebSockets; document and test this
+behaviour without confusing it with idle Workspace deletion. These
+tests **do not** replace GKE provider NetworkPolicy or IAM qualification.
+
 ## Workspace access checks
 
 `agentWorkspace/access` (#3858) is the only Workspace permission. Use a
