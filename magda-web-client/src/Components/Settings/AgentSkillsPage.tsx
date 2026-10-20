@@ -83,10 +83,10 @@ export const AgentSkillsHeader: FunctionComponent<{
     canOpenWorkspace: boolean;
 }> = ({ canOpenWorkspace }) => (
     <div className="agent-skills-header">
-        <div>
-            <h1>Agent Skills</h1>
-            <p>Discover and manage reusable skills for your Agent Workspace.</p>
-        </div>
+        {/* The breadcrumb already shows the page name; keep the h1 for
+            assistive technology without repeating it visually. */}
+        <h1 className="sr-only">Agent Skills</h1>
+        <p>Discover and manage reusable skills for your Agent Workspace.</p>
         {canOpenWorkspace ? (
             <Button
                 as={Link}

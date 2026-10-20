@@ -27,20 +27,15 @@
     display: flex;
     flex-wrap: wrap;
     gap: 12px 24px;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     padding-bottom: 14px;
     border-bottom: 1px solid #e9ebf0;
 
-    h1 {
-        margin: 0 0 4px;
-        font-size: 26px;
-        line-height: 1.2;
-    }
-
     p {
         margin: 0;
-        color: #555f73;
+        color: #3d4350;
+        font-size: 16px;
     }
 
     // A router link rendered as a button must not inherit link underlines.

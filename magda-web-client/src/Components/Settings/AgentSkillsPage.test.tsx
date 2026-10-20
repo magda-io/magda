@@ -260,6 +260,9 @@ describe("AgentSkillsPage", () => {
         expect(container.textContent).toContain(
             "We've just cleaned up a CSV with inconsistent column names"
         );
+        // The breadcrumb names the page; the h1 remains for assistive tech.
+        expect(container.querySelector("h1")?.className).toBe("sr-only");
+        expect(container.querySelector("h1")?.textContent).toBe("Agent Skills");
         expect(
             container.querySelector('a[href="/settings/agent-workspace"]')
                 ?.textContent
