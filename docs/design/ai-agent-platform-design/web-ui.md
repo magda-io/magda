@@ -6,7 +6,7 @@
 
 ## Product lifecycle
 
-The initial #3850 Agent Workspace page was hard-gated to the Admin Users role. **Expanded MVP target (#3858):** one grantable OPA operation **`agentWorkspace/access`** controls only the authenticated user's own Workspace lifecycle, DSH HTTP and WebSocket; the initial role grant remains admin-only by default. This is an API-side authorization check, not a menu visibility decision. The product supports one current Workspace per authenticated Magda user **per installation**, with multiple DSH sessions inside. Fine-grained LLM-model authorization remains separate (#3838).
+The initial #3850 Agent Workspace page was hard-gated to the Admin Users role. **Implemented expanded MVP (#3858, reviewed/closed):** one grantable OPA operation **`agentWorkspace/access`** controls only the authenticated user's own Workspace lifecycle, DSH HTTP and WebSocket; the initial role grant remains admin-only by default. This is an API-side authorization check, not a menu visibility decision. The product supports one current Workspace per authenticated Magda user **per installation**, with multiple DSH sessions inside. Fine-grained LLM-model authorization remains separate (#3838).
 
 Expected lifecycle:
 
@@ -38,7 +38,7 @@ The managed UI still hides deployment-controlled provider/model/plugin managemen
 
 **The same selectable UI for system and user publications.** A user skill dialog states it is saved to that user's account and reused in later Workspaces. A system skill dialog explicitly explains broader visibility: other authorised MAGDA users and Workspaces may gain access, subject to backend access controls; system publication is not anonymously/public-internet accessible. **Do not add a second system-specific dialog or permission mechanism.** Existing typed Agent Services system/user authorization is authoritative. No new Settings skill editor or publish UI in #3857 is required by Stage 3.
 
-## Agent Skills catalogue and agent-led creation (expanded MVP)
+## Agent Skills catalogue and agent-led creation (expanded MVP; #3857 reviewed/closed)
 
 **Authoritative permissions, sharing and sync contract:** [skill authorization and Workspace manifest decisions](./skills-authorization-and-workspace-manifest.md). **Skill discovery is based on the intended user; skill access is based on authorization; skill synchronization is optional to Workspace availability.**
 
@@ -73,7 +73,7 @@ System-skill management UI (available only to principals with the necessary type
 
 **Accepted sync model (2026-10-18):** The [authoritative scan-based Agent Skill sync design](./local-agent-skill-sync.md) uses independent copied skill directories, inline `.magda-skill-install.json` and no central installation index, journal or cross-harness rollback. A partial sync preserves already-successful copies and reports remaining errors. Normal manual sync reinstalls missing eligible directories and repairs exact-content matching metadata without `--force`. All sync conflicts/errors are **non-blocking for Workspace READY and DSH**.
 
-**Failed remote preparation versus local conflicts:** If a required Registry/Storage/OPA source or current publication ZIP cannot be obtained/verified, **stop the Manager's online skill reconciliation before changing installed skill directories** and report failure/retry guidance. Do not install stale cached ZIPs as if current. Workspace remains READY and DSH accessible. Conversely, after complete remote verification, an edited local skill blocks **only itself**; clean updates/removals, missing installs and exact-content metadata repair may succeed, so status can be `partial`. The #3857 Retry dialog is still shown **before** any Manager-invoked forced attempt, warning about potential discarding of actual local edits. No new durable unresolved status field is needed.
+**Implemented in draft #3850 — failed remote preparation versus local conflicts:** If a required Registry/Storage/OPA source or current publication ZIP cannot be obtained/verified, **stop the Manager's online skill reconciliation before changing installed skill directories** and report failure/retry guidance. Do not install stale cached ZIPs as if current. Workspace remains READY and DSH accessible. Conversely, after complete remote verification, an edited local skill blocks **only itself**; clean updates/removals, missing installs and exact-content metadata repair may succeed, so status can be `partial`. The #3857 Retry dialog is still shown **before** any Manager-invoked forced attempt, warning about potential discarding of actual local edits. No new durable unresolved status field is needed.
 
 **Initiator/timing and Retry UI matrix (#3857):**
 
@@ -115,6 +115,6 @@ A future product design may expose a Magda-native authorised model selector, but
 
 Keep the existing WebGPU agent available during early v8 transition behind a separate feature/entry point. Decide later whether it remains a local/privacy mode or is deprecated.
 
-## Foreground-work lifecycle warning
+## Foreground-work lifecycle contract
 
-The existing accepted lifecycle treats actively executing foreground turns/tools as meaningful activity, while #3850 currently renews on successful explicit DSH mutation RPCs and resume. A >30-minute turn with no further qualifying HTTP request may be suspended. Product behaviour and warning copy must follow the eventual decision in [session-lifecycle.md](./session-lifecycle.md); do not implicitly promise uninterrupted long-running jobs before the scenario is tested. WebSocket keepalives alone must not renew the deadline.
+Draft #3850 now tracks verified running DSH foreground turns using `api-session/status` events and connection-scoped running-session snapshots, renewing activity during turns longer than 30 minutes. Merely open sockets and keepalives do not count. This implements the previously outstanding foreground-turn requirement; protocol assumptions remain pinned to the tested DSH build. See [session-lifecycle.md](./session-lifecycle.md) and the published [Agent Workspace architecture](https://github.com/magda-io/magda/blob/feat/3849-agent-workspace-mvp/docs/docs/architecture/agent-workspace.md).
