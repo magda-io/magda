@@ -525,19 +525,32 @@ gateway_config_json() {
 }
 gateway_fixture="$helm_root/../../magda-gateway/src/test/fixtures/agentWorkspaceGatewayConfig.json"
 gateway_config_json "$tmp/model-default.yaml" >"$tmp/gateway-enabled.json"
+# Helm < 3.18 drops null-valued chart defaults (e.g. the default helmet's
+# `defaultSrc: null`) while newer Helm keeps them, so null directives are
+# normalised away on both sides; the Gateway spec covers both forms.
 node -e '
     const assert = require("assert");
     const fs = require("fs");
+    const dropNulls = (value) =>
+        Array.isArray(value)
+            ? value.map(dropNulls)
+            : value && typeof value === "object"
+            ? Object.fromEntries(
+                  Object.entries(value)
+                      .filter(([, v]) => v !== null)
+                      .map(([k, v]) => [k, dropNulls(v)])
+              )
+            : value;
     const rendered = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
     const fixture = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
     assert.deepStrictEqual(
-        {
+        dropNulls({
             agentRoute: rendered.routes.agent,
             helmet: rendered.helmet,
             csp: rendered.csp,
             helmetPerPath: rendered.helmetPerPath
-        },
-        fixture,
+        }),
+        dropNulls(fixture),
         "rendered gateway-config differs from the Gateway CSP test fixture"
     );
 ' "$tmp/gateway-enabled.json" "$gateway_fixture"
