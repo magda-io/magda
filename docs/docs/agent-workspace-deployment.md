@@ -204,7 +204,7 @@ builder, including `magda-authorization-api`, `magda-gateway`,
 ### Minikube-specific setup
 
 The reproducible local E2E profile lives in
-[`deploy/helm/agent-workspace-minikube.yml`](../../../deploy/helm/agent-workspace-minikube.yml)
+[`deploy/helm/agent-workspace-minikube.yml`](../../deploy/helm/agent-workspace-minikube.yml)
 and targets the **`deploy/helm/local-deployment`** umbrella. The dependency
 hierarchy is `local-deployment → magda → magda-core`; therefore
 component overrides, including `agent-services`, `llm-services`, Gateway,
@@ -316,7 +316,7 @@ It did **not** qualify the integrated Magda Gateway/auth/logout path, real
 LiteLLM/provider access, effective GKE NetworkPolicy enforcement, Workload
 Identity isolation, warm pools greater than zero, multiple users, HA,
 multi-zone operation, node upgrades, cert-manager, or native GCE L7/Gateway API.
-The supplied [`deploy/helm/agent-workspace-gke-magda-core.yml`](../../../deploy/helm/agent-workspace-gke-magda-core.yml) is therefore an **alpha reference
+The supplied [`deploy/helm/agent-workspace-gke-magda-core.yml`](../../deploy/helm/agent-workspace-gke-magda-core.yml) is therefore an **alpha reference
 profile**, not a qualified production profile. Do not claim GKE production or
 security qualification until the functional gates below pass.
 
