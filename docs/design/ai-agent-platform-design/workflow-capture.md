@@ -1,6 +1,6 @@
 # Agent Workspace Stage 3 — workflow capture, publication consent and history retrieval
 
-**Status:** Accepted final Stage-3 design decisions (2026-10-19); implementation reviewed and #3856 closed, in still-draft [#3850](https://github.com/magda-io/magda/pull/3850). Original implementation owner: [#3856](https://github.com/magda-io/magda/issues/3856) within **draft** implementation [#3850](https://github.com/magda-io/magda/pull/3850). This supplements [skills.md](./skills.md) and supersedes earlier Stage-3 descriptions where inconsistent. **Do not silently implement Stage 4 #3857 or sharing #3861.**
+**Status:** Accepted final Stage-3 design decisions (2026-10-19); #3856 implementation reviewed and closed in still-draft [#3850](https://github.com/magda-io/magda/pull/3850). This supplements [skills.md](./skills.md) and supersedes earlier Stage-3 descriptions where inconsistent. **Do not silently implement Stage 4 #3857 or sharing #3861.**
 
 ## 1. Product contract and scope
 
