@@ -417,8 +417,10 @@ exact text. Record the session ID, and the publication ID where there is one.
    Skills** only, and `/settings/agent-workspace` redirects with a permission
    error. With both, or as an administrator, both appear. Without either the
    group is hidden. No **Shared Skills** item appears.
-2. **Introduction:** the page explains skills and shows the CSV example. The
-   **Open Workspace** link appears only with Workspace access.
+2. **Introduction:** the guide ("What are Agent Skills? How do I create one?")
+   explains skills and shows the CSV example. It is open when you have no
+   skills and collapsed otherwise. **Open Workspace** is in the header only with
+   Workspace access.
 3. **Listing:** publish more than one page of user skills (page size 10) and at
    least one system skill. **All** shows READY system + own user skills;
    **My Skills** only own user skills; **System Skills** only system skills.
@@ -427,9 +429,10 @@ exact text. Record the session ID, and the publication ID where there is one.
    never appear. Another user's user skill never appears.
 4. **Search:** a keyword from one skill's description finds it on page 1; an
    unmatched keyword shows the empty state.
-5. **Metadata:** each entry shows the name, description, publication ID, type,
-   intended user (user skills), owner, and created/updated time and user from
-   the Registry record.
+5. **Metadata:** each compact card shows the name, type, description and
+   last-updated date; **Details** reveals the publication ID, intended user
+   (user skills), owner, and created/updated time and user from the Registry
+   record. Cards use two columns on wide screens.
 6. **System entries** have no Download, Replace, Delete or edit control, even
    for an administrator.
 7. **Download ZIP** of an own user skill matches `mgd agent-skill pull`.
@@ -465,10 +468,14 @@ Read the claim's `agent.magda.io/skill-sync-*` annotations and poll
    and the Workspace stays READY. Restore and Retry again for `success`.
 6. **Reset during Retry:** start a Retry, then **Start New Workspace**. The old
    attempt never writes the new claim's status; the request returns `409`.
-7. **Status ownership:** a manual `mgd agent-skill sync` or the
+7. **Display:** reopening a Workspace whose last sync succeeded shows only the
+   toolbar status. A sync completing while the page is open shows the success
+   banner for 15 seconds, and later polls don't bring it back. Partial and
+   failed results stay visible.
+8. **Status ownership:** a manual `mgd agent-skill sync` or the
    `magda_agent_skill_sync` tool does not change the annotations; a status GET
    alone never starts an exec.
-8. **Authorization:** Retry needs `agentWorkspace/access` and targets only the
+9. **Authorization:** Retry needs `agentWorkspace/access` and targets only the
    caller's claim, whatever body, query or headers are sent.
 
 ## Minikube gVisor troubleshooting

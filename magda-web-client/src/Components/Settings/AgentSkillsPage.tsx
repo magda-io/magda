@@ -12,7 +12,6 @@ import ButtonGroup from "rsuite/ButtonGroup";
 import Input from "rsuite/Input";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
-import Panel from "rsuite/Panel";
 import Breadcrumb from "./Breadcrumb";
 import SideNavigation from "./SideNavigation";
 import { StateType } from "reducers/reducer";
@@ -69,57 +68,96 @@ function saveBlob(blob: Blob, filename: string) {
     setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-export const AgentSkillsIntroduction: FunctionComponent<{
+function formatDate(value: string) {
+    const time = new Date(value);
+    return isNaN(time.getTime())
+        ? value
+        : time.toLocaleDateString(undefined, {
+              day: "numeric",
+              month: "short",
+              year: "numeric"
+          });
+}
+
+export const AgentSkillsHeader: FunctionComponent<{
     canOpenWorkspace: boolean;
 }> = ({ canOpenWorkspace }) => (
-    <Panel bordered className="agent-skills-introduction">
-        <h1>Agent Skills</h1>
-        <p>
-            An Agent Skill is a reusable set of instructions your agent can
-            follow in Agent Workspace, such as the steps, checks and decisions
-            of a task you repeat. Published skills are copied into your Agent
-            Workspace, so the agent can use them in later sessions and new
-            workspaces.
-        </p>
-        <ul>
-            <li>
-                <strong>My Skills</strong> are skills you published. They stay
-                with your Magda account when a workspace is reset.
-            </li>
-            <li>
-                <strong>System Skills</strong> are published for Magda users by
-                your organisation and are available to you according to your
-                permissions.
-            </li>
-        </ul>
-        <h2>Create a skill by talking to your agent</h2>
-        <ol>
-            <li>Complete a task with your agent in Agent Workspace.</li>
-            <li>
-                Ask the agent to capture the steps as a skill. It drafts the
-                skill in your workspace.
-            </li>
-            <li>Review the draft, ask for changes, then approve publishing.</li>
-        </ol>
-        <p>For example, after a CSV clean-up you could ask:</p>
-        <blockquote className="agent-skills-example">{CSV_EXAMPLE}</blockquote>
+    <div className="agent-skills-header">
+        <div>
+            <h1>Agent Skills</h1>
+            <p>Discover and manage reusable skills for your Agent Workspace.</p>
+        </div>
         {canOpenWorkspace ? (
+            <Button
+                as={Link}
+                appearance="primary"
+                to="/settings/agent-workspace"
+            >
+                Open Workspace
+            </Button>
+        ) : null}
+    </div>
+);
+
+/**
+ * The explanation of Agent Skills, collapsed once the user has skills so the
+ * catalogue stays near the top of the page.
+ */
+export const AgentSkillsGuide: FunctionComponent<{
+    open: boolean;
+    canOpenWorkspace: boolean;
+    onToggle: (open: boolean) => void;
+}> = ({ open, canOpenWorkspace, onToggle }) => (
+    <details
+        className="agent-skills-guide"
+        open={open}
+        onToggle={(event) =>
+            onToggle((event.currentTarget as HTMLDetailsElement).open)
+        }
+    >
+        <summary>What are Agent Skills? How do I create one?</summary>
+        <div className="agent-skills-guide-body">
             <p>
-                <Button
-                    as={Link}
-                    appearance="primary"
-                    to="/settings/agent-workspace"
-                >
-                    Open Workspace
-                </Button>
+                An Agent Skill is a reusable set of instructions your agent can
+                follow in Agent Workspace, such as the steps, checks and
+                decisions of a task you repeat. Published skills are copied into
+                your Agent Workspace, so the agent can use them in later
+                sessions and new workspaces.
             </p>
-        ) : (
-            <p className="agent-skills-note">
-                Creating skills needs Agent Workspace access. Ask your Magda
-                administrator if you need it.
-            </p>
-        )}
-    </Panel>
+            <ul>
+                <li>
+                    <strong>My Skills</strong> are skills you published. They
+                    stay with your Magda account when a workspace is reset.
+                </li>
+                <li>
+                    <strong>System Skills</strong> are published for Magda users
+                    by your organisation and are available to you according to
+                    your permissions.
+                </li>
+            </ul>
+            <h2>Create a skill by talking to your agent</h2>
+            <ol>
+                <li>Complete a task with your agent in Agent Workspace.</li>
+                <li>
+                    Ask the agent to capture the steps as a skill. It drafts the
+                    skill in your workspace.
+                </li>
+                <li>
+                    Review the draft, ask for changes, then approve publishing.
+                </li>
+            </ol>
+            <p>For example, after a CSV clean-up you could ask:</p>
+            <blockquote className="agent-skills-example">
+                {CSV_EXAMPLE}
+            </blockquote>
+            {canOpenWorkspace ? null : (
+                <p className="agent-skills-note">
+                    Creating skills needs Agent Workspace access. Ask your Magda
+                    administrator if you need it.
+                </p>
+            )}
+        </div>
+    </details>
 );
 
 export const AgentSkillCard: FunctionComponent<{
@@ -154,42 +192,50 @@ export const AgentSkillCard: FunctionComponent<{
             <p className="agent-skill-description">
                 {skill.description || "No description."}
             </p>
-            <dl className="agent-skill-metadata">
-                <div>
-                    <dt>Publication ID</dt>
-                    <dd>
-                        <code>{skill.id}</code>
-                    </dd>
-                </div>
-                <div>
-                    <dt>Type</dt>
-                    <dd>{skill.type}</dd>
-                </div>
-                {skill.type === "user" ? (
+            <details className="agent-skill-details">
+                <summary>
+                    <span className="agent-skill-updated">
+                        Updated {formatDate(skill.updatedAt)}
+                    </span>
+                    <span className="agent-skill-details-label">Details</span>
+                </summary>
+                <dl className="agent-skill-metadata">
                     <div>
-                        <dt>Intended user</dt>
-                        <dd>{person(skill.userId)}</dd>
+                        <dt>Publication ID</dt>
+                        <dd>
+                            <code>{skill.id}</code>
+                        </dd>
                     </div>
-                ) : null}
-                <div>
-                    <dt>Owner</dt>
-                    <dd>{person(skill.ownerId)}</dd>
-                </div>
-                <div>
-                    <dt>Created</dt>
-                    <dd>
-                        {formatTime(skill.createdAt)} by{" "}
-                        {person(skill.createdBy)}
-                    </dd>
-                </div>
-                <div>
-                    <dt>Last updated</dt>
-                    <dd>
-                        {formatTime(skill.updatedAt)} by{" "}
-                        {person(skill.updatedBy)}
-                    </dd>
-                </div>
-            </dl>
+                    <div>
+                        <dt>Type</dt>
+                        <dd>{skill.type}</dd>
+                    </div>
+                    {skill.type === "user" ? (
+                        <div>
+                            <dt>Intended user</dt>
+                            <dd>{person(skill.userId)}</dd>
+                        </div>
+                    ) : null}
+                    <div>
+                        <dt>Owner</dt>
+                        <dd>{person(skill.ownerId)}</dd>
+                    </div>
+                    <div>
+                        <dt>Created</dt>
+                        <dd>
+                            {formatTime(skill.createdAt)} by{" "}
+                            {person(skill.createdBy)}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt>Last updated</dt>
+                        <dd>
+                            {formatTime(skill.updatedAt)} by{" "}
+                            {person(skill.updatedBy)}
+                        </dd>
+                    </div>
+                </dl>
+            </details>
             {skill.type === "user" ? (
                 <div className="agent-skill-actions">
                     <Button
@@ -263,6 +309,10 @@ const AgentSkillsPage: FunctionComponent = () => {
         Record<string, "download" | "replace" | undefined>
     >({});
     const [feedback, setFeedback] = useState<Record<string, ItemFeedback>>({});
+    // Collapsed until the first unfiltered page loads; then open only when
+    // there is nothing to browse yet. A user's own toggle always wins.
+    const [guideOpen, setGuideOpen] = useState(false);
+    const guideDecided = useRef(false);
     const requestSequence = useRef(0);
 
     const load = useCallback(async () => {
@@ -278,6 +328,15 @@ const AgentSkillsPage: FunctionComponent = () => {
             if (sequence !== requestSequence.current) return;
             setItems(page.items);
             setNextPageToken(page.hasMore ? page.nextPageToken : undefined);
+            if (
+                !guideDecided.current &&
+                filter === "all" &&
+                !query &&
+                pageIndex === 0
+            ) {
+                guideDecided.current = true;
+                if (!page.items.length) setGuideOpen(true);
+            }
         } catch (error) {
             if (sequence !== requestSequence.current) return;
             setItems([]);
@@ -465,9 +524,19 @@ const AgentSkillsPage: FunctionComponent = () => {
                         { title: "Agent Skills" }
                     ]}
                 />
-                <AgentSkillsIntroduction
-                    canOpenWorkspace={canAccessAgentWorkspace(user)}
-                />
+                <section className="agent-skills-panel">
+                    <AgentSkillsHeader
+                        canOpenWorkspace={canAccessAgentWorkspace(user)}
+                    />
+                    <AgentSkillsGuide
+                        open={guideOpen}
+                        canOpenWorkspace={canAccessAgentWorkspace(user)}
+                        onToggle={(open) => {
+                            guideDecided.current = true;
+                            setGuideOpen(open);
+                        }}
+                    />
+                </section>
                 <section
                     className="agent-skills-catalogue"
                     aria-labelledby="agent-skills-catalogue-heading"

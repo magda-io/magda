@@ -2,7 +2,8 @@
     > .main-content-container {
         width: 100%;
         min-width: 0;
-        max-width: 1100px;
+        // Wide enough for two card columns; very long lines stay readable.
+        max-width: 1680px;
         padding-right: 25px;
         padding-bottom: 25px;
     }
@@ -14,24 +15,61 @@
     }
 }
 
-.agent-skills-introduction {
+.agent-skills-panel {
+    margin-bottom: 20px;
+    padding: 20px 24px 8px;
+    border: 1px solid #e0e3ea;
+    border-radius: 6px;
     background: #fff;
-    margin-bottom: 24px;
-    color: #3d4350;
-    font-size: 16px;
-    line-height: 1.55;
+}
 
-    > .rs-panel-body {
-        padding: 24px 30px;
-    }
+.agent-skills-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e9ebf0;
 
     h1 {
-        margin-top: 0;
+        margin: 0 0 4px;
+        font-size: 26px;
+        line-height: 1.2;
+    }
+
+    p {
+        margin: 0;
+        color: #555f73;
+    }
+
+    // A router link rendered as a button must not inherit link underlines.
+    a.rs-btn,
+    a.rs-btn:hover,
+    a.rs-btn:focus {
+        text-decoration: none;
+    }
+}
+
+.agent-skills-guide {
+    color: #3d4350;
+    font-size: 15px;
+    line-height: 1.55;
+
+    > summary {
+        padding: 14px 0;
+        font-weight: 600;
+        color: #30384d;
+        cursor: pointer;
+    }
+
+    .agent-skills-guide-body {
+        padding-bottom: 12px;
     }
 
     h2 {
-        font-size: 18px;
-        margin: 20px 0 8px;
+        font-size: 17px;
+        margin: 16px 0 6px;
     }
 
     ul,
@@ -40,12 +78,12 @@
     }
 
     li {
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
 
     .agent-skills-example {
-        margin: 12px 0 20px;
-        padding: 12px 16px;
+        margin: 10px 0 14px;
+        padding: 10px 14px;
         border-left: 4px solid #4b6fbf;
         background: #f3f6fc;
         font-style: italic;
@@ -76,12 +114,11 @@
     display: flex;
     gap: 8px;
     align-items: center;
-    flex: 1 1 280px;
-    max-width: 420px;
+    flex: 0 1 420px;
 }
 
 .agent-skills-hint {
-    margin: 8px 0 16px;
+    margin: 8px 0 14px;
     color: #555f73;
     font-size: 13px;
 }
@@ -93,14 +130,24 @@
 }
 
 .agent-skills-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    // Each card keeps its own height when a neighbour expands its details.
+    align-items: start;
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
+@media (min-width: 1200px) {
+    .agent-skills-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 .agent-skill-card {
-    margin-bottom: 16px;
-    padding: 18px 20px;
+    padding: 14px 18px;
     border: 1px solid #e0e3ea;
     border-radius: 6px;
     background: #fff;
@@ -108,18 +155,18 @@
     .agent-skill-card-header {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px 12px;
+        gap: 6px 10px;
         align-items: center;
 
         h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 17px;
             overflow-wrap: anywhere;
         }
     }
 
     .agent-skill-type {
-        padding: 2px 8px;
+        padding: 1px 8px;
         border-radius: 10px;
         font-size: 12px;
         font-weight: 600;
@@ -133,16 +180,36 @@
     }
 
     .agent-skill-description {
-        margin: 8px 0 12px;
+        margin: 6px 0 8px;
         color: #3d4350;
+    }
+
+    .agent-skill-details {
+        font-size: 13px;
+
+        > summary {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            color: #555f73;
+            cursor: pointer;
+        }
+
+        .agent-skill-details-label {
+            color: #1f4aa8;
+        }
+
+        &[open] > summary {
+            margin-bottom: 8px;
+        }
     }
 
     .agent-skill-metadata {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 8px 20px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 6px 18px;
         margin: 0;
-        font-size: 13px;
 
         dt {
             color: #555f73;
@@ -159,7 +226,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 14px;
+        margin-top: 10px;
     }
 
     .agent-skill-file-input {
@@ -167,7 +234,7 @@
     }
 
     .agent-skill-feedback {
-        margin-top: 12px;
+        margin-top: 10px;
         padding: 8px 12px;
         border-radius: 4px;
         font-size: 14px;
@@ -194,7 +261,7 @@
     gap: 12px;
     align-items: center;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: 12px;
 }
 
 @media (max-width: 767px) {
@@ -203,11 +270,11 @@
         padding-right: 12px;
     }
 
-    .agent-skills-introduction > .rs-panel-body {
-        padding: 16px;
+    .agent-skills-panel {
+        padding: 16px 16px 4px;
     }
 
     .agent-skills-search {
-        max-width: none;
+        flex-basis: 100%;
     }
 }

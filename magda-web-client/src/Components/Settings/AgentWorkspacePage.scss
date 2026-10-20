@@ -141,6 +141,16 @@
     gap: 8px;
 }
 
+.agent-workspace-skill-chip {
+    align-self: center;
+    font-size: 13px;
+    color: #555f73;
+}
+
+span.agent-workspace-skill-chip {
+    padding: 0 8px;
+}
+
 .agent-workspace-skill-sync {
     flex: 0 0 auto;
     padding: 8px 14px;

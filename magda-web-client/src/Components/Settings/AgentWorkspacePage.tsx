@@ -160,7 +160,70 @@ function countSummary(counts?: AgentWorkspaceSkillSync["counts"]) {
     ] as Array<[string, number]>)
         .filter(([, count]) => count > 0)
         .map(([label, count]) => `${count} ${label}`);
-    return parts.length ? parts.join(", ") : "no published skills";
+    return `Last sync: ${
+        parts.length ? parts.join(", ") : "no published skills"
+    }`;
+}
+
+/** How long a newly completed successful sync stays expanded above DSH. */
+export const SKILL_SYNC_SUCCESS_DISPLAY_MS = 15_000;
+
+/**
+ * True for SKILL_SYNC_SUCCESS_DISPLAY_MS after a successful Manager sync
+ * completes while this page is open. Keyed on `completedAt`, so status
+ * polling never restarts it, and a success that completed before the page
+ * loaded is not replayed.
+ */
+export function useNewSkillSyncSuccess(skillSync?: AgentWorkspaceSkillSync) {
+    // undefined until the first status; null when it had no completed attempt
+    const baseline = useRef<string | null>();
+    const [flashing, setFlashing] = useState(false);
+    if (baseline.current === undefined && skillSync) {
+        baseline.current = skillSync.inProgress
+            ? null
+            : skillSync.completedAt ?? null;
+    }
+    const successKey =
+        skillSync?.status === "success" && !skillSync.inProgress
+            ? skillSync.completedAt
+            : undefined;
+    useEffect(() => {
+        if (!successKey || successKey === baseline.current) return;
+        baseline.current = successKey;
+        setFlashing(true);
+        const timer = setTimeout(
+            () => setFlashing(false),
+            SKILL_SYNC_SUCCESS_DISPLAY_MS
+        );
+        return () => {
+            clearTimeout(timer);
+            setFlashing(false);
+        };
+    }, [successKey]);
+    return flashing;
+}
+
+/** Sync states that stay expanded until resolved. */
+function needsAttention(skillSync?: AgentWorkspaceSkillSync) {
+    return (
+        !!skillSync?.inProgress ||
+        skillSync?.status === "partial" ||
+        skillSync?.status === "failed"
+    );
+}
+
+function chipLabel(skillSync: AgentWorkspaceSkillSync, retrying?: boolean) {
+    if (retrying || skillSync.inProgress) return "Skills: checking…";
+    switch (skillSync.status) {
+        case "success":
+            return "Skills: up to date";
+        case "partial":
+            return "Skills: need attention";
+        case "failed":
+            return "Skills: sync failed";
+        default:
+            return "Skills: not synchronised yet";
+    }
 }
 
 /**
@@ -172,7 +235,8 @@ export const SkillSyncStatusBanner: FunctionComponent<{
     retrying?: boolean;
     retryError?: string;
     onRetry?: () => void;
-}> = ({ skillSync, retrying, retryError, onRetry }) => {
+    onDismissError?: () => void;
+}> = ({ skillSync, retrying, retryError, onRetry, onDismissError }) => {
     if (!skillSync) return null;
     const inProgress = retrying || skillSync.inProgress;
     const counts = countSummary(skillSync.counts);
@@ -205,6 +269,7 @@ export const SkillSyncStatusBanner: FunctionComponent<{
     }
     return (
         <section
+            id="agent-workspace-skill-sync"
             className={`agent-workspace-skill-sync tone-${tone}`}
             aria-label="Published skill synchronisation"
         >
@@ -215,7 +280,7 @@ export const SkillSyncStatusBanner: FunctionComponent<{
                     {!inProgress && counts ? (
                         <span className="agent-workspace-skill-sync-counts">
                             {" "}
-                            ({counts})
+                            ({counts}.)
                         </span>
                     ) : null}
                     {!inProgress && skillSync.status !== "success" ? (
@@ -250,7 +315,16 @@ export const SkillSyncStatusBanner: FunctionComponent<{
             ) : null}
             {retryError ? (
                 <p role="alert" className="agent-workspace-skill-sync-error">
-                    {retryError}
+                    {retryError}{" "}
+                    {onDismissError ? (
+                        <Button
+                            size="xs"
+                            appearance="link"
+                            onClick={onDismissError}
+                        >
+                            Dismiss
+                        </Button>
+                    ) : null}
                 </p>
             ) : null}
         </section>
@@ -314,39 +388,79 @@ export const AgentWorkspaceReady: FunctionComponent<{
     retryingSkillSync?: boolean;
     skillSyncRetryError?: string;
     onRetrySkillSync?: () => void;
+    onDismissSkillSyncError?: () => void;
 }> = ({
     skillSync,
     terminateButton,
     resetButton,
     retryingSkillSync,
     skillSyncRetryError,
-    onRetrySkillSync
-}) => (
-    <div className="agent-workspace-ready">
-        <div className="agent-workspace-toolbar">
-            <div className="agent-workspace-toolbar-heading">
-                <strong>Agent Workspace</strong>
-                <span>Private workspace running with your Magda authority</span>
+    onRetrySkillSync,
+    onDismissSkillSyncError
+}) => {
+    // DSH is the main working area: show sync details above it only while
+    // they matter, keeping a compact status in the toolbar otherwise.
+    // undefined follows the automatic display; true/false is the user's choice.
+    const [expanded, setExpanded] = useState<boolean>();
+    const recentSuccess = useNewSkillSyncSuccess(skillSync);
+    useEffect(() => {
+        // A newly completed sync is shown again even if details were hidden.
+        if (recentSuccess) setExpanded(undefined);
+    }, [recentSuccess]);
+    const pinned =
+        !!retryingSkillSync ||
+        !!skillSyncRetryError ||
+        needsAttention(skillSync);
+    const showBanner = !!skillSync && (pinned || (expanded ?? recentSuccess));
+    return (
+        <div className="agent-workspace-ready">
+            <div className="agent-workspace-toolbar">
+                <div className="agent-workspace-toolbar-heading">
+                    <strong>Agent Workspace</strong>
+                    <span>
+                        Private workspace running with your Magda authority
+                    </span>
+                </div>
+                <ButtonToolbar className="agent-workspace-toolbar-actions">
+                    {skillSync ? (
+                        pinned ? (
+                            <span className="agent-workspace-skill-chip">
+                                {chipLabel(skillSync, retryingSkillSync)}
+                            </span>
+                        ) : (
+                            <Button
+                                appearance="subtle"
+                                className="agent-workspace-skill-chip"
+                                aria-expanded={showBanner}
+                                aria-controls="agent-workspace-skill-sync"
+                                onClick={() => setExpanded(!showBanner)}
+                            >
+                                {chipLabel(skillSync)}
+                            </Button>
+                        )
+                    ) : null}
+                    {terminateButton}
+                    {resetButton}
+                </ButtonToolbar>
             </div>
-            <ButtonToolbar className="agent-workspace-toolbar-actions">
-                {terminateButton}
-                {resetButton}
-            </ButtonToolbar>
+            {showBanner ? (
+                <SkillSyncStatusBanner
+                    skillSync={skillSync}
+                    retrying={retryingSkillSync}
+                    retryError={skillSyncRetryError}
+                    onRetry={onRetrySkillSync}
+                    onDismissError={onDismissSkillSyncError}
+                />
+            ) : null}
+            <iframe
+                className="agent-workspace-runtime"
+                src={AGENT_WORKSPACE_RUNTIME_URL}
+                title="Agent Workspace"
+                allow="clipboard-read; clipboard-write"
+            />
         </div>
-        <SkillSyncStatusBanner
-            skillSync={skillSync}
-            retrying={retryingSkillSync}
-            retryError={skillSyncRetryError}
-            onRetry={onRetrySkillSync}
-        />
-        <iframe
-            className="agent-workspace-runtime"
-            src={AGENT_WORKSPACE_RUNTIME_URL}
-            title="Agent Workspace"
-            allow="clipboard-read; clipboard-write"
-        />
-    </div>
-);
+    );
+};
 
 const AgentWorkspacePage: FunctionComponent = () => {
     const [status, setStatus] = useState<AgentWorkspaceStatus>();
@@ -564,6 +678,9 @@ const AgentWorkspacePage: FunctionComponent = () => {
                     retryingSkillSync={retryingSkillSync}
                     skillSyncRetryError={skillSyncRetryError}
                     onRetrySkillSync={() => setRetryOpen(true)}
+                    onDismissSkillSyncError={() =>
+                        setSkillSyncRetryError(undefined)
+                    }
                 />
             );
         }

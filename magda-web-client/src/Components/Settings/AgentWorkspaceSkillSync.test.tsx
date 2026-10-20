@@ -60,6 +60,8 @@ jest.mock("../../api-clients/AgentWorkspaceApis", () => ({
 
 // eslint-disable-next-line import/first
 import AgentWorkspacePage, {
+    AgentWorkspaceReady,
+    SKILL_SYNC_SUCCESS_DISPLAY_MS,
     SkillSyncStatusBanner
 } from "./AgentWorkspacePage";
 
@@ -112,7 +114,7 @@ describe("SkillSyncStatusBanner", () => {
 
     it("shows counts and sanitized per-skill reasons", () => {
         const markup = html({ skillSync: partial });
-        expect(markup).toContain("1 installed, 1 kept or skipped");
+        expect(markup).toContain("Last sync: 1 installed, 1 kept or skipped");
         expect(markup).toContain("csv-clean");
         expect(markup).toContain("edited in this Workspace");
         expect(markup).toContain("Your Workspace remains available.");
@@ -220,7 +222,11 @@ describe("Open Workspace Retry / Re-check", () => {
             resolveRetry({
                 completed: true,
                 deduplicated: false,
-                skillSync: { status: "success", counts: counts({ updated: 1 }) }
+                skillSync: {
+                    status: "success",
+                    completedAt: "2026-10-20T01:00:00.000Z",
+                    counts: counts({ updated: 1 })
+                }
             });
         });
         await flush();
@@ -243,5 +249,118 @@ describe("Open Workspace Retry / Re-check", () => {
             container.querySelector('[role="alert"]')?.textContent
         ).toContain("Skill re-check failed");
         expect(container.querySelector("iframe")).not.toBeNull();
+    });
+});
+
+describe("Compact skill sync status above DSH", () => {
+    let container: HTMLDivElement;
+    let root: Root;
+
+    beforeAll(() => {
+        (global as any).IS_REACT_ACT_ENVIRONMENT = true;
+    });
+
+    beforeEach(() => {
+        jest.useFakeTimers();
+        container = document.createElement("div");
+        document.body.appendChild(container);
+        root = createRoot(container);
+    });
+
+    afterEach(() => {
+        act(() => root.unmount());
+        container.remove();
+        jest.useRealTimers();
+    });
+
+    const success = (completedAt: string) => ({
+        status: "success" as const,
+        completedAt,
+        counts: counts({ unchanged: 3 })
+    });
+
+    function render(props: any) {
+        act(() => root.render(<AgentWorkspaceReady {...props} />));
+    }
+
+    const banner = () => container.querySelector("#agent-workspace-skill-sync");
+    const chip = () =>
+        container.querySelector<HTMLElement>(".agent-workspace-skill-chip");
+
+    it("does not replay an earlier success but keeps it one click away", () => {
+        render({ skillSync: success("2026-10-20T00:00:00.000Z") });
+        expect(banner()).toBeNull();
+        expect(chip()?.textContent).toBe("Skills: up to date");
+        expect(chip()?.getAttribute("aria-expanded")).toBe("false");
+        act(() => chip()!.click());
+        expect(banner()?.textContent).toContain("Last sync: 3 unchanged");
+        act(() => chip()!.click());
+        expect(banner()).toBeNull();
+    });
+
+    it("shows a newly completed success briefly without polling restarting it", () => {
+        render({ skillSync: { status: "notAttempted", inProgress: true } });
+        expect(banner()?.textContent).toContain(
+            "Checking your published skills"
+        );
+
+        render({ skillSync: success("2026-10-20T01:00:00.000Z") });
+        expect(banner()?.textContent).toContain("up to date");
+
+        act(() =>
+            jest.advanceTimersByTime(SKILL_SYNC_SUCCESS_DISPLAY_MS - 1000)
+        );
+        // A poll returning the same completed attempt must not extend it.
+        render({ skillSync: success("2026-10-20T01:00:00.000Z") });
+        act(() => jest.advanceTimersByTime(1000));
+        expect(banner()).toBeNull();
+
+        // A later completed attempt is shown again.
+        render({ skillSync: success("2026-10-20T02:00:00.000Z") });
+        expect(banner()).not.toBeNull();
+        act(() => jest.advanceTimersByTime(SKILL_SYNC_SUCCESS_DISPLAY_MS));
+        expect(banner()).toBeNull();
+    });
+
+    it("lets the user hide a success early", () => {
+        render({ skillSync: { status: "notAttempted", inProgress: true } });
+        render({ skillSync: success("2026-10-20T01:00:00.000Z") });
+        expect(banner()).not.toBeNull();
+        act(() => chip()!.click());
+        expect(banner()).toBeNull();
+    });
+
+    it("keeps partial, failed and Retry errors visible until resolved", () => {
+        for (const skillSync of [
+            partial,
+            { status: "failed", counts: counts({ failed: 1 }) }
+        ]) {
+            render({ skillSync, onRetrySkillSync: () => undefined });
+            act(() => jest.advanceTimersByTime(60_000));
+            expect(banner()).not.toBeNull();
+            // The chip is a status label here, not a toggle.
+            expect(chip()?.tagName).toBe("SPAN");
+        }
+        const dismiss = jest.fn();
+        render({
+            skillSync: success("2026-10-20T00:00:00.000Z"),
+            skillSyncRetryError: "Skill re-check failed: offline",
+            onDismissSkillSyncError: dismiss
+        });
+        act(() => jest.advanceTimersByTime(60_000));
+        expect(
+            container.querySelector('[role="alert"]')?.textContent
+        ).toContain("offline");
+        const button = Array.from(container.querySelectorAll("button")).find(
+            (item) => item.textContent === "Dismiss"
+        )!;
+        act(() => button.click());
+        expect(dismiss).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows a not-yet-synchronised Workspace only as a compact status", () => {
+        render({ skillSync: { status: "notAttempted" } });
+        expect(banner()).toBeNull();
+        expect(chip()?.textContent).toBe("Skills: not synchronised yet");
     });
 });

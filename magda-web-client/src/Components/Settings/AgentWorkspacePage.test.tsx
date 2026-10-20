@@ -2,6 +2,14 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AgentWorkspaceReady } from "./AgentWorkspacePage";
 
+jest.mock("react", () =>
+    jest.requireActual(
+        require.resolve("react", {
+            paths: [require.resolve("react-dom")]
+        })
+    )
+);
+
 jest.mock("rsuite/Button", () => "button");
 jest.mock("rsuite/ButtonToolbar", () => "div");
 jest.mock("rsuite/Loader", () => "div");

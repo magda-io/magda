@@ -205,6 +205,54 @@ describe("agentSkillListQuery", () => {
 });
 
 describe("AgentSkillsPage", () => {
+    const guide = () =>
+        container.querySelector<HTMLDetailsElement>(".agent-skills-guide");
+
+    it("opens the guide when there is nothing to browse yet", async () => {
+        mockList.mockResolvedValue({ items: [], hasMore: false });
+        await render();
+        expect(guide()?.open).toBe(true);
+    });
+
+    it("collapses the guide when skills exist and respects the user's choice", async () => {
+        mockList
+            .mockResolvedValueOnce({ items: [skill()], hasMore: false })
+            .mockResolvedValue({ items: [], hasMore: false });
+        await render();
+        expect(guide()?.open).toBe(false);
+        expect(guide()?.querySelector("summary")?.textContent).toBe(
+            "What are Agent Skills? How do I create one?"
+        );
+        // Opening it, then reaching an empty filter, keeps the user's choice.
+        act(() => {
+            guide()!.open = true;
+            guide()!.dispatchEvent(new Event("toggle"));
+        });
+        await click("My Skills");
+        expect(guide()?.open).toBe(true);
+        act(() => {
+            guide()!.open = false;
+            guide()!.dispatchEvent(new Event("toggle"));
+        });
+        await click("System Skills");
+        expect(guide()?.open).toBe(false);
+    });
+
+    it("keeps full metadata behind each card's Details disclosure", async () => {
+        mockList.mockResolvedValue({ items: [skill()], hasMore: false });
+        await render();
+        const details = cards()[0].querySelector<HTMLDetailsElement>(
+            ".agent-skill-details"
+        )!;
+        expect(details.open).toBe(false);
+        expect(details.querySelector("summary")?.textContent).toMatch(
+            /^Updated .*2026Details$/
+        );
+        expect(details.querySelector("dl")?.textContent).toContain(
+            "Publication ID"
+        );
+    });
+
     it("explains skills with the CSV example and links to Open Workspace", async () => {
         mockList.mockResolvedValue({ items: [], hasMore: false });
         await render();

@@ -472,8 +472,11 @@ route guard. Menu visibility is a hint; the APIs enforce access. A user can
 browse the catalogue without Workspace access, and the page then omits the
 **Open Workspace** link.
 
-The **Agent Skills** page explains skills, the capture → review → publish flow
-with a concrete CSV example, and lists published READY skills through the
+The **Agent Skills** page has a compact header (with **Open Workspace** when
+allowed) and a collapsible guide that explains skills and the capture → review
+→ publish flow with a concrete CSV example. The guide opens by default only when
+the first unfiltered page is empty; the user's own toggle is never overridden.
+The page lists published READY skills through the
 existing `GET /api/v0/agent/skills`:
 
 - **All** (`type=all`): READY system skills plus the caller's READY user
@@ -487,8 +490,10 @@ existing `GET /api/v0/agent/skills`:
   before paging. It matches whole words in skill metadata such as names and
   descriptions; it is not an exact name search.
 
-Each entry shows the name, description, publication ID, type, intended user
-(user skills), owner, and created/updated time and user as published. System
+Entries are compact cards in a two-column grid on wide screens (one column
+otherwise): name, type, description, last-updated date and actions, with the
+publication ID, intended user (user skills), owner, and created/updated time and
+user under a per-card **Details** disclosure. System
 entries are metadata only. User entries offer **Download ZIP** and, when the
 caller holds `object/agentSkill/user/update` for their own publication,
 **Replace ZIP**. Replacement uses the same `PUT .../archive` path as `mgd`:
@@ -501,9 +506,19 @@ Workspace. There is no create, delete, metadata editing or system ZIP action.
 
 ## Workspace skill-sync status and Retry / Re-check
 
-**Open Workspace** shows the Manager-owned status above the embedded DSH:
-status, counts, sanitized per-skill reasons and, for a remote-source failure,
-that no installed skill changed. `GET /api/v0/agent/session` is read-only and
+**Open Workspace** keeps DSH as the main area. A compact status in the
+Workspace toolbar always shows the Manager-owned sync state, and the details
+banner above DSH (counts labelled "Last sync", sanitized per-skill reasons and,
+for a remote-source failure, that no installed skill changed) appears only
+when it matters:
+
+| State                                          | Banner                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------- |
+| In progress                                    | Shown while running                                                 |
+| `partial` / `failed`, or a Retry request error | Pinned until resolved (errors can be dismissed)                     |
+| `success` completed while the page is open     | Shown for 15 s, keyed on `completedAt` so polling never restarts it |
+| Earlier `success`, `notAttempted`              | Hidden; the toolbar status toggles it                               | `GET /api/v0/agent/session` is read-only and |
+
 reports `skillSync.inProgress` while a Manager attempt runs.
 
 After `partial` or `failed`, **Retry / Re-check skill sync** opens one
