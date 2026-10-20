@@ -1,9 +1,19 @@
--- Register typed Agent Skill publication and future installation operations.
+-- Register Agent Skill publication operations and the self-only Agent
+-- Workspace operation.
 --
--- The stock roles are deliberately unassigned. #3858 owns registration of
--- agentWorkspace/access and, in its later migration, attaches that permission
--- to Agent Workspace Users. Keeping that FK in the later migration guarantees
--- this migration never references an operation that does not yet exist.
+-- Agent Skills: typed system, user and future (#3861) installation CRUD.
+-- There is no wildcard read operation.
+--
+-- Agent Workspace: `agentWorkspace/access` lets the authenticated user start,
+-- inspect, resume, use (DSH runtime HTTP and WebSocket), reset and terminate
+-- their **own** Agent Workspace. Agent Manager always derives the target
+-- Sandbox from the authenticated user, so the permission never reaches another
+-- user's Sandbox.
+--
+-- Both stock roles are deliberately unassigned, and nothing here is granted to
+-- Anonymous or Authenticated Users. Global administrators keep access through
+-- the existing entrypoint administrator override. "Agent Skills Admins" does
+-- not imply Workspace access.
 
 INSERT INTO "public"."resources" ("id", "uri", "name", "description") VALUES
 ('078c459f-6fa6-46be-a47d-e657854ebf95', 'object/agentSkill/system', 'System Agent Skills', 'Trusted system Agent Skill publications.'),
@@ -52,6 +62,19 @@ INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") V
 ('00000000-3854-4100-8000-000000000007', '00000000-3854-4000-8000-000000000003'),
 ('00000000-3854-4100-8000-000000000007', '00000000-3854-4000-8000-000000000004');
 
+INSERT INTO "public"."resources" ("id", "uri", "name", "description") VALUES
+('00000000-3858-4300-8000-000000000001', 'agentWorkspace', 'Agent Workspace', 'The current user''s own Agent Workspace.');
+
+INSERT INTO "public"."operations" ("id", "uri", "name", "description", "resource_id") VALUES
+('00000000-3858-4000-8000-000000000001', 'agentWorkspace/access', 'Access Own Agent Workspace', 'Start, use, resume, reset and terminate the current user''s own Agent Workspace.', '00000000-3858-4300-8000-000000000001');
+
+INSERT INTO "public"."permissions"
+("id", "name", "resource_id", "user_ownership_constraint", "org_unit_ownership_constraint", "pre_authorised_constraint", "allow_exemption", "description") VALUES
+('00000000-3858-4100-8000-000000000001', 'Access Own Agent Workspace', '00000000-3858-4300-8000-000000000001', false, false, false, false, 'Operate the current user''s own Agent Workspace only.');
+
+INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") VALUES
+('00000000-3858-4100-8000-000000000001', '00000000-3858-4000-8000-000000000001');
+
 INSERT INTO "public"."roles" ("id", "name", "description") VALUES
 ('00000000-3854-4200-8000-000000000001', 'Agent Workspace Users', 'Unassigned stock role for own Workspace, publication reads, own user publications and future own installations.'),
 ('00000000-3854-4200-8000-000000000002', 'Agent Skills Admins', 'Unassigned stock role for trusted system publication management without global administrator access.');
@@ -63,4 +86,5 @@ INSERT INTO "public"."role_permissions" ("role_id", "permission_id") VALUES
 ('00000000-3854-4200-8000-000000000001', '00000000-3854-4100-8000-000000000004'),
 ('00000000-3854-4200-8000-000000000001', '00000000-3854-4100-8000-000000000005'),
 ('00000000-3854-4200-8000-000000000001', '00000000-3854-4100-8000-000000000006'),
+('00000000-3854-4200-8000-000000000001', '00000000-3858-4100-8000-000000000001'),
 ('00000000-3854-4200-8000-000000000002', '00000000-3854-4100-8000-000000000007');
