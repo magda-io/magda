@@ -205,20 +205,34 @@ organisation-specific image names/tags for a shared registry:
 ```sh
 (
   cd magda-agent-manager
+  yarn build
   ../node_modules/.bin/create-docker-context-for-node-component \
     --build --tag localhost:5000/magda-agent-manager:latest --local
 )
 (
   cd magda-llm-services
+  yarn build
   ../node_modules/.bin/create-docker-context-for-node-component \
     --build --tag localhost:5000/magda-llm-services:latest --local
 )
-yarn workspace @magda/agent-runtime docker-build-local --version latest
+(
+  # prepare-docker builds the bundled mgd CLI and runs the runtime tests.
+  cd magda-agent-runtime
+  yarn prepare-docker
+  ../node_modules/.bin/create-docker-context-for-node-component \
+    --build --tag localhost:5000/magda-agent-runtime:latest --local
+)
 ```
 
+These commands build into the local Docker daemon without pushing. The
+packages' `docker-build-local` scripts also `--push`, which fails unless a
+registry is listening on `localhost:5000`.
+
 Build the changed existing components using the repository's standard component
-builder, including `magda-authorization-api`, `magda-gateway`,
-`magda-web-server`, and `magda-migrator-authorization-db`.
+builder, including `magda-authorization-api`, `magda-opa`, `magda-gateway`,
+`magda-storage-api`, `magda-web-server`, and
+`magda-migrator-authorization-db`. The Minikube profile expects each as
+`localhost:5000/<component>:latest`.
 
 ### Minikube-specific setup
 
@@ -236,6 +250,22 @@ dependency, so the standard E2E path does **not** install
 `magda-auth-internal` a second time. Ensure the internal plugin is enabled and
 Gateway discovers it as part of the rendered umbrella deployment.
 
+The profile sets `tags.all: false` and allowlists the components it needs.
+Helm enables a chart when **any** of its tags is true, so `all: true` cannot be
+narrowed by setting individual component tags to `false`. The allowlist keeps
+the core services, dataset search (used by the `mgd` read checks) and the
+internal auth plugin, and leaves connectors, minions, URL processors,
+semantic indexers and the other auth plugins disabled.
+
+When converting an existing pre-release development cluster to this profile:
+
+- `helm uninstall` any separately installed `magda-auth-internal` release
+  first; the umbrella now owns that workload.
+- Reset an Authorization DB that applied the earlier unreleased
+  `V2_4__agent_skills.sql`/`V2_5__agent_workspace_access.sql` migrations.
+  They are replaced by `V2_4__agent_workspace_and_skills.sql`, and Flyway
+  rejects the changed `2.4` checksum. Pre-release state is not migrated.
+
 The supplied values expect local `localhost:5000/*:latest` images loaded into
 Minikube. For each required local image:
 
@@ -250,7 +280,7 @@ kubectl create namespace magda-agent --dry-run=client -o yaml | kubectl apply -f
 INGRESS_IP=$(kubectl -n ingress-nginx get svc ingress-nginx-controller \
   -o jsonpath='{.spec.clusterIP}')
 kubectl -n ingress-nginx get secret magda-test-tls \
-  -o jsonpath='{.data.tls\\.crt}' | base64 --decode >/tmp/magda-agent-ca.crt
+  -o jsonpath='{.data.tls\.crt}' | base64 --decode >/tmp/magda-agent-ca.crt
 kubectl -n magda-agent create secret generic magda-agent-trusted-ca \
   --from-file=ca.crt=/tmp/magda-agent-ca.crt \
   --dry-run=client -o yaml | kubectl apply -f -
@@ -278,13 +308,14 @@ magda:
 EOF
 ```
 
-Refresh local chart dependencies from the inside out, then deploy the local
-umbrella:
+Refresh all vendored local chart dependencies, including the internal charts'
+own dependencies, from the repository root, then deploy the local umbrella.
+Running only `helm dependency update` on `magda-core`, `magda` and
+`local-deployment` is not sufficient on a fresh checkout:
 
 ```sh
-helm dependency update deploy/helm/magda-core
-helm dependency update deploy/helm/magda
-helm dependency update deploy/helm/local-deployment
+helm repo add magda-io https://charts.magda.io
+yarn update-all-charts
 helm upgrade --install magda deploy/helm/local-deployment \
   --namespace magda --create-namespace \
   -f deploy/helm/agent-workspace-minikube.yml \

@@ -29,8 +29,11 @@ for publication and synchronization details.
   kubectl -n agent-sandbox-system rollout status deploy --timeout=300s
   ```
 
-- The local Agent Manager, LLM Services and Agent Runtime images built and
-  loaded into Minikube. Reset any workspace created by an earlier development
+- The local Agent Manager, LLM Services and Agent Runtime images, plus the
+  changed existing components listed in
+  [Build local images](../agent-workspace-deployment.md#build-local-images)
+  (including `magda-opa` and `magda-storage-api`), built and loaded into
+  Minikube. Reset any workspace created by an earlier development
   image before qualification: bootstrap configuration is PVC-backed and an
   existing claim is not reprovisioned by a Helm upgrade.
 - The [local qualification overlay](../../../deploy/helm/agent-workspace-minikube.yml)
@@ -108,7 +111,6 @@ for publication and synchronization details.
 
   Without this secret, the lifecycle and DSH paths remain testable and LLM calls
   should return a useful provider-credential error.
-
 
 Before the browser checks, verify that the rendered local umbrella is using
 **nested** `magda.magda-core.agent-services`/LLM/Gateway/Ingress overrides,
@@ -247,11 +249,17 @@ Run each check while watching the Settings page and Kubernetes resources:
   with `pods/exec`, and neither token nor DSH cookie reaches browser responses or
   Pod logs.
 
-Repeat the core browser, `mgd`, LLM streaming, refresh and reset journey with:
+Repeat the core browser, `mgd`, LLM streaming, refresh and reset journey with
+each runtime. Through the `local-deployment` umbrella the key is nested under
+`magda.magda-core`:
 
-1. `agent-services.warmPool.type=runc`; and
-2. `agent-services.warmPool.type=gvisor` with the Minikube gVisor RuntimeClass
-   installed.
+1. `magda.magda-core.agent-services.warmPool.type=runc` (the profile default);
+   and
+2. `--set magda.magda-core.agent-services.warmPool.type=gvisor` with the
+   Minikube gVisor RuntimeClass installed.
+
+Switching runtime replaces the SandboxTemplate and warm pool: terminate or
+reset existing workspaces first.
 
 Each render must contain exactly one SandboxTemplate and one matching
 SandboxWarmPool. Kata is covered by the offline Helm render matrix; run the full
@@ -270,9 +278,27 @@ annotations `nginx.ingress.kubernetes.io/proxy-read-timeout` and
 with Workspace enabled, remain absent without Workspace unless explicitly
 configured, and honor deliberate overrides (#3847).
 
-On a real local ingress path, keep a DSH WSS connection alive beyond the
-old default timeout, deliberately close/restart the Gateway or Manager,
-and verify browser reconnect rather than a permanently hung socket.
+The render-level and Gateway request-level checks are automated:
+
+```sh
+bash deploy/helm/magda-core/tests/agent-services-render.sh
+bash deploy/helm/magda-core/tests/agent-workspace-profiles.sh
+(cd magda-gateway && yarn test)   # agentWorkspaceCsp.spec.ts; needs PostgreSQL
+```
+
+On the deployed umbrella, compare the live `Content-Security-Policy` of
+`/api/v0/agent/runtime/` with an ordinary page and a near-match such as
+`/api/v0/agent/runtime-evil/`. Confirm the controller's effective
+configuration for the Magda host contains `proxy_read_timeout 3600s` and
+`proxy_send_timeout 3600s`.
+
+On a real local ingress path, keep a DSH WSS connection
+(`/api/v0/agent/runtime/api/remote.mux`) open beyond the old default
+timeout, deliberately close/restart the Gateway or Manager, and verify
+browser reconnect rather than a permanently hung socket. DSH sends a
+protocol ping about every two seconds, so an open DSH socket is never idle at
+the TCP level; the effective nginx configuration is the evidence for the
+timeout annotations themselves.
 Controller config reloads may terminate WebSockets; document and test this
 behaviour without confusing it with idle Workspace deletion. These
 tests **do not** replace GKE provider NetworkPolicy or IAM qualification.
@@ -581,7 +607,8 @@ Recover a disposable local cluster as follows:
    all to become ready.
 
 For local lifecycle testing where gVisor itself is not under qualification, use
-`agent-services.warmPool.type=runc` instead of weakening the Sandbox security
+`runc` (`magda.magda-core.agent-services.warmPool.type=runc` through the
+umbrella) instead of weakening the Sandbox security
 context or bypassing readiness checks.
 
 ### Model turns fail with `Connection error`
