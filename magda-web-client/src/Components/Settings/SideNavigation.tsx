@@ -21,7 +21,8 @@ import {
     MdSecurity,
     MdSmartToy,
     MdOpenInBrowser,
-    MdOutlineLibraryBooks
+    MdOutlineLibraryBooks,
+    MdPeopleOutline
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -33,7 +34,8 @@ import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization
 import { config } from "../../config";
 import {
     AGENT_SKILL_READ_OPERATIONS,
-    AGENT_WORKSPACE_ACCESS_OPERATION
+    AGENT_WORKSPACE_ACCESS_OPERATION,
+    SHARED_SKILL_OPERATIONS
 } from "./agentWorkspaceAccess";
 import {
     getUrlWithPopUpQueryString,
@@ -97,9 +99,7 @@ const defaultMenuItems: MenuItem[] = [
         ? [
               {
                   // A non-clickable group. Each child is shown independently;
-                  // the group appears when any child is available. #3861 will
-                  // add a third child, Shared Skills
-                  // (/settings/agent-workspace/shared-skills).
+                  // the group appears when any child is available.
                   title: "Agent Workspace",
                   path: "/settings/agent-workspace-group",
                   icon: <MdSmartToy />,
@@ -118,6 +118,12 @@ const defaultMenuItems: MenuItem[] = [
                           path: "/settings/agent-workspace/skills",
                           icon: <MdOutlineLibraryBooks />,
                           requireAnyOperationUris: AGENT_SKILL_READ_OPERATIONS
+                      },
+                      {
+                          title: "Shared Skills",
+                          path: "/settings/agent-workspace/shared-skills",
+                          icon: <MdPeopleOutline />,
+                          requireAnyOperationUris: SHARED_SKILL_OPERATIONS
                       }
                   ]
               }

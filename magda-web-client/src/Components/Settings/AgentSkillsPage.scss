@@ -251,6 +251,69 @@
     }
 }
 
+// #3861: sharing and system skill access dialogs; feedback lines outside a
+// card reuse the card feedback colours.
+.agent-skill-recipients,
+.agent-skill-audience {
+    margin-top: 16px;
+
+    h3 {
+        font-size: 16px;
+        margin: 0 0 8px;
+    }
+
+    .agent-skill-feedback {
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 4px;
+
+        &.feedback-success {
+            background: #ecf6ec;
+            color: #22662a;
+        }
+
+        &.feedback-error {
+            background: #fdecea;
+            color: #a12c1f;
+        }
+    }
+}
+
+.agent-skill-recipient-add,
+.agent-skill-recipient-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .rs-input {
+        flex: 1 1 260px;
+    }
+}
+
+.agent-skill-recipient-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 6px 8px;
+        border-bottom: 1px solid #e5e5ea;
+        text-align: left;
+        vertical-align: middle;
+    }
+}
+
+.agent-skill-public label,
+.agent-skill-orgunit label {
+    font-weight: 600;
+}
+
+.agent-skill-orgunit {
+    margin: 12px 0;
+}
+
 .agent-skills-pagination {
     display: flex;
     gap: 12px;

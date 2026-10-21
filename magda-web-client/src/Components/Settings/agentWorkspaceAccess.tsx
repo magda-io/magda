@@ -22,6 +22,15 @@ export const AGENT_SKILL_READ_OPERATIONS = [
     "object/agentSkill/user/read"
 ];
 
+/**
+ * Shared Skills (#3861): reading other users' shared user skills, or managing
+ * the user's own installations. Independent of Workspace access.
+ */
+export const SHARED_SKILL_OPERATIONS = [
+    "object/agentSkill/user/read",
+    "object/agentSkill/install/read"
+];
+
 export function canAccessAgentWorkspace(user?: User) {
     return !!user?.id && hasPermission(AGENT_WORKSPACE_ACCESS_OPERATION, user);
 }
@@ -30,6 +39,15 @@ export function canBrowseAgentSkills(user?: User) {
     return (
         !!user?.id &&
         AGENT_SKILL_READ_OPERATIONS.some((operation) =>
+            hasPermission(operation, user)
+        )
+    );
+}
+
+export function canBrowseSharedSkills(user?: User) {
+    return (
+        !!user?.id &&
+        SHARED_SKILL_OPERATIONS.some((operation) =>
             hasPermission(operation, user)
         )
     );
@@ -56,3 +74,14 @@ function RequireAgentSkillsAccess(WrappedComponent) {
 }
 
 export const requireAgentSkillsAccess = memoize(RequireAgentSkillsAccess);
+
+function RequireSharedSkillsAccess(WrappedComponent) {
+    const NewComponent = (props) => (
+        <ValidateUser checkUserFunc={canBrowseSharedSkills}>
+            <WrappedComponent {...props} />
+        </ValidateUser>
+    );
+    return NewComponent;
+}
+
+export const requireSharedSkillsAccess = memoize(RequireSharedSkillsAccess);

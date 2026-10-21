@@ -137,6 +137,12 @@ const PROBLEM_REASONS: Record<string, string> = {
     OPERATION_FAILED: "the installed copy couldn't be updated",
     DOWNLOAD_FAILED: "the published skill couldn't be downloaded",
     SOURCE_UNRESOLVED: "the published source couldn't be resolved",
+    NOT_DESIRED_LOCAL_MODIFICATION:
+        "edited in this Workspace but no longer part of your skills, so it was kept",
+    INSTALLATION_SOURCE_UNAVAILABLE:
+        "this shared skill is no longer available to you; uninstall it from Shared Skills",
+    MANIFEST_WARNING_SOURCE_PENDING:
+        "a shared skill is being updated by its publisher; retry shortly",
     MANIFEST_UNAVAILABLE: "the list of published skills couldn't be loaded"
 };
 
