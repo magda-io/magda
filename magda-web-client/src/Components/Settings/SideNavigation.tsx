@@ -18,7 +18,10 @@ import {
     MdOutlineArticle,
     MdOutlineHome,
     MdOutlineTextFields,
-    MdSecurity
+    MdSecurity,
+    MdSmartToy,
+    MdOpenInBrowser,
+    MdOutlineLibraryBooks
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -27,6 +30,11 @@ import { useSelector } from "react-redux";
 import uniq from "lodash/uniq";
 import { User } from "reducers/userManagementReducer";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
+import { config } from "../../config";
+import {
+    AGENT_SKILL_READ_OPERATIONS,
+    AGENT_WORKSPACE_ACCESS_OPERATION
+} from "./agentWorkspaceAccess";
 import {
     getUrlWithPopUpQueryString,
     showSideNav
@@ -38,14 +46,19 @@ type PropsType = {
     history: History;
 };
 
-type MenuItem = {
+export type MenuItem = {
     // the page path; for a group, a unique key (a group isn't a link)
     path: string;
     icon: ReactElement;
     title: string;
     active?: boolean;
+    // highlight only on this exact path, not on its sub-pages
+    exact?: boolean;
     requireRoleIds?: string[];
+    // all of these operations are required
     requireOperationUris?: string[];
+    // at least one of these operations is required
+    requireAnyOperationUris?: string[];
     // second level menu items. A menu item with children is a group and is not a link itself.
     // A group is hidden when none of its children is available (e.g. due to access).
     children?: MenuItem[];
@@ -80,6 +93,36 @@ const defaultMenuItems: MenuItem[] = [
             "object/faas/function/invoke"
         ]
     },
+    ...(config.featureFlags.agentWorkspace
+        ? [
+              {
+                  // A non-clickable group. Each child is shown independently;
+                  // the group appears when any child is available. #3861 will
+                  // add a third child, Shared Skills
+                  // (/settings/agent-workspace/shared-skills).
+                  title: "Agent Workspace",
+                  path: "/settings/agent-workspace-group",
+                  icon: <MdSmartToy />,
+                  children: [
+                      {
+                          title: "Open Workspace",
+                          path: "/settings/agent-workspace",
+                          exact: true,
+                          icon: <MdOpenInBrowser />,
+                          requireOperationUris: [
+                              AGENT_WORKSPACE_ACCESS_OPERATION
+                          ]
+                      },
+                      {
+                          title: "Agent Skills",
+                          path: "/settings/agent-workspace/skills",
+                          icon: <MdOutlineLibraryBooks />,
+                          requireAnyOperationUris: AGENT_SKILL_READ_OPERATIONS
+                      }
+                  ]
+              }
+          ]
+        : []),
     {
         title: "Access Controls",
         path: "/settings/accessControls",
@@ -180,6 +223,44 @@ const defaultMenuItems: MenuItem[] = [
     }
 ];
 
+/**
+ * Whether the user's `whoami` roles and operations satisfy a menu item. This
+ * is a navigation hint only; routes and APIs enforce authorization.
+ */
+export function isMenuItemAllowed(
+    item: MenuItem,
+    userRoleIds: string[],
+    userOpUris: string[]
+): boolean {
+    if (userRoleIds.indexOf(ADMIN_USERS_ROLE_ID) !== -1) {
+        // admin user will see all menu items
+        return true;
+    }
+    if (item?.requireRoleIds?.length) {
+        for (const roleId of item.requireRoleIds) {
+            if (userRoleIds.indexOf(roleId) === -1) {
+                return false;
+            }
+        }
+    }
+    if (item?.requireOperationUris?.length) {
+        for (const opUri of item.requireOperationUris) {
+            if (userOpUris.indexOf(opUri) === -1) {
+                return false;
+            }
+        }
+    }
+    if (
+        item?.requireAnyOperationUris?.length &&
+        !item.requireAnyOperationUris.some(
+            (opUri) => userOpUris.indexOf(opUri) !== -1
+        )
+    ) {
+        return false;
+    }
+    return true;
+}
+
 /* eslint-disable jsx-a11y/anchor-is-valid */
 const SideNavigation: FunctionComponent<PropsType> = (props) => {
     const { location } = props;
@@ -209,7 +290,9 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
         ? props.menuItems
         : defaultMenuItems;
     const isActive = (item: MenuItem) =>
-        props.location.pathname.indexOf(item.path) === 0;
+        item.exact
+            ? props.location.pathname.replace(/\/+$/, "") === item.path
+            : props.location.pathname.indexOf(item.path) === 0;
     // groups are collapsed by default, except the group of the current page.
     // Clicking a group title expands / collapses it.
     const [toggledGroups, setToggledGroups] = useState<{
@@ -228,41 +311,14 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
     function accessFilter(item: MenuItem): boolean {
         if (
             (item?.requireRoleIds?.length ||
-                item?.requireOperationUris?.length) &&
+                item?.requireOperationUris?.length ||
+                item?.requireAnyOperationUris?.length) &&
             (isUserLoading || userLoadingError)
         ) {
             // any require access check items will not will be shown until user data is available
             return false;
         }
-        if (
-            userRoleIds.findIndex(
-                (roleId) => roleId === ADMIN_USERS_ROLE_ID
-            ) !== -1
-        ) {
-            // admin user will see all menu items
-            return true;
-        }
-        if (item?.requireRoleIds?.length) {
-            if (!userRoleIds.length) {
-                return false;
-            }
-            for (const roleId of item.requireRoleIds) {
-                if (userRoleIds.indexOf(roleId) === -1) {
-                    return false;
-                }
-            }
-        }
-        if (item?.requireOperationUris?.length) {
-            if (!userOpUris.length) {
-                return false;
-            }
-            for (const opUri of item.requireOperationUris) {
-                if (userOpUris.indexOf(opUri) === -1) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return isMenuItemAllowed(item, userRoleIds, userOpUris);
     }
 
     return (

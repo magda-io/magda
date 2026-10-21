@@ -8,6 +8,8 @@ import {
     installSkill,
     uninstallSkill,
     resolveSkillDir,
+    resolveGlobalSkillRoot,
+    resolveAgentSkillTargets,
     parseAgents,
     packageSkillsDir,
     AGENT_NAMES
@@ -33,11 +35,46 @@ describe("skills install", () => {
         env = {
             HOME: tmp,
             CODEX_HOME: path.join(tmp, "codexhome"),
-            XDG_CONFIG_HOME: path.join(tmp, "xdg")
+            XDG_CONFIG_HOME: path.join(tmp, "xdg"),
+            PATH: ""
         };
+        await Promise.all([
+            fs.mkdir(path.join(tmp, ".claude"), { recursive: true }),
+            fs.mkdir(path.join(tmp, ".agents"), { recursive: true }),
+            fs.mkdir(path.join(tmp, "xdg", "opencode"), { recursive: true })
+        ]);
     });
     afterEach(async () => {
         await fs.rm(tmp, { recursive: true, force: true });
+    });
+
+    it("SKILL.md routes to every bundled reference, including agent-skills.md", async () => {
+        const skill = await fs.readFile(
+            path.join(SKILLS_DIR, "SKILL.md"),
+            "utf8"
+        );
+        const references = expectedBundle().filter((f) => f !== "SKILL.md");
+        expect(references).to.include("agent-skills.md");
+        for (const reference of references) {
+            expect(skill, reference).to.include(`\`${reference}\``);
+        }
+        // Both the command table and the task-routing table name the
+        // Agent Skills reference, and keep the two command families distinct.
+        const routes = skill
+            .split("\n")
+            .filter((line) => line.includes("`agent-skills.md`"));
+        expect(routes.some((line) => line.includes("agent-skill init"))).to.be
+            .true;
+        expect(routes.some((line) => line.includes("skills install"))).to.be
+            .true;
+        expect(routes.some((line) => /reusable Agent Skill/i.test(line))).to.be
+            .true;
+        const reference = await fs.readFile(
+            path.join(SKILLS_DIR, "agent-skills.md"),
+            "utf8"
+        );
+        expect(reference).to.include("mgd skills install");
+        expect(reference).to.include("mgd agent-skill");
     });
 
     it("packageSkillsDir finds the shipped skills folder", () => {
@@ -71,6 +108,69 @@ describe("skills install", () => {
                 env
             })
         ).to.equal(path.join(tmp, "xdg", "opencode", "skills", "magda-mgd"));
+    });
+
+    it("exposes the harness-native global skill roots", () => {
+        expect(resolveGlobalSkillRoot("claude", env)).to.equal(
+            path.join(tmp, ".claude", "skills")
+        );
+        expect(resolveGlobalSkillRoot("codex", env)).to.equal(
+            path.join(tmp, ".agents", "skills")
+        );
+        expect(resolveGlobalSkillRoot("opencode", env)).to.equal(
+            path.join(tmp, "xdg", "opencode", "skills")
+        );
+    });
+
+    it("resolves native harness roots and DSH as independent copy targets", () => {
+        env.DSH_HOME = path.join(tmp, "dsh");
+        expect(resolveAgentSkillTargets({ env })).to.deep.equal([
+            {
+                root: path.join(tmp, ".claude", "skills"),
+                harness: "claude"
+            },
+            {
+                root: path.join(tmp, ".agents", "skills"),
+                harness: "codex"
+            },
+            {
+                root: path.join(tmp, "xdg", "opencode", "skills"),
+                harness: "opencode"
+            },
+            {
+                root: path.join(tmp, "dsh", "skills"),
+                harness: "dsh"
+            }
+        ]);
+    });
+
+    it("deduplicates overlapping harness roots", () => {
+        env.DSH_HOME = path.join(tmp, ".agents");
+        expect(resolveAgentSkillTargets({ env })).to.deep.equal([
+            {
+                root: path.join(tmp, ".claude", "skills"),
+                harness: "claude"
+            },
+            {
+                root: path.join(tmp, ".agents", "skills"),
+                harness: "codex"
+            },
+            {
+                root: path.join(tmp, "xdg", "opencode", "skills"),
+                harness: "opencode"
+            }
+        ]);
+    });
+
+    it("uses MGD_AGENT_SKILL_DIR as an explicit single target", () => {
+        env.MGD_AGENT_SKILL_DIR = path.join(tmp, "workspace-skills");
+        env.DSH_HOME = path.join(tmp, "dsh");
+        expect(resolveAgentSkillTargets({ env })).to.deep.equal([
+            {
+                root: path.join(tmp, "workspace-skills"),
+                harness: "custom"
+            }
+        ]);
     });
 
     it("resolveSkillDir: project dirs are per-tool", () => {
@@ -160,7 +260,8 @@ describe("skills install", () => {
         const src = path.join(tmp, "src-skills");
         await fs.mkdir(src, { recursive: true });
         const mdFiles = ["SKILL.md", "core.md", "extra-reference.md"];
-        for (const f of mdFiles) await fs.writeFile(path.join(src, f), `# ${f}`);
+        for (const f of mdFiles)
+            await fs.writeFile(path.join(src, f), `# ${f}`);
         // a non-markdown file must be ignored
         await fs.writeFile(path.join(src, "notes.txt"), "ignore me");
 

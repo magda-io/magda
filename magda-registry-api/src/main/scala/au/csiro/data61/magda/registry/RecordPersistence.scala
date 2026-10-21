@@ -457,7 +457,10 @@ class DefaultRecordPersistence(config: Config)
     sql"SELECT * FROM records ${SQLSyntax.where(SQLUtils.toAndConditionOpt(whereClauseParts: _*))} LIMIT 1"
       .map { rs =>
         val aspects =
-          sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${id}"""
+          sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${id} ${SQLUtils
+            .tenantIdToWhereClause(tenantId, "recordaspects.tenantid")
+            .map(condition => sqls"AND $condition")
+            .getOrElse(SQLSyntax.empty)}"""
             .map { rs =>
               val aspectId = rs.string("aspectid")
               (aspectId, JsonParser(rs.string("data")).asJsObject)

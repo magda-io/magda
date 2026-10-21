@@ -23,6 +23,13 @@ import LogoSettingsPage from "./Content/LogoSettingsPage";
 import PagesSettingsPage from "./Content/PagesSettingsPage";
 import HomeSettingsPage from "./Content/HomeSettingsPage";
 import UiTextSettingsPage from "./Content/UiTextSettingsPage";
+import AgentWorkspacePage from "./AgentWorkspacePage";
+import AgentSkillsPage from "./AgentSkillsPage";
+import {
+    requireAgentSkillsAccess,
+    requireAgentWorkspaceAccess
+} from "./agentWorkspaceAccess";
+import { config } from "../../config";
 
 function SettingsRedirect() {
     const location = useLocation();
@@ -67,6 +74,28 @@ const Routes = () => {
                             noContainerClass: true
                         })}
                     />
+                    {config.featureFlags.agentWorkspace && (
+                        <Route
+                            exact
+                            path="/settings/agent-workspace/skills"
+                            component={requireAgentSkillsAccess(
+                                withHeader(AgentSkillsPage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
+                    {config.featureFlags.agentWorkspace && (
+                        <Route
+                            exact
+                            path="/settings/agent-workspace"
+                            component={requireAgentWorkspaceAccess(
+                                withHeader(AgentWorkspacePage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
                     <Route
                         exact
                         path="/settings/users"

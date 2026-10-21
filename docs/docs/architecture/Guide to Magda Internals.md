@@ -7,6 +7,7 @@
   - [Content API](#content-api)
   - [Correspondence API](#correspondence-api)
   - [Gateway](#gateway)
+  - [Agent Workspace and LLM Services](#agent-workspace-and-llm-services)
   - [Minions](#minions)
   - [Registry](#registry)
     - [Records](#records)
@@ -130,6 +131,30 @@ The Gateway is responsible for:
 - Managing security related HTTP headers via [Helmet](https://www.npmjs.com/package/helmet)
 
 See [Authentication](#authentication-authn) for more details around how it handles authn.
+
+## Agent Workspace and LLM Services
+
+Magda's optional **Agent Workspace** integrates a browser-hosted coding/data
+agent with the catalogue without placing Magda user sessions or model-provider
+credentials in the Sandbox. **Agent Manager** provisions and manages one
+installation-scoped, isolated Kubernetes Agent Sandbox/PVC per user and proxies
+the managed DeepSeek Harness HTTP/WebSocket UI. Each Sandbox can contain
+multiple DSH conversations. **Magda LLM Services** independently authenticates
+the caller and enforces the deployment model allowlist before forwarding model
+requests to a bundled or external LiteLLM backend. The agent's Magda actions
+use a lifecycle-bound user API key and existing Magda authorization.
+
+**Agent Skills** are separately published, Registry-backed user/system
+capabilities stored as validated ZIPs through the regular Storage API. Their
+authorization, reconciliation and Settings catalogue are separate from the
+Sandbox lifecycle.
+
+The Agent Workspace and LLM facade are opt-in via Helm and remain
+independently configurable. For component boundaries and threat model see
+[Agent Workspace architecture](./agent-workspace.md) and
+[Agent Skills architecture](./agent-skills.md). For deployment, lifecycle
+cleanup and qualified infrastructure see the
+[Agent Workspace operator guide](../agent-workspace-deployment.md).
 
 ## Minions
 

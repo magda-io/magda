@@ -166,9 +166,9 @@ export default function registerMultipartRoutes(
                 const bucket = req.params.bucket;
                 const objectKey = req.params[0];
                 const encodeBucketname = encodeURIComponent(bucket);
-                const recordId = req.query.recordId
-                    ? decodeURIComponent(req.query.recordId as string)
-                    : undefined;
+                const recordId = res.locals.storageObjectRecordId as
+                    | string
+                    | undefined;
                 const contentType = req.headers["content-type"] as string;
                 const orgUnitId = req.query.orgUnitId as string;
                 const ownerId = res.locals.storageObjectOwnerId as string;
@@ -465,13 +465,14 @@ export default function registerMultipartRoutes(
                 const uploadSession: UploadSession = res.locals.uploadSession;
                 if (
                     res.locals.storageObjectOwnerId !==
-                    getUploadSessionOwnerId(uploadSession)
+                        getUploadSessionOwnerId(uploadSession) ||
+                    res.locals.storageObjectRecordId !== uploadSession.recordId
                 ) {
                     // the owner was persisted when the upload was initiated & can't be changed now.
                     // i.e. the target object has been replaced by another owner's object since then.
                     return res.status(409).send({
                         message:
-                            "The target object's owner has changed since the multipart upload was initiated. Please abort the upload and initiate a new one."
+                            "The target object's owner or record link has changed since the multipart upload was initiated. Please abort the upload and initiate a new one."
                     });
                 }
                 const parts = req.body?.parts;

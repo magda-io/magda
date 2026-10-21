@@ -1,0 +1,31 @@
+global:
+  defaultAgentModel: {}
+
+image:
+  name: magda-llm-services
+  tag: ""
+  pullPolicy: IfNotPresent
+replicas: 1
+# -- Deployment-wide model allowlist. An empty array inherits
+# global.defaultAgentModel.alias from the parent chart. Bundled LiteLLM requires
+# exactly one matching alias; external backends may use multiple aliases.
+allowedModels: []
+
+# External LiteLLM-compatible backend. Leave empty when the bundled LiteLLM
+# subchart is enabled. When bundled LiteLLM is disabled all three fields are
+# required, and the operator must ensure every allowed model alias exists on the
+# external backend.
+backend:
+  url: ""
+  masterKeySecret:
+    name: ""
+    key: ""
+
+# Optional bundled static LiteLLM router. Child values not repeated here use the
+# defaults from the litellm chart.
+litellm:
+  enabled: true
+
+resources:
+  requests: {cpu: 50m, memory: 64Mi}
+  limits: {cpu: 500m, memory: 256Mi}

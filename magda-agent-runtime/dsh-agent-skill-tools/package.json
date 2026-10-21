@@ -1,0 +1,11 @@
+{
+  "name": "@magda/dsh-agent-skill-tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./operations": "./lib/operations.js"
+  }
+}

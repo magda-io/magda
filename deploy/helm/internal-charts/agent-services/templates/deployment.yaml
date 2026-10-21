@@ -1,0 +1,103 @@
+{{- $namespace := include "agent-services.sandboxNamespace" . -}}
+{{- $installationId := include "agent-services.installationId" . -}}
+{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
+{{- $model := coalesce .Values.llm.model (get $globalModel "alias") -}}
+{{- $contextWindow := get $globalModel "contextWindow" -}}
+{{- if and (hasKey .Values.llm "contextWindow") (ne (kindOf .Values.llm.contextWindow) "invalid") -}}
+{{- $contextWindow = .Values.llm.contextWindow -}}
+{{- end -}}
+{{- $maxTokens := get $globalModel "maxTokens" -}}
+{{- if and (hasKey .Values.llm "maxTokens") (ne (kindOf .Values.llm.maxTokens) "invalid") -}}
+{{- $maxTokens = .Values.llm.maxTokens -}}
+{{- end -}}
+{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
+{{- if ne (int .Values.manager.replicas) 1 -}}
+{{- fail "agent-services.manager.replicas must be 1 because lifecycle reconciliation is single-writer" -}}
+{{- end -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-manager
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
+    app.kubernetes.io/name: magda-agent-manager
+spec:
+  replicas: {{ .Values.manager.replicas }}
+  # Avoid old/new Manager overlap: activity and destructive lifecycle decisions
+  # are single-writer. Durable writes still use Kubernetes CAS and max-only key
+  # expiry updates as defense in depth.
+  strategy:
+    type: Recreate
+  # Keep the pre-merge selector stable so upgrades from the split chart do not
+  # attempt to mutate Deployment.spec.selector (which Kubernetes forbids).
+  selector:
+    matchLabels:
+      service: agent-manager
+  template:
+    metadata:
+      labels:
+        service: agent-manager
+        app.kubernetes.io/name: magda-agent-manager
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        agent.magda.io/installation-id: {{ $installationId | quote }}
+    spec:
+{{ include "magda.imagePullSecrets" . | indent 6 }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: agent-manager
+          image: {{ include "agent-services.managerImage" . | quote }}
+          imagePullPolicy: {{ include "agent-services.managerImagePullPolicy" . | quote }}
+          ports:
+            - {name: http, containerPort: 8080}
+          env:
+            - {name: PORT, value: "8080"}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef: {name: auth-secrets, key: jwt-secret}
+            - name: CONTROL_PLANE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.controlPlaneSecret.name }}
+                  key: {{ .Values.controlPlaneSecret.key }}
+            - {name: SYSTEM_USER_ID, value: {{ required "agent-services: global.defaultAdminUserId is required (normally supplied by the magda-core parent chart)" .Values.global.defaultAdminUserId | quote }}}
+            - {name: AUTH_API_URL, value: "http://authorization-api/v0"}
+            - {name: REGISTRY_API_URL, value: {{ .Values.registryApiUrl | quote }}}
+            - {name: STORAGE_API_URL, value: {{ .Values.storageApiUrl | quote }}}
+            - {name: DEFAULT_STORAGE_BUCKET, value: {{ .Values.global.defaultDatasetBucket | quote }}}
+            - {name: TENANT_ID, value: {{ .Values.tenantId | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_COMPRESSED_BYTES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxCompressedBytes) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_UNCOMPRESSED_BYTES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxUncompressedBytes) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_ENTRIES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxEntries) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_PATH_LENGTH, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxPathLength) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_NESTING_DEPTH, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxNestingDepth) | quote }}}
+            - {name: SKILL_ARCHIVE_MAX_MARKDOWN_BYTES, value: {{ printf "%.0f" (float64 .Values.skillArchive.maxMarkdownBytes) | quote }}}
+            - {name: SANDBOX_NAMESPACE, value: {{ $namespace | quote }}}
+            - {name: MAGDA_INSTALLATION_ID, value: {{ $installationId | quote }}}
+            - {name: SANDBOX_WARM_POOL, value: {{ include "agent-services.warmPoolName" . | quote }}}
+            - {name: MANAGED_API_KEY_NAME, value: {{ printf "%s-%s" .Values.managedApiKeyNamePrefix $installationId | quote }}}
+            - {name: EXTERNAL_URL, value: {{ include "agent-services.externalUrl" . | quote }}}
+            - {name: MAGDA_API_URL, value: {{ .Values.magdaApiUrl | default (printf "%s/api" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}}
+            - {name: MAGDA_LLM_API_URL, value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}}
+            - {name: RUNTIME_PREFIX, value: {{ .Values.runtimePrefix | quote }}}
+            - {name: HARD_DELETE_SECONDS, value: {{ .Values.hardDeleteSeconds | quote }}}
+            - {name: IDLE_SUSPEND_SECONDS, value: {{ .Values.idleSuspendSeconds | quote }}}
+            - {name: RECONCILE_INTERVAL_SECONDS, value: {{ .Values.reconcileIntervalSeconds | quote }}}
+            - {name: RUNTIME_MAX_BODY_BYTES, value: {{ .Values.runtimeMaxBodyBytes | quote }}}
+            - {name: MAGDA_LLM_MODEL, value: {{ required "agent-services: llm.model or global.defaultAgentModel.alias is required" $model | quote }}}
+            - {name: MAGDA_LLM_CONTEXT_WINDOW, value: {{ printf "%.0f" (float64 (required "agent-services: llm.contextWindow or global.defaultAgentModel.contextWindow is required" $contextWindow)) | quote }}}
+            - {name: MAGDA_LLM_MAX_TOKENS, value: {{ printf "%.0f" (float64 (required "agent-services: llm.maxTokens or global.defaultAgentModel.maxTokens is required" $maxTokens)) | quote }}}
+{{- with $reasoningEffort }}
+            - {name: MAGDA_LLM_REASONING_EFFORT, value: {{ . | quote }}}
+{{- end }}
+          readinessProbe:
+            httpGet: {path: /v0/status/ready, port: http}
+          livenessProbe:
+            httpGet: {path: /v0/status/live, port: http}
+          resources:
+{{ toYaml .Values.manager.resources | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile: {type: RuntimeDefault}

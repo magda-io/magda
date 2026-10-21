@@ -1,0 +1,7 @@
+apiVersion: v2
+name: agent-services
+description: Magda Agent Workspace manager and isolated runtime resources
+version: 7.0.0
+kubeVersion: ">= 1.24.0-0"
+annotations:
+  magdaModuleType: core

@@ -21,6 +21,8 @@ Kubernetes: `>= 1.19.0-0`
 | ingressClass | string | When not specified, the default ingress class in the environment will be used. | The ingress class. The value of config will be used to add as `kubernetes.io/ingress.class` annotation on the ingress object. Possible values: nginx, gce etc. depends on the available ingressClass in your environment. |
 | ipName | string | `nil` | The name of a Google Cloud Platform (GCP) global IP address used by ingress as static external IP. Only supported on GCP.  |
 | proxyBodySize | string | `"100M"` | Proxy body size limit. You might want to increase this limit for larger file upload. |
+| proxyReadTimeout | string | `nil` | NGINX upstream timeouts in seconds. Long-lived Agent Workspace WebSockets need these to exceed the normal interactive session duration. |
+| proxySendTimeout | string | `nil` |  |
 | targetService | string | When not specified, will default to Magda's [gateway](../gateway) service | The target service of the ingress |
 | tlsSecretName | string | When not specified, default to `magda-cert-tls` | TLS certificate secret name. Only used when `enableTls` = true and `useDefaultCertificate` = false |
 | useDefaultCertificate | bool | `false` | Whether or not to used ingress controller default certificate. When set to true, no TLS certificate secret name needs to be supplied. |

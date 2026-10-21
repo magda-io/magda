@@ -165,6 +165,7 @@ export default class MagdaMinioClient {
                 try {
                     const stat = await this.client.statObject(bucket, fileName);
                     return {
+                        ...this.toS3MetaHeaders(stat.metaData),
                         "Content-Type": stat.metaData["content-type"],
                         "Content-Encoding": stat.metaData["content-encoding"],
                         "Cache-Control": stat.metaData["cache-control"],

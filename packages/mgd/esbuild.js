@@ -11,7 +11,7 @@ await esbuild.build({
     format: "esm",
     outfile,
     banner: { js: "#!/usr/bin/env node" },
-    external: ["commander"]
+    external: ["commander", "crc-32", "js-yaml", "yauzl", "yazl"]
 });
 
 // Make the bundle executable so `npm link` / direct execution works locally.

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-services
+spec:
+  selector: {service: llm-services}
+  ports:
+    - {name: http, port: 80, targetPort: 8080}

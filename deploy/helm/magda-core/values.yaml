@@ -1,4 +1,27 @@
 global:
+  agentWorkspace:
+    # -- Enable the opt-in integrated Agent Workspace MVP. The target cluster
+    # must have Kubernetes Agent Sandbox v1.0.4 or newer installed.
+    enabled: false
+    # -- Namespace containing per-user SandboxClaim, Sandbox and PVC resources.
+    # Empty derives a collision-resistant name from the Helm release namespace.
+    sandboxNamespace: ""
+  llmServices:
+    # -- Enable the authenticated Magda LLM facade independently of Agent Workspace.
+    enabled: false
+  defaultAgentModel:
+    # -- Stable model alias exposed by MAGDA LLM Services and managed DSH.
+    alias: magda-agent-default
+    # -- LiteLLM provider model routed behind the stable MAGDA alias.
+    providerModel: openai/gpt-5.6-sol
+    # -- Provider reasoning effort. Supported values: off, low, medium, high,
+    # xhigh, and max. Set to an empty string to omit the setting and let the
+    # provider choose its model default.
+    reasoningEffort: medium
+    # -- Model context-window capability.
+    contextWindow: 1050000
+    # -- Model maximum output tokens, including reasoning tokens.
+    maxTokens: 128000
   searchEngine:
     semanticIndexer:
       indexName: "semantic-index"

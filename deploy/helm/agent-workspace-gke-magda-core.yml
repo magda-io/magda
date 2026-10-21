@@ -1,0 +1,66 @@
+# Alpha reference values for the partially qualified GKE Standard + GKE
+# Sandbox/gVisor + community ingress-nginx + regional L4 passthrough NLB path.
+#
+# Values shape: direct `magda-core` chart. Apply as-is to a `magda-core`
+# release. When `magda-core` is a dependency of a parent chart, keep `global`
+# at the top level and nest every other top-level key below under the
+# dependency's path, for example `magda-core.agent-services` for the published
+# `magda` umbrella, or `magda.magda-core.agent-services` for
+# `local-deployment`.
+#
+# Not production-qualified: separate NetworkPolicy enforcement, IAM/Workload
+# Identity and provider qualification (#3848) must pass first.
+# These values do not install KAS, a gVisor node pool, ingress-nginx/NLB,
+# NetworkPolicy enforcement, certificates, provider secrets, or Google IAM
+# policy. Complete the GKE qualification gate in the deployment guide before
+# enabling Agent Workspace for untrusted workloads.
+global:
+  agentWorkspace:
+    # Change to true only after every GKE qualification gate passes.
+    enabled: false
+    # Empty derives <release-namespace>-agents with collision-safe truncation.
+    sandboxNamespace: ""
+  llmServices:
+    enabled: true
+
+agent-services:
+  # Requires a dedicated, non-Spot GKE Sandbox node pool. The GKE-managed
+  # RuntimeClass supplies its node selector and toleration.
+  warmPool:
+    type: gvisor
+    size: 2
+  runtimeClasses:
+    gvisor: gvisor
+  runtime:
+    # If the GKE API server has a public endpoint, add its exact /32 here so the
+    # broad public egress rule cannot reach it (for example: [203.0.113.10/32]).
+    deniedCidrs: []
+    storage:
+      size: 5Gi
+      # Tested zonal PD CSI profile. Regional/multi-zone storage must be
+      # selected and requalified explicitly.
+      storageClassName: standard-rwo
+  # These selectors are part of Sandbox egress policy and must exactly match
+  # the separately installed community ingress-nginx controller Pods.
+  ingressController:
+    namespace: ingress-nginx
+    podLabels:
+      app.kubernetes.io/component: controller
+
+llm-services:
+  # Bundled static LiteLLM. Create the provider Secret named
+  # litellm-provider before installation, or disable this child chart and
+  # configure llm-services.backend for an external LiteLLM endpoint.
+  litellm:
+    enabled: true
+
+# The PoC transport evidence used community ingress-nginx behind an L4
+# passthrough NLB. Install a uniquely named class separately and verify its
+# spec.controller is k8s.io/ingress-nginx; a class named `nginx` may instead be
+# owned by the incompatible F5 controller. Native GCE L7 is not qualified.
+ingress:
+  ingressClass: magda-agent-nginx
+  # These prevent nginx's default timeout from closing quiet DSH sockets after
+  # about 60 seconds. DSH must still reconnect after controller reload/drain.
+  proxyReadTimeout: 3600
+  proxySendTimeout: 3600

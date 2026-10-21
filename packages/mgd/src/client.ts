@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
-import { MgdApiError } from "./errors.js";
+import { MgdApiError, MutationOutcome } from "./errors.js";
 import {
     loadConfig,
     resolveProfile,
@@ -26,6 +26,51 @@ export interface RequestOptions {
 }
 
 const MUTATING = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+// Failures while establishing the connection or TLS session: the request
+// itself never reached the server.
+const NOT_SENT_CODES = new Set([
+    "ECONNREFUSED",
+    "ENOTFOUND",
+    "EAI_AGAIN",
+    "EHOSTUNREACH",
+    "ENETUNREACH",
+    "EADDRNOTAVAIL",
+    "UND_ERR_CONNECT_TIMEOUT",
+    "CERT_HAS_EXPIRED",
+    "DEPTH_ZERO_SELF_SIGNED_CERT",
+    "SELF_SIGNED_CERT_IN_CHAIN",
+    "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+    "ERR_TLS_CERT_ALTNAME_INVALID"
+]);
+
+function errorCodes(error: unknown): string[] {
+    const codes: string[] = [];
+    for (let e = error as any, depth = 0; e && depth < 5; depth++) {
+        if (typeof e.code === "string") codes.push(e.code);
+        e = e.cause;
+    }
+    return codes;
+}
+
+/** A server error on a write may follow a partial commit. */
+function serverErrorOutcome(method: string, error: MgdApiError): MgdApiError {
+    if (!MUTATING.has(method) || error.status < 500) return error;
+    return new MgdApiError(
+        error.message,
+        error.status,
+        error.code,
+        error.hint,
+        "unknown"
+    );
+}
+
+/** Classify a transport failure of a mutating request. */
+export function transportOutcome(error: unknown): MutationOutcome {
+    return errorCodes(error).some((code) => NOT_SENT_CODES.has(code))
+        ? "not-sent"
+        : "unknown";
+}
 
 function codeForStatus(status: number): string {
     if (status === 401) return "unauthorized";
@@ -90,19 +135,25 @@ export class MagdaClient {
                 if (!res.ok) throw await toApiError(res);
                 return res;
             } catch (e) {
-                if (e instanceof MgdApiError) throw e;
+                if (e instanceof MgdApiError)
+                    throw serverErrorOutcome(method, e);
                 lastError = e;
                 if (attempt === maxAttempts - 1) break;
             }
         }
-        if (lastError instanceof MgdApiError) throw lastError;
+        if (lastError instanceof MgdApiError)
+            throw serverErrorOutcome(method, lastError);
+        const detail = errorCodes(lastError)
+            .filter((code) => code !== "UND_ERR")
+            .slice(-1)[0];
         throw new MgdApiError(
             `Request failed: ${
                 lastError instanceof Error ? lastError.message : lastError
-            }`,
+            }${detail ? ` (${detail})` : ""}`,
             0,
             "network-error",
-            "Check the site URL and your network connection."
+            "Check the site URL and your network connection.",
+            MUTATING.has(method) ? transportOutcome(lastError) : undefined
         );
     }
 
@@ -112,24 +163,53 @@ export class MagdaClient {
         opts: RequestOptions = {}
     ): Promise<T> {
         const res = await this.request(method, path, opts);
-        return (await res.json()) as T;
+        try {
+            return (await res.json()) as T;
+        } catch (error) {
+            if (!MUTATING.has(method)) throw error;
+            // The server accepted the write but its response was lost.
+            throw new MgdApiError(
+                `The server accepted the request (HTTP ${
+                    res.status
+                }) but its response could not be read: ${
+                    (error as Error).message
+                }`,
+                res.status,
+                "response-unreadable",
+                undefined,
+                "unknown"
+            );
+        }
     }
 }
 
 async function toApiError(res: Response): Promise<MgdApiError> {
     let message = `${res.status} ${res.statusText}`;
+    let serverCode: string | undefined;
     try {
         const text = await res.text();
         try {
             const parsed = JSON.parse(text);
-            message = parsed?.message || parsed?.errorMessage || message;
+            message =
+                parsed?.error?.message ||
+                parsed?.message ||
+                parsed?.errorMessage ||
+                message;
+            serverCode =
+                typeof parsed?.error?.code === "string"
+                    ? parsed.error.code
+                    : undefined;
         } catch {
             if (text.trim()) message = text.trim().slice(0, 500);
         }
     } catch {
         // keep default message
     }
-    return new MgdApiError(message, res.status, codeForStatus(res.status));
+    return new MgdApiError(
+        message,
+        res.status,
+        serverCode || codeForStatus(res.status)
+    );
 }
 
 export async function clientFromProfile(): Promise<MagdaClient> {

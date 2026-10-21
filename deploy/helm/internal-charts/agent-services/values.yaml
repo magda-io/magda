@@ -1,0 +1,105 @@
+# -- Global values are owned and defaulted by the parent `magda-core` chart.
+# This chart requires `global.externalUrl`, `global.defaultAdminUserId`,
+# `global.defaultDatasetBucket`, `global.defaultAgentModel` and
+# `global.image` from its parent and fails rendering when a required value is
+# absent.
+global: {}
+
+manager:
+  image:
+    name: magda-agent-manager
+    tag: ""
+    pullPolicy: IfNotPresent
+  # -- Must remain one because lifecycle reconciliation is single-writer.
+  replicas: 1
+  resources:
+    requests: {cpu: 50m, memory: 96Mi}
+    limits: {cpu: 500m, memory: 384Mi}
+
+runtime:
+  image:
+    name: magda-agent-runtime
+    tag: ""
+    pullPolicy: IfNotPresent
+  dshVersion: 0.2.1-alpha.1
+  storage:
+    size: 5Gi
+    storageClassName: ""
+  resources:
+    requests: {cpu: 100m, memory: 384Mi, ephemeral-storage: 256Mi}
+    limits: {cpu: "1", memory: 1536Mi, ephemeral-storage: 1Gi}
+  hostAliases: []
+  externalPrivateCidrs: []
+  externalPrivatePorts: [80, 443]
+  # -- Additional public destinations denied by the broad public egress rule,
+  # such as a GKE public control-plane endpoint (/32).
+  deniedCidrs: []
+  trustedCaSecret:
+    name: ""
+    key: ca.crt
+
+# runc is intended for trusted local development. Use gvisor or kata for
+# production after qualifying the selected RuntimeClass on the target cluster.
+warmPool:
+  type: gvisor
+  size: 2
+runtimeClasses:
+  gvisor: gvisor
+  kata: kata
+
+sandboxNamespace:
+  create: true
+  annotations:
+    helm.sh/resource-policy: keep
+  labels: {}
+
+managedApiKeyNamePrefix: magda-agent-workspace
+controlPlaneSecret:
+  # Create a stable release-owned secret when true. Set false to reference an
+  # existing operator-managed secret.
+  create: true
+  name: magda-agent-control
+  key: token
+runtimePrefix: /v0/runtime
+magdaApiUrl: ""
+llmApiUrl: ""
+registryApiUrl: http://registry-api/v0
+storageApiUrl: http://storage-api/v0
+tenantId: 0
+skillArchive:
+  maxCompressedBytes: 8388608
+  maxUncompressedBytes: 33554432
+  maxEntries: 256
+  maxPathLength: 240
+  maxNestingDepth: 8
+  maxMarkdownBytes: 1048576
+hardDeleteSeconds: 28800
+idleSuspendSeconds: 1800
+reconcileIntervalSeconds: 30
+runtimeMaxBodyBytes: 16777216
+# Optional chart-specific overrides. Empty values inherit
+# global.defaultAgentModel from the parent chart.
+llm:
+  # -- Stable public model alias override.
+  model: ""
+  # -- Model context-window override.
+  contextWindow: null
+  # -- Model maximum-output-token override.
+  maxTokens: null
+# ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox
+# Pods use a separate installation-scoped, no-RBAC ServiceAccount created in the
+# Sandbox namespace; its name is generated to avoid shared-namespace collisions.
+serviceAccount:
+  name: magda-agent-manager
+
+kasValidation:
+  enabled: true
+  image:
+    repository: alpine/k8s
+    tag: 1.31.5
+    pullPolicy: IfNotPresent
+
+ingressController:
+  namespace: ingress-nginx
+  podLabels:
+    app.kubernetes.io/component: controller

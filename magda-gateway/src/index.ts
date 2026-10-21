@@ -237,6 +237,17 @@ const argv = addJwtSecretFromEnvVar(
                 "How long time (in seconds) before upstream service must complete request in order to avoid request timeout error.",
             type: "string"
         })
+        .option("agentManagerUrl", {
+            describe:
+                "Optional internal Agent Manager base URL used to destroy Agent Workspaces before logout.",
+            type: "string"
+        })
+        .option("agentManagerControlSecret", {
+            describe:
+                "Shared control-plane secret for the Agent Manager logout cleanup endpoint.",
+            type: "string",
+            default: process.env.AGENT_MANAGER_CONTROL_SECRET
+        })
         .option("websocketHandshakeTimeout", {
             describe:
                 "How long (in seconds) the upstream of a `websocket: true` route has to answer a WebSocket handshake. Doesn't limit the lifetime of an established WebSocket connection.",

@@ -1,0 +1,237 @@
+.agent-workspace-page {
+    min-height: calc(100vh - 80px);
+
+    > .main-content-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: 0;
+        padding-right: 25px;
+        padding-bottom: 25px;
+    }
+
+    .agent-workspace-request-error {
+        margin: 0 0 16px;
+    }
+}
+
+.agent-workspace-introduction,
+.agent-workspace-loading,
+.agent-workspace-state-card {
+    width: 100%;
+    max-width: 800px;
+    background: #fff;
+
+    > .rs-panel-body {
+        padding: 30px;
+    }
+
+    h1,
+    h2 {
+        margin-top: 0;
+        color: #30384d;
+    }
+}
+
+.agent-workspace-information {
+    margin: 18px 0 26px;
+    color: #3d4350;
+    font-size: 16px;
+    line-height: 1.55;
+
+    ul {
+        margin: 18px 0;
+        padding-left: 24px;
+    }
+
+    li {
+        margin-bottom: 9px;
+    }
+
+    .agent-workspace-access-note {
+        color: #555f73;
+        font-size: 14px;
+    }
+}
+
+.agent-workspace-loading,
+.agent-workspace-state-card {
+    > .rs-panel-body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 260px;
+    }
+}
+
+.agent-workspace-loading > .rs-panel-body {
+    align-items: center;
+}
+
+.agent-workspace-state-card {
+    > .rs-panel-body > .rs-loader {
+        margin-bottom: 24px;
+    }
+
+    p {
+        max-width: 650px;
+        margin-bottom: 24px;
+        font-size: 16px;
+    }
+
+    small {
+        margin-top: 20px;
+        color: #646d7d;
+    }
+
+    &.state-failed,
+    &.state-degraded {
+        border-left: 5px solid #c83c3c;
+    }
+}
+
+.agent-workspace-state-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.agent-workspace-ready {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 650px;
+    overflow: hidden;
+    border: 1px solid #cbd0da;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.agent-workspace-toolbar {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #d9dce3;
+    background: #f5f6f8;
+
+    .agent-workspace-toolbar-heading {
+        display: flex;
+        flex-direction: column;
+    }
+
+    strong {
+        color: #30384d;
+    }
+
+    span {
+        margin-top: 2px;
+        color: #60697a;
+        font-size: 12px;
+    }
+}
+
+.agent-workspace-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.agent-workspace-skill-chip {
+    align-self: center;
+    font-size: 13px;
+    color: #555f73;
+}
+
+span.agent-workspace-skill-chip {
+    padding: 0 8px;
+}
+
+.agent-workspace-skill-sync {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-bottom: 1px solid #d9dce3;
+    font-size: 14px;
+    color: #30384d;
+
+    &.tone-success {
+        background: #f3faf3;
+    }
+
+    &.tone-warning {
+        background: #fff8e6;
+    }
+
+    &.tone-info {
+        background: #f3f6fc;
+    }
+
+    .agent-workspace-skill-sync-main {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 16px;
+
+        .rs-loader-wrapper {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    }
+
+    .agent-workspace-skill-sync-counts {
+        color: #555f73;
+    }
+
+    .agent-workspace-skill-sync-problems {
+        margin: 6px 0 0;
+        padding-left: 20px;
+        max-height: 96px;
+        overflow-y: auto;
+    }
+
+    .agent-workspace-skill-sync-hint,
+    .agent-workspace-skill-sync-error {
+        margin: 6px 0 0;
+    }
+
+    .agent-workspace-skill-sync-error {
+        color: #a12c1f;
+    }
+}
+
+.agent-workspace-runtime {
+    display: block;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 600px;
+    border: 0;
+    background: #fff;
+}
+
+@media (max-width: 768px) {
+    .agent-workspace-page > .main-content-container {
+        padding-right: 15px;
+    }
+
+    .agent-workspace-introduction,
+    .agent-workspace-loading,
+    .agent-workspace-state-card {
+        > .rs-panel-body {
+            padding: 20px;
+        }
+    }
+
+    .agent-workspace-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .agent-workspace-toolbar-actions {
+        justify-content: flex-start;
+    }
+}
