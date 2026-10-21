@@ -189,7 +189,7 @@ export const SharedSkillCard: FunctionComponent<{
             <div className="agent-skill-card-header">
                 <h3 id={headingId}>{skill.name}</h3>
                 {installedAs.length ? (
-                    <span className="agent-skill-type type-user">
+                    <span className="agent-skill-type status-installed">
                         Installed
                     </span>
                 ) : null}
@@ -262,7 +262,7 @@ export const InstalledSkillCard: FunctionComponent<{
             <div className="agent-skill-card-header">
                 <h3 id={headingId}>{name}</h3>
                 {source?.status === "unavailable" || !installation ? (
-                    <span className="agent-skill-type type-system">
+                    <span className="agent-skill-type status-unavailable">
                         Unavailable
                     </span>
                 ) : null}
@@ -661,32 +661,30 @@ const SharedSkillsPage: FunctionComponent = () => {
                     <SharedSkillsGuide />
                 </section>
                 <section className="agent-skills-catalogue" aria-busy={loading}>
-                    <div
-                        role="tablist"
-                        aria-label="Shared skills"
-                        className="agent-skills-filters"
-                    >
-                        {tabs.map((option) => (
-                            <Button
-                                key={option.value}
-                                role="tab"
-                                id={`shared-skills-tab-${option.value}`}
-                                aria-selected={tab === option.value}
-                                aria-controls="shared-skills-panel"
-                                appearance={
-                                    tab === option.value ? "primary" : "default"
-                                }
-                                onClick={() => selectTab(option.value)}
-                            >
-                                {option.label}
-                            </Button>
-                        ))}
-                    </div>
-                    <div
-                        id="shared-skills-panel"
-                        role="tabpanel"
-                        aria-labelledby={`shared-skills-tab-${tab}`}
-                    >
+                    <div className="agent-skills-controls">
+                        <div
+                            role="tablist"
+                            aria-label="Shared skills"
+                            className="agent-skills-filters"
+                        >
+                            {tabs.map((option) => (
+                                <Button
+                                    key={option.value}
+                                    role="tab"
+                                    id={`shared-skills-tab-${option.value}`}
+                                    aria-selected={tab === option.value}
+                                    aria-controls="shared-skills-panel"
+                                    appearance={
+                                        tab === option.value
+                                            ? "primary"
+                                            : "default"
+                                    }
+                                    onClick={() => selectTab(option.value)}
+                                >
+                                    {option.label}
+                                </Button>
+                            ))}
+                        </div>
                         {tab === "available" ? (
                             <form
                                 className="agent-skills-search"
@@ -720,10 +718,21 @@ const SharedSkillsPage: FunctionComponent = () => {
                                 ) : null}
                             </form>
                         ) : null}
+                    </div>
+                    <p className="agent-skills-hint">
+                        {tab === "available"
+                            ? "Skills other users have shared with you. Installing one adds it to your skills; nothing is installed automatically."
+                            : "Shared skills you installed. Uninstalling removes only your installation."}
+                    </p>
+                    <div
+                        id="shared-skills-panel"
+                        role="tabpanel"
+                        aria-labelledby={`shared-skills-tab-${tab}`}
+                    >
                         {feedback.page ? (
                             <p
                                 role="status"
-                                className="agent-skill-feedback feedback-success"
+                                className="agent-skills-page-feedback"
                             >
                                 {feedback.page.message}
                             </p>

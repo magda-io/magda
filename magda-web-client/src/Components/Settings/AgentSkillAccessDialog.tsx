@@ -103,7 +103,9 @@ export const SkillRecipientsPanel: FunctionComponent<{
             setFeedback({
                 type: "success",
                 message: result.added
-                    ? `Shared with ${id}. They can now find “${skill.name}” under Shared Skills and choose to install it.`
+                    ? skill.type === "system"
+                        ? `Granted ${id} access to “${skill.name}”. It reaches their Agent Workspace at its next skill sync.`
+                        : `Shared with ${id}. They can now find “${skill.name}” under Shared Skills and choose to install it.`
                     : `${id} already has access.`
             });
             await load();
@@ -126,9 +128,11 @@ export const SkillRecipientsPanel: FunctionComponent<{
                 type: "success",
                 message: `Removed ${
                     recipient.displayName || recipient.id
-                }. They can no longer read or download “${
-                    skill.name
-                }”; copies already on their computers are removed at their next successful sync.`
+                }. They can no longer read or download “${skill.name}”${
+                    skill.type === "system"
+                        ? " unless another access path still applies"
+                        : ""
+                }; copies already on their computers are removed at their next successful sync.`
             });
             if (offset > 0 && items.length === 1)
                 setOffset(Math.max(0, offset - RECIPIENT_PAGE_SIZE));

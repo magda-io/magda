@@ -172,6 +172,16 @@
             background: #ecf6ec;
             color: #22662a;
         }
+
+        &.status-installed {
+            background: #e8f0fe;
+            color: #1f4aa8;
+        }
+
+        &.status-unavailable {
+            background: #fdf1e3;
+            color: #8a4b08;
+        }
     }
 
     .agent-skill-description {
@@ -253,9 +263,21 @@
 
 // #3861: sharing and system skill access dialogs; feedback lines outside a
 // card reuse the card feedback colours.
+.agent-skills-page-feedback {
+    margin: 0 0 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: #ecf6ec;
+    color: #22662a;
+}
+
 .agent-skill-recipients,
 .agent-skill-audience {
     margin-top: 16px;
+
+    > * + * {
+        margin-top: 10px;
+    }
 
     h3 {
         font-size: 16px;
@@ -305,9 +327,23 @@
     }
 }
 
+.agent-skill-recipients {
+    padding-top: 16px;
+    border-top: 1px solid #e5e5ea;
+}
+
 .agent-skill-public label,
 .agent-skill-orgunit label {
     font-weight: 600;
+}
+
+.agent-skill-public .agent-skills-hint {
+    margin: 4px 0 0;
+}
+
+.agent-skill-orgunit label {
+    display: block;
+    margin-bottom: 4px;
 }
 
 .agent-skill-orgunit {
