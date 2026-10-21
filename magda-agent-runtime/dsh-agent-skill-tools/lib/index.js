@@ -64,7 +64,7 @@ export function apply(ctx) {
                 forkSharedInstallation: {
                     type: "boolean",
                     description:
-                        "Publish an installed copy of a skill shared by another user as the user's own user skill, replacing their installation (mgd --force). The other user's skill is never changed. Only when the user explicitly asked for it."
+                        "Publish an installed copy of a skill shared by another user as the user's own user skill, replacing their installation (mgd --force). The other user's skill is never changed. Set it only after a publish returned SHARED_INSTALLATION_FORK_REQUIRED. The tool then always asks the user to confirm the fork itself (even with userApproved), so do not ask a separate question first."
                 }
             },
             output: OUTPUT,

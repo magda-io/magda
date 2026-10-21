@@ -222,6 +222,21 @@ try {
         ]
     );
 
+    // Chat approval to "publish" never skips the fork question.
+    scenario({
+        validate: validated,
+        publish: { stdout: { ...publication, localCache: "updated" } }
+    });
+    ui = asker(choose("Cancel"));
+    result = await ops().publish(
+        { path: draft, forkSharedInstallation: true, userApproved: true },
+        { cwd, ask: ui.ask }
+    );
+    assert.equal(ui.asked.length, 1);
+    assert.match(ui.asked[0][0].question, /shared skill "good"/);
+    assert.equal(result.outcome, "cancelled");
+    assert.ok(!calls().some(([, command]) => command === "publish"));
+
     for (const args of [
         { path: draft, forkSharedInstallation: true, type: "system" },
         {

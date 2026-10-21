@@ -121,6 +121,12 @@ the recipient account recorded in the copy, never another active profile. If
 it reports that the installation was removed but the publication was not
 created yet, the local files are unchanged: rerun the same command to finish.
 Other installed copies update at their next sync.
+A request to "publish" an installed shared copy is **not** consent to fork:
+first publish normally, and when it reports `SHARED_INSTALLATION_FORK_REQUIRED`,
+explain the fork. On a local computer, ask before running `publish --force`.
+In an Agent Workspace, call `magda_agent_skill_publish` again with
+`forkSharedInstallation: true` instead of asking: that tool always asks the
+user to confirm the fork itself, so one question is enough.
 
 ```sh
 # Only after confirming the correct exact publication and deletion intent:

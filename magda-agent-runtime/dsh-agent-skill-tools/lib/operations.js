@@ -533,7 +533,11 @@ export function createAgentSkillOperations(options = {}) {
                         "The draft is not a valid Agent Skill. Nothing was sent to MAGDA. Fix the draft and validate it again."
                 };
             const name = sanitize(validated.name);
-            if (args?.userApproved !== true) {
+            // A fork replaces the user's installation of another user's skill
+            // with their own publication. Approval to "publish" in chat does
+            // not show that they understood this, so a fork always asks its
+            // own question.
+            if (fork || args?.userApproved !== true) {
                 const decision = await confirmAction(
                     context.ask,
                     fork
@@ -576,7 +580,7 @@ export function createAgentSkillOperations(options = {}) {
                             "This is an installed copy of a skill shared by another user."
                     },
                     guidance:
-                        "Nothing was published. Publishing this copy would create the user's own skill in place of their installation of the shared skill; the other user's skill is never changed. Explain this to the user and, only if they explicitly want it, call magda_agent_skill_publish again with forkSharedInstallation: true."
+                        "Nothing was published. Publishing this copy would create the user's own skill in place of their installation of the shared skill; the other user's skill is never changed. Briefly explain this, then call magda_agent_skill_publish again with forkSharedInstallation: true. That call itself asks the user to confirm the fork, so do not ask a separate question first; if they cancel, nothing is published."
                 };
             if (published?.id && published?.checksum)
                 return {
