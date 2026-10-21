@@ -39,7 +39,10 @@ import { AuthenticatedUser } from "../types.js";
  * recipients.
  */
 
-/** Recipients are listed and searched within this bound. */
+/**
+ * Recipients are listed and searched within this bound, so sharing refuses a
+ * new recipient beyond it (an existing recipient stays idempotent).
+ */
 export const MAX_SHARE_RECIPIENTS = 500;
 
 function shareKeyword(record: AgentSkillRecord): string {
@@ -200,7 +203,10 @@ export class AgentSkillAccessService {
             group.permissionId,
             internalSession
         );
-        if (users.some((id) => id !== record.id)) throw invalidShare();
+        // Record IDs are unique, so any other ID (or more matches than one
+        // page holds) means the permission is attached elsewhere.
+        if (!users.complete || users.ids.some((id) => id !== record.id))
+            throw invalidShare();
         return { group, attached: !!attached[0] };
     }
 
@@ -333,6 +339,20 @@ export class AgentSkillAccessService {
                         );
                     const internalSession = this.options.publications.internalSessionToken();
                     let bound = await this.boundGroup(record, internalSession);
+                    const current = await this.recipients(
+                        bound,
+                        internalSession
+                    );
+                    if (current.some((r) => r.id === recipientId)) return false;
+                    if (current.length >= MAX_SHARE_RECIPIENTS)
+                        throw new AgentSkillError(
+                            `An Agent Skill can be shared with at most ${MAX_SHARE_RECIPIENTS} users. Remove a recipient before adding another.`,
+                            409,
+                            "AGENT_SKILL_SHARE_LIMIT_REACHED",
+                            false,
+                            id,
+                            { limit: MAX_SHARE_RECIPIENTS }
+                        );
                     if (!bound) {
                         const group = await this.options.shareGroups.create(
                             {

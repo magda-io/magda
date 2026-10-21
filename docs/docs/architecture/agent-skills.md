@@ -371,7 +371,19 @@ group. Before any change the binding is verified (keyword, resource, single
 read operation, attached to this source and to no other publication). The
 permission is attached before members are added, so an interrupted first share
 leaves an empty, unattached group that the next attempt reuses. Revocation
-removes only membership. Recipient lists are bounded to 500 per skill.
+removes only membership. Recipient lists are bounded to 500 per skill: adding a
+new recipient to a skill that already has 500 returns `409 AGENT_SKILL_SHARE_LIMIT_REACHED` (re-adding an existing recipient stays
+idempotent), so no authorized recipient is ever missing from the listing.
+
+Sharing, installation and fork changes are serialized by the same
+process-local per-record lock as publication changes. This relies on the single
+Agent Manager replica (the chart refuses `manager.replicas` other than 1).
+With several replicas, two concurrent first shares of one publication could
+each create a share group, recipient additions could exceed the 500 bound, and
+concurrent access edits could overwrite each other's `access-control` change.
+Horizontal scaling must first move these mutations to a distributed lock or
+Registry conditional writes, together with the publication compare-and-swap
+above.
 
 System skills keep **Public skill** (`constraintExemption`, default on) and
 one validated OrgUnit, plus the same selected-users group. Paths are additive:

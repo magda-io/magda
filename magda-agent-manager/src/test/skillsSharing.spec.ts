@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { MAX_SHARE_RECIPIENTS } from "../skills/access.js";
 import { DownstreamServiceError } from "../skills/clients.js";
 import { AgentSkillError, AgentSkillService } from "../skills/service.js";
 import { AuthenticatedUser } from "../types.js";
@@ -277,6 +278,36 @@ describe("Agent Skill sharing and installations (#3861)", () => {
             ).to.equal("RECIPIENT_NOT_FOUND");
         });
 
+        it("enforces the recipient limit and keeps existing recipients idempotent", async () => {
+            await share(bob);
+            const [group] = [...world.groups.values()];
+            for (let i = 0; group.members.size < MAX_SHARE_RECIPIENTS - 1; i++)
+                group.members.add(
+                    `10000000-0000-4000-8000-${i
+                        .toString(16)
+                        .padStart(12, "0")}`
+                );
+            // 499 -> 500 succeeds.
+            expect(await share(carol)).to.deep.equal({ added: true });
+            expect(group.members.size).to.equal(MAX_SHARE_RECIPIENTS);
+            // A new recipient at 500 is refused without changing membership.
+            const error = await caught(share(dave));
+            expect(error.status).to.equal(409);
+            expect(error.code).to.equal("AGENT_SKILL_SHARE_LIMIT_REACHED");
+            expect(error.details).to.deep.equal({
+                limit: MAX_SHARE_RECIPIENTS
+            });
+            expect(group.members.has(dave.id)).to.equal(false);
+            expect(group.members.size).to.equal(MAX_SHARE_RECIPIENTS);
+            // Re-adding an existing recipient at 500 stays idempotent.
+            expect(await share(bob)).to.deep.equal({ added: false });
+            expect(await share(carol)).to.deep.equal({ added: false });
+            expect(
+                (await service.access.getAccess("user", SOURCE, alice))
+                    .recipients
+            ).to.deep.equal({ count: MAX_SHARE_RECIPIENTS });
+        });
+
         it("recovers an interrupted first share by reusing its unattached group", async () => {
             world.failures.set(
                 `registry.put:${SOURCE}`,
@@ -313,6 +344,16 @@ describe("Agent Skill sharing and installations (#3861)", () => {
             ];
             const error = await caught(share(carol));
             expect(error.code).to.equal("AGENT_SKILL_SHARE_INVALID");
+            expect(group.members).to.deep.equal(new Set([bob.id]));
+        });
+
+        it("fails closed when the binding query reports more matches than it returned", async () => {
+            await share();
+            const [group] = [...world.groups.values()];
+            world.bindingPageSize = 0;
+            expect((await caught(share(carol))).code).to.equal(
+                "AGENT_SKILL_SHARE_INVALID"
+            );
             expect(group.members).to.deep.equal(new Set([bob.id]));
         });
 

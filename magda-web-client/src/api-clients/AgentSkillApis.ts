@@ -457,6 +457,12 @@ export function sharingErrorMessage(error: unknown): string {
             return "No Magda user has this ID. Check the ID on the recipient's Account page.";
         case "AGENT_SKILL_SHARE_INVALID":
             return "This skill's sharing settings need attention from a Magda administrator.";
+        case "AGENT_SKILL_SHARE_LIMIT_REACHED":
+            return `This skill is already shared with the maximum of ${
+                typeof error.details?.limit === "number"
+                    ? error.details.limit
+                    : 500
+            } users. Remove a recipient before adding another.`;
         case "INVALID_ORG_UNIT":
             return "The selected organisation no longer exists.";
         case "AGENT_SKILL_NOT_FOUND":

@@ -360,10 +360,14 @@ export interface AgentSkillShareGroups {
         options: { offset: number; limit: number },
         sessionToken: string
     ): Promise<AgentSkillShareRecipient[]>;
-    /** IDs of Agent Skill publications whose access-control lists the permission. */
+    /**
+     * IDs of Agent Skill publications whose access-control lists the
+     * permission. `complete` is false when Registry reported more matches than
+     * were returned.
+     */
     publicationsUsingPermission(
         permissionId: string,
         sessionToken: string
-    ): Promise<string[]>;
+    ): Promise<{ ids: string[]; complete: boolean }>;
     orgUnitExists(orgUnitId: string, sessionToken: string): Promise<boolean>;
 }

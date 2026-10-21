@@ -422,6 +422,34 @@ describe("Agent Skill sharing downstream clients (#3861)", () => {
         expect(findUrl.searchParams.getAll("aspectQuery")).to.deep.equal([
             "access-group-details.keywords:<|agent-skill-share-abc"
         ]);
+        reply = () =>
+            new Response(
+                JSON.stringify({
+                    hasMore: false,
+                    records: [{ id: "agent-skill-a" }]
+                }),
+                { status: 200 }
+            );
+        expect(
+            await groups.publicationsUsingPermission("p", "internal")
+        ).to.deep.equal({ ids: ["agent-skill-a"], complete: true });
+        const bindingUrl = new URL(requests[requests.length - 1].url);
+        expect(bindingUrl.searchParams.getAll("aspectQuery")).to.deep.equal([
+            "access-control.preAuthorisedPermissionIds:<|p"
+        ]);
+        reply = () =>
+            new Response(
+                JSON.stringify({
+                    hasMore: true,
+                    nextPageToken: "10",
+                    records: [{ id: "agent-skill-a" }]
+                }),
+                { status: 200 }
+            );
+        expect(
+            await groups.publicationsUsingPermission("p", "internal")
+        ).to.deep.equal({ ids: ["agent-skill-a"], complete: false });
+
         reply = () => new Response("bad user", { status: 400 });
         let error: any;
         try {

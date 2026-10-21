@@ -926,7 +926,7 @@ export class HttpAgentSkillShareGroups implements AgentSkillShareGroups {
     async publicationsUsingPermission(
         permissionId: string,
         sessionToken: string
-    ): Promise<string[]> {
+    ): Promise<{ ids: string[]; complete: boolean }> {
         const query = new URLSearchParams();
         query.append("aspect", "agent-skill");
         query.append(
@@ -949,9 +949,12 @@ export class HttpAgentSkillShareGroups implements AgentSkillShareGroups {
                 502,
                 "Registry API returned an invalid share binding response"
             );
-        return data.records
-            .map((record: any) => record?.id)
-            .filter((id: unknown): id is string => typeof id === "string");
+        return {
+            ids: data.records
+                .map((record: any) => record?.id)
+                .filter((id: unknown): id is string => typeof id === "string"),
+            complete: data.hasMore !== true
+        };
     }
 
     async orgUnitExists(

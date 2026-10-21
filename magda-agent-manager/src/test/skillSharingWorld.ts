@@ -99,6 +99,8 @@ export class SharingWorld {
         token: string;
     }> = [];
     failures = new Map<string, Error>();
+    /** Page size of the share binding query (Registry uses `limit=10`). */
+    bindingPageSize = 10;
     private groupCounter = 0;
 
     private fail(key: string): void {
@@ -532,7 +534,7 @@ export class SharingWorld {
             },
             async publicationsUsingPermission(permissionId, token) {
                 requireInternal(token);
-                return [...world.records.values()]
+                const ids = [...world.records.values()]
                     .filter(
                         (record) =>
                             record.aspects["agent-skill"] &&
@@ -542,6 +544,10 @@ export class SharingWorld {
                             ).includes(permissionId)
                     )
                     .map((record) => record.id);
+                return {
+                    ids: ids.slice(0, world.bindingPageSize),
+                    complete: ids.length <= world.bindingPageSize
+                };
             },
             async orgUnitExists(orgUnitId, token) {
                 requireInternal(token);
@@ -614,7 +620,7 @@ export function noShareGroups(): AgentSkillShareGroups {
         addUser: unused,
         removeUser: unused,
         listUsers: async () => [],
-        publicationsUsingPermission: async () => [],
+        publicationsUsingPermission: async () => ({ ids: [], complete: true }),
         orgUnitExists: unused
     };
 }
