@@ -112,10 +112,18 @@
     flex: 0 1 420px;
 }
 
-.agent-skills-hint {
-    margin: 8px 0 14px;
+// `body.au-body` sets `p` margins (`.au-body * + p` adds 1.5rem above), which
+// outrank a single class, so hint margins are scoped one level deeper.
+.au-body .agent-skills-hint {
+    margin: 6px 0 0;
     color: #555f73;
     font-size: 13px;
+}
+
+// Below the tabs and search row: close to the controls it explains, with a
+// clear gap before the cards.
+.au-body .agent-skills-catalogue .agent-skills-hint {
+    margin: 8px 0 16px;
 }
 
 .agent-skills-loading,
@@ -337,7 +345,7 @@
     font-weight: 600;
 }
 
-.agent-skill-public .agent-skills-hint {
+.au-body .agent-skill-public .agent-skills-hint {
     margin: 4px 0 0;
 }
 
