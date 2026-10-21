@@ -10,6 +10,7 @@ import {
     RegistryRecordsPage
 } from "../skills/types.js";
 import { AuthenticatedUser } from "../types.js";
+import { noInstallations, noShareGroups } from "./skillSharingWorld.js";
 
 const user: AuthenticatedUser = {
     id: "00000000-0000-4000-8000-000000000123",
@@ -109,6 +110,9 @@ function service(
     authorization: AgentSkillAuthorization = new ManifestAuthorization()
 ): AgentSkillService {
     return new AgentSkillService({
+        installationRegistry: noInstallations(),
+        installationAuthorization: noInstallations(),
+        shareGroups: noShareGroups(),
         registry,
         authorization,
         storage: ({} as unknown) as AgentSkillStorage,
@@ -254,7 +258,7 @@ describe("Agent Skill workspace manifest", () => {
         expect(result.sources).to.deep.equal({
             system: { complete: true, count: 2 },
             user: { complete: true, count: 2 },
-            installations: { status: "notImplemented", count: 0 }
+            installations: { complete: true, count: 0, unavailable: 0 }
         });
         expect(
             authorization.calls.every(
@@ -400,10 +404,11 @@ describe("Agent Skill workspace manifest", () => {
             identity: { tenantId: "0", userId: user.id },
             items: [],
             warnings: [],
+            unavailableInstallations: [],
             sources: {
                 system: { complete: true, count: 0 },
                 user: { complete: true, count: 0 },
-                installations: { status: "notImplemented", count: 0 }
+                installations: { complete: true, count: 0, unavailable: 0 }
             }
         });
         expect(registry.calls).to.have.length(2);
