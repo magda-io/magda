@@ -21,6 +21,12 @@ allow {
 }
 
 allow {
+    ## delegate recipient installation decisions (#3861) to their typed rules
+    startswith(input.operationUri, "object/agentSkill/install/")
+    data.object.agentSkillInstallation.allow
+}
+
+allow {
     ## delegate the self-only Agent Workspace operation to its own rules
     input.operationUri == "agentWorkspace/access"
     data.agentWorkspace.allow
