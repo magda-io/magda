@@ -17,6 +17,7 @@ import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization
 import urijs from "urijs";
 import { requireResolve } from "@magda/esm-utils";
 import { Readable, PassThrough } from "node:stream";
+import { finished } from "node:stream/promises";
 import fetchRequest from "magda-typescript-common/src/fetchRequest.js";
 import treeKill from "magda-typescript-common/src/treeKill.js";
 
@@ -824,39 +825,35 @@ export default class ServiceRunner {
         }
     }
 
-    pullImage(
+    /**
+     * Pull an image (or all images of a docker compose project) and wait until
+     * every pull stream has been fully consumed.
+     *
+     * The pull output is drained in memory (or echoed to stdout) rather than
+     * written to a file stream: destroying a `/dev/null` write stream as soon as
+     * the pull stream ended raced with its last pending write and crashed the
+     * test run with an uncaught `ERR_STREAM_DESTROYED`.
+     */
+    async pullImage(
         imageOrDockerComposeObj: string | DockerCompose,
         printOutput: boolean = false
-    ) {
-        return new Promise(async (resolve, reject) => {
-            const pullStreams: Readable[] = [];
-            if (typeof imageOrDockerComposeObj === "string") {
-                pullStreams.push(
-                    await this.docker.pull(imageOrDockerComposeObj)
-                );
-            } else {
-                pullStreams.splice(
-                    0,
-                    0,
-                    ...(await imageOrDockerComposeObj.pull(undefined, {
-                        streams: true
-                    }))
-                );
-            }
-            for (const pullStream of pullStreams) {
+    ): Promise<void> {
+        const pullStreams: Readable[] =
+            typeof imageOrDockerComposeObj === "string"
+                ? [await this.docker.pull(imageOrDockerComposeObj)]
+                : await imageOrDockerComposeObj.pull(undefined, {
+                      streams: true
+                  });
+        await Promise.all(
+            pullStreams.map((pullStream) => {
                 if (printOutput) {
-                    pullStream.pipe(process.stdout);
-                    pullStream.once("end", resolve);
+                    pullStream.pipe(process.stdout, { end: false });
                 } else {
-                    const devNull = fs.createWriteStream("/dev/null");
-                    pullStream.pipe(devNull);
-                    pullStream.once("end", () => {
-                        resolve(void 0);
-                        devNull.destroy();
-                    });
+                    pullStream.resume();
                 }
-            }
-        });
+                return finished(pullStream);
+            })
+        );
     }
 
     async runMigrator(name: string, dbName: string) {
