@@ -4,6 +4,7 @@ import request from "supertest";
 import { AgentManager } from "../manager.js";
 import buildApp from "../buildApp.js";
 import {
+    DownstreamServiceError,
     HttpAgentSkillRegistry,
     HttpAgentSkillShareGroups,
     OpaAgentSkillAuthorization
@@ -449,6 +450,19 @@ describe("Agent Skill sharing downstream clients (#3861)", () => {
         expect(
             await groups.publicationsUsingPermission("p", "internal")
         ).to.deep.equal({ ids: ["agent-skill-a"], complete: false });
+        reply = () =>
+            new Response(
+                JSON.stringify({ records: [{ id: "agent-skill-a" }] }),
+                { status: 200 }
+            );
+        let malformed: any;
+        try {
+            await groups.publicationsUsingPermission("p", "internal");
+        } catch (caught) {
+            malformed = caught;
+        }
+        expect(malformed).to.be.instanceOf(DownstreamServiceError);
+        expect(malformed.status).to.equal(502);
 
         reply = () => new Response("bad user", { status: 400 });
         let error: any;

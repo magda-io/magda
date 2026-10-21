@@ -943,7 +943,9 @@ export class HttpAgentSkillShareGroups implements AgentSkillShareGroups {
             ),
             "Registry API rejected the share binding query"
         );
-        if (!Array.isArray(data?.records))
+        // Completeness is part of the integrity check, so a page without a
+        // boolean `hasMore` is malformed rather than assumed complete.
+        if (!Array.isArray(data?.records) || typeof data.hasMore !== "boolean")
             throw new DownstreamServiceError(
                 "registry",
                 502,
@@ -953,7 +955,7 @@ export class HttpAgentSkillShareGroups implements AgentSkillShareGroups {
             ids: data.records
                 .map((record: any) => record?.id)
                 .filter((id: unknown): id is string => typeof id === "string"),
-            complete: data.hasMore !== true
+            complete: !data.hasMore
         };
     }
 
