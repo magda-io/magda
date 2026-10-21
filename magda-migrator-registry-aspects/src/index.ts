@@ -36,6 +36,33 @@ const registryClient = new AuthorizedRegistryClient({
     tenantId: MAGDA_ADMIN_PORTAL_ID
 });
 
+/**
+ * Built-in definitions are normally created once and never overwritten, so a
+ * deployment's own changes to them survive upgrades. A definition listed here
+ * is owned by this release: an existing copy whose schema differs from the
+ * bundled one is replaced. Keep the list to schemas that services depend on.
+ *
+ * - `access-group-details`: #3861 Agent Skill share groups need the widened
+ *   `resourceUri` enum; Registry validates aspects against this schema.
+ */
+const RELEASE_OWNED_ASPECT_IDS = new Set(["access-group-details"]);
+
+/** JSON with object keys sorted, so stored (jsonb) and bundled schemas compare. */
+function canonicalJson(value: unknown): string {
+    if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+    if (value && typeof value === "object")
+        return `{${Object.keys(value)
+            .sort()
+            .map(
+                (key) =>
+                    `${JSON.stringify(key)}:${canonicalJson(
+                        (value as Record<string, unknown>)[key]
+                    )}`
+            )
+            .join(",")}}`;
+    return JSON.stringify(value);
+}
+
 const schemaFileNameFilterRegEx = /\.schema.json$/;
 const schemaFileNameRegEx = /^([^\.]+)\.schema.json$/;
 
@@ -89,6 +116,29 @@ function getAllBuiltInAspectDefs(): AspectDefItem[] {
             const aspectDef = await registryClient.getAspectDefinition(
                 aspectDefs[i].id
             );
+            if (
+                RELEASE_OWNED_ASPECT_IDS.has(aspectDef.id) &&
+                canonicalJson(aspectDef.jsonSchema) !==
+                    canonicalJson(aspectDefs[i].jsonSchema)
+            ) {
+                console.log(
+                    `AspectDef '${aspectDef.id}' exists with an older schema. Updating it to the bundled schema...`
+                );
+                const updated = await registryClient.putAspectDefinition({
+                    ...aspectDefs[i],
+                    name: aspectDef.name
+                });
+                if (updated instanceof Error) {
+                    // Fail the Job so Kubernetes retries it.
+                    console.error(
+                        `Failed to update aspect definition for '${aspectDef.id}': ${updated.message}`
+                    );
+                    process.exitCode = 1;
+                    continue;
+                }
+                console.log(`Updated aspect definition for '${aspectDef.id}'.`);
+                continue;
+            }
             console.log(
                 `AspectDef '${aspectDef.id}' exists in registry. Skip definition creation.`
             );
