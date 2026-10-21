@@ -566,3 +566,24 @@ cleanup evidence—is in `docs/docs/e2e-test-cases/agent-workspace.md`.
 - Local GPT-5.6 Sol use required a 1 GiB LiteLLM memory limit during qualification.
 - Reset and logout are destructive by design. Publish important outputs to Magda
   or another durable store first.
+- **Agent Skill sharing (#3861)** needs no Authorization DB migration: it uses
+  the `object/agentSkill/install/*` operations and the stock roles registered
+  by `V2_4__agent_workspace_and_skills.sql`, and creates per-skill share grants
+  as runtime Access Groups. It does require the upgraded Registry aspect
+  definitions (the new `agent-skill-installation` aspect and the widened
+  `access-group-details.resourceUri` enum). The normal post-upgrade
+  `registry-aspect-definition-migrator` Job creates the former and, because
+  `access-group-details` is release-owned, replaces an older copy of the
+  latter. Check its log for `Updated aspect definition for 'access-group-details'`. Deploy these together with the matching OPA policy,
+  Authorization API, Agent Manager and web images. Upgrade them together; an
+  older Registry schema rejects installation records and skill share groups.
+- To let ordinary users share and install skills, grant them the
+  **Agent Workspace Users** stock role (own user skills, installations and the
+  pre-authorised typed reads that sharing uses). System skill managers need
+  **Agent Skills Admins**. Recipients are added by MAGDA user UUID, shown on
+  each user's Account page.
+- Skill share groups appear in **Settings > Access Groups** to administrators
+  as "Agent Skill share" groups with resource `object/agentSkill/user` or
+  `object/agentSkill/system`. Manage their members from the skill's **Share**
+  or **Manage access** dialog. Do not add datasets to them (the API refuses)
+  or edit their keywords, which bind each group to one publication.

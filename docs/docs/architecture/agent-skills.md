@@ -1,10 +1,11 @@
 # Agent Skills architecture
 
 Agent Skills are reusable, Registry-backed capabilities for the optional Magda
-Agent Platform. This document describes **implemented draft #3850 behaviour**
-for system and personal publications, the `mgd agent-skill` CLI,
-Workspace/local synchronization and the Settings catalogue. Future recipient
-sharing/installation records are reserved for #3861 and are **not yet active**.
+Agent Platform. This document describes the implemented behaviour for system
+and personal publications (#3850), the `mgd agent-skill` CLI,
+Workspace/local synchronization, the Settings catalogue, and explicit
+sharing, recipient installations and the Shared Skills page (#3861, see
+[Sharing and installed shared skills](#sharing-and-installed-shared-skills-3861)).
 
 See [Agent Workspace architecture](./agent-workspace.md) for Sandbox lifecycle,
 self-only Workspace access and the runtime trust boundary; see
@@ -41,8 +42,8 @@ description but must preserve the name; renaming creates a new skill. The
 Registry-backed publication states are `PENDING`, `READY`, and `DELETING`; only
 READY records are catalogued. The default **All** query is one Registry-side
 `READY AND (type=system OR userId=<caller>)` query, **My Skills** adds
-`type=user` and `userId:<caller>`, and the future **Shared Skills** source view
-adds `type=user` and `userId:!<caller>`. Registry applies these predicates and
+`type=user` and `userId:<caller>`, and the **Shared Skills / All available**
+view adds `type=user` and `userId:!<caller>`. Registry applies these predicates and
 OPA before sequence-keyset pagination, so other users' readable publications do
 not leak into default pages and independent cursors never need post-hoc merging.
 Catalogue traversal uses `reversePageTokenOrder=true`, never the unsupported
@@ -81,15 +82,15 @@ Authenticated Users. The premerge, consolidated
 permissions and #3858's `agentWorkspace/access` operation and attaches its
 permission to Agent Workspace Users in the same file. The separate `V2_3`
 migration remains responsible for system-managed API-key table structure.
-Installation operations and their owner permission are
-registered for #3861, but no installation record, API, policy, or sharing
-functionality is activated here. Agent Services marks managed system
-publications `constraintExemption=true`, so holders of an applicable
+The installation operations and their owner permission
+registered there are used by #3861 without a further migration; per-skill
+share grants are runtime Access Group entities. Agent Services marks managed
+system publications `constraintExemption=true`, so holders of an applicable
 exemption-capable typed system-read permission can discover them. Here public
 means broadly available to those authorised users, never anonymous access.
-Later #3857/#3861 management may add OrgUnit and explicit-recipient grants;
-those grants remain additive while public is enabled. User publications remain
-owner-private unless explicitly constrained or shared.
+System skill managers can add an OrgUnit and selected users; those grants
+remain additive while public is enabled. User publications remain
+owner-private unless explicitly shared.
 
 Each skill has one record-linked ZIP in the existing
 `global.defaultDatasetBucket`:
@@ -159,10 +160,10 @@ or archive content.
 route. It independently traverses all pages of visible READY system publications
 and READY user publications whose immutable `agent-skill.userId` is the current
 user UUID. Every Registry request and typed read decision uses the caller session;
-the lifecycle-only internal administrator identity is never used. A future third
-installation source is represented in the response shape but remains unimplemented
-until #3861. A publication that belongs to another user is never selected merely
-because it is readable.
+the lifecycle-only internal administrator identity is never used. A third,
+independently paginated source adds the caller's explicitly installed shared
+skills (see [below](#manifests-revocation-and-outages)). A publication that
+belongs to another user is never selected merely because it is readable.
 
 Malformed, mismatched, or individually denied records are skipped with bounded
 warnings. Registry or authorization infrastructure errors fail the complete
@@ -183,8 +184,8 @@ before horizontal scaling.
 Local-computer sync uses the distinct authenticated
 `GET /api/v0/agent/skills/local-sync-manifest`. It fully paginates only READY
 publications whose immutable `userId` equals the caller, returns the verified
-tenant/user identity, excludes system and merely readable foreign publications,
-and reserves an unimplemented installation source for #3861. Verified
+tenant/user identity, adds explicitly installed shared skills, and excludes
+system and merely readable foreign publications. Verified
 publication snapshots, immutable archives and explicit `pull`/`publish` working
 directory refs live under
 `${XDG_DATA_HOME:-~/.local/share}/mgd/agent-skills/sources/<hash>/`, where the
@@ -300,6 +301,170 @@ Web slash-suggestion cache may require a page reconnect or new Session to displa
 a changed name immediately, while a directly typed invocation and the next model
 step use current host discovery.
 
+## Sharing and installed shared skills (#3861)
+
+Sharing permits access; installing is a separate, explicit act. A published
+user skill stays private to its owner until shared. A recipient who can read
+it sees it under **Shared Skills / All available** and in
+`mgd agent-skill list --shared`, but nothing is synchronized until they
+install it. The publisher's record and ZIP stay authoritative and are never
+copied, transferred or modified by sharing, installing, uninstalling or
+forking.
+
+### Records and typed authorization
+
+| Record                 | Aspects                                                                                           | ID and ownership                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Published user skill   | `agent-skill` (`type=user`, `userId`), `access-control`                                           | `agent-skill-<publisher>-<name>`, one ZIP                                  |
+| Recipient installation | `agent-skill-installation {userId, sourceSkillId, alias?, createdAt}`, `access-control {ownerId}` | `agent-skill-<recipient>-<effective name>`, owned by the recipient, no ZIP |
+
+The effective name is the alias, or the source name (an alias equal to the
+source name is not stored). Installations share the recipient's namespace with
+their own publications, so Registry's atomic create rejects any collision; the
+API answers `409 AGENT_SKILL_NAME_CONFLICT` with `details.conflict`
+(`publication` or `installation`) and a free `suggestedAlias`. Names follow
+the publication rules (46 characters, no `system-` prefix, no runtime-bundled
+names). Identity, recipient, source and alias are immutable: there is no
+update API, OPA never grants an owner `install/update`, and renaming means
+uninstall then install.
+
+`object/record` decisions for a record carrying `agent-skill-installation`
+(and no `agent-skill`) dispatch only to
+`object/agentSkill/install/{create,read,update,delete}`. Create validates the
+full deterministic identity and requires `userId = ownerId = caller` and a
+well-formed source owned by someone else. Owners read and delete their own
+records, including malformed ones in their namespace. A record with both
+markers matches no typed path, generic `object/record` grants never apply,
+and Storage never links an object to an installation. As for publications,
+generic Registry mutation hardening remains out of scope (#3862/#3863): a
+direct Registry client can create only an installation in its own namespace,
+and it never gains source access.
+
+### Source-scoped sharing grants
+
+Sharing reuses Access Groups. Each publication incarnation gets at most one
+system-managed group whose `resourceUri` is `object/agentSkill/user` (or
+`system`), whose single operation is the matching `read`, and which has no
+owner, OrgUnit or control permissions. Its group-specific pre-authorised
+permission ID is attached to that publication's
+`access-control.preAuthorisedPermissionIds`, and recipients are members of its
+role. The existing typed pre-authorised rule then grants exactly that source
+read: never `object/record/read`, never another skill, and never an
+installation. The stock "Read Pre-authorised … Agent Skills" permissions are
+role-wide and grant nothing on their own.
+
+| Endpoint (`/api/v0/agent/skills/...`)           | Purpose                                                             |
+| ----------------------------------------------- | ------------------------------------------------------------------- |
+| `GET :type/:id/access`                          | Public skill, OrgUnit (system only) and recipient count             |
+| `PUT :type/:id/access`                          | System only: `{public?, orgUnitId? \| null}`                        |
+| `GET :type/:id/access/users`                    | Recipients (`offset`, `limit`, `keyword`): only ID and display name |
+| `PUT` / `DELETE :type/:id/access/users/:userId` | Add (idempotent) / remove one recipient by MAGDA user ID            |
+
+Every request first authorizes the real caller for the typed `update` of the
+actual source (`404` otherwise, so recipients cannot manage grants). Agent
+Services then uses its internal session against the Access Group API, while
+the source record itself is written with the caller's session so Registry and
+OPA check it again. The group is bound by an opaque keyword derived from the
+record ID and its immutable `createdAt`; a skill deleted and published again
+never inherits earlier recipients, and deleting a publication removes its
+group. Before any change the binding is verified (keyword, resource, single
+read operation, attached to this source and to no other publication). The
+permission is attached before members are added, so an interrupted first share
+leaves an empty, unattached group that the next attempt reuses. Revocation
+removes only membership. Recipient lists are bounded to 500 per skill.
+
+System skills keep **Public skill** (`constraintExemption`, default on) and
+one validated OrgUnit, plus the same selected-users group. Paths are additive:
+toggling Public never discards the OrgUnit or recipients, and the proposed
+audience is itself authorized as a typed update. User skills cannot be made
+public or OrgUnit-scoped in this version.
+
+### Installation API
+
+| Endpoint (`/api/v0/agent/skills/installations...`) | Purpose                                                          |
+| -------------------------------------------------- | ---------------------------------------------------------------- |
+| `GET /`                                            | The caller's installations (keyset pages) with source status     |
+| `POST /` `{sourceSkillId, alias?}`                 | Install (`201`; an identical repeat returns `200`)               |
+| `GET /:id`, `DELETE /:id`                          | Status; uninstall (only the caller's record, as the caller)      |
+| `POST /:id/publish` (ZIP)                          | Fork an installed copy into the caller's own publication (below) |
+
+The recipient is always the authenticated caller; any other body field is
+rejected. Install reads the source with the caller's session, requires it to
+be a READY user skill of another user in this tenant, re-checks its typed
+read (`404 AGENT_SKILL_SOURCE_NOT_FOUND` for missing and unreadable alike,
+`409 AGENT_SKILL_SOURCE_PENDING` while it is being replaced) and requires the
+caller's own `install/create`. Status reports a source as `available` (with
+metadata), `pending` or `unavailable`; publisher details are returned only
+while the caller can read the source. A revoked, deleted or invalid source
+leaves the installation listed and uninstallable.
+
+### Manifests, revocation and outages
+
+Both manifests stay `version: 1`. The installation source pages through the
+caller's installation records independently, reads each source as the real
+caller, and returns an item with `sourceKind: "installation"`,
+`selectionId` = the installation ID, `source` = the original publication
+(including its checksum) and `installation {id, userId, sourceSkillId, alias?}`. Clients built before #3861 reject such items and so fail closed,
+without local changes, only for users who installed shared skills.
+
+| Situation                                                                                     | Manifest                     | Sync                                                                                                      |
+| --------------------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Source readable and READY                                                                     | item                         | install / update                                                                                          |
+| Source deleted, `DELETING`, unreadable (revoked), malformed, not another user's, other tenant | `unavailableInstallations[]` | **authoritative**: clean copies removed; partial with `INSTALLATION_SOURCE_UNAVAILABLE` until uninstalled |
+| Source `PENDING` (publisher replacing it)                                                     | warning `SOURCE_PENDING`     | abort before any change, even with `--force`                                                              |
+| Malformed own installation record                                                             | warning `INVALID_RECORD`     | abort; uninstall it                                                                                       |
+| Registry, OPA or installation-list failure                                                    | request fails                | abort before any change, even with `--force`                                                              |
+| Required ZIP download or checksum/validation failure                                          | —                            | abort before any change, even with `--force`                                                              |
+
+A definitive unavailability is therefore not a generic warning: it lets a
+successful sync remove clean managed copies while edited copies remain
+conflicts until `--force`. Revoked and deleted sources are deliberately not
+distinguished.
+
+### Projection into harnesses and Workspaces
+
+The same scan engine projects installations into local harness roots and the
+Workspace DSH root as independent real copies. The root marker records the
+recipient's verified `sourceKey`, the original publication (`kind: "installation"`), `installationRecordId`, `alias`, the publisher's archive
+checksum and the installed tree digest; never credentials. With an alias, only
+the frontmatter `name:` line of the local `SKILL.md` is rewritten after the
+publisher's exact ZIP was verified, the result is re-validated, and the
+baseline digest is that of the renamed tree. The verified cache keeps the
+publisher's exact bytes, keyed per installation in the snapshot. Missing copies
+are reinstalled, exact markerless copies adopted, clean copies updated or
+removed, and edited copies conflict exactly as for own publications. Installing,
+uninstalling, sharing or revoking never synchronizes anything by itself: a
+Workspace reconciles at its next Manager sync (new Workspace, recovery or the
+confirmed Retry / Re-check), and a computer at its next `mgd agent-skill sync`.
+
+**Accepted limitation:** revocation stops future authorized access and
+download. Copies already on a computer, including locally edited or manually
+copied files, cannot be erased remotely at that moment; managed clean copies
+are removed by the next successful authoritative sync, and edited copies only
+with `--force`. This is not instant remote code revocation.
+
+### Forking an installed shared copy
+
+Plain `mgd agent-skill publish <installed-shared-copy>` refuses
+(`SHARED_INSTALLATION_FORK_REQUIRED`) and explains that `--force` publishes the
+copy as the recipient's **own** user skill named like the installation, in
+place of the installation; the original publisher's skill never changes.
+`publish --force` is that explicit consent. `mgd` authenticates the recipient
+account recorded in the marker (never another active profile), refuses a
+renamed copy, and calls `POST /installations/:id/publish`. Agent Services
+validates the ZIP, checks the caller's `user/create` for the proposed
+publication and `install/delete` for the installation before changing
+anything, removes the installation as the caller, and creates the publication
+under the same in-process record lock. Registry has no multi-record
+transaction: if creation fails after the installation was removed, the API
+returns `AGENT_SKILL_FORK_INCOMPLETE` (retryable), `mgd` keeps the edited files
+and marker unchanged, and rerunning the command completes an ordinary own
+create of the same deterministic ID. On success `mgd` caches the exact accepted
+ZIP, replaces only the installation's snapshot entry, and rebinds only the
+originating copy's marker; other harness copies update at their next sync. In
+a Workspace the `magda_agent_skill_publish` tool requires
+`forkSharedInstallation: true` and asks one dedicated question.
+
 ## Settings: Agent Skills catalogue (#3857)
 
 Settings has a non-clickable **Agent Workspace** group. Its children are
@@ -310,9 +475,9 @@ child is available:
 | -------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Open Workspace | `/settings/agent-workspace`               | `agentWorkspace/access`                                                                         |
 | Agent Skills   | `/settings/agent-workspace/skills`        | `object/agentSkill/system/read` **or** `object/agentSkill/user/read` (constrained grants count) |
-| Shared Skills  | `/settings/agent-workspace/shared-skills` | reserved for #3861; not shown                                                                   |
+| Shared Skills  | `/settings/agent-workspace/shared-skills` | `object/agentSkill/user/read` **or** `object/agentSkill/install/read`                           |
 
-Both routes are behind the existing `agentWorkspace` feature flag and their own
+All three routes are behind the existing `agentWorkspace` feature flag and their own
 route guard. Menu visibility is a hint; the APIs enforce access. A user can
 browse the catalogue without Workspace access, and the page then omits the
 **Open Workspace** link.
@@ -348,6 +513,9 @@ permission, conflict, size and network errors each have specific messages.
 After success the page says a running Workspace is not updated automatically:
 ask the agent to resynchronise skills, or run `mgd agent-skill sync` in the
 Workspace. There is no create, delete, metadata editing or system ZIP action.
+The caller's own user skills also offer **Share**, and system skills offer
+**Manage access** to holders of `object/agentSkill/system/update`
+([details](#sharing-and-installed-shared-skills-3861)).
 
 ## Workspace skill-sync status and Retry / Re-check
 

@@ -486,7 +486,9 @@ exact text. Record the session ID, and the publication ID where there is one.
    (`object/agentSkill/system/read` or `.../user/read`), it shows **Agent
    Skills** only, and `/settings/agent-workspace` redirects with a permission
    error. With both, or as an administrator, both appear. Without either the
-   group is hidden. No **Shared Skills** item appears.
+   group is hidden. **Shared Skills** appears with `object/agentSkill/user/read`
+   or `object/agentSkill/install/read`, independently of Workspace access (see
+   [sharing checks](#agent-skill-sharing-and-installation-checks-3861)).
 2. **Introduction:** the guide ("What are Agent Skills? How do I create one?")
    explains skills and shows the CSV example. It is open when you have no
    skills and collapsed otherwise. **Open Workspace** is in the header only with
@@ -516,6 +518,83 @@ exact text. Record the session ID, and the publication ID where there is one.
 9. **Responsive/accessibility:** at phone width the list has no horizontal
    scroll; filters expose `aria-pressed`; the page is usable by keyboard;
    loading, empty and error states are announced.
+
+## Agent Skill sharing and installation checks (#3861)
+
+Use two non-admin users holding only **Agent Workspace Users**, called Alice
+(publisher) and Bob (recipient), an unrelated non-admin Carol with the same
+role, a user Dave holding only the typed user-read permissions (no install
+permission), and an **Agent Skills Admins** user for system access. Create
+them and their API keys through `/v0/public/{users,roles,…}` with a
+short-lived admin JWT, as described in [Workspace access checks](#workspace-access-checks),
+and remove them afterwards. Run each user's `mgd` with its own profile; never
+share credentials between profiles.
+
+1. **Private by default.** Alice publishes `csv-reporter`. Bob's
+   `mgd agent-skill list --shared` and **Shared Skills / All available** are
+   empty; `mgd agent-skill show user/<alice-skill-id>` and the archive download
+   return `404`, and `install` returns `404 AGENT_SKILL_SOURCE_NOT_FOUND`.
+2. **Share.** Alice runs `mgd agent-skill share user/<id> <bob-uuid>` (or
+   **Share** on the Agent Skills card). Settings > Access Groups shows one
+   "Agent Skill share" group with resource `object/agentSkill/user`, a single
+   `object/agentSkill/user/read` operation and Bob as the only member; the
+   publication's `access-control.preAuthorisedPermissionIds` contains exactly
+   that group's permission ID.
+3. **Readable, not installed.** Bob now sees the skill (with Alice as the
+   publisher) and can show and download it. His `local-sync-manifest` and
+   `workspace-manifest` contain no installation item.
+4. **Install.** Bob first publishes his own `csv-reporter`. Installing
+   Alice's then returns `409 AGENT_SKILL_NAME_CONFLICT` with a suggested alias,
+   and the UI opens the alias prompt prefilled with it; Bob installs it under
+   that alias. **Installed** lists the installation; the Registry record has
+   `agent-skill-installation`, Bob as owner and no `agent-skill` aspect, and
+   Storage has no new object. Repeating the install returns `200` without a
+   second record.
+5. **Sync both ways.** Bob's local `mgd agent-skill sync` installs a real copy
+   in each detected harness; with an alias, only the `name:` line of `SKILL.md`
+   differs from the ZIP, and the marker has `kind: "installation"`, the
+   installation ID, the alias and Alice's archive checksum. In Bob's Workspace,
+   **Retry / Re-check** (or a fresh Workspace) installs the same copy in the DSH
+   root and the agent can use it.
+6. **Publisher update.** Alice publishes v2. Bob edits one harness copy. Bob's
+   next sync updates the clean copies and reports only the edited one as
+   `LOCAL_MODIFICATION` (partial); `sync --force` replaces it.
+7. **Revocation.** Alice removes Bob (confirmation dialog). Bob can no longer
+   show or download the source (`404`/`403`), the manifest lists the
+   installation under `unavailableInstallations`, a successful sync removes
+   clean copies and reports `INSTALLATION_SOURCE_UNAVAILABLE`, and an edited
+   copy stays as `NOT_DESIRED_LOCAL_MODIFICATION` until `sync --force`.
+   **Installed** shows the source as no longer available, without publisher
+   details.
+8. **Dangling uninstall.** Bob uninstalls it (confirmation dialog, or
+   `mgd agent-skill uninstall <name>`). Alice's record and ZIP are unchanged
+   (same checksum), and Bob's next sync succeeds.
+9. **Fork.** Alice shares again; Bob installs, edits his copy, and runs
+   `mgd agent-skill publish <copy>`, which refuses with
+   `SHARED_INSTALLATION_FORK_REQUIRED`. `publish <copy> --force` creates
+   `user/agent-skill-<bob-uuid>-<name>` owned by Bob and removes his
+   installation; only that copy's marker is rebound and other harness copies
+   update at the next sync. Alice's record, permissions and ZIP checksum are
+   unchanged. With Bob's active profile switched to another account the fork
+   still authenticates as Bob; with no valid Bob profile it refuses without a
+   request.
+10. **Negative matrix.** Carol cannot see, show, download, install, share or
+    fork Alice's skill, nor list, read or uninstall Bob's installation. Bob
+    cannot change Alice's sharing (`404`). Dave can read a skill shared with
+    him but `install` returns `403 AGENT_SKILL_INSTALL_FORBIDDEN`. A user from
+    another tenant cannot obtain the source. A direct Registry `object/record`
+    grant reads no installation or shared source. Install request bodies with
+    `userId`, `ownerId` or `id`, malformed IDs, system sources, `system-` or
+    runtime-bundled aliases are rejected.
+11. **Outage.** Stop the Registry or OPA briefly, or make Alice's source
+    PENDING: Bob's sync (even `--force`) fails before any change; nothing is
+    removed.
+12. **System skill access.** As an Agent Skills Admin, open **Manage access**
+    for a system skill: **Public skill** is checked by default with help text
+    that it is not anonymous. Select an OrgUnit and add Bob, then uncheck Public
+    and save: Bob still reads it, Carol does not, and the OrgUnit and Bob are
+    kept when Public is checked again. An Agent Workspace User sees no
+    **Manage access** button and the API returns `404`.
 
 ## Retry / Re-check skill sync checks (#3857)
 
