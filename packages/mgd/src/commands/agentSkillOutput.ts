@@ -101,6 +101,10 @@ export function printAgentSkillSyncResult(
         );
     }
     for (const item of result.items) {
+        if (item.code === "INSTALLATION_SOURCE_UNAVAILABLE")
+            note(
+                `  - ${item.name}: the shared skill you installed is no longer available to you (sharing was revoked or it was deleted). Clean installed copies were removed; uninstall it with \`mgd agent-skill uninstall ${item.name}\`.`
+            );
         if (item.code === "CACHED_NOT_ACTIVATED")
             note(
                 `  Profile "${item.name}" is not the globally active profile (or a one-off override is set); skills were cached but not installed.`

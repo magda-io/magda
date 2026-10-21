@@ -16,7 +16,7 @@ import {
     AGENT_SKILL_INSTALL_MARKER,
     inspectInstalledAgentSkill,
     isReservedAgentSkillName,
-    readAgentSkillArchiveFiles,
+    readProjectedAgentSkillArchive,
     sha256Hex
 } from "./agentSkillArchive.js";
 import type {
@@ -28,6 +28,7 @@ import {
     createInstallMarker,
     parseInstallMarker,
     serializeInstallMarker,
+    snapshotKey,
     verifiedMarkerSource
 } from "./agentSkillLocalState.js";
 import {
@@ -236,18 +237,21 @@ async function verifiedArchiveFiles(
         throw new Error(
             `Cached Agent Skill archive does not match its verified checksum: ${publication.archiveFile}`
         );
-    const archive = await readAgentSkillArchiveFiles(
+    // An installed shared skill under an alias gets a locally renamed
+    // SKILL.md; the cached publisher archive itself is never changed.
+    const projected = await readProjectedAgentSkillArchive(
         bytes,
-        publication.ref.type
+        publication.ref.type,
+        publication.alias
     );
     if (
-        archive.result.treeDigest !== publication.treeDigest ||
-        archive.result.name !== publication.name
+        projected.treeDigest !== publication.treeDigest ||
+        projected.name !== publication.name
     )
         throw new Error(
             `Cached Agent Skill archive does not match its verified publication: ${publication.archiveFile}`
         );
-    return archive.files;
+    return projected.files;
 }
 
 /** Stage the complete new skill, marker included, as <operation>/new. */
@@ -532,6 +536,9 @@ async function classify(
                 sameSource &&
                 M.source.type === D.ref.type &&
                 M.source.id === D.ref.id &&
+                M.source.kind === D.sourceKind &&
+                M.installationRecordId === D.installationRecordId &&
+                M.alias === D.alias &&
                 M.baselineChecksum === D.checksum &&
                 M.baselineTreeDigest === D.treeDigest
             )
@@ -552,7 +559,13 @@ async function classify(
         }
         if (
             sameSource &&
-            request.unresolved?.has(`${M.source.type}/${M.source.id}`)
+            request.unresolved?.has(
+                snapshotKey({
+                    ref: { type: M.source.type, id: M.source.id },
+                    sourceKind: M.source.kind,
+                    installationRecordId: M.installationRecordId
+                })
+            )
         )
             return { kind: "none", code: "SOURCE_UNRESOLVED" };
         if (clean) return { kind: "remove", expected };

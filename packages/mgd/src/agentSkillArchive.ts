@@ -1061,6 +1061,109 @@ export async function readAgentSkillArchiveFiles(
     };
 }
 
+/**
+ * Rewrite only the top-level `name:` line of SKILL.md frontmatter, for a
+ * recipient's alias of an installed shared skill (#3861). Every other byte is
+ * preserved; the result must parse with the new name and otherwise identical
+ * frontmatter, description and body, or the rename is refused.
+ */
+export function renameAgentSkillMarkdown(
+    content: Buffer,
+    from: string,
+    to: string
+): Buffer {
+    let text: string;
+    try {
+        text = new TextDecoder("utf-8", { fatal: true }).decode(content);
+    } catch (error) {
+        invalid("SKILL.md must be valid UTF-8", error);
+    }
+    const match = /^(---\r?\n)([\s\S]*?)(\r?\n---(?:\r?\n|$)[\s\S]*)$/.exec(
+        text
+    );
+    if (!match) invalid("SKILL.md must begin with YAML frontmatter");
+    const lines = match[2].split(/(?<=\n)/);
+    const nameLines = lines
+        .map((line, index) => ({ line, index }))
+        .filter(({ line }) => /^name[ \t]*:/.test(line));
+    if (nameLines.length !== 1)
+        invalid("SKILL.md frontmatter must declare its name on one line");
+    const { line, index } = nameLines[0];
+    const ending = /\r?\n$/.exec(line)?.[0] || "";
+    lines[index] = `name: ${to}${ending}`;
+    const renamed = `${match[1]}${lines.join("")}${match[3]}`;
+    const before = parseAgentSkillMarkdown(text);
+    const after = parseAgentSkillMarkdown(renamed);
+    const frontmatter = (value: string) => {
+        const parsed = loadYaml(/^---\r?\n([\s\S]*?)\r?\n---/.exec(value)![1], {
+            schema: JSON_SCHEMA
+        }) as Record<string, unknown>;
+        const { name, ...rest } = parsed;
+        return JSON.stringify(rest);
+    };
+    if (
+        before.name !== from ||
+        after.name !== to ||
+        after.description !== before.description ||
+        after.body !== before.body ||
+        frontmatter(text) !== frontmatter(renamed)
+    )
+        invalid("SKILL.md name could not be rewritten safely");
+    return Buffer.from(renamed, "utf8");
+}
+
+/**
+ * Validate a published archive and return the files and tree digest of its
+ * local projection: unchanged, or renamed to a recipient alias. The archive
+ * itself (and its checksum) is always the publisher's exact bytes.
+ */
+export async function readProjectedAgentSkillArchive(
+    bytes: Buffer | Uint8Array,
+    type: AgentSkillType,
+    alias?: string,
+    limitOverrides: Partial<AgentSkillArchiveLimits> = {}
+): Promise<{
+    archive: ValidatedAgentSkillArchive;
+    name: string;
+    treeDigest: string;
+    files: AgentSkillArchiveFile[];
+}> {
+    const inspected = await inspectAgentSkillArchive(
+        bytes,
+        type,
+        limitOverrides
+    );
+    if (alias === undefined || alias === inspected.result.name)
+        return {
+            archive: inspected.result,
+            name: inspected.result.name,
+            treeDigest: inspected.result.treeDigest,
+            files: inspected.files.map((file) => ({ ...file }))
+        };
+    validateAgentSkillNameForType(alias, "user");
+    const files = inspected.files.map((file) =>
+        file.path === "SKILL.md"
+            ? {
+                  ...file,
+                  content: renameAgentSkillMarkdown(
+                      file.content,
+                      inspected.result.name,
+                      alias
+                  )
+              }
+            : { ...file }
+    );
+    const tree = validateTree(files, type);
+    if (tree.name !== alias)
+        invalid("SKILL.md name could not be rewritten safely");
+    return {
+        archive: inspected.result,
+        name: alias,
+        treeDigest: tree.treeDigest,
+        files
+    };
+}
+
 async function pathExists(value: string): Promise<boolean> {
     try {
         await fs.lstat(value);
