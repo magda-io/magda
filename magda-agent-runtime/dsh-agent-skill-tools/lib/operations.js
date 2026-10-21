@@ -136,6 +136,18 @@ const CONFIRMATION = {
             cancelDescription: "Keep the published skill."
         })
     },
+    /**
+     * `mgd agent-skill publish --force` of an installed copy of a skill shared
+     * by another user (#3861): the user's own publication replaces their
+     * installation; the publisher's skill is never changed.
+     */
+    fork: (name) => ({
+        header: "Publish as your own skill",
+        question: `Publish your copy of the shared skill "${name}" as your own user skill? Your installation of the other user's skill will be replaced by your own publication named "${name}", which you can update and share yourself. The other user's skill is not changed.`,
+        confirm: "Publish as my skill",
+        confirmDescription: `Publish "${name}" as your own user skill.`,
+        cancelDescription: "Do not publish. Your installed copy is kept."
+    }),
     forceSync: () => ({
         header: "Replace local changes",
         question:
@@ -486,9 +498,14 @@ export function createAgentSkillOperations(options = {}) {
             const operation = "publish";
             let directory;
             const type = args?.type ?? "user";
+            const fork = args?.forkSharedInstallation === true;
             try {
                 if (type !== "user" && type !== "system")
                     throw new ToolInputError('type must be "user" or "system"');
+                if (fork && (type !== "user" || args?.overwriteRemoteChanges))
+                    throw new ToolInputError(
+                        'forkSharedInstallation publishes a user skill and cannot be combined with type "system" or overwriteRemoteChanges'
+                    );
                 directory = await skillDirectory(args?.path, context.cwd);
             } catch (error) {
                 return inputFailure(operation, error);
@@ -519,7 +536,9 @@ export function createAgentSkillOperations(options = {}) {
             if (args?.userApproved !== true) {
                 const decision = await confirmAction(
                     context.ask,
-                    args?.overwriteRemoteChanges === true
+                    fork
+                        ? CONFIRMATION.fork(name)
+                        : args?.overwriteRemoteChanges === true
                         ? CONFIRMATION.overwrite.publish(type, name)
                         : CONFIRMATION.publish[type](name)
                 );
@@ -534,13 +553,31 @@ export function createAgentSkillOperations(options = {}) {
                     "--type",
                     type,
                     "--json",
-                    ...(args?.overwriteRemoteChanges === true
+                    ...(args?.overwriteRemoteChanges === true || fork
                         ? ["--force"]
                         : [])
                 ],
                 context.signal
             );
             const published = run.ok ? parseJson(run.stdout) : undefined;
+            if (
+                !run.ok &&
+                parseJson(run.stderr)?.error?.code ===
+                    "SHARED_INSTALLATION_FORK_REQUIRED"
+            )
+                return {
+                    operation,
+                    name,
+                    type,
+                    outcome: "rejected",
+                    error: {
+                        code: "SHARED_INSTALLATION_FORK_REQUIRED",
+                        message:
+                            "This is an installed copy of a skill shared by another user."
+                    },
+                    guidance:
+                        "Nothing was published. Publishing this copy would create the user's own skill in place of their installation of the shared skill; the other user's skill is never changed. Explain this to the user and, only if they explicitly want it, call magda_agent_skill_publish again with forkSharedInstallation: true."
+                };
             if (published?.id && published?.checksum)
                 return {
                     operation,

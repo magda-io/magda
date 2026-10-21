@@ -60,6 +60,11 @@ export function apply(ctx) {
                     type: "boolean",
                     description:
                         "Overwrite a newer remote version of this publication (mgd --force). Only when the user explicitly asked to overwrite."
+                },
+                forkSharedInstallation: {
+                    type: "boolean",
+                    description:
+                        "Publish an installed copy of a skill shared by another user as the user's own user skill, replacing their installation (mgd --force). The other user's skill is never changed. Only when the user explicitly asked for it."
                 }
             },
             output: OUTPUT,

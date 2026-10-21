@@ -182,7 +182,8 @@ async function publishInstallation(
     if (marker.source.kind === "installation") {
         if (!opts.force)
             throw new UsageError(
-                `This is your installed copy of ${ref.id}, a skill shared with you by another user. Publishing it creates your own user skill named "${marker.name}" from this copy (a fork): your installation of the shared skill is removed and replaced by your publication, and the original publisher's skill is never changed. If that is what you want, rerun with \`mgd agent-skill publish ${installation.path} --force\`.`
+                `This is your installed copy of ${ref.id}, a skill shared with you by another user. Publishing it creates your own user skill named "${marker.name}" from this copy (a fork): your installation of the shared skill is removed and replaced by your publication, and the original publisher's skill is never changed. If that is what you want, rerun with \`mgd agent-skill publish ${installation.path} --force\`.`,
+                "SHARED_INSTALLATION_FORK_REQUIRED"
             );
         await forkInstallation(installation, opts);
         return;
