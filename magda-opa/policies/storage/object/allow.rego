@@ -8,8 +8,11 @@ import data.common.isEmpty
 
 default allow = false
 
+# Installation records (#3861) have no Storage object of their own: no object
+# may be linked to one, so their typed record permissions never reach Storage.
 linkedRecordBindingValid {
 	not input.object.record["agent-skill"]
+	not input.object.record["agent-skill-installation"]
 }
 
 linkedRecordBindingValid {

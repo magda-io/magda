@@ -7,6 +7,7 @@ import data.common.isPublishedDataset
 import data.common.isPublishedDistribution
 import data.common.verifyRecordPermission
 import data.object.agentSkill.verifyPermission as verifyAgentSkillPermission
+import data.object.agentSkillInstallation.verifyPermission as verifyAgentSkillInstallationPermission
 import data.object.dataset.verifyPermission as verifyDatasetPermission
 import data.object.distribution.verifyPermission as verifyDistributionPermission
 import data.object.organization.verifyPermission as verifyOrgPermission
@@ -23,6 +24,7 @@ allow {
 # intentionally tracked separately in #3862/#3863.
 verifyPermission(operationUri) {
 	input.object.record["agent-skill"].type == "system"
+	not input.object.record["agent-skill-installation"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	inputOperationUri := concat("/", ["object", "agentSkill", "system", operationType])
@@ -31,15 +33,27 @@ verifyPermission(operationUri) {
 
 verifyPermission(operationUri) {
 	input.object.record["agent-skill"].type == "user"
+	not input.object.record["agent-skill-installation"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	inputOperationUri := concat("/", ["object", "agentSkill", "user", operationType])
 	verifyAgentSkillPermission(inputOperationUri, "record")
 }
 
-# A concrete typed publication never falls back to generic object/record grants.
-# #3861 will replace the fail-closed installation reservation with typed
-# installation dispatch after its aspect and lifecycle exist.
+# A recipient installation record (#3861) uses only typed installation
+# operations. It never authorizes its source publication, and a record carrying
+# both markers matches neither typed path, so it fails closed.
+verifyPermission(operationUri) {
+	input.object.record["agent-skill-installation"]
+	not input.object.record["agent-skill"]
+
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "agentSkill", "install", operationType])
+	verifyAgentSkillInstallationPermission(inputOperationUri, "record")
+}
+
+# Concrete typed publications and installations never fall back to generic
+# object/record grants.
 verifyPermission(operationUri) {
 	not input.object.record["agent-skill"]
 	not input.object.record["agent-skill-installation"]

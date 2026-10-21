@@ -583,3 +583,38 @@ test_delete_grant_can_delete_existing_linked_archive {
 		"object": {"record": system_skill},
 	}
 }
+
+test_object_linked_to_installation_record_is_never_readable {
+	recipient := "00000000-0000-4000-8000-0000000000b0"
+	installation := {
+		"id": sprintf("agent-skill-%s-useful-skill", [recipient]),
+		"name": "useful-skill",
+		"agent-skill-installation": {"userId": recipient, "sourceSkillId": "agent-skill-00000000-0000-4000-8000-0000000000a1-useful-skill"},
+		"access-control": {"ownerId": recipient},
+	}
+
+	permission := {
+		"resourceUri": "object/agentSkill/install",
+		"userOwnershipConstraint": true,
+		"orgUnitOwnershipConstraint": false,
+		"preAuthorisedConstraint": false,
+		"operations": [
+			{"uri": "object/agentSkill/install/create"},
+			{"uri": "object/agentSkill/install/read"},
+		],
+	}
+
+	not allow with input as {
+		"operationUri": "storage/object/read",
+		"storage": {"object": {"name": "notes/readme.md", "recordId": installation.id, "ownerId": recipient, "exists": true}},
+		"object": {"record": installation},
+		"user": {"id": recipient, "permissions": [permission]},
+	}
+
+	not allow with input as {
+		"operationUri": "storage/object/upload",
+		"storage": {"object": {"name": "notes/readme.md", "recordId": installation.id, "ownerId": recipient, "exists": false}},
+		"object": {"record": installation},
+		"user": {"id": recipient, "permissions": [permission]},
+	}
+}
