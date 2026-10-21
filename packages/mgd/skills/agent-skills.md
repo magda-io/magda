@@ -1,7 +1,8 @@
 # Reusable MAGDA Agent Skills with `mgd`
 
 Use this reference when the task is to **draft, validate, publish, inspect,
-download, delete, or synchronize** a Registry-backed Agent Skill. These are
+download, delete, share, install or synchronize** a Registry-backed Agent
+Skill. These are
 persistent user/system publications distinct from ordinary dataset operations
 and from the bundled `magda-mgd` guidance installed by `mgd skills install`.
 
@@ -21,8 +22,7 @@ their intended user. Published **system** skills may include regular supporting
 files/scripts and require dedicated system-publishing authority. Both must
 respect the same explicit review-and-publish decision. A system publication
 can be available to other authorised MAGDA users; do not describe it as
-anonymous/public-internet access. Future sharing/recipient installs (#3861)
-are not available in this version.
+anonymous/public-internet access.
 
 ## Draft, validate and deliberately publish
 
@@ -60,6 +60,41 @@ A pulled directory is a **working copy**, not an automatically installed skill.
 It records verified source-account/ETag provenance for safe later publication.
 Do not delete or overwrite an existing local directory as part of a pull.
 
+## Sharing and installing shared skills
+
+Sharing and installing are separate, explicit steps, and both are mutations
+that need the user's go-ahead in this conversation:
+
+```sh
+# The owner shares one published user skill with another MAGDA user (UUID from
+# their Account page). This grants read access only; nothing is installed.
+mgd agent-skill share user/agent-skill-<my-uuid>-clean-columns <user-uuid> --json
+mgd agent-skill recipients user/agent-skill-<my-uuid>-clean-columns --json
+mgd agent-skill unshare user/agent-skill-<my-uuid>-clean-columns <user-uuid> --json
+
+# A recipient discovers what is shared with them, then explicitly installs it.
+mgd agent-skill list --shared --json
+mgd agent-skill install user/agent-skill-<publisher-uuid>-clean-columns --json
+mgd agent-skill install user/agent-skill-<publisher-uuid>-clean-columns --as team-columns --json
+mgd agent-skill installations --json
+mgd agent-skill uninstall team-columns --json
+```
+
+- A shared skill is **not installed automatically**; only `install` (or
+  Settings > Agent Workspace > Shared Skills) adds it to the recipient's
+  skills. Installing copies nothing locally until the next `sync`.
+- Installed names share the recipient's namespace with their own
+  publications. On a name conflict the error suggests an alias; rerun with
+  `--as <name>`. Renaming means uninstall and install again.
+- Uninstalling removes only the recipient's installation; the publisher's
+  skill is never changed. A source whose sharing was revoked or which was
+  deleted stays listed as unavailable until it is uninstalled.
+- System skills are not installed this way. Their access (Public skill,
+  organisation, selected users) is managed by authorised system skill
+  managers with `mgd agent-skill access system/<id> [--public|--no-public] [--org-unit <id>|--clear-org-unit]` plus `share`/`unshare`. Public means
+  available to users with a suitable system-skill read permission, never
+  anonymous access. Access paths are additive.
+
 ## Publication replacement and deletion safety
 
 A publication has an immutable type, identity and skill name. Renaming requires
@@ -75,6 +110,17 @@ If another actor has changed the publication, stop and show the conflict.
 decision and needs explicit user consent. Never use it as an automatic fix.
 For installed system skills, pull to a separate working directory and use the
 appropriate system type; do not try to publish the installed copy directly.
+
+An installed copy of a skill **shared by another user** is never published
+back to that user's skill. Plain `publish` refuses (error code
+`SHARED_INSTALLATION_FORK_REQUIRED`) and explains that `publish --force`
+would publish the edited copy as the recipient's **own** user skill (a fork)
+in place of their installation. Only with the user's explicit consent to that
+fork, run `mgd agent-skill publish <installed-dir> --force --json`. It uses
+the recipient account recorded in the copy, never another active profile. If
+it reports that the installation was removed but the publication was not
+created yet, the local files are unchanged: rerun the same command to finish.
+Other installed copies update at their next sync.
 
 ```sh
 # Only after confirming the correct exact publication and deletion intent:
@@ -98,12 +144,18 @@ mgd agent-skill sync --force --json
 ```
 
 On a local computer, ordinary sync installs the current profile's **own
-user publications only** into detected Claude Code, Codex, OpenCode and
-configured DSH roots. It does **not** automatically install system skills or
-someone else's readable publications. Use explicit `pull system/<id>` to inspect
-a system publication. In the Magda-hosted Agent Workspace, the trusted runtime
-may reconcile authorised system skills and the current user's own publications;
-the future installation source remains reserved for #3861.
+user publications and explicitly installed shared skills** into detected
+Claude Code, Codex, OpenCode and configured DSH roots. It does **not**
+automatically install system skills or someone else's merely readable
+publications. Use explicit `pull system/<id>` to inspect a system publication.
+In the Magda-hosted Agent Workspace, the trusted runtime also reconciles the
+system skills available to the user.
+
+When a shared skill's source is revoked or deleted, a successful sync removes
+clean installed copies and reports `INSTALLATION_SOURCE_UNAVAILABLE` with a
+nonzero exit until the installation is uninstalled. Edited copies are kept as
+conflicts until `sync --force`. Revocation stops future access; it cannot
+instantly erase copies already on a computer.
 
 Installed skills are **independent real-directory copies** with a root-level
 `.magda-skill-install.json` marker (provenance, baseline, no credentials).
