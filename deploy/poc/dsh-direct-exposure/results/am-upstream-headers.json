@@ -1,0 +1,9 @@
+{
+  "test": "am-upstream-headers",
+  "result": "pass",
+  "modes": [
+    "managed-cookie",
+    "none",
+    "passthrough"
+  ]
+}

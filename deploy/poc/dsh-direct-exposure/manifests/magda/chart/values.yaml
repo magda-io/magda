@@ -1,0 +1,95 @@
+# Values for manifests/magda/chart (Magda 7.0.0 + magda-auth-internal 4.0.0), #3841.
+# Only what the agent route needs: gateway (PoC WebSocket image), session /
+# auth DB, authorization-api + OPA, the chart Ingress, plus the
+# magda-auth-internal login plugin (password login -> Magda session cookie).
+global:
+  externalUrl: https://magda.test:18443
+  enableLivenessProbes: true
+  useCombinedDb: true
+  image:
+    pullPolicy: IfNotPresent
+  openfaas:
+    enabled: false
+  searchEngine:
+    hybridSearch:
+      enabled: false
+
+tags:
+  all: false
+  priorities: false
+  gateway: true
+  combined-db: true
+  authorization-api: true
+  authorization-db: true
+  session-db: true
+  ingress: true
+  minions: false
+  minion-broken-link: false
+  minion-format: false
+  minion-linked-data-rating: false
+  minion-visualization: false
+  magda-pdf-semantic-indexer: false
+  magda-csv-semantic-indexer: false
+  magda-embedding-api: false
+  semantic-search-api: false
+
+magda:
+  magda-core:
+    gateway:
+      image:
+        repository: local
+        name: magda-gateway
+        tag: ws-poc
+        pullPolicy: Never
+      enableAuthEndpoint: true
+      enableCkanRedirection: false
+      authPlugins:
+        - key: internal
+          baseUrl: http://magda-auth-internal
+      cookie:
+        # TLS terminates at ingress; the browser-facing leg is https
+        secure: "auto"
+      # DSH's served index carries inline boot scripts (window.__DSH_BOOT__ etc.,
+      # content changes per build/plugin set), which the gateway's default CSP
+      # `script-src 'self'` blocks: the UI never starts. Relax CSP for the agent
+      # mount only. Its client module loader also evaluates strings, so
+      # 'unsafe-eval' is needed too. A per-path entry replaces the global CSP.
+      helmetPerPath:
+        /api/v0/agent/runtime:
+          contentSecurityPolicy:
+            directives:
+              scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+              connectSrc: ["'self'"]
+              imgSrc: ["'self'", "data:", "blob:"]
+              workerSrc: ["'self'", "blob:"]
+              frameSrc: ["'self'", "blob:"]
+              frameAncestors: ["'self'"]
+      routes:
+        auth:
+          to: http://authorization-api/v0/public
+          auth: true
+        # #3841: Browser -> gateway -> Agent Manager PoC -> Sandbox Service -> DSH
+        agent/runtime:
+          to: http://agent-manager.magda-agent-poc.svc.cluster.local/runtime
+          auth: true
+          websocket: true
+          redirectTrailingSlash: true
+    ingress:
+      hostname: magda.test
+      enableTls: true
+      # ingress-nginx serves the self-signed magda.test certificate as its
+      # default certificate (scripts/04-install-magda.sh), so the chart does not
+      # need cert-manager.
+      useDefaultCertificate: true
+      ingressClass: nginx
+    combined-db:
+      magda-postgres:
+        postgresql:
+          primary:
+            resources:
+              requests: { cpu: 100m, memory: 256Mi }
+              limits: { memory: 1Gi }
+
+magda-auth-internal:
+  authPluginConfig:
+    loginFormExtraInfoContent: "#3841 PoC"
