@@ -32,6 +32,8 @@ describe("Access Group API Router", function () {
     let mergeParamSeenControl: boolean;
     let patchBody: any;
     let accessControlPatched: boolean; // Added flag
+    // users / roles that table lookups should report as missing
+    let missingRecordIds: Set<string>;
 
     before(function () {
         nock.disableNetConnect();
@@ -63,6 +65,7 @@ describe("Access Group API Router", function () {
         mergeParamSeenControl = false;
         patchBody = undefined;
         accessControlPatched = false;
+        missingRecordIds = new Set();
         db = new mockDatabase();
         db.deleteRole = async () => {};
         let permissionIdCounter = 1;
@@ -96,6 +99,18 @@ describe("Access Group API Router", function () {
                 const query = queryOrConfig.text ?? queryOrConfig;
                 const params = queryOrConfig.values ?? values ?? [];
                 executedQueries.push({ query, params });
+                // getTableRecord lookups of users and roles by id
+                if (
+                    /^\s*select\b/i.test(query) &&
+                    /from\s+"?(users|roles)"?\s+where\s+id\s*=/i.test(query) &&
+                    typeof params[0] === "string"
+                ) {
+                    return {
+                        rows: missingRecordIds.has(params[0])
+                            ? []
+                            : [{ id: params[0] }]
+                    };
+                }
                 return { rows: [] as unknown[] };
             }
         });
@@ -991,6 +1006,157 @@ describe("Access Group API Router", function () {
                         q.params.includes(validRoleId)
                 )
             ).to.be.true;
+        });
+    });
+    describe("Agent Skill share groups (#3861)", () => {
+        const skillGroupBody = (overrides: any = {}) => ({
+            name: "Agent Skill share",
+            description: "Managed by Agent Services",
+            resourceUri: "object/agentSkill/user",
+            keywords: ["agent-skill-share"],
+            operationUris: ["object/agentSkill/user/read"],
+            ownerId: null as string | null,
+            orgUnitId: null as string | null,
+            ...overrides
+        });
+
+        it("creates only the typed read permission and no control permissions", async () => {
+            registryScope
+                .post("/records", (body) => {
+                    registryRequestBody = body;
+                    return true;
+                })
+                .reply(200, () => ({ id: registryRequestBody.id }));
+            const res = await request(app)
+                .post("/v0/auth/accessGroups")
+                .send(skillGroupBody());
+            expect(res.status).to.equal(200);
+            expect(createPermissionCalls).to.have.length(1);
+            expect(createPermissionCalls[0]).to.include({
+                resourceUri: "object/agentSkill/user",
+                userOwnershipConstraint: false,
+                orgUnitOwnershipConstraint: false,
+                preAuthorisedConstraint: true
+            });
+            expect(createPermissionCalls[0].operationUris).to.deep.equal([
+                "object/agentSkill/user/read"
+            ]);
+            const details = registryRequestBody.aspects["access-group-details"];
+            expect(details.resourceUri).to.equal("object/agentSkill/user");
+            expect(details.permissionId).to.equal("mock-permission-id-1");
+            expect(details.extraControlPermissionIds).to.deep.equal([]);
+            const accessControl = registryRequestBody.aspects["access-control"];
+            expect(accessControl.ownerId).to.equal(null);
+            expect(accessControl.orgUnitId).to.equal(null);
+            expect(accessControl.preAuthorisedPermissionIds).to.deep.equal([]);
+            const rolePermissions = executedQueries.filter((q) =>
+                q.query.toLowerCase().includes("insert into role_permissions")
+            );
+            expect(rolePermissions).to.have.length(1);
+            expect(rolePermissions[0].params).to.deep.equal([
+                "mock-role-id",
+                "mock-permission-id-1"
+            ]);
+        });
+
+        it("creates a system skill share group with the typed system read", async () => {
+            registryScope
+                .post("/records", (body) => {
+                    registryRequestBody = body;
+                    return true;
+                })
+                .reply(200, () => ({ id: registryRequestBody.id }));
+            const res = await request(app)
+                .post("/v0/auth/accessGroups")
+                .send(
+                    skillGroupBody({
+                        resourceUri: "object/agentSkill/system",
+                        operationUris: ["object/agentSkill/system/read"]
+                    })
+                );
+            expect(res.status).to.equal(200);
+            expect(createPermissionCalls[0].operationUris).to.deep.equal([
+                "object/agentSkill/system/read"
+            ]);
+        });
+
+        silenceErrorLogs(() => {
+            for (const operationUris of [
+                ["object/record/read"],
+                ["object/agentSkill/user/update"],
+                [
+                    "object/agentSkill/user/read",
+                    "object/agentSkill/user/delete"
+                ],
+                ["object/agentSkill/system/read"],
+                []
+            ]) {
+                it(`rejects a user skill group granting ${JSON.stringify(
+                    operationUris
+                )}`, async () => {
+                    const res = await request(app)
+                        .post("/v0/auth/accessGroups")
+                        .send(skillGroupBody({ operationUris }));
+                    expect(res.status).to.equal(400);
+                    expect(createPermissionCalls).to.have.length(0);
+                });
+            }
+
+            it("rejects an unknown resource URI", async () => {
+                const res = await request(app)
+                    .post("/v0/auth/accessGroups")
+                    .send(
+                        skillGroupBody({
+                            resourceUri: "object/agentSkill/install",
+                            operationUris: ["object/agentSkill/install/read"]
+                        })
+                    );
+                expect(res.status).to.equal(400);
+            });
+
+            it("rejects widening a skill group's operations", async () => {
+                currentGroupDetails.aspects[
+                    "access-group-details"
+                ].resourceUri = "object/agentSkill/user";
+                currentGroupDetails.aspects[
+                    "access-group-details"
+                ].operationUris = ["object/agentSkill/user/read"];
+                const res = await request(app)
+                    .put(`/v0/auth/accessGroups/${currentGroupDetails.id}`)
+                    .send({ operationUris: ["object/record/read"] });
+                expect(res.status).to.equal(400);
+            });
+
+            it("rejects adding a dataset to a skill group", async () => {
+                currentGroupDetails.aspects[
+                    "access-group-details"
+                ].resourceUri = "object/agentSkill/user";
+                const res = await request(app)
+                    .post(
+                        `/v0/auth/accessGroups/${currentGroupDetails.id}/datasets/${datasetRecordMock.id}`
+                    )
+                    .send();
+                expect(res.status).to.equal(400);
+            });
+
+            it("rejects adding a user who does not exist", async () => {
+                const userId = uuidV4();
+                missingRecordIds.add(userId);
+                currentGroupDetails.aspects[
+                    "access-group-details"
+                ].roleId = uuidV4();
+                const res = await request(app)
+                    .post(
+                        `/v0/auth/accessGroups/${currentGroupDetails.id}/users/${userId}`
+                    )
+                    .send();
+                expect(res.status).to.equal(400);
+                expect(
+                    executedQueries.some((q) =>
+                        q.query.toLowerCase().includes("insert into user_roles")
+                    )
+                ).to.equal(false);
+            });
         });
     });
 });
