@@ -1,6 +1,6 @@
 # Magda v8 AI Agent Platform Design
 
-**Status:** Blueprint in progress — expanded MVP stages #3854–#3858 implemented and reviewed in draft #3850; GKE security acceptance/future designs still open  
+**Status:** Agent Workspace MVP [#3850](https://github.com/magda-io/magda/pull/3850) merged to `next` 21 October 2026 (merge `73b74bb7f`); #3849 closed. This is the continuing draft v8 design. #3861 sharing/recipient installations is next, while GKE security qualification (#3848), Registry review (#3862/#3863) and dynamic LLM profiles (#3838) remain open.
 **Umbrella design issue:** #3811  
 **Working PR:** #3819  
 **Parent implementation epic:** #3810
