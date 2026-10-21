@@ -269,9 +269,17 @@ When converting an existing pre-release development cluster to this profile:
   `V2_4__agent_workspace_and_skills.sql` (with hardcoded resource and
   operation IDs) also fails Flyway validation with a `2.4` checksum mismatch.
   That revision creates the same authorization rows, so a disposable
-  development database can either be reset or, after confirming the `2.4`
-  history row is the consolidated migration, realigned with `flyway repair`,
-  which updates only the stored checksum.
+  development database can either be reset or repaired. Before repairing,
+  verify that the applied `2.4` entry is the consolidated migration, that its
+  authorization rows match a fresh install, and that `flyway info` shows no
+  other discrepancy (failed, missing or pending migrations). Run
+  `flyway repair` from the migrator image with the same `-locations`,
+  placeholders and `-ignoreMigrationPatterns` as `migrate`, inspect the
+  actions it reports, then run `flyway validate`. `repair` can also align
+  descriptions and types, remove failed entries and mark missing migrations
+  as deleted; in this scenario the only expected action is realigning the
+  `2.4` checksum. Anything else means the database is not in the expected
+  state, so reset it instead.
 
 The supplied values expect local `localhost:5000/*:latest` images loaded into
 Minikube. For each required local image:
