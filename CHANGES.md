@@ -2,6 +2,7 @@
 
 ## v7.1.0
 
+- [#3870](https://github.com/magda-io/magda/pull/3870): Fix bulk record updates (e.g. `PUT /v0/registry/records/aspects/{aspectId}`, used by `mgd dataset publish` / `unpublish`) failing with a 500 error for non-admin users who hold Agent Skill permissions (closes #3869). Authorization rules that can't be translated (built-in function calls such as `regex.match` on unknown records) are now treated as not matched instead of failing the decision. As a result, non-admin users can't bulk-update Agent Skill records.
 - [#3859](https://github.com/magda-io/magda/pull/3859): Fix owner-scoped `storage/object/*` permissions not matching objects uploaded through the Storage API (closes #3853). Uploads now store the owner under the `magda-owner-id` metadata key that authorization reads. Objects uploaded by earlier versions (owner stored under `magda-user-id`) keep their owner. Replacing an existing object now keeps its owner, and is authorised against the existing object's owner, not the uploader.
 - [#3843](https://github.com/magda-io/magda/pull/3843): Add opt-in WebSocket proxying to magda-gateway routes (`websocket: true`). WebSocket connections are checked by the same authentication and access control as other requests, and only accepted from the Magda site's own origin by default (configurable via `websocketAllowedOrigins`).
 
