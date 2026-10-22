@@ -112,6 +112,18 @@
     flex: 0 1 420px;
 }
 
+// index.scss forces the focus outline of every `form > input` to the
+// dark-theme focus colour (white) with !important. In these forms the input is
+// a direct child, so the white ring covered the border on focus; restore
+// rsuite's focus ring.
+.agent-skills-search,
+.agent-skill-recipient-add,
+.agent-skill-recipient-search {
+    > .rs-input:focus-visible {
+        outline-color: var(--rs-focus-ring-color) !important;
+    }
+}
+
 // `body.au-body` sets `p` margins (`.au-body * + p` adds 1.5rem above), which
 // outrank a single class, so hint margins are scoped one level deeper.
 .au-body .agent-skills-hint {
