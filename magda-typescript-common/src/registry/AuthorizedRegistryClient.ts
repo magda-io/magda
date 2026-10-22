@@ -248,7 +248,9 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                         e,
                         retriesLeft
                     )
-                )
+                ),
+            // --- a 400 response means the record is invalid; retrying won't help
+            (e) => e?.response?.status !== 400
         )
             .then((result) => result.body)
             .catch(toServerError("putRecord"));
