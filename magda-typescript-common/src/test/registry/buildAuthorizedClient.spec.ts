@@ -4,6 +4,7 @@ import { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import nock from "nock";
 import AuthorizedRegistryClient from "../../../src/registry/AuthorizedRegistryClient.js";
+import ServerError from "../../../src/ServerError.js";
 
 chai.use(chaiAsPromised);
 
@@ -96,5 +97,71 @@ describe("Test AuthorizedRegistryClient.ts", function () {
                 tenantId: 0
             });
         }).not.to.throw();
+    });
+
+    describe("putRecord", function () {
+        const record = {
+            id: "test-record",
+            name: "test record",
+            aspects: {},
+            sourceTag: "test-tag"
+        } as any;
+
+        const createClient = () =>
+            new AuthorizedRegistryClient({
+                baseUrl: "http://registry.example.com",
+                jwt: "some.jwt.token",
+                maxRetries: 3,
+                secondsBetweenRetries: 0,
+                tenantId: 0
+            });
+
+        it("should not retry when the registry responds with 400", async function () {
+            let requestCount = 0;
+            nock("http://registry.example.com")
+                .put("/records/test-record")
+                .times(4)
+                .reply(() => {
+                    requestCount++;
+                    return [400, "invalid record"];
+                });
+
+            const result = await createClient().putRecord(record);
+
+            expect(requestCount).to.equal(1);
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(400);
+        });
+
+        it("should still retry when the registry responds with 500", async function () {
+            let requestCount = 0;
+            nock("http://registry.example.com")
+                .put("/records/test-record")
+                .times(4)
+                .reply(() => {
+                    requestCount++;
+                    return [500, "server error"];
+                });
+
+            const result = await createClient().putRecord(record);
+
+            expect(requestCount).to.equal(4);
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(500);
+        });
+
+        it("should stop retrying once the registry responds with 400 after a retryable error", async function () {
+            const statuses = [500, 400, 400, 400];
+            let requestCount = 0;
+            nock("http://registry.example.com")
+                .put("/records/test-record")
+                .times(4)
+                .reply(() => [statuses[requestCount++], "error"]);
+
+            const result = await createClient().putRecord(record);
+
+            expect(requestCount).to.equal(2);
+            expect((result as ServerError).statusCode).to.equal(400);
+        });
     });
 });

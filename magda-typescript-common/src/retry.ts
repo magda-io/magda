@@ -15,7 +15,13 @@ export default function retry<T = any>(
                     if (retries > 0 && shouldRetry(e)) {
                         onRetry(e, retries);
                         return runLater(delaySeconds * 1000, () =>
-                            retry(op, delaySeconds, retries - 1, onRetry)
+                            retry(
+                                op,
+                                delaySeconds,
+                                retries - 1,
+                                onRetry,
+                                shouldRetry
+                            )
                         );
                     } else {
                         throw e;
