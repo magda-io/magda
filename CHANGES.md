@@ -2,6 +2,7 @@
 
 ## v7.1.0
 
+- #3288: Fix the site footer ignoring the order set on its menu categories. Desktop & mobile footer categories are now shown in ascending order, like their links.
 - [#3859](https://github.com/magda-io/magda/pull/3859): Fix owner-scoped `storage/object/*` permissions not matching objects uploaded through the Storage API (closes #3853). Uploads now store the owner under the `magda-owner-id` metadata key that authorization reads. Objects uploaded by earlier versions (owner stored under `magda-user-id`) keep their owner. Replacing an existing object now keeps its owner, and is authorised against the existing object's owner, not the uploader.
 - [#3843](https://github.com/magda-io/magda/pull/3843): Add opt-in WebSocket proxying to magda-gateway routes (`websocket: true`). WebSocket connections are checked by the same authentication and access control as other requests, and only accepted from the Magda site's own origin by default (configurable via `websocketAllowedOrigins`).
 

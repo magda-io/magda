@@ -171,7 +171,8 @@ function parseContent(content) {
                 ...item[1].content,
                 links: item[1].links.sort(order)
             };
-        });
+        })
+        .sort(order);
     footerMediumNavs = Object.entries(footerMediumNavs)
         .filter((item: any) => item[1].content && item[1].links)
         .map((item: any) => {
@@ -179,7 +180,8 @@ function parseContent(content) {
                 ...item[1].content,
                 links: item[1].links.sort(order)
             };
-        });
+        })
+        .sort(order);
 
     // only highlights with background images are shown
     const pickedHighlight = pickHighlight(
