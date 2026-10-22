@@ -74,6 +74,17 @@ export class RegoRule {
     public hasNoResolvableRef: boolean = false;
 
     /**
+     * Whether the rule body contains any expressions that the parser can't translate (@see RegoExp.isUnsupported).
+     * e.g. built-in function calls on unknowns.
+     * Such a rule will be considered as "not matched" (i.e. fail closed).
+     * This is only safe when it can't grant more access. `OpaCompileResponseParser.parse` will throw an error otherwise.
+     *
+     * @type {boolean}
+     * @memberof RegoRule
+     */
+    public hasUnsupportedExpression: boolean = false;
+
+    /**
      * All Rego expressions in this rule's rule body. @see RegoExp
      *
      * @type {RegoExp[]}
@@ -139,7 +150,11 @@ export class RegoRule {
 
         this.removeDuplicateExpressions();
 
+        this.hasUnsupportedExpression =
+            this.expressions.findIndex((exp) => exp.isUnsupported) !== -1;
+
         if (
+            !this.hasUnsupportedExpression &&
             this.expressions?.length &&
             this.expressions.findIndex((exp) => !exp.hasNoResolvableRef) === -1
         ) {
@@ -227,11 +242,18 @@ export class RegoRule {
      * @memberof RegoRule
      */
     evaluate() {
-        if (this.hasNoResolvableRef) {
+        if (this.isCompleteEvaluated) {
             return this;
         }
 
-        if (this.isCompleteEvaluated) {
+        if (this.hasUnsupportedExpression) {
+            // --- fail closed: we can't translate the rule, so the rule will never match
+            this.isCompleteEvaluated = true;
+            this.isMatched = false;
+            return this;
+        }
+
+        if (this.hasNoResolvableRef) {
             return this;
         }
 
@@ -469,9 +491,15 @@ export class RegoTerm {
      * @returns
      * @memberof RegoTerm
      */
-    asString() {
+    asString(): string {
         if (this.value instanceof RegoRef) return this.value.fullRefString();
-        else return JSON.stringify(this.value);
+        else if (this.type === "call" && _.isArray(this.value)) {
+            // --- function call term: the first item is the function ref and the rest are arguments
+            const [fn, ...args] = (this.value as any[]).map((item) =>
+                RegoTerm.parseFromData(item, this.parser).asString()
+            );
+            return `${fn}(${args.join(", ")})`;
+        } else return JSON.stringify(this.value);
     }
 
     /**
@@ -739,6 +767,18 @@ export class RegoExp {
     public isCompleteEvaluated: boolean = false;
 
     /**
+     * Whether this expression can't be translated by the parser.
+     * e.g. a built-in function call on unknowns (`regex.match(pattern, input.x)`, `startswith(input.x, "a")`)
+     * or an expression contains a function call term (`count(input.x) <= 46`).
+     * OPA keeps those expressions in the residual rules when their arguments are unknowns.
+     * The rule contains such an expression will be considered as "not matched". See `RegoRule.hasUnsupportedExpression`.
+     *
+     * @type {boolean}
+     * @memberof RegoExp
+     */
+    public isUnsupported: boolean = false;
+
+    /**
      * The value of the expression
      *
      * @type {RegoValue}
@@ -767,7 +807,9 @@ export class RegoExp {
         this.isCompleteEvaluated = isCompleteEvaluated;
         this.value = value;
         this.parser = parser;
+        this.isUnsupported = RegoExp.isUnsupportedTerms(this.terms);
         if (
+            !this.isUnsupported &&
             this?.terms?.length &&
             this.terms.findIndex((item) => !item.hasNoResolvableRef) === -1
         ) {
@@ -955,9 +997,12 @@ export class RegoExp {
         if (this.isCompleteEvaluated) {
             return this;
         }
+        if (this.isUnsupported) {
+            // --- e.g. builtin function calls on unknowns. We can't evaluate or translate them.
+            // --- The rule contains this expression will be considered as "not matched" instead.
+            return this;
+        }
         // --- so far there is no 2 terms expression e.g. ! x
-        // --- builtin function should never be included in residual rule
-        // --- as we won't apply them on unknowns
         if (this.terms.length === 0) {
             // --- exp should be considered as matched (true)
             this.isCompleteEvaluated = true;
@@ -1083,6 +1128,33 @@ export class RegoExp {
 
     toConciseJSON(): string {
         return JSON.stringify(this.toConciseData());
+    }
+
+    /**
+     * Whether the terms make up an expression that the parser doesn't support. i.e.:
+     * - any term is a function call term. e.g. `count(input.x) <= 46`
+     * - a 3 terms expression without exactly one operator term. e.g. `regex.match(pattern, input.x)`
+     * - any 2 terms or more than 3 terms expression. e.g. `sprintf(format, values, output)`
+     *
+     * @static
+     * @param {RegoTerm[]} terms
+     * @returns {boolean}
+     * @memberof RegoExp
+     */
+    static isUnsupportedTerms(terms: RegoTerm[]): boolean {
+        if (!terms?.length) {
+            return false;
+        }
+        if (terms.findIndex((t) => t.type === "call") !== -1) {
+            return true;
+        }
+        if (terms.length === 1) {
+            return false;
+        }
+        if (terms.length === 3) {
+            return terms.filter((t) => t.isOperator()).length !== 1;
+        }
+        return true;
     }
 
     static parseFromData(
@@ -1668,8 +1740,106 @@ export default class OpaCompileResponseParser {
                 ))
         );
 
+        this.validateUnsupportedRules();
+
         this.resolveAllRuleSets();
         return this.rules;
+    }
+
+    /**
+     * Rules contain unsupported expressions (e.g. built-in function calls on unknowns) are treated as "not matched".
+     * Dropping a rule can only make the final decision more restrictive when:
+     * - the rule's value is `true`; and
+     * - the rule set is only referenced by the query positively. i.e. via non-negated single term expressions (e.g. `data.partial.allow`)
+     *   rather than through `not` or comparisons (e.g. `data.partial.allow == false`).
+     * Otherwise, we can't safely produce a decision and an error will be thrown.
+     *
+     * @private
+     * @memberof OpaCompileResponseParser
+     */
+    private validateUnsupportedRules() {
+        const unsupportedRules = this.rules.filter(
+            (r) => r.hasUnsupportedExpression
+        );
+        if (!unsupportedRules.length) {
+            return;
+        }
+        const [
+            positiveRuleSets,
+            nonPositiveRuleSets
+        ] = this.getRuleSetReferencePolarity();
+        unsupportedRules.forEach((rule) => {
+            const unsupportedExpStr = rule.expressions
+                .filter((exp) => exp.isUnsupported)
+                .map((exp) => exp.asString())
+                .join("; ");
+            if (
+                rule.value !== true ||
+                !positiveRuleSets.has(rule.fullName) ||
+                nonPositiveRuleSets.has(rule.fullName)
+            ) {
+                throw new Error(
+                    `Rule \`${rule.fullName}\` contains unsupported rego expressions that can't be safely treated as "not matched": ${unsupportedExpStr}`
+                );
+            }
+            this.reportWarns(
+                `Rule \`${rule.fullName}\` contains unsupported rego expressions and has been treated as "not matched": ${unsupportedExpStr}`
+            );
+        });
+    }
+
+    /**
+     * Walk through all rule sets that can be reached from the query and
+     * work out which rule sets are referenced positively (i.e. via non-negated single term expressions all the way from the query)
+     * and which are not.
+     *
+     * @private
+     * @returns {[Set<string>, Set<string>]} [positive rule set names, non-positive rule set names]
+     * @memberof OpaCompileResponseParser
+     */
+    private getRuleSetReferencePolarity(): [Set<string>, Set<string>] {
+        const positive = new Set<string>();
+        const nonPositive = new Set<string>();
+        const ruleSetNames = Object.keys(this.ruleSets);
+        const queue: [string, boolean][] = [[this.pseudoQueryRuleName, true]];
+
+        while (queue.length) {
+            const [fullName, isPositive] = queue.shift();
+            const visited = isPositive ? positive : nonPositive;
+            if (visited.has(fullName)) {
+                continue;
+            }
+            visited.add(fullName);
+            this.rules
+                .filter((r) => r.fullName === fullName)
+                .forEach((rule) =>
+                    rule.expressions.forEach((exp) => {
+                        const isPositiveExp =
+                            !exp.isNegated &&
+                            exp.terms.length === 1 &&
+                            exp.terms[0].isRef();
+                        collectRefStrings(
+                            exp.terms.map((t) => t.toData())
+                        ).forEach((refStr) =>
+                            ruleSetNames
+                                .filter(
+                                    (name) =>
+                                        refStr === name ||
+                                        refStr.indexOf(name + ".") === 0
+                                )
+                                .forEach((name) =>
+                                    queue.push([
+                                        name,
+                                        isPositive &&
+                                            isPositiveExp &&
+                                            refStr === name
+                                    ])
+                                )
+                        );
+                    })
+                );
+        }
+        return [positive, nonPositive];
     }
 
     addRule(rule: RegoRule) {
@@ -1819,6 +1989,26 @@ export default class OpaCompileResponseParser {
         this.warns.push(msg);
         this.hasWarns = true;
     }
+}
+
+/**
+ * Collect full ref strings of all ref terms in the OPA AST term data (including refs nested in function call / composite terms).
+ *
+ * @param {*} data
+ * @param {string[]} [refs=[]]
+ * @returns {string[]}
+ */
+function collectRefStrings(data: any, refs: string[] = []): string[] {
+    if (_.isArray(data)) {
+        data.forEach((item) => collectRefStrings(item, refs));
+    } else if (_.isObject(data)) {
+        const termData = data as any;
+        if (termData.type === "ref" && _.isArray(termData.value)) {
+            refs.push(RegoRef.convertToFullRefString(termData.value));
+        }
+        Object.values(termData).forEach((v) => collectRefStrings(v, refs));
+    }
+    return refs;
 }
 
 export function unknown2Ref(unknown: string) {

@@ -26,6 +26,8 @@ import {
 } from "./testUtils.js";
 
 const ENV_SETUP_TIME_OUT = 600000; // -- 10 mins
+// stock "Agent Workspace Users" role created by the V2_4 auth DB migration
+const AGENT_WORKSPACE_USERS_ROLE_ID = "00000000-3854-4200-8000-000000000001";
 const jwtSecret = uuidV4();
 const authApiClient = new AuthApiClient(
     "http://localhost:6104/v0",
@@ -995,6 +997,110 @@ describe("registry auth integration tests", () => {
             expect(record.aspects["dcat-dataset-strings"]["title"]).to.equal(
                 "test dataset updated name"
             );
+        });
+
+        it("should allow data steward to publish its own draft dataset & distribution via bulk aspect update", async () => {
+            // see https://github.com/magda-io/magda/issues/3869
+            const dataStewardUser = await authApiClient.createUser({
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const dataStewardUserId = dataStewardUser.id;
+            // the Agent Workspace Users role adds the Agent Skill write rules
+            // (with built-in function calls) to the `object/record/update` residual rules
+            await authApiClient.addUserRoles(dataStewardUserId, [
+                DATA_STEWARDS_ROLE_ID,
+                AGENT_WORKSPACE_USERS_ROLE_ID
+            ]);
+
+            const datasetId = await createTestDatasetByUser(dataStewardUserId, {
+                id: "",
+                name: "test dataset",
+                aspects: {
+                    "dcat-dataset-strings": {
+                        title: "test dataset",
+                        description: "this is a test dataset"
+                    }
+                },
+                tenantId: 0,
+                sourceTag: ""
+            });
+            const distributionId = await createTestDistributionByUser(
+                dataStewardUserId
+            );
+
+            const result = await getRegistryClient(
+                dataStewardUserId
+            ).putRecordsAspect(
+                [datasetId, distributionId],
+                "publishing",
+                { state: "published" },
+                true
+            );
+            expect(result).to.not.be.an.instanceof(Error);
+
+            for (const recordId of [datasetId, distributionId]) {
+                const record = unionToThrowable(
+                    await getRegistryClient(
+                        DEFAULT_ADMIN_USER_ID
+                    ).getRecord(recordId, ["publishing"])
+                );
+                expect(record.aspects["publishing"]["state"]).to.equal(
+                    "published"
+                );
+            }
+        });
+
+        it("should not allow data steward to update other user's draft dataset via bulk aspect update", async () => {
+            const dataStewardUser = await authApiClient.createUser({
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const dataStewardUserId = dataStewardUser.id;
+            // the Agent Workspace Users role adds the Agent Skill write rules
+            // (with built-in function calls) to the `object/record/update` residual rules
+            await authApiClient.addUserRoles(dataStewardUserId, [
+                DATA_STEWARDS_ROLE_ID,
+                AGENT_WORKSPACE_USERS_ROLE_ID
+            ]);
+
+            const dataStewardUser2 = await authApiClient.createUser({
+                displayName: "Test dataStewardUser2",
+                email: "dataStewward2@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            await authApiClient.addUserRoles(dataStewardUser2.id, [
+                DATA_STEWARDS_ROLE_ID
+            ]);
+
+            const datasetId = await createTestDatasetByUser(dataStewardUserId);
+            const otherUserDatasetId = await createTestDatasetByUser(
+                dataStewardUser2.id
+            );
+
+            const result = await getRegistryClient(
+                dataStewardUserId
+            ).putRecordsAspect(
+                [datasetId, otherUserDatasetId],
+                "publishing",
+                { state: "published" },
+                true
+            );
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(403);
+
+            const record = unionToThrowable(
+                await getRegistryClient(dataStewardUserId).getRecord(
+                    datasetId,
+                    ["publishing"]
+                )
+            );
+            expect(record.aspects["publishing"]["state"]).to.equal("draft");
         });
 
         it("should not allow a user to access distributions that he has no access via `dereference`", async () => {
