@@ -68,15 +68,18 @@ generic `object/record/*` level, a concrete `agent-skill` record is:
   role has one) and apply to every record, including Agent Skill records, for
   reads too. Constrained generic grants never apply to typed publications, and
   typed Agent Skill grants alone can't write through the generic Registry API.
+  Generic grants give access to skill **records** (Registry and Storage);
+  Agent Services, the skills application, requires the typed permissions for
+  every operation, including listing and the Workspace manifest.
 
-| Use case                                                                       | Admin | Unconstrained generic `object/record/*` grant                                               | Typed Agent Skill grants (e.g. Agent Workspace Users, Agent Skills Admins) | Others (incl. constrained generic grants) |
-| ------------------------------------------------------------------------------ | ----- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------- |
-| Create/update/delete skills via Agent Services (`/v0/agent/skills`, `mgd`, UI) | ✓     | only with typed grants                                                                      | ✓ (as granted)                                                             | ✗                                         |
-| Read/list/download skills via Agent Services                                   | ✓     | listed (the catalogue uses Registry read filtering); single reads/downloads need typed read | ✓ (typed read rules)                                                       | ✗                                         |
-| Write Agent Skill records via the generic Registry API (incl. bulk updates)    | ✓     | ✓                                                                                           | ✗ (use Agent Services)                                                     | ✗                                         |
-| Read Agent Skill records via the generic Registry API                          | ✓     | ✓                                                                                           | ✓ (typed read rules)                                                       | ✗                                         |
-| `trimBySourceTag`; deleting a record (or its aspect) that doesn't exist        | ✓     | ✓ (with unconstrained delete / update)                                                      | 403                                                                        | 403                                       |
-| Upload/delete a linked skill archive via Storage API                           | ✓     | ✓                                                                                           | ✓ (typed create/update/delete)                                             | ✗                                         |
+| Use case                                                                       | Admin | Unconstrained generic `object/record/*` grant | Typed Agent Skill grants (e.g. Agent Workspace Users, Agent Skills Admins) | Others (incl. constrained generic grants) |
+| ------------------------------------------------------------------------------ | ----- | --------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------- |
+| Create/update/delete skills via Agent Services (`/v0/agent/skills`, `mgd`, UI) | ✓     | only with typed grants                        | ✓ (as granted)                                                             | ✗                                         |
+| Read/list/download skills via Agent Services                                   | ✓     | only with typed grants                        | ✓ (typed read rules)                                                       | ✗                                         |
+| Write Agent Skill records via the generic Registry API (incl. bulk updates)    | ✓     | ✓                                             | ✗ (use Agent Services)                                                     | ✗                                         |
+| Read Agent Skill records via the generic Registry API                          | ✓     | ✓                                             | ✓ (typed read rules)                                                       | ✗                                         |
+| `trimBySourceTag`; deleting a record (or its aspect) that doesn't exist        | ✓     | ✓ (with unconstrained delete / update)        | 403                                                                        | 403                                       |
+| Upload/delete a linked skill archive via Storage API                           | ✓     | ✓                                             | ✓ (typed create/update/delete)                                             | ✗                                         |
 
 Agent Services preserves immutable publication type, intended user, ID/name,
 creator, archive key, and owner, and fails closed on inconsistent or
