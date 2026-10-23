@@ -58,6 +58,7 @@ object Directives extends Protocols with SprayJsonSupport {
     Future {
       var recordJsFields: Map[String, JsValue] = Map()
       var fetchedRecordId: String = ""
+      var fetchedRecordTenantId: Option[BigInt] = None
 
       DB readOnly { implicit session =>
         sql"SELECT * FROM records WHERE recordid=${recordId} ${tenantId match {
@@ -80,6 +81,7 @@ object Directives extends Protocols with SprayJsonSupport {
               .foreach(
                 item => recordJsFields += ("tenantId" -> JsNumber(item))
               )
+            fetchedRecordTenantId = rs.bigIntOpt("tenantId").map(BigInt(_))
           }
       }
 
@@ -88,7 +90,11 @@ object Directives extends Protocols with SprayJsonSupport {
       }
 
       DB readOnly { implicit session =>
-        sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
+        // only aspects of the selected record: a record with the same ID may exist in other tenants
+        sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId} ${fetchedRecordTenantId match {
+          case Some(recordTenantId) => sqls"AND tenantid=${recordTenantId}"
+          case None                 => sqls"AND tenantid IS NULL"
+        }}"""
           .foreach { rs =>
             val aspectId = rs.string("aspectid")
             Try(JsonParser(rs.string("data")).asJsObject) match {
