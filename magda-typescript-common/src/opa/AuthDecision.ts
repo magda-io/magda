@@ -36,7 +36,8 @@ export default class AuthDecision {
                 "Failed to create AuthDecision: invalid hasResidualRules type"
             );
         }
-        if (hasResidualRules && !residualRules?.length) {
+        // `residualRules` can be omitted when the decision was requested with `unconditionalOnly`
+        if (hasResidualRules && residualRules && !residualRules.length) {
             throw new Error(
                 "Failed to create AuthDecision: residualRules must have at least one item when hasResidualRules == true"
             );
@@ -62,6 +63,11 @@ export default class AuthDecision {
 
     toAspectQueryGroups(prefixes: string[]): AspectQueryGroup[] {
         if (this.hasResidualRules) {
+            if (!this.residualRules) {
+                throw new Error(
+                    "Can't convert the auth decision to queries: it has no residual rules (e.g. requested with `unconditionalOnly`)"
+                );
+            }
             return this.residualRules.map((item) =>
                 item.toAspectQueryGroup(prefixes)
             );

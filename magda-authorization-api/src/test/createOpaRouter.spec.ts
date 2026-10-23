@@ -18,6 +18,7 @@ import Database from "../Database.js";
 import mockApiKeyStore from "./mockApiKeyStore.js";
 import { ANONYMOUS_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 const testDataSimple = require("../../../magda-typescript-common/src/test/sampleOpaResponses/simple.json");
+const testDataUnconditionalTrue = require("../../../magda-typescript-common/src/test/sampleOpaResponses/unconditionalTrue.json");
 const testDataAgentSkillBuiltinCalls = require("../../../magda-typescript-common/src/test/sampleUntranslatableOpaResponses/agentSkillBuiltinCalls.json");
 import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 
@@ -705,7 +706,44 @@ describe("Auth api router", function (this) {
                 `/decision/object/record/update`
             );
             expect(res.status).to.be.equal(500);
-            expect(res.text).to.contain("can't locate operator: regex.match");
+            expect(res.text).to.contain(
+                "can't be translated (in rule `data.partial.object.record.allow`): regex.match"
+            );
+            expect(scope.isDone()).to.be.equal(true);
+        });
+
+        it("should return a not unconditional decision without residual rules when `unconditionalOnly` = true", async () => {
+            for (const req of [
+                request(app).get(
+                    `/decision/object/record/update?unconditionalOnly=true`
+                ),
+                request(app)
+                    .post(`/decision/object/record/update`)
+                    .send({ unconditionalOnly: true })
+            ]) {
+                let opaRequestData: any;
+                const scope = createOpaNockScope((query, data) => {
+                    opaRequestData = data;
+                }, testDataAgentSkillBuiltinCalls);
+                const res = await req;
+                expect(res.status).to.be.equal(200);
+                expect(res.body.hasResidualRules).to.be.equal(true);
+                expect(res.body.residualRules).to.be.undefined;
+                expect(res.body.result).to.be.undefined;
+                expect(scope.isDone()).to.be.equal(true);
+                // not forwarded to OPA
+                expect(opaRequestData.unconditionalOnly).to.be.undefined;
+            }
+        });
+
+        it("should return an unconditional decision as normal when `unconditionalOnly` = true", async () => {
+            const scope = createOpaNockScope(null, testDataUnconditionalTrue);
+            const res = await request(app).get(
+                `/decision/object/record/update?unconditionalOnly=true`
+            );
+            expect(res.status).to.be.equal(200);
+            expect(res.body.hasResidualRules).to.be.equal(false);
+            expect(res.body.result).to.be.equal(true);
             expect(scope.isDone()).to.be.equal(true);
         });
     });

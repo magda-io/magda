@@ -11,6 +11,8 @@ export type AuthDecisionReqConfig = {
     pretty?: boolean;
     humanReadable?: boolean;
     concise?: boolean;
+    // only ask whether the decision is unconditional: no residual rules will be returned
+    unconditionalOnly?: boolean;
     jwtToken?: string;
     input?: {
         [key: string]: any;
@@ -67,6 +69,9 @@ class AuthDecisionQueryClient {
         }
         if (config?.unknowns && !config.unknowns.length) {
             queryParams.unknowns = "";
+        }
+        if (config?.unconditionalOnly) {
+            queryParams.unconditionalOnly = true;
         }
 
         const usePost =

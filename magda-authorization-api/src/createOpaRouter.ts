@@ -477,6 +477,10 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * Please note: Magda's built-in policies don't utilise `resourceUri` as we can figure it out from `operationUri` instead.
      * This interface is provided to facilitate users' own customised implementation only.
      *
+     * @apiParam (Query String Parameters) {Boolean} [unconditionalOnly] Set to `true` (or `"unconditionalOnly": true` in the request body) when you only need to know whether the decision is unconditional,
+     * e.g. whether the user can perform the operation on any object regardless of its attributes.
+     * When the decision isn't unconditional, the response will have `hasResidualRules` = `true` but no `residualRules`.
+     * Unlike a normal partial evaluation request, this works even when the residual rules can't be translated (e.g. they call built-in functions on unknowns).
      * @apiParam (Query String Parameters) {String[]} [unknowns] Use to supply A list of references that should be considered as "unknown" during the policy evaluation.
      * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
      * e.g. When `unknowns=["input.object.dataset"]`, any rules related to dataset's attributes will be kept and output as residual rules, unless existing context info is sufficient to make a conclusive/unconditional auth decision (e.g. admin can access all datasets the values of regardless dataset attributes).
@@ -598,7 +602,13 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             );
             const opUriParts = operationUri.split("/");
 
+            // whether the caller only needs to know if the decision is unconditional (see `evaluateUnconditionally`)
+            const unconditionalOnly =
+                req?.query?.unconditionalOnly === "true" ||
+                req?.body?.unconditionalOnly === true;
+
             const reqOpts = await appendUserInfoToInput(req);
+            delete reqOpts.json.unconditionalOnly;
 
             // only forward 4 OPA supported qs parameters
             if (reqOpts.qs) {
@@ -719,7 +729,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                             parser.evaluateAsHumanReadableString()
                         );
                     } else {
-                        const result = parser.evaluate();
+                        const result = unconditionalOnly
+                            ? parser.evaluateUnconditionally()
+                            : parser.evaluate();
                         const resData = {
                             hasResidualRules: !result.isCompleteEvaluated,
                             unknowns: reqOpts.json.unknowns
@@ -731,7 +743,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                                 typeof result.value === "undefined"
                                     ? false
                                     : result.value;
-                        } else {
+                        } else if (!unconditionalOnly) {
                             resData.residualRules = result.residualRules.map(
                                 (rule) =>
                                     outputInConciseFormat

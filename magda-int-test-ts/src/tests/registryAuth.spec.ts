@@ -1172,6 +1172,42 @@ describe("registry auth integration tests", () => {
             );
         });
 
+        it("should respond 403 rather than 500 to a user with Agent Skill permissions when an operation requires unconditional permission", async () => {
+            // e.g. deleting a record that doesn't exist requires `object/record/delete` permission on any record.
+            // For users with Agent Skill permissions, the partial evaluation result calls built-in functions (e.g. `regex.match`)
+            // that can't be translated, but that's not needed to tell the decision isn't unconditional.
+            const user = await authApiClient.createUser({
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            await authApiClient.addUserRoles(user.id, [
+                DATA_STEWARDS_ROLE_ID,
+                AGENT_WORKSPACE_USERS_ROLE_ID
+            ]);
+            const registryClient = getRegistryClient(user.id);
+            const notExistRecordId = uuidV4();
+
+            for (const result of [
+                await registryClient.deleteRecord(notExistRecordId),
+                await registryClient.deleteRecordAspect(
+                    notExistRecordId,
+                    "dcat-dataset-strings"
+                ),
+                await registryClient.deleteBySource("tag", "test-source")
+            ]) {
+                expect(result).to.be.an.instanceof(ServerError);
+                expect((result as ServerError).statusCode).to.equal(403);
+            }
+
+            // users with unconditional permission (e.g. admin) can still delete a record that doesn't exist
+            const result = await getRegistryClient(
+                DEFAULT_ADMIN_USER_ID
+            ).deleteRecord(notExistRecordId);
+            expect(result).to.not.be.an.instanceof(Error);
+        });
+
         it("should not allow a user to access distributions that he has no access via `dereference`", async () => {
             const dataStewardUser = await authApiClient.createUser({
                 displayName: "Test dataStewardUser",

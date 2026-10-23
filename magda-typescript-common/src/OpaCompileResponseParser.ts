@@ -469,9 +469,15 @@ export class RegoTerm {
      * @returns
      * @memberof RegoTerm
      */
-    asString() {
+    asString(): string {
         if (this.value instanceof RegoRef) return this.value.fullRefString();
-        else return JSON.stringify(this.value);
+        else if (this.type === "call" && _.isArray(this.value)) {
+            // --- function call term: the first item is the function ref and the rest are arguments
+            const [fn, ...args] = (this.value as any[]).map((item) =>
+                RegoTerm.parseFromData(item, this.parser).asString()
+            );
+            return `${fn}(${args.join(", ")})`;
+        } else return JSON.stringify(this.value);
     }
 
     /**
@@ -739,6 +745,18 @@ export class RegoExp {
     public isCompleteEvaluated: boolean = false;
 
     /**
+     * Whether the parser can't evaluate or translate this expression.
+     * e.g. a built-in function call on unknowns (`regex.match(pattern, input.x)`)
+     * or an expression contains a function call term (`count(input.x) <= 46`).
+     * OPA keeps those expressions in the residual rules when their arguments are unknown.
+     * Such an expression is never resolved. Producing residual rules that contain it throws an error.
+     *
+     * @type {boolean}
+     * @memberof RegoExp
+     */
+    public isUnsupported: boolean = false;
+
+    /**
      * The value of the expression
      *
      * @type {RegoValue}
@@ -767,6 +785,7 @@ export class RegoExp {
         this.isCompleteEvaluated = isCompleteEvaluated;
         this.value = value;
         this.parser = parser;
+        this.isUnsupported = RegoExp.isUnsupportedTerms(this.terms);
         if (
             this?.terms?.length &&
             this.terms.findIndex((item) => !item.hasNoResolvableRef) === -1
@@ -955,9 +974,11 @@ export class RegoExp {
         if (this.isCompleteEvaluated) {
             return this;
         }
+        if (this.isUnsupported) {
+            // --- e.g. builtin function calls on unknowns. We can't evaluate them. The expression stays unresolved.
+            return this;
+        }
         // --- so far there is no 2 terms expression e.g. ! x
-        // --- builtin function should never be included in residual rule
-        // --- as we won't apply them on unknowns
         if (this.terms.length === 0) {
             // --- exp should be considered as matched (true)
             this.isCompleteEvaluated = true;
@@ -1083,6 +1104,33 @@ export class RegoExp {
 
     toConciseJSON(): string {
         return JSON.stringify(this.toConciseData());
+    }
+
+    /**
+     * Whether the terms make up an expression that the parser doesn't support. i.e.:
+     * - any term is a function call term. e.g. `count(input.x) <= 46`
+     * - a 3 terms expression without exactly one operator term. e.g. `regex.match(pattern, input.x)`
+     * - any 2 terms or more than 3 terms expression. e.g. `sprintf(format, values, output)`
+     *
+     * @static
+     * @param {RegoTerm[]} terms
+     * @returns {boolean}
+     * @memberof RegoExp
+     */
+    static isUnsupportedTerms(terms: RegoTerm[]): boolean {
+        if (!terms?.length) {
+            return false;
+        }
+        if (terms.findIndex((t) => t.type === "call") !== -1) {
+            return true;
+        }
+        if (terms.length === 1) {
+            return false;
+        }
+        if (terms.length === 3) {
+            return terms.filter((t) => t.isOperator()).length !== 1;
+        }
+        return true;
     }
 
     static parseFromData(
@@ -1405,6 +1453,17 @@ export class RegoRuleSet {
         }
 
         rules = _.flatMap(rules, (rule) => {
+            const unsupportedExpression = rule.expressions.find(
+                (exp) => exp.isUnsupported && !exp.isResolvable()
+            );
+            if (unsupportedExpression) {
+                // --- residual rules are for translation (e.g. to SQL). Fail loudly rather than drop or mistranslate the rule.
+                throw new Error(
+                    `Residual rules contain a rego expression that can't be translated (in rule \`${
+                        rule.fullName
+                    }\`): ${unsupportedExpression.termsAsString()}`
+                );
+            }
             // all resolvable expressions can all be ignored as:
             // - if the expression is resolved to "matched", it won't impact the result of the rule
             // - if the expression is resolved to "unmatched", the rule should be resolved to "unmatched" earlier.
@@ -1780,6 +1839,33 @@ export default class OpaCompileResponseParser {
      */
     evaluate(): CompleteRuleResult {
         return this.evaluateRule(this.pseudoQueryRuleName);
+    }
+
+    /**
+     * Evaluate the query without producing residual rules.
+     * For callers that only need to know whether the result is unconditional (e.g. "is the user allowed to perform the operation on any record?").
+     * Unlike `evaluate`, this works even when the residual rules can't be translated: such a result simply isn't unconditional.
+     *
+     * @returns {CompleteRuleResult} When `isCompleteEvaluated` is `false`, `residualRules` is not included.
+     * @memberof OpaCompileResponseParser
+     */
+    evaluateUnconditionally(): CompleteRuleResult {
+        const completeResult = this.completeRuleResults[
+            this.pseudoQueryRuleName
+        ];
+        if (completeResult) {
+            return completeResult;
+        }
+        const ruleSet = this.ruleSets[this.pseudoQueryRuleName];
+        if (!ruleSet) {
+            return null;
+        }
+        return {
+            fullName: this.pseudoQueryRuleName,
+            name: ruleSet.name,
+            value: ruleSet.isResolvable() ? ruleSet.value : undefined,
+            isCompleteEvaluated: ruleSet.isResolvable()
+        };
     }
 
     /**

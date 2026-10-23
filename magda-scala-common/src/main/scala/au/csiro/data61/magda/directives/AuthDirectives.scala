@@ -82,18 +82,20 @@ object AuthDirectives {
       authApiClient: AuthApiClient,
       config: AuthDecisionReqConfig,
       requiredDecision: Boolean = true
-  ): Directive0 = withAuthDecision(authApiClient, config).flatMap {
-    authDecision =>
-      if (authDecision.hasResidualRules == false && authDecision.result.isDefined && (requiredDecision == Auth
-            .isTrueEquivalent(authDecision.result.get))) {
-        pass
-      } else {
-        complete(
-          Forbidden,
-          s"you are not permitted to perform `${config.operationUri}` on required resources."
-        )
+  ): Directive0 =
+    // we only need to know whether the decision is unconditional, not the residual rules
+    withAuthDecision(authApiClient, config.copy(unconditionalOnly = Some(true)))
+      .flatMap { authDecision =>
+        if (authDecision.hasResidualRules == false && authDecision.result.isDefined && (requiredDecision == Auth
+              .isTrueEquivalent(authDecision.result.get))) {
+          pass
+        } else {
+          complete(
+            Forbidden,
+            s"you are not permitted to perform `${config.operationUri}` on required resources."
+          )
+        }
       }
-  }
 
   /**
     * require permission based on input data provided.

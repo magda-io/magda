@@ -96,6 +96,9 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
         .filter(!_)
         .map(_.toString))
     }
+    if (config.unconditionalOnly.contains(true)) {
+      requestQueryFields += ("unconditionalOnly" -> Some("true"))
+    }
     if (config.unknowns.isDefined && config.unknowns.get.length == 0) {
       // See decision endpoint docs, send unknowns as an empty string to stop endpoint from auto generating unknowns reference
       // we send `unknowns` as query string for this case

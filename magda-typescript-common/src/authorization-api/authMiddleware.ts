@@ -84,24 +84,33 @@ export function requireUnconditionalAuthDecision(
     configOrConfigFunc: AuthDecisionReqConfigOrConfigFuncParam,
     requiredDecision: boolean = true
 ) {
+    // we only need to know whether the decision is unconditional, not the residual rules
+    const unconditionalOnlyConfigOrConfigFunc: AuthDecisionReqConfigOrConfigFuncParam =
+        typeof configOrConfigFunc === "function"
+            ? async (req, res, next) => {
+                  const config = await configOrConfigFunc(req, res, next);
+                  return config
+                      ? { ...config, unconditionalOnly: true }
+                      : config;
+              }
+            : { ...configOrConfigFunc, unconditionalOnly: true };
     return (req: Request, res: Response, next: () => void) => {
-        withAuthDecision(authDecisionClient, configOrConfigFunc)(
-            req,
-            res,
-            () => {
-                const authDecision = res.locals.authDecision as AuthDecision;
-                if (
-                    authDecision?.hasResidualRules === false &&
-                    isTrueEquivalent(authDecision?.result) == requiredDecision
-                ) {
-                    return next();
-                } else {
-                    res.status(403).send(
-                        `you are not permitted to perform \`${res?.locals?.authDecisionConfig?.operationUri}\` on required resources.`
-                    );
-                }
+        withAuthDecision(
+            authDecisionClient,
+            unconditionalOnlyConfigOrConfigFunc
+        )(req, res, () => {
+            const authDecision = res.locals.authDecision as AuthDecision;
+            if (
+                authDecision?.hasResidualRules === false &&
+                isTrueEquivalent(authDecision?.result) == requiredDecision
+            ) {
+                return next();
+            } else {
+                res.status(403).send(
+                    `you are not permitted to perform \`${res?.locals?.authDecisionConfig?.operationUri}\` on required resources.`
+                );
             }
-        );
+        });
     };
 }
 

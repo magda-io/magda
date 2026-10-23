@@ -11,7 +11,9 @@ case class AuthDecisionReqConfig(
     pretty: Option[Boolean] = None,
     humanReadable: Option[Boolean] = None,
     concise: Option[Boolean] = None,
-    input: Option[JsObject] = None
+    input: Option[JsObject] = None,
+    // only ask whether the decision is unconditional: no residual rules will be returned
+    unconditionalOnly: Option[Boolean] = None
 )
 
 object AuthDecisionReqConfig {

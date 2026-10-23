@@ -1,3 +1,4 @@
+import _ from "lodash";
 import "mocha";
 import { require } from "@magda/esm-utils";
 import { expect } from "chai";
@@ -428,15 +429,57 @@ describe("Test OpaCompileResultParser with testDataSingleTermAspectRef", functio
  * Residual rules produced by OPA (v0.37.2) for `object/record/update` with unknown `input.object.record`
  * for a user with Agent Skill owner permissions. The Agent Skill write rules call built-in functions
  * (e.g. `regex.match`) on the unknown record, which can't be translated (e.g. to SQL).
- * The parser must fail loudly rather than silently drop or mistranslate those rules,
+ * The parser must fail loudly when residual rules are needed, rather than silently drop or mistranslate those rules,
  * so policy authors find out and choose a different evaluation path (e.g. full evaluation per record).
  * See https://github.com/magda-io/magda/issues/3869
  */
 describe("Test OpaCompileResultParser with built-in function calls on unknowns", function () {
-    it("should throw an error rather than produce residual rules", function () {
+    // the same response plus a rule that allows the operation on any record
+    function withUnconditionalRule(data: any) {
+        const newData = _.cloneDeep(data);
+        const recordPackage = newData.result.support.find((p: any) =>
+            p.package.path.find((part: any) => part.value === "record")
+        );
+        recordPackage.rules.push({
+            head: { name: "allow", value: { type: "boolean", value: true } },
+            body: [{ index: 0, terms: { type: "boolean", value: true } }]
+        });
+        return newData;
+    }
+
+    it("should throw an error when residual rules are needed", function () {
         const parser = new OpaCompileResponseParser();
-        expect(() =>
-            parser.parse(JSON.stringify(testDataAgentSkillBuiltinCalls))
-        ).to.throw(/can't locate operator: regex\.match/);
+        parser.parse(JSON.stringify(testDataAgentSkillBuiltinCalls));
+        expect(() => parser.evaluate()).to.throw(
+            /Residual rules contain a rego expression that can't be translated .*: regex\.match "\^\[0-9a-f\]/
+        );
+        expect(() => parser.evaluateAsHumanReadableString()).to.throw(
+            /can't be translated/
+        );
+    });
+
+    it("should evaluate unconditionally as not unconditional, without residual rules", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataAgentSkillBuiltinCalls));
+        const result = parser.evaluateUnconditionally();
+        expect(result.isCompleteEvaluated).to.be.equal(false);
+        expect(result.residualRules).to.be.undefined;
+    });
+
+    it("should evaluate to unconditional true when another rule allows the operation unconditionally", function () {
+        const data = withUnconditionalRule(testDataAgentSkillBuiltinCalls);
+
+        let parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(data));
+        let result = parser.evaluateUnconditionally();
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(true);
+
+        // no residual rules are needed either
+        parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(data));
+        result = parser.evaluate();
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(true);
     });
 });
