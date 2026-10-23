@@ -1248,15 +1248,19 @@ class DefaultRecordPersistence(config: Config)
     * Unlike a nested `DB.localTx` (a separate connection & transaction that commits on its own), the changes are
     * committed or rolled back together with the current transaction. e.g. an aspect created by a bulk update won't be
     * kept when the bulk update is rolled back.
-    * When the session is not in a transaction (auto commit), `f` runs in a new transaction instead.
+    * When the session is not in a transaction (auto commit), `f` runs in a new transaction instead,
+    * which is committed when `f` succeeds and rolled back when it fails.
     */
-  private def withinSavepoint[T](
+  private[registry] def withinSavepoint[T](
       f: DBSession => Try[T]
   )(implicit session: DBSession): Try[T] = {
     val connection = session.connection
     if (connection.getAutoCommit) {
-      DB.localTx { nested =>
-        f(nested)
+      // `DB.localTx` only rolls back when the block throws
+      Try {
+        DB.localTx { nested =>
+          f(nested).get
+        }
       }
     } else {
       val savepoint = connection.setSavepoint()
