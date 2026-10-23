@@ -32,7 +32,9 @@ object BulkRecordMutationAuthorization {
     * Run a mutation on a list of records within the current transaction, when the user has permission to perform
     * `operationUri` on all records' current and proposed state.
     *
-    * - The records are locked (`SELECT ... FOR UPDATE`) until the transaction ends.
+    * - The records and their existing aspects are locked (`SELECT ... FOR UPDATE`) until the transaction ends,
+    *   so other transactions can't change, add or delete them in between. (Adding an aspect checks the
+    *   `recordaspects` -> `records` foreign key, which needs a lock on the record row that conflicts with ours.)
     * - The proposed state is read back from the DB after the mutation, so it's exactly what will be committed.
     * - This method throws when the mutation fails or the user has no permission, so the transaction rolls back.
     *
@@ -110,7 +112,9 @@ object BulkRecordMutationAuthorization {
     *
     * @param tenantId
     * @param recordIds
-    * @param lockRecords whether to lock the record rows (`FOR UPDATE`) until the current transaction ends
+    * @param lockRecords whether to lock the record rows and their aspect rows (`FOR UPDATE`) until the current transaction ends.
+    *                    Rows are locked in a deterministic order (by record ID, then aspect ID), so that concurrent bulk
+    *                    mutations on overlapping records wait for each other rather than deadlock.
     * @param session
     * @return a map from record ID to its context data. Records that don't exist are not included.
     */
@@ -127,6 +131,7 @@ object BulkRecordMutationAuthorization {
 
     sql"""SELECT recordid, name, lastupdate, sourcetag, tenantid FROM records
           WHERE tenantid=${tenantId.tenantId} AND recordid IN (${recordIds})
+          ORDER BY recordid
           ${if (lockRecords) sqls"FOR UPDATE" else SQLSyntax.empty}"""
       .foreach { rs =>
         val recordId = rs.string("recordid")
@@ -144,7 +149,9 @@ object BulkRecordMutationAuthorization {
 
     // only aspects of the selected records in the current tenant
     sql"""SELECT recordid, aspectid, data FROM recordaspects
-          WHERE tenantid=${tenantId.tenantId} AND recordid IN (${recordIds})"""
+          WHERE tenantid=${tenantId.tenantId} AND recordid IN (${recordIds})
+          ORDER BY recordid, aspectid
+          ${if (lockRecords) sqls"FOR UPDATE" else SQLSyntax.empty}"""
       .foreach { rs =>
         val recordId = rs.string("recordid")
         records.get(recordId).foreach { fields =>

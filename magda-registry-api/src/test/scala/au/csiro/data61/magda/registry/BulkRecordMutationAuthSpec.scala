@@ -3,7 +3,12 @@ package au.csiro.data61.magda.registry
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
+import scalikejdbc._
 import spray.json._
+
+import java.sql.SQLException
+import scala.util.{Failure, Success, Try}
 
 /**
   * Auth logic of routes that mutate a list of records in one request:
@@ -410,6 +415,78 @@ class BulkRecordMutationAuthSpec extends ApiSpec {
           getAspect(param, "r1", "extra-aspect") shouldBe JsObject(
             "b" -> JsString("old")
           )
+      }
+    }
+
+    describe("Record context data loading") {
+
+      /**
+        * Run `sql` in a separate connection that gives up waiting for row locks quickly.
+        * Returns `Some(SQLState)` when the statement failed.
+        */
+      def runInAnotherConnection(
+          statement: SQL[Nothing, NoExtractor]
+      ): Option[String] =
+        using(DB(ConnectionPool.borrow())) { db =>
+          db.localTx { implicit session =>
+            sql"SET LOCAL lock_timeout = '200ms'".execute.apply()
+            Try(statement.execute.apply()) match {
+              case Success(_)               => None
+              case Failure(e: SQLException) => Some(e.getSQLState)
+              case Failure(e)               => throw e
+            }
+          }
+        }
+
+      val LOCK_NOT_AVAILABLE = Some("55P03")
+
+      val concurrentChanges = List(
+        "lock the record" -> sql"SELECT 1 FROM records WHERE recordid='r1' FOR UPDATE",
+        "update an existing aspect" -> sql"UPDATE recordaspects SET data='{}'::json WHERE recordid='r1' AND aspectid='test-aspect'",
+        "delete an existing aspect" -> sql"DELETE FROM recordaspects WHERE recordid='r1' AND aspectid='publishing'",
+        "add a new aspect" -> sql"INSERT INTO recordaspects (recordid, tenantid, aspectid, lastupdate, data) SELECT 'r1', tenantid, 'new-aspect', lastupdate, '{}'::json FROM records WHERE recordid='r1'"
+      )
+
+      it(
+        "should lock the records and their aspects until the transaction ends when `lockRecords` = true"
+      ) { param =>
+        settingUpTestData(param, List(draftRecord("r1")), List("new-aspect"))
+
+        DB localTx { implicit session =>
+          val records = BulkRecordMutationAuthorization.loadRecordsContextData(
+            SpecifiedTenantId(TENANT_1),
+            List("r1"),
+            lockRecords = true
+          )
+          records.keySet shouldBe Set("r1")
+          concurrentChanges.foreach {
+            case (desc, statement) =>
+              withClue(s"another transaction should not be able to ${desc}: ") {
+                runInAnotherConnection(statement) shouldBe LOCK_NOT_AVAILABLE
+              }
+          }
+        }
+
+        // locks are released when the transaction ends
+        runInAnotherConnection(concurrentChanges.head._2) shouldBe None
+      }
+
+      it("should not lock any rows when `lockRecords` = false") { param =>
+        settingUpTestData(param, List(draftRecord("r1")), List("new-aspect"))
+
+        DB localTx { implicit session =>
+          BulkRecordMutationAuthorization.loadRecordsContextData(
+            SpecifiedTenantId(TENANT_1),
+            List("r1"),
+            lockRecords = false
+          )
+          concurrentChanges.foreach {
+            case (desc, statement) =>
+              withClue(s"another transaction should be able to ${desc}: ") {
+                runInAnotherConnection(statement) shouldBe None
+              }
+          }
+        }
       }
     }
 
