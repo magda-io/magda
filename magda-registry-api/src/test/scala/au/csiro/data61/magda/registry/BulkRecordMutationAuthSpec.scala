@@ -31,6 +31,7 @@ class BulkRecordMutationAuthSpec extends ApiSpec {
        |webhooks.eventPageSize=10
        |akka.test.timefactor=20.0
        |trimBySourceTagTimeoutThreshold=500
+       |bulkMutationMaxRecords=2
     """.stripMargin
 
   val updateOperationUri = "object/record/update"
@@ -415,6 +416,82 @@ class BulkRecordMutationAuthSpec extends ApiSpec {
           getAspect(param, "r1", "extra-aspect") shouldBe JsObject(
             "b" -> JsString("old")
           )
+      }
+    }
+
+    describe("Request size limit (`bulkMutationMaxRecords`)") {
+
+      def recordIdsJson(recordIds: List[String]) =
+        JsArray(recordIds.map(JsString(_)).toVector)
+
+      val tooManyRecordIds = List("r1", "r2", "r3")
+
+      val requests = List(
+        "patch records" -> (
+            () =>
+              Patch(
+                "/v0/records",
+                JsObject(
+                  "recordIds" -> recordIdsJson(tooManyRecordIds),
+                  "jsonPath" -> """[{"op": "replace", "path": "/aspects/publishing/state", "value": "published"}]""".parseJson
+                )
+              )
+          ),
+        "put records aspect" -> (
+            () =>
+              Put(
+                "/v0/records/aspects/publishing?merge=true",
+                JsObject(
+                  "recordIds" -> recordIdsJson(tooManyRecordIds),
+                  "data" -> JsObject("state" -> JsString("published"))
+                )
+              )
+          ),
+        "delete records aspect array items" -> (
+            () =>
+              Delete(
+                "/v0/records/aspectArrayItems/test-aspect",
+                JsObject(
+                  "recordIds" -> recordIdsJson(tooManyRecordIds),
+                  "jsonPath" -> JsString("$.items"),
+                  "items" -> JsArray(JsString("B"))
+                )
+              )
+          )
+      )
+
+      requests.foreach {
+        case (desc, request) =>
+          it(
+            s"should respond 400 without changing any records or asking for any decisions when a ${desc} request has too many records"
+          ) { param =>
+            settingUpTestData(
+              param,
+              List(draftRecord("r1"), draftRecord("r2"), draftRecord("r3"))
+            )
+            param.authFetcher.setBatchDecisionFunc(
+              updateOperationUri,
+              _ => JsTrue
+            )
+
+            request() ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+              .api(Full)
+              .routes ~> check {
+              status shouldEqual StatusCodes.BadRequest
+              responseAs[String] should include(
+                "A request can change at most 2 records"
+              )
+            }
+
+            param.authFetcher.batchAuthCallLog.length shouldBe 0
+            List("r1", "r2", "r3").foreach { recordId =>
+              publishingState(param, recordId) shouldBe JsString("draft")
+              getAspect(param, recordId, "test-aspect").fields("items") shouldBe JsArray(
+                JsString("A"),
+                JsString("B")
+              )
+            }
+          }
       }
     }
 
