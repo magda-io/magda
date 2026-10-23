@@ -29,7 +29,7 @@ The revised model removes the direct path instead, so neither job is needed in O
 ## Principles
 
 1. **OPA only authorises.** Agent Skill rules use only literal comparisons and existence checks on record fields. Every partial decision can be translated (e.g. into Registry SQL filters). Data validation (identity, naming rules, archive linkage) lives in Agent Services, plus the `agent-skill` aspect JSON schema for formats.
-2. **Agent Services is the only non-admin writer of Agent Skill records.** For each create/update/delete, it authorises the **real caller** with the one typed operation (`object/agentSkill/<system|user>/<create|update|delete>`, a full evaluation of the actual or proposed record). Only then does it write the Registry record, with its internal session.
+2. **Agent Services is the only non-admin writer of Agent Skill records and archives.** For each create/update/delete, it authorises the **real caller** with the one typed operation (`object/agentSkill/<system|user>/<create|update|delete>`, a full evaluation of the actual or proposed record). Only then does it write the Registry record and the archive, with its internal session.
 3. **Unconstrained generic grants are trusted.** An `object/record/<operation>` permission with no ownership, OrgUnit or pre-authorised constraint applies to **every** record, including Agent Skill records, for reads too. No built-in role has one, so it can only exist because an admin granted it on purpose. Such users operate on Agent Skill records **as generic records**. Agent Services' typed endpoints still require typed permissions.
 4. **Constrained generic grants never reach typed publications.** A concrete `agent-skill` record never falls back to constrained generic `object/record` grants. Agent Skill installations stay reserved (fail closed) until #3861.
 
@@ -62,13 +62,17 @@ Always fully evaluated (the Storage API sends the concrete object and record).
 
 - **Reads under the reserved prefixes** (`agent-services/skills/system-skills/`, `agent-services/skills/user-skills/`) never fall back to generic Storage grants. A non-admin read requires:
   - an existing object;
-  - linked to an Agent Skill record (`recordId`), with an exact archive key and owner match;
+  - linked to an Agent Skill record (`recordId`), with an exact archive key match;
   - permission to read that record through the generic record rules above (typed read, or an unconstrained generic read).
 
   The identity check is removed. Agent Services validates the publication, and the downloaded ZIP's checksum, before exposing an archive.
-- **Linked uploads and deletes** require the linked record's `object/record/create|update|delete` permission. For an Agent Skill record, the caller's **typed** `object/agentSkill/<type>/create|update|delete` permission also applies.
+- **Writes (upload/delete) under the reserved prefixes** are limited to Agent Services (as an admin), admins and unconstrained grants, the same as Agent Skill records:
+  - Constrained (owner or OrgUnit) Storage permissions don't apply there. Unconstrained Storage permissions (trusted grants) can write there, but never read.
+  - An object there can only be linked to the Agent Skill record whose archive key it is. Otherwise a user could create an object at a reserved key by linking it to any record they can update (e.g. their own dataset).
+  - A linked upload or delete requires the linked record's `object/record/create|update|delete` permission. For an Agent Skill record, only admins and unconstrained generic grants have it; typed Agent Skill grants alone don't. A trusted existence flag keeps create from replacing an existing archive, and only delete can remove one.
 
-  This is needed because Agent Services uploads a **new** archive with the caller's session. Storage API makes the uploader the owner of a new object, and the archive owner must match the record owner. A trusted existence flag keeps create from replacing an existing archive, and only delete can remove one.
+  So users can't replace their own archive (e.g. with an invalid skill package, then share it) except through Agent Services, which validates it. Archive integrity doesn't depend on every client re-checking it (although Agent Services and `mgd`/Workspace sync do check the checksum against the record).
+- **An archive's Storage owner isn't part of its link to the publication.** Agent Services uploads archives with its internal session, so the Storage owner is the internal principal. Reads are authorised by the publication's read rules. The link is the exact archive key plus Storage's trusted `magda-record-id`, and Agent Services checks the archive's checksum against the record.
 
 ## Sessions used by Agent Services
 
@@ -78,11 +82,10 @@ Always fully evaluated (the Storage API sends the concrete object and record).
 | Registry reads for list/read/download | caller |
 | Privileged lookups (existing record or archive state before a write) | internal |
 | Registry record **create / update / delete** (PENDING, READY, DELETING, delete) | **internal** (after authorising the caller) |
-| Storage upload of a **new** archive; archive delete | caller (typed create/delete authority) |
-| Storage upload replacing the archive when republishing (owner kept) | caller (typed update authority) |
-| Storage upload completing an interrupted create, when the archive already exists (owner kept) | internal |
+| Storage archive **upload / replacement / delete** | **internal** (after authorising the caller) |
+| Storage archive download | caller |
 
-The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. It's confined to validated Agent Skill client calls and never returned, logged, stored or forwarded. `createdBy`, `updatedBy` and `access-control.ownerId` always record the real user. Registry events for skill writes record the internal principal; Agent Services' audit log records the real caller.
+The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. It's confined to validated Agent Skill client calls and never returned, logged, stored or forwarded. `createdBy`, `updatedBy` and `access-control.ownerId` always record the real user. Registry events for skill writes, and archives' Storage owner, record the internal principal; Agent Services' audit log records the real caller.
 
 ## Use cases
 
@@ -103,7 +106,7 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 | Bulk record updates of normal records (datasets etc.) | ✓ | ✓ | n/a | per existing rules, before and after the change |
 | `trimBySourceTag` | ✓ | ✓ (unconstrained delete) | 403 | 403 |
 | Delete a record, or one of its aspects, that doesn't exist | 200 | 200 (unconstrained delete / update) | 403 | 403 |
-| Upload/delete a linked skill archive via Storage API | ✓ | ✓ | ✓ (typed create/update/delete) | ✗ |
+| Upload/delete a skill archive via Storage API | ✓ | ✓ (unconstrained generic record or Storage grants) | ✗ (use Agent Services) | ✗ |
 | `agent-skill-installation` records (until #3861) | ✓ | ✓ | ✗ | ✗ |
 
 **Generic grants give access to skill records, not to the skills application.** Unconstrained-grant holders see and work with skill *records* through Registry and Storage, per their generic permissions. Agent Services, the skills application, requires the typed permission for every operation: create, update and delete, single reads and downloads, and the typed read on every listed record and every Workspace manifest source. A generic grant alone shows no skills there. "Unconstrained" users can still use Agent Services with typed grants, as anyone can.
@@ -122,8 +125,8 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 
 ## Trade-offs and follow-ups
 
-- **Trusted writers can skip validation.** Admins and unconstrained-grant holders can write malformed skill records. Agent Services re-validates identity before showing or syncing a skill, so the damage is limited to that one skill.
-- **Registry event attribution** for skill writes is the internal principal (see Sessions).
+- **Trusted writers can skip validation.** Admins and unconstrained-grant holders can write malformed skill records and archives. Agent Services re-validates identity before showing or syncing a skill, so the damage is limited to that one skill.
+- **Registry event attribution** for skill writes, and archives' Storage owner, is the internal principal (see Sessions).
 - Related follow-ups:
   - #3872: single-record Registry writes authorised inside the mutation transaction;
   - #3873: `originalRecord` cross-version policies;
