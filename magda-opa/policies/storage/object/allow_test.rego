@@ -417,12 +417,14 @@ test_reserved_skill_read_requires_matching_archive_key {
 	}
 }
 
-test_reserved_skill_read_requires_matching_owner {
-	mismatched := object.union(linked_user_object, {"ownerId": user_skill_reader})
-	not allow with input as {
+# Agent Services uploads archives with its internal session, so an archive's
+# Storage owner isn't the publication owner.
+test_reserved_skill_read_does_not_require_matching_storage_owner {
+	internally_owned := object.union(linked_user_object, {"ownerId": "00000000-0000-4000-8000-000000000000"})
+	allow with input as {
 		"operationUri": "storage/object/read",
 		"user": user_owner_reader,
-		"storage": {"object": mismatched},
+		"storage": {"object": internally_owned},
 		"object": {"record": user_skill},
 	}
 }
@@ -471,17 +473,37 @@ test_legacy_dataset_file_missing_org_remains_readable {
 	}
 }
 
-test_reserved_skill_upload_generic_owner_semantics_are_unchanged {
-	allow with input as {
+# Agent Skill archives are written by Agent Services only (as an admin), admins
+# and unconstrained grants.
+
+power_user(operation) = {
+	"id": "00000000-0000-4000-8000-000000000999",
+	"permissions": [{
+		"id": "00000000-0000-4000-8000-000000000790",
+		"resourceUri": "object/record",
+		"userOwnershipConstraint": false,
+		"orgUnitOwnershipConstraint": false,
+		"preAuthorisedConstraint": false,
+		"allowExemption": false,
+		"operations": [{"uri": sprintf("object/record/%s", [operation])}],
+	}],
+}
+
+unconstrainedStorageUser(operationUri) = {
+	"id": "00000000-0000-4000-8000-000000000998",
+	"permissions": [storagePermission(operationUri, false, false)],
+	"managingOrgUnitIds": [],
+}
+
+test_owner_constrained_storage_grants_cannot_write_reserved_skill_archive {
+	not allow with input as {
 		"operationUri": "storage/object/upload",
 		"user": ownerConstraintUser(user_skill_owner, "storage/object/upload"),
 		"storage": {"object": linked_user_object},
 		"object": {"record": user_skill},
 	}
-}
 
-test_reserved_skill_delete_generic_owner_semantics_are_unchanged {
-	allow with input as {
+	not allow with input as {
 		"operationUri": "storage/object/delete",
 		"user": ownerConstraintUser(user_skill_owner, "storage/object/delete"),
 		"storage": {"object": linked_user_object},
@@ -489,63 +511,62 @@ test_reserved_skill_delete_generic_owner_semantics_are_unchanged {
 	}
 }
 
-test_trusted_non_admin_can_replace_linked_system_archive_without_owning_it {
-	allow with input as {
-		"operationUri": "storage/object/upload",
-		"user": system_publisher("update"),
-		"storage": {"object": linked_system_object},
-		"object": {"record": system_skill},
+test_org_unit_constrained_storage_grants_cannot_write_reserved_skill_archive {
+	object_in_org := object.union(linked_user_object, {"orgUnitId": "org-1"})
+	user := {
+		"id": user_skill_owner,
+		"permissions": [storagePermission("storage/object/upload", false, true)],
+		"managingOrgUnitIds": ["org-1"],
 	}
-}
 
-test_create_only_grant_cannot_replace_existing_linked_archive {
 	not allow with input as {
 		"operationUri": "storage/object/upload",
-		"user": system_publisher("create"),
-		"storage": {"object": linked_system_object},
-		"object": {"record": system_skill},
+		"user": user,
+		"storage": {"object": object_in_org},
+		"object": {"record": user_skill},
 	}
 }
 
-test_create_only_grant_can_upload_new_linked_archive {
-	creator_id := system_publisher("create").id
-	new_skill := object.union(system_skill, {
-		"agent-skill": object.union(system_skill["agent-skill"], {
-			"createdBy": creator_id,
-			"updatedBy": creator_id,
-		}),
-		"access-control": {"ownerId": creator_id},
-	})
-
-	new_object := object.union(linked_system_object, {"exists": false, "ownerId": creator_id})
+test_unconstrained_storage_grants_can_write_but_not_read_reserved_skill_archive {
 	allow with input as {
+		"operationUri": "storage/object/upload",
+		"user": unconstrainedStorageUser("storage/object/upload"),
+		"storage": {"object": linked_user_object},
+		"object": {"record": user_skill},
+	}
+
+	allow with input as {
+		"operationUri": "storage/object/delete",
+		"user": unconstrainedStorageUser("storage/object/delete"),
+		"storage": {"object": linked_user_object},
+		"object": {"record": user_skill},
+	}
+
+	not allow with input as {
+		"operationUri": "storage/object/read",
+		"user": unconstrainedStorageUser("storage/object/read"),
+		"storage": {"object": linked_user_object},
+		"object": {"record": user_skill},
+	}
+}
+
+test_typed_agent_skill_grants_cannot_write_archive_directly {
+	new_object := object.union(linked_system_object, {"exists": false})
+	not allow with input as {
 		"operationUri": "storage/object/upload",
 		"user": system_publisher("create"),
 		"storage": {"object": new_object},
-		"object": {"record": new_skill},
-	}
-}
-
-test_create_only_grant_cannot_delete_existing_linked_archive {
-	not allow with input as {
-		"operationUri": "storage/object/delete",
-		"user": system_publisher("create"),
-		"storage": {"object": linked_system_object},
 		"object": {"record": system_skill},
 	}
-}
 
-test_update_only_grant_cannot_delete_existing_linked_archive {
 	not allow with input as {
-		"operationUri": "storage/object/delete",
+		"operationUri": "storage/object/upload",
 		"user": system_publisher("update"),
 		"storage": {"object": linked_system_object},
 		"object": {"record": system_skill},
 	}
-}
 
-test_delete_grant_can_delete_existing_linked_archive {
-	allow with input as {
+	not allow with input as {
 		"operationUri": "storage/object/delete",
 		"user": system_publisher("delete"),
 		"storage": {"object": linked_system_object},
@@ -556,19 +577,77 @@ test_delete_grant_can_delete_existing_linked_archive {
 test_unconstrained_generic_record_grant_can_replace_linked_archive {
 	allow with input as {
 		"operationUri": "storage/object/upload",
-		"user": {
-			"id": "00000000-0000-4000-8000-000000000999",
-			"permissions": [{
-				"id": "00000000-0000-4000-8000-000000000790",
-				"resourceUri": "object/record",
-				"userOwnershipConstraint": false,
-				"orgUnitOwnershipConstraint": false,
-				"preAuthorisedConstraint": false,
-				"allowExemption": false,
-				"operations": [{"uri": "object/record/update"}],
-			}],
-		},
+		"user": power_user("update"),
 		"storage": {"object": linked_system_object},
 		"object": {"record": system_skill},
+	}
+}
+
+test_create_only_grant_cannot_replace_existing_linked_archive {
+	not allow with input as {
+		"operationUri": "storage/object/upload",
+		"user": power_user("create"),
+		"storage": {"object": linked_system_object},
+		"object": {"record": system_skill},
+	}
+}
+
+test_create_only_grant_can_upload_new_linked_archive {
+	allow with input as {
+		"operationUri": "storage/object/upload",
+		"user": power_user("create"),
+		"storage": {"object": object.union(linked_system_object, {"exists": false})},
+		"object": {"record": system_skill},
+	}
+}
+
+test_create_and_update_only_grants_cannot_delete_existing_linked_archive {
+	not allow with input as {
+		"operationUri": "storage/object/delete",
+		"user": power_user("create"),
+		"storage": {"object": linked_system_object},
+		"object": {"record": system_skill},
+	}
+
+	not allow with input as {
+		"operationUri": "storage/object/delete",
+		"user": power_user("update"),
+		"storage": {"object": linked_system_object},
+		"object": {"record": system_skill},
+	}
+}
+
+test_delete_grant_can_delete_existing_linked_archive {
+	allow with input as {
+		"operationUri": "storage/object/delete",
+		"user": power_user("delete"),
+		"storage": {"object": linked_system_object},
+		"object": {"record": system_skill},
+	}
+}
+
+test_reserved_object_cannot_be_linked_to_other_records {
+	# e.g. planting an object at a reserved key through a record the user can update
+	dataset := {"id": "my-dataset", "access-control": {"ownerId": user_skill_owner}}
+	planted := object.union(linked_user_object, {"recordId": "my-dataset", "exists": false})
+	record_owner := {
+		"id": user_skill_owner,
+		"permissions": [{
+			"id": "00000000-0000-4000-8000-000000000791",
+			"resourceUri": "object/record",
+			"userOwnershipConstraint": true,
+			"orgUnitOwnershipConstraint": false,
+			"preAuthorisedConstraint": false,
+			"allowExemption": false,
+			"operations": [{"uri": "object/record/create"}, {"uri": "object/record/update"}],
+		}],
+		"managingOrgUnitIds": [],
+	}
+
+	not allow with input as {
+		"operationUri": "storage/object/upload",
+		"user": record_owner,
+		"storage": {"object": planted},
+		"object": {"record": dataset},
 	}
 }

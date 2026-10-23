@@ -336,13 +336,13 @@ describe("Agent Skill publication state machine", () => {
                 (record) => record.name === record.aspects["agent-skill"].name
             )
         ).to.equal(true);
-        expect(storage.uploads).to.deep.equal([
-            {
-                key: `agent-services/skills/user-skills/${owner.id}/${recordId}.zip`,
-                recordId,
-                token: owner.sessionToken
-            }
-        ]);
+        expect(storage.uploads).to.have.length(1);
+        expect(storage.uploads[0]).to.deep.include({
+            key: `agent-services/skills/user-skills/${owner.id}/${recordId}.zip`,
+            recordId
+        });
+        // Agent Skill archives are only written with the internal session
+        expectInternalSession(storage.uploads[0].token);
         expect(registry.records.get(recordId)?.name).to.equal("useful-skill");
     });
 
@@ -364,7 +364,7 @@ describe("Agent Skill publication state machine", () => {
         expect(
             registry.records.get(recordId)?.aspects["agent-skill"].state
         ).to.equal("READY");
-        expect(storage.uploads[0].token).to.equal(owner.sessionToken);
+        expectInternalSession(storage.uploads[0].token);
         const readyPut = registry.calls.find(
             (call) => call.operation === "put"
         );
@@ -587,7 +587,7 @@ describe("Agent Skill publication state machine", () => {
             key: storage.uploads[0].key,
             recordId: storage.uploads[0].recordId
         });
-        expect(storage.uploads[0].token).to.equal(owner.sessionToken);
+        expectInternalSession(storage.uploads[0].token);
         expectInternalSession(storage.uploads[1].token);
         expect(registry.records.get(recordId)).to.deep.equal(ready);
     });
@@ -796,7 +796,7 @@ describe("Agent Skill publication state machine", () => {
         storage.inspections.forEach((call) =>
             expectInternalSession(call.token)
         );
-        expect(storage.uploads.at(-1)?.token).to.equal(owner.sessionToken);
+        expectInternalSession(storage.uploads.at(-1)!.token);
     });
 
     it("preserves OrgUnit, pre-authorised and exemption read constraints", async () => {
@@ -898,13 +898,13 @@ describe("Agent Skill publication state machine", () => {
         expectInternalSession(
             registry.calls.find((call) => call.operation === "delete")!.token
         );
-        expect(storage.deletions[0].token).to.equal(owner.sessionToken);
+        expectInternalSession(storage.deletions[0].token);
     });
 
-    it("writes Agent Skill records only with the internal session, after authorising the real caller", async () => {
-        // Generic registry writes on Agent Skill records are limited to admins
-        // (and unconstrained grants), so users' registry writes would be denied.
-        const { service, registry, authorization } = fixture();
+    it("writes Agent Skill records and archives only with the internal session, after authorising the real caller", async () => {
+        // Generic Registry & Storage writes on Agent Skill records & archives are
+        // limited to admins (and unconstrained grants), so users' writes would be denied.
+        const { service, registry, storage, authorization } = fixture();
         await service.prepareCreate("user", owner);
         await service.createAuthorized("user", await skillZip(), owner);
         const current = await service.prepareExisting(
@@ -932,6 +932,11 @@ describe("Agent Skill publication state machine", () => {
             "delete"
         ]);
         writes.forEach((call) => expectInternalSession(call.token));
+        expect(storage.uploads).to.have.length(2);
+        expect(storage.deletions).to.have.length(1);
+        [...storage.uploads, ...storage.deletions].forEach((call) =>
+            expectInternalSession(call.token)
+        );
         // the real caller is authorised with the typed operations
         expect(
             authorization.calls.map((call) => call.operation)
