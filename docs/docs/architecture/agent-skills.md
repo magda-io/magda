@@ -71,6 +71,8 @@ generic `object/record/*` level, a concrete `agent-skill` record is:
   Generic grants give access to skill **records** (Registry and Storage);
   Agent Services, the skills application, requires the typed permissions for
   every operation, including listing and the Workspace manifest.
+  This follows the general model for
+  [features built on Registry records](<./Guide to Magda Internals.md#building-features-on-registry-records>).
 
 | Use case                                                                       | Admin | Unconstrained generic `object/record/*` grant | Typed Agent Skill grants (e.g. Agent Workspace Users, Agent Skills Admins) | Others (incl. constrained generic grants) |
 | ------------------------------------------------------------------------------ | ----- | --------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------- |
