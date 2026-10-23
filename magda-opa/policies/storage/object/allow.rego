@@ -39,22 +39,18 @@ protectedAgentSkillRead {
 	protectedAgentSkillArchive
 }
 
-genericStoragePermissionApplies {
-	not protectedAgentSkillRead
-}
-
 # Agent Skill archives are written by Agent Services only (with its internal
 # session), after it authorises the caller with the typed Agent Skill
-# operations. So constrained (ownership or org unit) Storage permissions never
-# apply in the reserved namespace; unconstrained Storage permissions (trusted
-# grants) can still write there, but never read (see below).
+# operations, and read with the publications' read rules (see below). So
+# constrained (ownership or org unit) Storage permissions never apply in the
+# reserved namespace. Unconstrained Storage permissions are deliberate grants
+# to trusted users (no built-in role has one), so they apply everywhere.
 constrainedStoragePermissionApplies {
 	not protectedAgentSkillArchive
 }
 
 # Users has a unlimited permission to perform the operation on storage object will be allowed
 allow {
-	genericStoragePermissionApplies
 	hasNoConstraintPermission(input.operationUri)
 }
 
@@ -106,7 +102,7 @@ allow {
 }
 
 # Reads from the reserved Agent Skill archive namespace never fall back to
-# generic Storage permissions. The object must exist and be linked to an Agent
+# constrained Storage permissions. The object must exist and be linked to an Agent
 # Skill publication (whose archive key matches the object) that the real caller
 # can read. Agent Services validates the publication's deterministic identity
 # before writing it, and the archive before exposing it. Trusted global

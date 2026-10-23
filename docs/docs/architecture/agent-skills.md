@@ -145,9 +145,10 @@ publication's read rules, and Agent Services checks the archive's checksum
 against the record.
 
 Reads under the two reserved Agent Skill archive prefixes have a deliberately
-stronger boundary than ordinary Storage objects. Every generic Storage-read
-branch—including unconstrained, owner, matching-OrgUnit, and legacy missing or
-empty-OrgUnit access—is excluded. A read requires an existing Agent Skill
+stronger boundary than ordinary Storage objects. Every constrained Storage-read
+branch—owner, matching-OrgUnit, and legacy missing or empty-OrgUnit access—is
+excluded; unconstrained Storage permissions (deliberate, trusted grants) still
+apply. Otherwise, a read requires an existing Agent Skill
 record, exact trusted record ID/key linkage, and the caller's
 corresponding typed source-read permission (or an unconstrained generic record
 read grant). Missing or mismatched linkage fails closed; Agent Services
@@ -163,7 +164,8 @@ requires the linked record's create/update/delete permission.
 
 Writes (upload and delete) under the reserved prefixes are limited to Agent
 Services (as an admin), admins and unconstrained grants, like Agent Skill
-records: constrained (owner or OrgUnit) Storage permissions don't apply there,
+records: constrained (owner or OrgUnit) Storage permissions don't apply there
+(for reads either),
 an object there can only be linked to the Agent Skill record whose archive key
 it is, and that record's linked writes require the generic record operation,
 which typed Agent Skill grants alone don't have. So users can't replace their

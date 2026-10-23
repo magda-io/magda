@@ -276,9 +276,10 @@ test_linked_storage_read_denies_unrelated_typed_permission {
 	}
 }
 
-test_reserved_skill_read_denies_unconstrained_storage_read {
+# Unconstrained Storage permissions are deliberate grants to trusted users
+test_reserved_skill_read_allows_unconstrained_storage_read {
 	reader := storageReader(user_skill_reader, false, false, [])
-	not allow with input as {
+	allow with input as {
 		"operationUri": "storage/object/read",
 		"user": reader,
 		"storage": {"object": linked_user_object},
@@ -389,10 +390,9 @@ test_reserved_skill_read_requires_existing_object {
 }
 
 test_reserved_skill_read_requires_registry_record {
-	reader := storageReader(user_skill_reader, false, false, [])
 	not allow with input as {
 		"operationUri": "storage/object/read",
-		"user": reader,
+		"user": user_owner_reader,
 		"storage": {"object": linked_user_object},
 	}
 }
@@ -527,7 +527,7 @@ test_org_unit_constrained_storage_grants_cannot_write_reserved_skill_archive {
 	}
 }
 
-test_unconstrained_storage_grants_can_write_but_not_read_reserved_skill_archive {
+test_unconstrained_storage_grants_can_read_and_write_reserved_skill_archive {
 	allow with input as {
 		"operationUri": "storage/object/upload",
 		"user": unconstrainedStorageUser("storage/object/upload"),
@@ -542,7 +542,7 @@ test_unconstrained_storage_grants_can_write_but_not_read_reserved_skill_archive 
 		"object": {"record": user_skill},
 	}
 
-	not allow with input as {
+	allow with input as {
 		"operationUri": "storage/object/read",
 		"user": unconstrainedStorageUser("storage/object/read"),
 		"storage": {"object": linked_user_object},
