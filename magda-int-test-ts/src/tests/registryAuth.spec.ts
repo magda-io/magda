@@ -1103,6 +1103,75 @@ describe("registry auth integration tests", () => {
             expect(record.aspects["publishing"]["state"]).to.equal("draft");
         });
 
+        it("should not allow a user with draft-only update permission to publish a dataset via bulk aspect update", async () => {
+            // a bulk update must check the proposed state too, like single record updates
+            const role = await authApiClient.createRole(
+                "Role with draft dataset access only"
+            );
+            await authApiClient.createRolePermission(role.id, {
+                name: "draft dataset permission",
+                description: "",
+                operationUris: [
+                    "object/dataset/draft/create",
+                    "object/dataset/draft/read",
+                    "object/dataset/draft/update"
+                ],
+                allow_exemption: false,
+                org_unit_ownership_constraint: false,
+                user_ownership_constraint: true,
+                pre_authorised_constraint: false,
+                resourceUri: "object/dataset/draft"
+            });
+            const user = await authApiClient.createUser({
+                displayName: "Test draft only user",
+                email: "draftOnly@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            await authApiClient.addUserRoles(user.id, [role.id]);
+
+            const datasetId = await createTestDatasetByUser(user.id, {
+                id: "",
+                name: "test dataset",
+                aspects: {
+                    "dcat-dataset-strings": {
+                        title: "test dataset",
+                        description: "this is a test dataset"
+                    }
+                },
+                tenantId: 0,
+                sourceTag: ""
+            });
+
+            // the user can still update the draft dataset
+            let result = await getRegistryClient(user.id).putRecordsAspect(
+                [datasetId],
+                "dcat-dataset-strings",
+                { title: "test dataset updated" },
+                true
+            );
+            expect(result).to.not.be.an.instanceof(Error);
+
+            result = await getRegistryClient(user.id).putRecordsAspect(
+                [datasetId],
+                "publishing",
+                { state: "published" },
+                true
+            );
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(403);
+
+            const record = unionToThrowable(
+                await getRegistryClient(
+                    DEFAULT_ADMIN_USER_ID
+                ).getRecord(datasetId, ["publishing", "dcat-dataset-strings"])
+            );
+            expect(record.aspects["publishing"]["state"]).to.equal("draft");
+            expect(record.aspects["dcat-dataset-strings"]["title"]).to.equal(
+                "test dataset updated"
+            );
+        });
+
         it("should not allow a user to access distributions that he has no access via `dereference`", async () => {
             const dataStewardUser = await authApiClient.createUser({
                 displayName: "Test dataStewardUser",

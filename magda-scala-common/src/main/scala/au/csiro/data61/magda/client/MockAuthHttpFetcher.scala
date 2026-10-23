@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.{
   StatusCode
 }
 import au.csiro.data61.magda.model.Auth.{AuthDecision, AuthProtocols}
-import spray.json.{JsObject, JsString, JsValue}
+import spray.json.{JsArray, JsObject, JsString, JsValue}
 
 import scala.concurrent.{ExecutionContext, Future}
 import io.lemonlabs.uri.Url
@@ -54,6 +54,25 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
     authDecisionList += operationUri -> decision
   }
 
+  /**
+    * Per item decision functions for the batch decision endpoint (`/v0/opa/batchDecision`), by operationUri.
+    * Can add / update via `setBatchDecisionFunc` method.
+    * When there is no function for an operationUri, the unconditional decision set via `setAuthDecision` is used for all items.
+    */
+  var batchDecisionFuncs: Map[String, JsObject => JsValue] = Map()
+
+  def setBatchDecisionFunc(operationUri: String, f: JsObject => JsValue) = {
+    batchDecisionFuncs += operationUri -> f
+  }
+
+  /**
+    * a list of batch decision requests received: (operationUri, items)
+    */
+  var batchAuthCallLog: List[(String, Seq[JsObject])] = List()
+
+  def batchCallsByOperationUri(operationUri: String) =
+    batchAuthCallLog.filter(_._1 == operationUri).reverse
+
   var presetFixedResponse: Option[(StatusCode, String)] = None
 
   def setResponse(code: StatusCode, response: String) = {
@@ -69,6 +88,8 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
   def resetMock() = {
     authDecisionList = Map()
     authCallLog = List()
+    batchDecisionFuncs = Map()
+    batchAuthCallLog = List()
     presetFixedResponse = None
     presetError = None
   }
@@ -143,6 +164,41 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
     }
   }
 
+  private def batchDecisionResponse(payload: Any): Future[HttpResponse] = {
+    val operationUri = getOperationUriFromPayload(Some(payload)).getOrElse(
+      throw new Exception(
+        s"MockAuthHttpFetch received batch decision request without operationUri: ${payload}"
+      )
+    )
+    val items = getFieldFromPayload("items", Some(payload)) match {
+      case Some(JsArray(items)) => items.map(_.asJsObject)
+      case _ =>
+        throw new Exception(
+          s"MockAuthHttpFetch received batch decision request without items: ${payload}"
+        )
+    }
+    batchAuthCallLog = (operationUri, items) :: batchAuthCallLog
+    val decide: JsObject => JsValue = batchDecisionFuncs.getOrElse(
+      operationUri, {
+        val decision = authDecisionList.getOrElse(
+          operationUri,
+          throw new Exception(
+            s"NockAuthHttpFetch cannot locate pre-setup authDecision for operationUri: ${operationUri}"
+          )
+        )
+        if (decision.hasResidualRules || decision.result.isEmpty) {
+          throw new Exception(
+            s"NockAuthHttpFetch requires an unconditional authDecision or a batch decision function for operationUri: ${operationUri}"
+          )
+        }
+        (_: JsObject) => decision.result.get
+      }
+    )
+    Marshal(JsObject("results" -> JsArray(items.map(decide))))
+      .to[ResponseEntity]
+      .map(entity => HttpResponse(status = 200, entity = entity))
+  }
+
   def post[T](
       path: String,
       payload: T,
@@ -163,6 +219,8 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
         )
     } else if (presetError.isDefined) {
       throw presetError.get
+    } else if (Url.parse(path).path.toString() == "/v0/opa/batchDecision") {
+      batchDecisionResponse(payload)
     } else {
       val lookupResult = locateAuthDecisionFromPath(path, Some(payload))
       val requestOperationUri = lookupResult._1

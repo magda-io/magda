@@ -144,18 +144,82 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
       )
     }
 
+    parseDecisionResponse[Auth.AuthDecision](
+      responseFuture,
+      s"Failed to retrieve auth decision for operation `${config.operationUri}` from policy engine"
+    )
+  }
+
+  /**
+    * Get one auth decision per supplied context data item, in a single request (see the authorization API `batchDecision` endpoint).
+    * Every decision is a full evaluation (no `unknowns`), so it's for a known list of objects whose context data is available.
+    *
+    * @param jwtToken
+    * @param operationUri e.g. `object/record/update`
+    * @param items context data for each decision. e.g. `{"object": {"record": {...}}}`
+    * @return decision results in the same order as `items`
+    */
+  def getAuthDecisions(
+      jwtToken: Option[String],
+      operationUri: String,
+      items: Seq[JsObject]
+  ): Future[Seq[JsValue]] = {
+    if (skipOpaQuery) {
+      if (!muteWarning) {
+        system.log.warning(
+          "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+        )
+      }
+      return Future(items.map(_ => JsTrue))
+    }
+    if (items.isEmpty) {
+      return Future(Seq())
+    }
+
+    val headers = jwtToken match {
+      case Some(jwt) => List(RawHeader("X-Magda-Session", jwt))
+      case None      => List()
+    }
+    val requestData = JsObject(
+      "operationUri" -> JsString(operationUri),
+      "items" -> JsArray(items.toVector)
+    )
+    val errorMsg =
+      s"Failed to retrieve auth decisions for operation `${operationUri}` from policy engine"
+
+    parseDecisionResponse[JsObject](
+      authHttpFetcher
+        .post[JsValue]("/v0/opa/batchDecision", requestData, headers, true),
+      errorMsg
+    ).flatMap { data =>
+      data.fields.get("results") match {
+        case Some(JsArray(results)) if results.length == items.length =>
+          Future.successful(results)
+        case _ =>
+          logger.error("{}: invalid response: {}", errorMsg, data)
+          Future.failed(new Exception(s"${errorMsg}: invalid response."))
+      }
+    }
+  }
+
+  private def parseDecisionResponse[T](
+      responseFuture: Future[akka.http.scaladsl.model.HttpResponse],
+      errorMsgPrefix: String
+  )(
+      implicit um: akka.http.scaladsl.unmarshalling.FromEntityUnmarshaller[T]
+  ): Future[T] = {
     responseFuture.flatMap { res =>
       if (res.status.intValue() != 200) {
         res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).flatMap { body =>
           val errorMsg =
-            s"Failed to retrieve auth decision for operation `${config.operationUri}` from policy engine: ${body.utf8String}"
+            s"${errorMsgPrefix}: ${body.utf8String}"
           logger.error(errorMsg)
           Future.failed(
             new Exception(errorMsg)
           )
         }
       } else {
-        Unmarshal(res).to[Auth.AuthDecision].recover {
+        Unmarshal(res).to[T].recover {
           case e: Throwable =>
             res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).map { body =>
               logger.error(
@@ -167,6 +231,5 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
         }
       }
     }
-
   }
 }

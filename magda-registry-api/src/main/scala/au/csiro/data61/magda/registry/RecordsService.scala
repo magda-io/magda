@@ -15,26 +15,32 @@ import au.csiro.data61.magda.registry.Directives.{
   requireRecordUpdateOrCreateWhenNonExistPermission
 }
 import au.csiro.data61.magda.directives.AuthDirectives.{
+  getJwt,
   requirePermission,
   requireUnconditionalAuthDecision,
   requireUserId,
   withAuthDecision
 }
 import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
-import au.csiro.data61.magda.model.Auth.recordToContextData
+import au.csiro.data61.magda.model.Auth.{
+  UnconditionalTrueDecision,
+  recordToContextData
+}
+import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
+import au.csiro.data61.magda.registry.BulkRecordMutationAuthorization.authorizeRecordsMutation
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 
 import javax.ws.rs.Path
-import scalikejdbc.DB
+import scalikejdbc.{DB, DBSession}
 import org.everit.json.schema.ValidationException
 import spray.json.JsObject
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 import au.csiro.data61.magda.directives.CommonDirectives.{
   onCompleteBlockingTask,
   onCompleteBlockingTaskIn,
@@ -629,6 +635,9 @@ class RecordsService(
     *
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     *
+    * The user must have `object/record/update` permission on every record, both before and after the change.
+    * Otherwise, a 403 error will be responded. Either all records are changed or none.
+    *
     * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
     * @apiParam (body) {object[]} jsonPatch The RFC 6902 patch to apply to the aspect.
     * @apiParamExample {json} Request-Example
@@ -708,40 +717,16 @@ class RecordsService(
     requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
         sanitizedJsonEntity(as[PatchRecordsRequest]) { requestData =>
-          withAuthDecision(
-            authClient,
-            AuthDecisionReqConfig("object/record/update")
-          ) { authDecision =>
-            onCompleteBlockingTask {
-              val result = DB localTx { implicit session =>
-                session.queryTimeout(this.defaultQueryTimeout)
+          getJwt { jwt =>
+            completeBulkRecordsMutation(jwt, tenantId, requestData.recordIds) {
+              implicit session =>
                 recordPersistence.patchRecords(
                   tenantId,
-                  authDecision,
+                  UnconditionalTrueDecision,
                   requestData.recordIds,
                   requestData.jsonPath,
                   userId
-                ) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      result
-                    )
-                  case Failure(ServerError(msg, statusCode)) =>
-                    complete(
-                      statusCode,
-                      ApiError(msg)
-                    )
-                  case Failure(e) =>
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError(e.getMessage)
-                    )
-                }
-              }
-              webHookActor ! WebHookActor
-                .Process()
-              result
+                )
             }
           }
         }
@@ -754,6 +739,9 @@ class RecordsService(
     * @api {put} /v0/registry/records/aspects/:aspectId Modify a list of records's aspect with same new data
     *
     * @apiDescription  Modify a list of records's aspect with same new data
+    *
+    * The user must have `object/record/update` permission on every record, both before and after the change.
+    * Otherwise, a 403 error will be responded. Either all records are changed or none.
     *
     * @apiParam (path) {string} aspectId the id of the aspect to be updated
     * @apiParam (query) {boolean} [merge] Indicate whether merge the new data into existing aspect data or replace it. Default: `false`
@@ -835,43 +823,22 @@ class RecordsService(
             parameters(
               'merge.as[Boolean].?
             ) { merge =>
-              withAuthDecision(
-                authClient,
-                AuthDecisionReqConfig("object/record/update")
-              ) { authDecision =>
-                onCompleteBlockingTask {
-                  val result = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    recordPersistence.putRecordsAspectById(
-                      tenantId,
-                      authDecision,
-                      requestData.recordIds,
-                      aspectId,
-                      requestData.data,
-                      userId,
-                      false,
-                      merge.getOrElse(false)
-                    ) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          result
-                        )
-                      case Failure(ServerError(msg, statusCode)) =>
-                        complete(
-                          statusCode,
-                          ApiError(msg)
-                        )
-                      case Failure(e) =>
-                        complete(
-                          StatusCodes.InternalServerError,
-                          ApiError(e.getMessage)
-                        )
-                    }
-                  }
-                  webHookActor ! WebHookActor
-                    .Process()
-                  result
+              getJwt { jwt =>
+                completeBulkRecordsMutation(
+                  jwt,
+                  tenantId,
+                  requestData.recordIds
+                ) { implicit session =>
+                  recordPersistence.putRecordsAspectById(
+                    tenantId,
+                    UnconditionalTrueDecision,
+                    requestData.recordIds,
+                    aspectId,
+                    requestData.data,
+                    userId,
+                    false,
+                    merge.getOrElse(false)
+                  )
                 }
               }
             }
@@ -890,6 +857,9 @@ class RecordsService(
     * If the aspect doesn't exist for a record or the array can't be located with the jsonPath string or the value located with the jsonPath string is `null`,
     * the operation will be skipped without throwing error. `0` will returned as eventId for this case.
     * If the json data that is located by the jsonPath string exists and is not an Array or null, an error will be thrown and 400 code will be responded.
+    *
+    * The user must have `object/record/update` permission on every record, both before and after the change.
+    * Otherwise, a 403 error will be responded. Either all records are changed or none.
     *
     * @apiParam (path) {string} aspectId the id of the aspect to be updated
     * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
@@ -958,42 +928,21 @@ class RecordsService(
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[DeleteRecordsAspectArrayItemsRequest]) { requestData =>
-            withAuthDecision(
-              authClient,
-              AuthDecisionReqConfig("object/record/update")
-            ) { authDecision =>
-              onCompleteBlockingTask {
-                val result = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence.deleteRecordsAspectArrayItems(
-                    tenantId,
-                    authDecision,
-                    requestData.recordIds,
-                    aspectId,
-                    requestData.jsonPath,
-                    requestData.items,
-                    userId
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        result
-                      )
-                    case Failure(ServerError(msg, statusCode)) =>
-                      complete(
-                        statusCode,
-                        ApiError(msg)
-                      )
-                    case Failure(e) =>
-                      complete(
-                        StatusCodes.InternalServerError,
-                        ApiError(e.getMessage)
-                      )
-                  }
-                }
-                webHookActor ! WebHookActor
-                  .Process()
-                result
+            getJwt { jwt =>
+              completeBulkRecordsMutation(
+                jwt,
+                tenantId,
+                requestData.recordIds
+              ) { implicit session =>
+                recordPersistence.deleteRecordsAspectArrayItems(
+                  tenantId,
+                  UnconditionalTrueDecision,
+                  requestData.recordIds,
+                  aspectId,
+                  requestData.jsonPath,
+                  requestData.items,
+                  userId
+                )
               }
             }
           }
@@ -1122,6 +1071,47 @@ class RecordsService(
       }
     }
   }
+
+  /**
+    * Run a mutation on a list of records in one transaction and complete the request with the result (a list of event IDs).
+    * The user must have `object/record/update` permission on every record's current and proposed state
+    * (see `BulkRecordMutationAuthorization`).
+    * Any failure (incl. no permission) rolls back the whole transaction, so either all records are changed or none.
+    */
+  private def completeBulkRecordsMutation(
+      jwt: Option[String],
+      tenantId: SpecifiedTenantId,
+      recordIds: Seq[String]
+  )(mutation: DBSession => Try[Seq[Long]]): Route =
+    onCompleteBlockingTask {
+      val result = Try {
+        DB localTx { implicit session =>
+          session.queryTimeout(this.defaultQueryTimeout)
+          authorizeRecordsMutation(authClient, jwt, tenantId, recordIds)(
+            mutation(session)
+          )
+        }
+      } match {
+        case Success(result) =>
+          complete(
+            StatusCodes.OK,
+            result
+          )
+        case Failure(ServerError(msg, statusCode)) =>
+          complete(
+            statusCode,
+            ApiError(msg)
+          )
+        case Failure(e) =>
+          complete(
+            StatusCodes.InternalServerError,
+            ApiError(e.getMessage)
+          )
+      }
+      webHookActor ! WebHookActor
+        .Process()
+      result
+    }
 
   override def route: Route =
     super.route ~
