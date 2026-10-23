@@ -427,37 +427,6 @@ test_reserved_skill_read_requires_matching_owner {
 	}
 }
 
-test_reserved_skill_read_rejects_self_consistent_malformed_publication {
-	key := "agent-services/skills/system-skills/not-a-skill-id.zip"
-	malformed := {
-		"id": "not-a-skill-id",
-		"name": "not-a-system-skill",
-		"agent-skill": {
-			"name": "not-a-system-skill",
-			"type": "system",
-			"archiveKey": key,
-		},
-		"access-control": {
-			"ownerId": user_skill_owner,
-			"preAuthorisedPermissionIds": [system_pre_authorised_reader.permissions[0].id],
-		},
-	}
-
-	object_metadata := {
-		"name": key,
-		"recordId": malformed.id,
-		"ownerId": user_skill_owner,
-		"exists": true,
-	}
-
-	not allow with input as {
-		"operationUri": "storage/object/read",
-		"user": system_pre_authorised_reader,
-		"storage": {"object": object_metadata},
-		"object": {"record": malformed},
-	}
-}
-
 test_agent_skill_prefix_lookalike_retains_generic_read_semantics {
 	reader := storageReader(user_skill_reader, false, false, [])
 	allow with input as {
@@ -579,6 +548,26 @@ test_delete_grant_can_delete_existing_linked_archive {
 	allow with input as {
 		"operationUri": "storage/object/delete",
 		"user": system_publisher("delete"),
+		"storage": {"object": linked_system_object},
+		"object": {"record": system_skill},
+	}
+}
+
+test_unconstrained_generic_record_grant_can_replace_linked_archive {
+	allow with input as {
+		"operationUri": "storage/object/upload",
+		"user": {
+			"id": "00000000-0000-4000-8000-000000000999",
+			"permissions": [{
+				"id": "00000000-0000-4000-8000-000000000790",
+				"resourceUri": "object/record",
+				"userOwnershipConstraint": false,
+				"orgUnitOwnershipConstraint": false,
+				"preAuthorisedConstraint": false,
+				"allowExemption": false,
+				"operations": [{"uri": "object/record/update"}],
+			}],
+		},
 		"storage": {"object": linked_system_object},
 		"object": {"record": system_skill},
 	}

@@ -1172,6 +1172,125 @@ describe("registry auth integration tests", () => {
             );
         });
 
+        describe("Agent Skill records", () => {
+            function userSkillRecord(userId: string): Record {
+                const id = `agent-skill-${userId}-useful-skill`;
+                const now = new Date().toISOString();
+                return {
+                    id,
+                    name: "useful-skill",
+                    aspects: {
+                        "agent-skill": {
+                            name: "useful-skill",
+                            type: "user",
+                            userId,
+                            createdAt: now,
+                            createdBy: userId,
+                            description: "a useful skill",
+                            archiveKey: `agent-services/skills/user-skills/${userId}/${id}.zip`,
+                            updatedAt: now,
+                            updatedBy: userId,
+                            checksum: "0".repeat(64),
+                            state: "READY"
+                        },
+                        "access-control": { ownerId: userId }
+                    },
+                    tenantId: 0,
+                    sourceTag: ""
+                };
+            }
+
+            async function createUserWithRoles(roleIds: string[]) {
+                const user = await authApiClient.createUser({
+                    displayName: "Test User",
+                    email: "testUser@test.com",
+                    source: "internal",
+                    sourceId: uuidV4()
+                });
+                await authApiClient.addUserRoles(user.id, roleIds);
+                return user.id;
+            }
+
+            it("should not allow typed Agent Skill grants alone to write Agent Skill records via the generic Registry API", async () => {
+                // Agent Services is the only non-admin writer of Agent Skill records
+                const userId = await createUserWithRoles([
+                    AGENT_WORKSPACE_USERS_ROLE_ID
+                ]);
+                const result = await getRegistryClient(userId).putRecord(
+                    userSkillRecord(userId)
+                );
+                expect(result).to.be.an.instanceof(ServerError);
+                expect((result as ServerError).statusCode).to.equal(403);
+            });
+
+            it("should respond 403 rather than 500 to users with Agent Skill grants when unconditional permission is required", async () => {
+                // e.g. deleting a record that doesn't exist requires `object/record/delete` permission on any record
+                const userId = await createUserWithRoles([
+                    DATA_STEWARDS_ROLE_ID,
+                    AGENT_WORKSPACE_USERS_ROLE_ID
+                ]);
+                const registryClient = getRegistryClient(userId);
+                const notExistRecordId = uuidV4();
+                for (const result of [
+                    await registryClient.deleteRecord(notExistRecordId),
+                    await registryClient.deleteRecordAspect(
+                        notExistRecordId,
+                        "dcat-dataset-strings"
+                    ),
+                    await registryClient.deleteBySource("tag", "test-source")
+                ]) {
+                    expect(result).to.be.an.instanceof(ServerError);
+                    expect((result as ServerError).statusCode).to.equal(403);
+                }
+            });
+
+            it("should allow unconstrained generic record grants to operate on any record, including Agent Skill records", async () => {
+                const role = await authApiClient.createRole(
+                    "Role with unconstrained generic record permissions"
+                );
+                await authApiClient.createRolePermission(role.id, {
+                    name: "unconstrained record permission",
+                    description: "",
+                    operationUris: [
+                        "object/record/create",
+                        "object/record/read",
+                        "object/record/update",
+                        "object/record/delete"
+                    ],
+                    allow_exemption: false,
+                    org_unit_ownership_constraint: false,
+                    user_ownership_constraint: false,
+                    pre_authorised_constraint: false,
+                    resourceUri: "object/record"
+                });
+                const userId = await createUserWithRoles([role.id]);
+                const registryClient = getRegistryClient(userId);
+
+                // an Agent Skill record of another user
+                const skillOwnerId = await createUserWithRoles([
+                    AGENT_WORKSPACE_USERS_ROLE_ID
+                ]);
+                let result: any = await registryClient.putRecord(
+                    userSkillRecord(skillOwnerId)
+                );
+                expect(result).to.not.be.an.instanceof(Error);
+                result = await registryClient.getRecord(
+                    `agent-skill-${skillOwnerId}-useful-skill`,
+                    ["agent-skill"]
+                );
+                expect(result).to.not.be.an.instanceof(Error);
+
+                // operations that require unconditional permission
+                result = await registryClient.deleteRecord(uuidV4());
+                expect(result).to.not.be.an.instanceof(Error);
+                result = await registryClient.deleteBySource(
+                    "tag",
+                    "test-source"
+                );
+                expect(result).to.not.be.an.instanceof(Error);
+            });
+        });
+
         it("should not allow a user to access distributions that he has no access via `dereference`", async () => {
             const dataStewardUser = await authApiClient.createUser({
                 displayName: "Test dataStewardUser",

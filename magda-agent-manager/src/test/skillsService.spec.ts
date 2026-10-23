@@ -789,11 +789,10 @@ describe("Agent Skill publication state machine", () => {
                 (call) => call.token === owner.sessionToken
             )
         ).to.equal(true);
-        expect(
-            registry.calls
-                .filter((call) => call.operation === "put")
-                .every((call) => call.token === owner.sessionToken)
-        ).to.equal(true);
+        // Agent Skill records are only written with the internal session
+        registry.calls
+            .filter((call) => call.operation === "put")
+            .forEach((call) => expectInternalSession(call.token));
         storage.inspections.forEach((call) =>
             expectInternalSession(call.token)
         );
@@ -896,10 +895,52 @@ describe("Agent Skill publication state machine", () => {
             (call) => call.operation === "put"
         );
         expectInternalSession(deletingPut!.token);
-        expect(
-            registry.calls.find((call) => call.operation === "delete")?.token
-        ).to.equal(owner.sessionToken);
+        expectInternalSession(
+            registry.calls.find((call) => call.operation === "delete")!.token
+        );
         expect(storage.deletions[0].token).to.equal(owner.sessionToken);
+    });
+
+    it("writes Agent Skill records only with the internal session, after authorising the real caller", async () => {
+        // Generic registry writes on Agent Skill records are limited to admins
+        // (and unconstrained grants), so users' registry writes would be denied.
+        const { service, registry, authorization } = fixture();
+        await service.prepareCreate("user", owner);
+        await service.createAuthorized("user", await skillZip(), owner);
+        const current = await service.prepareExisting(
+            "user",
+            recordId,
+            "update",
+            owner
+        );
+        await service.replaceAuthorized(
+            current,
+            await skillZip("useful-skill", "Updated"),
+            owner
+        );
+        await service.deleteAuthorized(
+            await service.prepareExisting("user", recordId, "delete", owner),
+            owner
+        );
+
+        const writes = registry.calls.filter((call) =>
+            ["create", "put", "delete"].includes(call.operation)
+        );
+        expect(writes.map((call) => call.operation)).to.include.members([
+            "create",
+            "put",
+            "delete"
+        ]);
+        writes.forEach((call) => expectInternalSession(call.token));
+        // the real caller is authorised with the typed operations
+        expect(
+            authorization.calls.map((call) => call.operation)
+        ).to.include.members(["create", "update", "delete"]);
+        expect(
+            authorization.calls.every(
+                (call) => call.token === owner.sessionToken
+            )
+        ).to.equal(true);
     });
 
     it("keeps read-only access caller-scoped and blocks privileged mutation", async () => {

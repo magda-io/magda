@@ -90,19 +90,34 @@ allow {
 }
 
 # Reads from the reserved Agent Skill archive namespace never fall back to
-# generic Storage permissions. The object must exist and be linked to a complete,
-# deterministic Agent Skill publication whose typed source-read policy allows the
-# real caller. Trusted global administrators, including the default administrator
-# used for internal lifecycle inspection, remain covered by the existing top-level
-# entrypoint override; they are not granted here through a Storage permission.
+# generic Storage permissions. The object must exist and be linked to an Agent
+# Skill publication (whose archive key & owner match the object) that the real
+# caller can read. Agent Services validates the publication's deterministic
+# identity before writing it and before exposing an archive. Trusted global
+# administrators, including the default administrator used for internal
+# lifecycle inspection, remain covered by the existing top-level entrypoint
+# override; they are not granted here through a Storage permission.
 allow {
 	protectedAgentSkillRead
 	input.storage.object.exists == true
 	input.storage.object.recordId = input.object.record.id
-	publicationType := data.object.agentSkill.recordPublicationType("record")
-	data.object.agentSkill.validPublicationIdentity("record", publicationType)
+	data.object.agentSkill.recordPublicationType("record")
 	linkedRecordBindingValid
 	data.object.record.verifyPermission("object/record/read")
+}
+
+# Writes to a linked object require the corresponding operation on the linked record.
+linkedRecordWritePermission(operationType) {
+	data.object.record.verifyPermission(concat("/", ["object/record", operationType]))
+}
+
+# Agent Skill records can only be written by Agent Services (see
+# `object/record/allow.rego`), but their archives are uploaded with the real
+# caller's session, so that a new archive is owned by the publication's owner.
+# For those, the typed Agent Skill operation applies.
+linkedRecordWritePermission(operationType) {
+	publicationType := data.object.agentSkill.recordPublicationType("record")
+	data.object.agentSkill.verifyPermission(concat("/", ["object/agentSkill", publicationType, operationType]), "record")
 }
 
 # A linked upload of a new object follows record create. Replacing an existing
@@ -115,7 +130,7 @@ allow {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
 	operationType = "upload"
 	input.storage.object.exists == false
-	data.object.record.verifyPermission("object/record/create")
+	linkedRecordWritePermission("create")
 }
 
 allow {
@@ -124,7 +139,7 @@ allow {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
 	operationType = "upload"
 	input.storage.object.exists == true
-	data.object.record.verifyPermission("object/record/update")
+	linkedRecordWritePermission("update")
 }
 
 # Deleting an existing linked object requires the corresponding record delete;
@@ -134,5 +149,5 @@ allow {
 	linkedRecordBindingValid
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
 	operationType = "delete"
-	data.object.record.verifyPermission("object/record/delete")
+	linkedRecordWritePermission("delete")
 }

@@ -794,8 +794,10 @@ export class AgentSkillService {
                 } else {
                     pending = candidate;
                     try {
-                        // Initial creation remains attributed to the real actor.
-                        await this.registry.create(pending, user.sessionToken);
+                        // Agent Skill records are only written by Agent Services
+                        // (with the internal session), after authorising the
+                        // real caller above. The aspect records the real actor.
+                        await this.registry.create(pending, internalSession);
                     } catch (error) {
                         if (
                             error instanceof DownstreamServiceError &&
@@ -994,7 +996,7 @@ export class AgentSkillService {
                         }
                     }
                 };
-                await this.registry.put(pending, user.sessionToken);
+                await this.registry.put(pending, internalSession);
                 await this.storage.upload(
                     pending.aspects["agent-skill"].archiveKey,
                     current.id,
@@ -1021,7 +1023,7 @@ export class AgentSkillService {
                         }
                     }
                 };
-                await this.registry.put(ready, user.sessionToken);
+                await this.registry.put(ready, internalSession);
                 this.audit("update", ready, user, "success");
                 return metadata(ready);
             } catch (error) {
@@ -1104,7 +1106,7 @@ export class AgentSkillService {
                     deleting.aspects["agent-skill"].archiveKey,
                     user.sessionToken
                 );
-                await this.registry.delete(deleting.id, user.sessionToken);
+                await this.registry.delete(deleting.id, internalSession);
                 this.audit("delete", deleting, user, "success");
             } catch (error) {
                 const mapped = downstreamError(error, existing.id);
