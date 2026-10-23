@@ -1,10 +1,7 @@
 import "mocha";
 import { require } from "@magda/esm-utils";
 import { expect } from "chai";
-import _ from "lodash";
-import OpaCompileResponseParser, {
-    RegoRule
-} from "../OpaCompileResponseParser.js";
+import OpaCompileResponseParser from "../OpaCompileResponseParser.js";
 const testData = require("./sampleOpaResponses/content.json");
 const testDataSimple = require("./sampleOpaResponses/simple.json");
 const testDataUnconditionalTrue = require("./sampleOpaResponses/unconditionalTrue.json");
@@ -17,8 +14,7 @@ const testDataUnconditionalTrueSimple = require("./sampleOpaResponses/unconditio
 const testDataDatasetPermissionWithOrgUnitConstraint = require("./sampleOpaResponses/datasetPermissionWithOrgUnitConstraint.json");
 const testDataSingleTermAspectRef = require("./sampleOpaResponses/singleTermAspectRef.json");
 const testExtraLargeResponse = require("./sampleOpaResponses/extraLargeResponse.json");
-const testDataAgentSkillBuiltinCallsWithDraftDatasetPermission = require("./sampleOpaResponses/agentSkillBuiltinCallsWithDraftDatasetPermission.json");
-const testDataAgentSkillBuiltinCallsOnly = require("./sampleOpaResponses/agentSkillBuiltinCallsOnly.json");
+const testDataAgentSkillBuiltinCalls = require("./sampleUntranslatableOpaResponses/agentSkillBuiltinCalls.json");
 
 describe("Test extra large opa response", () => {
     it("should process extra large opa response in timely manager", function () {
@@ -429,105 +425,18 @@ describe("Test OpaCompileResultParser with testDataSingleTermAspectRef", functio
 });
 
 /**
- * Residual rules produced by OPA (v0.37.2) for `object/record/update` with unknown `input.object.record`.
- * The Agent Skill write rules call built-in functions (e.g. `regex.match`, `count`, `startswith`, `sprintf`) on the unknown record.
+ * Residual rules produced by OPA (v0.37.2) for `object/record/update` with unknown `input.object.record`
+ * for a user with Agent Skill owner permissions. The Agent Skill write rules call built-in functions
+ * (e.g. `regex.match`) on the unknown record, which can't be translated (e.g. to SQL).
+ * The parser must fail loudly rather than silently drop or mistranslate those rules,
+ * so policy authors find out and choose a different evaluation path (e.g. full evaluation per record).
  * See https://github.com/magda-io/magda/issues/3869
  */
 describe("Test OpaCompileResultParser with built-in function calls on unknowns", function () {
-    function getUnsupportedExpressionStrings(rules: RegoRule[]) {
-        return rules.flatMap((rule) =>
-            rule.expressions
-                .filter((exp) => exp.isUnsupported)
-                .map((exp) => exp.asString())
-        );
-    }
-
-    it("should treat rules with built-in function calls as not matched and keep other residual rules", function () {
+    it("should throw an error rather than produce residual rules", function () {
         const parser = new OpaCompileResponseParser();
-        parser.parse(
-            JSON.stringify(
-                testDataAgentSkillBuiltinCallsWithDraftDatasetPermission
-            )
-        );
-        const result = parser.evaluate();
-        expect(result.isCompleteEvaluated).to.be.equal(false);
-        expect(result.residualRules.length).to.be.greaterThan(0);
-        expect(
-            getUnsupportedExpressionStrings(result.residualRules)
-        ).to.deep.equal([]);
-        result.residualRules.forEach((rule) => {
-            // --- the remaining rules should all be translatable
-            const conciseData = rule.toConciseData();
-            // --- the remaining rules should only match non Agent Skill records
-            expect(
-                conciseData.expressions.find(
-                    (exp) =>
-                        exp.negated === true &&
-                        exp.operator === null &&
-                        exp.operands[0].value ===
-                            "input.object.record.agent-skill"
-                )
-            ).to.not.be.undefined;
-        });
-        expect(parser.hasWarns).to.be.equal(true);
-        expect(parser.warns.length).to.be.equal(1);
-        expect(parser.warns[0]).to.contain('has been treated as "not matched"');
-        expect(parser.warns[0]).to.contain(
-            'regex.match "^[a-z0-9]+(?:-[a-z0-9]+)*$" input.object.record.agent-skill.name'
-        );
-        expect(parser.warns[0]).to.contain(
-            "lte count(input.object.record.agent-skill.name) 46"
-        );
-        expect(parser.evaluateAsHumanReadableString()).to.not.contain(
-            "agent-skill.name"
-        );
-    });
-
-    it("should produce an unconditional result when all rules contain built-in function calls", function () {
-        const parser = new OpaCompileResponseParser();
-        parser.parse(JSON.stringify(testDataAgentSkillBuiltinCallsOnly));
-        const result = parser.evaluate();
-        expect(result.isCompleteEvaluated).to.be.equal(true);
-        // --- the decision endpoint will output `undefined` value as `false`
-        expect(result.value).to.be.undefined;
-        expect(parser.hasWarns).to.be.equal(true);
-    });
-
-    it("should throw an error when the rule with built-in function calls is referenced via negated expressions", function () {
-        const data = _.cloneDeep(testDataAgentSkillBuiltinCallsOnly);
-        data.result.queries[0][0].negated = true;
-        const parser = new OpaCompileResponseParser();
-        expect(() => parser.parse(JSON.stringify(data))).to.throw(
-            /can't be safely treated as "not matched"/
-        );
-    });
-
-    it("should throw an error when the rule with built-in function calls is referenced via comparison expressions", function () {
-        const data = _.cloneDeep(testDataAgentSkillBuiltinCallsOnly);
-        const queryRef = data.result.queries[0][0].terms;
-        data.result.queries[0][0].terms = [
-            {
-                type: "ref",
-                value: [{ type: "var", value: "eq" }]
-            },
-            queryRef,
-            { type: "boolean", value: false }
-        ];
-        const parser = new OpaCompileResponseParser();
-        expect(() => parser.parse(JSON.stringify(data))).to.throw(
-            /can't be safely treated as "not matched"/
-        );
-    });
-
-    it("should throw an error when the rule with built-in function calls has a non-true value", function () {
-        const data = _.cloneDeep(testDataAgentSkillBuiltinCallsOnly);
-        data.result.support
-            .flatMap((p: any) => p.rules)
-            .filter((r: any) => !r.default && r.body.length > 1)
-            .forEach((r: any) => (r.head.value.value = false));
-        const parser = new OpaCompileResponseParser();
-        expect(() => parser.parse(JSON.stringify(data))).to.throw(
-            /can't be safely treated as "not matched"/
-        );
+        expect(() =>
+            parser.parse(JSON.stringify(testDataAgentSkillBuiltinCalls))
+        ).to.throw(/can't locate operator: regex\.match/);
     });
 });
