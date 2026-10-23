@@ -469,21 +469,24 @@ export class AgentSkillService {
         return result;
     }
 
+    /**
+     * An archive is linked to its record by its exact key (derived from the
+     * record) and Storage's trusted `magda-record-id`. Archives are uploaded
+     * with the internal session, so their Storage owner is not the publication
+     * owner and is not part of the linkage. Downloads also check the archive's
+     * checksum against the record.
+     */
     private requireArchiveIdentity(
         identity: {
             exists: boolean;
             recordId?: string;
-            ownerId?: string;
         },
         record: AgentSkillRecord,
         required: boolean
     ): void {
         if (
             (required && !identity.exists) ||
-            (identity.exists &&
-                (identity.recordId !== record.id ||
-                    identity.ownerId !==
-                        record.aspects["access-control"].ownerId))
+            (identity.exists && identity.recordId !== record.id)
         ) {
             throw new AgentSkillError(
                 "Published Agent Skill archive linkage is inconsistent",
@@ -794,8 +797,10 @@ export class AgentSkillService {
                 } else {
                     pending = candidate;
                     try {
-                        // Initial creation remains attributed to the real actor.
-                        await this.registry.create(pending, user.sessionToken);
+                        // Agent Skill records are only written by Agent Services
+                        // (with the internal session), after authorising the
+                        // real caller above. The aspect records the real actor.
+                        await this.registry.create(pending, internalSession);
                     } catch (error) {
                         if (
                             error instanceof DownstreamServiceError &&
@@ -845,7 +850,7 @@ export class AgentSkillService {
                     pending.aspects["agent-skill"].archiveKey,
                     id,
                     bytes,
-                    stored.exists ? internalSession : user.sessionToken
+                    internalSession
                 );
                 this.requireArchiveIdentity(
                     await this.storage.inspect(
@@ -994,12 +999,12 @@ export class AgentSkillService {
                         }
                     }
                 };
-                await this.registry.put(pending, user.sessionToken);
+                await this.registry.put(pending, internalSession);
                 await this.storage.upload(
                     pending.aspects["agent-skill"].archiveKey,
                     current.id,
                     bytes,
-                    user.sessionToken
+                    internalSession
                 );
                 this.requireArchiveIdentity(
                     await this.storage.inspect(
@@ -1021,7 +1026,7 @@ export class AgentSkillService {
                         }
                     }
                 };
-                await this.registry.put(ready, user.sessionToken);
+                await this.registry.put(ready, internalSession);
                 this.audit("update", ready, user, "success");
                 return metadata(ready);
             } catch (error) {
@@ -1102,9 +1107,9 @@ export class AgentSkillService {
                 }
                 await this.storage.delete(
                     deleting.aspects["agent-skill"].archiveKey,
-                    user.sessionToken
+                    internalSession
                 );
-                await this.registry.delete(deleting.id, user.sessionToken);
+                await this.registry.delete(deleting.id, internalSession);
                 this.audit("delete", deleting, user, "success");
             } catch (error) {
                 const mapped = downstreamError(error, existing.id);
@@ -1146,8 +1151,7 @@ export class AgentSkillService {
         this.requireArchiveIdentity(
             {
                 exists: true,
-                recordId: downloaded.recordId,
-                ownerId: downloaded.ownerId
+                recordId: downloaded.recordId
             },
             record,
             true

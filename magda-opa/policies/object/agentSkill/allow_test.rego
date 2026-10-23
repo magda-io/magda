@@ -174,10 +174,39 @@ test_system_read_never_exposes_user_publication {
 	}
 }
 
-test_identity_mismatch_write_fails_closed {
-	bad := object.union(user_record(user_id, user_id), {"id": "agent-skill-forged"})
+test_owner_can_update_and_delete_own_user_skill {
+	verifyPermission("object/agentSkill/user/update", "agentSkill") with input as {
+		"object": {"agentSkill": user_record(user_id, user_id)},
+		"user": {"id": user_id, "permissions": [owner_permission]},
+	}
+
+	verifyPermission("object/agentSkill/user/delete", "agentSkill") with input as {
+		"object": {"agentSkill": user_record(user_id, user_id)},
+		"user": {"id": user_id, "permissions": [owner_permission]},
+	}
+}
+
+test_owner_cannot_update_another_users_skill {
 	not verifyPermission("object/agentSkill/user/update", "agentSkill") with input as {
-		"object": {"agentSkill": bad},
+		"object": {"agentSkill": user_record(other_id, other_id)},
+		"user": {"id": user_id, "permissions": [owner_permission]},
+	}
+}
+
+test_user_skill_grants_do_not_apply_to_system_publication {
+	record := object.union(system_record, {"access-control": {"ownerId": user_id}})
+	not verifyPermission("object/agentSkill/user/update", "agentSkill") with input as {
+		"object": {"agentSkill": record},
+		"user": {"id": user_id, "permissions": [owner_permission]},
+	}
+}
+
+# Validating a publication's deterministic identity (e.g. record ID matching
+# type, user and name) is Agent Services' job, not the policy's.
+test_identity_is_not_validated_by_policy {
+	record := object.union(user_record(user_id, user_id), {"id": "any-record-id"})
+	verifyPermission("object/agentSkill/user/update", "agentSkill") with input as {
+		"object": {"agentSkill": record},
 		"user": {"id": user_id, "permissions": [owner_permission]},
 	}
 }

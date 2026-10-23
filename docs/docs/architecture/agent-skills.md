@@ -48,23 +48,48 @@ not leak into default pages and independent cursors never need post-hoc merging.
 Catalogue traversal uses `reversePageTokenOrder=true`, never the unsupported
 `orderBy` plus `pageToken` combination.
 
-The typed OPA policy delegates every concrete `agent-skill` record exclusively
-by its actual or proposed `type`; a generic `object/record` permission alone
-cannot read or mutate a valid typed publication. Read rules use
-Registry-compatible literal/existence conditions for partial authorization, then
-Agent Services validates the full deterministic identity of every returned
-record before exposing it. Typed write rules validate each concrete state.
+OPA policies only **authorise**; validating a publication's deterministic
+identity (record ID, name and archive key derived from type, intended user and
+name, plus the naming rules above) is data validation that **Agent Services**
+does before every write and for every record it returns. All Agent Skill rules
+use only literal comparisons and existence checks, so every partial decision
+can be translated (e.g. into Registry SQL filters).
 
-Cross-version business invariants belong to the supported Agent Services API in
-this stage. Agent Services preserves immutable publication type, intended user,
-ID/name, creator, archive key, and owner and fails closed on inconsistent or
-wrong-type records. Generic Registry clients with sufficient permissions may
-still bypass those service-owned invariants through marker removal, separately
-authorised old/new states, bulk mutation, or source trimming. That accepted MVP
-integrity limitation is not a supported Agent Skill management path; generic
-Registry mutation-context and bulk hardening are deliberately isolated for
-independent design, compatibility, concurrency, and performance review in
-#3862 and draft PR #3863. The only Registry production adjustment retained by
+**Agent Services is the only non-admin writer of Agent Skill records.** It
+authorises the real caller with the typed operation
+(`object/agentSkill/<system|user>/<create|update|delete>`, a full evaluation),
+then writes the Registry record with its internal session (see below). At the
+generic `object/record/*` level, a concrete `agent-skill` record is:
+
+- **read** with the typed Agent Skill read rules (by its actual `type`);
+- **written** only by admins and by holders of an **unconstrained** generic
+  `object/record/<operation>` grant (no ownership, OrgUnit or pre-authorised
+  constraint). Such grants are deliberate grants to trusted users (no built-in
+  role has one) and apply to every record, including Agent Skill records, for
+  reads too. Constrained generic grants never apply to typed publications, and
+  typed Agent Skill grants alone can't write through the generic Registry API.
+  Generic grants give access to skill **records** (Registry and Storage);
+  Agent Services, the skills application, requires the typed permissions for
+  every operation, including listing and the Workspace manifest.
+  This follows the general model for
+  [features built on Registry records](<./Guide to Magda Internals.md#building-features-on-registry-records>).
+
+| Use case                                                                       | Admin | Unconstrained generic `object/record/*` grant      | Typed Agent Skill grants (e.g. Agent Workspace Users, Agent Skills Admins) | Others (incl. constrained generic grants) |
+| ------------------------------------------------------------------------------ | ----- | -------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------- |
+| Create/update/delete skills via Agent Services (`/v0/agent/skills`, `mgd`, UI) | ✓     | only with typed grants                             | ✓ (as granted)                                                             | ✗                                         |
+| Read/list/download skills via Agent Services                                   | ✓     | only with typed grants                             | ✓ (typed read rules)                                                       | ✗                                         |
+| Write Agent Skill records via the generic Registry API (incl. bulk updates)    | ✓     | ✓                                                  | ✗ (use Agent Services)                                                     | ✗                                         |
+| Read Agent Skill records via the generic Registry API                          | ✓     | ✓                                                  | ✓ (typed read rules)                                                       | ✗                                         |
+| `trimBySourceTag`; deleting a record (or its aspect) that doesn't exist        | ✓     | ✓ (with unconstrained delete / update)             | 403                                                                        | 403                                       |
+| Upload/delete a skill archive via Storage API                                  | ✓     | ✓ (unconstrained generic record or Storage grants) | ✗ (use Agent Services)                                                     | ✗                                         |
+
+Agent Services preserves immutable publication type, intended user, ID/name,
+creator, archive key, and owner, and fails closed on inconsistent or
+wrong-type records. Because only Agent Services (and trusted admins or
+unconstrained grant holders) can write Agent Skill records, those invariants
+can't be bypassed through the generic Registry API by ordinary users. Bulk
+Registry mutations authorise every record's current and proposed state with
+full evaluations (#3870). The only Registry production adjustment retained by
 this stage binds `/records/inFull/:id` aspect loading to the selected tenant.
 Storage authorization consumes that existing endpoint for trusted linked-record
 context; without the tenant predicate, equal record IDs in different tenants can
@@ -106,34 +131,49 @@ transitions that would otherwise imply an unrelated permission, Agent Services
 mints a two-minute HS256 session for MAGDA's existing
 `DEFAULT_ADMIN_USER_ID`; that token is confined to validated Agent Skill client
 calls and is never returned, logged, stored, or forwarded to a Workspace,
-browser, DSH, or `mgd`. The initial Registry create and Storage upload use the
-real caller, update writes use the caller's update authority, and final delete
-uses the caller's delete authority. Explicit `createdBy`, `updatedBy`, and
-`access-control.ownerId` always retain real-user attribution.
+browser, DSH, or `mgd`. After authorising the real caller, all Registry record
+writes (create, updates and delete) and all archive writes (upload, replacement
+and delete) use that internal session. Explicit `createdBy`, `updatedBy`, and
+`access-control.ownerId` always retain real-user attribution; Registry events
+and archives' Storage owner record the internal principal.
 
-Storage API assigns the original object owner and `magda-record-id`; replacement
-uses the same key and a trusted existing record link so neither can be rebound by
-query parameters. It preserves ownership while Registry records the current
-publisher in `updatedBy`.
+Storage API assigns `magda-record-id` (and the object's Storage owner, here the
+internal principal); replacement uses the same key and a trusted existing record
+link so neither can be rebound by query parameters. An archive's Storage owner
+isn't part of its link to the publication: archive reads are authorised by the
+publication's read rules, and Agent Services checks the archive's checksum
+against the record.
 
 Reads under the two reserved Agent Skill archive prefixes have a deliberately
-stronger boundary than ordinary Storage objects. Every generic Storage-read
-branch—including unconstrained, owner, matching-OrgUnit, and legacy missing or
-empty-OrgUnit access—is excluded. A read requires an existing deterministic
-Agent Skill record, exact trusted record ID/key/owner linkage, and the caller's
-corresponding typed source-read permission. Missing, malformed, or mismatched
-linkage fails closed. Public system skills remain readable through their
+stronger boundary than ordinary Storage objects. Every constrained Storage-read
+branch—owner, matching-OrgUnit, and legacy missing or empty-OrgUnit access—is
+excluded; unconstrained Storage permissions (deliberate, trusted grants) still
+apply. Otherwise, a read requires an existing Agent Skill
+record, exact trusted record ID/key linkage, and the caller's
+corresponding typed source-read permission (or an unconstrained generic record
+read grant). Missing or mismatched linkage fails closed; Agent Services
+validates the publication's identity before exposing an archive. Public system skills remain readable through their
 exemption-capable typed system-read grant, while shared user skills require an
 applicable typed owner, OrgUnit, or explicit pre-authorised grant. The existing
 top-level global-administrator override remains unchanged and covers MAGDA's
 trusted internal lifecycle inspection; Agent Services never uses that identity
 for caller downloads.
 Ordinary standalone objects, dataset/distribution files, and their historical
-missing/empty-OrgUnit read behavior are unchanged. Generic upload/delete rules
-are also unchanged in this focused revision.
+missing/empty-OrgUnit read behavior are unchanged. A linked upload or delete
+requires the linked record's create/update/delete permission.
 
-Create requires only typed create, writes PENDING before the caller-owned upload,
-and uses the internal principal to mark READY after Storage succeeds. Delete
+Writes (upload and delete) under the reserved prefixes are limited to Agent
+Services (as an admin), admins and unconstrained grants, like Agent Skill
+records: constrained (owner or OrgUnit) Storage permissions don't apply there
+(for reads either),
+an object there can only be linked to the Agent Skill record whose archive key
+it is, and that record's linked writes require the generic record operation,
+which typed Agent Skill grants alone don't have. So users can't replace their
+own archive (e.g. with an invalid skill package) except through Agent Services,
+which validates it.
+
+Create requires only typed create, writes PENDING before the upload, and marks
+READY after Storage succeeds. Delete
 requires only typed delete; its internal DELETING marker does not imply caller
 update authority. Storage's linked-record policy uses a trusted object-existence
 flag so create cannot replace an existing archive and only delete can remove one.

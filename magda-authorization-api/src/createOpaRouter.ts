@@ -249,6 +249,198 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
     }
 
     /**
+     * Work out the `operationUri` (from URL path, query string or request body) & `resourceUri` of a decision request.
+     *
+     * @param {express.Request} req
+     * @return {{ operationUri: string; resourceUri: string }}
+     */
+    function getOperationAndResourceUri(
+        req: express.Request
+    ): { operationUri: string; resourceUri: string } {
+        let operationUri = req.params?.[0];
+        if (
+            !operationUri &&
+            req?.query?.operationUri &&
+            typeof req.query.operationUri == "string"
+        ) {
+            operationUri = req.query.operationUri;
+        } else if (
+            !operationUri &&
+            req?.body?.operationUri &&
+            typeof req.body.operationUri == "string"
+        ) {
+            operationUri = req.body.operationUri;
+        }
+
+        operationUri =
+            typeof operationUri === "string" ? operationUri.trim() : "";
+
+        if (operationUri === "/") {
+            throw new GenericError("`/` is not valid `operationUri`", 400);
+        }
+
+        if (!operationUri) {
+            throw new GenericError(
+                "Please specify `operationUri` for the request",
+                400
+            );
+        }
+
+        if (operationUri[0] === "/") {
+            operationUri = operationUri.substring(1);
+        }
+
+        const opUriParts = operationUri.split("/");
+
+        let resourceUri =
+            opUriParts.length > 1
+                ? opUriParts.slice(0, opUriParts.length - 1).join("/")
+                : opUriParts[0];
+
+        if (
+            req?.query?.resourceUri &&
+            typeof req.query.resourceUri == "string"
+        ) {
+            resourceUri = req.query.resourceUri;
+        } else if (
+            req?.body?.resourceUri &&
+            typeof req.body.resourceUri == "string"
+        ) {
+            resourceUri = req.body.resourceUri;
+        }
+
+        return { operationUri, resourceUri };
+    }
+
+    /**
+     * Evaluates the entrypoint policy once per item in a single OPA request.
+     * For each item, OPA input is the item merged with the shared input (`input.base`).
+     * Items must not contain any of the shared input's top-level fields (see `getBatchAuthDecisions`).
+     * The shared input is passed separately from the items: building each item's input from an input that also holds all items makes the cost quadratic.
+     */
+    const BATCH_DECISION_QUERY =
+        "decisions := {i: r | item := input.items[i]; merged := object.union(item, input.base); r := data.entrypoint.allow with input as merged}";
+
+    /**
+     * @apiGroup Auth
+     * @api {post} /v0/auth/opa/batchDecision Get Auth Decisions For A List Of Objects
+     * @apiDescription Ask OPA to make one auth decision per supplied object (e.g. record) in a single request.
+     * Unlike the `decision` endpoint, every decision is a full evaluation: no `unknowns` are involved.
+     * It's for making decisions on a known list of objects whose context data is available (e.g. bulk record updates),
+     * without the cost of one decision request per object.
+     *
+     * For each item, the OPA `input` is made up of:
+     * - the item (e.g. `{"object": {"record": {...}}}`)
+     * - the shared `input` supplied via request body (optional)
+     * - `operationUri`, `resourceUri`, current user profile & `timestamp` (set by this endpoint)
+     *
+     * When the same top-level field is supplied by both the item and the shared data, the item's field is ignored and the shared data (incl. the fields set by this endpoint) is used.
+     *
+     * @apiParam (Request Body JSON) {String} operationUri The URI of the resource operation that you propose to perform. e.g. `object/record/update`
+     * @apiParam (Request Body JSON) {String} [resourceUri] Use to supply / overwrite the resource uri.
+     * @apiParam (Request Body JSON) {Object} [input] Shared context data for all items.
+     * @apiParam (Request Body JSON) {Object[]} items A list of context data objects. One decision will be made for each item.
+     *
+     * @apiParamExample {json} Request Body Example
+     * {
+     *   "operationUri": "object/record/update",
+     *   "items": [
+     *     {"object": {"record": {"id": "record-1", "publishing": {"state": "draft"}, "access-control": {"ownerId": "xxx"}}}},
+     *     {"object": {"record": {"id": "record-2", "publishing": {"state": "draft"}, "access-control": {"ownerId": "yyy"}}}}
+     *   ]
+     * }
+     *
+     * @apiSuccess (Success JSON Response Body) {any[]} results The decision for each item, in the same order as `items`.
+     * When no rule matched (i.e. the policy evaluated to `undefined`), the decision will be `false`.
+     *
+     * @apiSuccessExample {json} Success Response Example
+     * {
+     *   "results": [true, false]
+     * }
+     *
+     * @apiErrorExample {string} Error Response Example / Status Code: 500/400
+     *    Failed to get auth decisions: xxxxxxxxx
+     */
+    async function getBatchAuthDecisions(
+        req: express.Request,
+        res: express.Response
+    ) {
+        try {
+            setResponseNoCache(res);
+
+            const { operationUri, resourceUri } = getOperationAndResourceUri(
+                req
+            );
+
+            const items = req?.body?.items;
+            if (
+                !_.isArray(items) ||
+                items.findIndex((item) => !_.isPlainObject(item)) !== -1
+            ) {
+                throw new GenericError(
+                    "`items` must be an array of context data objects",
+                    400
+                );
+            }
+
+            const reqOpts = await appendUserInfoToInput(req);
+            const baseInput = reqOpts.json.input;
+            baseInput.operationUri = operationUri;
+            baseInput.resourceUri = resourceUri;
+
+            // `object.union` merges recursively. Remove the shared input's top-level fields (e.g. `user`) from items first,
+            // so an item can never add to them (e.g. inject `user.managingOrgUnitIds`).
+            const sharedFields = Object.keys(baseInput);
+            const itemInputs = items.map((item) => _.omit(item, sharedFields));
+
+            const opaResponse = await fetch(`${opaUrl}v1/query`, {
+                method: "POST",
+                body: JSON.stringify({
+                    query: BATCH_DECISION_QUERY,
+                    input: { base: baseInput, items: itemInputs }
+                }),
+                headers: { "Content-Type": "application/json" }
+            });
+
+            if (!opaResponse.ok) {
+                throw new Error(
+                    `OPA responded with status ${
+                        opaResponse.status
+                    }: ${await opaResponse.text()}`
+                );
+            }
+
+            const data: Record<string, any> = await opaResponse.json();
+            const decisions = data?.result?.[0]?.decisions;
+            if (!_.isPlainObject(decisions)) {
+                throw new Error(
+                    "Invalid response from policy query endpoint: " +
+                        JSON.stringify(data)
+                );
+            }
+
+            const results = items.map((item, idx) =>
+                // output "no rule matched" (value as `undefined`) as `false`, same as the `decision` endpoint
+                typeof decisions[idx] === "undefined" ? false : decisions[idx]
+            );
+
+            if (options?.debug === true) {
+                console.log(
+                    `Batch auth decisions for \`${operationUri}\`: ${JSON.stringify(
+                        results
+                    )}`
+                );
+            }
+
+            res.status(200).send({ results });
+        } catch (e) {
+            console.log(e);
+            const statusCode = e instanceof GenericError ? e.statusCode : 500;
+            res.status(statusCode).send(`Failed to get auth decisions: ${e}`);
+        }
+    }
+
+    /**
      * @apiGroup Auth
      * @api {post} /v0/auth/opa/decision[/path...] Get Auth Decision From OPA
      * @apiDescription Ask OPA ([Open Policy Agent](https://www.openpolicyagent.org/)) make authorisation decision on proposed resource operation URI.
@@ -401,56 +593,10 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
             setResponseNoCache(res);
 
-            let operationUri = req.params[0];
-            if (
-                !operationUri &&
-                req?.query?.operationUri &&
-                typeof req.query.operationUri == "string"
-            ) {
-                operationUri = req.query.operationUri;
-            } else if (
-                !operationUri &&
-                req?.body?.operationUri &&
-                typeof req.body.operationUri == "string"
-            ) {
-                operationUri = req.body.operationUri;
-            }
-
-            operationUri = operationUri.trim();
-
-            if (operationUri === "/") {
-                throw new GenericError("`/` is not valid `operationUri`", 400);
-            }
-
-            if (!operationUri) {
-                throw new GenericError(
-                    "Please specify `operationUri` for the request",
-                    400
-                );
-            }
-
-            if (operationUri[0] === "/") {
-                operationUri = operationUri.substring(1);
-            }
-
+            const { operationUri, resourceUri } = getOperationAndResourceUri(
+                req
+            );
             const opUriParts = operationUri.split("/");
-
-            let resourceUri =
-                opUriParts.length > 1
-                    ? opUriParts.slice(0, opUriParts.length - 1).join("/")
-                    : opUriParts[0];
-
-            if (
-                req?.query?.resourceUri &&
-                typeof req.query.resourceUri == "string"
-            ) {
-                resourceUri = req.query.resourceUri;
-            } else if (
-                req?.body?.resourceUri &&
-                typeof req.body.resourceUri == "string"
-            ) {
-                resourceUri = req.body.resourceUri;
-            }
 
             const reqOpts = await appendUserInfoToInput(req);
 
@@ -622,6 +768,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         }
     }
 
+    router.post("/batchDecision", getBatchAuthDecisions);
     router.get("/decision*", getAuthDecision);
     router.post("/decision*", getAuthDecision);
 

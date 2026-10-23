@@ -35,6 +35,7 @@
     - [Authz Model Rego Policy Structure](#authz-model-rego-policy-structure)
     - [Decision API Endpoint](#decision-api-endpoint)
       - [Types of Decision Queries](#types-of-decision-queries)
+    - [Building Features on Registry Records](#building-features-on-registry-records)
     - [Run OPA as a Sidecar Container](#run-opa-as-a-sidecar-container)
 - [Structure](#structure)
   - [Core Components](#core-components)
@@ -69,6 +70,8 @@
   - [Authn/z](#authn-z)
     - [Why not just store the user id in a JWT and get rid of the session db entirely?](#why-not-just-store-the-user-id-in-a-jwt-and-get-rid-of-the-session-db-entirely-)
     - [Why only pass the user id in the JWT, why not all details about the user?](#why-only-pass-the-user-id-in-the-jwt--why-not-all-details-about-the-user-)
+    - [Why do Registry bulk updates use per-record decisions rather than partial evaluation?](#why-do-registry-bulk-updates-use-per-record-decisions-rather-than-partial-evaluation)
+    - [Why is data validation not in OPA policies?](#why-is-data-validation-not-in-opa-policies)
 
 # Architecture Diagram
 
@@ -438,6 +441,15 @@ The partial evaluation process is similar to solving an equation. i.e. with an e
 
 > For more info of Partial Evaluation, you can also have a look at [this](https://jacky-jiang.medium.com/policy-based-data-filtering-solution-using-partial-evaluation-c8736bd089e0) & [this article](https://blog.openpolicyagent.org/write-policy-in-opa-enforce-policy-in-sql-d9d24db93bf4).
 
+#### Keep partially evaluated rules translatable
+
+Residual rules can only be translated into a query when every remaining expression is a simple comparison (`=`, `!=`, `<`, `>`, `<=`, `>=`) or an existence check on the unknown object. So any rule that can be reached by a partial evaluation, i.e. any rule for an operation used to filter a set of objects (e.g. `object/record/read`, `object/dataset/*/read`), must only use those on the object's attributes:
+
+- **Don't** call built-in functions (e.g. `regex.match`, `startswith`, `count`, `sprintf`) on the unknown object's attributes. OPA keeps such calls in the residual rules, and they can't be translated.
+- Built-in functions on **known** input (e.g. `input.operationUri`, `input.user`) are fine: OPA evaluates them during partial evaluation.
+
+The decision API deliberately fails (500) rather than produce an incorrect decision when residual rules can't be translated, so a policy mistake is noticed rather than silently granting or denying access. You can check a policy by requesting a decision for the operation as a user with constrained permissions, without supplying the object (see [Types of Decision Queries](#types-of-decision-queries)), optionally with the `rawAst` query parameter to see OPA's raw residual rules. Checks on the object's data itself (e.g. formats or derived identifiers) are usually data validation rather than authorisation and belong in the service that owns the data (see [Building Features on Registry Records](#building-features-on-registry-records)).
+
 ### Key Concepts of Authorisation Model
 
 In order to describe a more generic authorisation model, we defined a few key concepts. They are:
@@ -543,12 +555,16 @@ e.g. When query the "entrypoint" policy with operation URI "object/dataset/read"
 However, when query the "entrypoint" policy with operation URI "object/record/read" (i.e. generic record resource), the entrypoint will delegate the decision to all defined subset resources policies (e.g. "dataset", "distribution", "organization" etc.). Together with authorisation rules for generic record resource, the query result will be similar to the following pseudo code:
 
 ```
+- an unconstrained generic record permission (no ownership, org unit or pre-authorised constraint) applies to any record.
+- when the record is a typed feature record (e.g. an Agent Skill record), only that feature's typed rules apply.
 - when the record looks like a dataset record, the following rules apply.
 - when the record looks like a distribution record, the following rules apply.
 - when the record looks like a organization record, the following rules apply.
 ....
 - otherwise, the common rules for generic record apply for any other type of records.
 ```
+
+Typed feature records (see [Building Features on Registry Records](#building-features-on-registry-records)) don't fall back to constrained generic record permissions. Dataset, distribution and organisation records predate that model: generic record permissions also apply to them.
 
 In the [Registry section](#registry) & [Search API section](#search-api), we mentioned that the data models in Registry & search engine ElasticSearch index are different. Thanks to the policy structure design, we will be able to query the same authorisation models from a different view. i.e. we are able to query operation URIs "object/record/_" for Registry's "generic record" oriented APIs and query operation URIs "object/dataset/_" for Search API's "dataset" oriented APIs.
 
@@ -610,11 +626,51 @@ The request sent to decision API can be simply like:
 }
 ```
 
+- When you need decisions for a **known list** of resource objects (e.g. a bulk update of a list of records), send all objects in one request to the batch decision endpoint (`POST /v0/opa/batchDecision` on the Authorization API; `/api/v0/auth/opa/batchDecision` via the gateway). It makes one full evaluation per item in a single OPA query, so it's much cheaper than one decision request per object, and it supports any policy logic (no residual rules are involved):
+
+```json
+{
+  "operationUri": "object/record/update",
+  "items": [
+    { "object": { "record": { "id": "record-1", ... } } },
+    { "object": { "record": { "id": "record-2", ... } } }
+  ]
+}
+```
+
+The response contains one decision per item, in the same order:
+
+```json
+{
+  "results": [true, false]
+}
+```
+
+Use partial evaluation to **filter** objects that you query from a store, and full evaluation (single or batch) to decide on objects you already have, including the proposed state of objects you're about to change. e.g. Registry's bulk record routes check `object/record/update` on every record's current and proposed state with two batch decision requests, inside the mutation transaction.
+
 The detailed document of the decision API can be found from [here](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-authorization-api/src/createOpaRouter.ts#L220)
 
 > The HTML version doc can be accessed via the footer link of a deployed Magda site. You can also build Magda's API doc manually to avoid the deployment. Just go to `magda-apidocs-server` module and run `yarn build`. The HTML version API docs will be available from `build` folder. See [`magda-apidocs-server/README.md`](../../../magda-apidocs-server/README.md) for how the API docs are generated and served.
 
 > We implemented decision API integration code as [Directives](https://github.com/magda-io/magda/blob/next/magda-scala-common/src/main/scala/au/csiro/data61/magda/directives/AuthDirectives.scala) in scala code base and [middlewares](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-typescript-common/src/authorization-api/authMiddleware.ts#L83) in nodejs codebase. You can choose to reuse those code or write your own.
+
+### Building Features on Registry Records
+
+New features that store their data as Registry records should treat Registry as the **storage layer** and the feature as an **application layer** on top of it:
+
+- Generic `object/record/*` permissions govern access to **records**.
+- The feature's own typed permissions (e.g. `object/agentSkill/user/read`) govern access to **the feature**.
+
+In practice:
+
+1. **Mark the feature's records with their own aspect, and register the feature's own resources and operations.** e.g. Agent Skill records have an `agent-skill` aspect and the `object/agentSkill/system` & `object/agentSkill/user` resources. In `object/record/allow.rego`, route reads of the feature's records to the feature's typed read rules, so Registry (and search) can still filter records with partial evaluation. Constrained generic record permissions shouldn't apply to the feature's records. Unconstrained generic record permissions (no ownership, org unit or pre-authorised constraint) do apply to every record: they're deliberate grants to trusted users, giving storage-level access.
+2. **The feature's service is the only non-admin writer of its records, and of any files it stores.** It authorises the real caller with the typed operation (a full evaluation on the actual or proposed record), then writes the records with its internal session. Generic record writes on the feature's records are limited to admins and unconstrained generic grants, so no typed write rules are needed at the record level. Files go in a reserved Storage namespace (e.g. `agent-services/skills/`), where writes are likewise limited to the feature's service (as an admin), admins and unconstrained grants: constrained Storage permissions don't apply there (for reads either: those use the feature record's read rules), unconstrained Storage permissions do, and an object there can only be linked to its own feature record.
+3. **Data validation belongs in the feature's service** (plus the aspect's JSON schema), not in OPA policies. That includes formats, derived identifiers, naming rules, cross-field consistency and immutable fields. Policies only authorise.
+4. **Keep partially evaluated rules translatable** (see [above](#keep-partially-evaluated-rules-translatable)): only simple comparisons and existence checks on record data.
+5. **The feature's service checks the typed read permission on every record it returns**, including lists, rather than relying on Registry's filtering alone. So generic record permissions don't grant access to the feature (e.g. its catalogue).
+6. **Use partial evaluation only to filter reads.** Decide on known records (including the proposed state of changes) with full evaluations, batched for many records (see [Types of Decision Queries](#types-of-decision-queries)).
+
+Agent Skills follow this model; see [Agent Skills](./agent-skills.md) for a worked example, including a table of who can do what. Existing dataset, distribution and organisation records predate it: generic record permissions also apply to them, and they're written directly through Registry APIs.
 
 ### Run OPA as a Sidecar Container
 
@@ -899,6 +955,19 @@ This was done because:
 - We never got to the point where just passing the id and having the recipient service look up the user was a performance problem
 
 If performance problems did come up, it would certainly be possible to include more details about the user in the JWT, although attention would have to be paid to ensuring that this could be extended by third-party implementers of Magda.
+
+### Why do Registry bulk updates use per-record decisions rather than partial evaluation?
+
+Registry's bulk record routes (e.g. `PUT /v0/registry/records/aspects/{aspectId}`) used to authorise with one partial evaluation, turned into a SQL filter on the current records. That had two problems:
+
+- It couldn't check the **proposed** state, so a user could make a change through a bulk route that a single record route would refuse (e.g. publish a draft dataset with draft-only permissions).
+- It only worked if the residual rules could be translated into SQL.
+
+The bulk routes now load the records within the mutation transaction, check every record's current and proposed state with two batch decision requests (full evaluations), and roll back if any is denied. The cost is two decision requests per bulk call regardless of the number of records.
+
+### Why is data validation not in OPA policies?
+
+Validation rules usually need built-in functions on the object's data (e.g. regular expressions, string lengths, derived identifiers). In rules that are partially evaluated, those make the residual rules untranslatable, and the decision fails. Validation is also the responsibility of the service that owns the data, which has the full context (e.g. current and proposed state). So policies only authorise, using simple comparisons and existence checks, and the owning service validates its data (see [Building Features on Registry Records](#building-features-on-registry-records)).
 
 ### How to debug Authorisation Decision made by the policy engine?
 
