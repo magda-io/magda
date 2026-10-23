@@ -60,14 +60,14 @@ Admins are covered by the entrypoint's global override, which happens before any
 
 Always fully evaluated (the Storage API sends the concrete object and record).
 
-- **Reads under the reserved prefixes** (`agent-services/skills/system-skills/`, `agent-services/skills/user-skills/`) never fall back to generic Storage grants. A non-admin read requires:
+- **Reads under the reserved prefixes** (`agent-services/skills/system-skills/`, `agent-services/skills/user-skills/`) never fall back to constrained (owner, OrgUnit, or legacy missing/empty-OrgUnit) Storage grants. Unconstrained Storage grants (deliberate, trusted) still apply. Otherwise, a non-admin read requires:
   - an existing object;
   - linked to an Agent Skill record (`recordId`), with an exact archive key match;
   - permission to read that record through the generic record rules above (typed read, or an unconstrained generic read).
 
   The identity check is removed. Agent Services validates the publication, and the downloaded ZIP's checksum, before exposing an archive.
 - **Writes (upload/delete) under the reserved prefixes** are limited to Agent Services (as an admin), admins and unconstrained grants, the same as Agent Skill records:
-  - Constrained (owner or OrgUnit) Storage permissions don't apply there. Unconstrained Storage permissions (trusted grants) can write there, but never read.
+  - Constrained (owner or OrgUnit) Storage permissions don't apply there. Unconstrained Storage permissions (trusted grants) apply to reads and writes, like unconstrained generic record grants.
   - An object there can only be linked to the Agent Skill record whose archive key it is. Otherwise a user could create an object at a reserved key by linking it to any record they can update (e.g. their own dataset).
   - A linked upload or delete requires the linked record's `object/record/create|update|delete` permission. For an Agent Skill record, only admins and unconstrained generic grants have it; typed Agent Skill grants alone don't. A trusted existence flag keeps create from replacing an existing archive, and only delete can remove one.
 
