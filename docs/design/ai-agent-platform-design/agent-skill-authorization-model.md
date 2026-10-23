@@ -96,7 +96,7 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 | Use case | Admin | Unconstrained | Typed | Others |
 | --- | --- | --- | --- | --- |
 | Create/update/delete skills via Agent Services (`/v0/agent/skills`, `mgd`, UI) | ✓ | only with typed grants | ✓ (as granted) | ✗ |
-| Read/list/download skills via Agent Services | ✓ | listed (the catalogue uses Registry read filtering); single reads/downloads need typed read | ✓ (typed read rules) | ✗ |
+| Read/list/download skills via Agent Services; Workspace manifest/sync | ✓ | only with typed grants | ✓ (typed read rules) | ✗ |
 | Write Agent Skill records via the generic Registry API | ✓ | ✓ | **✗** (use Agent Services) | ✗ |
 | Read Agent Skill records via the generic Registry API | ✓ | ✓ | ✓ (typed read rules) | ✗ |
 | Bulk record updates that include skill records (#3870) | ✓ | ✓ | ✗ | ✗ |
@@ -106,7 +106,7 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 | Upload/delete a linked skill archive via Storage API | ✓ | ✓ | ✓ (typed create/update/delete) | ✗ |
 | `agent-skill-installation` records (until #3861) | ✓ | ✓ | ✗ | ✗ |
 
-"Unconstrained" users can still use Agent Services with typed grants, as anyone can. A generic grant alone only lets them work with skill records as generic records.
+**Generic grants give access to skill records, not to the skills application.** Unconstrained-grant holders see and work with skill *records* through Registry and Storage, per their generic permissions. Agent Services, the skills application, requires the typed permission for every operation: create, update and delete, single reads and downloads, and the typed read on every listed record and every Workspace manifest source. A generic grant alone shows no skills there. "Unconstrained" users can still use Agent Services with typed grants, as anyone can.
 
 ## What this guarantees
 
@@ -124,7 +124,6 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 
 - **Trusted writers can skip validation.** Admins and unconstrained-grant holders can write malformed skill records. Agent Services re-validates identity before showing or syncing a skill, so the damage is limited to that one skill.
 - **Registry event attribution** for skill writes is the internal principal (see Sessions).
-- **Agent Services listing vs single reads:** unconstrained-grant holders see skills in Agent Services listings (Registry-filtered), but single reads and downloads there need typed read. Unify if it matters.
 - Related follow-ups:
   - #3872: single-record Registry writes authorised inside the mutation transaction;
   - #3873: `originalRecord` cross-version policies;
