@@ -811,10 +811,10 @@ class DefaultRecordPersistence(config: Config)
         case Some(record) => Success((record, None))
         // Possibility of a race condition here. The record doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
-        // more time to get an existing one. We use a nested transaction so that, if the create fails,
+        // more time to get an existing one. We use a savepoint so that, if the create fails,
         // we don't end up with an extraneous record creation event in the database.
         case None =>
-          DB.localTx { nested =>
+          withinSavepoint { nested =>
             // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
             // --- as the aspect data has been validated (unless not required) in the beginning of current method
             createRecord(tenantId, newRecord, userId, true)(nested).map {

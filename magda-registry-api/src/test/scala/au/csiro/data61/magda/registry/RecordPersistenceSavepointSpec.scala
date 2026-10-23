@@ -1,5 +1,7 @@
 package au.csiro.data61.magda.registry
 
+import au.csiro.data61.magda.model.Registry.Record
+import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
 import scalikejdbc._
 
 import scala.util.{Failure, Success, Try}
@@ -98,6 +100,33 @@ class RecordPersistenceSavepointSpec extends ApiSpec {
         }
         existingIds() shouldBe Set()
       }
+    }
+  }
+
+  describe("putRecordById") {
+    it(
+      "should not keep a record it creates when the caller's transaction rolls back"
+    ) { param =>
+      val persistence = new DefaultRecordPersistence(testConfig)
+      Try {
+        DB localTx { implicit session =>
+          persistence
+            .putRecordById(
+              SpecifiedTenantId(TENANT_1),
+              "new-record",
+              Record("new-record", "new record", Map()),
+              USER_ID
+            )
+            .get
+          throw new Exception("rollback")
+        }
+      }
+      DB readOnly { implicit session =>
+        sql"SELECT count(*) AS total FROM records WHERE recordid='new-record'"
+          .map(_.int("total"))
+          .single
+          .apply()
+      } shouldBe Some(0)
     }
   }
 }
