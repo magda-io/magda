@@ -65,9 +65,11 @@ until merge/release. Refer to [skills.md](./skills.md),
 [local-agent-skill-sync.md](./local-agent-skill-sync.md).
 
 Future #3861 owns cross-user sharing and persistent recipient installations.
-Generic Registry mutation hardening remains #3862/draft #3863, not part of the
-MVP. Agent Services is the supported validated skill lifecycle; generic
-Registry/Storage writes retain their deliberately documented consistency risk.
+Generic Registry mutation hardening (#3862) is complete: generic record writes
+check the current and proposed state within the mutation transaction (#3870,
+#3880), and only admins and unconstrained grant holders can write skill records
+and archives directly. Agent Services is the supported validated skill
+lifecycle; those trusted direct writers retain the documented consistency risk.
 
 ## Later design areas
 

@@ -1,6 +1,6 @@
 # Magda v8 AI Agent Platform Design
 
-**Status:** Agent Workspace MVP [#3850](https://github.com/magda-io/magda/pull/3850) merged to `next` 21 October 2026 (merge `73b74bb7f`); #3849 closed. This is the continuing draft v8 design. #3861 sharing/recipient installations is next, while GKE security qualification (#3848), Registry review (#3862/#3863) and dynamic LLM profiles (#3838) remain open.
+**Status:** Agent Workspace MVP [#3850](https://github.com/magda-io/magda/pull/3850) merged to `next` 21 October 2026 (merge `73b74bb7f`); #3849 closed. This is the continuing draft v8 design. #3861 sharing/recipient installations is next, while GKE security qualification (#3848) and dynamic LLM profiles (#3838) remain open. The generic Registry mutation review (#3862) is complete (#3870, #3880).
 **Umbrella design issue:** #3811  
 **Working PR:** #3819  
 **Parent implementation epic:** #3810
@@ -125,7 +125,7 @@ Runtime + credentials + network
 | Future LLM access profiles, dynamic permissions and quotas | [llm-access-profiles.md](./llm-access-profiles.md) | #3838 — **Agreed design direction; not MVP implementation** |
 | Network / security | [network-security.md](./network-security.md) | Draft |
 | Mutation confirmation | [mutation-approval.md](./mutation-approval.md) | Proposed product/DSH UX contract |
-| Agent Skill authorization model | [agent-skill-authorization-model.md](./agent-skill-authorization-model.md) | **Revised 2026-10-23** (#3869 / #3870): OPA only authorises (no identity validation, no untranslatable residual rules); Agent Services is the only non-admin writer of Agent Skill records; unconstrained generic `object/record/*` grants apply to all records; use-case table |
+| Agent Skill authorization model | [agent-skill-authorization-model.md](./agent-skill-authorization-model.md) | **Revised 2026-10-23** (#3869 / #3870): OPA only authorises (no identity validation, no untranslatable residual rules); Agent Services is the only non-admin writer of Agent Skill records; unconstrained generic `object/record/*` grants apply to all records; single-record writes authorised within the mutation transaction (#3880); use-case table |
 | Skills | [skills.md](./skills.md) | Expanded MVP: Registry-backed metadata, Storage API archives, scoped OPA, `mgd`, workflow capture and catalogue UI; implementation #3854–#3857 |
 | Local Agent Skill sync / multiple MAGDA profiles | [local-agent-skill-sync.md](./local-agent-skill-sync.md) | **Revised 2026-10-18**; scan-based independent copy installs, inline authoritative marker, no central inventory/journal/rollback, commit-first profile switch, source-account publishing, per-skill recovery, non-blocking Workspace sync (#3855/#3857/#3861) |
 | Agent workflow capture / trusted skill tools / session history | [workflow-capture.md](./workflow-capture.md) | **Accepted 2026-10-19**; Stage 3 #3856, one approval via chat-model judgment or DSH Publish/Cancel UI, same system/user flow with clearer system warning, typed host-tool calling existing `mgd`, source-aware publication errors, incremental bounded history processing, selective prompts |
@@ -200,7 +200,7 @@ The foundation is substantially clearer, but #3811 is **not complete**. Remainin
 - #3838 future per-user LLM access profiles, quotas and full model-level authorization (MVP facade and Helm packaging are already implemented);
 - **verified** network/security enforcement per provider (GKE NetworkPolicy negative tests, metadata/KSA/Workload Identity IAM boundaries);
 - polished/structured mutation-confirmation UX (optional DSH approval integration);
-- future sharing and persistent recipient installations (#3861), and generic Registry mutation hardening (#3862/draft #3863); the reviewed #3854–#3858 MVP implementation remains unmerged in **draft #3850**;
+- future sharing and persistent recipient installations (#3861); the reviewed #3854–#3858 MVP implementation remains unmerged in **draft #3850**;
 - full web/product lifecycle UX;
 - Helm/runtime implementation contract is now represented in #3850; remaining **secure GKE deployment qualification**, maintained ingress-controller choice and cluster preflight policy;
 - observability/audit;

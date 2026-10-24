@@ -113,7 +113,7 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 
 ## What this guarantees
 
-- **No untranslatable residual rules.** A partial-evaluation audit (OPA 0.37.2, bundled policies) covered every partially evaluated operation: `object/record/*`, dataset and distribution reads, aspect/event/webhook operations. It used a user holding owner-, OrgUnit-, pre-authorised- and exemption-constrained permissions on every resource, including Agent Skill, and found **no built-in function calls in any residual**. For unconstrained-grant holders, `object/record/*` decisions are **unconditional true**. The only remaining built-in on object data is the reserved-prefix `startswith` in the Storage policy, which is always fully evaluated and is real authorisation. #3875 tracks a CI check for this.
+- **No untranslatable residual rules.** A partial-evaluation audit (OPA 0.37.2, bundled policies) covered every partially evaluated operation: `object/record/*`, dataset and distribution reads, aspect/event/webhook operations. It used a user holding owner-, OrgUnit-, pre-authorised- and exemption-constrained permissions on every resource, including Agent Skill, and found **no built-in function calls in any residual**. For unconstrained-grant holders, `object/record/*` decisions are **unconditional true**. The only remaining built-in on object data is the reserved-prefix `startswith` in the Storage policy, which is always fully evaluated and is real authorisation. An integration test checks this in CI (#3879, for #3875).
 - **Unconditional checks behave correctly.** `trimBySourceTag` and deleting a record (or its aspect) that doesn't exist work for admins and unconstrained-grant holders, and return 403 (never 500) to everyone else. Users without permission still can't tell whether a record exists. Since #3850, the Agent Skill guard had made unconstrained `object/record/delete` conditional, so in practice only admins could trim; that's fixed.
 - **Service-owned invariants can't be bypassed by ordinary users.** Only Agent Services (plus trusted admins and unconstrained-grant holders) can write Agent Skill records. Its invariants therefore hold for every supported path:
   - immutable type, intended user, ID/name, creator, archive key and owner;
@@ -122,16 +122,17 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 
   This replaces the Stage #3854 "accepted MVP integrity limitation".
 - **Bulk updates authorise every record** before and after the change, with full evaluations, and are all-or-nothing (#3870).
+- **Single-record updates** (record and aspect `PUT` / `PATCH` / `DELETE`) authorise the record's current state and its proposed state as written, within the mutation transaction, with the record locked; any denial rolls back (#3880).
 
 ## Trade-offs and follow-ups
 
 - **Trusted writers can skip validation.** Admins and unconstrained-grant holders can write malformed skill records and archives. Agent Services re-validates identity before showing or syncing a skill, so the damage is limited to that one skill.
 - **Registry event attribution** for skill writes, and archives' Storage owner, is the internal principal (see Sessions).
-- Related follow-ups:
-  - #3872: single-record Registry writes authorised inside the mutation transaction;
-  - #3873: `originalRecord` cross-version policies;
-  - #3874: a bulk request size limit;
-  - #3875: the CI check above.
+- Related follow-ups (all resolved; #3862 is closed):
+  - #3872: single-record Registry writes authorised inside the mutation transaction, done in #3880;
+  - #3873: `originalRecord` cross-version policies, closed as not needed for now. Policies can't compare the current and proposed state, so cross-version invariants stay with the owning service (e.g. Agent Services for skill identity);
+  - #3874: a bulk request size limit (`bulkMutationMaxRecords`), done in #3878;
+  - #3875: the CI check above, done in #3879.
 
 ## Tests (#3870)
 
