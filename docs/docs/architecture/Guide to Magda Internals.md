@@ -646,7 +646,7 @@ The response contains one decision per item, in the same order:
 }
 ```
 
-Use partial evaluation to **filter** objects that you query from a store, and full evaluation (single or batch) to decide on objects you already have, including the proposed state of objects you're about to change. e.g. Registry's bulk record routes check `object/record/update` on every record's current and proposed state with two batch decision requests, inside the mutation transaction.
+Use partial evaluation to **filter** objects that you query from a store, and full evaluation (single or batch) to decide on objects you already have, including the proposed state of objects you're about to change. e.g. Registry's record routes check `object/record/update` on the record's current and proposed state inside the mutation transaction: with a single decision request per state for single record routes, and two batch decision requests for bulk routes.
 
 The detailed document of the decision API can be found from [here](https://github.com/magda-io/magda/blob/e10a202de7cc0c3610b206ca9daaaabddb00e79f/magda-authorization-api/src/createOpaRouter.ts#L220)
 
@@ -964,6 +964,8 @@ Registry's bulk record routes (e.g. `PUT /v0/registry/records/aspects/{aspectId}
 - It only worked if the residual rules could be translated into SQL.
 
 The bulk routes now load the records within the mutation transaction, check every record's current and proposed state with two batch decision requests (full evaluations), and roll back if any is denied. The cost is two decision requests per bulk call regardless of the number of records.
+
+Single record routes (e.g. `PUT /v0/registry/records/{id}`) work the same way, with one decision request per state: they lock the record within the mutation transaction, check its current state, run the mutation, read the record back and check the proposed state as written, and roll back if either is denied. They used to check both states before the transaction, with the proposed state rebuilt from the request, so the record could change in between, and the rebuilt state could differ from what was written.
 
 ### Why is data validation not in OPA policies?
 

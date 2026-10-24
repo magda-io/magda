@@ -530,7 +530,7 @@ class BulkRecordMutationAuthSpec extends ApiSpec {
         settingUpTestData(param, List(draftRecord("r1")), List("new-aspect"))
 
         DB localTx { implicit session =>
-          val records = BulkRecordMutationAuthorization.loadRecordsContextData(
+          val records = RecordMutationAuthorization.loadRecordsContextData(
             SpecifiedTenantId(TENANT_1),
             List("r1"),
             lockRecords = true
@@ -552,7 +552,7 @@ class BulkRecordMutationAuthSpec extends ApiSpec {
         settingUpTestData(param, List(draftRecord("r1")), List("new-aspect"))
 
         DB localTx { implicit session =>
-          BulkRecordMutationAuthorization.loadRecordsContextData(
+          RecordMutationAuthorization.loadRecordsContextData(
             SpecifiedTenantId(TENANT_1),
             List("r1"),
             lockRecords = false

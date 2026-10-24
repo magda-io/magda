@@ -87,9 +87,10 @@ Agent Services preserves immutable publication type, intended user, ID/name,
 creator, archive key, and owner, and fails closed on inconsistent or
 wrong-type records. Because only Agent Services (and trusted admins or
 unconstrained grant holders) can write Agent Skill records, those invariants
-can't be bypassed through the generic Registry API by ordinary users. Bulk
-Registry mutations authorise every record's current and proposed state with
-full evaluations (#3870). The only Registry production adjustment retained by
+can't be bypassed through the generic Registry API by ordinary users. Registry
+record mutations (bulk #3870, single record #3872) authorise every record's
+current and proposed state with full evaluations within the mutation
+transaction. The only Registry production adjustment retained by
 this stage binds `/records/inFull/:id` aspect loading to the selected tenant.
 Storage authorization consumes that existing endpoint for trusted linked-record
 context; without the tenant predicate, equal record IDs in different tenants can

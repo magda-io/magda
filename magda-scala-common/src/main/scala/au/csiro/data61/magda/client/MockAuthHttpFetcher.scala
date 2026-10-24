@@ -55,6 +55,18 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
   }
 
   /**
+    * Per input decision functions for single decision requests that supply `input` context data, by operationUri.
+    * The function receives the `input` and returns the unconditional decision result.
+    * Can add / update via `setDecisionFunc` method.
+    * When there is no function for an operationUri (or a request has no `input`), the decision set via `setAuthDecision` is used.
+    */
+  var decisionFuncs: Map[String, JsObject => JsValue] = Map()
+
+  def setDecisionFunc(operationUri: String, f: JsObject => JsValue) = {
+    decisionFuncs += operationUri -> f
+  }
+
+  /**
     * Per item decision functions for the batch decision endpoint (`/v0/opa/batchDecision`), by operationUri.
     * Can add / update via `setBatchDecisionFunc` method.
     * When there is no function for an operationUri, the unconditional decision set via `setAuthDecision` is used for all items.
@@ -88,6 +100,7 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
   def resetMock() = {
     authDecisionList = Map()
     authCallLog = List()
+    decisionFuncs = Map()
     batchDecisionFuncs = Map()
     batchAuthCallLog = List()
     presetFixedResponse = None
@@ -222,13 +235,23 @@ class MockAuthHttpFetcher(implicit ec: ExecutionContext)
     } else if (Url.parse(path).path.toString() == "/v0/opa/batchDecision") {
       batchDecisionResponse(payload)
     } else {
-      val lookupResult = locateAuthDecisionFromPath(path, Some(payload))
-      val requestOperationUri = lookupResult._1
-      val authDecision = lookupResult._2
-      this.logAuthCall(authDecision, requestOperationUri, payload match {
+      val input = payload match {
         case v: JsObject => v.fields.get("input")
         case _           => None
-      })
+      }
+      val decisionFunc = getOperationUriFromPayload(Some(payload)).flatMap(
+        operationUri => decisionFuncs.get(operationUri).map(operationUri -> _)
+      )
+      val (requestOperationUri, authDecision) = (decisionFunc, input) match {
+        case (Some((operationUri, f)), Some(inputData: JsObject)) =>
+          operationUri -> AuthDecision(
+            hasResidualRules = false,
+            result = Some(f(inputData)),
+            residualRules = None
+          )
+        case _ => locateAuthDecisionFromPath(path, Some(payload))
+      }
+      this.logAuthCall(authDecision, requestOperationUri, input)
 
       Marshal(authDecision)
         .to[ResponseEntity]
