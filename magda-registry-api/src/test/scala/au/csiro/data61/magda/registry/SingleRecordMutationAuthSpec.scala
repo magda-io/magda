@@ -452,6 +452,43 @@ class SingleRecordMutationAuthSpec extends ApiSpec {
         }
 
         it(
+          "should respond 500 with a generic error, without any decision requests or changes, when the record can't be loaded for the auth decision"
+        ) { param =>
+          settingUpTestData(param)
+          // not a JSON object, so the record context data can't be created
+          DB autoCommit { implicit session =>
+            sql"""UPDATE recordaspects SET data='[]'::json WHERE recordid='r1' AND aspectid='publishing'"""
+              .update()
+              .apply()
+          }
+          param.authFetcher.setDecisionFunc(
+            routeCase.operationUri,
+            _ => JsTrue
+          )
+
+          send(routeCase.changeRequest()) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.InternalServerError
+            responseAs[String] should not include ("JsArray")
+            responseAs[String] should not include ("Exception")
+          }
+
+          param.authFetcher.totalCallTimes shouldBe 0
+          DB readOnly { implicit session =>
+            sql"SELECT name FROM records WHERE recordid='r1'"
+              .map(_.string("name"))
+              .single()
+              .apply()
+          } shouldBe Some(draftRecord.name)
+          DB readOnly { implicit session =>
+            sql"SELECT data::text FROM recordaspects WHERE recordid='r1' AND aspectid='test-aspect'"
+              .map(_.string(1))
+              .single()
+              .apply()
+              .map(_.parseJson)
+          } shouldBe draftRecord.aspects.get("test-aspect")
+        }
+
+        it(
           "should lock the record, so it can't be changed by others between the current state check and the mutation"
         ) { param =>
           settingUpTestData(param)
@@ -601,7 +638,7 @@ class SingleRecordMutationAuthSpec extends ApiSpec {
           using(DB(ConnectionPool.borrow())) { db =>
             db.begin()
             // another request has created the record, but not committed yet
-            db.withinTx { implicit session =>
+            val anotherTxPid = db.withinTx { implicit session =>
               persistence
                 .createRecord(
                   SpecifiedTenantId(TENANT_1),
@@ -609,6 +646,7 @@ class SingleRecordMutationAuthSpec extends ApiSpec {
                   USER_ID
                 )
                 .get
+              sql"SELECT pg_backend_pid()".map(_.int(1)).single().apply().get
             }
             val response = Future {
               send(Put("/v0/records/r1", changedRecord)) ~> param
@@ -617,16 +655,36 @@ class SingleRecordMutationAuthSpec extends ApiSpec {
                 status
               }
             }
-            // give the request time to try to create the record, which waits for the other transaction
-            Thread.sleep(2000)
+            // Only commit once the request has found no record and is trying to create it:
+            // its insert waits for the other transaction.
+            def requestIsWaitingToCreate() = DB readOnly { implicit session =>
+              sql"""SELECT count(*) FROM pg_stat_activity
+                    WHERE ${anotherTxPid} = ANY(pg_blocking_pids(pid))
+                    AND query ILIKE '%insert into Records%'"""
+                .map(_.int(1))
+                .single()
+                .apply()
+                .get > 0
+            }
+            val deadline = System.currentTimeMillis() + 30000
+            while (!requestIsWaitingToCreate()) {
+              if (System.currentTimeMillis() > deadline) {
+                fail("The request didn't try to create the record")
+              }
+              Thread.sleep(50)
+            }
             db.commit()
             Await.result(response, 60.seconds) shouldEqual StatusCodes.Forbidden
           }
 
           recordName(param) shouldBe Some(anotherRecord.name)
-          decisionRecords(param, updateOperationUri).head.fields(
-            "name"
-          ) shouldBe JsString(anotherRecord.name)
+          // the creation failed, so the request was retried as an update of the record created by the other request
+          decisionRecords(param, createOperationUri) shouldBe empty
+          val updateDecisions = decisionRecords(param, updateOperationUri)
+          updateDecisions.length shouldBe 1
+          updateDecisions.head.fields("name") shouldBe JsString(
+            anotherRecord.name
+          )
         }
       }
     }

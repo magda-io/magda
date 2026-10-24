@@ -27,8 +27,10 @@ import au.csiro.data61.magda.registry.RecordMutationAuthorization.{
   authorizeRecordCreation,
   authorizeRecordMutation,
   authorizeRecordsMutation,
+  mutationResult,
   requireUnconditionalPermission,
-  runInMutationTransaction
+  runInMutationTransaction,
+  MutationFailure
 }
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
@@ -175,7 +177,7 @@ class RecordsService(
                           jwt,
                           "object/record/delete"
                         )
-                        deleteRecord().get
+                        mutationResult(deleteRecord())
                       }
                     )(deleteRecord())
                 } match {
@@ -187,10 +189,22 @@ class RecordsService(
                     )
                   case Failure(ServerError(msg, statusCode)) =>
                     complete(statusCode, ApiError(msg))
-                  case Failure(exception) =>
+                  case Failure(MutationFailure(exception)) =>
                     complete(
                       StatusCodes.BadRequest,
                       ApiError(exception.getMessage)
+                    )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Failed to delete record {}",
+                      recordId
+                    )
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(
+                        "An error occurred while processing the request."
+                      )
                     )
                 }
               webHookActor ! WebHookActor.Process()
@@ -492,7 +506,9 @@ class RecordsService(
                         complete(statusCode, ApiError(msg))
                       // If the exception is from validation then reveal the message to the caller,
                       // otherwise log it and return something generic.
-                      case Failure(exception: ValidationException) =>
+                      case Failure(
+                          MutationFailure(exception: ValidationException)
+                          ) =>
                         complete(
                           StatusCodes.BadRequest,
                           ApiError(
@@ -654,7 +670,7 @@ class RecordsService(
                     )
                   case Failure(ServerError(msg, statusCode)) =>
                     complete(statusCode, ApiError(msg))
-                  case Failure(exception) =>
+                  case Failure(MutationFailure(exception)) =>
                     logger.error(
                       exception,
                       "Exception encountered while PATCHing record {} with {}",
@@ -664,6 +680,18 @@ class RecordsService(
                     complete(
                       StatusCodes.BadRequest,
                       ApiError(exception.getMessage)
+                    )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Failed to patch record {}",
+                      id
+                    )
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(
+                        "An error occurred while processing the request."
+                      )
                     )
                 }
                 webHookActor ! WebHookActor

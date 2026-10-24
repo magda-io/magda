@@ -50,6 +50,22 @@ object RecordMutationAuthorization {
       )
 
   /**
+    * The mutation itself failed (e.g. invalid data, or a JSON patch that can't be applied), as opposed to other failures
+    * within the mutation transaction (e.g. failing to load the record for the auth decision).
+    * Routes respond with the mutation's error, and treat any other failure as an internal error.
+    */
+  final case class MutationFailure(cause: Throwable)
+      extends Exception(cause.getMessage, cause)
+
+  /**
+    * Get the mutation result, or throw its failure as a `MutationFailure`.
+    */
+  def mutationResult[T](mutation: Try[T]): T = mutation match {
+    case Success(result) => result
+    case Failure(e)      => throw MutationFailure(e)
+  }
+
+  /**
     * Run a mutation on a list of records within the current transaction, when the user has permission to perform
     * `operationUri` on all records' current and proposed state.
     *
@@ -115,6 +131,7 @@ object RecordMutationAuthorization {
     * - Each decision is a single full evaluation request (no `unknowns`), the same as the `requirePermission` directive's.
     * - When the record doesn't exist (in the tenant), `onRecordNotFound` runs instead, within the same transaction.
     *   e.g. to check a permission that doesn't depend on the record, or to create the record (see `authorizeRecordCreation`).
+    * - A failure of the mutation is thrown as a `MutationFailure`.
     *
     * @param authApiClient
     * @param jwt current user's session JWT
@@ -122,7 +139,8 @@ object RecordMutationAuthorization {
     * @param recordId
     * @param operationUri
     * @param checkProposedState false for mutations that leave no proposed state to check (i.e. deleting the record)
-    * @param onRecordNotFound runs when the record doesn't exist. It should throw (e.g. a `ServerError`) to deny the request.
+    * @param onRecordNotFound runs when the record doesn't exist. It should throw (e.g. a `ServerError`) to deny the request,
+    *                         and use `mutationResult` to get the result of any mutation it runs.
     * @param mutation
     * @param session must be a transaction session (e.g. `DB localTx`)
     * @return the mutation (or `onRecordNotFound`) result
@@ -140,7 +158,7 @@ object RecordMutationAuthorization {
       case None => onRecordNotFound()
       case Some(currentRecord) =>
         requirePermission(authApiClient, jwt, operationUri, currentRecord)
-        val result = mutation.get
+        val result = mutationResult(mutation)
         if (checkProposedState) {
           requirePermission(
             authApiClient,
@@ -164,7 +182,8 @@ object RecordMutationAuthorization {
     * As there is no record row to lock, another transaction may create the same record in the meantime.
     * When so (i.e. the creation fails and the record exists), it throws `RecordCreatedConcurrentlyException`
     * rather than changing the other transaction's record, so the request can be retried as an update of that record,
-    * which requires `object/record/update` permission on the record.
+    * which requires `object/record/update` permission on the record. Any other failure of the creation is thrown as a
+    * `MutationFailure`.
     *
     * @param authApiClient
     * @param jwt current user's session JWT
@@ -188,7 +207,7 @@ object RecordMutationAuthorization {
         if (loadRecordContextData(tenantId, recordId, false).isDefined) {
           throw RecordCreatedConcurrentlyException(recordId)
         }
-        throw e
+        throw MutationFailure(e)
     }
     requirePermission(
       authApiClient,

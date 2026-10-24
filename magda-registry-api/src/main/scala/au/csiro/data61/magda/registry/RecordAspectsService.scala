@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import akka.actor.{ActorRef, ActorSystem}
+import akka.event.Logging
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
@@ -13,7 +14,9 @@ import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenant
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
 import au.csiro.data61.magda.registry.RecordMutationAuthorization.{
+  MutationFailure,
   authorizeRecordMutation,
+  mutationResult,
   requireUnconditionalPermission,
   runInMutationTransaction
 }
@@ -50,6 +53,8 @@ class RecordAspectsService(
       config,
       recordPersistence
     ) {
+
+  private val logger = Logging(system, getClass)
 
   private val defaultQueryTimeout = config
     .getDuration(
@@ -272,7 +277,7 @@ class RecordAspectsService(
                     jwt,
                     "object/record/update"
                   )
-                  deleteRecordAspect.get
+                  mutationResult(deleteRecordAspect)
                 }
               )(deleteRecordAspect(_))
             }
@@ -390,6 +395,8 @@ class RecordAspectsService(
     * Run a mutation on a record's aspect when the user has `object/record/update` permission on the record's current
     * and proposed state (see `RecordMutationAuthorization`), and complete the request with the mutation result.
     * The mutation is rolled back when it fails or the user has no permission.
+    * It responds BadRequest with the error when the mutation fails, and InternalServerError for any other failure
+    * (e.g. failing to load the record for the auth decision).
     * There is no way to construct the full record context data for the auth decision without the record,
     * so it responds BadRequest when the record doesn't exist, unless `onRecordNotFound` is supplied.
     * The webhook actor is notified after the transaction ends.
@@ -432,10 +439,20 @@ class RecordAspectsService(
           )
         case Failure(ServerError(msg, statusCode)) =>
           complete(statusCode, ApiError(msg))
-        case Failure(exception) =>
+        case Failure(MutationFailure(exception)) =>
           complete(
             StatusCodes.BadRequest,
             ApiError(exception.getMessage)
+          )
+        case Failure(exception) =>
+          logger.error(
+            exception,
+            "Failed to change an aspect of record {}",
+            recordId
+          )
+          complete(
+            StatusCodes.InternalServerError,
+            ApiError("An error occurred while processing the request.")
           )
       }
       webHookActor ! WebHookActor.Process(
