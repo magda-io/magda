@@ -54,10 +54,14 @@ writeAttributionValid(operationUri, publicationType, inputObjectRefName) {
 	input.object[inputObjectRefName]["agent-skill"].updatedBy == input.user.id
 }
 
-# Read rules deliberately use only literal comparisons and existence checks so
-# Registry can convert OPA's partial decision into SQL aspect filters. Agent
-# Services validates the complete deterministic identity of every returned
-# record before exposing it.
+# All rules deliberately use only literal comparisons and existence checks, so
+# a partial decision can always be translated (e.g. into SQL aspect filters).
+# Validating a publication's deterministic identity (record ID, name and
+# archive key) is data validation, not authorisation: Agent Services does it
+# before every write and for every record it returns. Agent Services is the
+# only non-admin writer of Agent Skill records: these typed rules authorise its
+# callers, and generic `object/record/*` writes on Agent Skill records are
+# limited to admins and unconstrained grants (see `object/record/allow.rego`).
 recordPublicationType(inputObjectRefName) = "system" {
 	skill := input.object[inputObjectRefName]["agent-skill"]
 	skill.type == "system"
@@ -68,35 +72,6 @@ recordPublicationType(inputObjectRefName) = "user" {
 	skill := input.object[inputObjectRefName]["agent-skill"]
 	skill.type == "user"
 	skill.userId
-}
-
-# Writes use the full deterministic identity. Direct create/update/delete of a
-# malformed publication therefore fails closed when the proposed/current record
-# is supplied to OPA.
-validPublicationIdentity(inputObjectRefName, "system") {
-	recordPublicationType(inputObjectRefName) == "system"
-	record := input.object[inputObjectRefName]
-	skill := record["agent-skill"]
-	regex.match("^system-[a-z0-9]+(?:-[a-z0-9]+)*$", skill.name)
-	count(skill.name) <= 46
-	record.name == skill.name
-	record.id == sprintf("agent-skill-%s", [skill.name])
-	skill.archiveKey == sprintf("agent-services/skills/system-skills/%s.zip", [record.id])
-}
-
-validPublicationIdentity(inputObjectRefName, "user") {
-	recordPublicationType(inputObjectRefName) == "user"
-	record := input.object[inputObjectRefName]
-	skill := record["agent-skill"]
-	regex.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", skill.userId)
-	regex.match("^[a-z0-9]+(?:-[a-z0-9]+)*$", skill.name)
-	count(skill.name) <= 46
-	not startswith(skill.name, "system-")
-	skill.name != "capture-workflow"
-	skill.name != "magda-mgd"
-	record.name == skill.name
-	record.id == sprintf("agent-skill-%s-%s", [skill.userId, skill.name])
-	skill.archiveKey == sprintf("agent-services/skills/user-skills/%s/%s.zip", [skill.userId, record.id])
 }
 
 # Unconstrained typed reads support system managers and explicit broad grants.
@@ -126,7 +101,6 @@ verifyPermission(operationUri, inputObjectRefName) {
 	input.user.id
 	publicationType := recordPublicationType(inputObjectRefName)
 	unconstrainedWrite(operationUri, publicationType)
-	validPublicationIdentity(inputObjectRefName, publicationType)
 	writeAttributionValid(operationUri, publicationType, inputObjectRefName)
 	hasNoConstraintPermission(operationUri)
 }
@@ -135,7 +109,7 @@ verifyPermission(operationUri, inputObjectRefName) {
 # intended Workspace namespace; it is deliberately not a general read grant.
 verifyPermission(operationUri, inputObjectRefName) {
 	input.user.id
-	validPublicationIdentity(inputObjectRefName, "user")
+	recordPublicationType(inputObjectRefName) == "user"
 	operationForType(operationUri, "user", "create")
 	writeAttributionValid(operationUri, "user", inputObjectRefName)
 	hasOwnerConstraintPermission(operationUri)
@@ -161,7 +135,7 @@ ownerUserWrite(operationUri) {
 
 verifyPermission(operationUri, inputObjectRefName) {
 	input.user.id
-	validPublicationIdentity(inputObjectRefName, "user")
+	recordPublicationType(inputObjectRefName) == "user"
 	ownerUserWrite(operationUri)
 	hasOwnerConstraintPermission(operationUri)
 	input.object[inputObjectRefName]["access-control"].ownerId == input.user.id

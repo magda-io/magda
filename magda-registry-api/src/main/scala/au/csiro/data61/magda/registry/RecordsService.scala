@@ -10,31 +10,41 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.ServerError
 import au.csiro.data61.magda.client.AuthDecisionReqConfig
-import au.csiro.data61.magda.registry.Directives.{
-  requireRecordPermission,
-  requireRecordUpdateOrCreateWhenNonExistPermission
-}
 import au.csiro.data61.magda.directives.AuthDirectives.{
+  getJwt,
   requirePermission,
   requireUnconditionalAuthDecision,
   requireUserId,
   withAuthDecision
 }
 import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
-import au.csiro.data61.magda.model.Auth.recordToContextData
+import au.csiro.data61.magda.model.Auth.{
+  UnconditionalTrueDecision,
+  recordToContextData
+}
+import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
+import au.csiro.data61.magda.registry.RecordMutationAuthorization.{
+  authorizeRecordCreation,
+  authorizeRecordMutation,
+  authorizeRecordsMutation,
+  mutationResult,
+  requireUnconditionalPermission,
+  runInMutationTransaction,
+  MutationFailure
+}
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 
 import javax.ws.rs.Path
-import scalikejdbc.DB
+import scalikejdbc.{DB, DBSession}
 import org.everit.json.schema.ValidationException
 import spray.json.JsObject
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 import au.csiro.data61.magda.directives.CommonDirectives.{
   onCompleteBlockingTask,
   onCompleteBlockingTaskIn,
@@ -141,41 +151,62 @@ class RecordsService(
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
       requireUserId { userId =>
-        requireRecordPermission(
-          authClient,
-          "object/record/delete",
-          recordId,
-          // when the record doesn't not exist (or not accessible within current tenant)
-          // we will check "unconditional" `delete` permission. i.e.
-          // users with "unconditional" `delete` permission will get 200 status code with "record is deleted" response (this is for matching existing behaviour).
-          // users without this permission will not be able to know that the record has been removed.
-          onRecordNotFound = Some(
-            () =>
-              requireUnconditionalAuthDecision(
-                authClient,
-                AuthDecisionReqConfig("object/record/delete")
-              ) & pass
-          )
-        ) {
-          requiresSpecifiedTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
+          getJwt { jwt =>
             onCompleteBlockingTask {
-              val theResult = DB localTx { implicit session =>
-                session.queryTimeout(this.defaultQueryTimeout)
-                recordPersistence
-                  .deleteRecord(tenantId, recordId, userId) match {
+              val theResult =
+                runInMutationTransaction(this.defaultQueryTimeout) {
+                  implicit session =>
+                    def deleteRecord() =
+                      recordPersistence.deleteRecord(tenantId, recordId, userId)
+                    authorizeRecordMutation(
+                      authClient,
+                      jwt,
+                      tenantId,
+                      recordId,
+                      "object/record/delete",
+                      // there is no record after the deletion to check
+                      checkProposedState = false,
+                      // when the record doesn't exist (or is not accessible within the current tenant)
+                      // we will check "unconditional" `delete` permission. i.e.
+                      // users with "unconditional" `delete` permission will get 200 status code with "record is deleted" response (this is for matching existing behaviour).
+                      // users without this permission will not be able to know that the record has been removed.
+                      onRecordNotFound = () => {
+                        requireUnconditionalPermission(
+                          authClient,
+                          jwt,
+                          "object/record/delete"
+                        )
+                        mutationResult(deleteRecord())
+                      }
+                    )(deleteRecord())
+                } match {
                   case Success(result) =>
                     complete(
                       StatusCodes.OK,
                       List(RawHeader("x-magda-event-id", result._2.toString)),
                       DeleteResult(result._1)
                     )
-                  case Failure(exception) =>
+                  case Failure(ServerError(msg, statusCode)) =>
+                    complete(statusCode, ApiError(msg))
+                  case Failure(MutationFailure(exception)) =>
                     complete(
                       StatusCodes.BadRequest,
                       ApiError(exception.getMessage)
                     )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Failed to delete record {}",
+                      recordId
+                    )
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(
+                        "An error occurred while processing the request."
+                      )
+                    )
                 }
-              }
               webHookActor ! WebHookActor.Process()
               theResult
             }
@@ -422,23 +453,47 @@ class RecordsService(
             parameters(
               'merge.as[Boolean].?
             ) { merge =>
-              requireRecordUpdateOrCreateWhenNonExistPermission(
-                authClient,
-                recordIn.id,
-                Left(recordIn),
-                merge.getOrElse(false)
-              ) {
-                onCompleteBlockingTask {
-                  val result = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    recordPersistence.putRecordById(
-                      tenantId,
-                      id,
-                      recordIn,
-                      userId,
-                      forceSkipAspectValidation = false,
-                      merge.getOrElse(false)
-                    ) match {
+              getJwt { jwt =>
+                if (id != recordIn.id) {
+                  complete(
+                    StatusCodes.BadRequest,
+                    ApiError(
+                      "Encountered an error - The provided ID does not match the record's ID."
+                    )
+                  )
+                } else {
+                  onCompleteBlockingTask {
+                    val result = runInMutationTransaction(
+                      this.defaultQueryTimeout
+                    ) { implicit session =>
+                      authorizeRecordMutation(
+                        authClient,
+                        jwt,
+                        tenantId,
+                        id,
+                        // when the record doesn't exist, create it, when the user has permission to create the record
+                        onRecordNotFound = () =>
+                          authorizeRecordCreation(
+                            authClient,
+                            jwt,
+                            tenantId,
+                            id,
+                            recordPersistence
+                          )(
+                            recordPersistence
+                              .createRecord(tenantId, recordIn, userId)(_)
+                          )
+                      )(
+                        recordPersistence.putRecordById(
+                          tenantId,
+                          id,
+                          recordIn,
+                          userId,
+                          forceSkipAspectValidation = false,
+                          merge.getOrElse(false)
+                        )
+                      )
+                    } match {
                       case Success(result) =>
                         complete(
                           StatusCodes.OK,
@@ -447,9 +502,13 @@ class RecordsService(
                           ),
                           result._1
                         )
+                      case Failure(ServerError(msg, statusCode)) =>
+                        complete(statusCode, ApiError(msg))
                       // If the exception is from validation then reveal the message to the caller,
                       // otherwise log it and return something generic.
-                      case Failure(exception: ValidationException) =>
+                      case Failure(
+                          MutationFailure(exception: ValidationException)
+                          ) =>
                         complete(
                           StatusCodes.BadRequest,
                           ApiError(
@@ -466,12 +525,12 @@ class RecordsService(
                           ApiError("Encountered an error")
                         )
                     }
+                    webHookActor ! WebHookActor.Process(
+                      ignoreWaitingForResponse = false,
+                      Some(recordIn.aspects.keys.toList)
+                    )
+                    result
                   }
-                  webHookActor ! WebHookActor.Process(
-                    ignoreWaitingForResponse = false,
-                    Some(recordIn.aspects.keys.toList)
-                  )
-                  result
                 }
               }
             }
@@ -578,38 +637,62 @@ class RecordsService(
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           sanitizedJsonEntity(as[JsonPatch]) { recordPatch =>
-            requireRecordUpdateOrCreateWhenNonExistPermission(
-              authClient,
-              id,
-              Right(recordPatch)
-            ) {
+            getJwt { jwt =>
               onCompleteBlockingTask {
-                val theResult = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence.patchRecordById(
+                val theResult = runInMutationTransaction(
+                  this.defaultQueryTimeout
+                ) { implicit session =>
+                  authorizeRecordMutation(
+                    authClient,
+                    jwt,
                     tenantId,
                     id,
-                    recordPatch,
-                    userId
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        List(RawHeader("x-magda-event-id", result._2.toString)),
-                        result._1
+                    // there is no way to patch a record that doesn't exist
+                    onRecordNotFound = () =>
+                      throw ServerError(
+                        s"Cannot locate request record by id: ${id}",
+                        StatusCodes.BadRequest
                       )
-                    case Failure(exception) =>
-                      logger.error(
-                        exception,
-                        "Exception encountered while PATCHing record {} with {}",
-                        id,
-                        recordPatch.toJson.prettyPrint
+                  )(
+                    recordPersistence.patchRecordById(
+                      tenantId,
+                      id,
+                      recordPatch,
+                      userId
+                    )
+                  )
+                } match {
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      result._1
+                    )
+                  case Failure(ServerError(msg, statusCode)) =>
+                    complete(statusCode, ApiError(msg))
+                  case Failure(MutationFailure(exception)) =>
+                    logger.error(
+                      exception,
+                      "Exception encountered while PATCHing record {} with {}",
+                      id,
+                      recordPatch.toJson.prettyPrint
+                    )
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(exception.getMessage)
+                    )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Failed to patch record {}",
+                      id
+                    )
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError(
+                        "An error occurred while processing the request."
                       )
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(exception.getMessage)
-                      )
-                  }
+                    )
                 }
                 webHookActor ! WebHookActor
                   .Process()
@@ -618,7 +701,6 @@ class RecordsService(
             }
           }
         }
-
       }
     }
   }
@@ -628,6 +710,10 @@ class RecordsService(
     * @api {patch} /v0/registry/records Modify a list of records by applying the same JSON Patch
     *
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
+    *
+    * The user must have `object/record/update` permission on every record, both before and after the change.
+    * Otherwise, a 403 error will be responded. Either all records are changed or none.
+    * A request can change at most 1000 records (configurable via `bulkMutationMaxRecords`). Otherwise, a 400 error will be responded.
     *
     * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
     * @apiParam (body) {object[]} jsonPatch The RFC 6902 patch to apply to the aspect.
@@ -708,40 +794,16 @@ class RecordsService(
     requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
         sanitizedJsonEntity(as[PatchRecordsRequest]) { requestData =>
-          withAuthDecision(
-            authClient,
-            AuthDecisionReqConfig("object/record/update")
-          ) { authDecision =>
-            onCompleteBlockingTask {
-              val result = DB localTx { implicit session =>
-                session.queryTimeout(this.defaultQueryTimeout)
+          getJwt { jwt =>
+            completeBulkRecordsMutation(jwt, tenantId, requestData.recordIds) {
+              implicit session =>
                 recordPersistence.patchRecords(
                   tenantId,
-                  authDecision,
+                  UnconditionalTrueDecision,
                   requestData.recordIds,
                   requestData.jsonPath,
                   userId
-                ) match {
-                  case Success(result) =>
-                    complete(
-                      StatusCodes.OK,
-                      result
-                    )
-                  case Failure(ServerError(msg, statusCode)) =>
-                    complete(
-                      statusCode,
-                      ApiError(msg)
-                    )
-                  case Failure(e) =>
-                    complete(
-                      StatusCodes.InternalServerError,
-                      ApiError(e.getMessage)
-                    )
-                }
-              }
-              webHookActor ! WebHookActor
-                .Process()
-              result
+                )
             }
           }
         }
@@ -754,6 +816,10 @@ class RecordsService(
     * @api {put} /v0/registry/records/aspects/:aspectId Modify a list of records's aspect with same new data
     *
     * @apiDescription  Modify a list of records's aspect with same new data
+    *
+    * The user must have `object/record/update` permission on every record, both before and after the change.
+    * Otherwise, a 403 error will be responded. Either all records are changed or none.
+    * A request can change at most 1000 records (configurable via `bulkMutationMaxRecords`). Otherwise, a 400 error will be responded.
     *
     * @apiParam (path) {string} aspectId the id of the aspect to be updated
     * @apiParam (query) {boolean} [merge] Indicate whether merge the new data into existing aspect data or replace it. Default: `false`
@@ -835,43 +901,22 @@ class RecordsService(
             parameters(
               'merge.as[Boolean].?
             ) { merge =>
-              withAuthDecision(
-                authClient,
-                AuthDecisionReqConfig("object/record/update")
-              ) { authDecision =>
-                onCompleteBlockingTask {
-                  val result = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
-                    recordPersistence.putRecordsAspectById(
-                      tenantId,
-                      authDecision,
-                      requestData.recordIds,
-                      aspectId,
-                      requestData.data,
-                      userId,
-                      false,
-                      merge.getOrElse(false)
-                    ) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          result
-                        )
-                      case Failure(ServerError(msg, statusCode)) =>
-                        complete(
-                          statusCode,
-                          ApiError(msg)
-                        )
-                      case Failure(e) =>
-                        complete(
-                          StatusCodes.InternalServerError,
-                          ApiError(e.getMessage)
-                        )
-                    }
-                  }
-                  webHookActor ! WebHookActor
-                    .Process()
-                  result
+              getJwt { jwt =>
+                completeBulkRecordsMutation(
+                  jwt,
+                  tenantId,
+                  requestData.recordIds
+                ) { implicit session =>
+                  recordPersistence.putRecordsAspectById(
+                    tenantId,
+                    UnconditionalTrueDecision,
+                    requestData.recordIds,
+                    aspectId,
+                    requestData.data,
+                    userId,
+                    false,
+                    merge.getOrElse(false)
+                  )
                 }
               }
             }
@@ -890,6 +935,10 @@ class RecordsService(
     * If the aspect doesn't exist for a record or the array can't be located with the jsonPath string or the value located with the jsonPath string is `null`,
     * the operation will be skipped without throwing error. `0` will returned as eventId for this case.
     * If the json data that is located by the jsonPath string exists and is not an Array or null, an error will be thrown and 400 code will be responded.
+    *
+    * The user must have `object/record/update` permission on every record, both before and after the change.
+    * Otherwise, a 403 error will be responded. Either all records are changed or none.
+    * A request can change at most 1000 records (configurable via `bulkMutationMaxRecords`). Otherwise, a 400 error will be responded.
     *
     * @apiParam (path) {string} aspectId the id of the aspect to be updated
     * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
@@ -958,42 +1007,21 @@ class RecordsService(
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[DeleteRecordsAspectArrayItemsRequest]) { requestData =>
-            withAuthDecision(
-              authClient,
-              AuthDecisionReqConfig("object/record/update")
-            ) { authDecision =>
-              onCompleteBlockingTask {
-                val result = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence.deleteRecordsAspectArrayItems(
-                    tenantId,
-                    authDecision,
-                    requestData.recordIds,
-                    aspectId,
-                    requestData.jsonPath,
-                    requestData.items,
-                    userId
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        result
-                      )
-                    case Failure(ServerError(msg, statusCode)) =>
-                      complete(
-                        statusCode,
-                        ApiError(msg)
-                      )
-                    case Failure(e) =>
-                      complete(
-                        StatusCodes.InternalServerError,
-                        ApiError(e.getMessage)
-                      )
-                  }
-                }
-                webHookActor ! WebHookActor
-                  .Process()
-                result
+            getJwt { jwt =>
+              completeBulkRecordsMutation(
+                jwt,
+                tenantId,
+                requestData.recordIds
+              ) { implicit session =>
+                recordPersistence.deleteRecordsAspectArrayItems(
+                  tenantId,
+                  UnconditionalTrueDecision,
+                  requestData.recordIds,
+                  aspectId,
+                  requestData.jsonPath,
+                  requestData.items,
+                  userId
+                )
               }
             }
           }
@@ -1122,6 +1150,60 @@ class RecordsService(
       }
     }
   }
+
+  /**
+    * Run a mutation on a list of records in one transaction and complete the request with the result (a list of event IDs).
+    * The user must have `object/record/update` permission on every record's current and proposed state
+    * (see `RecordMutationAuthorization`).
+    * Any failure (incl. no permission) rolls back the whole transaction, so either all records are changed or none.
+    */
+  private val bulkMutationMaxRecords =
+    if (config.hasPath("bulkMutationMaxRecords"))
+      config.getInt("bulkMutationMaxRecords")
+    else 1000
+
+  private def completeBulkRecordsMutation(
+      jwt: Option[String],
+      tenantId: SpecifiedTenantId,
+      recordIds: Seq[String]
+  )(mutation: DBSession => Try[Seq[Long]]): Route =
+    if (recordIds.length > bulkMutationMaxRecords) {
+      complete(
+        StatusCodes.BadRequest,
+        ApiError(
+          s"Too many records in one request: ${recordIds.length}. A request can change at most ${bulkMutationMaxRecords} records."
+        )
+      )
+    } else
+      onCompleteBlockingTask {
+        val result = Try {
+          DB localTx { implicit session =>
+            session.queryTimeout(this.defaultQueryTimeout)
+            authorizeRecordsMutation(authClient, jwt, tenantId, recordIds)(
+              mutation(session)
+            )
+          }
+        } match {
+          case Success(result) =>
+            complete(
+              StatusCodes.OK,
+              result
+            )
+          case Failure(ServerError(msg, statusCode)) =>
+            complete(
+              statusCode,
+              ApiError(msg)
+            )
+          case Failure(e) =>
+            complete(
+              StatusCodes.InternalServerError,
+              ApiError(e.getMessage)
+            )
+        }
+        webHookActor ! WebHookActor
+          .Process()
+        result
+      }
 
   override def route: Route =
     super.route ~

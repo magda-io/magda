@@ -39,6 +39,27 @@ generic_record_permission := {
 	],
 }
 
+# a generic record grant with ownership constraint
+owner_generic_record_permission := object.union(generic_record_permission, {"userOwnershipConstraint": true})
+
+# an unconstrained typed (not generic) grant
+published_dataset_read_permission := {
+	"resourceUri": "object/dataset/published",
+	"userOwnershipConstraint": false,
+	"orgUnitOwnershipConstraint": false,
+	"preAuthorisedConstraint": false,
+	"operations": [{"uri": "object/dataset/published/read"}],
+}
+
+system_record := {
+	"id": "agent-skill-system-useful-skill",
+	"name": "system-useful-skill",
+	"agent-skill": {"name": "system-useful-skill", "type": "system", "createdAt": "2026-10-15T00:00:00Z", "createdBy": other_id, "archiveKey": "agent-services/skills/system-skills/agent-skill-system-useful-skill.zip"},
+	"access-control": {"ownerId": other_id},
+}
+
+record_operations := ["create", "read", "update", "delete"]
+
 user_record(owner, target) = {
 	"id": sprintf("agent-skill-%s-useful-skill", [target]),
 	"name": "useful-skill",
@@ -53,59 +74,60 @@ user_record(owner, target) = {
 	"access-control": {"ownerId": owner},
 }
 
-test_owner_agent_skill_grant_allows_typed_user_record {
+test_owner_agent_skill_grant_reads_own_user_record {
 	allow with input as {
-		"operationUri": "object/record/update",
+		"operationUri": "object/record/read",
 		"object": {"record": user_record(user_id, user_id)},
 		"user": {"id": user_id, "permissions": [agent_owner_permission]},
 	}
 }
 
-test_generic_record_grant_cannot_read_private_agent_skill {
+# Agent Services writes Agent Skill records with its internal admin session,
+# after authorising its caller with the typed operations.
+test_typed_agent_skill_grants_cannot_write_via_generic_record_operations {
+	every_denied := [operation |
+		operation := ["create", "update", "delete"][_]
+		not allow with input as {
+			"operationUri": concat("/", ["object/record", operation]),
+			"object": {"record": user_record(user_id, user_id)},
+			"user": {"id": user_id, "permissions": [agent_owner_permission]},
+		}
+	]
+
+	count(every_denied) == 3
+
 	not allow with input as {
-		"operationUri": "object/record/read",
-		"object": {"record": user_record(other_id, other_id)},
-		"user": {"id": user_id, "permissions": [generic_record_permission]},
-	}
-}
-
-test_generic_create_grant_cannot_create_typed_agent_skill {
-	not allow with input as {
-		"operationUri": "object/record/create",
-		"object": {"record": user_record(user_id, user_id)},
-		"user": {"id": user_id, "permissions": [generic_record_permission]},
-	}
-}
-
-test_proposed_system_state_uses_system_typed_permission {
-	system := {
-		"id": "agent-skill-system-useful-skill",
-		"name": "system-useful-skill",
-		"agent-skill": {"name": "system-useful-skill", "type": "system", "createdAt": "2026-10-15T00:00:00Z", "createdBy": user_id, "archiveKey": "agent-services/skills/system-skills/agent-skill-system-useful-skill.zip"},
-		"access-control": {"ownerId": user_id},
-	}
-
-	allow with input as {
 		"operationUri": "object/record/update",
-		"object": {"record": system},
+		"object": {"record": system_record},
 		"user": {"id": user_id, "permissions": [system_admin_permission]},
 	}
 }
 
-test_same_type_mutable_fields_update_is_allowed {
-	original := user_record(user_id, user_id)
-	proposed := object.union(original, {"agent-skill": object.union(original["agent-skill"], {
-		"description": "updated",
-		"checksum": "updated-checksum",
-		"state": "READY",
-		"updatedBy": user_id,
-	})})
+test_unconstrained_generic_record_grant_applies_to_agent_skill_records {
+	allowed := [operation |
+		operation := record_operations[_]
+		record := [user_record(other_id, other_id), system_record][_]
+		allow with input as {
+			"operationUri": concat("/", ["object/record", operation]),
+			"object": {"record": record},
+			"user": {"id": user_id, "permissions": [generic_record_permission]},
+		}
+	]
 
-	allow with input as {
-		"operationUri": "object/record/update",
-		"object": {"record": proposed},
-		"user": {"id": user_id, "permissions": [agent_owner_permission]},
-	}
+	count(allowed) == 8
+}
+
+test_constrained_generic_record_grant_cannot_access_agent_skill_records {
+	denied := [operation |
+		operation := record_operations[_]
+		not allow with input as {
+			"operationUri": concat("/", ["object/record", operation]),
+			"object": {"record": user_record(user_id, user_id)},
+			"user": {"id": user_id, "permissions": [owner_generic_record_permission]},
+		}
+	]
+
+	count(denied) == 4
 }
 
 test_agent_skill_cannot_bypass_policy_with_other_typed_markers {
@@ -118,7 +140,7 @@ test_agent_skill_cannot_bypass_policy_with_other_typed_markers {
 	not allow with input as {
 		"operationUri": "object/record/read",
 		"object": {"record": record},
-		"user": {"id": user_id, "permissions": [generic_record_permission]},
+		"user": {"id": user_id, "permissions": [published_dataset_read_permission]},
 	}
 }
 
@@ -127,13 +149,22 @@ test_generic_record_grant_cannot_read_installation {
 	not allow with input as {
 		"operationUri": "object/record/read",
 		"object": {"record": installation},
-		"user": {"id": user_id, "permissions": [generic_record_permission]},
+		"user": {"id": user_id, "permissions": [owner_generic_record_permission]},
 	}
 }
 
 test_generic_record_grant_cannot_read_installation_with_unreserved_id {
 	installation := {"id": "ordinary-record", "name": "shared-skill", "agent-skill-installation": {"userId": user_id, "sourceSkillId": "source"}, "access-control": {"ownerId": user_id}}
 	not allow with input as {
+		"operationUri": "object/record/read",
+		"object": {"record": installation},
+		"user": {"id": user_id, "permissions": [owner_generic_record_permission]},
+	}
+}
+
+test_unconstrained_generic_record_grant_applies_to_installation_records {
+	installation := {"id": "ordinary-record", "name": "shared-skill", "agent-skill-installation": {"userId": other_id, "sourceSkillId": "source"}, "access-control": {"ownerId": other_id}}
+	allow with input as {
 		"operationUri": "object/record/read",
 		"object": {"record": installation},
 		"user": {"id": user_id, "permissions": [generic_record_permission]},
@@ -211,23 +242,28 @@ record_decision(operation, record, permissions) {
 	}
 }
 
-test_installation_record_uses_typed_installation_operations {
-	record_decision("create", recipient_installation, [install_owner_permission])
+# Installations are read with the typed read rules. Like publications, they're
+# written by Agent Services only (with its internal session), after it
+# authorises the caller with the typed installation operations.
+test_installation_record_reads_use_typed_rules_and_writes_are_reserved {
 	record_decision("read", recipient_installation, [install_owner_permission])
-	record_decision("delete", recipient_installation, [install_owner_permission])
+	not record_decision("create", recipient_installation, [install_owner_permission])
 	not record_decision("update", recipient_installation, [install_owner_permission])
+	not record_decision("delete", recipient_installation, [install_owner_permission])
 }
 
-test_generic_record_grants_never_authorize_installations {
-	not record_decision("create", recipient_installation, [generic_record_permission])
-	not record_decision("read", recipient_installation, [generic_record_permission])
-	not record_decision("delete", recipient_installation, [generic_record_permission])
+# Unconstrained generic grants apply to every record (see
+# test_unconstrained_generic_record_grant_applies_to_installation_records).
+test_constrained_generic_record_grants_never_authorize_installations {
+	not record_decision("create", recipient_installation, [owner_generic_record_permission])
+	not record_decision("read", recipient_installation, [owner_generic_record_permission])
+	not record_decision("delete", recipient_installation, [owner_generic_record_permission])
 }
 
 test_record_with_both_markers_fails_closed {
 	both := object.union(shared_source, {"agent-skill-installation": recipient_installation["agent-skill-installation"]})
 	not record_decision("read", both, [share_permission("object/agentSkill/user", "object/agentSkill/user/read")])
-	not record_decision("read", both, [install_owner_permission, generic_record_permission])
+	not record_decision("read", both, [install_owner_permission, owner_generic_record_permission])
 }
 
 test_installation_existence_never_grants_source_read {

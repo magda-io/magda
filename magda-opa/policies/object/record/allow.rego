@@ -1,6 +1,7 @@
 package object.record
 
 import data.common.breakdownOperationUri
+import data.common.hasNoConstraintPermission
 import data.common.isDraftDataset
 import data.common.isDraftDistribution
 import data.common.isPublishedDataset
@@ -18,17 +19,25 @@ allow {
 	verifyPermission(input.operationUri)
 }
 
-# Agent Skill dispatch is exclusive for every concrete current or proposed
-# record supplied by Registry. Cross-version business invariants are enforced by
-# the supported Agent Services lifecycle; generic Registry mutation hardening is
-# intentionally tracked separately in #3862/#3863.
+# Unconstrained generic record grants (no ownership, org unit or pre-authorised
+# constraint) are deliberate grants to trusted users (no built-in role has one).
+# They apply to every record, including typed Agent Skill records.
+verifyPermission(operationUri) {
+	hasNoConstraintPermission(operationUri)
+}
+
+# Agent Skill records are read with the typed Agent Skill read rules.
+# They're written by Agent Services only (with its internal admin session),
+# after it authorises the caller with the typed Agent Skill operations. So
+# there are no typed write rules here: generic writes on Agent Skill records
+# are limited to admins and unconstrained grants above.
 verifyPermission(operationUri) {
 	input.object.record["agent-skill"].type == "system"
 	not input.object.record["agent-skill-installation"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-	inputOperationUri := concat("/", ["object", "agentSkill", "system", operationType])
-	verifyAgentSkillPermission(inputOperationUri, "record")
+	operationType == "read"
+	verifyAgentSkillPermission("object/agentSkill/system/read", "record")
 }
 
 verifyPermission(operationUri) {
@@ -36,24 +45,28 @@ verifyPermission(operationUri) {
 	not input.object.record["agent-skill-installation"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-	inputOperationUri := concat("/", ["object", "agentSkill", "user", operationType])
-	verifyAgentSkillPermission(inputOperationUri, "record")
+	operationType == "read"
+	verifyAgentSkillPermission("object/agentSkill/user/read", "record")
 }
 
-# A recipient installation record (#3861) uses only typed installation
-# operations. It never authorizes its source publication, and a record carrying
-# both markers matches neither typed path, so it fails closed.
+# Installation records (#3861) are read with the typed installation read rules.
+# Like publications, they're written by Agent Services only (with its internal
+# session), after it authorises the caller with the typed installation
+# operations. So there are no typed write rules here either. An installation
+# never authorizes its source publication, and a record carrying both markers
+# matches neither typed path, so it fails closed for everyone but admins and
+# unconstrained grants.
 verifyPermission(operationUri) {
 	input.object.record["agent-skill-installation"]
 	not input.object.record["agent-skill"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-	inputOperationUri := concat("/", ["object", "agentSkill", "install", operationType])
-	verifyAgentSkillInstallationPermission(inputOperationUri, "record")
+	operationType == "read"
+	verifyAgentSkillInstallationPermission("object/agentSkill/install/read", "record")
 }
 
-# Concrete typed publications and installations never fall back to generic
-# object/record grants.
+# Concrete typed publications and installations never fall back to constrained
+# generic object/record grants.
 verifyPermission(operationUri) {
 	not input.object.record["agent-skill"]
 	not input.object.record["agent-skill-installation"]

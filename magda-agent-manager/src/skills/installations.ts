@@ -458,9 +458,12 @@ export class AgentSkillInstallationService {
                 id,
                 async () => {
                     try {
+                        // Installation records are only written by Agent
+                        // Services (with the internal session), after
+                        // authorising the real caller above.
                         await this.options.installations.createInstallation(
                             candidate,
-                            user.sessionToken
+                            this.options.publications.internalSessionToken()
                         );
                         return { created: true, record: candidate };
                     } catch (error) {
@@ -545,11 +548,12 @@ export class AgentSkillInstallationService {
                     user,
                     "AGENT_SKILL_UNINSTALL_FORBIDDEN"
                 );
-                // Only the recipient's record is removed, as the recipient.
-                // The original publication and its ZIP are never touched.
+                // Only the recipient's record is removed, after authorising
+                // the recipient above. The original publication and its ZIP
+                // are never touched.
                 await this.options.installations.deleteInstallation(
                     id,
-                    user.sessionToken
+                    this.options.publications.internalSessionToken()
                 );
             });
             this.audit("uninstall", id, user, "success");
@@ -855,7 +859,7 @@ export class AgentSkillInstallationService {
                         );
                         await this.options.installations.deleteInstallation(
                             id,
-                            user.sessionToken
+                            internalSession
                         );
                         installationRemoved = true;
                     }

@@ -390,7 +390,10 @@ export class AgentSkillAccessService {
                                     }
                                 }
                             },
-                            user.sessionToken
+                            // Agent Skill records are only written by Agent
+                            // Services, after current() re-authorised the
+                            // caller's typed update in the record lock.
+                            internalSession
                         );
                     }
                     return this.options.shareGroups.addUser(
@@ -558,9 +561,12 @@ export class AgentSkillAccessService {
                             403,
                             "AGENT_SKILL_FORBIDDEN"
                         );
+                    // Written by Agent Services after authorising the
+                    // caller's typed update on the current (current()) and
+                    // proposed states above.
                     await this.options.registry.put(
                         proposed,
-                        user.sessionToken
+                        this.options.publications.internalSessionToken()
                     );
                     return proposed;
                 }
