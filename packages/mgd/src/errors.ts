@@ -34,7 +34,8 @@ export class MgdApiError extends Error {
 }
 
 export class UsageError extends Error {
-    constructor(message: string) {
+    /** Optional stable machine-readable reason for JSON error output. */
+    constructor(message: string, readonly code?: string) {
         super(message);
         this.name = "UsageError";
     }

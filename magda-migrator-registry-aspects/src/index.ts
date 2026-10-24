@@ -4,8 +4,11 @@ import AuthorizedRegistryClient from "magda-typescript-common/src/registry/Autho
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts.js";
 import fse from "fs-extra";
-import ServerError from "magda-typescript-common/src/ServerError.js";
 import { requireResolve } from "@magda/esm-utils";
+import {
+    AspectDefItem,
+    migrateAspectDefinitions
+} from "./migrateAspectDefinitions.js";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -26,6 +29,17 @@ const argv = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("maxRetries", {
+            describe:
+                "How many times to retry a failed aspect definition write",
+            type: "number",
+            default: 10
+        })
+        .option("secondsBetweenRetries", {
+            describe: "Seconds to wait between write retries",
+            type: "number",
+            default: 10
         }).argv
 );
 
@@ -33,17 +47,13 @@ const registryClient = new AuthorizedRegistryClient({
     userId: argv.userId,
     jwtSecret: argv.jwtSecret as string,
     baseUrl: argv.registryUrl,
-    tenantId: MAGDA_ADMIN_PORTAL_ID
+    tenantId: MAGDA_ADMIN_PORTAL_ID,
+    maxRetries: argv.maxRetries,
+    secondsBetweenRetries: argv.secondsBetweenRetries
 });
 
 const schemaFileNameFilterRegEx = /\.schema.json$/;
 const schemaFileNameRegEx = /^([^\.]+)\.schema.json$/;
-
-type AspectDefItem = {
-    id: string;
-    name: string;
-    jsonSchema: { [key: string]: any };
-};
 
 function getAllBuiltInAspectDefs(): AspectDefItem[] {
     const aspectDefDir = path.dirname(
@@ -71,55 +81,26 @@ function getAllBuiltInAspectDefs(): AspectDefItem[] {
         });
 }
 
-(async () => {
-    const aspectDefs = getAllBuiltInAspectDefs();
-    if (!aspectDefs?.length) {
-        throw new Error(
-            "Cannot locate built-in registry aspect definition files"
+migrateAspectDefinitions(registryClient, getAllBuiltInAspectDefs()).then(
+    () => {
+        console.log(
+            "Registry aspect definitions migration has been completed!"
         );
+    },
+    (e) => {
+        // Fail the Job so Kubernetes retries it and the release does not report
+        // success with a definition that was never created or upgraded.
+        console.error("Registry aspect definitions migration failed:");
+        console.error(e);
+        process.exitCode = 1;
     }
-    for (let i = 0; i < aspectDefs.length; i++) {
-        try {
-            if (aspectDefs[i]?.id?.length > 100) {
-                console.log(
-                    `Aspect '${aspectDefs[i]?.id}' has a ID over 100 characters. Skipped processing this aspect definition.`
-                );
-                continue;
-            }
-            const aspectDef = await registryClient.getAspectDefinition(
-                aspectDefs[i].id
-            );
-            console.log(
-                `AspectDef '${aspectDef.id}' exists in registry. Skip definition creation.`
-            );
-        } catch (e) {
-            if (e instanceof ServerError && e.statusCode === 404) {
-                console.log(`AspectDef '${aspectDefs[i].id}' not present.`);
-                console.log(
-                    `Creating aspect definition for '${aspectDefs[i].id}'...`
-                );
-                const aspectDef = { ...aspectDefs[i] };
-                if (aspectDef?.name?.length > 100) {
-                    console.log(
-                        `Aspect '${aspectDef.id}' has a name over 100 characters. Use aspect ID as name instead.`
-                    );
-                    aspectDef.name = aspectDef.id;
-                }
-                await registryClient.putAspectDefinition(aspectDef);
-                console.log(
-                    `Created aspect definition for '${aspectDefs[i].id}'.`
-                );
-                continue;
-            }
-        }
-    }
-    console.log("Registry aspect definitions migration has been completed!");
-})();
+);
 
 process.on(
     "unhandledRejection",
     (reason: {} | null | undefined, promise: Promise<any>) => {
         console.error("Unhandled rejection");
         console.error(reason);
+        process.exitCode = 1;
     }
 );

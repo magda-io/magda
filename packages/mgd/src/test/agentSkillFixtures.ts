@@ -34,6 +34,17 @@ export class FakeAgentSkillRemote {
     failManifest = false;
     failDownloads = new Set<string>();
     downloads = 0;
+    /** #3861: this account's installations of other accounts' skills. */
+    shared = new Map<
+        string,
+        { publisher: FakeAgentSkillRemote; sourceId: string; alias?: string }
+    >();
+    unavailableInstallations: Array<{
+        installationId: string;
+        effectiveName: string;
+        sourceSkillId: string;
+        code: "SOURCE_UNAVAILABLE";
+    }> = [];
 
     constructor(
         public baseUrl: string,
@@ -88,6 +99,64 @@ export class FakeAgentSkillRemote {
         this.items.delete(this.idFor(name, type));
     }
 
+    /** Install another account's user publication into this account. */
+    installShared(
+        publisher: FakeAgentSkillRemote,
+        name: string,
+        alias?: string
+    ): string {
+        const installationId = this.idFor(alias || name);
+        this.shared.set(installationId, {
+            publisher,
+            sourceId: publisher.idFor(name),
+            ...(alias ? { alias } : {})
+        });
+        return installationId;
+    }
+
+    /** The publisher revoked or deleted the source of an installation. */
+    revokeShared(installationId: string): void {
+        const entry = this.shared.get(installationId)!;
+        this.shared.delete(installationId);
+        this.unavailableInstallations.push({
+            installationId,
+            effectiveName: installationId.slice(
+                `agent-skill-${this.userId}-`.length
+            ),
+            sourceSkillId: entry.sourceId,
+            code: "SOURCE_UNAVAILABLE"
+        });
+    }
+
+    private sharedItems() {
+        return [...this.shared.entries()].flatMap(([installationId, entry]) => {
+            const item = entry.publisher.items.get(entry.sourceId);
+            if (!item) return [];
+            return [
+                {
+                    selectionId: installationId,
+                    effectiveName: entry.alias || item.meta.name,
+                    sourceKind: "installation" as const,
+                    source: item.meta,
+                    installation: {
+                        id: installationId,
+                        userId: this.userId,
+                        sourceSkillId: entry.sourceId,
+                        ...(entry.alias ? { alias: entry.alias } : {})
+                    }
+                }
+            ];
+        });
+    }
+
+    private item(id: string): RemoteItem | undefined {
+        const own = this.items.get(id);
+        if (own) return own;
+        for (const entry of this.shared.values())
+            if (entry.sourceId === id) return entry.publisher.items.get(id);
+        return undefined;
+    }
+
     private manifestItems(types: AgentSkillType[]) {
         return [...this.items.values()]
             .filter(({ meta }) => types.includes(meta.type))
@@ -107,15 +176,19 @@ export class FakeAgentSkillRemote {
             version: 1 as const,
             complete: true as const,
             identity: { tenantId: this.tenantId, userId: this.userId },
-            items: this.manifestItems(["user"]),
-            warnings: this.warnings
+            items: [...this.manifestItems(["user"]), ...this.sharedItems()],
+            warnings: this.warnings,
+            unavailableInstallations: this.unavailableInstallations
         };
     }
 
     workspaceManifest() {
         return {
             ...this.localManifest(),
-            items: this.manifestItems(["system", "user"])
+            items: [
+                ...this.manifestItems(["system", "user"]),
+                ...this.sharedItems()
+            ]
         };
     }
 
@@ -132,7 +205,7 @@ export class FakeAgentSkillRemote {
             },
             download: async (ref: { type: AgentSkillType; id: string }) => {
                 this.downloads += 1;
-                const item = this.items.get(ref.id);
+                const item = this.item(ref.id);
                 if (!item || this.failDownloads.has(item.meta.name))
                     throw new Error("download failed");
                 return { metadata: item.meta, bytes: item.bytes };
@@ -156,7 +229,7 @@ export class FakeAgentSkillRemote {
                 path: /^\/api\/v0\/agent\/skills\/(user|system)\/[^/]+\/archive$/,
                 handler: (req, res) => {
                     const id = (req.url || "").split("/").slice(-2)[0];
-                    const item = this.items.get(id);
+                    const item = this.item(id);
                     if (!item) {
                         res.writeHead(404, {
                             "content-type": "application/json"
@@ -173,7 +246,7 @@ export class FakeAgentSkillRemote {
                 path: /^\/api\/v0\/agent\/skills\/(user|system)\/[^/]+$/,
                 handler: (req, res) => {
                     const id = (req.url || "").split("?")[0].split("/").pop()!;
-                    const item = this.items.get(id);
+                    const item = this.item(id);
                     res.writeHead(item ? 200 : 404, {
                         "content-type": "application/json"
                     });

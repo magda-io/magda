@@ -15,6 +15,23 @@ jest.mock("../../config", () => ({ config: { baseUrl: "/" } }));
 jest.mock("Components/ValidateUser", () => () => null);
 jest.mock("./Breadcrumb", () => () => null);
 jest.mock("./SideNavigation", () => () => null);
+jest.mock("../Dataset/Add/OrgUnitDropDown", () => () => null);
+jest.mock("rsuite/Modal", () => {
+    const Modal = ({ open, children, role, ...rest }: any) =>
+        open ? (
+            <div
+                role={role || "dialog"}
+                aria-labelledby={rest["aria-labelledby"]}
+            >
+                {children}
+            </div>
+        ) : null;
+    Modal.Header = ({ children }: any) => <div>{children}</div>;
+    Modal.Title = ({ children, id }: any) => <h4 id={id}>{children}</h4>;
+    Modal.Body = ({ children }: any) => <div>{children}</div>;
+    Modal.Footer = ({ children }: any) => <div>{children}</div>;
+    return Modal;
+});
 jest.mock(
     "rsuite/Button",
     () => ({
@@ -296,7 +313,11 @@ describe("AgentSkillsPage", () => {
         expect(user.textContent).toContain(`agent-skill-${me}-csv-clean`);
         expect(user.textContent).toContain("Intended user");
         expect(user.textContent).toContain("You");
-        expect(user.querySelectorAll("button")).toHaveLength(2);
+        expect(
+            Array.from(user.querySelectorAll("button")).map(
+                (item) => item.textContent
+            )
+        ).toEqual(["Download ZIP", "Replace ZIP", "Share"]);
         expect(user.querySelector('input[type="file"]')).not.toBeNull();
 
         expect(system.textContent).toContain("agent-skill-system-review");
@@ -305,6 +326,26 @@ describe("AgentSkillsPage", () => {
         expect(system.querySelectorAll("button")).toHaveLength(0);
         expect(system.querySelector('input[type="file"]')).toBeNull();
         expect(container.textContent).not.toMatch(/Delete|Upload new|Edit/);
+    });
+
+    it("offers system skill access management only to system skill managers", async () => {
+        signedIn([
+            "object/agentSkill/system/read",
+            "object/agentSkill/system/update"
+        ]);
+        mockList.mockResolvedValue({
+            items: [systemSkill, skill({ userId: other, ownerId: other })],
+            hasMore: false
+        });
+        await render();
+        const [system, othersSkill] = cards();
+        expect(
+            Array.from(system.querySelectorAll("button")).map(
+                (item) => item.textContent
+            )
+        ).toEqual(["Manage access"]);
+        // Another user's skill can never be shared by this user.
+        expect(othersSkill.textContent).not.toContain("Share");
     });
 
     it("offers Download but not Replace without typed update permission", async () => {

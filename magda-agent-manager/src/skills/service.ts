@@ -1,18 +1,26 @@
-import {
-    ArchiveValidationError,
-    validateAgentSkillArchive,
-    validateAgentSkillMetadata,
-    validateAgentSkillNameForType
-} from "./archive.js";
+import { validateAgentSkillArchive } from "./archive.js";
 import { DownstreamServiceError } from "./clients.js";
+import {
+    AgentSkillError,
+    agentSkillRecordId,
+    archiveKey,
+    downstreamError,
+    hasRecordIdShape,
+    isObject,
+    metadata,
+    parseAgentSkillRecord
+} from "./records.js";
 import {
     AgentSkillArchiveLimits,
     AgentSkillAuthorization,
+    AgentSkillInstallationAuthorization,
+    AgentSkillInstallationRegistry,
     AgentSkillMetadata,
     AgentSkillRecord,
     AgentSkillRegistry,
     AgentSkillType,
     AgentSkillState,
+    AgentSkillShareGroups,
     AgentSkillStorage,
     LocalSkillSyncManifest,
     ValidatedAgentSkillArchive,
@@ -21,81 +29,24 @@ import {
     WorkspaceSkillManifestWarning,
     WorkspaceSkillSourceKind
 } from "./types.js";
+import { AgentSkillAccessService } from "./access.js";
+import { AgentSkillInstallationService } from "./installations.js";
 import { AuthenticatedUser } from "../types.js";
 import jwt from "jsonwebtoken";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const USER_RECORD_ID_PATTERN = /^agent-skill-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-([a-z0-9]+(?:-[a-z0-9]+)*)$/;
-const SYSTEM_RECORD_ID_PATTERN = /^agent-skill-system-[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const CHECKSUM_PATTERN = /^[0-9a-f]{64}$/;
-
-export function agentSkillRecordId(
-    type: AgentSkillType,
-    userId: string | undefined,
-    name: string
-): string {
-    try {
-        validateAgentSkillMetadata(name, "identity");
-        validateAgentSkillNameForType(name, type);
-    } catch {
-        throw new AgentSkillError(
-            "Agent Skill identity is invalid",
-            400,
-            "INVALID_SKILL_IDENTITY"
-        );
-    }
-    if (type === "system") {
-        if (userId !== undefined) {
-            throw new AgentSkillError(
-                "System Agent Skills must not have a user identity",
-                400,
-                "INVALID_SKILL_IDENTITY"
-            );
-        }
-        return `agent-skill-${name}`;
-    }
-    if (!userId || !UUID_PATTERN.test(userId)) {
-        throw new AgentSkillError(
-            "Agent Skill intended user identity is invalid",
-            400,
-            "INVALID_SKILL_IDENTITY"
-        );
-    }
-    return `agent-skill-${userId}-${name}`;
-}
-
-function hasRecordIdShape(type: AgentSkillType, id: string): boolean {
-    const match =
-        type === "system"
-            ? SYSTEM_RECORD_ID_PATTERN.exec(id)
-            : USER_RECORD_ID_PATTERN.exec(id);
-    if (!match) return false;
-    const userId = type === "system" ? undefined : match[1];
-    const name = type === "system" ? id.slice("agent-skill-".length) : match[2];
-    try {
-        return agentSkillRecordId(type, userId, name) === id;
-    } catch {
-        return false;
-    }
-}
-
-export class AgentSkillError extends Error {
-    constructor(
-        message: string,
-        public readonly status: number,
-        public readonly code: string,
-        public readonly retryable = false,
-        public readonly recordId?: string
-    ) {
-        super(message);
-    }
-}
+// Compatibility exports for callers of the publication service module.
+export { AgentSkillError, agentSkillRecordId, parseAgentSkillRecord };
 
 export interface AgentSkillServiceOptions {
     registry: AgentSkillRegistry;
     storage: AgentSkillStorage;
     authorization: AgentSkillAuthorization;
+    /** Recipient installation records (#3861). */
+    installationRegistry: AgentSkillInstallationRegistry;
+    installationAuthorization: AgentSkillInstallationAuthorization;
+    /** Source-scoped Access Groups used for sharing (#3861). */
+    shareGroups: AgentSkillShareGroups;
     archiveLimits: AgentSkillArchiveLimits;
     tenantId: number;
     jwtSecret: string;
@@ -108,238 +59,6 @@ export interface AgentSkillListRequest {
     pageToken?: string;
     limit: number;
     q?: string;
-}
-
-function archiveKey(
-    type: AgentSkillType,
-    userId: string | undefined,
-    recordId: string
-): string {
-    if (type === "user" && !userId) {
-        throw new AgentSkillError(
-            "Agent Skill intended user identity is invalid",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    return type === "system"
-        ? `agent-services/skills/system-skills/${recordId}.zip`
-        : `agent-services/skills/user-skills/${userId}/${recordId}.zip`;
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-    return !!value && typeof value === "object" && !Array.isArray(value);
-}
-
-function requiredString(
-    value: unknown,
-    field: string,
-    pattern?: RegExp
-): string {
-    if (
-        typeof value !== "string" ||
-        !value ||
-        (pattern && !pattern.test(value))
-    ) {
-        throw new AgentSkillError(
-            `Agent Skill record has invalid ${field}`,
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    return value;
-}
-
-export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
-    if (!isObject(raw) || !isObject(raw.aspects)) {
-        throw new AgentSkillError(
-            "Registry record is not a valid Agent Skill",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const aspect = raw.aspects["agent-skill"];
-    const accessControl = raw.aspects["access-control"];
-    if (!isObject(aspect) || !isObject(accessControl)) {
-        throw new AgentSkillError(
-            "Registry record is missing required Agent Skill aspects",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const id = requiredString(raw.id, "id");
-    const type = requiredString(aspect.type, "type") as AgentSkillType;
-    if (type !== "system" && type !== "user") {
-        throw new AgentSkillError(
-            "Agent Skill record has invalid type",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const userId =
-        type === "user"
-            ? requiredString(aspect.userId, "userId", UUID_PATTERN)
-            : undefined;
-    if (type === "system" && aspect.userId !== undefined) {
-        throw new AgentSkillError(
-            "System Agent Skill records must omit userId",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const rawName = requiredString(raw.name, "name");
-    const aspectName = requiredString(aspect.name, "agent-skill.name");
-    const rawDescription = requiredString(aspect.description, "description");
-    let name: string;
-    let description: string;
-    try {
-        ({ name, description } = validateAgentSkillMetadata(
-            rawName,
-            rawDescription
-        ));
-        validateAgentSkillNameForType(name, type);
-    } catch {
-        throw new AgentSkillError(
-            "Agent Skill record has invalid derived metadata",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    if (
-        name !== rawName ||
-        aspectName !== rawName ||
-        description !== rawDescription
-    ) {
-        throw new AgentSkillError(
-            "Agent Skill record has inconsistent derived metadata",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const ownerId = requiredString(
-        accessControl.ownerId,
-        "ownerId",
-        UUID_PATTERN
-    );
-    if (id !== agentSkillRecordId(type, userId, name)) {
-        throw new AgentSkillError(
-            "Agent Skill record identity is inconsistent",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const state = requiredString(aspect.state, "state") as AgentSkillState;
-    if (!(["PENDING", "READY", "DELETING"] as string[]).includes(state)) {
-        throw new AgentSkillError(
-            "Agent Skill record has invalid state",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const createdAt = requiredString(aspect.createdAt, "createdAt");
-    const updatedAt = requiredString(aspect.updatedAt, "updatedAt");
-    if (
-        !Number.isFinite(Date.parse(createdAt)) ||
-        !Number.isFinite(Date.parse(updatedAt))
-    ) {
-        throw new AgentSkillError(
-            "Agent Skill record has invalid timestamps",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    const createdBy = requiredString(
-        aspect.createdBy,
-        "createdBy",
-        UUID_PATTERN
-    );
-    const updatedBy = requiredString(
-        aspect.updatedBy,
-        "updatedBy",
-        UUID_PATTERN
-    );
-    const checksum = requiredString(
-        aspect.checksum,
-        "checksum",
-        CHECKSUM_PATTERN
-    );
-    const expectedArchiveKey = archiveKey(type, userId, id);
-    if (aspect.archiveKey !== expectedArchiveKey) {
-        throw new AgentSkillError(
-            "Agent Skill record archive path is inconsistent",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    if (
-        accessControl.preAuthorisedPermissionIds !== undefined &&
-        (!Array.isArray(accessControl.preAuthorisedPermissionIds) ||
-            accessControl.preAuthorisedPermissionIds.some(
-                (value) => typeof value !== "string"
-            ))
-    ) {
-        throw new AgentSkillError(
-            "Agent Skill record has invalid pre-authorised permissions",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    if (
-        accessControl.orgUnitId !== undefined &&
-        typeof accessControl.orgUnitId !== "string"
-    ) {
-        throw new AgentSkillError(
-            "Agent Skill record has invalid organisation unit",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    if (
-        accessControl.constraintExemption !== undefined &&
-        typeof accessControl.constraintExemption !== "boolean"
-    ) {
-        throw new AgentSkillError(
-            "Agent Skill record has invalid constraint exemption",
-            409,
-            "INVALID_SKILL_RECORD"
-        );
-    }
-    return {
-        id,
-        name,
-        ...(typeof raw.tenantId === "number" ? { tenantId: raw.tenantId } : {}),
-        aspects: {
-            "agent-skill": {
-                name,
-                type,
-                ...(userId ? { userId } : {}),
-                createdAt,
-                createdBy,
-                description,
-                archiveKey: expectedArchiveKey,
-                updatedAt,
-                updatedBy,
-                checksum,
-                state
-            },
-            "access-control": {
-                ownerId,
-                ...(accessControl.orgUnitId !== undefined
-                    ? { orgUnitId: accessControl.orgUnitId as string }
-                    : {}),
-                ...(accessControl.preAuthorisedPermissionIds
-                    ? {
-                          preAuthorisedPermissionIds: accessControl.preAuthorisedPermissionIds as string[]
-                      }
-                    : {}),
-                ...(accessControl.constraintExemption !== undefined
-                    ? {
-                          constraintExemption: accessControl.constraintExemption as boolean
-                      }
-                    : {})
-            }
-        }
-    };
 }
 
 function sameRecordVersion(
@@ -380,49 +99,6 @@ function sameRecordVersion(
     );
 }
 
-function metadata(record: AgentSkillRecord): AgentSkillMetadata {
-    const aspect = record.aspects["agent-skill"];
-    return {
-        id: record.id,
-        name: aspect.name,
-        description: aspect.description,
-        type: aspect.type,
-        ...(aspect.userId ? { userId: aspect.userId } : {}),
-        ownerId: record.aspects["access-control"].ownerId,
-        createdAt: aspect.createdAt,
-        createdBy: aspect.createdBy,
-        updatedAt: aspect.updatedAt,
-        updatedBy: aspect.updatedBy,
-        checksum: aspect.checksum
-    };
-}
-
-function downstreamError(error: unknown, recordId?: string): AgentSkillError {
-    if (error instanceof AgentSkillError) return error;
-    if (error instanceof ArchiveValidationError) {
-        return new AgentSkillError(error.message, 400, "INVALID_SKILL_ARCHIVE");
-    }
-    if (error instanceof DownstreamServiceError) {
-        const status = [400, 401, 403, 404, 409].includes(error.status)
-            ? error.status
-            : 503;
-        return new AgentSkillError(
-            error.message,
-            status,
-            `${error.service.toUpperCase()}_ERROR`,
-            status >= 500,
-            recordId
-        );
-    }
-    return new AgentSkillError(
-        "Agent Skill operation failed",
-        500,
-        "AGENT_SKILL_ERROR",
-        true,
-        recordId
-    );
-}
-
 export class AgentSkillService {
     private readonly registry: AgentSkillRegistry;
     private readonly storage: AgentSkillStorage;
@@ -432,6 +108,8 @@ export class AgentSkillService {
     private readonly jwtSecret: string;
     private readonly now: () => Date;
     private readonly mutationQueues = new Map<string, Promise<void>>();
+    readonly installations: AgentSkillInstallationService;
+    readonly access: AgentSkillAccessService;
 
     constructor(options: AgentSkillServiceOptions) {
         this.registry = options.registry;
@@ -441,6 +119,36 @@ export class AgentSkillService {
         this.tenantId = options.tenantId;
         this.jwtSecret = options.jwtSecret;
         this.now = options.now || (() => new Date());
+        this.installations = new AgentSkillInstallationService({
+            publications: this,
+            registry: options.registry,
+            installations: options.installationRegistry,
+            authorization: options.authorization,
+            installationAuthorization: options.installationAuthorization,
+            archiveLimits: options.archiveLimits,
+            tenantId: options.tenantId,
+            now: this.now
+        });
+        this.access = new AgentSkillAccessService({
+            publications: this,
+            registry: options.registry,
+            authorization: options.authorization,
+            shareGroups: options.shareGroups
+        });
+    }
+
+    /**
+     * Mint the short-lived internal administrator session. Only for trusted
+     * Agent Services-to-Registry/Storage/Access Group calls after the real
+     * caller was authorized; it never leaves this process.
+     */
+    internalSessionToken(): string {
+        return this.internalSession();
+    }
+
+    /** Serialize mutations of one deterministic record ID in this process. */
+    runExclusive<T>(recordId: string, operation: () => Promise<T>): Promise<T> {
+        return this.exclusive(recordId, operation);
     }
 
     private internalSession(): string {
@@ -761,130 +469,169 @@ export class AgentSkillService {
         }
         const userId = type === "user" ? user.id : undefined;
         const id = agentSkillRecordId(type, userId, archive.name);
-        return await this.exclusive(id, async () => {
-            let auditRecord = this.syntheticRecord(type, user.id, archive.name);
-            try {
-                const createdAt = this.now().toISOString();
-                const candidate = this.buildRecord(
+        return await this.exclusive(id, () =>
+            this.createUnlocked(type, bytes, archive, user)
+        );
+    }
+
+    /**
+     * Check the real caller's typed create permission for the exact
+     * publication a validated archive would create, without changing state.
+     */
+    async assertCanCreate(
+        type: AgentSkillType,
+        archive: ValidatedAgentSkillArchive,
+        user: AuthenticatedUser
+    ): Promise<void> {
+        const userId = type === "user" ? user.id : undefined;
+        const id = agentSkillRecordId(type, userId, archive.name);
+        const createdAt = this.now().toISOString();
+        await this.requirePermission(
+            "create",
+            this.buildRecord(
+                id,
+                type,
+                user.id,
+                userId,
+                archive,
+                "PENDING",
+                createdAt,
+                user.id,
+                createdAt,
+                user.id
+            ),
+            user
+        );
+    }
+
+    /** Create a validated publication; the caller holds its record lock. */
+    async createUnlocked(
+        type: AgentSkillType,
+        bytes: Buffer,
+        archive: ValidatedAgentSkillArchive,
+        user: AuthenticatedUser
+    ): Promise<AgentSkillMetadata> {
+        const userId = type === "user" ? user.id : undefined;
+        const id = agentSkillRecordId(type, userId, archive.name);
+        let auditRecord = this.syntheticRecord(type, user.id, archive.name);
+        try {
+            const createdAt = this.now().toISOString();
+            const candidate = this.buildRecord(
+                id,
+                type,
+                user.id,
+                userId,
+                archive,
+                "PENDING",
+                createdAt,
+                user.id,
+                createdAt,
+                user.id
+            );
+            // Never perform a privileged lookup or lifecycle write unless
+            // the real caller is authorized for this exact publication.
+            await this.requirePermission("create", candidate, user);
+            const internalSession = this.internalSession();
+            const existingRaw = await this.registry.get(id, internalSession);
+            let pending: AgentSkillRecord;
+            if (existingRaw) {
+                pending = this.recoverCreate(
+                    existingRaw,
                     id,
                     type,
                     user.id,
-                    userId,
-                    archive,
-                    "PENDING",
-                    createdAt,
-                    user.id,
-                    createdAt,
-                    user.id
+                    archive
                 );
-                // Never perform a privileged lookup or lifecycle write unless
-                // the real caller is authorized for this exact publication.
-                await this.requirePermission("create", candidate, user);
-                const internalSession = this.internalSession();
-                const existingRaw = await this.registry.get(
-                    id,
-                    internalSession
-                );
-                let pending: AgentSkillRecord;
-                if (existingRaw) {
+            } else {
+                pending = candidate;
+                try {
+                    // Agent Skill records are only written by Agent Services
+                    // (with the internal session), after authorising the
+                    // real caller above. The aspect records the real actor.
+                    await this.registry.create(pending, internalSession);
+                } catch (error) {
+                    if (
+                        error instanceof DownstreamServiceError &&
+                        ![400, 409].includes(error.status) &&
+                        error.status < 500
+                    ) {
+                        throw error;
+                    }
+                    const recovered = await this.registry.get(
+                        id,
+                        internalSession
+                    );
+                    if (!recovered) {
+                        if (
+                            error instanceof DownstreamServiceError &&
+                            [400, 409].includes(error.status)
+                        ) {
+                            throw new AgentSkillError(
+                                "Agent Skill name is already in use",
+                                409,
+                                "AGENT_SKILL_ID_CONFLICT",
+                                false,
+                                id
+                            );
+                        }
+                        throw error;
+                    }
                     pending = this.recoverCreate(
-                        existingRaw,
+                        recovered,
                         id,
                         type,
                         user.id,
                         archive
                     );
-                } else {
-                    pending = candidate;
-                    try {
-                        // Agent Skill records are only written by Agent Services
-                        // (with the internal session), after authorising the
-                        // real caller above. The aspect records the real actor.
-                        await this.registry.create(pending, internalSession);
-                    } catch (error) {
-                        if (
-                            error instanceof DownstreamServiceError &&
-                            ![400, 409].includes(error.status) &&
-                            error.status < 500
-                        ) {
-                            throw error;
-                        }
-                        const recovered = await this.registry.get(
-                            id,
-                            internalSession
-                        );
-                        if (!recovered) {
-                            if (
-                                error instanceof DownstreamServiceError &&
-                                [400, 409].includes(error.status)
-                            ) {
-                                throw new AgentSkillError(
-                                    "Agent Skill name is already in use",
-                                    409,
-                                    "AGENT_SKILL_ID_CONFLICT",
-                                    false,
-                                    id
-                                );
-                            }
-                            throw error;
-                        }
-                        pending = this.recoverCreate(
-                            recovered,
-                            id,
-                            type,
-                            user.id,
-                            archive
-                        );
-                    }
                 }
-                auditRecord = pending;
-                // Recheck the same requested operation against authoritative
-                // state before any administrator-authorized mutation.
-                await this.requirePermission("create", pending, user);
-                const stored = await this.storage.inspect(
-                    pending.aspects["agent-skill"].archiveKey,
-                    internalSession
-                );
-                this.requireArchiveIdentity(stored, pending, false);
-                await this.storage.upload(
-                    pending.aspects["agent-skill"].archiveKey,
-                    id,
-                    bytes,
-                    internalSession
-                );
-                this.requireArchiveIdentity(
-                    await this.storage.inspect(
-                        pending.aspects["agent-skill"].archiveKey,
-                        internalSession
-                    ),
-                    pending,
-                    true
-                );
-                if (pending.aspects["agent-skill"].state === "READY") {
-                    this.audit("create", pending, user, "success");
-                    return metadata(pending);
-                }
-                const ready: AgentSkillRecord = {
-                    ...pending,
-                    aspects: {
-                        ...pending.aspects,
-                        "agent-skill": {
-                            ...pending.aspects["agent-skill"],
-                            state: "READY",
-                            updatedAt: this.now().toISOString(),
-                            updatedBy: user.id
-                        }
-                    }
-                };
-                await this.registry.put(ready, internalSession);
-                this.audit("create", ready, user, "success");
-                return metadata(ready);
-            } catch (error) {
-                const mapped = downstreamError(error, id);
-                this.audit("create", auditRecord, user, "failure", mapped.code);
-                throw mapped;
             }
-        });
+            auditRecord = pending;
+            // Recheck the same requested operation against authoritative
+            // state before any administrator-authorized mutation.
+            await this.requirePermission("create", pending, user);
+            const stored = await this.storage.inspect(
+                pending.aspects["agent-skill"].archiveKey,
+                internalSession
+            );
+            this.requireArchiveIdentity(stored, pending, false);
+            await this.storage.upload(
+                pending.aspects["agent-skill"].archiveKey,
+                id,
+                bytes,
+                internalSession
+            );
+            this.requireArchiveIdentity(
+                await this.storage.inspect(
+                    pending.aspects["agent-skill"].archiveKey,
+                    internalSession
+                ),
+                pending,
+                true
+            );
+            if (pending.aspects["agent-skill"].state === "READY") {
+                this.audit("create", pending, user, "success");
+                return metadata(pending);
+            }
+            const ready: AgentSkillRecord = {
+                ...pending,
+                aspects: {
+                    ...pending.aspects,
+                    "agent-skill": {
+                        ...pending.aspects["agent-skill"],
+                        state: "READY",
+                        updatedAt: this.now().toISOString(),
+                        updatedBy: user.id
+                    }
+                }
+            };
+            await this.registry.put(ready, internalSession);
+            this.audit("create", ready, user, "success");
+            return metadata(ready);
+        } catch (error) {
+            const mapped = downstreamError(error, id);
+            this.audit("create", auditRecord, user, "failure", mapped.code);
+            throw mapped;
+        }
     }
 
     async replaceAuthorized(
@@ -1111,6 +858,9 @@ export class AgentSkillService {
                 );
                 await this.registry.delete(deleting.id, internalSession);
                 this.audit("delete", deleting, user, "success");
+                // Recipients lose access with the record itself; dropping the
+                // now-unreferenced share group is housekeeping only.
+                await this.access.cleanupAfterDelete(deleting);
             } catch (error) {
                 const mapped = downstreamError(error, existing.id);
                 this.audit("delete", existing, user, "failure", mapped.code);
@@ -1302,11 +1052,52 @@ export class AgentSkillService {
         return { items, warnings };
     }
 
+    /**
+     * Merge independently resolved sources into one effective set. Effective
+     * names are unique by construction (installations share the caller's
+     * deterministic publication namespace); any collision is reported as a
+     * warning instead of silently choosing one source.
+     */
+    private mergeManifestItems(
+        sources: Array<{
+            items: WorkspaceSkillManifestItem[];
+            warnings: WorkspaceSkillManifestWarning[];
+        }>
+    ): {
+        items: WorkspaceSkillManifestItem[];
+        warnings: WorkspaceSkillManifestWarning[];
+    } {
+        const warnings = sources.flatMap((source) => source.warnings);
+        const byName = new Map<string, WorkspaceSkillManifestItem>();
+        const collided = new Set<string>();
+        for (const item of sources.flatMap((source) => source.items)) {
+            if (byName.has(item.effectiveName)) {
+                collided.add(item.effectiveName);
+                warnings.push({
+                    sourceKind: item.sourceKind,
+                    code: "DUPLICATE_RECORD",
+                    recordId: item.selectionId
+                });
+                continue;
+            }
+            byName.set(item.effectiveName, item);
+        }
+        const items = [...byName.values()]
+            .filter((item) => !collided.has(item.effectiveName))
+            .sort(
+                (left, right) =>
+                    left.effectiveName.localeCompare(right.effectiveName) ||
+                    left.selectionId.localeCompare(right.selectionId)
+            );
+        return { items, warnings: warnings.slice(0, 100) };
+    }
+
     async getWorkspaceSkillManifest(
         user: AuthenticatedUser
     ): Promise<WorkspaceSkillManifest> {
-        // Keep source traversals independent. #3861 can add an installation
-        // resolver without changing publication pagination or source authority.
+        // Source traversals stay independent: each has its own pagination and
+        // authority, and the installation resolver re-reads every source as
+        // the real caller.
         const system = await this.workspaceManifestSource(
             "system-publication",
             user
@@ -1315,11 +1106,12 @@ export class AgentSkillService {
             "own-user-publication",
             user
         );
-        const items = [...system.items, ...own.items].sort(
-            (left, right) =>
-                left.effectiveName.localeCompare(right.effectiveName) ||
-                left.selectionId.localeCompare(right.selectionId)
-        );
+        const installed = await this.installations.resolveForManifest(user);
+        const { items, warnings } = this.mergeManifestItems([
+            system,
+            own,
+            installed
+        ]);
         return {
             version: 1,
             complete: true,
@@ -1328,11 +1120,16 @@ export class AgentSkillService {
                 userId: user.id
             },
             items,
-            warnings: [...system.warnings, ...own.warnings].slice(0, 100),
+            warnings,
+            unavailableInstallations: installed.unavailable,
             sources: {
                 system: { complete: true, count: system.items.length },
                 user: { complete: true, count: own.items.length },
-                installations: { status: "notImplemented", count: 0 }
+                installations: {
+                    complete: true,
+                    count: installed.items.length,
+                    unavailable: installed.unavailable.length
+                }
             }
         };
     }
@@ -1342,15 +1139,14 @@ export class AgentSkillService {
     ): Promise<LocalSkillSyncManifest> {
         // This source is intentionally independent from the Workspace manifest:
         // local reconciliation must never gain system publications implicitly.
+        // Only explicitly installed shared sources are added, never every
+        // readable one.
         const own = await this.workspaceManifestSource(
             "own-user-publication",
             user
         );
-        const items = own.items.sort(
-            (left, right) =>
-                left.effectiveName.localeCompare(right.effectiveName) ||
-                left.selectionId.localeCompare(right.selectionId)
-        );
+        const installed = await this.installations.resolveForManifest(user);
+        const { items, warnings } = this.mergeManifestItems([own, installed]);
         return {
             version: 1,
             complete: true,
@@ -1359,10 +1155,15 @@ export class AgentSkillService {
                 userId: user.id
             },
             items,
-            warnings: own.warnings,
+            warnings,
+            unavailableInstallations: installed.unavailable,
             sources: {
-                user: { complete: true, count: items.length },
-                installations: { status: "notImplemented", count: 0 }
+                user: { complete: true, count: own.items.length },
+                installations: {
+                    complete: true,
+                    count: installed.items.length,
+                    unavailable: installed.unavailable.length
+                }
             }
         };
     }

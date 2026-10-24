@@ -72,3 +72,55 @@ test_unsuffixed_operation_is_not_delegated_to_a_grant {
 		"user": {"id": user_id, "roles": [], "permissions": [entrypoint_system_admin_permission]},
 	}
 }
+
+installation_recipient := "00000000-0000-4000-8000-0000000000b0"
+
+installation_permission := {
+	"resourceUri": "object/agentSkill/install",
+	"userOwnershipConstraint": true,
+	"orgUnitOwnershipConstraint": false,
+	"preAuthorisedConstraint": false,
+	"operations": [
+		{"uri": "object/agentSkill/install/create"},
+		{"uri": "object/agentSkill/install/delete"},
+	],
+}
+
+installation_record := {
+	"id": sprintf("agent-skill-%s-csv-reporter", [installation_recipient]),
+	"name": "csv-reporter",
+	"agent-skill-installation": {
+		"userId": installation_recipient,
+		"sourceSkillId": "agent-skill-00000000-0000-4000-8000-0000000000a1-csv-reporter",
+		"createdAt": "2026-10-21T00:00:00Z",
+	},
+	"access-control": {"ownerId": installation_recipient},
+}
+
+test_entrypoint_routes_installation_decisions_to_typed_rules {
+	allow with input as {
+		"operationUri": "object/agentSkill/install/create",
+		"object": {"agentSkillInstallation": installation_record},
+		"user": {"id": installation_recipient, "permissions": [installation_permission]},
+	}
+
+	allow with input as {
+		"operationUri": "object/agentSkill/install/delete",
+		"object": {"agentSkillInstallation": installation_record},
+		"user": {"id": installation_recipient, "permissions": [installation_permission]},
+	}
+}
+
+test_entrypoint_installation_decisions_stay_owner_scoped {
+	not allow with input as {
+		"operationUri": "object/agentSkill/install/create",
+		"object": {"agentSkillInstallation": installation_record},
+		"user": {"id": "00000000-0000-4000-8000-0000000000c3", "permissions": [installation_permission]},
+	}
+
+	not allow with input as {
+		"operationUri": "object/agentSkill/install/update",
+		"object": {"agentSkillInstallation": installation_record},
+		"user": {"id": installation_recipient, "permissions": [installation_permission]},
+	}
+}

@@ -1,4 +1,4 @@
-import { MgdApiError } from "./errors.js";
+import { MgdApiError, UsageError } from "./errors.js";
 
 export type OutputMode = "human" | "json" | "jsonl";
 
@@ -49,7 +49,8 @@ export function printError(e: unknown, mode: OutputMode): void {
                       ...(e.details ? { details: e.details } : {})
                   }
                 : {
-                      code: "error",
+                      code:
+                          e instanceof UsageError && e.code ? e.code : "error",
                       message: e instanceof Error ? e.message : String(e)
                   };
         process.stderr.write(JSON.stringify({ error }) + "\n");

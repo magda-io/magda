@@ -3,7 +3,8 @@
 import {
     AgentSkillApiError,
     listAgentSkills,
-    replaceAgentSkillArchive
+    replaceAgentSkillArchive,
+    sharingErrorMessage
 } from "./AgentSkillApis";
 import { retryAgentWorkspaceSkillSync } from "./AgentWorkspaceApis";
 
@@ -134,5 +135,20 @@ describe("Agent Skill and Workspace sync API clients", () => {
             status: 409,
             message: "Agent Workspace must be ready"
         });
+    });
+
+    it("explains the recipient limit", () => {
+        expect(
+            sharingErrorMessage(
+                new AgentSkillApiError(
+                    "limit",
+                    409,
+                    "AGENT_SKILL_SHARE_LIMIT_REACHED",
+                    { limit: 500 }
+                )
+            )
+        ).toBe(
+            "This skill is already shared with the maximum of 500 users. Remove a recipient before adding another."
+        );
     });
 });

@@ -20,6 +20,7 @@ import {
 import { assertRealManagedAncestors } from "../agentSkillState.js";
 import {
     cacheAcknowledgedPublication,
+    cacheForkedPublication,
     cachedDesired,
     clientForSourceAccount,
     reconcileResult,
@@ -178,10 +179,15 @@ async function publishInstallation(
 ): Promise<void> {
     const { marker } = installation;
     const ref = { type: marker.source.type, id: marker.source.id };
-    if (marker.source.kind === "installation")
-        throw new UsageError(
-            "This is an installed copy of a skill shared by another publisher, whose publication is never modified. Publishing it as your own skill (`publish --force`) arrives with installed shared skills; it is not available yet."
-        );
+    if (marker.source.kind === "installation") {
+        if (!opts.force)
+            throw new UsageError(
+                `This is your installed copy of ${ref.id}, a skill shared with you by another user. Publishing it creates your own user skill named "${marker.name}" from this copy (a fork): your installation of the shared skill is removed and replaced by your publication, and the original publisher's skill is never changed. If that is what you want, rerun with \`mgd agent-skill publish ${installation.path} --force\`.`,
+                "SHARED_INSTALLATION_FORK_REQUIRED"
+            );
+        await forkInstallation(installation, opts);
+        return;
+    }
     if (marker.source.kind !== "own-user-publication")
         throw new UsageError(
             `This is an installed copy of ${ref.type}/${ref.id}. Installed system skills are not published from their installation; use \`mgd agent-skill pull ${ref.type}/${ref.id}\` and publish that working directory with --type system.`
@@ -271,6 +277,132 @@ async function publishInstallation(
 }
 
 /**
+ * `publish --force` of an installed shared copy: publish it as the recipient's
+ * own user skill in the installation's place (#3861). `--force` is the
+ * explicit consent; there is no second prompt. The recipient account recorded
+ * in the marker is authenticated (never the active profile by default), and
+ * the publisher's original is never written. Edited local files are kept on
+ * every failure.
+ */
+async function forkInstallation(
+    installation: RecognizedInstallation,
+    opts: { type: AgentSkillType; json?: boolean }
+): Promise<void> {
+    const { marker } = installation;
+    const installationRecordId = marker.installationRecordId!;
+    if (opts.type !== "user")
+        throw new UsageError(
+            "An installed shared skill can only be published as your own user skill (--type user)"
+        );
+    const candidate = await createAgentSkillArchiveFromInstallation(
+        installation.path,
+        "user"
+    );
+    if (candidate.name !== marker.name)
+        throw new UsageError(
+            `SKILL.md name "${candidate.name}" no longer matches the installed name "${marker.name}". Copy the directory elsewhere (without ${AGENT_SKILL_INSTALL_MARKER}) to publish it under a new name.`
+        );
+    const source = await clientForSourceAccount(marker.sourceKey);
+    if (
+        installationRecordId !==
+        `agent-skill-${source.identity.userId}-${marker.name}`
+    )
+        throw new UsageError(
+            "This installed copy's metadata does not belong to its recorded account; mgd will not publish it."
+        );
+    let result;
+    try {
+        result = await source.client
+            .publishInstallation(installationRecordId, candidate.bytes)
+            .catch((error) => {
+                throw withWriteTarget(error, {
+                    operation: "create",
+                    type: "user",
+                    id: installationRecordId,
+                    name: candidate.name,
+                    checksum: candidate.checksum
+                });
+            });
+    } catch (error) {
+        if (
+            error instanceof MgdApiError &&
+            error.code === "AGENT_SKILL_FORK_INCOMPLETE"
+        )
+            throw new UsageError(
+                `Your installation of the shared skill was removed, but your own publication was not created yet (${error.message}). Your local files were not changed. Rerun \`mgd agent-skill publish ${installation.path} --force\` to finish.`
+            );
+        throw error;
+    }
+    const { publication: metadata } = result;
+    if (
+        metadata.checksum !== candidate.checksum ||
+        metadata.userId !== source.identity.userId
+    )
+        throw new Error(
+            "The server acknowledged a different publication than was sent; run `mgd agent-skill sync` and review before retrying"
+        );
+    // The server accepted the fork. Local bookkeeping failures below must not
+    // make it appear to have failed.
+    let cacheError: string | undefined;
+    try {
+        await cacheForkedPublication(
+            source.state,
+            installationRecordId,
+            metadata,
+            candidate
+        );
+    } catch (error) {
+        cacheError = (error as Error).message;
+    }
+    let rebound = false;
+    if (!cacheError)
+        try {
+            const {
+                installationRecordId: _installation,
+                alias: _alias,
+                ...rest
+            } = marker;
+            await writeInstallMarker(installation.path, {
+                ...rest,
+                source: {
+                    type: "user",
+                    id: metadata.id,
+                    kind: "own-user-publication"
+                },
+                baselineChecksum: metadata.checksum,
+                baselineTreeDigest: candidate.treeDigest
+            });
+            rebound = true;
+        } catch (error) {
+            cacheError = (error as Error).message;
+        }
+    if (opts.json) {
+        printData("json", {
+            ...metadata,
+            forkedFrom: { source: marker.source.id, installationRecordId },
+            installationRemoved: result.installationRemoved,
+            localCache: cacheError ? "failed" : "updated",
+            installation: {
+                path: installation.path,
+                sourceProfile: source.profileName,
+                rebound
+            }
+        });
+        return;
+    }
+    note(
+        `Published your own user skill ${metadata.type}/${metadata.id} from ${installation.path} using profile "${source.profileName}" (the account that installed it). Your installation of ${marker.source.id} was replaced; the original publisher's skill was not changed.`
+    );
+    if (cacheError)
+        note(
+            `The remote publication succeeded, but local bookkeeping failed (${cacheError}). Do not publish it again; run \`mgd agent-skill sync\` with that profile to repair the local copy and cache.`
+        );
+    note(
+        "Other harness copies were not changed. Run `mgd agent-skill sync` to update them to your publication."
+    );
+}
+
+/**
  * After server acknowledgement, cache the exact published ZIP in the account's
  * verified cache. Failures are reported, never turned into publish failures.
  */
@@ -318,6 +450,45 @@ function withWriteTarget(
         : error;
 }
 
+function pageLimit(value: string): number {
+    const limit = Number(value);
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100)
+        throw new UsageError("--limit must be an integer from 1 to 100");
+    return limit;
+}
+
+/** A shared user publication: `user/<id>` or a bare publication ID. */
+function sharedRef(value: string) {
+    const ref = value.includes("/")
+        ? parseAgentSkillRef(value)
+        : { type: "user" as const, id: value };
+    if (ref.type !== "user")
+        throw new UsageError(
+            "Only user skills shared with you can be installed; system skills reach Agent Workspaces through their access settings"
+        );
+    return ref;
+}
+
+/** Resolve an installed name (or installation ID) of the current account. */
+async function installationIdFor(
+    client: AgentSkillClient,
+    value: string
+): Promise<string> {
+    if (value.startsWith("agent-skill-")) return value;
+    let pageToken: string | undefined;
+    do {
+        const page = await client.installations({ limit: 100, pageToken });
+        const found = page.items.find(
+            (item) => "effectiveName" in item && item.effectiveName === value
+        );
+        if (found) return found.id;
+        pageToken = page.hasMore ? page.nextPageToken : undefined;
+    } while (pageToken);
+    throw new UsageError(
+        `No installed shared skill is named "${value}". List them with \`mgd agent-skill installations\`.`
+    );
+}
+
 export function registerAgentSkillCommands(program: Command): void {
     const root = program
         .command("agent-skill")
@@ -326,6 +497,10 @@ export function registerAgentSkillCommands(program: Command): void {
 
     root.command("list")
         .addOption(typeOption(true))
+        .option(
+            "--shared",
+            "other users' published skills shared with you (not installed until `install`)"
+        )
         .option("--limit <number>", "page size", "20")
         .option("--page-token <token>")
         .option("--query <text>")
@@ -333,17 +508,16 @@ export function registerAgentSkillCommands(program: Command): void {
         .option("--jsonl")
         .action(async (opts, command) => {
             rejectScope(command);
-            const limit = Number(opts.limit);
-            if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100)
+            const limit = pageLimit(opts.limit);
+            if (opts.shared && opts.type === "system")
                 throw new UsageError(
-                    "--limit must be an integer from 1 to 100"
+                    "--shared lists user skills shared with you; it cannot be combined with --type system"
                 );
-            const page = await (await api()).list({
-                type: opts.type,
-                limit,
-                pageToken: opts.pageToken,
-                q: opts.query
-            });
+            const client = await api();
+            const query = { limit, pageToken: opts.pageToken, q: opts.query };
+            const page = opts.shared
+                ? await client.listShared(query)
+                : await client.list({ ...query, type: opts.type });
             const mode = resolveMode(opts);
             if (mode === "human") {
                 for (const item of page.items)
@@ -424,7 +598,7 @@ export function registerAgentSkillCommands(program: Command): void {
         .addOption(typeOption())
         .option(
             "--force",
-            "overwrite your own publication even if it changed remotely"
+            "overwrite your own publication even if it changed remotely; for an installed shared skill, publish it as your own skill in place of the installation"
         )
         .option("--json")
         .action(async (directory: string, opts) => {
@@ -767,5 +941,227 @@ export function registerAgentSkillCommands(program: Command): void {
             if (result.status !== "success" && !opts.workspaceStatus) {
                 process.exitCode = 1;
             }
+        });
+
+    root.command("installations")
+        .description(
+            "List the shared skills you installed, with their source status"
+        )
+        .option("--limit <number>", "page size", "20")
+        .option("--page-token <token>")
+        .option("--json")
+        .option("--jsonl")
+        .action(async (opts) => {
+            const page = await (await api()).installations({
+                limit: pageLimit(opts.limit),
+                pageToken: opts.pageToken
+            });
+            const mode = resolveMode(opts);
+            if (mode !== "human") {
+                printData(mode, page, page.items);
+                return;
+            }
+            for (const item of page.items) {
+                if ("problem" in item) {
+                    process.stdout.write(
+                        `${item.id}\tinvalid installation record (uninstall it)\n`
+                    );
+                    continue;
+                }
+                const source =
+                    item.source.status === "available"
+                        ? `shared by ${item.source.skill.userId}`
+                        : item.source.status === "pending"
+                        ? "source is being updated"
+                        : "source unavailable (revoked or deleted): uninstall it";
+                process.stdout.write(
+                    `${item.effectiveName}\t${item.sourceSkillId}\t${source}\n`
+                );
+            }
+            if (page.nextPageToken)
+                note(`Next page token: ${page.nextPageToken}`);
+        });
+
+    root.command("install <ref>")
+        .description(
+            "Install a user skill shared with you into your account (user/<id>)"
+        )
+        .option(
+            "--as <alias>",
+            "install under a different name, e.g. when the name is already used"
+        )
+        .option("--json")
+        .action(async (value: string, opts) => {
+            const ref = sharedRef(value);
+            const installed = await (await api())
+                .install(ref.id, opts.as)
+                .catch((error) => {
+                    if (
+                        error instanceof MgdApiError &&
+                        error.code === "AGENT_SKILL_NAME_CONFLICT"
+                    ) {
+                        const suggestion = (error.details?.server as {
+                            suggestedAlias?: string;
+                        })?.suggestedAlias;
+                        throw new UsageError(
+                            `${error.message}${
+                                suggestion
+                                    ? ` Rerun with \`--as ${suggestion}\`.`
+                                    : " Rerun with `--as <name>`."
+                            }`
+                        );
+                    }
+                    throw error;
+                });
+            if (opts.json) {
+                printData("json", installed);
+                return;
+            }
+            note(
+                `Installed ${ref.id} as "${installed.effectiveName}" (${
+                    installed.id
+                }).${
+                    installed.source.status === "available"
+                        ? ` Shared by ${installed.source.skill.userId}.`
+                        : ""
+                }`
+            );
+            note(
+                "Nothing was copied to this computer yet: run `mgd agent-skill sync` to install it in your coding-agent harnesses. Running Agent Workspaces receive it at their next skill sync."
+            );
+        });
+
+    root.command("uninstall <name>")
+        .description(
+            "Uninstall a shared skill you installed (by its installed name or installation ID); the publisher's skill is unchanged"
+        )
+        .option("--json")
+        .action(async (value: string, opts) => {
+            const client = await api();
+            const id = await installationIdFor(client, value);
+            await client.uninstall(id);
+            if (opts.json) {
+                printData("json", { id, uninstalled: true });
+                return;
+            }
+            note(
+                `Uninstalled ${id}. Run \`mgd agent-skill sync\` to remove its installed copies; edited copies are kept until \`sync --force\`.`
+            );
+        });
+
+    root.command("share <ref> <user-id>")
+        .description(
+            "Let another MAGDA user (by user ID) read one of your published skills; they install it explicitly"
+        )
+        .option("--json")
+        .action(async (value: string, userId: string, opts) => {
+            const ref = parseAgentSkillRef(value);
+            const result = await (await api()).share(ref, userId);
+            if (opts.json) printData("json", { ref, userId, ...result });
+            else
+                note(
+                    result.added
+                        ? `Shared ${value} with ${userId}. They can now find it with \`mgd agent-skill list --shared\` or Settings > Shared Skills, and install it explicitly.`
+                        : `${userId} already had access to ${value}.`
+                );
+        });
+
+    root.command("unshare <ref> <user-id>")
+        .description(
+            "Stop sharing a published skill with a user; their future syncs remove clean copies"
+        )
+        .option("--json")
+        .action(async (value: string, userId: string, opts) => {
+            const ref = parseAgentSkillRef(value);
+            const result = await (await api()).unshare(ref, userId);
+            if (opts.json) printData("json", { ref, userId, ...result });
+            else
+                note(
+                    result.removed
+                        ? `Stopped sharing ${value} with ${userId}. They can no longer read or download it; copies already on their computers are removed by their next successful sync (edited copies are kept as conflicts).`
+                        : `${value} was not shared with ${userId}.`
+                );
+        });
+
+    root.command("recipients <ref>")
+        .description("List the users a published skill is shared with")
+        .option("--offset <number>", "first result", "0")
+        .option("--limit <number>", "page size", "20")
+        .option("--keyword <text>", "match user ID or display name")
+        .option("--json")
+        .option("--jsonl")
+        .action(async (value: string, opts) => {
+            const offset = Number(opts.offset);
+            if (!Number.isSafeInteger(offset) || offset < 0)
+                throw new UsageError("--offset must be a non-negative integer");
+            const page = await (await api()).recipients(
+                parseAgentSkillRef(value),
+                {
+                    offset,
+                    limit: pageLimit(opts.limit),
+                    keyword: opts.keyword
+                }
+            );
+            const mode = resolveMode(opts);
+            if (mode !== "human") printData(mode, page, page.items);
+            else {
+                for (const item of page.items)
+                    process.stdout.write(
+                        `${item.id}\t${item.displayName || ""}\n`
+                    );
+                note(`${page.total} recipient(s).`);
+            }
+        });
+
+    root.command("access <ref>")
+        .description(
+            "Show or change who can read a system skill (Public skill and organisation); access paths are additive"
+        )
+        .option(
+            "--public",
+            "available to every user with a system-skill read permission that allows public access (not anonymous)"
+        )
+        .option(
+            "--no-public",
+            "restrict to the organisation and selected users"
+        )
+        .option("--org-unit <id>", "grant to one organisation unit")
+        .option("--clear-org-unit", "remove the organisation unit grant")
+        .option("--json")
+        .action(async (value: string, opts) => {
+            const ref = parseAgentSkillRef(value);
+            if (opts.orgUnit && opts.clearOrgUnit)
+                throw new UsageError(
+                    "--org-unit and --clear-org-unit cannot be combined"
+                );
+            const settings = {
+                ...(opts.public !== undefined ? { public: opts.public } : {}),
+                ...(opts.orgUnit ? { orgUnitId: opts.orgUnit } : {}),
+                ...(opts.clearOrgUnit ? { orgUnitId: null } : {})
+            };
+            const client = await api();
+            const access = Object.keys(settings).length
+                ? await client.updateAccess(ref, settings)
+                : await client.access(ref);
+            if (opts.json) {
+                printData("json", access);
+                return;
+            }
+            if (access.type === "system")
+                note(
+                    `${value}: Public skill ${
+                        access.public ? "on" : "off"
+                    }; organisation ${access.orgUnitId || "none"}; ${
+                        access.recipients.count
+                    } selected user(s).${
+                        access.public
+                            ? " While public, the organisation and selected users do not restrict access."
+                            : ""
+                    }`
+                );
+            else
+                note(
+                    `${value}: private to its user; shared with ${access.recipients.count} selected user(s).`
+                );
         });
 }

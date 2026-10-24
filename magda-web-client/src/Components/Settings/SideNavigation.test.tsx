@@ -164,7 +164,7 @@ describe("Agent Workspace Settings navigation", () => {
         expect(groupTitles()).not.toContain("Agent Workspace");
     });
 
-    it("shows both children for users with both permissions and for admins", () => {
+    it("shows every child for users with all permissions and for admins", () => {
         for (const currentUser of [
             user(["agentWorkspace/access", "object/agentSkill/user/read"]),
             user([], [ADMIN_ROLE_ID])
@@ -174,13 +174,26 @@ describe("Agent Workspace Settings navigation", () => {
             expect(links()).toEqual(
                 expect.arrayContaining([
                     "/settings/agent-workspace",
-                    "/settings/agent-workspace/skills"
+                    "/settings/agent-workspace/skills",
+                    "/settings/agent-workspace/shared-skills"
                 ])
             );
-            expect(links()).not.toContain(
-                "/settings/agent-workspace/shared-skills"
-            );
         }
+    });
+
+    it("shows Shared Skills independently of Workspace access", () => {
+        render(user(["object/agentSkill/install/read"]));
+        expect(groupTitles()).toContain("Agent Workspace");
+        expandAgentWorkspace();
+        expect(links()).toContain("/settings/agent-workspace/shared-skills");
+        expect(links()).not.toContain("/settings/agent-workspace");
+        expect(links()).not.toContain("/settings/agent-workspace/skills");
+
+        render(user(["object/agentSkill/system/read"]));
+        expandAgentWorkspace();
+        expect(links()).not.toContain(
+            "/settings/agent-workspace/shared-skills"
+        );
     });
 
     it("highlights only the current child", () => {

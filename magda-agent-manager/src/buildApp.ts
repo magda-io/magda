@@ -155,7 +155,8 @@ export default function buildApp(
                         code: error.code,
                         message: error.message,
                         retryable: error.retryable,
-                        ...(error.recordId ? { id: error.recordId } : {})
+                        ...(error.recordId ? { id: error.recordId } : {}),
+                        ...(error.details ? { details: error.details } : {})
                     }
                 });
                 return;
@@ -169,6 +170,16 @@ export default function buildApp(
                         code: `${error.service.toUpperCase()}_ERROR`,
                         message: error.message,
                         retryable: status >= 500
+                    }
+                });
+                return;
+            }
+            if ((error as { type?: string }).type === "entity.parse.failed") {
+                res.status(400).json({
+                    error: {
+                        code: "INVALID_JSON",
+                        message: "Request body must be valid JSON",
+                        retryable: false
                     }
                 });
                 return;

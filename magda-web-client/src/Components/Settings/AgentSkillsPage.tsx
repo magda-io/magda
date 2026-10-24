@@ -13,6 +13,7 @@ import Input from "rsuite/Input";
 import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import Breadcrumb from "./Breadcrumb";
+import AgentSkillAccessDialog from "./AgentSkillAccessDialog";
 import SideNavigation from "./SideNavigation";
 import { StateType } from "reducers/reducer";
 import { User } from "reducers/userManagementReducer";
@@ -41,7 +42,8 @@ const FILTERS: Array<{ value: AgentSkillFilter; label: string }> = [
 const EMPTY_MESSAGES: Record<AgentSkillFilter, string> = {
     all: "No published Agent Skills are available to you yet.",
     mine: "You haven't published any Agent Skills yet.",
-    system: "No system Agent Skills are available to you."
+    system: "No system Agent Skills are available to you.",
+    shared: "No skills have been shared with you yet."
 };
 
 const CSV_EXAMPLE =
@@ -164,18 +166,23 @@ export const AgentSkillCard: FunctionComponent<{
     skill: AgentSkillMetadata;
     currentUserId?: string;
     canReplace: boolean;
+    /** Owner sharing (user skills) or system skill access management. */
+    canManageAccess?: boolean;
     busy?: "download" | "replace";
     feedback?: ItemFeedback;
     onDownload: () => void;
     onReplace: (file: File) => void;
+    onManageAccess?: () => void;
 }> = ({
     skill,
     currentUserId,
     canReplace,
+    canManageAccess,
     busy,
     feedback,
     onDownload,
-    onReplace
+    onReplace,
+    onManageAccess
 }) => {
     const fileInput = useRef<HTMLInputElement>(null);
     const person = (id?: string) =>
@@ -275,6 +282,28 @@ export const AgentSkillCard: FunctionComponent<{
                             />
                         </>
                     ) : null}
+                    {canManageAccess ? (
+                        <Button
+                            size="sm"
+                            appearance="ghost"
+                            disabled={!!busy}
+                            aria-label={`Share ${skill.name}`}
+                            onClick={onManageAccess}
+                        >
+                            Share
+                        </Button>
+                    ) : null}
+                </div>
+            ) : canManageAccess ? (
+                <div className="agent-skill-actions">
+                    <Button
+                        size="sm"
+                        appearance="ghost"
+                        aria-label={`Manage access to ${skill.name}`}
+                        onClick={onManageAccess}
+                    >
+                        Manage access
+                    </Button>
                 </div>
             ) : null}
             {feedback ? (
@@ -309,6 +338,7 @@ const AgentSkillsPage: FunctionComponent = () => {
         Record<string, "download" | "replace" | undefined>
     >({});
     const [feedback, setFeedback] = useState<Record<string, ItemFeedback>>({});
+    const [managing, setManaging] = useState<AgentSkillMetadata>();
     // Collapsed until the first unfiltered page loads; then open only when
     // there is nothing to browse yet. A user's own toggle always wins.
     const [guideOpen, setGuideOpen] = useState(false);
@@ -462,6 +492,12 @@ const AgentSkillsPage: FunctionComponent = () => {
         "object/agentSkill/user/update",
         user
     );
+    // Navigation hint only: Agent Services authorizes the typed update of the
+    // actual skill before any access change.
+    const canManageSystemSkills = hasPermission(
+        "object/agentSkill/system/update",
+        user
+    );
 
     const renderCatalogue = () => {
         if (loading) {
@@ -504,6 +540,13 @@ const AgentSkillsPage: FunctionComponent = () => {
                             skill.userId === user?.id &&
                             canUpdateUserSkills
                         }
+                        canManageAccess={
+                            skill.type === "user"
+                                ? skill.userId === user?.id &&
+                                  canUpdateUserSkills
+                                : canManageSystemSkills
+                        }
+                        onManageAccess={() => setManaging(skill)}
                         busy={busy[skill.id]}
                         feedback={feedback[skill.id]}
                         onDownload={() => download(skill)}
@@ -613,6 +656,10 @@ const AgentSkillsPage: FunctionComponent = () => {
                     ) : null}
                 </section>
             </main>
+            <AgentSkillAccessDialog
+                skill={managing}
+                onClose={() => setManaging(undefined)}
+            />
         </div>
     );
 };

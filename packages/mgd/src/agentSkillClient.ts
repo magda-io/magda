@@ -2,24 +2,154 @@ import { MagdaClient } from "./client.js";
 import { MgdApiError } from "./errors.js";
 import {
     AGENT_SKILLS,
+    AGENT_SKILL_INSTALLATIONS,
     AGENT_SKILL_LOCAL_SYNC_MANIFEST,
     AGENT_SKILL_WORKSPACE_MANIFEST,
     agentSkill,
-    agentSkillArchive
+    agentSkillAccess,
+    agentSkillArchive,
+    agentSkillInstallation
 } from "./endpoints.js";
 import {
+    AgentSkillAccess,
+    AgentSkillInstallation,
+    AgentSkillInstallationPage,
     AgentSkillListType,
     AgentSkillMetadata,
     AgentSkillPage,
     AgentSkillRef,
     AgentSkillType,
     LocalSkillManifest,
+    UnavailableSkillInstallation,
+    WorkspaceSkillManifestItem,
     WorkspaceSkillManifestWithIdentity
 } from "./agentSkillTypes.js";
 
 const CHECKSUM = /^[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const RESERVED_NAMES = new Set(["capture-workflow", "magda-mgd"]);
+
+function validInstalledName(name: unknown): name is string {
+    return (
+        typeof name === "string" &&
+        SKILL_NAME.test(name) &&
+        name.length <= 46 &&
+        !name.startsWith("system-") &&
+        !RESERVED_NAMES.has(name)
+    );
+}
+
+/**
+ * Validate one manifest item against the authenticated identity. An
+ * installation item must name the caller's own deterministic installation and
+ * another user's publication, with an effective name of its alias or the
+ * source name.
+ */
+function assertManifestItem(
+    item: WorkspaceSkillManifestItem,
+    userId: string,
+    allowed: ReadonlySet<WorkspaceSkillManifestItem["sourceKind"]>,
+    message: string
+): WorkspaceSkillManifestItem {
+    const source = assertMetadata(item?.source);
+    if (!allowed.has(item.sourceKind)) throw new Error(message);
+    if (item.sourceKind === "installation") {
+        const installation = item.installation;
+        if (
+            !installation ||
+            source.type !== "user" ||
+            !source.userId ||
+            source.userId === userId ||
+            installation.userId !== userId ||
+            installation.sourceSkillId !== source.id ||
+            installation.id !== item.selectionId ||
+            installation.id !== `agent-skill-${userId}-${item.effectiveName}` ||
+            !validInstalledName(item.effectiveName) ||
+            (installation.alias === undefined
+                ? item.effectiveName !== source.name
+                : installation.alias !== item.effectiveName ||
+                  installation.alias === source.name)
+        )
+            throw new Error(message);
+        return {
+            selectionId: item.selectionId,
+            effectiveName: item.effectiveName,
+            sourceKind: item.sourceKind,
+            source,
+            installation: {
+                id: installation.id,
+                userId: installation.userId,
+                sourceSkillId: installation.sourceSkillId,
+                ...(installation.alias !== undefined
+                    ? { alias: installation.alias }
+                    : {})
+            }
+        };
+    }
+    if (
+        item.installation !== undefined ||
+        item.selectionId !== source.id ||
+        item.effectiveName !== source.name ||
+        (item.sourceKind === "system-publication") !==
+            (source.type === "system") ||
+        (item.sourceKind === "own-user-publication" && source.userId !== userId)
+    )
+        throw new Error(message);
+    return { ...item, source };
+}
+
+function assertUnavailableInstallations(
+    value: unknown,
+    userId: string,
+    message: string
+): UnavailableSkillInstallation[] {
+    // Servers that predate installations omit the list.
+    if (value === undefined) return [];
+    if (!Array.isArray(value)) throw new Error(message);
+    return value.map((entry) => {
+        if (
+            !entry ||
+            typeof entry !== "object" ||
+            entry.code !== "SOURCE_UNAVAILABLE" ||
+            !validInstalledName(entry.effectiveName) ||
+            entry.installationId !==
+                `agent-skill-${userId}-${entry.effectiveName}` ||
+            typeof entry.sourceSkillId !== "string" ||
+            !/^agent-skill-[0-9a-z-]+$/.test(entry.sourceSkillId)
+        )
+            throw new Error(message);
+        return {
+            installationId: entry.installationId,
+            effectiveName: entry.effectiveName,
+            sourceSkillId: entry.sourceSkillId,
+            code: "SOURCE_UNAVAILABLE" as const
+        };
+    });
+}
+
+function assertInstallation(value: unknown, userId?: string) {
+    const item = value as AgentSkillInstallation;
+    if (
+        !item ||
+        typeof item !== "object" ||
+        typeof item.id !== "string" ||
+        !validInstalledName(item.effectiveName) ||
+        typeof item.userId !== "string" ||
+        (userId !== undefined && item.userId !== userId) ||
+        item.id !== `agent-skill-${item.userId}-${item.effectiveName}` ||
+        typeof item.sourceSkillId !== "string" ||
+        !item.source ||
+        !["available", "pending", "unavailable"].includes(item.source.status)
+    )
+        throw new Error("Invalid Agent Skill installation response");
+    if (item.source.status === "available") {
+        const skill = assertMetadata(item.source.skill);
+        if (skill.id !== item.sourceSkillId)
+            throw new Error("Invalid Agent Skill installation response");
+    }
+    return item;
+}
 
 function assertMetadata(value: unknown): AgentSkillMetadata {
     if (!value || typeof value !== "object")
@@ -73,6 +203,7 @@ export class AgentSkillClient {
     async list(
         options: {
             type?: AgentSkillListType;
+            userId?: "current" | "!current";
             limit?: number;
             pageToken?: string;
             q?: string;
@@ -81,6 +212,7 @@ export class AgentSkillClient {
         const value = await this.client.json<unknown>("GET", AGENT_SKILLS, {
             query: {
                 type: options.type ?? "all",
+                userId: options.userId,
                 limit: options.limit,
                 pageToken: options.pageToken,
                 q: options.q
@@ -133,23 +265,24 @@ export class AgentSkillClient {
         ) {
             throw new Error("Invalid Agent Skill workspace manifest response");
         }
-        value.items = value.items.map((item) => {
-            const source = assertMetadata(item.source);
-            if (
-                item.sourceKind === "installation" ||
-                (item.sourceKind !== "system-publication" &&
-                    item.sourceKind !== "own-user-publication") ||
-                item.selectionId !== source.id ||
-                item.effectiveName !== source.name ||
-                (item.sourceKind === "system-publication") !==
-                    (source.type === "system") ||
-                (item.sourceKind === "own-user-publication" &&
-                    source.userId !== value.identity.userId)
-            ) {
-                throw new Error("Invalid Agent Skill workspace manifest item");
-            }
-            return { ...item, source };
-        });
+        const message = "Invalid Agent Skill workspace manifest item";
+        value.items = value.items.map((item) =>
+            assertManifestItem(
+                item,
+                value.identity.userId,
+                new Set([
+                    "system-publication",
+                    "own-user-publication",
+                    "installation"
+                ]),
+                message
+            )
+        );
+        value.unavailableInstallations = assertUnavailableInstallations(
+            value.unavailableInstallations,
+            value.identity.userId,
+            message
+        );
         return value;
     }
 
@@ -170,20 +303,194 @@ export class AgentSkillClient {
         ) {
             throw new Error("Invalid Agent Skill local sync manifest response");
         }
-        value.items = value.items.map((item) => {
-            const source = assertMetadata(item.source);
-            if (
-                item.sourceKind !== "own-user-publication" ||
-                source.type !== "user" ||
-                source.userId !== value.identity.userId ||
-                item.selectionId !== source.id ||
-                item.effectiveName !== source.name
-            ) {
-                throw new Error("Invalid Agent Skill local sync manifest item");
-            }
-            return { ...item, source };
-        });
+        // Local computers never receive system publications.
+        const message = "Invalid Agent Skill local sync manifest item";
+        value.items = value.items.map((item) =>
+            assertManifestItem(
+                item,
+                value.identity.userId,
+                new Set(["own-user-publication", "installation"]),
+                message
+            )
+        );
+        value.unavailableInstallations = assertUnavailableInstallations(
+            value.unavailableInstallations,
+            value.identity.userId,
+            message
+        );
         return value;
+    }
+
+    /** Other users' READY publications shared with (readable by) the caller. */
+    async listShared(
+        options: { limit?: number; pageToken?: string; q?: string } = {}
+    ): Promise<AgentSkillPage> {
+        return this.list({ ...options, type: "user", userId: "!current" });
+    }
+
+    async installations(
+        options: { limit?: number; pageToken?: string } = {}
+    ): Promise<AgentSkillInstallationPage> {
+        const value = await this.client.json<AgentSkillInstallationPage>(
+            "GET",
+            AGENT_SKILL_INSTALLATIONS,
+            { query: { limit: options.limit, pageToken: options.pageToken } }
+        );
+        if (
+            !value ||
+            !Array.isArray(value.items) ||
+            typeof value.hasMore !== "boolean"
+        )
+            throw new Error("Invalid Agent Skill installation page response");
+        return {
+            items: value.items.map((item) =>
+                (item as { problem?: string }).problem === "INVALID_RECORD"
+                    ? item
+                    : assertInstallation(item)
+            ),
+            hasMore: value.hasMore,
+            ...(value.nextPageToken
+                ? { nextPageToken: value.nextPageToken }
+                : {})
+        };
+    }
+
+    async install(
+        sourceSkillId: string,
+        alias?: string
+    ): Promise<AgentSkillInstallation> {
+        return afterWrite(async () =>
+            assertInstallation(
+                await this.client.json("POST", AGENT_SKILL_INSTALLATIONS, {
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        sourceSkillId,
+                        ...(alias !== undefined ? { alias } : {})
+                    })
+                })
+            )
+        );
+    }
+
+    async uninstall(installationId: string): Promise<void> {
+        await afterWrite(() =>
+            this.client.request(
+                "DELETE",
+                agentSkillInstallation(installationId)
+            )
+        );
+    }
+
+    /**
+     * Publish an installed shared copy as the caller's own user skill in the
+     * installation's place. The publisher's original is never written.
+     */
+    async publishInstallation(
+        installationId: string,
+        bytes: Buffer
+    ): Promise<{
+        publication: AgentSkillMetadata;
+        installationRemoved: boolean;
+    }> {
+        return afterWrite(async () => {
+            const value = (await this.client.json(
+                "POST",
+                `${agentSkillInstallation(installationId)}/publish`,
+                {
+                    headers: { "content-type": "application/zip" },
+                    body: bytes
+                }
+            )) as {
+                publication?: unknown;
+                installationRemoved?: unknown;
+            };
+            const publication = assertMetadata(value?.publication);
+            if (
+                publication.type !== "user" ||
+                publication.id !== installationId ||
+                typeof value.installationRemoved !== "boolean"
+            )
+                throw new Error(
+                    "Agent Skill response identity does not match the request"
+                );
+            return {
+                publication,
+                installationRemoved: value.installationRemoved
+            };
+        });
+    }
+
+    async access(ref: AgentSkillRef): Promise<AgentSkillAccess> {
+        return this.client.json<AgentSkillAccess>(
+            "GET",
+            agentSkillAccess(ref.type, ref.id)
+        );
+    }
+
+    async updateAccess(
+        ref: AgentSkillRef,
+        settings: { public?: boolean; orgUnitId?: string | null }
+    ): Promise<AgentSkillAccess> {
+        return afterWrite(() =>
+            this.client.json<AgentSkillAccess>(
+                "PUT",
+                agentSkillAccess(ref.type, ref.id),
+                {
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify(settings)
+                }
+            )
+        );
+    }
+
+    async recipients(
+        ref: AgentSkillRef,
+        options: { offset?: number; limit?: number; keyword?: string } = {}
+    ): Promise<{
+        items: Array<{ id: string; displayName?: string }>;
+        total: number;
+    }> {
+        return this.client.json(
+            "GET",
+            `${agentSkillAccess(ref.type, ref.id)}/users`,
+            {
+                query: {
+                    offset: options.offset,
+                    limit: options.limit,
+                    keyword: options.keyword
+                }
+            }
+        );
+    }
+
+    async share(
+        ref: AgentSkillRef,
+        userId: string
+    ): Promise<{ added: boolean }> {
+        return afterWrite(() =>
+            this.client.json(
+                "PUT",
+                `${agentSkillAccess(
+                    ref.type,
+                    ref.id
+                )}/users/${encodeURIComponent(userId)}`
+            )
+        );
+    }
+
+    async unshare(
+        ref: AgentSkillRef,
+        userId: string
+    ): Promise<{ removed: boolean }> {
+        return afterWrite(() =>
+            this.client.json(
+                "DELETE",
+                `${agentSkillAccess(
+                    ref.type,
+                    ref.id
+                )}/users/${encodeURIComponent(userId)}`
+            )
+        );
     }
 
     async download(

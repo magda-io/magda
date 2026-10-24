@@ -9,6 +9,7 @@ import { ManagerConfig, resolveLlmModel } from "./types.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
     HttpAgentSkillRegistry,
+    HttpAgentSkillShareGroups,
     HttpAgentSkillStorage,
     OpaAgentSkillAuthorization
 } from "./skills/clients.js";
@@ -136,17 +137,26 @@ const proxy = new RuntimeProxy(config, kubernetes, (userId, activityTime) =>
     manager.recordMeaningfulActivity(userId, activityTime)
 );
 manager = new AgentManager(config, kubernetes, apiKeys, proxy);
+const skillRegistry = new HttpAgentSkillRegistry(
+    config.registryApiUrl,
+    config.tenantId
+);
+const skillAuthorization = new OpaAgentSkillAuthorization(
+    new AuthDecisionQueryClient(config.authApiUrl)
+);
 const skillService = new AgentSkillService({
-    registry: new HttpAgentSkillRegistry(
-        config.registryApiUrl,
-        config.tenantId
-    ),
+    registry: skillRegistry,
     storage: new HttpAgentSkillStorage(
         config.storageApiUrl,
         config.defaultStorageBucket
     ),
-    authorization: new OpaAgentSkillAuthorization(
-        new AuthDecisionQueryClient(config.authApiUrl)
+    authorization: skillAuthorization,
+    installationRegistry: skillRegistry,
+    installationAuthorization: skillAuthorization,
+    shareGroups: new HttpAgentSkillShareGroups(
+        config.authApiUrl,
+        config.registryApiUrl,
+        config.tenantId
     ),
     tenantId: config.tenantId,
     jwtSecret: config.jwtSecret,

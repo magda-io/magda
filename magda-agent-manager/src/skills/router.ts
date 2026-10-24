@@ -43,6 +43,25 @@ function queryString(value: unknown, name: string): string | undefined {
     return value;
 }
 
+function queryInteger(
+    value: unknown,
+    name: string,
+    fallback: number,
+    min: number,
+    max: number
+): number {
+    const raw = queryString(value, name);
+    const parsed = raw === undefined ? fallback : Number(raw);
+    if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) {
+        throw new AgentSkillError(
+            `${name} must be an integer from ${min} to ${max}`,
+            400,
+            `INVALID_${name.toUpperCase()}`
+        );
+    }
+    return parsed;
+}
+
 function asyncRoute(
     handler: (req: Request, res: Response) => Promise<void>
 ): (req: Request, res: Response, next: NextFunction) => void {
@@ -262,6 +281,268 @@ export default function createAgentSkillRouter(
                     ? { nextPageToken: result.nextPageToken }
                     : {})
             });
+        })
+    );
+
+    /* ----------------------- #3861 recipient installations ---------------------- */
+
+    const jsonBody = express.json({ limit: "8kb" });
+
+    router.get(
+        "/installations",
+        asyncRoute(async (req, res) => {
+            const pageToken = queryString(req.query.pageToken, "pageToken");
+            if ((pageToken?.length || 0) > 4096) {
+                throw new AgentSkillError(
+                    "pageToken is too long",
+                    400,
+                    "INVALID_QUERY"
+                );
+            }
+            res.set("Cache-Control", "private, no-store");
+            res.json(
+                await options.service.installations.list(
+                    {
+                        limit: queryInteger(
+                            req.query.limit,
+                            "limit",
+                            20,
+                            1,
+                            100
+                        ),
+                        pageToken
+                    },
+                    req.agentUser as AuthenticatedUser
+                )
+            );
+        })
+    );
+
+    router.post(
+        "/installations",
+        jsonBody,
+        asyncRoute(async (req, res) => {
+            const body = req.body;
+            if (
+                !req.is("application/json") ||
+                !body ||
+                typeof body !== "object" ||
+                Array.isArray(body) ||
+                Object.keys(body).some(
+                    (key) => key !== "sourceSkillId" && key !== "alias"
+                )
+            ) {
+                // The recipient is always the authenticated caller.
+                throw new AgentSkillError(
+                    "Request body must be { sourceSkillId, alias? }",
+                    400,
+                    "INVALID_INSTALLATION_REQUEST"
+                );
+            }
+            const result = await options.service.installations.install(
+                body,
+                req.agentUser as AuthenticatedUser
+            );
+            res.location(
+                `/api/v0/agent/skills/installations/${encodeURIComponent(
+                    result.installation.id
+                )}`
+            );
+            res.status(result.created ? 201 : 200).json(result.installation);
+        })
+    );
+
+    router.get(
+        "/installations/:id",
+        asyncRoute(async (req, res) => {
+            res.set("Cache-Control", "private, no-store");
+            res.json(
+                await options.service.installations.get(
+                    req.params.id,
+                    req.agentUser as AuthenticatedUser
+                )
+            );
+        })
+    );
+
+    router.delete(
+        "/installations/:id",
+        asyncRoute(async (req, res) => {
+            await options.service.installations.uninstall(
+                req.params.id,
+                req.agentUser as AuthenticatedUser
+            );
+            res.status(204).end();
+        })
+    );
+
+    // Publish an installed shared copy as the caller's own user skill in the
+    // installation's place (`mgd agent-skill publish --force`).
+    router.post(
+        "/installations/:id/publish",
+        asyncMiddleware(async (req, res) => {
+            await options.service.prepareCreate(
+                "user",
+                req.agentUser as AuthenticatedUser
+            );
+        }),
+        (req, res, next) => {
+            if (
+                req.get("content-type")?.split(";", 1)[0] !== "application/zip"
+            ) {
+                res.status(415).json({
+                    error: {
+                        code: "UNSUPPORTED_MEDIA_TYPE",
+                        message: "Content-Type must be application/zip"
+                    }
+                });
+                return;
+            }
+            next();
+        },
+        admitUpload,
+        express.raw({
+            type: "application/zip",
+            limit: options.maxCompressedBytes
+        }),
+        uploadBodyReceived,
+        asyncRoute(async (req, res) => {
+            const result = await options.service.installations.fork(
+                req.params.id,
+                req.body as Buffer,
+                req.agentUser as AuthenticatedUser
+            );
+            res.location(
+                `/api/v0/agent/skills/user/${encodeURIComponent(
+                    result.publication.id
+                )}`
+            );
+            res.status(201).json(result);
+        })
+    );
+
+    /* --------------------------- #3861 source access --------------------------- */
+
+    const accessType = (value: string): AgentSkillType => {
+        try {
+            return pathType(value);
+        } catch {
+            throw new AgentSkillError(
+                "Agent Skill not found",
+                404,
+                "AGENT_SKILL_NOT_FOUND"
+            );
+        }
+    };
+
+    router.get(
+        "/:type/:id/access",
+        asyncRoute(async (req, res) => {
+            res.set("Cache-Control", "private, no-store");
+            res.json(
+                await options.service.access.getAccess(
+                    accessType(req.params.type),
+                    req.params.id,
+                    req.agentUser as AuthenticatedUser
+                )
+            );
+        })
+    );
+
+    router.put(
+        "/:type/:id/access",
+        jsonBody,
+        asyncRoute(async (req, res) => {
+            const body = req.body;
+            if (
+                !body ||
+                typeof body !== "object" ||
+                Array.isArray(body) ||
+                Object.keys(body).some(
+                    (key) => key !== "public" && key !== "orgUnitId"
+                )
+            ) {
+                throw new AgentSkillError(
+                    "Request body must be { public?, orgUnitId? }",
+                    400,
+                    "INVALID_ACCESS_SETTINGS"
+                );
+            }
+            res.json(
+                await options.service.access.updateSystemAccess(
+                    accessType(req.params.type),
+                    req.params.id,
+                    body,
+                    req.agentUser as AuthenticatedUser
+                )
+            );
+        })
+    );
+
+    router.get(
+        "/:type/:id/access/users",
+        asyncRoute(async (req, res) => {
+            const keyword = queryString(req.query.keyword, "keyword");
+            if ((keyword?.length || 0) > 200) {
+                throw new AgentSkillError(
+                    "keyword is too long",
+                    400,
+                    "INVALID_QUERY"
+                );
+            }
+            res.set("Cache-Control", "private, no-store");
+            res.json(
+                await options.service.access.listRecipients(
+                    accessType(req.params.type),
+                    req.params.id,
+                    {
+                        offset: queryInteger(
+                            req.query.offset,
+                            "offset",
+                            0,
+                            0,
+                            100_000
+                        ),
+                        limit: queryInteger(
+                            req.query.limit,
+                            "limit",
+                            10,
+                            1,
+                            100
+                        ),
+                        keyword
+                    },
+                    req.agentUser as AuthenticatedUser
+                )
+            );
+        })
+    );
+
+    router.put(
+        "/:type/:id/access/users/:userId",
+        asyncRoute(async (req, res) => {
+            res.json(
+                await options.service.access.addRecipient(
+                    accessType(req.params.type),
+                    req.params.id,
+                    req.params.userId,
+                    req.agentUser as AuthenticatedUser
+                )
+            );
+        })
+    );
+
+    router.delete(
+        "/:type/:id/access/users/:userId",
+        asyncRoute(async (req, res) => {
+            res.json(
+                await options.service.access.removeRecipient(
+                    accessType(req.params.type),
+                    req.params.id,
+                    req.params.userId,
+                    req.agentUser as AuthenticatedUser
+                )
+            );
         })
     );
 
