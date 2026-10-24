@@ -70,26 +70,8 @@ test_recipient_installs_under_alias {
 	decide("create", installation(recipient, publisher, "team-csv"), [install_permission(true)])
 }
 
-test_alias_equal_to_source_name_is_not_an_alias {
-	not decide("create", installation(recipient, publisher, "csv-reporter"), [install_permission(true)])
-}
-
 test_cannot_install_for_another_recipient {
 	not decide("create", installation(other, publisher, ""), [install_permission(true)])
-}
-
-test_cannot_install_own_publication {
-	not decide("create", installation(recipient, recipient, ""), [install_permission(true)])
-}
-
-test_record_id_must_match_effective_name {
-	record := installation(recipient, publisher, "team-csv")
-	not decide("create", object.union(record, {"id": sprintf("agent-skill-%s-csv-reporter", [recipient])}), [install_permission(true)])
-}
-
-test_record_name_must_match_effective_name {
-	record := installation(recipient, publisher, "team-csv")
-	not decide("create", object.union(record, {"name": "csv-reporter"}), [install_permission(true)])
 }
 
 test_owner_must_be_recipient {
@@ -97,28 +79,16 @@ test_owner_must_be_recipient {
 	not decide("create", object.union(record, {"access-control": {"ownerId": other}}), [install_permission(true)])
 }
 
-test_system_prefixed_alias_is_rejected {
-	not decide("create", installation(recipient, publisher, "system-csv"), [install_permission(true)])
-}
-
-test_runtime_bundled_alias_is_rejected {
-	not decide("create", installation(recipient, publisher, "magda-mgd"), [install_permission(true)])
-}
-
-test_overlong_alias_is_rejected {
-	not decide("create", installation(recipient, publisher, "a23456789-123456789-123456789-123456789-1234567"), [install_permission(true)])
-}
-
-test_system_source_is_rejected {
-	record := installation(recipient, publisher, "")
-	not decide(
-		"create", object.union(record, {"agent-skill-installation": {
-			"userId": recipient,
-			"sourceSkillId": "agent-skill-system-csv-reporter",
-			"createdAt": "2026-10-21T00:00:00Z",
-		}}),
-		[install_permission(true)],
-	)
+# Identity (record ID, names, alias and source ID) is data validation, done by
+# Agent Services before every write and for every record it returns. The policy
+# only authorises: it checks the caller's ownership with literal comparisons.
+test_identity_is_not_validated_by_the_policy {
+	record := installation(recipient, publisher, "team-csv")
+	decide("create", object.union(record, {"id": sprintf("agent-skill-%s-csv-reporter", [recipient])}), [install_permission(true)])
+	decide("create", object.union(record, {"name": "csv-reporter"}), [install_permission(true)])
+	decide("create", installation(recipient, publisher, "system-csv"), [install_permission(true)])
+	decide("create", installation(recipient, recipient, ""), [install_permission(true)])
+	decide("delete", object.union(record, {"id": sprintf("agent-skill-%s-csv-reporter", [other])}), [install_permission(true)])
 }
 
 test_record_with_publication_marker_is_not_an_installation {
@@ -136,10 +106,13 @@ test_owner_update_is_never_granted {
 	not decide("update", installation(recipient, publisher, ""), [install_permission(true)])
 }
 
-test_unconstrained_update_keeps_identity {
-	decide("update", installation(recipient, publisher, ""), [install_permission(false)])
-	record := installation(recipient, publisher, "")
-	not decide("update", object.union(record, {"id": "agent-skill-other"}), [install_permission(false)])
+test_unconstrained_grant_manages_any_installation {
+	decide("read", installation(other, publisher, ""), [install_permission(false)])
+	decide("create", installation(other, publisher, ""), [install_permission(false)])
+	decide("update", installation(other, publisher, ""), [install_permission(false)])
+	decide("delete", installation(other, publisher, ""), [install_permission(false)])
+	record := installation(other, publisher, "")
+	not decide("update", object.union(record, {"agent-skill": {"type": "user", "userId": other}}), [install_permission(false)])
 }
 
 test_recipient_deletes_own_installation {
@@ -156,11 +129,6 @@ test_recipient_deletes_own_malformed_installation {
 		}}),
 		[install_permission(true)],
 	)
-}
-
-test_cannot_delete_installation_outside_own_namespace {
-	record := installation(recipient, publisher, "")
-	not decide("delete", object.union(record, {"id": sprintf("agent-skill-%s-csv-reporter", [other])}), [install_permission(true)])
 }
 
 test_no_permission_denies_everything {

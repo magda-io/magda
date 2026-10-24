@@ -242,11 +242,11 @@ record_decision(operation, record, permissions) {
 	}
 }
 
-# Installations are read with the typed read rules. Like publications, they're
-# written by Agent Services only (with its internal session), after it
-# authorises the caller with the typed installation operations.
-test_installation_record_reads_use_typed_rules_and_writes_are_reserved {
-	record_decision("read", recipient_installation, [install_owner_permission])
+# Installations are a domain resource of Agent Services: typed installation
+# grants apply there (with the complete record), never to the generic Registry
+# API, which only admins and unconstrained generic grants can use for them.
+test_typed_installation_grants_never_reach_installation_records {
+	not record_decision("read", recipient_installation, [install_owner_permission])
 	not record_decision("create", recipient_installation, [install_owner_permission])
 	not record_decision("update", recipient_installation, [install_owner_permission])
 	not record_decision("delete", recipient_installation, [install_owner_permission])

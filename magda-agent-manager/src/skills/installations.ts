@@ -265,6 +265,23 @@ export class AgentSkillInstallationService {
     }
 
     /**
+     * Installation records are read with the internal session, so every record
+     * is shown, synced or returned only when the real caller may read it (the
+     * typed `object/agentSkill/install/read` decision on the complete record).
+     */
+    private canReadInstallation(
+        raw: unknown,
+        user: AuthenticatedUser
+    ): Promise<boolean> {
+        if (!isObject(raw)) return Promise.resolve(false);
+        return this.options.installationAuthorization.canInstallation(
+            "read",
+            (raw as unknown) as AgentSkillInstallationRecord,
+            user.sessionToken
+        );
+    }
+
+    /**
      * Read a source publication as the real caller. A Registry 403/404, a
      * malformed or non-shareable record, DELETING or a typed read denial is a
      * definitive "unavailable"; PENDING is transient. Infrastructure failures
@@ -614,11 +631,15 @@ export class AgentSkillInstallationService {
         );
         if (!ownInstallationId(id, user)) throw notFound;
         const raw = await this.options.installations
-            .getInstallation(id, user.sessionToken)
+            .getInstallation(
+                id,
+                this.options.publications.internalSessionToken()
+            )
             .catch((error) => {
                 throw downstreamError(error, id);
             });
-        if (!raw) throw notFound;
+        if (!raw || !(await this.canReadInstallation(raw, user)))
+            throw notFound;
         const record = parseInstallationRecord(raw, this.options.tenantId);
         if (record.aspects[INSTALLATION_ASPECT].userId !== user.id)
             throw notFound;
@@ -642,13 +663,14 @@ export class AgentSkillInstallationService {
                 limit: request.limit,
                 ...(request.pageToken ? { pageToken: request.pageToken } : {})
             },
-            user.sessionToken
+            this.options.publications.internalSessionToken()
         );
         const items: Array<
             | AgentSkillInstallationView
             | { id: string; problem: "INVALID_RECORD" }
         > = [];
         for (const raw of page.records) {
+            if (!(await this.canReadInstallation(raw, user))) continue;
             let record: AgentSkillInstallationRecord;
             try {
                 record = parseInstallationRecord(raw, this.options.tenantId);
@@ -676,8 +698,9 @@ export class AgentSkillInstallationService {
 
     /**
      * Resolve every installation of the caller for a manifest. Pages are
-     * exhausted independently of publication sources; each source is read
-     * and authorized as the real caller.
+     * exhausted independently of publication sources. Installations are read
+     * with the internal session and authorized for the real caller; each
+     * source is read and authorized as the real caller.
      */
     async resolveForManifest(
         user: AuthenticatedUser
@@ -698,9 +721,10 @@ export class AgentSkillInstallationService {
                     limit: 100,
                     ...(pageToken ? { pageToken } : {})
                 },
-                user.sessionToken
+                this.options.publications.internalSessionToken()
             );
             for (const raw of page.records) {
+                if (!(await this.canReadInstallation(raw, user))) continue;
                 const rawId =
                     isObject(raw) && typeof raw.id === "string"
                         ? raw.id

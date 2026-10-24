@@ -144,10 +144,9 @@ export class SharingWorld {
         if (installation) {
             if (!this.installers.has(actor)) return false;
             if (operation === "update") return false;
+            // Ownership only: identity is validated by Agent Services.
             return (
-                installation.userId === actor &&
-                accessControl.ownerId === actor &&
-                String(record.id).startsWith(`agent-skill-${actor}-`)
+                installation.userId === actor && accessControl.ownerId === actor
             );
         }
         if (!skill) return false;
@@ -185,11 +184,13 @@ export class SharingWorld {
      * Services (the internal administrator session).
      */
     registryAllowed(operation: string, record: any, token: string): boolean {
+        // Installations are a domain resource of Agent Services: no generic
+        // Registry access, not even reads, for anyone but Agent Services.
+        if (record?.aspects?.["agent-skill-installation"])
+            return this.actor(token) === undefined;
         if (operation === "read") return this.allowed("read", record, token);
-        const typed =
-            record?.aspects?.["agent-skill"] ||
-            record?.aspects?.["agent-skill-installation"];
-        if (typed) return this.actor(token) === undefined;
+        if (record?.aspects?.["agent-skill"])
+            return this.actor(token) === undefined;
         return this.allowed(operation, record, token);
     }
 
@@ -316,7 +317,8 @@ export class SharingWorld {
                 const record = world.records.get(id);
                 if (!record?.aspects?.["agent-skill-installation"])
                     return undefined;
-                if (!world.allowed("read", record, token)) return undefined;
+                if (!world.registryAllowed("read", record, token))
+                    return undefined;
                 return clone(record);
             },
             async listInstallations(
@@ -328,7 +330,7 @@ export class SharingWorld {
                     (record) =>
                         record.aspects["agent-skill-installation"]?.userId ===
                             options.userId &&
-                        world.allowed("read", record, token)
+                        world.registryAllowed("read", record, token)
                 );
                 return { hasMore: false, records: records.map(clone) };
             },

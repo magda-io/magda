@@ -631,6 +631,32 @@ describe("Agent Skill sharing and installations (#3861)", () => {
             ).to.deep.equal({ status: "unavailable" });
         });
 
+        it("shows installations only to callers with the typed installation read", async () => {
+            await service.installations.install({ sourceSkillId: SOURCE }, bob);
+            // Agent Services reads installation records with its internal
+            // session, so the caller's typed read decides what is returned.
+            world.installers.delete(bob.id);
+            expect(
+                (await service.installations.list({ limit: 20 }, bob)).items
+            ).to.deep.equal([]);
+            expect(
+                (await caught(service.installations.get(BOB_INSTALL, bob)))
+                    .status
+            ).to.equal(404);
+            const manifest = await service.installations.resolveForManifest(
+                bob
+            );
+            expect(manifest.items).to.deep.equal([]);
+            expect(manifest.unavailable).to.deep.equal([]);
+            for (const call of world.calls.filter(
+                (call) =>
+                    call.service === "registry" &&
+                    call.id === BOB_INSTALL &&
+                    call.operation !== "get"
+            ))
+                expect(world.actor(call.token)).to.equal(undefined);
+        });
+
         it("uninstalls only the recipient's record, even after revocation or deletion", async () => {
             await service.installations.install({ sourceSkillId: SOURCE }, bob);
             await service.access.removeRecipient("user", SOURCE, bob.id, alice);
