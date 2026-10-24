@@ -637,6 +637,7 @@ class RecordsService(
     *
     * The user must have `object/record/update` permission on every record, both before and after the change.
     * Otherwise, a 403 error will be responded. Either all records are changed or none.
+    * A request can change at most 1000 records (configurable via `bulkMutationMaxRecords`). Otherwise, a 400 error will be responded.
     *
     * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
     * @apiParam (body) {object[]} jsonPatch The RFC 6902 patch to apply to the aspect.
@@ -742,6 +743,7 @@ class RecordsService(
     *
     * The user must have `object/record/update` permission on every record, both before and after the change.
     * Otherwise, a 403 error will be responded. Either all records are changed or none.
+    * A request can change at most 1000 records (configurable via `bulkMutationMaxRecords`). Otherwise, a 400 error will be responded.
     *
     * @apiParam (path) {string} aspectId the id of the aspect to be updated
     * @apiParam (query) {boolean} [merge] Indicate whether merge the new data into existing aspect data or replace it. Default: `false`
@@ -860,6 +862,7 @@ class RecordsService(
     *
     * The user must have `object/record/update` permission on every record, both before and after the change.
     * Otherwise, a 403 error will be responded. Either all records are changed or none.
+    * A request can change at most 1000 records (configurable via `bulkMutationMaxRecords`). Otherwise, a 400 error will be responded.
     *
     * @apiParam (path) {string} aspectId the id of the aspect to be updated
     * @apiParam (body) {string[]} recordIds a list of record IDs of records to be patched
@@ -1078,40 +1081,53 @@ class RecordsService(
     * (see `BulkRecordMutationAuthorization`).
     * Any failure (incl. no permission) rolls back the whole transaction, so either all records are changed or none.
     */
+  private val bulkMutationMaxRecords =
+    if (config.hasPath("bulkMutationMaxRecords"))
+      config.getInt("bulkMutationMaxRecords")
+    else 1000
+
   private def completeBulkRecordsMutation(
       jwt: Option[String],
       tenantId: SpecifiedTenantId,
       recordIds: Seq[String]
   )(mutation: DBSession => Try[Seq[Long]]): Route =
-    onCompleteBlockingTask {
-      val result = Try {
-        DB localTx { implicit session =>
-          session.queryTimeout(this.defaultQueryTimeout)
-          authorizeRecordsMutation(authClient, jwt, tenantId, recordIds)(
-            mutation(session)
-          )
+    if (recordIds.length > bulkMutationMaxRecords) {
+      complete(
+        StatusCodes.BadRequest,
+        ApiError(
+          s"Too many records in one request: ${recordIds.length}. A request can change at most ${bulkMutationMaxRecords} records."
+        )
+      )
+    } else
+      onCompleteBlockingTask {
+        val result = Try {
+          DB localTx { implicit session =>
+            session.queryTimeout(this.defaultQueryTimeout)
+            authorizeRecordsMutation(authClient, jwt, tenantId, recordIds)(
+              mutation(session)
+            )
+          }
+        } match {
+          case Success(result) =>
+            complete(
+              StatusCodes.OK,
+              result
+            )
+          case Failure(ServerError(msg, statusCode)) =>
+            complete(
+              statusCode,
+              ApiError(msg)
+            )
+          case Failure(e) =>
+            complete(
+              StatusCodes.InternalServerError,
+              ApiError(e.getMessage)
+            )
         }
-      } match {
-        case Success(result) =>
-          complete(
-            StatusCodes.OK,
-            result
-          )
-        case Failure(ServerError(msg, statusCode)) =>
-          complete(
-            statusCode,
-            ApiError(msg)
-          )
-        case Failure(e) =>
-          complete(
-            StatusCodes.InternalServerError,
-            ApiError(e.getMessage)
-          )
+        webHookActor ! WebHookActor
+          .Process()
+        result
       }
-      webHookActor ! WebHookActor
-        .Process()
-      result
-    }
 
   override def route: Route =
     super.route ~
