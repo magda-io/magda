@@ -179,6 +179,20 @@ export class SharingWorld {
         );
     }
 
+    /**
+     * Registry's generic object/record emulation: Agent Skill publications and
+     * installations are read with the typed rules, but written only by Agent
+     * Services (the internal administrator session).
+     */
+    registryAllowed(operation: string, record: any, token: string): boolean {
+        if (operation === "read") return this.allowed("read", record, token);
+        const typed =
+            record?.aspects?.["agent-skill"] ||
+            record?.aspects?.["agent-skill-installation"];
+        if (typed) return this.actor(token) === undefined;
+        return this.allowed(operation, record, token);
+    }
+
     publication(id: string): AgentSkillRecord | undefined {
         const record = this.records.get(id);
         return record?.aspects?.["agent-skill"] ? record : undefined;
@@ -254,7 +268,7 @@ export class SharingWorld {
                 world.fail(`registry.create:${record.id}`);
                 if (world.records.has(record.id))
                     throw new DownstreamServiceError("registry", 400, "exists");
-                if (!world.allowed("create", record, token))
+                if (!world.registryAllowed("create", record, token))
                     throw new DownstreamServiceError("registry", 403, "denied");
                 world.records.set(record.id, clone(record));
                 return record;
@@ -270,8 +284,8 @@ export class SharingWorld {
                 const current = world.records.get(record.id);
                 if (
                     current &&
-                    (!world.allowed("update", current, token) ||
-                        !world.allowed("update", record, token))
+                    (!world.registryAllowed("update", current, token) ||
+                        !world.registryAllowed("update", record, token))
                 )
                     throw new DownstreamServiceError("registry", 403, "denied");
                 world.records.set(record.id, {
@@ -293,7 +307,7 @@ export class SharingWorld {
                 });
                 const current = world.records.get(id);
                 if (!current) return;
-                if (!world.allowed("delete", current, token))
+                if (!world.registryAllowed("delete", current, token))
                     throw new DownstreamServiceError("registry", 403, "denied");
                 world.records.delete(id);
             },
@@ -331,7 +345,7 @@ export class SharingWorld {
                 world.fail(`registry.createInstallation:${record.id}`);
                 if (world.records.has(record.id))
                     throw new DownstreamServiceError("registry", 400, "exists");
-                if (!world.allowed("create", record, token))
+                if (!world.registryAllowed("create", record, token))
                     throw new DownstreamServiceError("registry", 403, "denied");
                 world.records.set(record.id, clone(record));
                 return record;
@@ -346,7 +360,7 @@ export class SharingWorld {
                 world.fail(`registry.deleteInstallation:${id}`);
                 const current = world.records.get(id);
                 if (!current) return;
-                if (!world.allowed("delete", current, token))
+                if (!world.registryAllowed("delete", current, token))
                     throw new DownstreamServiceError("registry", 403, "denied");
                 world.records.delete(id);
             },

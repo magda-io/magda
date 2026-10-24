@@ -85,15 +85,15 @@ describe("Agent Skill sharing and installations (#3861)", () => {
                 world.publication(SOURCE)!.aspects["access-control"]
                     .preAuthorisedPermissionIds
             ).to.deep.equal([group.permissionId]);
-            // The source record is written as the real owner, never as the
-            // internal administrator.
-            expect(
-                world.calls
-                    .filter(
-                        (call) => call.operation === "put" && call.id === SOURCE
-                    )
-                    .map((call) => call.token)
-            ).to.include(alice.sessionToken);
+            // Agent Skill records are only written by Agent Services: the
+            // source record is written with the internal session, after the
+            // owner's typed update was authorised.
+            const sourceWrites = world.calls.filter(
+                (call) => call.operation === "put" && call.id === SOURCE
+            );
+            expect(sourceWrites).to.not.be.empty;
+            for (const call of sourceWrites)
+                expect(world.actor(call.token)).to.equal(undefined);
 
             const listed = await sharedList(service, bob);
             expect(listed.records.map((item) => item.id)).to.deep.equal([
@@ -420,12 +420,15 @@ describe("Agent Skill sharing and installations (#3861)", () => {
                 sourceSkillId: SOURCE,
                 createdAt: record.aspects["agent-skill-installation"].createdAt
             });
-            // Created as the real recipient, never the internal administrator.
+            // Created by Agent Services (internal session), after the
+            // recipient's typed install was authorised.
             expect(
-                world.calls.find(
-                    (call) => call.operation === "createInstallation"
-                )!.token
-            ).to.equal(bob.sessionToken);
+                world.actor(
+                    world.calls.find(
+                        (call) => call.operation === "createInstallation"
+                    )!.token
+                )
+            ).to.equal(undefined);
             // No ZIP is copied for an installation.
             expect(
                 [...world.archives.values()].map((archive) => archive.recordId)
@@ -640,10 +643,12 @@ describe("Agent Skill sharing and installations (#3861)", () => {
             expect(world.publication(SOURCE)).to.not.equal(undefined);
             expect(world.archives.size).to.equal(1);
             expect(
-                world.calls.find(
-                    (call) => call.operation === "deleteInstallation"
-                )!.token
-            ).to.equal(bob.sessionToken);
+                world.actor(
+                    world.calls.find(
+                        (call) => call.operation === "deleteInstallation"
+                    )!.token
+                )
+            ).to.equal(undefined);
             // A publication with an installation-shaped ID is not uninstallable.
             await service.createAuthorized(
                 "user",
