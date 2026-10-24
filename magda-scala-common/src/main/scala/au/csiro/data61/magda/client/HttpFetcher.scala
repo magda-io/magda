@@ -364,10 +364,24 @@ object HttpFetcher {
             Http()
               .cachedHostConnectionPoolHttps[Promise[HttpResponse]](host, port)
         }
+        /*
+          When the queue is full (i.e. there are more than `max-connections` + `max-open-requests` requests to the
+          host at the same time), the oldest queued request is dropped, and its response promise is never completed.
+          This is intentional (see #3881):
+          - For a request made while serving an API request, the server's request timeout (`akka.http.server.request-timeout`)
+            responds 503 to the API client in the end. Until then, the client waits, regardless of its retry policy.
+            This slows down clients when the host can't keep up with the requests.
+          - Failing dropped (or new) requests immediately instead turned overload into a retry storm in a stress test
+            (clients retrying straight away): a registry with 40 readers & 32 writers made ~9,000 requests/s that
+            failed within milliseconds, ran at ~600% CPU, and completed ~3,300 reads & 10-376 writes in 120s,
+            compared to ~4,100 reads & 4,600 writes (and 25 requests timed out after 60s) with this behaviour.
+          Callers that aren't serving an API request (e.g. background jobs) have no server request timeout, so they would
+          wait forever for a dropped request. They should keep their number of concurrent requests to a host below
+          the queue size, or set their own timeout.
+         */
         val baseQueue = Source
           .queue[(HttpRequest, Promise[HttpResponse])](
             queueSize,
-            // drop oldest request
             OverflowStrategy.dropHead
           )
 
