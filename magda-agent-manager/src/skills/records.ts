@@ -142,6 +142,14 @@ export function parseAgentSkillRecord(raw: unknown): AgentSkillRecord {
             "INVALID_SKILL_RECORD"
         );
     }
+    // A publication is never also an installation (#3861).
+    if (raw.aspects["agent-skill-installation"] !== undefined) {
+        throw new AgentSkillError(
+            "Registry record is not a valid Agent Skill",
+            409,
+            "INVALID_SKILL_RECORD"
+        );
+    }
     const id = requiredString(raw.id, "id");
     const type = requiredString(aspect.type, "type") as AgentSkillType;
     if (type !== "system" && type !== "user") {

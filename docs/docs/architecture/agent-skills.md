@@ -374,7 +374,7 @@ Agent Services authorizes the real caller with the typed
 `object/agentSkill/install/{create,delete}` decision on the complete record,
 then writes the installation with its internal session. Reads are made as the
 real caller: `object/record/read` of a record carrying
-`agent-skill-installation` (and no `agent-skill`) dispatches only to the typed
+`agent-skill-installation` dispatches to the typed
 `object/agentSkill/install/read`, so Registry filters installations with
 partial evaluation, and Agent Services also checks the typed read on every
 record it returns, so generic record permissions alone never show
@@ -382,12 +382,11 @@ installations there. The typed rules only authorize, with literal
 comparisons: the caller must be both the installation's `userId` and its
 `access-control.ownerId` (owners can read and delete their own records,
 including malformed ones). Agent Services validates the deterministic identity
-(record ID, names, alias and an other-user source) before every write and for
-every record it returns. Generic writes on installation records are limited
+(record ID, names, alias, an other-user source, and never both a publication
+and an installation) before every write and for every record it returns. Generic writes on installation records are limited
 to admins and unconstrained `object/record` grants, so a direct Registry
 client can neither create an installation nor gain source access through
-one. Constrained generic grants never apply, a record with both markers is
-never an installation, and Storage never links an object to an installation.
+one. Constrained generic grants never apply to installation records.
 
 ### Source-scoped sharing grants
 

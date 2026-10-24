@@ -9,13 +9,10 @@ import data.common.isEmpty
 default allow = false
 
 # Objects outside the reserved Agent Skill archive namespace can be linked to
-# any other record. Installation records (#3861) have no Storage object of
-# their own: no object may be linked to one, so their typed record permissions
-# never reach Storage.
+# any other record.
 linkedRecordBindingValid {
 	not protectedAgentSkillArchive
 	not input.object.record["agent-skill"]
-	not input.object.record["agent-skill-installation"]
 }
 
 # An Agent Skill record is only linked to the object at its exact archive key.

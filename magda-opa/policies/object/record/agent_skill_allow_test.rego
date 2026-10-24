@@ -260,12 +260,6 @@ test_constrained_generic_record_grants_never_authorize_installations {
 	not record_decision("delete", recipient_installation, [owner_generic_record_permission])
 }
 
-test_record_with_both_markers_fails_closed {
-	both := object.union(shared_source, {"agent-skill-installation": recipient_installation["agent-skill-installation"]})
-	not record_decision("read", both, [share_permission("object/agentSkill/user", "object/agentSkill/user/read")])
-	not record_decision("read", both, [install_owner_permission, owner_generic_record_permission])
-}
-
 test_installation_existence_never_grants_source_read {
 	not record_decision("read", user_record(other_id, other_id), [install_owner_permission])
 	not record_decision("read", shared_source, [install_owner_permission])

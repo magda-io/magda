@@ -1208,7 +1208,19 @@ describe("Agent Skill publication state machine", () => {
                         userId: otherOwner.id
                     }
                 }
-            })
+            }),
+            // A publication is never also an installation.
+            (current: AgentSkillRecord): AgentSkillRecord =>
+                (({
+                    ...current,
+                    aspects: {
+                        ...current.aspects,
+                        "agent-skill-installation": {
+                            userId: owner.id,
+                            sourceSkillId: current.id
+                        }
+                    }
+                } as unknown) as AgentSkillRecord)
         ]) {
             const { service, registry } = fixture();
             await service.prepareCreate("user", owner);

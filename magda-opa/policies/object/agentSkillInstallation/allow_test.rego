@@ -79,9 +79,10 @@ test_owner_must_be_recipient {
 	not decide("create", object.union(record, {"access-control": {"ownerId": other}}), [install_permission(true)])
 }
 
-# Identity (record ID, names, alias and source ID) is data validation, done by
-# Agent Services before every write and for every record it returns. The policy
-# only authorises: it checks the caller's ownership with literal comparisons.
+# Identity (record ID, names, alias, source ID, and not also being a
+# publication) is data validation, done by Agent Services before every write
+# and for every record it returns. The policy only authorises: it checks the
+# caller's ownership with literal comparisons.
 test_identity_is_not_validated_by_the_policy {
 	record := installation(recipient, publisher, "team-csv")
 	decide("create", object.union(record, {"id": sprintf("agent-skill-%s-csv-reporter", [recipient])}), [install_permission(true)])
@@ -89,12 +90,7 @@ test_identity_is_not_validated_by_the_policy {
 	decide("create", installation(recipient, publisher, "system-csv"), [install_permission(true)])
 	decide("create", installation(recipient, recipient, ""), [install_permission(true)])
 	decide("delete", object.union(record, {"id": sprintf("agent-skill-%s-csv-reporter", [other])}), [install_permission(true)])
-}
-
-test_record_with_publication_marker_is_not_an_installation {
-	record := installation(recipient, publisher, "")
-	not decide("create", object.union(record, {"agent-skill": {"type": "user", "userId": recipient}}), [install_permission(true)])
-	not decide("delete", object.union(record, {"agent-skill": {"type": "user", "userId": recipient}}), [install_permission(true)])
+	decide("create", object.union(record, {"agent-skill": {"type": "user", "userId": recipient}}), [install_permission(true)])
 }
 
 test_recipient_reads_own_installation_only {
@@ -111,8 +107,6 @@ test_unconstrained_grant_manages_any_installation {
 	decide("create", installation(other, publisher, ""), [install_permission(false)])
 	decide("update", installation(other, publisher, ""), [install_permission(false)])
 	decide("delete", installation(other, publisher, ""), [install_permission(false)])
-	record := installation(other, publisher, "")
-	not decide("update", object.union(record, {"agent-skill": {"type": "user", "userId": other}}), [install_permission(false)])
 }
 
 test_recipient_deletes_own_installation {

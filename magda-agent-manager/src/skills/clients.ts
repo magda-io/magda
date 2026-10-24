@@ -106,6 +106,9 @@ export class HttpAgentSkillRegistry
         const query = new URLSearchParams();
         query.append("aspect", "agent-skill");
         query.append("aspect", "access-control");
+        // Fetched only so parseAgentSkillRecord can reject a record that is
+        // also an installation.
+        query.append("optionalAspect", INSTALLATION_ASPECT);
         const response = await this.request(
             `/records/${encodeURIComponent(id)}?${query}`,
             sessionToken
@@ -128,6 +131,7 @@ export class HttpAgentSkillRegistry
         const query = new URLSearchParams();
         query.append("aspect", "agent-skill");
         query.append("aspect", "access-control");
+        query.append("optionalAspect", INSTALLATION_ASPECT);
         query.set("limit", String(options.limit));
         query.set("reversePageTokenOrder", "true");
         if (options.pageToken) query.set("pageToken", options.pageToken);

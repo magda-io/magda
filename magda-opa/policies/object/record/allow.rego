@@ -33,7 +33,6 @@ verifyPermission(operationUri) {
 # are limited to admins and unconstrained grants above.
 verifyPermission(operationUri) {
 	input.object.record["agent-skill"].type == "system"
-	not input.object.record["agent-skill-installation"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	operationType == "read"
@@ -42,30 +41,23 @@ verifyPermission(operationUri) {
 
 verifyPermission(operationUri) {
 	input.object.record["agent-skill"].type == "user"
-	not input.object.record["agent-skill-installation"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	operationType == "read"
 	verifyAgentSkillPermission("object/agentSkill/user/read", "record")
 }
 
-# Installation records (#3861) are read with the typed installation read rule,
-# so Registry can filter them with partial evaluation. Like publications,
-# they're written by Agent Services only (with its internal session), after it
-# authorises the caller with the typed installation operations, so there are
-# no typed write rules here. An installation never authorizes its source
-# publication, and a record carrying both markers matches neither typed path,
-# so it fails closed for everyone but admins and unconstrained grants.
+# Agent Skill installation records are read with the typed installation read
+# rules, and written by Agent Services only, the same as Agent Skill records.
 verifyPermission(operationUri) {
 	input.object.record["agent-skill-installation"]
-	not input.object.record["agent-skill"]
 
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
 	operationType == "read"
 	verifyAgentSkillInstallationPermission("object/agentSkill/install/read", "record")
 }
 
-# Concrete typed publications and installations never fall back to constrained
+# A concrete typed publication or installation never falls back to constrained
 # generic object/record grants.
 verifyPermission(operationUri) {
 	not input.object.record["agent-skill"]
