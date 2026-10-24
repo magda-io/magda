@@ -265,9 +265,12 @@ export class AgentSkillInstallationService {
     }
 
     /**
-     * Installation records are read with the internal session, so every record
-     * is shown, synced or returned only when the real caller may read it (the
-     * typed `object/agentSkill/install/read` decision on the complete record).
+     * Installation records are read as the real caller, so Registry filters
+     * them with the typed read rule. Every record is also checked here before
+     * it's shown, synced or returned (the typed `object/agentSkill/install/read`
+     * decision on the complete record), rather than relying on Registry's
+     * filtering alone: generic record permissions never grant access to
+     * installations through Agent Services.
      */
     private canReadInstallation(
         raw: unknown,
@@ -631,10 +634,7 @@ export class AgentSkillInstallationService {
         );
         if (!ownInstallationId(id, user)) throw notFound;
         const raw = await this.options.installations
-            .getInstallation(
-                id,
-                this.options.publications.internalSessionToken()
-            )
+            .getInstallation(id, user.sessionToken)
             .catch((error) => {
                 throw downstreamError(error, id);
             });
@@ -663,7 +663,7 @@ export class AgentSkillInstallationService {
                 limit: request.limit,
                 ...(request.pageToken ? { pageToken: request.pageToken } : {})
             },
-            this.options.publications.internalSessionToken()
+            user.sessionToken
         );
         const items: Array<
             | AgentSkillInstallationView
@@ -698,9 +698,8 @@ export class AgentSkillInstallationService {
 
     /**
      * Resolve every installation of the caller for a manifest. Pages are
-     * exhausted independently of publication sources. Installations are read
-     * with the internal session and authorized for the real caller; each
-     * source is read and authorized as the real caller.
+     * exhausted independently of publication sources. Installations and
+     * their sources are read and authorized as the real caller.
      */
     async resolveForManifest(
         user: AuthenticatedUser
@@ -721,7 +720,7 @@ export class AgentSkillInstallationService {
                     limit: 100,
                     ...(pageToken ? { pageToken } : {})
                 },
-                this.options.publications.internalSessionToken()
+                user.sessionToken
             );
             for (const raw of page.records) {
                 if (!(await this.canReadInstallation(raw, user))) continue;

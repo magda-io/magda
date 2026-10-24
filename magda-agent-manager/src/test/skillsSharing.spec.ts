@@ -612,7 +612,20 @@ describe("Agent Skill sharing and installations (#3861)", () => {
 
         it("lists the recipient's installations with source status", async () => {
             await service.installations.install({ sourceSkillId: SOURCE }, bob);
+            world.calls.length = 0;
             const page = await service.installations.list({ limit: 20 }, bob);
+            await service.installations.get(BOB_INSTALL, bob);
+            await service.installations.resolveForManifest(bob);
+            // Reads are made as the real caller, so Registry filters them with
+            // the typed read rule (only writes use the internal session).
+            const reads = world.calls.filter((call) =>
+                ["getInstallation", "listInstallations"].includes(
+                    call.operation
+                )
+            );
+            expect(reads).to.have.length(3);
+            for (const call of reads)
+                expect(call.token).to.equal(bob.sessionToken);
             expect(page.items).to.have.length(1);
             const [item] = page.items as any[];
             expect(item.source.status).to.equal("available");
@@ -633,9 +646,11 @@ describe("Agent Skill sharing and installations (#3861)", () => {
 
         it("shows installations only to callers with the typed installation read", async () => {
             await service.installations.install({ sourceSkillId: SOURCE }, bob);
-            // Agent Services reads installation records with its internal
-            // session, so the caller's typed read decides what is returned.
+            // An unconstrained generic record grant reads the record through
+            // Registry, but without the typed installation read Agent Services
+            // never shows it: generic grants don't grant the feature.
             world.installers.delete(bob.id);
+            world.genericRecordGrantees.add(bob.id);
             expect(
                 (await service.installations.list({ limit: 20 }, bob)).items
             ).to.deep.equal([]);
@@ -648,13 +663,6 @@ describe("Agent Skill sharing and installations (#3861)", () => {
             );
             expect(manifest.items).to.deep.equal([]);
             expect(manifest.unavailable).to.deep.equal([]);
-            for (const call of world.calls.filter(
-                (call) =>
-                    call.service === "registry" &&
-                    call.id === BOB_INSTALL &&
-                    call.operation !== "get"
-            ))
-                expect(world.actor(call.token)).to.equal(undefined);
         });
 
         it("uninstalls only the recipient's record, even after revocation or deletion", async () => {

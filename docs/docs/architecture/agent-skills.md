@@ -369,21 +369,25 @@ names). Identity, recipient, source and alias are immutable: there is no
 update API, OPA never grants an owner `install/update`, and renaming means
 uninstall then install.
 
-Installations are a domain resource of Agent Services. For every installation
-operation, Agent Services authorizes the real caller with the typed
-`object/agentSkill/install/{create,read,delete}` decision on the complete
-record, then reads or writes the record with its internal session. The typed
-rules only authorize, with literal comparisons: the caller must be both the
-installation's `userId` and its `access-control.ownerId` (owners can read and
-delete their own records, including malformed ones). Agent Services validates
-the deterministic identity (record ID, names, alias and an other-user source)
-before every write and for every record it returns. The generic Registry API
-doesn't use the typed installation rules: only admins and unconstrained
-`object/record` grants can read or write installation records there, so a
-direct Registry client can neither see nor create an installation, nor gain
-source access through one. Constrained generic grants never apply, a record
-with both markers is never an installation, and Storage never links an object
-to an installation.
+Installations follow the same model as publications (see [Building Features on Registry Records](<./Guide to Magda Internals.md#building-features-on-registry-records>)).
+Agent Services authorizes the real caller with the typed
+`object/agentSkill/install/{create,delete}` decision on the complete record,
+then writes the installation with its internal session. Reads are made as the
+real caller: `object/record/read` of a record carrying
+`agent-skill-installation` (and no `agent-skill`) dispatches only to the typed
+`object/agentSkill/install/read`, so Registry filters installations with
+partial evaluation, and Agent Services also checks the typed read on every
+record it returns, so generic record permissions alone never show
+installations there. The typed rules only authorize, with literal
+comparisons: the caller must be both the installation's `userId` and its
+`access-control.ownerId` (owners can read and delete their own records,
+including malformed ones). Agent Services validates the deterministic identity
+(record ID, names, alias and an other-user source) before every write and for
+every record it returns. Generic writes on installation records are limited
+to admins and unconstrained `object/record` grants, so a direct Registry
+client can neither create an installation nor gain source access through
+one. Constrained generic grants never apply, a record with both markers is
+never an installation, and Storage never links an object to an installation.
 
 ### Source-scoped sharing grants
 

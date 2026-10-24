@@ -582,11 +582,10 @@ share credentials between profiles.
     fork Alice's skill, nor list, read or uninstall Bob's installation. Bob
     cannot change Alice's sharing (`404`). Dave can read a skill shared with
     him but `install` returns `403 AGENT_SKILL_INSTALL_FORBIDDEN`. A user from
-    another tenant cannot obtain the source. Through the generic Registry API,
-    neither a constrained `object/record` grant nor Bob's typed installation
-    grant reads an installation record (only admins and unconstrained generic
-    grants can), and a constrained generic grant reads no shared source.
-    Install request bodies with
+    another tenant cannot obtain the source. Through the generic Registry API, a
+    constrained `object/record` grant reads no installation or shared source,
+    and only admins and unconstrained generic grants can write an
+    installation. Install request bodies with
     `userId`, `ownerId` or `id`, malformed IDs, system sources, `system-` or
     runtime-bundled aliases are rejected.
 11. **Outage.** Stop the Registry or OPA briefly, or make Alice's source

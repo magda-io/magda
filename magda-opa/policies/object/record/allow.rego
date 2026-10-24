@@ -8,6 +8,7 @@ import data.common.isPublishedDataset
 import data.common.isPublishedDistribution
 import data.common.verifyRecordPermission
 import data.object.agentSkill.verifyPermission as verifyAgentSkillPermission
+import data.object.agentSkillInstallation.verifyPermission as verifyAgentSkillInstallationPermission
 import data.object.dataset.verifyPermission as verifyDatasetPermission
 import data.object.distribution.verifyPermission as verifyDistributionPermission
 import data.object.organization.verifyPermission as verifyOrgPermission
@@ -48,12 +49,21 @@ verifyPermission(operationUri) {
 	verifyAgentSkillPermission("object/agentSkill/user/read", "record")
 }
 
-# Installation records (#3861) have no generic Registry access for ordinary
-# users: they're a domain resource of Agent Services, which checks the caller's
-# typed `object/agentSkill/install/*` operations (see
-# `object/agentSkillInstallation/allow.rego`) and then reads and writes them
-# with its internal session. So only admins and unconstrained generic grants
-# (above) can access them through the generic Registry API.
+# Installation records (#3861) are read with the typed installation read rule,
+# so Registry can filter them with partial evaluation. Like publications,
+# they're written by Agent Services only (with its internal session), after it
+# authorises the caller with the typed installation operations, so there are
+# no typed write rules here. An installation never authorizes its source
+# publication, and a record carrying both markers matches neither typed path,
+# so it fails closed for everyone but admins and unconstrained grants.
+verifyPermission(operationUri) {
+	input.object.record["agent-skill-installation"]
+	not input.object.record["agent-skill"]
+
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	operationType == "read"
+	verifyAgentSkillInstallationPermission("object/agentSkill/install/read", "record")
+}
 
 # Concrete typed publications and installations never fall back to constrained
 # generic object/record grants.

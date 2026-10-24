@@ -90,6 +90,8 @@ export class SharingWorld {
     orgUnits = new Set<string>(["00000000-0000-4000-8000-0000000000f1"]);
     /** Users holding "Manage Own Installed Agent Skills". */
     installers = new Set<string>([alice.id, bob.id, carol.id]);
+    /** Holders of unconstrained generic `object/record/*` grants. */
+    genericRecordGrantees = new Set<string>();
     /** Users holding the stock exemption-capable system read. */
     systemReaders = new Set<string>([alice.id, bob.id, carol.id, dave.id]);
     calls: Array<{
@@ -184,13 +186,15 @@ export class SharingWorld {
      * Services (the internal administrator session).
      */
     registryAllowed(operation: string, record: any, token: string): boolean {
-        // Installations are a domain resource of Agent Services: no generic
-        // Registry access, not even reads, for anyone but Agent Services.
-        if (record?.aspects?.["agent-skill-installation"])
-            return this.actor(token) === undefined;
+        const actor = this.actor(token);
+        // Unconstrained generic record grants apply to every record.
+        if (actor && this.genericRecordGrantees.has(actor)) return true;
         if (operation === "read") return this.allowed("read", record, token);
-        if (record?.aspects?.["agent-skill"])
-            return this.actor(token) === undefined;
+        if (
+            record?.aspects?.["agent-skill"] ||
+            record?.aspects?.["agent-skill-installation"]
+        )
+            return actor === undefined;
         return this.allowed(operation, record, token);
     }
 
@@ -313,6 +317,12 @@ export class SharingWorld {
                 world.records.delete(id);
             },
             async getInstallation(id: string, token: string) {
+                world.calls.push({
+                    service: "registry",
+                    operation: "getInstallation",
+                    id,
+                    token
+                });
                 world.fail(`registry.getInstallation:${id}`);
                 const record = world.records.get(id);
                 if (!record?.aspects?.["agent-skill-installation"])
@@ -325,6 +335,12 @@ export class SharingWorld {
                 options: { userId: string; pageToken?: string; limit: number },
                 token: string
             ): Promise<RegistryRecordsPage> {
+                world.calls.push({
+                    service: "registry",
+                    operation: "listInstallations",
+                    id: options.userId,
+                    token
+                });
                 world.fail("registry.listInstallations");
                 const records = [...world.records.values()].filter(
                     (record) =>
