@@ -48,7 +48,7 @@ Settings navigation is a non-clickable **Agent Workspace** group with independen
 Agent Workspace
   Open Workspace    /settings/agent-workspace
   Agent Skills      /settings/agent-workspace/skills
-  Shared Skills     /settings/agent-workspace/shared-skills  # future #3861
+  Shared Skills     /settings/agent-workspace/shared-skills  # implemented in draft #3864 (#3861), pending merge
 ```
 
 `Open Workspace` depends on `agentWorkspace/access`; `Agent Skills` visibility uses relevant `object/agentSkill/system/read` or `object/agentSkill/user/read` permission (or standard admin override). Future `Shared Skills` requires appropriate user-source read/install permissions and does not implicitly require Workspace access. Whoami navigation is **not** authoritative authorization; all endpoints enforce permission.
@@ -67,7 +67,7 @@ System-skill management UI (available only to principals with the necessary type
 - Clearly indicate that **access paths are additive (OR)**: while Public skill is checked, OrgUnit and selected-user settings *do not restrict* who can use the skill. To restrict visibility, uncheck Public skill. The UI can collapse or disable restricted controls while public is checked, but must preserve existing restricted settings and avoid silently removing grants.
 - When public access is turned off, the manager can grant to an OrgUnit, selected users, or both. No selected OrgUnit or users means no ordinary non-manager reads unless another explicit permission applies. Explain that access changes affect source download at next Workspace reconciliation; they cannot retract already downloaded data instantaneously.
 
-**Scheduling:** System-skill access-settings design applies to publication and management, but the initial #3857 Agent Skills catalogue is otherwise metadata-only for system ZIPs. Add a dedicated **Manage Access** action/view when implementation is scheduled (can be a follow-up to #3857); Access Group generalisation/member granting is coordinated with #3861. Do not confuse documenting this UX with delivering all group-sharing UI in #3854, and do not bypass typed OPA policy through generic Access Group `object/record/read` grants.
+**Implementation status:** System-skill **Manage Access**, recipient sharing and the Shared Skills page are implemented in draft #3864 (#3861), pending merge; #3857's earlier catalogue MVP did not include them. Access Group grants are typed publication-read permissions, never generic `object/record/read`. Agent Services authorizes the real caller before manipulating grants through its internal lifecycle session. The UI is not an authorization boundary.
 
 **Shared Skills** (#3861) has (a) All available, listing readable READY other-user shared publications for optional Install, and (b) Installed, listing current recipient's `agent-skill-installation.userId` records, source/revocation diagnostics and Uninstall. Sharing via simplified user-UUID input/member UI should reuse Access Group components/backend ideas with typed operations, not broad `object/record/read`. Installation never copies or grants the source ZIP. Name collision asks for alias; alias rename needs uninstall+reinstall, not `install/update`. Readable does not mean installed.
 
