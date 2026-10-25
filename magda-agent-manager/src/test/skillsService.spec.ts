@@ -18,6 +18,7 @@ import {
 import { AuthenticatedUser } from "../types.js";
 import jwt from "jsonwebtoken";
 import { DEFAULT_ADMIN_USER_ID } from "magda-typescript-common/src/authorization-api/constants.js";
+import { noInstallations, noShareGroups } from "./skillSharingWorld.js";
 
 const owner: AuthenticatedUser = {
     id: "00000000-0000-4000-8000-000000000123",
@@ -254,6 +255,9 @@ function fixture(shared?: {
     const authorization = shared?.authorization || new TestAuthorization();
     let tick = 0;
     const service = new AgentSkillService({
+        installationRegistry: noInstallations(),
+        installationAuthorization: noInstallations(),
+        shareGroups: noShareGroups(),
         registry,
         storage,
         authorization,
@@ -1204,7 +1208,19 @@ describe("Agent Skill publication state machine", () => {
                         userId: otherOwner.id
                     }
                 }
-            })
+            }),
+            // A publication is never also an installation.
+            (current: AgentSkillRecord): AgentSkillRecord =>
+                (({
+                    ...current,
+                    aspects: {
+                        ...current.aspects,
+                        "agent-skill-installation": {
+                            userId: owner.id,
+                            sourceSkillId: current.id
+                        }
+                    }
+                } as unknown) as AgentSkillRecord)
         ]) {
             const { service, registry } = fixture();
             await service.prepareCreate("user", owner);

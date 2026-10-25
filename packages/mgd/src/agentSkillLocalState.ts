@@ -47,6 +47,10 @@ export interface VerifiedAgentSkillPublication {
     treeDigest: string;
     archiveFile: string;
     verifiedAt: string;
+    /** #3861: the recipient installation that selected a shared source. */
+    installationRecordId?: string;
+    /** #3861: recipient alias; the local SKILL.md is renamed to it. */
+    alias?: string;
     /**
      * Retained from an earlier snapshot because a later manifest could not
      * authoritatively confirm or deny it. Never newly installed or removed.
@@ -97,7 +101,11 @@ export interface AgentSkillInstallMarker {
     baselineChecksum: string;
     baselineTreeDigest: string;
     installedAt: string;
-    /** Future #3861: Registry installation record and recipient alias. */
+    /**
+     * #3861, kind "installation" only: the recipient's installation record
+     * (`agent-skill-<recipient>-<name>`) and, when the local name differs
+     * from the publisher's, the recipient alias (equal to `name`).
+     */
     installationRecordId?: string;
     alias?: string;
 }
@@ -155,6 +163,54 @@ export function createAgentSkillSourceIdentity(input: {
 
 export function sourceStateKey(ref: AgentSkillRef): string {
     return `${ref.type}/${ref.id}`;
+}
+
+/**
+ * Snapshot key of one desired item: a publication by its ref, an installed
+ * shared source by its recipient installation (one source may be installed
+ * under several aliases).
+ */
+export function snapshotKey(item: {
+    ref: AgentSkillRef;
+    sourceKind: AgentSkillSourceKind;
+    installationRecordId?: string;
+}): string {
+    return item.sourceKind === "installation"
+        ? `installation/${item.installationRecordId}`
+        : sourceStateKey(item.ref);
+}
+
+const INSTALLATION_RECORD_ID = /^agent-skill-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-([a-z0-9]+(?:-[a-z0-9]+)*)$/;
+
+/**
+ * Structural identity of an installed shared source: the recipient's own
+ * installation of another user's user publication, with a consistent
+ * effective name and alias.
+ */
+export function validInstallationIdentity(
+    value: {
+        ref: AgentSkillRef;
+        name: string;
+        installationRecordId?: string;
+        alias?: string;
+    },
+    recipientId?: string
+): boolean {
+    const installation = INSTALLATION_RECORD_ID.exec(
+        value.installationRecordId || ""
+    );
+    const source = INSTALLATION_RECORD_ID.exec(value.ref.id);
+    return (
+        value.ref.type === "user" &&
+        !!installation &&
+        !!source &&
+        installation[2] === value.name &&
+        (recipientId === undefined || installation[1] === recipientId) &&
+        source[1] !== installation[1] &&
+        (value.alias === undefined
+            ? source[2] === value.name
+            : value.alias === value.name && source[2] !== value.name)
+    );
 }
 
 export function agentSkillSourceRoot(
@@ -235,7 +291,11 @@ function assertPublication(
     );
     if (
         !isRef(item.ref) ||
-        key !== sourceStateKey(item.ref) ||
+        key !== snapshotKey(item) ||
+        (item.sourceKind === "installation"
+            ? !validInstallationIdentity(item, identity.userId)
+            : item.installationRecordId !== undefined ||
+              item.alias !== undefined) ||
         !SKILL_NAME.test(item.name) ||
         typeof item.description !== "string" ||
         !SOURCE_KINDS.has(item.sourceKind) ||
@@ -341,7 +401,13 @@ export function createInstallMarker(
         name: publication.name,
         baselineChecksum: publication.checksum,
         baselineTreeDigest: publication.treeDigest,
-        installedAt
+        installedAt,
+        ...(publication.sourceKind === "installation"
+            ? {
+                  installationRecordId: publication.installationRecordId,
+                  ...(publication.alias ? { alias: publication.alias } : {})
+              }
+            : {})
     };
 }
 
@@ -383,10 +449,18 @@ export function parseInstallMarker(
         typeof value.baselineTreeDigest !== "string" ||
         !HEX64.test(value.baselineTreeDigest) ||
         typeof value.installedAt !== "string" ||
-        // Without a #3861 alias, the publication id must name this skill.
-        (value.alias === undefined &&
-            ref.id !== `agent-skill-${value.name}` &&
-            !ref.id.endsWith(`-${value.name}`))
+        (value.source.kind === "installation"
+            ? !validInstallationIdentity({
+                  ref,
+                  name: value.name,
+                  installationRecordId: value.installationRecordId,
+                  alias: value.alias
+              })
+            : value.installationRecordId !== undefined ||
+              value.alias !== undefined ||
+              // The publication id must name this skill.
+              (ref.id !== `agent-skill-${value.name}` &&
+                  !ref.id.endsWith(`-${value.name}`)))
     )
         return undefined;
     return value;
@@ -419,6 +493,21 @@ export async function verifiedMarkerSource(
         marker.source.kind === "system-publication" &&
         (marker.source.type !== "system" ||
             marker.source.id !== `agent-skill-${marker.name}`)
+    )
+        return undefined;
+    // An installed shared copy belongs to the recipient account that
+    // installed it, never to the original publisher.
+    if (
+        marker.source.kind === "installation" &&
+        !validInstallationIdentity(
+            {
+                ref: { type: marker.source.type, id: marker.source.id },
+                name: marker.name,
+                installationRecordId: marker.installationRecordId,
+                alias: marker.alias
+            },
+            state.identity.userId
+        )
     )
         return undefined;
     return state;

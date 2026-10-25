@@ -166,6 +166,91 @@ try {
         1
     );
 
+    // --- #3861: an installed shared copy needs the explicit fork option.
+    scenario({
+        validate: validated,
+        publish: {
+            code: 2,
+            stderr: {
+                error: {
+                    code: "SHARED_INSTALLATION_FORK_REQUIRED",
+                    message: "This is your installed copy of a shared skill."
+                }
+            }
+        }
+    });
+    result = await ops().publish({ path: draft, userApproved: true }, { cwd });
+    assert.equal(result.outcome, "rejected");
+    assert.equal(result.error.code, "SHARED_INSTALLATION_FORK_REQUIRED");
+    assert.match(result.guidance, /forkSharedInstallation: true/);
+    assert.match(result.guidance, /never changed/);
+    assert.deepEqual(
+        calls().filter(([, command]) => command === "publish"),
+        [["agent-skill", "publish", draft, "--type", "user", "--json"]]
+    );
+
+    // The fork asks its own question, then passes --force once.
+    scenario({
+        validate: validated,
+        publish: { stdout: { ...publication, localCache: "updated" } }
+    });
+    ui = asker(choose("Publish as my skill"));
+    result = await ops().publish(
+        { path: draft, forkSharedInstallation: true },
+        { cwd, ask: ui.ask }
+    );
+    assert.equal(result.outcome, "published");
+    const [forkQuestion] = ui.asked[0];
+    assert.deepEqual(
+        forkQuestion.options.map((option) => option.label),
+        ["Publish as my skill", "Cancel"]
+    );
+    assert.match(forkQuestion.question, /shared skill "good"/);
+    assert.match(forkQuestion.question, /other user's skill is not changed/);
+    assert.deepEqual(
+        calls().filter(([, command]) => command === "publish"),
+        [
+            [
+                "agent-skill",
+                "publish",
+                draft,
+                "--type",
+                "user",
+                "--json",
+                "--force"
+            ]
+        ]
+    );
+
+    // Chat approval to "publish" never skips the fork question.
+    scenario({
+        validate: validated,
+        publish: { stdout: { ...publication, localCache: "updated" } }
+    });
+    ui = asker(choose("Cancel"));
+    result = await ops().publish(
+        { path: draft, forkSharedInstallation: true, userApproved: true },
+        { cwd, ask: ui.ask }
+    );
+    assert.equal(ui.asked.length, 1);
+    assert.match(ui.asked[0][0].question, /shared skill "good"/);
+    assert.equal(result.outcome, "cancelled");
+    assert.ok(!calls().some(([, command]) => command === "publish"));
+
+    for (const args of [
+        { path: draft, forkSharedInstallation: true, type: "system" },
+        {
+            path: draft,
+            forkSharedInstallation: true,
+            overwriteRemoteChanges: true
+        }
+    ]) {
+        scenario({ validate: validated, publish: { stdout: publication } });
+        result = await ops().publish(args, { cwd });
+        assert.equal(result.outcome, "failed");
+        assert.deepEqual(calls(), []);
+    }
+
     // --- Cancel, custom text, dismissal/abort and no answerer never publish.
     for (const [answer, reason] of [
         [choose("Cancel"), "declined"],

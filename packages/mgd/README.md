@@ -203,6 +203,16 @@ mgd agent-skill show user/agent-skill-<user-uuid>-my-skill
 mgd agent-skill pull user/agent-skill-<user-uuid>-my-skill -o ./review-copy
 mgd agent-skill sync [--force]
 mgd agent-skill delete user/agent-skill-<user-uuid>-my-skill
+
+# Sharing (#3861): owners share; recipients explicitly install.
+mgd agent-skill share user/agent-skill-<user-uuid>-my-skill <recipient-uuid>
+mgd agent-skill unshare user/agent-skill-<user-uuid>-my-skill <recipient-uuid>
+mgd agent-skill recipients user/agent-skill-<user-uuid>-my-skill
+mgd agent-skill list --shared
+mgd agent-skill install user/agent-skill-<publisher-uuid>-their-skill [--as <name>]
+mgd agent-skill installations
+mgd agent-skill uninstall <installed-name>
+mgd agent-skill access system/agent-skill-system-x [--public|--no-public] [--org-unit <id>|--clear-org-unit]
 ```
 
 `init`, local edits, `pull`, and `validate` never publish. Only an explicit
@@ -230,8 +240,10 @@ bookkeeping failure reports `"deleted": true, "localCache": "failed"`.
 ### Synchronized installations
 
 On a local computer, `sync` downloads only the authenticated user's own READY
-user publications (never system skills; use explicit `pull system/<id>` to
-inspect one), verifies every ZIP checksum and its metadata, and installs an
+user publications and the shared skills they explicitly installed (never system
+skills, and never a shared skill that was not installed; use explicit
+`pull system/<id>` to inspect one), verifies every ZIP checksum and its
+metadata, and installs an
 **independent real-directory copy** into every detected harness root:
 `~/.claude/skills`, `~/.agents/skills` (Codex), `$XDG_CONFIG_HOME/opencode/skills`
 and, when `DSH_HOME` is set, `$DSH_HOME/skills`. Overlapping roots are
@@ -249,6 +261,16 @@ index or journal. The only other state is your profile configuration and, under
 verified account's publication snapshot, immutable archives and `pull`
 working-directory provenance (key = hash of canonical MAGDA API URL, tenant and
 user UUID).
+
+An installed shared skill is the publisher's verified ZIP, copied under the
+recipient's installed name. When installed under an alias, only the
+frontmatter `name:` line of the local `SKILL.md` is rewritten; the publisher's
+archive and checksum are unchanged. Its marker also records the recipient's
+installation record and alias. If sharing is revoked or the source deleted,
+the manifest says so authoritatively: the next successful sync removes clean
+copies (edited ones conflict until `--force`) and reports
+`INSTALLATION_SOURCE_UNAVAILABLE` until you `uninstall` it. Revocation stops
+future downloads; it cannot erase copies already on a computer at that moment.
 
 A sync considers the names in the current profile's verified manifest plus
 every directory carrying a valid marker, whichever profile installed it.
@@ -301,6 +323,15 @@ to the account they came from. Every publish caches the exact ZIP the server
 acknowledged, so a later sync reuses it instead of downloading it again; this
 does not mark the rest of the manifest as freshly verified. If that local
 bookkeeping fails, the command says the remote publication still succeeded.
+
+An installed copy of a skill **shared by another user** is never published to
+that user's skill. Plain `publish` refuses and explains the alternative:
+`publish --force` publishes your edited copy as **your own** user skill under
+its installed name, replacing your installation (the original is unchanged).
+It authenticates as the recipient account recorded in the copy, checks your
+publish and uninstall permissions before changing anything, and rebinds only
+that copy. If the installation was removed but the publication was not yet
+created, your files are kept and rerunning the command finishes the fork.
 
 ### Profiles
 

@@ -2,14 +2,23 @@ import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisio
 import { isTrueEquivalent } from "magda-typescript-common/src/opa/AuthDecision.js";
 import {
     AgentSkillAuthorization,
+    AgentSkillInstallationAuthorization,
+    AgentSkillInstallationRecord,
+    AgentSkillInstallationRegistry,
     AgentSkillRecord,
+    AgentSkillRecordOccupant,
     AgentSkillRegistry,
+    AgentSkillShareGroup,
+    AgentSkillShareGroups,
+    AgentSkillShareRecipient,
     AgentSkillStorage,
     DownloadedArchive,
     RegistryListOptions,
     RegistryRecordsPage,
     StoredArchiveIdentity
 } from "./types.js";
+
+const INSTALLATION_ASPECT = "agent-skill-installation";
 
 export class DownstreamServiceError extends Error {
     constructor(
@@ -44,7 +53,8 @@ async function parseJson(response: Response): Promise<unknown> {
     }
 }
 
-export class HttpAgentSkillRegistry implements AgentSkillRegistry {
+export class HttpAgentSkillRegistry
+    implements AgentSkillRegistry, AgentSkillInstallationRegistry {
     private readonly url: string;
 
     constructor(
@@ -96,6 +106,9 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
         const query = new URLSearchParams();
         query.append("aspect", "agent-skill");
         query.append("aspect", "access-control");
+        // Fetched only so parseAgentSkillRecord can reject a record that is
+        // also an installation.
+        query.append("optionalAspect", INSTALLATION_ASPECT);
         const response = await this.request(
             `/records/${encodeURIComponent(id)}?${query}`,
             sessionToken
@@ -118,6 +131,7 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
         const query = new URLSearchParams();
         query.append("aspect", "agent-skill");
         query.append("aspect", "access-control");
+        query.append("optionalAspect", INSTALLATION_ASPECT);
         query.set("limit", String(options.limit));
         query.set("reversePageTokenOrder", "true");
         if (options.pageToken) query.set("pageToken", options.pageToken);
@@ -233,6 +247,129 @@ export class HttpAgentSkillRegistry implements AgentSkillRegistry {
                 "Registry API rejected record deletion"
             );
         }
+    }
+
+    async getInstallation(
+        id: string,
+        sessionToken: string
+    ): Promise<unknown | undefined> {
+        const query = new URLSearchParams();
+        query.append("aspect", INSTALLATION_ASPECT);
+        query.append("aspect", "access-control");
+        // A publication with the same ID is not an installation.
+        query.append("optionalAspect", "agent-skill");
+        const response = await this.request(
+            `/records/${encodeURIComponent(id)}?${query}`,
+            sessionToken
+        );
+        if (response.status === 404) return undefined;
+        if (!response.ok) {
+            throw new DownstreamServiceError(
+                "registry",
+                response.status,
+                "Registry API rejected the installation read"
+            );
+        }
+        return await parseJson(response);
+    }
+
+    async listInstallations(
+        options: { userId: string; pageToken?: string; limit: number },
+        sessionToken: string
+    ): Promise<RegistryRecordsPage> {
+        const query = new URLSearchParams();
+        query.append("aspect", INSTALLATION_ASPECT);
+        query.append("aspect", "access-control");
+        query.append("optionalAspect", "agent-skill");
+        query.set("limit", String(options.limit));
+        query.set("reversePageTokenOrder", "true");
+        if (options.pageToken) query.set("pageToken", options.pageToken);
+        query.append(
+            "aspectQuery",
+            `${INSTALLATION_ASPECT}.userId:${options.userId}`
+        );
+        const response = await this.request(
+            `/records?${query.toString()}`,
+            sessionToken
+        );
+        if (!response.ok) {
+            throw new DownstreamServiceError(
+                "registry",
+                response.status,
+                "Registry API rejected the installation query"
+            );
+        }
+        const data = (await parseJson(response)) as Partial<
+            RegistryRecordsPage
+        >;
+        if (
+            !data ||
+            !Array.isArray(data.records) ||
+            typeof data.hasMore !== "boolean" ||
+            (data.nextPageToken !== undefined &&
+                typeof data.nextPageToken !== "string") ||
+            (data.hasMore && !data.nextPageToken)
+        ) {
+            throw new DownstreamServiceError(
+                "registry",
+                502,
+                "Registry API returned an invalid installation response"
+            );
+        }
+        return {
+            hasMore: data.hasMore,
+            nextPageToken: data.nextPageToken,
+            records: data.records
+        };
+    }
+
+    async createInstallation(
+        record: AgentSkillInstallationRecord,
+        sessionToken: string
+    ): Promise<unknown> {
+        const response = await this.request("/records", sessionToken, {
+            method: "POST",
+            body: JSON.stringify(record)
+        });
+        if (!response.ok) {
+            throw new DownstreamServiceError(
+                "registry",
+                response.status,
+                "Registry API rejected installation creation"
+            );
+        }
+        return await parseJson(response);
+    }
+
+    async deleteInstallation(id: string, sessionToken: string): Promise<void> {
+        await this.delete(id, sessionToken);
+    }
+
+    async occupant(
+        id: string,
+        sessionToken: string
+    ): Promise<AgentSkillRecordOccupant> {
+        const query = new URLSearchParams();
+        query.append("optionalAspect", "agent-skill");
+        query.append("optionalAspect", INSTALLATION_ASPECT);
+        const response = await this.request(
+            `/records/${encodeURIComponent(id)}?${query}`,
+            sessionToken
+        );
+        if (response.status === 404) return "none";
+        if (!response.ok) {
+            throw new DownstreamServiceError(
+                "registry",
+                response.status,
+                "Registry API rejected the record read"
+            );
+        }
+        const record = (await parseJson(response)) as {
+            aspects?: Record<string, unknown>;
+        };
+        if (record?.aspects?.["agent-skill"]) return "publication";
+        if (record?.aspects?.[INSTALLATION_ASPECT]) return "installation";
+        return "other";
     }
 }
 
@@ -465,8 +602,44 @@ export class HttpAgentSkillStorage implements AgentSkillStorage {
     }
 }
 
-export class OpaAgentSkillAuthorization implements AgentSkillAuthorization {
+export class OpaAgentSkillAuthorization
+    implements AgentSkillAuthorization, AgentSkillInstallationAuthorization {
     constructor(private readonly client: AuthDecisionQueryClient) {}
+
+    async canInstallation(
+        operation: "create" | "read" | "update" | "delete",
+        record: AgentSkillInstallationRecord,
+        sessionToken: string
+    ): Promise<boolean> {
+        const { aspects, ...recordFields } = record;
+        try {
+            const decision = await this.client.getAuthDecision(
+                {
+                    operationUri: `object/agentSkill/install/${operation}`,
+                    unknowns: [],
+                    input: {
+                        object: {
+                            agentSkillInstallation: {
+                                ...recordFields,
+                                ...aspects
+                            }
+                        }
+                    }
+                },
+                sessionToken
+            );
+            return (
+                decision.hasResidualRules === false &&
+                isTrueEquivalent(decision.result)
+            );
+        } catch {
+            throw new DownstreamServiceError(
+                "authorization",
+                503,
+                "Authorization service is unavailable"
+            );
+        }
+    }
 
     async can(
         operation: "create" | "read" | "update" | "delete",
@@ -501,5 +674,310 @@ export class OpaAgentSkillAuthorization implements AgentSkillAuthorization {
                 "Authorization service is unavailable"
             );
         }
+    }
+}
+
+function stringArray(value: unknown): string[] {
+    return Array.isArray(value)
+        ? value.filter((item): item is string => typeof item === "string")
+        : [];
+}
+
+/**
+ * Authorization API Access Groups plus the Registry lookups needed to prove a
+ * share group's binding. Every call uses the Agent Services internal session,
+ * only after the real caller was authorized for the source publication.
+ */
+export class HttpAgentSkillShareGroups implements AgentSkillShareGroups {
+    private readonly authUrl: string;
+    private readonly registryUrl: string;
+
+    constructor(
+        authApiUrl: string,
+        registryApiUrl: string,
+        private readonly tenantId: number,
+        private readonly requestTimeoutMs: number = 15_000
+    ) {
+        this.authUrl = baseUrl(authApiUrl);
+        this.registryUrl = baseUrl(registryApiUrl);
+    }
+
+    private async request(
+        service: "authorization" | "registry",
+        url: string,
+        sessionToken: string,
+        init: RequestInit = {}
+    ): Promise<Response> {
+        try {
+            return await fetch(url, {
+                ...init,
+                headers: {
+                    "X-Magda-Session": sessionToken,
+                    "X-Magda-Tenant-Id": String(this.tenantId),
+                    ...(typeof init.body === "string"
+                        ? { "Content-Type": "application/json" }
+                        : {}),
+                    ...(init.headers || {})
+                },
+                redirect: "error",
+                signal: AbortSignal.timeout(this.requestTimeoutMs)
+            });
+        } catch {
+            throw new DownstreamServiceError(
+                service,
+                503,
+                service === "registry"
+                    ? "Registry API is unavailable"
+                    : "Authorization API is unavailable"
+            );
+        }
+    }
+
+    private async json(
+        service: "authorization" | "registry",
+        response: Response,
+        message: string
+    ): Promise<any> {
+        if (!response.ok)
+            throw new DownstreamServiceError(service, response.status, message);
+        try {
+            return await response.json();
+        } catch {
+            throw new DownstreamServiceError(
+                service,
+                502,
+                `${message}: invalid response`
+            );
+        }
+    }
+
+    private group(value: any): AgentSkillShareGroup {
+        const details = value?.aspects?.["access-group-details"] || value;
+        if (!value || typeof value.id !== "string" || !details)
+            throw new DownstreamServiceError(
+                "authorization",
+                502,
+                "Access Group response is invalid"
+            );
+        return {
+            id: value.id,
+            resourceUri: String(details.resourceUri || ""),
+            operationUris: stringArray(details.operationUris),
+            permissionId: String(details.permissionId || ""),
+            roleId: String(details.roleId || ""),
+            keywords: stringArray(details.keywords)
+        };
+    }
+
+    async find(
+        keyword: string,
+        sessionToken: string
+    ): Promise<AgentSkillShareGroup[]> {
+        const query = new URLSearchParams();
+        query.append("aspect", "access-group-details");
+        query.append(
+            "aspectQuery",
+            `access-group-details.keywords:<|${keyword}`
+        );
+        query.set("limit", "10");
+        const data = await this.json(
+            "registry",
+            await this.request(
+                "registry",
+                `${this.registryUrl}/records?${query}`,
+                sessionToken
+            ),
+            "Registry API rejected the share group query"
+        );
+        if (!Array.isArray(data?.records) || data.hasMore === true)
+            throw new DownstreamServiceError(
+                "registry",
+                502,
+                "Registry API returned an invalid share group response"
+            );
+        return data.records.map((record: unknown) => this.group(record));
+    }
+
+    async create(
+        group: {
+            name: string;
+            description: string;
+            resourceUri: string;
+            operationUris: string[];
+            keywords: string[];
+        },
+        sessionToken: string
+    ): Promise<AgentSkillShareGroup> {
+        const data = await this.json(
+            "authorization",
+            await this.request(
+                "authorization",
+                `${this.authUrl}/public/accessGroups`,
+                sessionToken,
+                {
+                    method: "POST",
+                    // A system-managed group: no owner or OrgUnit, so generic
+                    // record grants never let anyone edit it directly.
+                    body: JSON.stringify({
+                        ...group,
+                        ownerId: null,
+                        orgUnitId: null
+                    })
+                }
+            ),
+            "Authorization API rejected share group creation"
+        );
+        return this.group(data);
+    }
+
+    async delete(groupId: string, sessionToken: string): Promise<void> {
+        await this.json(
+            "authorization",
+            await this.request(
+                "authorization",
+                `${this.authUrl}/public/accessGroups/${encodeURIComponent(
+                    groupId
+                )}`,
+                sessionToken,
+                { method: "DELETE" }
+            ),
+            "Authorization API rejected share group deletion"
+        );
+    }
+
+    private async membership(
+        method: "POST" | "DELETE",
+        groupId: string,
+        userId: string,
+        sessionToken: string
+    ): Promise<boolean> {
+        const response = await this.request(
+            "authorization",
+            `${this.authUrl}/public/accessGroups/${encodeURIComponent(
+                groupId
+            )}/users/${encodeURIComponent(userId)}`,
+            sessionToken,
+            { method }
+        );
+        if (response.status === 400 && method === "POST")
+            // The Access Group API rejects unknown users with 400.
+            throw new DownstreamServiceError(
+                "authorization",
+                404,
+                "No MAGDA user has this ID"
+            );
+        const data = await this.json(
+            "authorization",
+            response,
+            "Authorization API rejected the membership change"
+        );
+        return data?.result === true;
+    }
+
+    addUser(
+        groupId: string,
+        userId: string,
+        sessionToken: string
+    ): Promise<boolean> {
+        return this.membership("POST", groupId, userId, sessionToken);
+    }
+
+    removeUser(
+        groupId: string,
+        userId: string,
+        sessionToken: string
+    ): Promise<boolean> {
+        return this.membership("DELETE", groupId, userId, sessionToken);
+    }
+
+    async listUsers(
+        groupId: string,
+        options: { offset: number; limit: number },
+        sessionToken: string
+    ): Promise<AgentSkillShareRecipient[]> {
+        const query = new URLSearchParams({
+            offset: String(options.offset),
+            limit: String(options.limit)
+        });
+        const data = await this.json(
+            "authorization",
+            await this.request(
+                "authorization",
+                `${this.authUrl}/public/accessGroups/${encodeURIComponent(
+                    groupId
+                )}/users?${query}`,
+                sessionToken
+            ),
+            "Authorization API rejected the recipient query"
+        );
+        if (!Array.isArray(data))
+            throw new DownstreamServiceError(
+                "authorization",
+                502,
+                "Authorization API returned an invalid recipient response"
+            );
+        // Only the ID and display name leave Agent Services.
+        return data
+            .filter((user: any) => typeof user?.id === "string")
+            .map((user: any) => ({
+                id: user.id,
+                ...(typeof user.displayName === "string"
+                    ? { displayName: user.displayName }
+                    : {})
+            }));
+    }
+
+    async publicationsUsingPermission(
+        permissionId: string,
+        sessionToken: string
+    ): Promise<{ ids: string[]; complete: boolean }> {
+        const query = new URLSearchParams();
+        query.append("aspect", "agent-skill");
+        query.append(
+            "aspectQuery",
+            `access-control.preAuthorisedPermissionIds:<|${permissionId}`
+        );
+        query.set("limit", "10");
+        const data = await this.json(
+            "registry",
+            await this.request(
+                "registry",
+                `${this.registryUrl}/records?${query}`,
+                sessionToken
+            ),
+            "Registry API rejected the share binding query"
+        );
+        // Completeness is part of the integrity check, so a page without a
+        // boolean `hasMore` is malformed rather than assumed complete.
+        if (!Array.isArray(data?.records) || typeof data.hasMore !== "boolean")
+            throw new DownstreamServiceError(
+                "registry",
+                502,
+                "Registry API returned an invalid share binding response"
+            );
+        return {
+            ids: data.records
+                .map((record: any) => record?.id)
+                .filter((id: unknown): id is string => typeof id === "string"),
+            complete: !data.hasMore
+        };
+    }
+
+    async orgUnitExists(
+        orgUnitId: string,
+        sessionToken: string
+    ): Promise<boolean> {
+        const response = await this.request(
+            "authorization",
+            `${this.authUrl}/public/orgunits/${encodeURIComponent(orgUnitId)}`,
+            sessionToken
+        );
+        if (response.status === 404) return false;
+        await this.json(
+            "authorization",
+            response,
+            "Authorization API rejected the organisation unit lookup"
+        );
+        return true;
     }
 }

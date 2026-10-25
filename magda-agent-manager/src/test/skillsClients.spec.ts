@@ -184,6 +184,10 @@ describe("Agent Skill downstream clients", () => {
         expect(requestUrl).to.include(`/records/${recordId}?`);
         expect(requestUrl).to.include("aspect=agent-skill");
         expect(requestUrl).to.include("aspect=access-control");
+        // so a record that is also an installation can be rejected
+        expect(requestUrl).to.include(
+            "optionalAspect=agent-skill-installation"
+        );
         expect(headers).to.deep.include({
             "X-Magda-Session": session,
             "X-Magda-Tenant-Id": "7"

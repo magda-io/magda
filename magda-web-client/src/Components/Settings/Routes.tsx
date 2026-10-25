@@ -25,9 +25,11 @@ import HomeSettingsPage from "./Content/HomeSettingsPage";
 import UiTextSettingsPage from "./Content/UiTextSettingsPage";
 import AgentWorkspacePage from "./AgentWorkspacePage";
 import AgentSkillsPage from "./AgentSkillsPage";
+import SharedSkillsPage from "./SharedSkillsPage";
 import {
     requireAgentSkillsAccess,
-    requireAgentWorkspaceAccess
+    requireAgentWorkspaceAccess,
+    requireSharedSkillsAccess
 } from "./agentWorkspaceAccess";
 import { config } from "../../config";
 
@@ -80,6 +82,17 @@ const Routes = () => {
                             path="/settings/agent-workspace/skills"
                             component={requireAgentSkillsAccess(
                                 withHeader(AgentSkillsPage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
+                    {config.featureFlags.agentWorkspace && (
+                        <Route
+                            exact
+                            path="/settings/agent-workspace/shared-skills"
+                            component={requireSharedSkillsAccess(
+                                withHeader(SharedSkillsPage, {
                                     noContainerClass: true
                                 })
                             )}

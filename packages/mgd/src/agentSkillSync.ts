@@ -1,6 +1,9 @@
 import path from "node:path";
 import { readFile, readdir, rm } from "node:fs/promises";
-import { sha256Hex, validateAgentSkillArchive } from "./agentSkillArchive.js";
+import {
+    readProjectedAgentSkillArchive,
+    sha256Hex
+} from "./agentSkillArchive.js";
 import type {
     AgentSkillSourceIdentity,
     AgentSkillSourceStateV3,
@@ -14,6 +17,7 @@ import {
     loadAgentSkillSourceState,
     loadAgentSkillSourceStateByKey,
     saveAgentSkillSourceState,
+    snapshotKey,
     sourceStateKey,
     writeFileAtomically
 } from "./agentSkillLocalState.js";
@@ -32,6 +36,7 @@ import type {
     AgentSkillSyncItemResult,
     AgentSkillSyncResult,
     AgentSkillType,
+    UnavailableSkillInstallation,
     WorkspaceSkillManifestItem
 } from "./agentSkillTypes.js";
 import type { Profile } from "./profile.js";
@@ -144,17 +149,13 @@ export function reconcileResult(
 
 /**
  * Load a content-addressed cached archive and prove it is exactly the
- * expected publication. Returns its tree digest, or undefined if absent or
- * not an exact match (which then requires a fresh authenticated download).
+ * expected publication. Returns the tree digest of its local projection
+ * (renamed to the recipient alias, if any), or undefined if absent or not an
+ * exact match (which then requires a fresh authenticated download).
  */
 async function verifiedCachedArchive(
     archiveFile: string,
-    expected: {
-        type: AgentSkillType;
-        checksum: string;
-        name: string;
-        description: string;
-    }
+    expected: ExpectedPublication
 ): Promise<string | undefined> {
     let bytes: Buffer;
     try {
@@ -164,14 +165,40 @@ async function verifiedCachedArchive(
     }
     if (sha256Hex(bytes) !== expected.checksum) return undefined;
     try {
-        const validated = await validateAgentSkillArchive(bytes, expected.type);
-        return validated.name === expected.name &&
-            validated.description === expected.description
-            ? validated.treeDigest
-            : undefined;
+        return projectionDigest(
+            await readProjectedAgentSkillArchive(
+                bytes,
+                expected.type,
+                expected.alias
+            ),
+            expected
+        );
     } catch {
         return undefined;
     }
+}
+
+interface ExpectedPublication {
+    type: AgentSkillType;
+    checksum: string;
+    /** The publisher's SKILL.md name. */
+    sourceName: string;
+    /** The local (effective) name. */
+    name: string;
+    description: string;
+    alias?: string;
+}
+
+function projectionDigest(
+    projected: Awaited<ReturnType<typeof readProjectedAgentSkillArchive>>,
+    expected: ExpectedPublication
+): string | undefined {
+    return projected.archive.checksum === expected.checksum &&
+        projected.archive.name === expected.sourceName &&
+        projected.archive.description === expected.description &&
+        projected.name === expected.name
+        ? projected.treeDigest
+        : undefined;
 }
 
 export type PreparedSnapshot =
@@ -181,6 +208,8 @@ export type PreparedSnapshot =
           desired: VerifiedAgentSkillPublication[];
           reused: number;
           downloaded: number;
+          /** Installations whose source is authoritatively unavailable. */
+          unavailable: UnavailableSkillInstallation[];
       }
     | { ok: false; failures: AgentSkillSyncItemResult[] };
 
@@ -203,6 +232,7 @@ export async function prepareVerifiedSnapshot(
             code?: string;
             recordId?: string;
         }>;
+        unavailableInstallations?: UnavailableSkillInstallation[];
     },
     type?: AgentSkillType
 ): Promise<PreparedSnapshot> {
@@ -227,11 +257,15 @@ export async function prepareVerifiedSnapshot(
     for (const item of manifest.items) {
         if (type && item.source.type !== type) continue;
         const ref = { type: item.source.type, id: item.source.id };
-        const expected = {
+        const installation =
+            item.sourceKind === "installation" ? item.installation : undefined;
+        const expected: ExpectedPublication = {
             type: ref.type,
             checksum: item.source.checksum,
+            sourceName: item.source.name,
             name: item.effectiveName,
-            description: item.source.description
+            description: item.source.description,
+            ...(installation?.alias ? { alias: installation.alias } : {})
         };
         const archiveFile = agentSkillArchivePath(
             identity,
@@ -242,27 +276,32 @@ export async function prepareVerifiedSnapshot(
             let treeDigest = await verifiedCachedArchive(archiveFile, expected);
             if (treeDigest) reused += 1;
             else {
+                // The original publication is downloaded and verified as
+                // this account; an installation never has its own archive.
                 const fetched = await client.download(ref);
-                const validated = await validateAgentSkillArchive(
+                const projected = await readProjectedAgentSkillArchive(
                     fetched.bytes,
-                    ref.type
+                    ref.type,
+                    expected.alias
                 );
+                treeDigest = projectionDigest(projected, expected);
                 if (
+                    !treeDigest ||
                     fetched.metadata.checksum !== item.source.checksum ||
-                    validated.checksum !== item.source.checksum ||
-                    validated.name !== item.effectiveName ||
-                    validated.description !== item.source.description ||
+                    fetched.metadata.id !== item.source.id ||
                     (item.sourceKind === "own-user-publication" &&
-                        fetched.metadata.userId !== identity.userId)
+                        fetched.metadata.userId !== identity.userId) ||
+                    (item.sourceKind === "installation" &&
+                        (fetched.metadata.userId !== item.source.userId ||
+                            fetched.metadata.userId === identity.userId))
                 )
                     throw new Error(
                         "Downloaded Agent Skill does not match manifest"
                     );
                 await writeFileAtomically(archiveFile, fetched.bytes);
-                treeDigest = validated.treeDigest;
                 downloaded += 1;
             }
-            items[sourceStateKey(ref)] = {
+            const publication: VerifiedAgentSkillPublication = {
                 ref,
                 name: item.effectiveName,
                 description: item.source.description,
@@ -270,8 +309,17 @@ export async function prepareVerifiedSnapshot(
                 checksum: item.source.checksum,
                 treeDigest,
                 archiveFile,
-                verifiedAt: now
+                verifiedAt: now,
+                ...(installation
+                    ? {
+                          installationRecordId: installation.id,
+                          ...(installation.alias
+                              ? { alias: installation.alias }
+                              : {})
+                      }
+                    : {})
             };
+            items[snapshotKey(publication)] = publication;
         } catch {
             failures.push({
                 ref,
@@ -292,8 +340,28 @@ export async function prepareVerifiedSnapshot(
             (item) => !type || item.ref.type === type
         ),
         reused,
-        downloaded
+        downloaded,
+        unavailable:
+            !type || type === "user"
+                ? manifest.unavailableInstallations || []
+                : []
     };
+}
+
+/**
+ * Report installations whose source is authoritatively unavailable. Their
+ * clean managed copies are removed like any other non-desired installation;
+ * the record itself remains for the recipient to uninstall.
+ */
+export function unavailableInstallationNotes(
+    unavailable: UnavailableSkillInstallation[]
+): AgentSkillSyncItemResult[] {
+    return unavailable.map((entry) => ({
+        ref: { type: "user", id: entry.sourceSkillId },
+        name: entry.effectiveName,
+        action: "skipped",
+        code: "INSTALLATION_SOURCE_UNAVAILABLE"
+    }));
 }
 
 /** A remote-source failure: nothing local was changed; retry later. */
@@ -378,6 +446,59 @@ export async function cacheAcknowledgedPublication(
             verifiedAt: new Date().toISOString()
         };
         delete state.snapshot.items[key].unresolved;
+        await saveAgentSkillSourceState(state);
+    }
+}
+
+/**
+ * After a server-acknowledged fork (`publish --force` of an installed shared
+ * copy), cache the exact accepted ZIP in the recipient account and, if the
+ * snapshot already listed the installation, replace only that entry with the
+ * recipient's own publication. Both facts were confirmed by the server; the
+ * snapshot's verification time and every other entry are left alone.
+ */
+export async function cacheForkedPublication(
+    state: AgentSkillSourceStateV3,
+    installationRecordId: string,
+    metadata: AgentSkillMetadata,
+    archive: {
+        bytes: Buffer;
+        archiveSha256: string;
+        treeDigest: string;
+        name: string;
+        description: string;
+    }
+): Promise<void> {
+    if (
+        metadata.type !== "user" ||
+        metadata.id !== installationRecordId ||
+        metadata.userId !== state.identity.userId ||
+        metadata.checksum !== archive.archiveSha256 ||
+        metadata.name !== archive.name
+    )
+        throw new Error(
+            "The server acknowledged different content than was published"
+        );
+    const ref = { type: "user" as const, id: metadata.id };
+    const archiveFile = agentSkillArchivePath(
+        state.identity,
+        ref,
+        metadata.checksum
+    );
+    await writeFileAtomically(archiveFile, archive.bytes);
+    const installationKey = `installation/${installationRecordId}`;
+    if (state.snapshot?.items[installationKey]) {
+        delete state.snapshot.items[installationKey];
+        state.snapshot.items[sourceStateKey(ref)] = {
+            ref,
+            name: metadata.name,
+            description: metadata.description,
+            sourceKind: "own-user-publication",
+            checksum: metadata.checksum,
+            treeDigest: archive.treeDigest,
+            archiveFile,
+            verifiedAt: new Date().toISOString()
+        };
         await saveAgentSkillSourceState(state);
     }
 }
@@ -499,7 +620,9 @@ export async function syncLocalAgentSkills(
             desired: prepared.desired,
             force: !!options.force
         });
-        return reconcileResult(outcome);
+        return reconcileResult(outcome, {
+            notes: unavailableInstallationNotes(prepared.unavailable)
+        });
     });
 }
 
@@ -540,7 +663,9 @@ export async function syncWorkspaceAgentSkills(
             force,
             type
         });
-        return reconcileResult(outcome);
+        return reconcileResult(outcome, {
+            notes: unavailableInstallationNotes(prepared.unavailable)
+        });
     });
 }
 

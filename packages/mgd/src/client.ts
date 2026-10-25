@@ -186,6 +186,7 @@ export class MagdaClient {
 async function toApiError(res: Response): Promise<MgdApiError> {
     let message = `${res.status} ${res.statusText}`;
     let serverCode: string | undefined;
+    let serverDetails: Record<string, unknown> | undefined;
     try {
         const text = await res.text();
         try {
@@ -199,6 +200,13 @@ async function toApiError(res: Response): Promise<MgdApiError> {
                 typeof parsed?.error?.code === "string"
                     ? parsed.error.code
                     : undefined;
+            // Structured remedy data, e.g. a suggested alias.
+            if (
+                parsed?.error?.details &&
+                typeof parsed.error.details === "object" &&
+                !Array.isArray(parsed.error.details)
+            )
+                serverDetails = parsed.error.details;
         } catch {
             if (text.trim()) message = text.trim().slice(0, 500);
         }
@@ -208,7 +216,10 @@ async function toApiError(res: Response): Promise<MgdApiError> {
     return new MgdApiError(
         message,
         res.status,
-        serverCode || codeForStatus(res.status)
+        serverCode || codeForStatus(res.status),
+        undefined,
+        undefined,
+        serverDetails ? { server: serverDetails } : undefined
     );
 }
 

@@ -10,6 +10,7 @@ import {
     RegistryRecordsPage
 } from "../skills/types.js";
 import { AuthenticatedUser } from "../types.js";
+import { noInstallations, noShareGroups } from "./skillSharingWorld.js";
 
 const user: AuthenticatedUser = {
     id: "00000000-0000-4000-8000-000000000123",
@@ -103,6 +104,9 @@ function service(
     authorization: AgentSkillAuthorization = new LocalManifestAuthorization()
 ): AgentSkillService {
     return new AgentSkillService({
+        installationRegistry: noInstallations(),
+        installationAuthorization: noInstallations(),
+        shareGroups: noShareGroups(),
         registry,
         authorization,
         storage: ({} as unknown) as AgentSkillStorage,
@@ -235,9 +239,10 @@ describe("Agent Skill local sync manifest", () => {
                 }
             ],
             warnings: [],
+            unavailableInstallations: [],
             sources: {
                 user: { complete: true, count: 2 },
-                installations: { status: "notImplemented", count: 0 }
+                installations: { complete: true, count: 0, unavailable: 0 }
             }
         });
         expect(

@@ -144,7 +144,14 @@ describe("agent-skill CLI contracts", () => {
             "publish",
             "pull",
             "delete",
-            "sync"
+            "sync",
+            "installations",
+            "install",
+            "uninstall",
+            "share",
+            "unshare",
+            "recipients",
+            "access"
         ]);
         const publish = agentSkill?.commands.find(
             (command) => command.name() === "publish"

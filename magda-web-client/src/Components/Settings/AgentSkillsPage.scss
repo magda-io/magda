@@ -112,10 +112,30 @@
     flex: 0 1 420px;
 }
 
-.agent-skills-hint {
-    margin: 8px 0 14px;
+// index.scss forces the focus outline of every `form > input` to the
+// dark-theme focus colour (white) with !important. In these forms the input is
+// a direct child, so the white ring covered the border on focus; restore
+// rsuite's focus ring.
+.agent-skills-search,
+.agent-skill-recipient-add,
+.agent-skill-recipient-search {
+    > .rs-input:focus-visible {
+        outline-color: var(--rs-focus-ring-color) !important;
+    }
+}
+
+// `body.au-body` sets `p` margins (`.au-body * + p` adds 1.5rem above), which
+// outrank a single class, so hint margins are scoped one level deeper.
+.au-body .agent-skills-hint {
+    margin: 6px 0 0;
     color: #555f73;
     font-size: 13px;
+}
+
+// Below the tabs and search row: close to the controls it explains, with a
+// clear gap before the cards.
+.au-body .agent-skills-catalogue .agent-skills-hint {
+    margin: 8px 0 16px;
 }
 
 .agent-skills-loading,
@@ -171,6 +191,16 @@
         &.type-system {
             background: #ecf6ec;
             color: #22662a;
+        }
+
+        &.status-installed {
+            background: #e8f0fe;
+            color: #1f4aa8;
+        }
+
+        &.status-unavailable {
+            background: #fdf1e3;
+            color: #8a4b08;
         }
     }
 
@@ -249,6 +279,95 @@
             color: #30384d;
         }
     }
+}
+
+// #3861: sharing and system skill access dialogs; feedback lines outside a
+// card reuse the card feedback colours.
+.agent-skills-page-feedback {
+    margin: 0 0 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: #ecf6ec;
+    color: #22662a;
+}
+
+.agent-skill-recipients,
+.agent-skill-audience {
+    margin-top: 16px;
+
+    > * + * {
+        margin-top: 10px;
+    }
+
+    h3 {
+        font-size: 16px;
+        margin: 0 0 8px;
+    }
+
+    .agent-skill-feedback {
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 4px;
+
+        &.feedback-success {
+            background: #ecf6ec;
+            color: #22662a;
+        }
+
+        &.feedback-error {
+            background: #fdecea;
+            color: #a12c1f;
+        }
+    }
+}
+
+.agent-skill-recipient-add,
+.agent-skill-recipient-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .rs-input {
+        flex: 1 1 260px;
+    }
+}
+
+.agent-skill-recipient-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 6px 8px;
+        border-bottom: 1px solid #e5e5ea;
+        text-align: left;
+        vertical-align: middle;
+    }
+}
+
+.agent-skill-recipients {
+    padding-top: 16px;
+    border-top: 1px solid #e5e5ea;
+}
+
+.agent-skill-public label,
+.agent-skill-orgunit label {
+    font-weight: 600;
+}
+
+.au-body .agent-skill-public .agent-skills-hint {
+    margin: 4px 0 0;
+}
+
+.agent-skill-orgunit label {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.agent-skill-orgunit {
+    margin: 12px 0;
 }
 
 .agent-skills-pagination {

@@ -14,10 +14,16 @@ export const AGENT_SKILLS = "/v0/agent/skills";
 export const AGENT_SKILL_WORKSPACE_MANIFEST = `${AGENT_SKILLS}/workspace-manifest`;
 export const AGENT_SKILL_LOCAL_SYNC_MANIFEST = `${AGENT_SKILLS}/local-sync-manifest`;
 
+export const AGENT_SKILL_INSTALLATIONS = `${AGENT_SKILLS}/installations`;
+export const agentSkillInstallation = (id: string) =>
+    `${AGENT_SKILL_INSTALLATIONS}/${encodeURIComponent(id)}`;
+
 export const agentSkill = (type: string, id: string) =>
     `${AGENT_SKILLS}/${encodeURIComponent(type)}/${encodeURIComponent(id)}`;
 export const agentSkillArchive = (type: string, id: string) =>
     `${agentSkill(type, id)}/archive`;
+export const agentSkillAccess = (type: string, id: string) =>
+    `${agentSkill(type, id)}/access`;
 
 export const registryRecord = (id: string) =>
     `${REGISTRY_RECORDS}/${encodeURIComponent(id)}`;

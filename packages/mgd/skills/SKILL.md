@@ -37,10 +37,10 @@ that matches your task before acting.**
    `3` auth error (key missing/invalid or no permission); `4` not found;
    `1` anything else. In `--json` mode a failing command prints
    `{"error": {"code", "message", "status", "hint"}}` on stderr.
-5. **Confirm before mutating or publishing.** Never run `dataset create --publish`, `add-file`, `replace-file`, `update`, `aspect create/set/patch/delete`, `agent-skill publish`, `agent-skill delete`, or potentially destructive `agent-skill sync --force`,
+5. **Confirm before mutating or publishing.** Never run `dataset create --publish`, `add-file`, `replace-file`, `update`, `aspect create/set/patch/delete`, `agent-skill publish`, `agent-skill delete`, `agent-skill install/uninstall/share/unshare/access`, or potentially destructive `agent-skill sync --force`,
    or any `api request` with POST/PUT/PATCH/DELETE without the user's explicit
    go-ahead in this conversation. Uploading or attaching generated artifacts
-   happens only when the user asked for it. For *how* to create and publish once
+   happens only when the user asked for it. For _how_ to create and publish once
    the user has agreed, see `authoring.md`.
 6. **Report identifiers.** Every user-facing summary must include the dataset
    IDs, distribution IDs, local file paths, and upload targets you touched.
@@ -64,23 +64,24 @@ only when you intend to overwrite the whole aspect. For advanced RFC 6902 ops
 
 Curated commands (prefer these over `api request`, ground rule 2):
 
-| Command | Does |
-| --- | --- |
-| `auth status` | show the active profile + authenticated user |
-| `profile create/update/remove` · `use/list` | manage site profiles & credentials |
-| `search datasets <q>` · `search semantic <q>` | keyword / embedding search → `search.md` |
-| `dataset get <id>` · `dataset distributions <id>` | read a dataset / list its distributions → `search.md` |
-| `dataset create` · `dataset update <id>` | create (draft by default) / edit dataset metadata → `authoring.md` |
-| `dataset add-file <id> [file]` | upload a file, or register a link with `--access-url`, as a distribution → `authoring.md` |
-| `dataset publish/unpublish <id>` | set publishing state (cascades to distributions) → `authoring.md` |
-| `dataset aspect get/set/patch/delete <recordId> <aspectId>` | read/write any aspect on any record (`set`=replace, `patch`=merge) |
-| `dist get/update <id>` · `dist publish/unpublish <id>` | inspect / edit / flip a single distribution |
-| `dist download <id>` · `dist replace-file <id> <file>` · `dist remove <id>` | download / replace / remove a distribution → `search.md`, `authoring.md` |
-| `file upload/download` | direct storage transfer |
-| `aspect list/get/create/delete <id>` | manage custom aspect *definitions* → `authoring.md` |
-| `agent-skill init/validate/publish/list/show/pull/delete/sync` | draft, review, publish and reconcile Registry-backed skills → `agent-skills.md` |
-| `skills install/uninstall` | install/remove the bundled `magda-mgd` CLI guidance; **not** a Registry publication → `agent-skills.md` |
-| `api request <method> <path>` | raw REST call (fallback only) |
+| Command                                                                                                     | Does                                                                                                                   |
+| ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `auth status`                                                                                               | show the active profile + authenticated user                                                                           |
+| `profile create/update/remove` · `use/list`                                                                 | manage site profiles & credentials                                                                                     |
+| `search datasets <q>` · `search semantic <q>`                                                               | keyword / embedding search → `search.md`                                                                               |
+| `dataset get <id>` · `dataset distributions <id>`                                                           | read a dataset / list its distributions → `search.md`                                                                  |
+| `dataset create` · `dataset update <id>`                                                                    | create (draft by default) / edit dataset metadata → `authoring.md`                                                     |
+| `dataset add-file <id> [file]`                                                                              | upload a file, or register a link with `--access-url`, as a distribution → `authoring.md`                              |
+| `dataset publish/unpublish <id>`                                                                            | set publishing state (cascades to distributions) → `authoring.md`                                                      |
+| `dataset aspect get/set/patch/delete <recordId> <aspectId>`                                                 | read/write any aspect on any record (`set`=replace, `patch`=merge)                                                     |
+| `dist get/update <id>` · `dist publish/unpublish <id>`                                                      | inspect / edit / flip a single distribution                                                                            |
+| `dist download <id>` · `dist replace-file <id> <file>` · `dist remove <id>`                                 | download / replace / remove a distribution → `search.md`, `authoring.md`                                               |
+| `file upload/download`                                                                                      | direct storage transfer                                                                                                |
+| `aspect list/get/create/delete <id>`                                                                        | manage custom aspect _definitions_ → `authoring.md`                                                                    |
+| `agent-skill init/validate/publish/list/show/pull/delete/sync`                                              | draft, review, publish and reconcile Registry-backed skills → `agent-skills.md`                                        |
+| `agent-skill list --shared` · `installations` · `install/uninstall` · `share/unshare/recipients` · `access` | discover and explicitly install skills shared with you; share your own; manage system skill access → `agent-skills.md` |
+| `skills install/uninstall`                                                                                  | install/remove the bundled `magda-mgd` CLI guidance; **not** a Registry publication → `agent-skills.md`                |
+| `api request <method> <path>`                                                                               | raw REST call (fallback only)                                                                                          |
 
 Raw fallback (documented REST endpoints only):
 
@@ -93,13 +94,13 @@ mgd api request GET /v0/registry/records --query limit=3 --query aspect=dcat-dat
 Read the file(s) matching your task **before acting** — that's where the recipes
 and their caveats are:
 
-| If the task is… | Read |
-| --- | --- |
-| searching, finding, inspecting, or downloading datasets/distributions | `search.md` |
-| creating, editing, or publishing a dataset; attaching files; editing or defining aspects | `authoring.md` (+ `dataset-elicitation.md` for the metadata conversation) |
-| assigning or changing a dataset's **publisher / organisation** | `publisher.md` |
-| making a **preview** render, or cataloguing **remote/link distributions** (ArcGIS/WMS/remote CSV/JSON); a format→preview question; a **403** on a preview | `preview.md` |
-| capturing or sharing a **reusable Agent Skill**; publishing/downloading/synchronising skills; resolving a sync conflict or profile change | `agent-skills.md` |
+| If the task is…                                                                                                                                           | Read                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| searching, finding, inspecting, or downloading datasets/distributions                                                                                     | `search.md`                                                               |
+| creating, editing, or publishing a dataset; attaching files; editing or defining aspects                                                                  | `authoring.md` (+ `dataset-elicitation.md` for the metadata conversation) |
+| assigning or changing a dataset's **publisher / organisation**                                                                                            | `publisher.md`                                                            |
+| making a **preview** render, or cataloguing **remote/link distributions** (ArcGIS/WMS/remote CSV/JSON); a format→preview question; a **403** on a preview | `preview.md`                                                              |
+| capturing or sharing a **reusable Agent Skill**; publishing/downloading/synchronising skills; resolving a sync conflict or profile change                 | `agent-skills.md`                                                         |
 
 `dataset-elicitation.md` defines the metadata-consultant behaviour (infer before
 asking, quick vs guided path, confirm-then-write) for any create/edit conversation.

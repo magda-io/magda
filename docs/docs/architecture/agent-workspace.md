@@ -303,4 +303,4 @@ open sockets during destructive lifecycle operations.
 - [Agent Workspace E2E qualification](../e2e-test-cases/agent-workspace.md)
   — reproducible test procedures and acceptance checks.
 - [Magda v8 AI Agent Platform design (#3819)](https://github.com/magda-io/magda/tree/design/3811-ai-agent-platform/docs/design/ai-agent-platform-design)
-  — evolving architectural decisions and future work such as #3861/#3862.
+  — evolving architectural decisions and future work such as #3862.

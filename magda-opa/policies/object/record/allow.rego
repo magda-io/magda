@@ -8,6 +8,7 @@ import data.common.isPublishedDataset
 import data.common.isPublishedDistribution
 import data.common.verifyRecordPermission
 import data.object.agentSkill.verifyPermission as verifyAgentSkillPermission
+import data.object.agentSkillInstallation.verifyPermission as verifyAgentSkillInstallationPermission
 import data.object.dataset.verifyPermission as verifyDatasetPermission
 import data.object.distribution.verifyPermission as verifyDistributionPermission
 import data.object.organization.verifyPermission as verifyOrgPermission
@@ -46,9 +47,18 @@ verifyPermission(operationUri) {
 	verifyAgentSkillPermission("object/agentSkill/user/read", "record")
 }
 
-# A concrete typed publication never falls back to constrained generic
-# object/record grants. #3861 will replace the fail-closed installation
-# reservation with typed installation dispatch after its aspect and lifecycle exist.
+# Agent Skill installation records are read with the typed installation read
+# rules, and written by Agent Services only, the same as Agent Skill records.
+verifyPermission(operationUri) {
+	input.object.record["agent-skill-installation"]
+
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	operationType == "read"
+	verifyAgentSkillInstallationPermission("object/agentSkill/install/read", "record")
+}
+
+# A concrete typed publication or installation never falls back to constrained
+# generic object/record grants.
 verifyPermission(operationUri) {
 	not input.object.record["agent-skill"]
 	not input.object.record["agent-skill-installation"]

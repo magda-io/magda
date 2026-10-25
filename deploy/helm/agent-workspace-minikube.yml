@@ -137,8 +137,17 @@ magda:
           tag: latest
           pullPolicy: Never
 
-    # Agent Skill archive ownership checks. The published registry-api image is
-    # sufficient for this single-tenant profile.
+    # The published registry-api image is sufficient for this single-tenant
+    # profile, but its post-install/upgrade aspect definition migrator must be
+    # the local build: the published one lacks the Agent Skill aspects.
+    registry-api:
+      aspectDefinitionMigrator:
+        image:
+          repository: localhost:5000
+          tag: latest
+          pullPolicy: Never
+
+    # Agent Skill archive ownership checks.
     storage-api:
       image:
         repository: localhost:5000
