@@ -1,6 +1,6 @@
 # Agent Skill authorization model
 
-**Status: Revised 2026-10-23** (#3869, implemented in #3870). This document supersedes the parts of [skills-authorization-and-workspace-manifest.md](./skills-authorization-and-workspace-manifest.md) that describe OPA validating a publication's identity, typed write delegation at the generic `object/record` level, and the accepted "direct generic Registry mutation may bypass service-owned invariants" limitation. The rest of that document (typed resources, roles, read constraints, sharing, Workspace manifest and sync) is unchanged.
+**Status: Revised 2026-10-25** (#3869/#3870, installation integration in draft #3864). This document supersedes the parts of [skills-authorization-and-workspace-manifest.md](./skills-authorization-and-workspace-manifest.md) that describe OPA validating a publication's identity, typed write delegation at the generic `object/record` level, and the accepted "direct generic Registry mutation may bypass service-owned invariants" limitation. The rest of that document (typed resources, roles, read constraints, sharing, Workspace manifest and sync) is unchanged.
 
 ## Why it changed
 
@@ -31,7 +31,7 @@ The revised model removes the direct path instead, so neither job is needed in O
 1. **OPA only authorises.** Agent Skill rules use only literal comparisons and existence checks on record fields. Every partial decision can be translated (e.g. into Registry SQL filters). Data validation (identity, naming rules, archive linkage) lives in Agent Services, plus the `agent-skill` aspect JSON schema for formats.
 2. **Agent Services is the only non-admin writer of Agent Skill records and archives.** For each create/update/delete, it authorises the **real caller** with the one typed operation (`object/agentSkill/<system|user>/<create|update|delete>`, a full evaluation of the actual or proposed record). Only then does it write the Registry record and the archive, with its internal session.
 3. **Unconstrained generic grants are trusted.** An `object/record/<operation>` permission with no ownership, OrgUnit or pre-authorised constraint applies to **every** record, including Agent Skill records, for reads too. No built-in role has one, so it can only exist because an admin granted it on purpose. Such users operate on Agent Skill records **as generic records**. Agent Services' typed endpoints still require typed permissions.
-4. **Constrained generic grants never reach typed publications.** A concrete `agent-skill` record never falls back to constrained generic `object/record` grants. Agent Skill installations stay reserved (fail closed) until #3861.
+4. **Constrained generic grants never reach typed publications or installations.** Records carrying `agent-skill` or `agent-skill-installation` never fall back to constrained generic `object/record` grants. Draft #3864 adds typed installation read dispatch but keeps generic writes reserved for admins and unconstrained grants.
 
 ## Rules by layer
 
@@ -46,12 +46,22 @@ Only ever fully evaluated: Agent Services calls them with the concrete record an
 - **System skills, and broad user update/delete:** unconstrained typed grants (e.g. **Agent Skills Admins**). Create still requires matching attribution.
 - **No identity validation.** A record whose ID doesn't match its type, user and name is not rejected by OPA. Agent Services rejects it.
 
+### Typed installation rules: `object/agentSkill/install/*` (`object/agentSkillInstallation/allow.rego`)
+
+Draft #3864 applies the same division of responsibilities to recipient installations. Agent Services validates the deterministic installation ID/name, recipient, owner, source ID, alias, tenant and mutually exclusive publication/installation aspects; these are not re-implemented as identity-validation rules in OPA.
+
+- A recipient's typed owner-constrained `install/create`, `install/read` and `install/delete` checks require the installation's `userId` and `access-control.ownerId` to match the caller. Owner-constrained `install/update` is not granted: rename requires uninstall then install. Deliberate unconstrained typed grants remain independently grantable.
+- **Create/delete:** Agent Services authorises the *real caller* against the proposed/current complete installation record, then creates/deletes it using the internal administrator session. This also applies when converting an installation to the recipient's own publication (fork): check both typed operations first; an interrupted cross-record operation is recoverable, not atomically transactional.
+- **Read:** Registry reads use the real caller's session. `object/record/read` on installation records delegates to `object/agentSkill/install/read`, allowing translatable partial-evaluation filtering. Agent Services separately checks typed read on each returned record, so merely holding a generic record grant does not make an installation visible through the skills application.
+- **Source access:** Owning an installation does not grant access to the original published skill. Install, download, status and manifest resolution independently read and authorise the source as the real caller; revocation makes the source unavailable without preventing authorised uninstallation.
+- The policy performs **authorization**, not cross-aspect or deterministic-identity validation. Agent Services rejects malformed records (including a record carrying both `agent-skill` and `agent-skill-installation`). Generic writes by ordinary typed-grant users are denied, while administrators and consciously trusted unconstrained generic grant holders retain their underlying storage privileges.
+
 ### Generic record rules: `object/record/*` (`object/record/allow.rego`)
 
 | Record | Read | Create / update / delete |
 | --- | --- | --- |
 | Concrete `agent-skill` record | typed read rules (by actual `type`), **or** an unconstrained generic read grant | admins and unconstrained generic grants only |
-| `agent-skill-installation` record | unconstrained generic grants only (fail closed until #3861) | unconstrained generic grants only |
+| Concrete `agent-skill-installation` record | typed installation read rules, **or** an unconstrained generic read grant | admins and unconstrained generic grants only |
 | Any other record | existing rules (generic, dataset, distribution, organisation) | existing rules |
 
 Admins are covered by the entrypoint's global override, which happens before any of the above.
@@ -72,16 +82,17 @@ Always fully evaluated (the Storage API sends the concrete object and record).
   - A linked upload or delete requires the linked record's `object/record/create|update|delete` permission. For an Agent Skill record, only admins and unconstrained generic grants have it; typed Agent Skill grants alone don't. A trusted existence flag keeps create from replacing an existing archive, and only delete can remove one.
 
   So users can't replace their own archive (e.g. with an invalid skill package, then share it) except through Agent Services, which validates it. Archive integrity doesn't depend on every client re-checking it (although Agent Services and `mgd`/Workspace sync do check the checksum against the record).
-- **An archive's Storage owner isn't part of its link to the publication.** Agent Services uploads archives with its internal session, so the Storage owner is the internal principal. Reads are authorised by the publication's read rules. The link is the exact archive key plus Storage's trusted `magda-record-id`, and Agent Services checks the archive's checksum against the record.
+- **Why Storage's object owner is the internal administrator:** Storage API automatically records the **authenticated caller's user ID** as `magda-owner-id` when creating an object. Agent Services performs validated archive writes under its short-lived internal administrator session, so Storage correctly and automatically records that internal principal as the object owner. This is intentional and does **not** transfer Agent Skill ownership away from the real publisher: `access-control.ownerId`, `createdBy` and `updatedBy` preserve the relevant real-user identities.
+- **Why we do not add an owner-override upload parameter:** Letting an uploader nominate someone else's `magda-owner-id` would introduce an authorization question into the generic Storage API: who may assign ownership to another user, and under what permissions? Such an override could affect owner-constrained Storage access on unrelated objects. The Agent Skill model does not need it. Supported **write** authority is determined by domain-specific typed Agent Skill operations checked on the real caller by Agent Services, with service-owned writes; direct writes in the reserved namespace remain restricted to admins and deliberately trusted unconstrained grants. **Read** authority is determined by the trusted `magda-record-id` link and the publication's record-read permissions (except deliberately trusted unconstrained Storage grants), not by `magda-owner-id`. The link requires the exact archive key, and Agent Services checks ZIP checksum and identity before returning content. Recipient installations have **no independent ZIP/Storage object**; their source access is re-authorised against the original publication. Consequently, accepting the internal principal as Storage owner preserves Storage API's existing security semantics and avoids a new, unnecessary owner-spoofing surface.
 
 ## Sessions used by Agent Services
 
 | Call | Session |
 | --- | --- |
-| Typed authorisation of the caller (OPA) | caller |
-| Registry reads for list/read/download | caller |
+| Typed authorisation of the caller (OPA), including installation create/read/delete | caller |
+| Registry reads for publication **and installation** list/read/manifest | caller |
 | Privileged lookups (existing record or archive state before a write) | internal |
-| Registry record **create / update / delete** (PENDING, READY, DELETING, delete) | **internal** (after authorising the caller) |
+| Registry publication **and installation** create / update / delete | **internal** (after authorising the caller) |
 | Storage archive **upload / replacement / delete** | **internal** (after authorising the caller) |
 | Storage archive download | caller |
 
@@ -107,7 +118,9 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
 | `trimBySourceTag` | ✓ | ✓ (unconstrained delete) | 403 | 403 |
 | Delete a record, or one of its aspects, that doesn't exist | 200 | 200 (unconstrained delete / update) | 403 | 403 |
 | Upload/delete a skill archive via Storage API | ✓ | ✓ (unconstrained generic record or Storage grants) | ✗ (use Agent Services) | ✗ |
-| `agent-skill-installation` records (until #3861) | ✓ | ✓ | ✗ | ✗ |
+| Read installations through Registry | ✓ | ✓ | ✓ (typed installation read) | ✗ |
+| Write installation records through Registry | ✓ | ✓ | ✗ (use Agent Services) | ✗ |
+| Install/uninstall through Agent Services | ✓ | only with typed grants | ✓ (typed install create/delete) | ✗ |
 
 **Generic grants give access to skill records, not to the skills application.** Unconstrained-grant holders see and work with skill *records* through Registry and Storage, per their generic permissions. Agent Services, the skills application, requires the typed permission for every operation: create, update and delete, single reads and downloads, and the typed read on every listed record and every Workspace manifest source. A generic grant alone shows no skills there. "Unconstrained" users can still use Agent Services with typed grants, as anyone can.
 
@@ -134,6 +147,10 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
   - #3874: a bulk request size limit (`bulkMutationMaxRecords`), done in #3878;
   - #3875: the CI check above, done in #3879.
 
+## Sharing and installation lifecycle (draft #3864)
+
+One source-scoped Access Group grants only the appropriate typed publication-read operation (`object/agentSkill/user/read` or `object/agentSkill/system/read`). Agent Services checks the real caller's typed source update permission, verifies group binding to that publication incarnation, and performs validated Access Group management with the internal session. Attaching its permission ID to the source publication also uses the internal Registry session after typed authorization. Installations reference the original publication; no ZIP is copied, and unsharing does not delete the recipient's installation record. The resolved source is separately authorised as the real caller for reads/downloads and manifests.
+
 ## Tests (#3870)
 
 - **OPA:** 122 policy tests. The Agent Skill tests follow the use-case table:
@@ -142,7 +159,7 @@ The internal session is a short-lived JWT for MAGDA's `DEFAULT_ADMIN_USER_ID`. I
   - constrained generic grants can't reach skill records;
   - identity isn't validated by the policy;
   - typed and unconstrained archive uploads.
-- **Agent Services:** every Registry create/put/delete uses the internal session, and every authorisation check uses the caller's session.
+- **Agent Services:** every Registry publication/installation create/put/delete and skill archive write uses the internal session, and every typed authorisation check uses the caller's session. Installation list/get/manifest use caller-scoped Registry reads and additional typed read decisions (draft #3864).
 - **Integration (real OPA + authorization API + registry):**
   - the #3869 case (Data Stewards + Agent Workspace Users bulk-publishing their own dataset and distribution);
   - a typed-only user can't create a skill record through the Registry (403);
