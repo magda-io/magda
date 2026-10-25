@@ -95,6 +95,10 @@ describe("dataset add-file", () => {
                 `magda://storage-api/ds-1/${distId}/data.csv`
             );
             expect(posted.aspects.publishing.state).to.equal("draft");
+            // The format comes from the file extension. `dataset-format` is
+            // left to magda-minion-format.
+            expect(s.format).to.equal("CSV");
+            expect(posted.aspects["dataset-format"]).to.equal(undefined);
 
             const distPut = server.requests.find(
                 (r) =>
@@ -259,9 +263,62 @@ describe("dataset add-file", () => {
             const s = posted.aspects["dcat-distribution-strings"];
             expect(s.accessURL).to.equal("https://example.com/api");
             expect(s.useStorageApi).to.equal(undefined);
+            expect(s.format).to.equal(undefined);
         } finally {
             await server.close();
         }
+    });
+
+    async function postedDistributionStrings(args: string[]) {
+        const server = await startMockServer(routes());
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDatasetCommands(program);
+            await captureStdout(() =>
+                program.parseAsync(["dataset", "add-file", "ds-1", ...args], {
+                    from: "user"
+                })
+            );
+            const posted = JSON.parse(
+                server.requests
+                    .find(
+                        (r) =>
+                            r.method === "POST" &&
+                            r.url.startsWith("/v0/registry/records")
+                    )!
+                    .body.toString()
+            );
+            return posted.aspects["dcat-distribution-strings"];
+        } finally {
+            await server.close();
+        }
+    }
+
+    it("detects the format of a link-only distribution from its URL", async () => {
+        const s = await postedDistributionStrings([
+            "--access-url",
+            "https://example.com/files/stations.geojson?v=2"
+        ]);
+        expect(s.format).to.equal("GEOJSON");
+    });
+
+    it("uses --format over the detected format", async () => {
+        const local = path.join(tmp, "readings.txt");
+        await fs.writeFile(local, "a,b\n");
+        expect(
+            (await postedDistributionStrings([local, "--format", "CSV"])).format
+        ).to.equal("CSV");
+        expect(
+            (
+                await postedDistributionStrings([
+                    "--access-url",
+                    "https://example.com/stations.geojson",
+                    "--format",
+                    "JSON"
+                ])
+            ).format
+        ).to.equal("JSON");
     });
 
     it("tags the distribution v0 and bumps the dataset version", async () => {

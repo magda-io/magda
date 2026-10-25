@@ -174,6 +174,10 @@ export function registerDistCommands(program: Command): void {
             "--title <title>",
             "new distribution title (default: file name)"
         )
+        .option(
+            "--format <format>",
+            "data format (default: from file extension)"
+        )
         .option("--bucket <bucket>", "storage bucket", DATASETS_BUCKET_DEFAULT)
         .option("--keep-old", "never delete the superseded storage object")
         .option("--json", "output JSON result")
@@ -239,7 +243,8 @@ export function registerDistCommands(program: Command): void {
             progress.done();
 
             const title = opts.title ?? fileName;
-            const detectedFormat = detectFormat(fileName);
+            const format: string | undefined =
+                opts.format ?? detectFormat(fileName);
             let contentEventId = 0;
             try {
                 const { eventId } = await mergeAspect(
@@ -252,7 +257,7 @@ export function registerDistCommands(program: Command): void {
                         byteSize: uploaded.size,
                         modified: now.toISOString(),
                         useStorageApi: true,
-                        ...(detectedFormat ? { format: detectedFormat } : {})
+                        ...(format ? { format } : {})
                     }
                 );
                 contentEventId = eventId;

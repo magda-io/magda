@@ -19,10 +19,8 @@ describe("dist replace-file", () => {
         await fs.rm(tmp, { recursive: true, force: true });
     });
 
-    it("uploads, merges metadata, bumps version and keeps history-referenced old file", async () => {
-        const local = path.join(tmp, "new.csv");
-        await fs.writeFile(local, "x,y\n1,2\n");
-        const server = await startMockServer([
+    function routes() {
+        return [
             {
                 method: "GET",
                 path: "/v0/auth/users/whoami",
@@ -66,7 +64,13 @@ describe("dist replace-file", () => {
             },
             { method: "PUT", path: /aspects\//, body: {} },
             { method: "DELETE", path: /^\/v0\/storage\//, body: {} }
-        ]);
+        ];
+    }
+
+    it("uploads, merges metadata, bumps version and keeps history-referenced old file", async () => {
+        const local = path.join(tmp, "new.csv");
+        await fs.writeFile(local, "x,y\n1,2\n");
+        const server = await startMockServer(routes());
         process.env.MGD_BASE_URL = server.url;
         try {
             const program = new Command();
@@ -90,6 +94,43 @@ describe("dist replace-file", () => {
                 (r) => r.method === "DELETE" && r.url.includes("old.csv")
             );
             expect(deletes).to.have.length(0);
+            expect(dcatStringsPut(server).format).to.equal("CSV");
+        } finally {
+            await server.close();
+        }
+    });
+
+    function dcatStringsPut(server: { requests: any[] }) {
+        const put = server.requests.find(
+            (r) =>
+                r.method === "PUT" &&
+                r.url.includes("aspects/dcat-distribution-strings")
+        )!;
+        return JSON.parse(put.body.toString());
+    }
+
+    it("uses --format over the format detected from the new file", async () => {
+        const local = path.join(tmp, "new.txt");
+        await fs.writeFile(local, "x,y\n1,2\n");
+        const server = await startMockServer(routes());
+        process.env.MGD_BASE_URL = server.url;
+        try {
+            const program = new Command();
+            registerDistCommands(program);
+            await captureStdout(() =>
+                program.parseAsync(
+                    [
+                        "dist",
+                        "replace-file",
+                        "dist-1",
+                        local,
+                        "--format",
+                        "CSV"
+                    ],
+                    { from: "user" }
+                )
+            );
+            expect(dcatStringsPut(server).format).to.equal("CSV");
         } finally {
             await server.close();
         }

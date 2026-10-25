@@ -601,6 +601,14 @@ mgd dataset publish magda-ds-<uuid>          # unpublish the same way
 mgd dist publish magda-dist-<uuid>           # or flip a single distribution
 ```
 
+`add-file` and `replace-file` record each distribution's format in
+`dcat-distribution-strings.format`. It is detected from the file name, or for
+`--access-url` from the URL path, and a compression suffix is skipped
+(`data.csv.gz` is `CSV`). `--format` overrides the detected format. `mgd`
+doesn't write the `dataset-format` aspect: that is `magda-minion-format`'s job,
+and consumers such as the semantic indexers fall back to the DCAT format
+without it.
+
 Datasets created by the CLI are stamped with a `source` aspect
 (`{"id":"magda","name":"Magda CLI (mgd)","type":"internal","url":<site>}`) — the
 same `id` the web client uses, so they show up as editable records in the web
