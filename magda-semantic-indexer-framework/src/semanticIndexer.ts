@@ -81,12 +81,20 @@ function installUncaughtDiagnostics() {
     globalKey[UNCAUGHT_DIAGNOSTICS_INSTALLED] = true;
 }
 
-function createProcessingContext(
+// `dataset-format` comes from magda-minion-format, which isn't always deployed
+// (e.g. files added with `mgd dataset add-file`). It stays optional, so
+// distributions without it are indexed by their DCAT format instead.
+export const STORAGE_OBJECT_ASPECTS = ["dcat-distribution-strings"];
+export const STORAGE_OBJECT_OPTIONAL_ASPECTS = ["dataset-format"];
+
+export function createProcessingContext(
     userConfig: SemanticIndexerOptions,
     record: RegistryRecord
 ): ProcessingContext {
     const distributionAspect = record?.aspects?.["dcat-distribution-strings"];
-    const format = record?.aspects?.["dataset-format"]?.format;
+    const format =
+        record?.aspects?.["dataset-format"]?.format ||
+        distributionAspect?.format;
     return {
         indexerId: userConfig.id,
         itemType: userConfig.itemType,
@@ -229,8 +237,8 @@ export default async function semanticIndexer(
             minionOptions = {
                 argv: userConfig.argv,
                 id: userConfig.id,
-                aspects: ["dcat-distribution-strings", "dataset-format"],
-                optionalAspects: [],
+                aspects: STORAGE_OBJECT_ASPECTS,
+                optionalAspects: STORAGE_OBJECT_OPTIONAL_ASPECTS,
                 writeAspectDefs: [],
                 async: true,
                 dereference: false,

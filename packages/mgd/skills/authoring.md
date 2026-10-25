@@ -19,7 +19,7 @@ mgd dataset create --title "River gauge readings 2025" \
 mgd dataset aspect patch magda-ds-<uuid> dcat-dataset-strings \
   '{"keywords":["river","hydrology"],"themes":["water"]}' --json
 
-# 3. Add a file (--format overrides the extension-detected format)
+# 3. Add a file (--format overrides the format detected from the file name; data.csv.gz -> CSV)
 mgd dataset add-file magda-ds-<uuid> ./readings.csv --title "2025 readings" --format csv --json
 
 # 4. Publish — cascades to all the dataset's distributions
