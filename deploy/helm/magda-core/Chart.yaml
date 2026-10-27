@@ -66,7 +66,7 @@ dependencies:
     tags:
       - elasticsearch
   - name: magda-embedding-api
-    version: "1.1.0"
+    version: "1.2.0"
     repository: oci://ghcr.io/magda-io/charts
     condition: global.searchEngine.hybridSearch.enabled
     tags:
@@ -97,7 +97,7 @@ dependencies:
       - all
       - indexer
   - name: magda-preview-map
-    version: "2.1.0"
+    version: "2.1.1"
     alias: preview-map
     repository: oci://ghcr.io/magda-io/charts
     tags:

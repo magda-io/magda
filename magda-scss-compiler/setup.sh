@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 cd /usr/src/app
 
 echo "Removing unnecessary files..."
