@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 RUN mkdir -p /usr/src/app
 COPY . /usr/src/app
