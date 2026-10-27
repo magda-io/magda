@@ -24,7 +24,7 @@ dependencies:
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
   - name: magda-function-history-report
-    version: "2.0.0"
+    version: "2.1.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
@@ -32,7 +32,7 @@ dependencies:
 
   - name: magda-minion-broken-link
     alias: minion-broken-link
-    version: "3.0.0"
+    version: "3.1.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions
@@ -48,7 +48,7 @@ dependencies:
 
   - name: magda-minion-linked-data-rating
     alias: minion-linked-data-rating
-    version: "2.0.0"
+    version: "2.1.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions
@@ -56,20 +56,20 @@ dependencies:
 
   - name: magda-minion-visualization
     alias: minion-visualization
-    version: "2.0.0"
+    version: "2.1.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minions
       - minion-visualization
 
   - name: magda-minion-ckan-exporter
-    version: "2.0.0"
+    version: "2.1.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - minion-ckan-exporter
 
   - name: magda-ckan-connector
-    version: "2.0.0"
+    version: "2.2.0"
     alias: ckan-connector-functions
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -78,7 +78,7 @@ dependencies:
       - ckan-connector-functions
 
   - name: magda-function-esri-url-processor
-    version: "2.0.0"
+    version: "2.1.0"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
