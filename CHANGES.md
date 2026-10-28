@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v7.1.1
+
+- [#3891](https://github.com/magda-io/magda/pull/3891): Fix the release pipeline never publishing the `latest` Docker image tag for stable releases.
+
 ## v7.1.0
 
 - [#3888](https://github.com/magda-io/magda/pull/3888): Move `magda-scss-compiler` (from Node 20) and `magda-semantic-search-api` (from Node 18) to Node 22 (`node:22-alpine`), and fix two scss-compiler issues:
