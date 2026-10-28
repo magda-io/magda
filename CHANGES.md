@@ -12,6 +12,9 @@
 - [#3878](https://github.com/magda-io/magda/pull/3878): Bulk registry mutation requests are limited to `bulkMutationMaxRecords` records (default 1000). **Behaviour change:** larger requests are rejected with a 400 error. Closes #3874.
 - [#3876](https://github.com/magda-io/magda/pull/3876): Single record registry updates are now authorised using only the record's own tenant's aspects (multi-tenant deployments), and a record created by `PUT` is rolled back if the request fails.
 - [#3870](https://github.com/magda-io/magda/pull/3870): Fix bulk record updates (e.g. `mgd dataset publish` / `unpublish`) failing with a 500 error for users with Agent Skill permissions (closes #3869). Adds the authorization API endpoint `POST /v0/opa/batchDecision`. **Behaviour change:** a bulk update is all-or-nothing and is denied (403) if any record isn't permitted. Agent Skill records and archives are now written only by Agent Services, admins and users with unconstrained permissions, and unconstrained `object/record/*` permissions now also apply to Agent Skill records.
+## v7.1.1
+
+- [#3891](https://github.com/magda-io/magda/pull/3891): Fix the release pipeline never publishing the `latest` Docker image tag for stable releases.
 
 ## v7.1.0
 
