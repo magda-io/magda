@@ -1,6 +1,6 @@
 {
   "name": "@magda/agent-runtime",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "Managed DeepSeek Harness runtime for Magda Agent Workspace",
   "license": "Apache-2.0",
   "engines": {
@@ -18,10 +18,10 @@
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
-    "@magda/mgd": "^7.0.0"
+    "@magda/mgd": "^7.1.0"
   },
   "devDependencies": {
-    "@magda/scripts": "^7.0.0"
+    "@magda/scripts": "^7.1.0"
   },
   "config": {
     "docker": {

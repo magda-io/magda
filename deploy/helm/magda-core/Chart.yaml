@@ -156,11 +156,11 @@ dependencies:
       - all
       - storage-api
   - name: agent-services
-    version: 7.0.0
+    version: 7.1.0
     repository: file://../internal-charts/agent-services
     condition: global.agentWorkspace.enabled
   - name: llm-services
-    version: 7.0.0
+    version: 7.1.0
     repository: file://../internal-charts/llm-services
     condition: global.llmServices.enabled
   - name: tenant-api

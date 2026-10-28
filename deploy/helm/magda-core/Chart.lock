@@ -76,10 +76,10 @@ dependencies:
   version: 7.1.0
 - name: agent-services
   repository: file://../internal-charts/agent-services
-  version: 7.0.0
+  version: 7.1.0
 - name: llm-services
   repository: file://../internal-charts/llm-services
-  version: 7.0.0
+  version: 7.1.0
 - name: tenant-api
   repository: file://../internal-charts/tenant-api
   version: 7.1.0
@@ -95,5 +95,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 7.1.0
-digest: sha256:5e665191e87eb53c90d6878237deb6b1ca114291ddae7152dd08e5ec3b86d4d8
-generated: "2026-10-29T01:09:53.962479+11:00"
+digest: sha256:e77f5195e9885a139c85ae5e59abce1ae0dcccc28c0d0dfdd5251c0c0eeda8d7
+generated: "2026-10-29T09:40:49.751998+11:00"
