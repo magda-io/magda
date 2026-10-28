@@ -1,39 +1,39 @@
 dependencies:
 - name: magda-core
   repository: file://../magda-core
-  version: 7.0.0
+  version: 7.1.0
 - name: openfaas
   repository: oci://ghcr.io/magda-io/charts
   version: 5.5.5-magda.3
 - name: magda-function-history-report
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-minion-broken-link
   repository: oci://ghcr.io/magda-io/charts
-  version: 3.0.0
+  version: 3.1.0
 - name: magda-minion-format
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.2
+  version: 2.0.3
 - name: magda-minion-linked-data-rating
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-minion-visualization
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-minion-ckan-exporter
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-ckan-connector
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.2.0
 - name: magda-function-esri-url-processor
   repository: oci://ghcr.io/magda-io/charts
-  version: 2.0.0
+  version: 2.1.0
 - name: magda-pdf-semantic-indexer
   repository: oci://ghcr.io/magda-io/charts
-  version: 1.0.1
+  version: 1.0.2
 - name: magda-csv-semantic-indexer
   repository: oci://ghcr.io/magda-io/charts
-  version: 1.0.0-alpha.2
-digest: sha256:4e4bdb85a304bb6b0a2a4edff383caeb4695aedff3784cce89892a5fbc832861
-generated: "2026-10-07T13:19:51.712177038Z"
+  version: 1.0.0-alpha.3
+digest: sha256:7ce7a12353f54feb7072405867e0064cba9c5ada67fa84ecaff0caff17eedbd8
+generated: "2026-10-28T04:50:25.480029553Z"

@@ -1,36 +1,36 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "7.0.0"
+version: "7.1.0"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 7.0.0
+    version: 7.1.0
     repository: "file://../magda"
 
   - name: magda-auth-google
-    version: "4.0.0"
+    version: "4.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - magda-auth-google
 
   - name: magda-auth-internal
-    version: "4.0.0"
+    version: "4.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - magda-auth-internal
 
   - name: magda-auth-arcgis
-    version: "3.0.0"
+    version: "3.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
       - magda-auth-arcgis
 
   - name: magda-auth-facebook
-    version: "3.0.0"
+    version: "3.0.1"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
@@ -39,7 +39,7 @@ dependencies:
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-dga
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -47,7 +47,7 @@ dependencies:
       - connector-dga
 
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-act
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -55,35 +55,35 @@ dependencies:
       - connector-act
 
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-actmapi
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-actmapi
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-aims
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-aims
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-aodn
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-aodn
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-bom
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-bom
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-aurin
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -97,70 +97,70 @@ dependencies:
   #     - connectors
   #     - connector-brisbane
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-hobart
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-hobart
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-launceston
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-launceston
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-marlin
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-marlin
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-ga
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-ga
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-logan
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-logan
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-melbournewater
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-melbournewater
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-melbourne
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-melbourne
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-mrt
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-mrt
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-moretonbay
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-moretonbay
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-nsw
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -174,70 +174,70 @@ dependencies:
   #     - connectors
   #     - connector-sdinsw
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-qld
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-qld
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-sa
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-sa
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-listtas
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-listtas
   - name: magda-csw-connector
-    version: "2.0.2"
+    version: "2.1.0"
     alias: connector-tern
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-tern
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-vic
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-vic
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-wa
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-wa
   - name: magda-dap-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-dap
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-dap
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-vic-cardinia
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-vic-cardinia
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-nt-darwin
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - connectors
       - connector-nt-darwin
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-southern-grampians
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -245,7 +245,7 @@ dependencies:
       - connector-southern-grampians
 
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-bundaberg
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -253,7 +253,7 @@ dependencies:
       - connector-bundaberg
 
   - name: magda-ckan-connector
-    version: "2.1.0"
+    version: "2.2.0"
     alias: connector-ditrdca
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -261,7 +261,7 @@ dependencies:
       - connector-ditrdca
 
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-dcceew
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
@@ -269,7 +269,7 @@ dependencies:
       - connector-dcceew
 
   - name: magda-project-open-data-connector
-    version: "2.0.0"
+    version: "2.1.0"
     alias: connector-redland
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
