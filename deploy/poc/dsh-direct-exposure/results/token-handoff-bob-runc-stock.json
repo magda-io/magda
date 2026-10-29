@@ -1,0 +1,73 @@
+{
+  "user": "bob",
+  "checks": [
+    {
+      "name": "Pod log: startup line present, token redacted, no raw token",
+      "ok": true,
+      "startupLines": 1,
+      "redacted": true,
+      "rawToken": false
+    },
+    {
+      "name": "Agent Manager cannot read pods/log; can exec (get + create pods/exec)",
+      "ok": true,
+      "getPodsLog": "no",
+      "getPodsExec": "yes",
+      "createPodsExec": "yes"
+    },
+    {
+      "name": "token file: mode 0600, owner agent, non-empty",
+      "ok": true,
+      "stat": "600 agent 43"
+    },
+    {
+      "name": "token file is on a memory-backed emptyDir (tmpfs on the node), not the PVC",
+      "ok": true,
+      "inContainer": "tmpfs",
+      "onNode": "tmpfs"
+    },
+    {
+      "name": "full chain works with the exec-read token",
+      "ok": true,
+      "index": 200,
+      "rpc": 200
+    },
+    {
+      "name": "DSH restart: container restarted and the token file was rewritten with a new token",
+      "ok": true,
+      "restartCount": 1,
+      "tokenChanged": true
+    },
+    {
+      "name": "Pod log after restart (current and previous container): no raw token",
+      "ok": true,
+      "current": {
+        "startupLines": 1,
+        "redacted": true,
+        "rawToken": false
+      },
+      "previous": {
+        "startupLines": 1,
+        "redacted": true,
+        "rawToken": false
+      }
+    },
+    {
+      "name": "after the restart with a new signing secret: one 401 -> exec re-read -> re-exchange, chain works",
+      "ok": true,
+      "index": 200,
+      "rpc": 200,
+      "refreshExchanges": 1,
+      "credentialsRecreated": "yes",
+      "cookieErrors": 0
+    }
+  ],
+  "sandbox": "bob-3",
+  "template": "dsh-runc-stock",
+  "file": {
+    "stat": "600 agent 43",
+    "mountFsTypeInContainer": "tmpfs",
+    "emptyDirFsTypeOnNode": "tmpfs",
+    "copiesOnPvc": 0
+  }
+}

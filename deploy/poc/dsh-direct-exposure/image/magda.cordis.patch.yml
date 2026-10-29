@@ -1,0 +1,59 @@
+# Magda DSH profile overlay for #3841, applied with `dsh web --patch` after
+# the shipped dsh-base + dsh-web-app bundle layers. A patch replaces a row's
+# whole `config`, so each row restates every key it owns.
+
+# Experiment 1: bind the DSH webserver to the Pod network.
+#
+# The stock CLI refuses `--host 0.0.0.0` (dsh-web-app startup.ts), but the
+# listener itself is the `@deepseek-ai/dsh-host-webserver` row, whose shipped
+# config is `host: !!js ctx.webStartup.host ?? '127.0.0.1'`. Replacing that
+# row's config through the supported patch layer binds all interfaces without
+# touching DSH source. The literals drop the `ctx.webStartup` reads, so the
+# `--host`/`--port` flags no longer affect this row (documented launcher
+# behaviour for a literal patch).
+#
+# With an all-interfaces bind, the web-runtime row's LAN trust sampling also
+# adds the Pod IPv4 literal to the Host fence; `--trusted-host` adds the Magda
+# external authority on top.
+- id: webserver
+  config:
+    host: 0.0.0.0
+    port: 3080
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024
+
+# Deterministic in-cluster OpenAI Chat Completions mock (mock-llm/), so the
+# streaming/cancellation tests do not depend on a real provider. Production
+# points this at the Magda LLM Services endpoint (#3838).
+- id: llm-pi-ai
+  config:
+    providers:
+      magda-mock:
+        displayName: Magda LLM (mock)
+        apiKeyEnv: MAGDA_LLM_API_KEY
+        api: openai-completions
+        baseURL: !!js process.env.MAGDA_LLM_BASE_URL || 'http://mock-llm.magda-agent-poc.svc.cluster.local/v1'
+        models:
+          - id: mock-stream
+            name: Mock streaming model
+            contextWindow: 131072
+            maxTokens: 8192
+            reasoningEfforts: false
+
+- id: agent-default-model
+  config:
+    provider: magda-mock
+    model: mock-stream
+
+# Never contribute session logs to the DeepSeek API.
+- id: session-log-deepseek
+  disabled: true
+
+# The default Workspace lives under the Documents directory, which DSH looks up
+# with `xdg-user-dir DOCUMENTS` on Linux; containers have none, so first use
+# fails with "Unable to create default workspace". Point it at the PVC.
+- id: workspace-controller
+  config:
+    documentsDirectory: /data/workspace
+    documentsLookupTimeoutMs: 10000

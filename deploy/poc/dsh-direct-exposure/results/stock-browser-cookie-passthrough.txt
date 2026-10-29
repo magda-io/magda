@@ -1,0 +1,4 @@
+{"step":"browser redeems token via the Magda route","status":303,"location":"./","setCookie":"dsh-auth-mafVdaF0ZiXe62TqnCxK7TfzinXiyqzJTj8qA3HOusU=<value>; Max-Age=2592000; Path=/api/v0/agent/runtime/; Expires=Sat, 07 Nov 2026 05:46:50 GMT; HttpOnly; SameSite=Strict; Secure"}
+{"step":"browser sends Magda + DSH cookies","status":401,"body":"dsh web authentication required; reopen the URL printed by dsh web.\n"}
+{"t":"2026-10-08T05:46:50.254Z","event":"http","user":"00000000-0000-4000-8000-00000000a11c","sandbox":"alice-gvisor-stock-2","method":"GET","path":"/","status":303}
+{"t":"2026-10-08T05:46:50.269Z","event":"http","user":"00000000-0000-4000-8000-00000000a11c","sandbox":"alice-gvisor-stock-2","method":"GET","path":"/","status":401}
