@@ -1,6 +1,6 @@
 dependencies:
 - name: litellm
   repository: file://../litellm
-  version: 7.0.0
-digest: sha256:9ef5bdc41a78f66b9c9813e88c57b832d0035fd62421635a4c9c24055143d0d8
-generated: "2026-10-10T22:36:44.887868+11:00"
+  version: 7.1.0
+digest: sha256:4a84fc0b1801d44654b5f18880d12ce0811e6b68d2b79ea5d088702d556fb8fb
+generated: "2026-10-29T09:40:42.188829+11:00"

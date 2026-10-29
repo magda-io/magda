@@ -9,7 +9,45 @@ import path from "path";
 const cssImportRegex = /@import\s+(?:url\()?['"]([^'"]+\.css)['"]\)?\s*;?/gi;
 const urlLikeRegex = /^[a-z][a-z0-9+.-]*:/i;
 
+const getLoadPaths = (clientRoot: string) => [
+    path.join(clientRoot, "src"),
+    path.join(clientRoot, "node_modules"),
+    path.resolve(clientRoot, "../.."),
+    path.resolve(clientRoot, "../../../component/node_modules")
+];
+
+const resolveCssImport = (
+    clientRoot: string,
+    file: string,
+    importPath: string
+) => {
+    const resolvedPath = path.isAbsolute(importPath)
+        ? importPath
+        : path.resolve(path.dirname(file), importPath);
+    if (fse.existsSync(resolvedPath)) {
+        return resolvedPath;
+    }
+    // A relative path to a package (e.g. `../../node_modules/leaflet/...`) only
+    // works in the monorepo layout. When web-client is installed as a package
+    // (e.g. in the docker image), look the package up in the load paths instead.
+    const idx = importPath.lastIndexOf("node_modules/");
+    if (idx !== -1) {
+        const packagePath = importPath.substring(idx + "node_modules/".length);
+        for (const loadPath of getLoadPaths(clientRoot)) {
+            const candidate = path.join(loadPath, packagePath);
+            if (fse.existsSync(candidate)) {
+                return candidate;
+            }
+        }
+    }
+    console.warn(
+        `Skipping CSS import "${importPath}" from ${file} (missing at ${resolvedPath}).`
+    );
+    return undefined;
+};
+
 const collectCssImports = async (
+    clientRoot: string,
     files: string[]
 ): Promise<Map<string, string>> => {
     const cssImports = new Map<string, string>();
@@ -20,13 +58,8 @@ const collectCssImports = async (
             if (!importPath || urlLikeRegex.test(importPath)) {
                 continue;
             }
-            const resolvedPath = path.isAbsolute(importPath)
-                ? importPath
-                : path.resolve(path.dirname(file), importPath);
-            if (!fse.existsSync(resolvedPath)) {
-                console.warn(
-                    `Skipping CSS import "${importPath}" from ${file} (missing at ${resolvedPath}).`
-                );
+            const resolvedPath = resolveCssImport(clientRoot, file, importPath);
+            if (!resolvedPath) {
                 continue;
             }
             if (!cssImports.has(importPath)) {
@@ -60,12 +93,7 @@ export const renderScssData = async (
     cssImports?: Map<string, string>
 ) => {
     const result = sass.compileString(data, {
-        loadPaths: [
-            path.join(clientRoot, "src"),
-            path.join(clientRoot, "node_modules"),
-            path.resolve(clientRoot, "../.."),
-            path.resolve(clientRoot, "../../../component/node_modules")
-        ]
+        loadPaths: getLoadPaths(clientRoot)
     });
     const rawCss =
         cssImports && cssImports.size
@@ -89,7 +117,7 @@ export const renderScssFiles = async (
     files: string[],
     params: object = {}
 ) => {
-    const cssImports = await collectCssImports(files);
+    const cssImports = await collectCssImports(clientRoot, files);
     return await renderScssData(
         clientRoot,
         files.map((file: string) => `@import "${file}";`).join(""),
@@ -123,7 +151,7 @@ export const renderScssFilesExtra = async (
     );
 
     otherfiles.unshift(orgIdxfile);
-    const cssImports = await collectCssImports(otherfiles);
+    const cssImports = await collectCssImports(clientRoot, otherfiles);
     return await renderScssData(
         clientRoot,
         otherfiles.map((file: string) => `@import "${file}";`).join(""),

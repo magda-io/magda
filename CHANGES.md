@@ -12,9 +12,18 @@
 - [#3878](https://github.com/magda-io/magda/pull/3878): Bulk registry mutation requests are limited to `bulkMutationMaxRecords` records (default 1000). **Behaviour change:** larger requests are rejected with a 400 error. Closes #3874.
 - [#3876](https://github.com/magda-io/magda/pull/3876): Single record registry updates are now authorised using only the record's own tenant's aspects (multi-tenant deployments), and a record created by `PUT` is rolled back if the request fails.
 - [#3870](https://github.com/magda-io/magda/pull/3870): Fix bulk record updates (e.g. `mgd dataset publish` / `unpublish`) failing with a 500 error for users with Agent Skill permissions (closes #3869). Adds the authorization API endpoint `POST /v0/opa/batchDecision`. **Behaviour change:** a bulk update is all-or-nothing and is denied (403) if any record isn't permitted. Agent Skill records and archives are now written only by Agent Services, admins and users with unconstrained permissions, and unconstrained `object/record/*` permissions now also apply to Agent Skill records.
+## v7.1.1
+
+- [#3891](https://github.com/magda-io/magda/pull/3891): Fix the release pipeline never publishing the `latest` Docker image tag for stable releases.
 
 ## v7.1.0
 
+- [#3888](https://github.com/magda-io/magda/pull/3888): Move `magda-scss-compiler` (from Node 20) and `magda-semantic-search-api` (from Node 18) to Node 22 (`node:22-alpine`), and fix two scss-compiler issues:
+  - The compiled UI stylesheet could differ between runs, because the SCSS files were compiled in a random order.
+  - The map styles (Leaflet CSS) were missing from the compiled UI stylesheet, and a broken `@import` was left in its place.
+- [#3888](https://github.com/magda-io/magda/pull/3888): Upgrade magda-embedding-api to 1.2.0 and magda-preview-map to 2.1.1.
+- [#3888](https://github.com/magda-io/magda/pull/3888): Upgrade the connectors, minions, OpenFaaS functions & auth plugins to Node v22.23.4: magda-ckan-connector 2.2.0, magda-csw-connector 2.1.0, magda-project-open-data-connector 2.1.0, magda-dap-connector 2.1.0, magda-minion-linked-data-rating 2.1.0, magda-minion-visualization 2.1.0, magda-minion-ckan-exporter 2.1.0, magda-minion-broken-link 3.1.0, magda-function-history-report 2.1.0, magda-function-esri-url-processor 2.1.0, magda-auth-google 4.0.1, magda-auth-internal 4.0.1, magda-auth-arcgis 3.0.1 & magda-auth-facebook 3.0.1.
+- [#3888](https://github.com/magda-io/magda/pull/3888): Upgrade magda-minion-format to 2.0.3, magda-pdf-semantic-indexer to 1.0.2 and magda-csv-semantic-indexer to 1.0.0-alpha.3 (Node v24.22.1).
 - [#3859](https://github.com/magda-io/magda/pull/3859): Fix owner-scoped `storage/object/*` permissions not matching objects uploaded through the Storage API (closes #3853). Uploads now store the owner under the `magda-owner-id` metadata key that authorization reads. Objects uploaded by earlier versions (owner stored under `magda-user-id`) keep their owner. Replacing an existing object now keeps its owner, and is authorised against the existing object's owner, not the uploader.
 - [#3843](https://github.com/magda-io/magda/pull/3843): Add opt-in WebSocket proxying to magda-gateway routes (`websocket: true`). WebSocket connections are checked by the same authentication and access control as other requests, and only accepted from the Magda site's own origin by default (configurable via `websocketAllowedOrigins`).
 

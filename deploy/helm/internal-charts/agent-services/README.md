@@ -1,6 +1,6 @@
 # agent-services
 
-![Version: 7.0.0](https://img.shields.io/badge/Version-7.0.0-informational?style=flat-square)
+![Version: 7.1.0](https://img.shields.io/badge/Version-7.1.0-informational?style=flat-square)
 
 Magda Agent Workspace manager and isolated runtime resources
 
