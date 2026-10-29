@@ -1,9 +1,10 @@
 .agent-workspace-page {
-    min-height: calc(100vh - 80px);
+    display: flex;
 
     > .main-content-container {
         display: flex;
         flex-direction: column;
+        height: auto;
         width: 100%;
         min-width: 0;
         padding-right: 25px;
