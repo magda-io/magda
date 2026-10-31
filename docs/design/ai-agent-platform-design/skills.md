@@ -11,6 +11,14 @@
 
 Reusable skill publications/installation records survive disposable Workspaces. They are distinct: **runtime-bundled** skills live in the image; **system** publications (trusted publisher, executable assets allowed) and **user** publications (Markdown-only) live as `agent-skill` Registry records with Storage API ZIPs; **installed shared** skills live as recipient-specific `agent-skill-installation` Registry records referencing another user's published ZIP, never copying it. A merely readable shared user skill is not installed. System skills execute with current user's MAGDA permissions, not publisher authority. See the [authoritative identity/sharing/OPA contract](./skills-authorization-and-workspace-manifest.md).
 
+## Runtime-bundled skill names and namespace
+
+Runtime-bundled skills are image-owned and distinct from Registry-backed system publications. The current names are `capture-workflow` and `magda-mgd`; PR #3896 adds `python-dependencies`. Keep those names in this change.
+
+Agent Services and `mgd` both reserve these names to avoid publication and synchronization collisions. Centralize the shared list in `@magda/typescript-common` and bundle the import into the standalone `mgd` build. A test should discover runtime skill names in the source tree and verify the list. OPA grants access by operation and resource attributes, not by skill name.
+
+Future runtime-bundled skills should use `magda-builtin-<purpose>`, while published system skills retain the existing `system-<suffix>` pattern. When introduced, reserve the entire `magda-builtin-` prefix. No existing skills are renamed in #3896. This protects MAGDA-managed publication and sync, not user-created local DSH overrides.
+
 ## Registry: authoritative published skill catalogue
 
 The publication `agent-skill` aspect uses immutable `type: "system"|"user"` (renamed from `scope`), `name`, ZIP-derived `description`, server-derived `archiveKey`, immutable `createdAt/createdBy`, publisher `updatedAt/updatedBy`, ZIP `checksum` and `state: PENDING|READY|DELETING`. For `type=user`, `userId` is a **required immutable intended-user UUID**; system publications have **no** userId. An `agent-skill-installation` aspect requires recipient `userId`, `sourceSkillId` and optional `alias`, with no independent ZIP. Both records carry `access-control`.
