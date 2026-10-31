@@ -626,6 +626,36 @@ See [Agent Skill synchronization checks](../e2e-test-cases/agent-workspace.md#ag
 in the E2E procedure for the Minikube and CLI sync test matrix. The authoritative
 local reconciliation contract and recovery semantics remain above.
 
+## Runtime-bundled skill naming (design for #3896)
+
+**Runtime-bundled** skills are deployment-owned files read from the Agent
+Runtime image. They are not Registry-backed `system-` publications, which have
+separate authenticated Agent Services APIs and typed OPA authorization.
+
+The merged MVP reserves `capture-workflow` and the separately installed
+`magda-mgd` skill. [PR #3896](https://github.com/magda-io/magda/pull/3896)
+introduces the image-bundled `python-dependencies` skill. That name must
+also be reserved by Agent Services publication and installation-alias
+validation and by `mgd` local publication/synchronization. This is a
+pending implementation requirement until #3896 merges, not an assertion
+about the currently deployed runtime. OPA contains no name-specific rules.
+
+The intended shared reserved-name list and predicate belong in a small
+dependency-free `@magda/typescript-common` module. Agent Manager uses the
+module directly; `mgd` should include it in its standalone esbuild output
+using a build-time dependency, without a published runtime dependency on
+`@magda/typescript-common`. A source-tree test should enumerate
+`magda-agent-runtime/skills/*/SKILL.md` names and verify reservation,
+plus `magda-mgd` from its separate installation path.
+
+**Future naming convention:** use `magda-builtin-<purpose>` for newly
+introduced runtime-bundled skills and reserve that entire prefix when
+the convention is adopted. Registry-backed system publications continue to
+use `system-<suffix>`. Existing built-in skill names will not be renamed
+as part of #3896. Name reservation blocks MAGDA-managed publication/sync
+collisions; it does not make higher-priority user-authored project-local
+DSH skills impossible.
+
 ## Workflow capture and skill suggestions
 
 Stage 3 (#3856) lets a user turn work they have finished in DSH into a reusable
