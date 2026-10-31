@@ -13,7 +13,7 @@ FROM node:${NODE_VERSION}-bookworm-slim
 ARG DSH_VERSION=0.2.1-alpha.1
 ARG UV_VERSION
 COPY --from=uv /uv /usr/local/lib/magda-agent/uv
-COPY --chmod=0755 magda-agent-runtime/uv-wrapper.sh /usr/local/bin/uv
+COPY --chmod=0755 component/uv-wrapper.sh /usr/local/bin/uv
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bubblewrap ca-certificates curl file git jq less patch procps python3 \
@@ -33,11 +33,11 @@ RUN set -eu; \
   test "$(grep -F -c "paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)" "$typed")" = 1; \
   sed -i 's/paths.join(directory, "deepseek-harness", DEFAULT_WORKSPACE_DIRECTORY)/paths.join(directory, "agent-harness", DEFAULT_WORKSPACE_DIRECTORY)/' "$bundled"; \
   sed -i "s/paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)/paths.join(directory, 'agent-harness', DEFAULT_WORKSPACE_DIRECTORY)/" "$typed"
-COPY magda-agent-runtime/dsh-client-managed-profile/ \
+COPY component/dsh-client-managed-profile/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-client-managed-profile/
-COPY magda-agent-runtime/dsh-workflow-capture-guidance/ \
+COPY component/dsh-workflow-capture-guidance/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-workflow-capture-guidance/
-COPY magda-agent-runtime/dsh-agent-skill-tools/ \
+COPY component/dsh-agent-skill-tools/ \
   /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda/dsh-agent-skill-tools/
 RUN chown -R root:root /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda \
   && chmod -R a+rX,go-w /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda
@@ -51,14 +51,14 @@ RUN groupadd --gid 10001 agent \
   && chown -R agent:agent /data /run/magda-agent \
   && install -d -m 0755 /etc/magda-agent /usr/local/lib/magda-agent \
   && install -o root -g root -m 0444 /dev/null /etc/magda-agent/workspace-runtime
-COPY --chmod=0644 magda-agent-runtime/magda.cordis.patch.yml /etc/magda-agent/magda.cordis.patch.yml
-COPY --chmod=0755 magda-agent-runtime/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
-COPY --chmod=0755 magda-agent-runtime/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
-COPY --chmod=0644 magda-agent-runtime/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
+COPY --chmod=0644 component/magda.cordis.patch.yml /etc/magda-agent/magda.cordis.patch.yml
+COPY --chmod=0755 component/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
+COPY --chmod=0755 component/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
+COPY --chmod=0644 component/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
 # Runtime-bundled Agent Skills: immutable, root-owned and independent of
 # Registry/Storage publications. DSH discovers them through DSH_BUNDLED_SKILL_DIR.
-COPY magda-agent-runtime/skills/ /usr/local/lib/magda-agent/skills/
-COPY --chmod=0755 magda-agent-runtime/session-history.mjs /usr/local/lib/magda-agent/session-history.mjs
+COPY component/skills/ /usr/local/lib/magda-agent/skills/
+COPY --chmod=0755 component/session-history.mjs /usr/local/lib/magda-agent/session-history.mjs
 RUN chown -R root:root /usr/local/lib/magda-agent/skills /usr/local/lib/magda-agent/session-history.mjs \
   && chmod -R a+rX,go-w /usr/local/lib/magda-agent/skills \
   && ln -s /usr/local/lib/magda-agent/session-history.mjs /usr/local/bin/magda-session-history

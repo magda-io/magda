@@ -167,12 +167,12 @@ const dockerIncludes = new Set(
 for (const requiredPath of [
     "node_modules",
     "Dockerfile",
-    "../magda-agent-runtime/dsh-client-managed-profile",
-    "../magda-agent-runtime/magda.cordis.patch.yml",
-    "../magda-agent-runtime/entrypoint.sh",
-    "../magda-agent-runtime/uv-wrapper.sh",
-    "../magda-agent-runtime/bootstrap.mjs",
-    "../magda-agent-runtime/dsh-launch.mjs"
+    "dsh-client-managed-profile",
+    "magda.cordis.patch.yml",
+    "entrypoint.sh",
+    "uv-wrapper.sh",
+    "bootstrap.mjs",
+    "dsh-launch.mjs"
 ]) {
     assert.ok(
         dockerIncludes.has(requiredPath),
