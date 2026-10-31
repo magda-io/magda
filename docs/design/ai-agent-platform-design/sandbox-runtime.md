@@ -51,6 +51,46 @@ A dedicated PVC contains DSH home/journals/workspace files, DSH managed config/c
 
 The #3852 zonal GKE test also verified claim/PVC/PV/GCE PD deletion with reclaim policy `Delete`. **Regional storage/HA, zone rescheduling, cross-zone failover and Spot preemption are not qualified.** A zonal PV constrains where replacement Pods can run; production topology and StorageClass must be chosen together.
 
+## On-demand Python dependencies (#3895 / PR #3896)
+
+Use a lean runtime rather than preinstalling a large Python ML stack. Ship Debian's
+system Python and pandas, `python3-venv`, `python3-pip`, and a version- and
+digest-pinned, multi-architecture `uv` binary. Prefer `uv venv` and `uv pip
+install` (or locked `uv sync`) with the system interpreter; disable uv-managed
+Python downloads. Never modify Debian's externally managed system Python.
+`python3 -m venv` plus environment-scoped pip is the compatibility fallback.
+Use isolated environments by default; `--system-site-packages` is an explicitly
+checked exception because Debian's scientific packages may conflict with newer
+PyPI versions.
+
+Virtual environments, package caches and installation temporaries must live
+inside the per-user PVC **and** DSH's writable working tree:
+`/data/workspace/agent-harness/default-workspace/{.venvs,.cache,.tmp}`.
+The `uv` wrapper scopes `TMPDIR` and `XDG_CACHE_HOME` to the package
+manager/build subprocess; the pip fallback does likewise. Do not globally
+redirect DSH's own host-process cache or temporary state, put caches in the
+container writable layer, or widen DSH's `workspace-write` boundary.
+
+A runtime-bundled `python-dependencies` skill should first inspect available
+tools and package requirements, explain exact external dependencies and versions,
+and **ask for explicit user approval before installation or sync**. This is
+agent guidance, not an independently enforced approval gate. Record actual
+versions, prefer pinned/locked requirements, report failures honestly, and offer
+user-approved cleanup. Nothing is globally installed with sudo/apt. The
+environment survives Pod replacement and suspend/resume but is removed on
+Workspace reset, termination and logout along with the PVC.
+
+PR #3896 proposes increasing newly created PVCs from **5 GiB to 10 GiB**.
+Keep 1 CPU, 1536 MiB memory, and 1 GiB ephemeral-storage limits initially,
+with measured qualification in a real nonroot Sandbox. Cache, virtualenv and
+temporary writes must be PVC-backed. Operator configuration remains flexible;
+changing the default does not automatically resize existing PVCs. The reported
+Minikube scientific/skops check observed approximately 280 MiB PVC growth,
+493 MiB peak memory and zero measured ephemeral growth; production gVisor
+security qualification remains a separate deployment concern. See
+[Agent Skills](./skills.md) for built-in naming and reservation policy and
+[deployment](./deployment.md) for runtime defaults.
+
 ## Single selected WarmPool and runtime
 
 ```yaml
