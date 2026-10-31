@@ -7,7 +7,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "check": "bash -n entrypoint.sh && node --check bootstrap.mjs && node --check dsh-launch.mjs && node --check session-history.mjs && node --check dsh-agent-skill-tools/lib/operations.js",
+    "check": "bash -n entrypoint.sh && bash -n uv-wrapper.sh && node --check bootstrap.mjs && node --check dsh-launch.mjs && node --check session-history.mjs && node --check dsh-agent-skill-tools/lib/operations.js",
     "build": "yarn run check",
     "test": "yarn run check && node test-runtime.mjs && node test-workflow-capture.mjs && node test-session-history.mjs && node test-agent-skill-tools.mjs",
     "prepare-docker": "yarn --cwd ../packages/mgd build && test -x ../packages/mgd/bin/mgd.js && yarn test",
@@ -26,7 +26,7 @@
   "config": {
     "docker": {
       "name": "magda-agent-runtime",
-      "include": "node_modules Dockerfile ../magda-agent-runtime/dsh-client-managed-profile ../magda-agent-runtime/dsh-workflow-capture-guidance ../magda-agent-runtime/dsh-agent-skill-tools ../magda-agent-runtime/skills ../magda-agent-runtime/magda.cordis.patch.yml ../magda-agent-runtime/entrypoint.sh ../magda-agent-runtime/bootstrap.mjs ../magda-agent-runtime/dsh-launch.mjs ../magda-agent-runtime/session-history.mjs"
+      "include": "node_modules Dockerfile ../magda-agent-runtime/dsh-client-managed-profile ../magda-agent-runtime/dsh-workflow-capture-guidance ../magda-agent-runtime/dsh-agent-skill-tools ../magda-agent-runtime/skills ../magda-agent-runtime/magda.cordis.patch.yml ../magda-agent-runtime/entrypoint.sh ../magda-agent-runtime/uv-wrapper.sh ../magda-agent-runtime/bootstrap.mjs ../magda-agent-runtime/dsh-launch.mjs ../magda-agent-runtime/session-history.mjs"
     }
   },
   "magda": {

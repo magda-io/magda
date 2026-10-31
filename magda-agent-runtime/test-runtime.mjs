@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -34,12 +34,114 @@ const bootstrap = await readFile(
     new URL("bootstrap.mjs", import.meta.url),
     "utf8"
 );
+const entrypoint = await readFile(
+    new URL("entrypoint.sh", import.meta.url),
+    "utf8"
+);
+const uvWrapper = await readFile(
+    new URL("uv-wrapper.sh", import.meta.url),
+    "utf8"
+);
+const pythonDependenciesSkill = await readFile(
+    new URL("skills/python-dependencies/SKILL.md", import.meta.url),
+    "utf8"
+);
 
 assert.match(
     dockerfile,
     /ARG DSH_VERSION=0\.2\.1-alpha\.1/,
     "The qualified DSH release must remain pinned"
 );
+assert.match(
+    dockerfile,
+    /ARG UV_VERSION=0\.13\.6/,
+    "uv must remain pinned to the qualified version"
+);
+assert.match(
+    dockerfile,
+    /ARG UV_IMAGE_DIGEST=sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0/,
+    "The qualified official uv image digest must remain pinned"
+);
+assert.match(
+    dockerfile,
+    /FROM ghcr\.io\/astral-sh\/uv:\$\{UV_VERSION\}@\$\{UV_IMAGE_DIGEST\} AS uv/,
+    "uv must come from Astral's pinned multi-architecture image"
+);
+assert.match(
+    dockerfile,
+    /COPY --from=uv \/uv \/usr\/local\/lib\/magda-agent\/uv/,
+    "Only the uv binary should be copied into the runtime"
+);
+assert.doesNotMatch(
+    dockerfile,
+    /\/uvx/,
+    "uvx is an additional package execution path and must not be bundled"
+);
+for (const pythonPackage of ["python3-pip", "python3-venv"]) {
+    assert.match(
+        dockerfile,
+        new RegExp(`\\b${pythonPackage}\\b`),
+        `${pythonPackage} must be installed from Debian`
+    );
+}
+for (const persistentEnvironment of [
+    "MAGDA_PYTHON_CACHE_ROOT=/data/workspace/agent-harness/default-workspace/.cache",
+    "UV_CACHE_DIR=/data/workspace/agent-harness/default-workspace/.cache/uv",
+    "PIP_CACHE_DIR=/data/workspace/agent-harness/default-workspace/.cache/pip",
+    "MAGDA_PYTHON_TMPDIR=/data/workspace/agent-harness/default-workspace/.tmp",
+    "MAGDA_PYTHON_VENV_ROOT=/data/workspace/agent-harness/default-workspace/.venvs",
+    "UV_PYTHON_DOWNLOADS=never",
+    "UV_PYTHON_PREFERENCE=only-system",
+    "PIP_REQUIRE_VIRTUALENV=true"
+]) {
+    assert.ok(
+        dockerfile.includes(persistentEnvironment),
+        `Runtime environment must include ${persistentEnvironment}`
+    );
+}
+assert.doesNotMatch(
+    dockerfile,
+    /--break-system-packages|pip install(?! -g)|uv python install/,
+    "The image build must not modify or replace Debian's system Python"
+);
+assert.doesNotMatch(
+    dockerfile,
+    /^\s*(?:XDG_CACHE_HOME|TMPDIR)=/m,
+    "Host DSH cache and temporary state must not enter the agent-writable tree"
+);
+for (const wrapperEnvironment of [
+    'export TMPDIR="${MAGDA_PYTHON_TMPDIR:?}"',
+    'export XDG_CACHE_HOME="${MAGDA_PYTHON_CACHE_ROOT:?}"',
+    'exec /usr/local/lib/magda-agent/uv "$@"'
+]) {
+    assert.ok(
+        uvWrapper.includes(wrapperEnvironment),
+        `uv wrapper must include ${wrapperEnvironment}`
+    );
+}
+for (const persistentPath of [".cache/uv", ".cache/pip", ".tmp", ".venvs"]) {
+    assert.ok(
+        entrypoint.includes(persistentPath) ||
+            bootstrap.includes(persistentPath),
+        `Runtime startup must initialise ${persistentPath}`
+    );
+}
+for (const guidance of [
+    "Ask for explicit user approval",
+    "does not create or claim a technical enforcement boundary",
+    "uv venv --python /usr/bin/python3",
+    "uv sync --locked",
+    "/usr/bin/python3 -m venv",
+    "--system-site-packages",
+    "--break-system-packages",
+    "uv cache prune",
+    "reset, termination or logout"
+]) {
+    assert.ok(
+        pythonDependenciesSkill.includes(guidance),
+        `Bundled Python dependency guidance must cover: ${guidance}`
+    );
+}
 assert.equal(packageJson.version, lernaJson.version);
 assert.equal(mgdPackageJson.version, lernaJson.version);
 assert.equal(packageJson.dependencies["@magda/mgd"], `^${lernaJson.version}`);
@@ -68,6 +170,7 @@ for (const requiredPath of [
     "../magda-agent-runtime/dsh-client-managed-profile",
     "../magda-agent-runtime/magda.cordis.patch.yml",
     "../magda-agent-runtime/entrypoint.sh",
+    "../magda-agent-runtime/uv-wrapper.sh",
     "../magda-agent-runtime/bootstrap.mjs",
     "../magda-agent-runtime/dsh-launch.mjs"
 ]) {
@@ -211,6 +314,26 @@ try {
     };
 
     runBootstrap(bootstrapPayload);
+    for (const relativePath of [
+        "workspace/agent-harness/default-workspace/.cache",
+        "workspace/agent-harness/default-workspace/.cache/uv",
+        "workspace/agent-harness/default-workspace/.cache/pip",
+        "workspace/agent-harness/default-workspace/.tmp",
+        "workspace/agent-harness/default-workspace/.venvs"
+    ]) {
+        const directoryStat = await stat(
+            path.join(bootstrapRoot, relativePath)
+        );
+        assert.ok(
+            directoryStat.isDirectory(),
+            `${relativePath} must be a directory`
+        );
+        assert.equal(
+            directoryStat.mode & 0o777,
+            0o700,
+            `${relativePath} must be private to the Workspace user`
+        );
+    }
     const envFile = path.join(bootstrapRoot, "config/magda-agent.env");
     assert.match(
         await readFile(envFile, "utf8"),

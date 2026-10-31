@@ -205,7 +205,14 @@ for runtime in runc gvisor kata; do
             exit !found
         }
     ' "$tmp/$runtime.yaml"
-    grep -q 'fsGroupChangePolicy: OnRootMismatch' "$tmp/$runtime.yaml"
+    sandbox_template="$(resources_of_kind SandboxTemplate "$tmp/$runtime.yaml")"
+    grep -q 'fsGroupChangePolicy: OnRootMismatch' <<<"$sandbox_template"
+    grep -q 'storage: 10Gi' <<<"$sandbox_template"
+    for resource in \
+        'cpu: 100m' 'memory: 384Mi' 'ephemeral-storage: 256Mi' \
+        'cpu: "1"' 'memory: 1536Mi' 'ephemeral-storage: 1Gi'; do
+        grep -q "$resource" <<<"$sandbox_template"
+    done
     grep -q 'Kubernetes Agent Sandbox v1beta1 extension APIs are unavailable' "$tmp/$runtime.yaml"
     grep -q '^    type: Recreate$' "$tmp/$runtime.yaml"
     if [[ "$runtime" == runc ]]; then

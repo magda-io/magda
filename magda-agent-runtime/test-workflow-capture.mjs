@@ -196,8 +196,8 @@ assert.ok(
 );
 assert.ok(!/: /.test(fields.whenToUse));
 assert.deepEqual(
-    fs.readdirSync(here("skills")),
-    ["capture-workflow"],
+    fs.readdirSync(here("skills")).sort(),
+    ["capture-workflow", "python-dependencies"],
     "Only immediate skill directories belong in the bundled root"
 );
 for (const required of [

@@ -47,7 +47,7 @@ agent-services:
     maxTokens: null
   runtime:
     storage:
-      size: 5Gi
+      size: 10Gi
 
 llm-services:
   # An empty list inherits global.defaultAgentModel.alias.
@@ -69,6 +69,66 @@ local development. gVisor and Kata default to RuntimeClasses named `gvisor` and
 Changing `warmPool.type` while claims exist is a migration, not an in-place
 runtime switch. Drain or reset active workspaces, confirm their claims and warm
 Sandboxes are gone, then upgrade the release and admit new workspaces.
+
+### On-demand Python environments and storage
+
+The runtime contains Debian's system Python and pandas plus `python3-pip`,
+`python3-venv`, and `uv` 0.13.6. The uv binary is copied from Astral's official
+amd64/arm64 multi-architecture image pinned to immutable OCI index digest
+`sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0`;
+no second Python interpreter is bundled. `UV_PYTHON_DOWNLOADS=never` and
+`UV_PYTHON_PREFERENCE=only-system` keep uv on `/usr/bin/python3` rather than
+downloading a managed interpreter. Debian's externally managed system Python is
+not modified.
+
+The non-root runtime initialises all package-installation writes on the per-user
+PVC:
+
+| Purpose                                  | Persistent path                                                                                       |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Purpose-specific virtual environments    | `/data/workspace/agent-harness/default-workspace/.venvs/<purpose>` (`$MAGDA_PYTHON_VENV_ROOT`)        |
+| uv cache                                 | `/data/workspace/agent-harness/default-workspace/.cache/uv` (`$UV_CACHE_DIR`)                         |
+| pip/package cache root                   | `.cache/pip` (`$PIP_CACHE_DIR`) and `.cache` (`$MAGDA_PYTHON_CACHE_ROOT`) in the managed working tree |
+| uv/pip build and install temporary files | `/data/workspace/agent-harness/default-workspace/.tmp` (`$MAGDA_PYTHON_TMPDIR`)                       |
+
+DSH's `workspace-write` sandbox makes only the managed working tree writable to
+agent Bash commands. Keeping these paths inside that tree both persists the
+writes on `/data` and leaves sibling credential/configuration paths such as
+`/data/config` read-only. Do not widen the sandbox to the whole PVC merely to
+support package installation. The `uv` wrapper scopes `TMPDIR` and
+`XDG_CACHE_HOME` to uv and its build subprocesses; DSH itself keeps private
+host-process temporary state outside the agent-writable tree.
+
+The bundled `python-dependencies` Agent Skill tells agents to inspect existing
+requirements first, disclose the exact packages and external source, obtain the
+user's explicit approval, and then prefer an isolated `uv venv` plus `uv pip`
+or a locked `uv sync`. pip is a venv-only fallback. This is behavioural guidance,
+not a technical package-installation approval boundary; the current Workspace
+execution permission does not independently prevent a model from invoking a
+package manager without consent.
+
+The default PVC request is **10 GiB per warm or claimed Sandbox**. This increases
+provisioned capacity and potential storage cost relative to the former 5 GiB
+default, particularly when `warmPool.size` is greater than zero. CPU, memory and
+ephemeral-storage defaults remain unchanged; in particular, the 1 GiB ephemeral
+limit assumes cache, environment and temporary writes stay under `/data`.
+Operators should monitor capacity with `df -h /data` and usage with
+`du -sh "$MAGDA_PYTHON_VENV_ROOT" "$MAGDA_PYTHON_CACHE_ROOT" "$MAGDA_PYTHON_TMPDIR"`. Users can
+remove an unneeded environment and run `uv cache prune` after confirming what
+can be deleted.
+
+Changing the Helm value affects newly provisioned PVCs only. Kubernetes does not
+resize existing claims merely because the SandboxTemplate changed, and existing
+unclaimed warm Sandboxes may still carry PVCs created at the former size. After
+an upgrade, drain/recycle those warm Sandboxes and verify replacement PVC
+capacity before admitting users. To retain an existing Workspace while enlarging
+it, the selected StorageClass must set
+`allowVolumeExpansion: true`; follow that CSI driver's documented PVC expansion
+and filesystem-resize procedure and verify the result inside the Sandbox.
+Otherwise publish durable outputs and reset/terminate the Workspace so its
+replacement receives the new size. Reset, termination and logout delete the PVC,
+including every environment and cache; suspend/resume and Pod replacement retain
+it.
 
 ### Mandatory migration from the split charts
 
