@@ -14,7 +14,7 @@ This describes the **current #3850 MVP Helm interface** as implementation eviden
 - Kubernetes Agent Sandbox (**KAS**) CRDs/controllers are installed **separately**; Magda must not silently install cluster-wide KAS as a chart dependency. The MVP live-install/pre-upgrade Job checks KAS v1beta1 APIs and the selected RuntimeClass without breaking offline `helm template`. **It does not establish that NetworkPolicy is enforced.**
 - Magda Gateway handles Magda authentication and routes same-origin DSH HTTP and WebSocket to Agent Manager. The Sandbox never receives browser sessions or provider credentials.
 
-## MVP Helm values (illustrative, aligned with #3850)
+## Illustrative Helm values (MVP with proposed #3896 runtime storage)
 
 ```yaml
 global:
@@ -38,7 +38,7 @@ agent-services:
     image:
       name: magda-agent-runtime
     storage:
-      size: 5Gi
+      size: 10Gi
       # Set a qualified StorageClass appropriate to the cluster.
       storageClassName: ""
   idleSuspendSeconds: 1800
@@ -56,6 +56,16 @@ ingress:
   proxyReadTimeout: 3600
   proxySendTimeout: 3600
 ```
+
+The `10Gi` PVC size is the **proposed PR #3896 default**, not a claim that
+the currently merged `next` release already uses it (the MVP was `5Gi`).
+The new runtime keeps limits at 1 CPU, 1536 MiB memory and 1 GiB ephemeral
+storage, with a 256 MiB ephemeral request. Python virtual environments, uv/pip
+caches and installation temporaries are stored on the per-user PVC inside the
+DSH `workspace-write` tree; see [sandbox-runtime.md](./sandbox-runtime.md).
+Capacity applies to newly created claims, including warm Sandboxes. Existing
+PVCs do not grow automatically on Helm upgrade; operators must check their
+StorageClass expansion support or provision replacement Workspaces.
 
 The bundled LiteLLM uses static configuration and Kubernetes Secrets; neither PostgreSQL nor Redis is mandatory. Multiple replicas without Redis have per-process router/rate-limit/cooldown/cache state. Provider credentials must stay outside the Sandbox.
 
