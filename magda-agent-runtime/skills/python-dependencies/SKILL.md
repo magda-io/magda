@@ -53,6 +53,7 @@ Do not use `sudo`, `apt-get`, global pip/uv installation, `--system`, `--break-s
 PIP_ENV_DIR="${MAGDA_PYTHON_VENV_ROOT}/pip-<purpose>"
 /usr/bin/python3 -m venv "$PIP_ENV_DIR"
 TMPDIR="$MAGDA_PYTHON_TMPDIR" \
+XDG_CACHE_HOME="$MAGDA_PYTHON_CACHE_ROOT" \
   "$PIP_ENV_DIR/bin/python" -m pip install '<package>==<compatible-version>'
 ```
 

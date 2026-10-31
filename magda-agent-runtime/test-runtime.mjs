@@ -132,6 +132,7 @@ for (const guidance of [
     "uv venv --python /usr/bin/python3",
     "uv sync --locked",
     "/usr/bin/python3 -m venv",
+    'XDG_CACHE_HOME="$MAGDA_PYTHON_CACHE_ROOT"',
     "--system-site-packages",
     "--break-system-packages",
     "uv cache prune",
