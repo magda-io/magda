@@ -300,12 +300,31 @@ describe("Agent Skill publication state machine", () => {
             ["system", owner.id, "missing-prefix"],
             ["user", owner.id, "capture-workflow"],
             ["user", owner.id, "magda-mgd"],
+            ["user", owner.id, "python-dependencies"],
             ["user", "ABCDEF00-0000-4000-8000-000000000123", "valid-name"]
         ] as const) {
             expect(() => agentSkillRecordId(type, ownerId, name)).to.throw(
                 AgentSkillError
             );
         }
+    });
+
+    it("rejects a direct reserved-name publication before downstream writes", async () => {
+        const { service, registry, storage } = fixture();
+        let error: unknown;
+        try {
+            await service.createAuthorized(
+                "user",
+                await skillZip("python-dependencies"),
+                owner
+            );
+        } catch (caught) {
+            error = caught;
+        }
+        expect(error).to.be.instanceOf(AgentSkillError);
+        expect((error as AgentSkillError).message).to.include("reserved");
+        expect(registry.records.size).to.equal(0);
+        expect(storage.uploads).to.have.length(0);
     });
 
     it("authorizes before publication and transitions PENDING to READY", async () => {

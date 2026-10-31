@@ -28,6 +28,7 @@
     "yazl": "^3.3.1"
   },
   "devDependencies": {
+    "@magda/typescript-common": "^7.1.0",
     "@types/chai": "^4.3.11",
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.6",

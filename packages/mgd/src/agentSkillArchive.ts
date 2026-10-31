@@ -7,6 +7,7 @@ import CRC32 from "crc-32";
 import { JSON_SCHEMA, load as loadYaml } from "js-yaml";
 import yauzl, { Entry, ZipFile as YauzlZipFile } from "yauzl";
 import { ZipFile as YazlZipFile } from "yazl";
+import { isReservedAgentSkillName } from "@magda/typescript-common/dist/agentSkillNames.js";
 import type { AgentSkillType } from "./agentSkillTypes.js";
 
 export type { AgentSkillType } from "./agentSkillTypes.js";
@@ -90,12 +91,9 @@ const USER_FILE_PATTERN = /\.md$/i;
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_SKILL_NAME_LENGTH = 46;
 const MAX_SKILL_DESCRIPTION_LENGTH = 1024;
-const RESERVED_RUNTIME_SKILL_NAMES = new Set(["capture-workflow", "magda-mgd"]);
 
 /** Image-bundled/runtime skill names that synchronization never claims. */
-export function isReservedAgentSkillName(name: string): boolean {
-    return RESERVED_RUNTIME_SKILL_NAMES.has(name);
-}
+export { isReservedAgentSkillName };
 const TREE_DIGEST_DOMAIN = Buffer.from("magda-agent-skill-tree-v1\0", "utf8");
 // ZIP's DOS timestamp has a two-second resolution and begins in 1980. Constructing
 // this in local time plus forceDosTimestamp makes the encoded bytes timezone-free.
@@ -216,7 +214,7 @@ export function validateAgentSkillNameForType(
 ): void {
     validateType(type);
     validateMetadata(name, "valid");
-    if (RESERVED_RUNTIME_SKILL_NAMES.has(name)) {
+    if (isReservedAgentSkillName(name)) {
         invalid(`'${name}' is reserved for a runtime-bundled Agent Skill`);
     }
     if (type === "system" && !name.startsWith("system-")) {

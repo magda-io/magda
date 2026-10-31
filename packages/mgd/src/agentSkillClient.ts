@@ -1,5 +1,6 @@
 import { MagdaClient } from "./client.js";
 import { MgdApiError } from "./errors.js";
+import { isReservedAgentSkillName } from "@magda/typescript-common/dist/agentSkillNames.js";
 import {
     AGENT_SKILLS,
     AGENT_SKILL_INSTALLATIONS,
@@ -28,7 +29,6 @@ import {
 const CHECKSUM = /^[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const RESERVED_NAMES = new Set(["capture-workflow", "magda-mgd"]);
 
 function validInstalledName(name: unknown): name is string {
     return (
@@ -36,7 +36,7 @@ function validInstalledName(name: unknown): name is string {
         SKILL_NAME.test(name) &&
         name.length <= 46 &&
         !name.startsWith("system-") &&
-        !RESERVED_NAMES.has(name)
+        !isReservedAgentSkillName(name)
     );
 }
 

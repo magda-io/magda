@@ -744,13 +744,11 @@ describe("installed shared Agent Skills (#3861)", () => {
                     .find((file) => file.path === "SKILL.md")!
                     .content.toString()
             ).to.include("name: team-csv");
-            await expectRejects(
-                readProjectedAgentSkillArchive(
-                    archive.bytes,
-                    "user",
-                    "system-x"
-                )
-            );
+            for (const alias of ["system-x", "python-dependencies"]) {
+                await expectRejects(
+                    readProjectedAgentSkillArchive(archive.bytes, "user", alias)
+                );
+            }
         } finally {
             await env.restore();
         }
