@@ -203,6 +203,41 @@ LLM Services proxies both Responses and Chat Completions for compatibility.
 
 ## Key implementation decisions
 
+### On-demand Python environments (proposed in #3896)
+
+[PR #3896](https://github.com/magda-io/magda/pull/3896), tracked by
+[#3895](https://github.com/magda-io/magda/issues/3895), adds support for
+on-demand Python packages without preinstalling a large ML stack. This is
+a **pending PR**, not part of the merged `next` runtime yet. The design
+keeps Debian's system Python and pandas, adds `python3-pip` and
+`python3-venv`, and ships a pinned multi-architecture `uv` binary.
+Agents should use an isolated environment and locked/pinned dependencies,
+with pip inside a venv as a compatibility fallback; uv-managed Python
+downloads and modifications to system Python remain disabled.
+
+DSH's `workspace-write` boundary permits agent writes in the managed
+working tree, not arbitrary paths on the PVC. Package environments, uv/pip
+caches and installation temporaries therefore reside in
+`/data/workspace/agent-harness/default-workspace/{.venvs,.cache,.tmp}`.
+The package-manager wrappers scope temporary/cache environment variables
+to their subprocesses without redirecting DSH host-process state.
+Users must explicitly approve dependency installation/synchronization;
+the bundled `python-dependencies` Agent Skill communicates this rule,
+but it is agent guidance rather than a technically enforced approval gate.
+Environments survive suspend/resume and Pod replacement, but disappear
+with reset, termination or logout and PVC deletion.
+
+PR #3896 proposes a 10 GiB default PVC for newly created and warm
+Sandboxes (up from 5 GiB) while initially retaining 1 CPU, 1536 MiB
+memory and 1 GiB ephemeral-storage limits. The reported Minikube
+qualification exercised isolated scientific/skops, system-site and pip
+fallback environments with no measured ephemeral-storage growth.
+An existing PVC does not automatically resize on Helm upgrade; operators
+must check StorageClass expansion or recreate the Workspace. See the
+[deployment guide](../agent-workspace-deployment.md) for current operational
+status and [Agent Skills architecture](./agent-skills.md#runtime-bundled-skill-naming-design-for-3896)
+for naming/reservation decisions.
+
 ### Stateless manager, Kubernetes-owned state
 
 The manager can restart without an application database. Claims, Sandbox status,
