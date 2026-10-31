@@ -17,6 +17,16 @@ set -euo pipefail
 
 mkdir -p "$DSH_HOME" /data/workspace "${XDG_CONFIG_HOME:-/data/config}" \
   "${XDG_DATA_HOME:-/data/local/share}"
+# DSH workspace-write exposes only the managed working tree as writable; other
+# agent-owned PVC paths remain read-only inside Bash. Keep every package write
+# inside that boundary. A fresh WarmPool workspace that was pre-created
+# read-only is repaired and initialised by bootstrap.mjs when it is claimed.
+if [[ -w /data/workspace ]]; then
+  python_dirs=("${MAGDA_PYTHON_CACHE_ROOT}" "${UV_CACHE_DIR}" "${PIP_CACHE_DIR}" \
+    "${MAGDA_PYTHON_TMPDIR}" "${MAGDA_PYTHON_VENV_ROOT}")
+  mkdir -p "${python_dirs[@]}"
+  chmod 0700 "${python_dirs[@]}"
+fi
 
 # The profile loader resolves out-of-tree plugins from the profile directory.
 # Keep the deployment-owned plugins immutable in the image and expose them to

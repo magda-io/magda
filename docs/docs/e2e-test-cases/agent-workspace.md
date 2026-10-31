@@ -161,6 +161,105 @@ continues to use the **direct magda-core** values shape and is not a
    Repeat with `reasoningEffort: ""` and verify neither configures a reasoning
    effort while the provider request still succeeds.
 
+## On-demand Python dependency checks
+
+Run this qualification in an actual claimed Agent Sandbox with the chart defaults
+of 1 CPU, 1536 MiB memory and 1 GiB ephemeral storage. Confirm the rendered Pod
+limits before testing. Record the runtime image ID and the output of
+`python3 --version`, `python3 -m pip --version`, `uv --version`, `env | grep -E '^(UV_|PIP_CACHE_DIR|MAGDA_PYTHON_)'`, `df -h / /data`, and
+`du -sh "$MAGDA_PYTHON_VENV_ROOT" "$MAGDA_PYTHON_CACHE_ROOT" "$MAGDA_PYTHON_TMPDIR" 2>/dev/null`.
+`pwd` must report `/data/workspace/agent-harness/default-workspace`; every
+package path above must be a descendant of that DSH `workspace-write` boundary.
+`uv cache dir` must report that working tree's `.cache/uv`; automatic Python
+downloads must be `never`, and uv must resolve `/usr/bin/python3` rather than
+creating a managed interpreter. The runtime environment must not globally set
+`TMPDIR` or `XDG_CACHE_HOME`; inspect a uv build subprocess if necessary to
+confirm its wrapper scopes both to the persistent package paths. A write probe to
+sibling `/data/cache` or `/data/config` must remain denied.
+
+1. Through a real model turn, request work that needs a package not already
+   installed. The bundled `python-dependencies` guidance must first inspect
+   imports and project requirements, name the proposed packages and versions,
+   explain why they are needed and that they come from an external distribution
+   source, and ask for explicit approval. Before approval, no install or sync may
+   run. The explanation must not claim this behavioural consent rule is a
+   technical enforcement boundary.
+2. After approval, create the isolated environment and install this qualified,
+   mutually compatible Python 3.11 set (or document and review any replacement
+   set explicitly):
+
+   ```sh
+   ENV_DIR="${MAGDA_PYTHON_VENV_ROOT}/skops-smoke"
+   uv venv --python /usr/bin/python3 "$ENV_DIR"
+   uv pip install --python "$ENV_DIR/bin/python" \
+     'numpy==1.26.4' 'scipy==1.11.4' \
+     'scikit-learn==1.4.2' 'skops==0.10.0'
+   uv pip freeze --python "$ENV_DIR/bin/python"
+   ```
+
+3. Save this script in the managed session working tree and run it with the
+   environment's interpreter. It must fit a RandomForest, inspect and restrict the serialized
+   file's untrusted type names before loading, load it, and reproduce the same
+   predictions:
+
+   ```python
+   from pathlib import Path
+   import numpy as np
+   from sklearn.datasets import load_iris
+   from sklearn.ensemble import RandomForestClassifier
+   import skops.io as sio
+
+   X, y = load_iris(return_X_y=True)
+   model = RandomForestClassifier(n_estimators=40, random_state=7).fit(X, y)
+   expected = model.predict(X[:12])
+   artifact = Path("random-forest.skops")
+   sio.dump(model, artifact)
+   untrusted = sio.get_untrusted_types(file=artifact)
+   allowed_prefixes = ("numpy.", "sklearn.")
+   unexpected = [name for name in untrusted if not name.startswith(allowed_prefixes)]
+   if unexpected:
+       raise RuntimeError(f"unexpected serialized types: {unexpected}")
+   loaded = sio.load(artifact, trusted=untrusted)
+   np.testing.assert_array_equal(expected, loaded.predict(X[:12]))
+   print({"untrusted_types": untrusted, "predictions": expected.tolist()})
+   ```
+
+4. During installation, sample `memory.current` and `memory.peak` from cgroup v2
+   where available (otherwise use the cluster metrics source) and retain the peak.
+   Compare `df`/`du` before and after for the root filesystem and `/data`, plus
+   `/tmp` and `/home/agent/.cache`. The venv, uv cache and `$MAGDA_PYTHON_TMPDIR` writes must be
+   on `/data`; no Python interpreter may appear in the uv cache, and the
+   ephemeral-storage limit must not be approached unexpectedly. Record resolved
+   package versions, elapsed time, peak memory, PVC growth, ephemeral growth and
+   any OOM, quota, eviction or build failure.
+5. Exercise the exceptional system-site path only after checking Debian's actual
+   pandas version and the proposed package's requirements. With approval, this
+   lightweight compatibility check may be used:
+
+   ```sh
+   ENV_DIR="${MAGDA_PYTHON_VENV_ROOT}/system-pandas-smoke"
+   uv venv --python /usr/bin/python3 --system-site-packages "$ENV_DIR"
+   uv pip install --python "$ENV_DIR/bin/python" 'tabulate==0.9.0'
+   "$ENV_DIR/bin/python" - <<'PY'
+   import pandas, tabulate
+   print({"pandas": pandas.__version__, "tabulate": tabulate.__version__})
+   PY
+   ```
+
+   If resolution or imports reveal incompatibility, report it and remove the
+   environment; do not force the install or modify system Python. Isolated venvs
+   remain the documented default.
+
+6. Create a marker inside each venv, suspend/resume the Workspace, then delete its
+   Sandbox Pod. The same environment interpreter, imports, model artifact and
+   markers must survive on the same PVC. Finally reset or terminate the Workspace
+   and confirm the old PVC and environments are deleted. A new claim must request
+   10 GiB; upgrading the chart must not be reported as resizing an existing PVC.
+7. Run `uv cache prune`, remove only the named smoke environments after approval,
+   and re-check usage. Confirm errors and actual versions are reported truthfully
+   and that no `sudo`, runtime `apt-get`, global pip, `--system`,
+   `--break-system-packages`, privilege escalation or Python download was used.
+
 ## Lifecycle and security checks
 
 Run each check while watching the Settings page and Kubernetes resources:

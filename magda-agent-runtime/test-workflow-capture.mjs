@@ -28,7 +28,7 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    new RegExp(`COPY magda-agent-runtime/skills/ ${bundledDir}/`),
+    new RegExp(`COPY component/skills/ ${bundledDir}/`),
     "Bundled skills must be copied into the image, not synchronized"
 );
 assert.match(
@@ -37,7 +37,7 @@ assert.match(
     "Bundled skills must be root-owned and read-only for the agent user"
 );
 assert.ok(
-    dockerfile.indexOf("COPY magda-agent-runtime/skills/") <
+    dockerfile.indexOf("COPY component/skills/") <
         dockerfile.indexOf("USER 10001:10001"),
     "Bundled skills must be installed as root before switching user"
 );
@@ -53,7 +53,7 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    /COPY magda-agent-runtime\/dsh-workflow-capture-guidance\/ \\\n\s+\/usr\/local\/lib\/node_modules\/@deepseek-ai\/dsh\/node_modules\/@magda\/dsh-workflow-capture-guidance\//
+    /COPY component\/dsh-workflow-capture-guidance\/ \\\n\s+\/usr\/local\/lib\/node_modules\/@deepseek-ai\/dsh\/node_modules\/@magda\/dsh-workflow-capture-guidance\//
 );
 assert.match(
     entrypoint,
@@ -62,10 +62,10 @@ assert.match(
 );
 const includes = new Set(packageJson.config.docker.include.split(" "));
 for (const required of [
-    "../magda-agent-runtime/skills",
-    "../magda-agent-runtime/dsh-workflow-capture-guidance",
-    "../magda-agent-runtime/dsh-agent-skill-tools",
-    "../magda-agent-runtime/session-history.mjs"
+    "skills",
+    "dsh-workflow-capture-guidance",
+    "dsh-agent-skill-tools",
+    "session-history.mjs"
 ])
     assert.ok(
         includes.has(required),
@@ -85,7 +85,7 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    /COPY magda-agent-runtime\/dsh-agent-skill-tools\/ \\\n\s+\/usr\/local\/lib\/node_modules\/@deepseek-ai\/dsh\/node_modules\/@magda\/dsh-agent-skill-tools\//
+    /COPY component\/dsh-agent-skill-tools\/ \\\n\s+\/usr\/local\/lib\/node_modules\/@deepseek-ai\/dsh\/node_modules\/@magda\/dsh-agent-skill-tools\//
 );
 assert.doesNotMatch(
     cordisPatch,
@@ -196,8 +196,8 @@ assert.ok(
 );
 assert.ok(!/: /.test(fields.whenToUse));
 assert.deepEqual(
-    fs.readdirSync(here("skills")),
-    ["capture-workflow"],
+    fs.readdirSync(here("skills")).sort(),
+    ["capture-workflow", "python-dependencies"],
     "Only immediate skill directories belong in the bundled root"
 );
 for (const required of [

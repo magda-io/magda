@@ -63,6 +63,25 @@ try {
     }
 }
 
+// Package downloads, build temporaries and virtual environments must all use
+// the PVC and stay inside DSH's workspace-write boundary. Recreate these paths
+// during every bootstrap so fresh WarmPool claims and PVCs created by older
+// runtime images receive the same layout.
+const managedWorkspace = path.join(
+    workspace,
+    "agent-harness/default-workspace"
+);
+for (const directory of [
+    path.join(managedWorkspace, ".cache"),
+    path.join(managedWorkspace, ".cache/uv"),
+    path.join(managedWorkspace, ".cache/pip"),
+    path.join(managedWorkspace, ".tmp"),
+    path.join(managedWorkspace, ".venvs")
+]) {
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+    fs.chmodSync(directory, 0o700);
+}
+
 atomicJson(path.join(dataRoot, "config/mgd/config.json"), {
     activeProfile: payload.magda.profile || "magda-agent-workspace",
     profiles: {
