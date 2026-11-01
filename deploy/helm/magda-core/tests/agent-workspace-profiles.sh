@@ -34,6 +34,14 @@ resource_document() {
     ' "$file"
 }
 
+resources_of_kind() {
+    local kind="$1" file="$2"
+    awk -v kind="$kind" '
+        BEGIN { RS = "---" }
+        $0 ~ "(^|\\n)kind: " kind "(\\n|$)" { print "---"; print }
+    ' "$file"
+}
+
 # Chart (dependency path below the top-level chart) of every rendered template.
 rendered_charts() {
     sed -n 's|^# Source: ||p' "$1" | awk -F/ '{
@@ -110,6 +118,8 @@ for image in magda-agent-manager magda-agent-runtime magda-llm-services \
 done
 [[ "$(count_kind SandboxTemplate "$tmp/minikube.yaml")" == 1 ]]
 [[ "$(count_kind SandboxWarmPool "$tmp/minikube.yaml")" == 1 ]]
+minikube_sandbox="$(resources_of_kind SandboxTemplate "$tmp/minikube.yaml")"
+grep -q 'storage: 10Gi' <<<"$minikube_sandbox"
 if grep -q 'runtimeClassName:' "$tmp/minikube.yaml"; then refuted $LINENO; fi
 grep -q '^  namespace: magda-agent$' "$tmp/minikube.yaml"
 if resource_document Namespace magda-agent "$tmp/minikube.yaml" | grep -q .; then refuted $LINENO; fi
@@ -155,8 +165,10 @@ grep -q 'nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"' <<<"$gke_ingres
 
 helm template magda "$chart" --namespace magda -f "$gke_profile" \
     --set global.agentWorkspace.enabled=true >"$tmp/gke-enabled.yaml"
-grep -q 'runtimeClassName: "gvisor"' "$tmp/gke-enabled.yaml"
-grep -q 'storageClassName: "\?standard-rwo"\?' "$tmp/gke-enabled.yaml"
+gke_sandbox="$(resources_of_kind SandboxTemplate "$tmp/gke-enabled.yaml")"
+grep -q 'runtimeClassName: "gvisor"' <<<"$gke_sandbox"
+grep -q 'storage: 10Gi' <<<"$gke_sandbox"
+grep -q 'storageClassName: "\?standard-rwo"\?' <<<"$gke_sandbox"
 grep -q '^  namespace: magda-agents$' "$tmp/gke-enabled.yaml"
 awk '/^kind: SandboxWarmPool$/{found=1} found && /^  replicas:/{print $2; exit}' \
     "$tmp/gke-enabled.yaml" | grep -qx 2

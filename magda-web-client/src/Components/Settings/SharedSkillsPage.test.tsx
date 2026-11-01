@@ -258,6 +258,7 @@ describe("shared catalogue helpers", () => {
         expect(installedNameError("team-csv")).toBeUndefined();
         expect(installedNameError("system-csv")).toMatch(/reserved/);
         expect(installedNameError("magda-mgd")).toMatch(/reserved/);
+        expect(installedNameError("python-dependencies")).toMatch(/reserved/);
         expect(installedNameError("Team")).toMatch(/lowercase/);
         expect(installedNameError("a".repeat(47))).toMatch(/46/);
     });

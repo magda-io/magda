@@ -1,3 +1,4 @@
+import { isReservedAgentSkillName } from "@magda/typescript-common/dist/agentSkillNames.js";
 import { config } from "../config";
 
 function gatewayUrl(path: string): string {
@@ -259,7 +260,6 @@ export interface AgentSkillInstallationPage {
 }
 
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const RESERVED_SKILL_NAMES = ["capture-workflow", "magda-mgd"];
 
 /** Client-side check of an installed skill name; the server re-validates. */
 export function installedNameError(name: string): string | undefined {
@@ -269,7 +269,7 @@ export function installedNameError(name: string): string | undefined {
         return "Use lowercase letters, digits and single hyphens, for example csv-reporter-2.";
     if (name.startsWith("system-"))
         return "Names starting with system- are reserved for system skills.";
-    if (RESERVED_SKILL_NAMES.includes(name))
+    if (isReservedAgentSkillName(name))
         return "This name is reserved for a built-in skill.";
     return undefined;
 }

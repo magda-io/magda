@@ -101,8 +101,6 @@ magda:
           repository: localhost:5000
           tag: latest
           pullPolicy: Never
-        storage:
-          size: 1Gi
         # Supply hostAliases and externalPrivateCidrs from the ingress Service's
         # current ClusterIP as shown in the deployment guide; Minikube assigns it
         # dynamically.

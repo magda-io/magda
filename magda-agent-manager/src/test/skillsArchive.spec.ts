@@ -141,7 +141,11 @@ describe("Agent Skill ZIP validation", () => {
             "system",
             "must start with system-"
         );
-        for (const reserved of ["capture-workflow", "magda-mgd"]) {
+        for (const reserved of [
+            "capture-workflow",
+            "magda-mgd",
+            "python-dependencies"
+        ]) {
             await expectInvalid(
                 await zip([
                     {

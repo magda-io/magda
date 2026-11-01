@@ -450,6 +450,7 @@ describe("Agent Skill sharing and installations (#3861)", () => {
                 "system-csv",
                 "magda-mgd",
                 "capture-workflow",
+                "python-dependencies",
                 "Bad Name",
                 "a".repeat(47),
                 ""

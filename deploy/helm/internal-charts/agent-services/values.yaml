@@ -23,7 +23,8 @@ runtime:
     pullPolicy: IfNotPresent
   dshVersion: 0.2.1-alpha.1
   storage:
-    size: 5Gi
+    # -- Default per-user PVC capacity. Existing PVCs are not resized automatically.
+    size: 10Gi
     storageClassName: ""
   resources:
     requests: {cpu: 100m, memory: 384Mi, ephemeral-storage: 256Mi}

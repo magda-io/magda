@@ -3,6 +3,7 @@ import path from "node:path";
 import { load as loadYaml, JSON_SCHEMA } from "js-yaml";
 import CRC32 from "crc-32";
 import yauzl, { Entry, ZipFile } from "yauzl";
+import { isReservedAgentSkillName } from "magda-typescript-common/src/agentSkillNames.js";
 import {
     AgentSkillArchiveLimits,
     AgentSkillType,
@@ -12,7 +13,6 @@ import {
 const USER_FILE_PATTERN = /\.md$/i;
 const SKILL_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_SKILL_NAME_LENGTH = 46;
-const RESERVED_RUNTIME_SKILL_NAMES = new Set(["capture-workflow", "magda-mgd"]);
 
 export class ArchiveValidationError extends Error {}
 
@@ -97,7 +97,7 @@ export function validateAgentSkillNameForType(
     name: string,
     type: AgentSkillType
 ): void {
-    if (RESERVED_RUNTIME_SKILL_NAMES.has(name)) {
+    if (isReservedAgentSkillName(name)) {
         invalid(`'${name}' is reserved for a runtime-bundled Agent Skill`);
     }
     if (type === "system" && !name.startsWith("system-")) {

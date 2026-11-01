@@ -36,7 +36,7 @@ agent-services:
     # broad public egress rule cannot reach it (for example: [203.0.113.10/32]).
     deniedCidrs: []
     storage:
-      size: 5Gi
+      size: 10Gi
       # Tested zonal PD CSI profile. Regional/multi-zone storage must be
       # selected and requalified explicitly.
       storageClassName: standard-rwo

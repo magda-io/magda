@@ -29,8 +29,8 @@ skills use `agent-skill-<user-uuid>-<name>` and system skills use
 user publishing, `userId`, `access-control.ownerId`, and the authenticated actor
 must match; the two fields remain distinct for future explicitly delegated use. Names are at
 most 46 lowercase letters/digits with interior hyphens; user names cannot use
-the `system-` prefix, and runtime-bundled names such as `capture-workflow` and
-`magda-mgd` are reserved. Registry's primary key atomically enforces each
+the `system-` prefix, and runtime-owned names `capture-workflow`, `magda-mgd`
+and `python-dependencies` are reserved. Registry's primary key atomically enforces each
 intended user's namespace, so the API never accepts a caller-selected ID or uses
 full-text search for uniqueness. Different users may publish the same name.
 
@@ -632,21 +632,20 @@ local reconciliation contract and recovery semantics remain above.
 Runtime image. They are not Registry-backed `system-` publications, which have
 separate authenticated Agent Services APIs and typed OPA authorization.
 
-The merged MVP reserves `capture-workflow` and the separately installed
-`magda-mgd` skill. [PR #3896](https://github.com/magda-io/magda/pull/3896)
-introduces the image-bundled `python-dependencies` skill. That name must
-also be reserved by Agent Services publication and installation-alias
-validation and by `mgd` local publication/synchronization. This is a
-pending implementation requirement until #3896 merges, not an assertion
-about the currently deployed runtime. OPA contains no name-specific rules.
+The runtime reserves `capture-workflow`, the separately installed `magda-mgd`
+skill, and the image-bundled `python-dependencies` skill introduced by
+[PR #3896](https://github.com/magda-io/magda/pull/3896). Agent Services
+publication and installation-alias validation and `mgd` publication and
+local/Workspace synchronization all enforce the same reserved names. OPA
+contains no name-specific rules.
 
-The intended shared reserved-name list and predicate belong in a small
-dependency-free `@magda/typescript-common` module. Agent Manager uses the
-module directly; `mgd` should include it in its standalone esbuild output
-using a build-time dependency, without a published runtime dependency on
-`@magda/typescript-common`. A source-tree test should enumerate
-`magda-agent-runtime/skills/*/SKILL.md` names and verify reservation,
-plus `magda-mgd` from its separate installation path.
+The shared reserved-name list and predicate live in a small dependency-free
+`@magda/typescript-common` module. Agent Manager uses the module directly;
+`mgd` includes it in its standalone esbuild output through a build-time-only
+dependency, without a published runtime dependency on
+`@magda/typescript-common`. A source-tree test enumerates
+`magda-agent-runtime/skills/*/SKILL.md` names and verifies reservation, plus
+`magda-mgd` from its separate installation path.
 
 **Future naming convention:** use `magda-builtin-<purpose>` for newly
 introduced runtime-bundled skills and reserve that entire prefix when
@@ -679,8 +678,8 @@ change `mgd skills install` or the image's `magda-mgd` guidance in
 DSH gives the bundled root the lowest precedence (rank 600, after project
 `.dsh/skills`/`.agents/skills`, custom roots, `$DSH_HOME/skills` and
 `~/.agents/skills`). Both `mgd` and Agent Services reserve the names
-`capture-workflow` and `magda-mgd`, so no publication or synchronized copy can
-use them. Only a directory the user deliberately creates in their own Workspace
+`capture-workflow`, `magda-mgd` and `python-dependencies`, so no publication or
+synchronized copy can use them. Only a directory the user deliberately creates in their own Workspace
 could shadow the bundled skill; the shipped file itself cannot be modified.
 
 Users invoke it by asking in chat ("save what we just did as a skill") or by

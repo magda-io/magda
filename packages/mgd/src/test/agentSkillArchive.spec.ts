@@ -259,7 +259,11 @@ describe("Agent Skill archive", () => {
             ),
             "must start"
         );
-        for (const reserved of ["capture-workflow", "magda-mgd"]) {
+        for (const reserved of [
+            "capture-workflow",
+            "magda-mgd",
+            "python-dependencies"
+        ]) {
             await expectInvalid(
                 validateAgentSkillArchive(
                     await zip([{ name: "SKILL.md", content: named(reserved) }]),

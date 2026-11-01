@@ -993,6 +993,9 @@ export function registerAgentSkillCommands(program: Command): void {
         .option("--json")
         .action(async (value: string, opts) => {
             const ref = sharedRef(value);
+            if (opts.as !== undefined) {
+                validateAgentSkillNameForType(opts.as, "user");
+            }
             const installed = await (await api())
                 .install(ref.id, opts.as)
                 .catch((error) => {

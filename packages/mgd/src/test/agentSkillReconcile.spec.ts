@@ -694,21 +694,24 @@ describe("scan-based Agent Skill reconciliation", () => {
             const realOpencode = path.join(env.tmp, "real-opencode");
             await fs.rename(env.roots.opencode, realOpencode);
             await fs.symlink(realOpencode, env.roots.opencode);
-            const reserved = path.join(env.roots.claude, "magda-mgd");
-            await fs.mkdir(reserved);
-            await fs.writeFile(path.join(reserved, "SKILL.md"), "bundled");
             const marker = await readMarker(dir("claude"));
-            await fs.writeFile(
-                path.join(reserved, AGENT_SKILL_INSTALL_MARKER),
-                JSON.stringify({
-                    ...marker,
-                    name: "magda-mgd",
-                    source: {
-                        ...marker.source,
-                        id: `agent-skill-${remote.userId}-magda-mgd`
-                    }
-                })
-            );
+            const reservedNames = ["magda-mgd", "python-dependencies"];
+            for (const name of reservedNames) {
+                const reserved = path.join(env.roots.claude, name);
+                await fs.mkdir(reserved);
+                await fs.writeFile(path.join(reserved, "SKILL.md"), "bundled");
+                await fs.writeFile(
+                    path.join(reserved, AGENT_SKILL_INSTALL_MARKER),
+                    JSON.stringify({
+                        ...marker,
+                        name,
+                        source: {
+                            ...marker.source,
+                            id: `agent-skill-${remote.userId}-${name}`
+                        }
+                    })
+                );
+            }
             remote.remove("alpha");
 
             const forced = await sync(true);
@@ -718,11 +721,17 @@ describe("scan-based Agent Skill reconciliation", () => {
                     .sort()
             ).to.deep.equal([
                 "claude:magda-mgd:UNSAFE_PATH",
+                "claude:python-dependencies:UNSAFE_PATH",
                 "codex:alpha:UNSAFE_PATH",
                 "dsh:alpha:UNSAFE_PATH",
                 "opencode:*:UNSAFE_PATH"
             ]);
-            expect(await readSkill(reserved)).to.equal("bundled");
+            for (const name of reservedNames) {
+                expect(
+                    await readSkill(path.join(env.roots.claude, name)),
+                    name
+                ).to.equal("bundled");
+            }
             expect(
                 (
                     await fs.lstat(path.join(dir("codex"), "escape"))
@@ -760,11 +769,13 @@ describe("scan-based Agent Skill reconciliation", () => {
 
         beforeEach(async () => {
             root = path.join(env.tmp, "dsh", "skills");
-            await fs.mkdir(path.join(root, "magda-mgd"), { recursive: true });
-            await fs.writeFile(
-                path.join(root, "magda-mgd", "SKILL.md"),
-                "bundled"
-            );
+            for (const name of ["magda-mgd", "python-dependencies"]) {
+                await fs.mkdir(path.join(root, name), { recursive: true });
+                await fs.writeFile(
+                    path.join(root, name, "SKILL.md"),
+                    "bundled"
+                );
+            }
             await remote.publish(
                 "system-guide",
                 "system v1",
@@ -781,12 +792,15 @@ describe("scan-based Agent Skill reconciliation", () => {
             expect(
                 (await readMarker(path.join(root, "system-guide"))).source.kind
             ).to.equal("system-publication");
-            expect(
-                await fs.readFile(
-                    path.join(root, "magda-mgd", "SKILL.md"),
-                    "utf8"
-                )
-            ).to.equal("bundled");
+            for (const name of ["magda-mgd", "python-dependencies"]) {
+                expect(
+                    await fs.readFile(
+                        path.join(root, name, "SKILL.md"),
+                        "utf8"
+                    ),
+                    name
+                ).to.equal("bundled");
+            }
             expect(await pathExists(env.roots.claude)).to.equal(false);
         });
 

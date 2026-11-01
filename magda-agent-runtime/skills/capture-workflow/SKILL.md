@@ -75,7 +75,7 @@ Keep a literal value only when it is genuinely part of the procedure, for exampl
 
 A name is 1 to 46 characters of lowercase letters and digits, with single hyphens between words. Describe the task, for example `profile-csv-distribution` or `standardise-csv-columns`.
 
-- User skills must not start with `system-`. `capture-workflow` and `magda-mgd` are reserved.
+- User skills must not start with `system-`. `capture-workflow`, `magda-mgd` and `python-dependencies` are reserved.
 - Check for clashes first. Look in `$DSH_HOME/skills/<name>`, in `skill-drafts/<name>`, and run `mgd agent-skill list --type user --query <name>`. A clash with an existing publication fails with HTTP 409. Do not overwrite or replace someone's skill to get around it. Propose another name, or, if the user wants to update their existing skill, follow "Update an existing skill" below.
 - A published name cannot be renamed. Publishing under a new name creates a separate skill.
 

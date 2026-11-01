@@ -55,7 +55,7 @@ Kubernetes: `>= 1.24.0-0`
 | runtime.resources.requests.cpu | string | `"100m"` |  |
 | runtime.resources.requests.ephemeral-storage | string | `"256Mi"` |  |
 | runtime.resources.requests.memory | string | `"384Mi"` |  |
-| runtime.storage.size | string | `"5Gi"` |  |
+| runtime.storage.size | string | `"10Gi"` | Default per-user PVC capacity. Existing PVCs are not resized automatically. |
 | runtime.storage.storageClassName | string | `""` |  |
 | runtime.trustedCaSecret.key | string | `"ca.crt"` |  |
 | runtime.trustedCaSecret.name | string | `""` |  |

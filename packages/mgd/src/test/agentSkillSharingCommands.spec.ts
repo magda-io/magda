@@ -161,6 +161,24 @@ describe("agent-skill sharing commands (#3861)", () => {
         expect(JSON.parse(output).id).to.equal(INSTALLATION);
     });
 
+    it("rejects a reserved installation alias before contacting Agent Services", async () => {
+        const requestsBefore = server.requests.length;
+        let error: Error | undefined;
+        try {
+            await run([
+                "agent-skill",
+                "install",
+                `user/${SOURCE}`,
+                "--as",
+                "python-dependencies"
+            ]);
+        } catch (caught) {
+            error = caught as Error;
+        }
+        expect(error?.message).to.include("reserved");
+        expect(server.requests.length).to.equal(requestsBefore);
+    });
+
     it("turns a name conflict into an alias suggestion", async () => {
         installReply = {
             status: 409,

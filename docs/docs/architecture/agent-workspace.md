@@ -34,9 +34,11 @@ credentials remain in the Magda namespace.
 - **Kubernetes Agent Sandbox** provides the per-user execution boundary. The
   qualified release is Kubernetes Agent Sandbox v1.0.4. The installation renders
   exactly one selected runc, gVisor, or Kata template and warm pool.
-- **Agent Runtime** pins DSH, bundles `mgd`, and applies a deployment-owned Cordis
-  profile. The workspace is mounted at `/data/workspace`; runtime configuration
-  and DSH state are stored on the same per-user PVC.
+- **Agent Runtime** pins DSH, bundles `mgd`, Debian Python tooling and a
+  digest-pinned `uv`, and applies a deployment-owned Cordis profile. The
+  workspace is mounted at `/data/workspace`; runtime configuration, DSH state,
+  purpose-specific Python environments, package caches and install temporaries
+  are stored on the same per-user PVC.
 - **LLM Services** independently authenticates the Magda user and allowlists
   deployment-selected model IDs before proxying to LiteLLM. Provider errors are
   sanitized at this boundary.
