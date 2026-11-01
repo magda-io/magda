@@ -1,7 +1,7 @@
 ---
 name: python-dependencies
-description: Safely add on-demand Python dependencies to a MAGDA Agent Workspace using persistent uv virtual environments. Use when a task needs a Python package that is not already available, a project needs uv sync, or the user asks about Python environments, package installation, cleanup, or disk usage.
-whenToUse: A Python import or tool is missing, project requirements need installing or syncing, or the user asks to create, inspect, reproduce, clean up, or troubleshoot a Python environment.
+description: Safely add on-demand Python dependencies to a MAGDA Agent Workspace using persistent uv virtual environments. Use when a task needs a Python package that is not already available, a project needs uv sync, or the user asks about Python environments, package installation, cleanup, disk usage, or capacity for a Python workload.
+whenToUse: A Python import or tool is missing, project requirements need installing or syncing, or the user asks to create, inspect, reproduce, clean up, troubleshoot, or check the capacity of a Python environment or workload.
 ---
 
 # Manage on-demand Python dependencies
@@ -14,7 +14,34 @@ The runtime includes Debian's system Python, pandas, `pip`, `venv`, and pinned `
 2. Propose the smallest compatible dependency set. Tell the user the exact packages and versions or constraints, why each is required, and that they will be downloaded from external Python distribution sources.
 3. **Ask for explicit user approval before running any install or sync that downloads or changes packages.** Approval in ordinary conversation is enough; this guidance does not create or claim a technical enforcement boundary. The current Workspace execution permission cannot independently guarantee that a model will never run `uv` or `pip` without approval.
 
-Checking versions, imports, lockfiles, free space, and an existing environment is read-only and does not require installation approval.
+Checking versions, imports, lockfiles, resource limits, free space, and an existing environment is read-only and does not require installation approval.
+
+## Report the Workspace's actual capacity
+
+When deciding whether an installation, dataset or Python workload fits, report the Sandbox container limits—not the Kubernetes node capacity. Never present `nproc`, `os.cpu_count()`, `free`, `/proc/meminfo`, or host filesystem capacity as the Workspace's available resources.
+
+Run the read-only summary helper first. It reports the configured values, verifies cgroup v2 CPU/memory values, and shows the observed `/data` filesystem without treating it as a storage quota:
+
+```sh
+magda-workspace-resources
+```
+
+If the helper is unavailable or a value needs diagnosis, read the configured values and cgroup files directly:
+
+```sh
+printf 'configured CPU limit: %s\n' "$MAGDA_WORKSPACE_CPU_LIMIT"
+printf 'configured memory limit: %s\n' "$MAGDA_WORKSPACE_MEMORY_LIMIT"
+printf 'requested PVC size: %s\n' "$MAGDA_WORKSPACE_STORAGE_SIZE"
+cat /sys/fs/cgroup/cpu.max
+cat /sys/fs/cgroup/memory.max
+cat /sys/fs/cgroup/memory.current
+```
+
+Interpret `cpu.max` as `quota period`; divide quota by period to obtain the CPU limit (for example, `100000 100000` is 1 CPU). `max` means no cgroup CPU limit. `memory.max` is the byte limit and `max` means unlimited; `memory.current` is current cgroup-accounted use, not additional capacity. Prefer the effective cgroup limit if it is stricter than the configured value, and report any disagreement rather than guessing. If cgroup v2 files are unavailable, say that the configured limit could not be independently verified.
+
+Use `df -h /data` and `du` for observed PVC filesystem free space and package usage, but report `$MAGDA_WORKSPACE_STORAGE_SIZE` alongside them as the size requested for a fresh per-user PVC from the current Sandbox template—not a guaranteed quota. Some development StorageClasses, including Minikube hostpath, do not enforce the requested claim size, so `df /data` can show the node disk and must not be presented as the Workspace quota. Existing or warm claims can also retain an older size after a Helm change. Call out any disagreement: do not claim capacity above the requested size merely because `df` is larger, and use smaller observed/enforced capacity as the safe bound.
+
+Keep CPU-parallel work within the effective CPU limit. Do not use unbounded worker settings merely because host-oriented APIs report more processors. For a 1-CPU Sandbox, use one worker/thread for settings such as scikit-learn `n_jobs` and BLAS/OpenMP thread counts unless the user is deliberately targeting a differently configured Workspace.
 
 ## Create a persistent isolated environment
 
@@ -74,9 +101,14 @@ Environments, caches and outputs survive refresh, Pod replacement and suspend/re
 
 ## Diagnose space and clean up
 
-Inspect capacity before large environments or datasets:
+Inspect configured/effective capacity and persistent usage before large environments or datasets. Apply the resource-reporting rules above; do not substitute node figures:
 
 ```sh
+printf 'configured: cpu=%s memory=%s requested-pvc=%s\n' \
+  "$MAGDA_WORKSPACE_CPU_LIMIT" "$MAGDA_WORKSPACE_MEMORY_LIMIT" \
+  "$MAGDA_WORKSPACE_STORAGE_SIZE"
+cat /sys/fs/cgroup/cpu.max /sys/fs/cgroup/memory.max \
+  /sys/fs/cgroup/memory.current
 df -h /data
 du -sh "$MAGDA_PYTHON_VENV_ROOT" "$MAGDA_PYTHON_CACHE_ROOT" \
   "$MAGDA_PYTHON_TMPDIR" 2>/dev/null

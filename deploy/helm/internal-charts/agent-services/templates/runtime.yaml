@@ -120,6 +120,16 @@ spec:
             - {name: DSH_BROWSER_AUTH, value: "true"}
             - name: MAGDA_LLM_BASE_URL
               value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}
+            # Human-readable configured limits for agent guidance. CPU and memory
+            # are also verified against cgroup v2 at runtime; the requested PVC
+            # size is required because dev hostpath filesystems may report the
+            # node capacity from df rather than enforcing the claim quota.
+            - name: MAGDA_WORKSPACE_CPU_LIMIT
+              value: {{ .Values.runtime.resources.limits.cpu | toString | quote }}
+            - name: MAGDA_WORKSPACE_MEMORY_LIMIT
+              value: {{ .Values.runtime.resources.limits.memory | toString | quote }}
+            - name: MAGDA_WORKSPACE_STORAGE_SIZE
+              value: {{ .Values.runtime.storage.size | toString | quote }}
             {{- if .Values.runtime.trustedCaSecret.name }}
             - {name: NODE_EXTRA_CA_CERTS, value: /etc/magda-agent/ca/ca.crt}
             {{- end }}
