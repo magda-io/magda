@@ -112,6 +112,16 @@ provisioned capacity and potential storage cost relative to the former 5 GiB
 default, particularly when `warmPool.size` is greater than zero. CPU, memory and
 ephemeral-storage defaults remain unchanged; in particular, the 1 GiB ephemeral
 limit assumes cache, environment and temporary writes stay under `/data`.
+The Sandbox receives the configured CPU limit, memory limit and current-template
+PVC request as `MAGDA_WORKSPACE_CPU_LIMIT`, `MAGDA_WORKSPACE_MEMORY_LIMIT` and
+`MAGDA_WORKSPACE_STORAGE_SIZE`. `magda-workspace-resources` reports those values,
+the effective cgroup v2 limits/current memory use and the observed `/data`
+filesystem. CPU and memory cgroups are authoritative when stricter. The storage
+environment value is a request for fresh claims, not a guaranteed quota or a
+live lookup of an older claim. Development provisioners such as Minikube
+hostpath may not enforce the request, so `df -h /data` can show the node disk;
+do not present that larger filesystem capacity as the Workspace quota.
+
 Operators should monitor capacity with `df -h /data` and usage with
 `du -sh "$MAGDA_PYTHON_VENV_ROOT" "$MAGDA_PYTHON_CACHE_ROOT" "$MAGDA_PYTHON_TMPDIR"`. Users can
 remove an unneeded environment and run `uv cache prune` after confirming what

@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import {
+    mkdir,
+    mkdtemp,
+    readFile,
+    rm,
+    stat,
+    writeFile
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -40,6 +47,10 @@ const entrypoint = await readFile(
 );
 const uvWrapper = await readFile(
     new URL("uv-wrapper.sh", import.meta.url),
+    "utf8"
+);
+const workspaceResources = await readFile(
+    new URL("workspace-resources.sh", import.meta.url),
     "utf8"
 );
 const pythonDependenciesSkill = await readFile(
@@ -133,6 +144,23 @@ for (const guidance of [
     "uv sync --locked",
     "/usr/bin/python3 -m venv",
     'XDG_CACHE_HOME="$MAGDA_PYTHON_CACHE_ROOT"',
+    "MAGDA_WORKSPACE_CPU_LIMIT",
+    "MAGDA_WORKSPACE_MEMORY_LIMIT",
+    "MAGDA_WORKSPACE_STORAGE_SIZE",
+    "/sys/fs/cgroup/cpu.max",
+    "/sys/fs/cgroup/memory.max",
+    "/sys/fs/cgroup/memory.current",
+    "divide quota by period",
+    "Minikube hostpath",
+    "not the container's total writable-storage capacity",
+    "separate, configurable ephemeral-storage limit",
+    "container writable layer, logs and disk-backed temporary files",
+    "Python environments, dependency caches, datasets and workload temporary files",
+    "capacity available to `/tmp`",
+    "ephemeral-storage capacity has not been independently verified",
+    "2 CPUs and 4 GiB",
+    "1 CPU and 2 GiB",
+    "n_jobs",
     "--system-site-packages",
     "--break-system-packages",
     "uv cache prune",
@@ -142,6 +170,142 @@ for (const guidance of [
         pythonDependenciesSkill.includes(guidance),
         `Bundled Python dependency guidance must cover: ${guidance}`
     );
+}
+const misleadingHostProbeWarning = pythonDependenciesSkill
+    .split("\n")
+    .find((line) => line.includes("Never present"));
+for (const misleadingHostProbe of [
+    "nproc",
+    "os.cpu_count()",
+    "free",
+    "/proc/meminfo"
+]) {
+    assert.ok(
+        misleadingHostProbeWarning?.includes(misleadingHostProbe),
+        `Guidance must reject host-oriented capacity probe ${misleadingHostProbe}`
+    );
+}
+assert.match(
+    pythonDependenciesSkill,
+    /configured values say 2 CPUs and 4 GiB[^\n]*cgroup files limit the container to 1 CPU and 2 GiB[^\n]*report and plan against 1 CPU and 2 GiB/,
+    "Guidance must choose stricter cgroup CPU and memory limits and report the mismatch"
+);
+const ephemeralStorageGuidance = pythonDependenciesSkill
+    .split("\n")
+    .find((line) => line.includes("requested PVC size applies only"));
+assert.ok(
+    ephemeralStorageGuidance?.includes(
+        "persistent storage mounted at `/data`"
+    ) &&
+        ephemeralStorageGuidance.includes("container writable layer") &&
+        ephemeralStorageGuidance.includes("outside `/data`") &&
+        ephemeralStorageGuidance.includes("available to `/tmp`") &&
+        ephemeralStorageGuidance.includes(
+            "has not been independently verified"
+        ),
+    "Guidance must distinguish PVC capacity from unverified ephemeral storage"
+);
+assert.doesNotMatch(
+    ephemeralStorageGuidance ?? "",
+    /\b1\s*GiB\b/,
+    "Guidance must not hardcode the configurable ephemeral-storage limit"
+);
+assert.match(
+    dockerfile,
+    /COPY --chmod=0755 component\/workspace-resources\.sh \/usr\/local\/bin\/magda-workspace-resources/,
+    "The read-only Workspace resource summary must ship in the runtime image"
+);
+assert.match(
+    workspaceResources,
+    /Some development|development StorageClasses/,
+    "The resource helper must explain that development storage may not enforce the PVC request"
+);
+
+const resourceFixture = await mkdtemp(
+    path.join(tmpdir(), "magda-workspace-resources-test-")
+);
+try {
+    const cgroupRoot = path.join(resourceFixture, "cgroup");
+    await mkdir(cgroupRoot);
+    const runResourceSummary = (root = cgroupRoot) => {
+        const result = spawnSync(
+            "sh",
+            [fileURLToPath(new URL("workspace-resources.sh", import.meta.url))],
+            {
+                encoding: "utf8",
+                env: {
+                    ...process.env,
+                    MAGDA_WORKSPACE_CGROUP_ROOT: root,
+                    MAGDA_WORKSPACE_DATA_PATH: resourceFixture,
+                    MAGDA_WORKSPACE_CPU_LIMIT: "1",
+                    MAGDA_WORKSPACE_MEMORY_LIMIT: "1536Mi",
+                    MAGDA_WORKSPACE_STORAGE_SIZE: "10Gi"
+                }
+            }
+        );
+        assert.equal(result.status, 0, result.stderr);
+        return result.stdout;
+    };
+    await writeFile(path.join(cgroupRoot, "cpu.max"), "100000 100000\n");
+    await writeFile(path.join(cgroupRoot, "memory.max"), "1610612736\n");
+    await writeFile(path.join(cgroupRoot, "memory.current"), "536870912\n");
+    const defaultSummary = runResourceSummary();
+    for (const expected of [
+        "Configured CPU limit: 1",
+        "Container cgroup CPU limit: 1 CPU",
+        "Configured memory limit: 1536Mi",
+        "Container cgroup memory limit: 1.50 GiB (1610612736 bytes)",
+        "Current cgroup memory use: 512.00 MiB (536870912 bytes)",
+        "Requested PVC size: 10Gi",
+        "Minikube hostpath"
+    ]) {
+        assert.ok(
+            defaultSummary.includes(expected),
+            `Resource summary must include ${expected}`
+        );
+    }
+
+    await writeFile(path.join(cgroupRoot, "cpu.max"), "1000000 100000\n");
+    assert.match(
+        runResourceSummary(),
+        /Container cgroup CPU limit: 10 CPU/,
+        "A multi-digit integer CPU limit must not lose trailing zeroes"
+    );
+    await writeFile(path.join(cgroupRoot, "cpu.max"), "75000 100000\n");
+    assert.match(
+        runResourceSummary(),
+        /Container cgroup CPU limit: 0\.75 CPU/,
+        "A fractional CPU quota must be divided by its period"
+    );
+
+    await writeFile(path.join(cgroupRoot, "cpu.max"), "max 100000\n");
+    await writeFile(path.join(cgroupRoot, "memory.max"), "max\n");
+    const unlimitedSummary = runResourceSummary();
+    assert.match(unlimitedSummary, /Container cgroup CPU limit: unlimited/);
+    assert.match(unlimitedSummary, /Container cgroup memory limit: unlimited/);
+
+    await writeFile(path.join(cgroupRoot, "cpu.max"), "");
+    await writeFile(path.join(cgroupRoot, "memory.max"), "invalid\n");
+    await writeFile(path.join(cgroupRoot, "memory.current"), "invalid\n");
+    const invalidSummary = runResourceSummary();
+    assert.match(invalidSummary, /CPU limit: unavailable \(invalid cpu\.max\)/);
+    assert.match(
+        invalidSummary,
+        /memory limit: unavailable \(invalid memory\.max\)/
+    );
+    assert.match(
+        invalidSummary,
+        /memory use: unavailable \(invalid memory\.current\)/
+    );
+
+    const missingSummary = runResourceSummary(
+        path.join(resourceFixture, "missing-cgroup")
+    );
+    assert.match(missingSummary, /no cgroup v2 cpu\.max/);
+    assert.match(missingSummary, /no cgroup v2 memory\.max/);
+    assert.match(missingSummary, /no cgroup v2 memory\.current/);
+} finally {
+    await rm(resourceFixture, { recursive: true, force: true });
 }
 assert.equal(packageJson.version, lernaJson.version);
 assert.equal(mgdPackageJson.version, lernaJson.version);
@@ -172,6 +336,7 @@ for (const requiredPath of [
     "magda.cordis.patch.yml",
     "entrypoint.sh",
     "uv-wrapper.sh",
+    "workspace-resources.sh",
     "bootstrap.mjs",
     "dsh-launch.mjs"
 ]) {

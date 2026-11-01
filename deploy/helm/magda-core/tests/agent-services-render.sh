@@ -213,6 +213,14 @@ for runtime in runc gvisor kata; do
         'cpu: "1"' 'memory: 1536Mi' 'ephemeral-storage: 1Gi'; do
         grep -q "$resource" <<<"$sandbox_template"
     done
+    for resource_env in \
+        'MAGDA_WORKSPACE_CPU_LIMIT|value: "1"' \
+        'MAGDA_WORKSPACE_MEMORY_LIMIT|value: "1536Mi"' \
+        'MAGDA_WORKSPACE_STORAGE_SIZE|value: "10Gi"'; do
+        env_name="${resource_env%%|*}"
+        env_value="${resource_env#*|}"
+        grep -A1 "name: $env_name" <<<"$sandbox_template" | grep -q "$env_value"
+    done
     grep -q 'Kubernetes Agent Sandbox v1beta1 extension APIs are unavailable' "$tmp/$runtime.yaml"
     grep -q '^    type: Recreate$' "$tmp/$runtime.yaml"
     if [[ "$runtime" == runc ]]; then
@@ -220,6 +228,27 @@ for runtime in runc gvisor kata; do
     else
         grep -q "runtimeClassName: \"$runtime\"" "$tmp/$runtime.yaml"
     fi
+done
+
+# Human-readable Workspace metadata must stay wired to the same Helm values as
+# the Pod limits and volumeClaimTemplate request, including non-default units.
+render "$tmp/custom-workspace-resources.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set-string agent-services.runtime.resources.limits.cpu=750m \
+    --set-string agent-services.runtime.resources.limits.memory=2Gi \
+    --set-string agent-services.runtime.storage.size=12Gi
+custom_sandbox="$(resources_of_kind SandboxTemplate "$tmp/custom-workspace-resources.yaml")"
+grep -q 'storage: 12Gi' <<<"$custom_sandbox"
+grep -q 'cpu: 750m' <<<"$custom_sandbox"
+grep -q 'memory: 2Gi' <<<"$custom_sandbox"
+for resource_env in \
+    'MAGDA_WORKSPACE_CPU_LIMIT|value: "750m"' \
+    'MAGDA_WORKSPACE_MEMORY_LIMIT|value: "2Gi"' \
+    'MAGDA_WORKSPACE_STORAGE_SIZE|value: "12Gi"'; do
+    env_name="${resource_env%%|*}"
+    env_value="${resource_env#*|}"
+    grep -A1 "name: $env_name" <<<"$custom_sandbox" | grep -q "$env_value"
 done
 
 # The Sandbox uses the same internal/model gateway override as Agent Manager.

@@ -54,6 +54,7 @@ RUN groupadd --gid 10001 agent \
 COPY --chmod=0644 component/magda.cordis.patch.yml /etc/magda-agent/magda.cordis.patch.yml
 COPY --chmod=0755 component/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
 COPY --chmod=0755 component/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
+COPY --chmod=0755 component/workspace-resources.sh /usr/local/bin/magda-workspace-resources
 COPY --chmod=0644 component/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
 # Runtime-bundled Agent Skills: immutable, root-owned and independent of
 # Registry/Storage publications. DSH discovers them through DSH_BUNDLED_SKILL_DIR.
