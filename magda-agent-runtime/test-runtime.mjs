@@ -152,6 +152,14 @@ for (const guidance of [
     "/sys/fs/cgroup/memory.current",
     "divide quota by period",
     "Minikube hostpath",
+    "not the container's total writable-storage capacity",
+    "separate, configurable ephemeral-storage limit",
+    "container writable layer, logs and disk-backed temporary files",
+    "Python environments, dependency caches, datasets and workload temporary files",
+    "capacity available to `/tmp`",
+    "ephemeral-storage capacity has not been independently verified",
+    "2 CPUs and 4 GiB",
+    "1 CPU and 2 GiB",
     "n_jobs",
     "--system-site-packages",
     "--break-system-packages",
@@ -177,6 +185,31 @@ for (const misleadingHostProbe of [
         `Guidance must reject host-oriented capacity probe ${misleadingHostProbe}`
     );
 }
+assert.match(
+    pythonDependenciesSkill,
+    /configured values say 2 CPUs and 4 GiB[^\n]*cgroup files limit the container to 1 CPU and 2 GiB[^\n]*report and plan against 1 CPU and 2 GiB/,
+    "Guidance must choose stricter cgroup CPU and memory limits and report the mismatch"
+);
+const ephemeralStorageGuidance = pythonDependenciesSkill
+    .split("\n")
+    .find((line) => line.includes("requested PVC size applies only"));
+assert.ok(
+    ephemeralStorageGuidance?.includes(
+        "persistent storage mounted at `/data`"
+    ) &&
+        ephemeralStorageGuidance.includes("container writable layer") &&
+        ephemeralStorageGuidance.includes("outside `/data`") &&
+        ephemeralStorageGuidance.includes("available to `/tmp`") &&
+        ephemeralStorageGuidance.includes(
+            "has not been independently verified"
+        ),
+    "Guidance must distinguish PVC capacity from unverified ephemeral storage"
+);
+assert.doesNotMatch(
+    ephemeralStorageGuidance ?? "",
+    /\b1\s*GiB\b/,
+    "Guidance must not hardcode the configurable ephemeral-storage limit"
+);
 assert.match(
     dockerfile,
     /COPY --chmod=0755 component\/workspace-resources\.sh \/usr\/local\/bin\/magda-workspace-resources/,
