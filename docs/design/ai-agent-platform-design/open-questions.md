@@ -72,16 +72,16 @@ lifecycle; those trusted direct writers retain the documented consistency risk.
 
 ## Recent implementation follow-ups and evidence (4 November 2026)
 
-- **Skill sharing:** #3861 / merged #3864 provides typed source-scoped sharing, explicit recipient installations, authorized manifests and fork. The [two-user acceptance scenario](https://github.com/t83714/my-ideas/issues/15) and #3866 remain open for independent observation and regression evidence.
+- **Skill sharing:** #3861 / merged #3864 provides typed source-scoped sharing, explicit recipient installations, authorized manifests and fork. Real-world two-user qualification under #3866 remains open for independent observation and regression evidence.
 - **Python/data analysis:** #3895 / merged #3896 provides pinned `uv`, fallback isolated Python environments, per-user PVC-backed caches/temp files, runtime guidance with explicit installation-consent instructions, and a **10 GiB new-PVC default**. Consent is guidance, not a runtime enforcement mechanism. #3897 / merged #3898 exposes configured and cgroup resource information and cautions against reporting host CPU/RAM or Minikube node filesystem capacity as user quotas. See [sandbox-runtime.md](./sandbox-runtime.md) and [deployment.md](./deployment.md).
 - **Registry authorization/migration:** #3870/#3876/#3878/#3879/#3880 delivered concrete mutation and CI improvements; #3862 is closed. Generalized upgrade of *all* bundled built-in aspect definitions remains separate [#3883](https://github.com/magda-io/magda/issues/3883), building on #3864's existing `access-group-details` migration special case.
-- **Product evidence:** [grower three-cycle report](https://github.com/t83714/my-ideas/blob/main/demo-packs/agent-workspace/reports/2026-10-31-grower-full-take.md) and [crop-yield five-scene report](https://github.com/t83714/my-ideas/blob/main/demo-packs/agent-workspace/reports/2026-11-02-crop-full-take.md) document corrected first-pass errors, reviewed skill capture, resource/model reuse and reproducible synthetic checks. Their video approvals and independent numeric checks are valuable evidence, but #3866 requires its own acceptance report and the sharing scenario is not yet qualified.
+- **Product acceptance:** #3866 requires an independent, documented rubric for changed-input skill reuse, resource-backed ML and explicit two-user sharing, including negative authorization checks. Demo footage alone does not close acceptance.
 
 ## Later design areas
 
 - optional structured DSH approval integration for mutating `mgd` operations;
 - provider-specific **functional** network policy enforcement and Cloud IAM qualification (GKE security matrix above);
-- real-world two-user sharing, model-resource authorization and fresh-Workspace reuse qualification (#3866 / campaign #15); the #3861 implementation itself is merged, with no new skill DB/bucket; 
+- real-world two-user sharing, model-resource authorization and fresh-Workspace reuse qualification (#3866); the #3861 implementation itself is merged, with no new skill DB/bucket; 
 - full web/product UX;
 - remaining provider/ingress **security** qualification, including #3848 / PR #3852 (GKE transport evidence) and #3851 (future native GCE L7 study); #3846 DSH CSP and #3847 nginx WebSocket timeouts were completed in merged #3850;
 - observability/audit;
