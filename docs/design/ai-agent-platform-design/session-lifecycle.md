@@ -81,7 +81,7 @@ requalification before relying on those event semantics.
 
 The **intended invariant** is that after a recorded meaningful event, both the KAS deletion deadline and managed key expiry reflect the same monotonic activity-based deadline. Both stores must resist replay of older activity timestamps, be idempotent on retries and reconcile independently after restart/partial error.
 
-**Implemented in draft #3850:** These remain two distinct durable stores,
+**Implemented in merged #3850:** These remain two distinct durable stores,
 not an atomic distributed transaction, but the Manager persists the monotonic
 claim activity/`shutdownTime` first and then extends the system-managed key
 expiry with bounded retries. `RuntimeProxy.touchActivity` now advances the
