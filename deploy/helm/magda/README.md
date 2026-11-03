@@ -24,7 +24,7 @@ A complete solution for managing, publishing and discovering government data, pr
 | oci://ghcr.io/magda-io/charts | minion-format(magda-minion-format) | 2.0.3 |
 | oci://ghcr.io/magda-io/charts | minion-linked-data-rating(magda-minion-linked-data-rating) | 2.1.0 |
 | oci://ghcr.io/magda-io/charts | minion-visualization(magda-minion-visualization) | 2.1.0 |
-| oci://ghcr.io/magda-io/charts | magda-pdf-semantic-indexer | 1.0.2 |
+| oci://ghcr.io/magda-io/charts | magda-pdf-semantic-indexer | 1.0.3 |
 | oci://ghcr.io/magda-io/charts | openfaas | 5.5.5-magda.3 |
 
 ## Values

@@ -86,7 +86,7 @@ dependencies:
       - magda-function-esri-url-processor
 
   - name: magda-pdf-semantic-indexer
-    version: "1.0.2"
+    version: "1.0.3"
     repository: "oci://ghcr.io/magda-io/charts"
     tags:
       - all
