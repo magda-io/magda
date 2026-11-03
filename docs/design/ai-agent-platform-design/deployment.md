@@ -14,7 +14,7 @@ This describes the **current #3850 MVP Helm interface** as implementation eviden
 - Kubernetes Agent Sandbox (**KAS**) CRDs/controllers are installed **separately**; Magda must not silently install cluster-wide KAS as a chart dependency. The MVP live-install/pre-upgrade Job checks KAS v1beta1 APIs and the selected RuntimeClass without breaking offline `helm template`. **It does not establish that NetworkPolicy is enforced.**
 - Magda Gateway handles Magda authentication and routes same-origin DSH HTTP and WebSocket to Agent Manager. The Sandbox never receives browser sessions or provider credentials.
 
-## Illustrative Helm values (MVP with proposed #3896 runtime storage)
+## Illustrative Helm values (`next` after merged #3896 and #3898)
 
 ```yaml
 global:
@@ -57,15 +57,12 @@ ingress:
   proxySendTimeout: 3600
 ```
 
-The `10Gi` PVC size is the **proposed PR #3896 default**, not a claim that
-the currently merged `next` release already uses it (the MVP was `5Gi`).
+The `10Gi` PVC request is the **implemented default on the `next` development branch** after merged #3896; the original #3850 MVP used `5Gi`. This is not a statement that a released v8 build is available.
 The new runtime keeps limits at 1 CPU, 1536 MiB memory and 1 GiB ephemeral
 storage, with a 256 MiB ephemeral request. Python virtual environments, uv/pip
 caches and installation temporaries are stored on the per-user PVC inside the
 DSH `workspace-write` tree; see [sandbox-runtime.md](./sandbox-runtime.md).
-Capacity applies to newly created claims, including warm Sandboxes. Existing
-PVCs do not grow automatically on Helm upgrade; operators must check their
-StorageClass expansion support or provision replacement Workspaces.
+Capacity applies to newly created claims and newly provisioned warm Sandboxes. Existing PVCs and already-created warm claims do not grow automatically on Helm upgrade; operators must check StorageClass expansion support or provision replacement Workspaces. Merged #3898 exposes configured CPU/memory/PVC request in the Sandbox and provides the read-only `magda-workspace-resources` helper to report actual cgroup CPU/memory and observed `/data` capacity. Minikube hostpath `df /data` can report node capacity, not the enforced PVC quota; guide agents to report these separately and cap ML thread pools to the cgroup CPU limit. These resource reports are diagnostics, not new storage enforcement.
 
 The bundled LiteLLM uses static configuration and Kubernetes Secrets; neither PostgreSQL nor Redis is mandatory. Multiple replicas without Redis have per-process router/rate-limit/cooldown/cache state. Provider credentials must stay outside the Sandbox.
 
