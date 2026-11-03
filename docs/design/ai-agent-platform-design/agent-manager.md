@@ -68,7 +68,7 @@ Route names may evolve; semantics remain one workspace, visible provisioning/rea
 ## Activity tracking and failure semantics
 
 30 minutes of **meaningful** inactivity -> suspend; eight hours -> hard
-delete. Open transport, polling and heartbeat do **not** count. Draft #3850
+delete. Open transport, polling and heartbeat do **not** count. Merged #3850
 implements a bounded foreground-activity tracker for genuinely running DSH
 turns via `api-session/status` and connection-scoped running-session
 snapshots, in addition to authenticated allowlisted mutation RPCs and resume.
