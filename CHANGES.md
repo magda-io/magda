@@ -2,6 +2,7 @@
 
 ## v7.1.1
 
+- [#3899](https://github.com/magda-io/magda/pull/3899): Upgrade magda-pdf-semantic-indexer to 1.0.3, fixing OOM kills when indexing scanned PDFs.
 - [#3891](https://github.com/magda-io/magda/pull/3891): Fix the release pipeline never publishing the `latest` Docker image tag for stable releases.
 
 ## v7.1.0
