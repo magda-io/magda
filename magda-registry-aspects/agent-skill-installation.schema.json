@@ -1,0 +1,33 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/hyper-schema#",
+    "title": "Agent Skill Installation",
+    "description": "A recipient's explicit installation of another user's published user Agent Skill, managed by Agent Services. The record is owned by the recipient, references the original publication by ID and has no Agent Skill publication aspect or Storage archive of its own. Its immutable record ID is agent-skill-<userId>-<effective name>, where the effective name is alias when present, otherwise the source skill name. Installing never grants access to the source: the recipient's source read permission is checked again on every install, download and manifest resolution.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["userId", "sourceSkillId", "createdAt"],
+    "properties": {
+        "userId": {
+            "description": "Immutable recipient user UUID; equal to the UUID in the record ID and to access-control.ownerId.",
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "sourceSkillId": {
+            "description": "Immutable Registry record ID of the original published user Agent Skill (agent-skill-<publisher-uuid>-<name>).",
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "^agent-skill-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "alias": {
+            "description": "Immutable recipient-chosen local skill name, present only when it differs from the source skill name. Renaming requires uninstalling and installing again.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 46,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "createdAt": {
+            "description": "Immutable UTC installation time.",
+            "type": "string",
+            "format": "date-time"
+        }
+    }
+}

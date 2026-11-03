@@ -1,0 +1,51 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "parquet-schema"
+    },
+    "provenance": {
+        "method": "harvested",
+        "generator": "example-parquet-inspector/1.0",
+        "reviewStatus": "unreviewed"
+    },
+    "entities": [
+        {
+            "id": "records",
+            "name": "Records",
+            "role": "table",
+            "fields": [
+                {
+                    "path": "customer",
+                    "name": "customer",
+                    "type": "object",
+                    "sourceType": "arrow:struct"
+                },
+                {
+                    "path": "customer.id",
+                    "name": "id",
+                    "type": "string",
+                    "sourceType": "arrow:utf8"
+                },
+                {
+                    "path": "amount",
+                    "name": "amount",
+                    "type": "number",
+                    "format": "decimal",
+                    "sourceType": "parquet:DECIMAL(18,2)"
+                },
+                {
+                    "path": "events[].occurredAt",
+                    "name": "occurredAt",
+                    "type": "datetime",
+                    "sourceType": "arrow:timestamp[us,UTC]"
+                },
+                {
+                    "path": "matrix[][]",
+                    "name": "matrix",
+                    "type": "number",
+                    "sourceType": "arrow:list<list<float64>>"
+                }
+            ]
+        }
+    ]
+}

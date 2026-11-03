@@ -1,0 +1,85 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "openapi",
+        "url": "https://example.org/openapi.json",
+        "version": "3.1.0"
+    },
+    "provenance": {
+        "method": "authoritative-import",
+        "reviewStatus": "unreviewed"
+    },
+    "entities": [
+        {
+            "id": "search-request",
+            "name": "Search request",
+            "role": "request-body",
+            "sourceIdentifier": "#/components/schemas/SearchRequest",
+            "fields": [
+                {
+                    "path": "filters",
+                    "name": "filters",
+                    "type": "object"
+                },
+                {
+                    "path": "filters.species",
+                    "name": "species",
+                    "type": "string"
+                },
+                {
+                    "path": "filters.boundingBox[]",
+                    "name": "boundingBox",
+                    "type": "number",
+                    "format": "coordinate"
+                }
+            ]
+        },
+        {
+            "id": "occurrence-record",
+            "name": "Occurrence",
+            "role": "response-record",
+            "sourceIdentifier": "#/components/schemas/Occurrence",
+            "fields": [
+                {
+                    "path": "id",
+                    "name": "id",
+                    "type": "string",
+                    "roles": ["identifier"]
+                },
+                {
+                    "path": "scientificName",
+                    "name": "scientificName",
+                    "type": "string",
+                    "semanticConcept": "http://rs.tdwg.org/dwc/terms/scientificName"
+                },
+                {
+                    "path": "location",
+                    "name": "location",
+                    "type": "object"
+                },
+                {
+                    "path": "location.latitude",
+                    "name": "latitude",
+                    "type": "number",
+                    "semanticConcept": "http://rs.tdwg.org/dwc/terms/decimalLatitude"
+                },
+                {
+                    "path": "location.longitude",
+                    "name": "longitude",
+                    "type": "number",
+                    "semanticConcept": "http://rs.tdwg.org/dwc/terms/decimalLongitude"
+                },
+                {
+                    "path": "tags[]",
+                    "name": "tags",
+                    "type": "string"
+                },
+                {
+                    "path": "measurements[].value",
+                    "name": "value",
+                    "type": "number"
+                }
+            ]
+        }
+    ]
+}

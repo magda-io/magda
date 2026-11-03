@@ -299,6 +299,143 @@ describe("storage api auth integration tests", () => {
         });
     });
 
+    describe("Agent Skill archives", function () {
+        // stock "Agent Workspace Users" role created by the V2_4 auth DB migration
+        const AGENT_WORKSPACE_USERS_ROLE_ID =
+            "00000000-3854-4200-8000-000000000001";
+
+        async function uploadFile(
+            pathSegments: string[],
+            fileName: string,
+            recordId: string,
+            userId: string
+        ) {
+            const formData = new FormData();
+            formData.append(fileName, "archive content", {
+                filename: fileName,
+                contentType: "application/zip"
+            });
+            let fetchUri = urijs(storageApiUrl)
+                .segmentCoded("upload")
+                .segmentCoded(serviceRunner.defaultBucket);
+            pathSegments.forEach((segment) => {
+                fetchUri = fetchUri.segmentCoded(segment);
+            });
+            return await fetch(fetchUri.search({ recordId }).toString(), {
+                method: "post",
+                body: formData.getBuffer(),
+                headers: {
+                    ...formData.getHeaders(),
+                    "X-Magda-Session": buildJwt(jwtSecret, userId)
+                }
+            });
+        }
+
+        function archiveRequestUri(pathSegments: string[], fileName: string) {
+            let uri = urijs(storageApiUrl).segmentCoded(
+                serviceRunner.defaultBucket
+            );
+            [...pathSegments, fileName].forEach((segment) => {
+                uri = uri.segmentCoded(segment);
+            });
+            return uri.toString();
+        }
+
+        it("should only allow Agent Services (as an admin), admins & unconstrained grants to write a skill archive", async () => {
+            const owner = await authApiClient.createUser({
+                displayName: "Test skill owner",
+                email: "skillOwner@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            await authApiClient.addUserRoles(owner.id, [
+                AGENT_WORKSPACE_USERS_ROLE_ID
+            ]);
+            const recordId = `agent-skill-${owner.id}-useful-skill`;
+            const pathSegments = [
+                "agent-services",
+                "skills",
+                "user-skills",
+                owner.id
+            ];
+            const fileName = `${recordId}.zip`;
+            const now = new Date().toISOString();
+            const result = await getRegistryClient(
+                DEFAULT_ADMIN_USER_ID
+            ).putRecord({
+                id: recordId,
+                name: "useful-skill",
+                aspects: {
+                    "agent-skill": {
+                        name: "useful-skill",
+                        type: "user",
+                        userId: owner.id,
+                        createdAt: now,
+                        createdBy: owner.id,
+                        description: "a useful skill",
+                        archiveKey: [...pathSegments, fileName].join("/"),
+                        updatedAt: now,
+                        updatedBy: owner.id,
+                        checksum: "0".repeat(64),
+                        state: "READY"
+                    },
+                    "access-control": { ownerId: owner.id }
+                },
+                tenantId: 0,
+                sourceTag: ""
+            });
+            expect(result).to.not.be.an.instanceof(Error);
+
+            // the archive is uploaded by an admin (e.g. Agent Services' internal session)
+            let res = await uploadFile(
+                pathSegments,
+                fileName,
+                recordId,
+                DEFAULT_ADMIN_USER_ID
+            );
+            expect(res.status).to.equal(200);
+
+            // the owner can read it, although the archive isn't owned by the owner in Storage
+            res = await fetch(archiveRequestUri(pathSegments, fileName), {
+                headers: {
+                    "X-Magda-Session": buildJwt(jwtSecret, owner.id)
+                }
+            });
+            expect(res.status).to.equal(200);
+
+            // but can't replace or delete it directly: only via Agent Services
+            res = await uploadFile(pathSegments, fileName, recordId, owner.id);
+            expect(res.status).to.equal(403);
+            res = await fetch(archiveRequestUri(pathSegments, fileName), {
+                method: "delete",
+                headers: {
+                    "X-Magda-Session": buildJwt(jwtSecret, owner.id)
+                }
+            });
+            expect(res.status).to.equal(403);
+        });
+
+        it("should not allow a user to create an object in the reserved Agent Skill archive namespace via a record they can update", async () => {
+            const dataStewardUser = await authApiClient.createUser({
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            await authApiClient.addUserRoles(dataStewardUser.id, [
+                DATA_STEWARDS_ROLE_ID
+            ]);
+            const datasetId = await createTestDatasetByUser(dataStewardUser.id);
+            const res = await uploadFile(
+                ["agent-services", "skills", "user-skills", dataStewardUser.id],
+                `agent-skill-${dataStewardUser.id}-planted.zip`,
+                datasetId,
+                dataStewardUser.id
+            );
+            expect(res.status).to.equal(403);
+        });
+    });
+
     describe("Test Dataset Metadata Creation related Workflow", function () {
         it("should allow a data steward to upload files that are associated with a draft dataset", async () => {
             const dataStewardUser = await authApiClient.createUser({

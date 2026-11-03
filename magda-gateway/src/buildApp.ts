@@ -78,10 +78,13 @@ export type Config = {
     defaultCacheControl?: string;
     magdaAdminPortalName?: string;
     proxyTimeout?: string;
+    websocketHandshakeTimeout?: number;
     skipAuth?: boolean;
     registryQueryCacheMaxKeys: number;
     registryQueryCacheStdTTL: number;
     disableGzip?: boolean;
+    agentManagerUrl?: string;
+    agentManagerControlSecret?: string;
 };
 
 export default function buildApp(app: express.Application, config: Config) {
@@ -115,7 +118,11 @@ export default function buildApp(app: express.Application, config: Config) {
         authApiBaseUrl: config.authorizationApi,
         dbPool,
         externalUrl: config.externalUrl,
-        appBasePath: baseUrl
+        appBasePath: baseUrl,
+        jwtSecret: config.jwtSecret,
+        agentManagerUrl: config.agentManagerUrl,
+        systemUserId: config.userId,
+        agentManagerControlSecret: config.agentManagerControlSecret
     });
 
     const skipAuth = config.skipAuth === true ? true : false;
@@ -178,6 +185,8 @@ export default function buildApp(app: express.Application, config: Config) {
         defaultCacheControl: config.defaultCacheControl,
         routes,
         proxyTimeout,
+        websocketHandshakeTimeout: config.websocketHandshakeTimeout,
+        externalUrl: config.externalUrl,
         authClient: authDecisionClient
     };
 

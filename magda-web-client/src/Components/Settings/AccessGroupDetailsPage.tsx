@@ -11,6 +11,7 @@ import Panel from "rsuite/Panel";
 import Placeholder from "rsuite/Placeholder";
 import Loader from "rsuite/Loader";
 import Tag from "rsuite/Tag";
+import TagGroup from "rsuite/TagGroup";
 import Whisper from "rsuite/Whisper";
 import Popover from "rsuite/Popover";
 import Message from "rsuite/Message";
@@ -137,7 +138,7 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
                                             <td colSpan={3}>
                                                 {accessGroup?.keywords
                                                     ?.length ? (
-                                                    <>
+                                                    <TagGroup>
                                                         {accessGroup.keywords.map(
                                                             (item, idx) => (
                                                                 <Tag
@@ -148,7 +149,7 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
                                                                 </Tag>
                                                             )
                                                         )}
-                                                    </>
+                                                    </TagGroup>
                                                 ) : (
                                                     "N/A"
                                                 )}
@@ -204,18 +205,22 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
                                             <td>Granted Access:</td>
                                             <td colSpan={3}>
                                                 {accessGroup?.operationUris
-                                                    ?.length
-                                                    ? accessGroup.operationUris.map(
-                                                          (item, idx) => (
-                                                              <Tag
-                                                                  key={idx}
-                                                                  color="green"
-                                                              >
-                                                                  {item}
-                                                              </Tag>
-                                                          )
-                                                      )
-                                                    : "N/A"}
+                                                    ?.length ? (
+                                                    <TagGroup>
+                                                        {accessGroup.operationUris.map(
+                                                            (item, idx) => (
+                                                                <Tag
+                                                                    key={idx}
+                                                                    color="green"
+                                                                >
+                                                                    {item}
+                                                                </Tag>
+                                                            )
+                                                        )}
+                                                    </TagGroup>
+                                                ) : (
+                                                    "N/A"
+                                                )}
                                             </td>
                                         </tr>
                                         <tr>

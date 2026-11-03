@@ -10,6 +10,11 @@ export interface UploadSession {
     objectKey: string;
     s3UploadId: string;
     userId?: string;
+    /**
+     * The owner persisted (as `magda-owner-id` metadata) when the upload was initiated.
+     * Tokens signed before v7.1.0 don't have it. Their owner is `userId`.
+     */
+    ownerId?: string;
     recordId?: string;
     orgUnitId?: string;
     contentType?: string;

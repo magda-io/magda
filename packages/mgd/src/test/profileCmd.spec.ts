@@ -38,6 +38,7 @@ describe("profile create/update/remove", () => {
         tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mgd-profcmd-"));
         for (const k of [
             "XDG_CONFIG_HOME",
+            "XDG_DATA_HOME",
             "MGD_BASE_URL",
             "MGD_API_KEY_ID",
             "MGD_API_KEY",
@@ -47,6 +48,7 @@ describe("profile create/update/remove", () => {
             delete process.env[k];
         }
         process.env.XDG_CONFIG_HOME = tmp;
+        process.env.XDG_DATA_HOME = path.join(tmp, "data");
     });
     afterEach(async () => {
         for (const [k, v] of Object.entries(origEnv)) {
@@ -139,7 +141,14 @@ describe("profile create/update/remove", () => {
                         prod: {
                             baseUrl: server.url,
                             apiKeyId: "old",
-                            apiKey: "oldkey"
+                            apiKey: "oldkey",
+                            agentSkillSource: {
+                                key: "a".repeat(64),
+                                canonicalBaseUrl: server.url,
+                                tenantId: "0",
+                                userId: "u1",
+                                verifiedAt: "2025-01-01T00:00:00.000Z"
+                            }
                         }
                     }
                 });
@@ -156,8 +165,10 @@ describe("profile create/update/remove", () => {
                 expect(cfg.profiles.prod.apiKeyId).to.equal("new");
                 // apiKey left unchanged
                 expect(cfg.profiles.prod.apiKey).to.equal("oldkey");
-                // active profile untouched by update
+                // active profile untouched; verified skill identity is cleared
+                // because credentials can resolve to another account.
                 expect(cfg.activeProfile).to.equal("prod");
+                expect(cfg.profiles.prod.agentSkillSource).to.equal(undefined);
             } finally {
                 await server.close();
             }
@@ -267,6 +278,7 @@ describe("auth login (deprecated alias of profile create)", () => {
         tmp = await fs.mkdtemp(path.join(os.tmpdir(), "mgd-authalias-"));
         for (const k of [
             "XDG_CONFIG_HOME",
+            "XDG_DATA_HOME",
             "MGD_BASE_URL",
             "MGD_API_KEY_ID",
             "MGD_API_KEY",
@@ -276,6 +288,7 @@ describe("auth login (deprecated alias of profile create)", () => {
             delete process.env[k];
         }
         process.env.XDG_CONFIG_HOME = tmp;
+        process.env.XDG_DATA_HOME = path.join(tmp, "data");
     });
     afterEach(async () => {
         for (const [k, v] of Object.entries(origEnv)) {

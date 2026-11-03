@@ -1,6 +1,6 @@
 # storage-api
 
-![Version: 6.2.1](https://img.shields.io/badge/Version-6.2.1-informational?style=flat-square)
+![Version: 7.1.0](https://img.shields.io/badge/Version-7.1.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -34,6 +34,7 @@ Kubernetes: `>= 1.14.0-0`
 | minio.nameOverride | string | `"magda-minio"` |  |
 | minio.persistence.size | string | `"10Gi"` |  |
 | minio.port | int | `9000` |  |
+| minio.resources.limits | string | `{"memory":"1Gi"}` | Memory limit for MinIO. Without a limit, the bundled MinIO release's memory usage keeps growing and can starve other workloads on the node. Under load MinIO's own memory stays around 250Mi; the rest of the usage up to the limit is file cache, which the kernel reclaims instead of OOM-killing MinIO. Increase it if you raise `uploadLimit` well above the default or expect many large concurrent uploads. |
 | minio.resources.requests.memory | string | `"256Mi"` |  |
 | minioEnableSSL | bool | `false` | Whether or not to connect to minio server with SSL connection |
 | minioRegion | string | "unspecified-region" | specify bucket region |

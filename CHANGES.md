@@ -1,31 +1,78 @@
 # CHANGELOG
 
+## v8.0.0
+
+- [#3850](https://github.com/magda-io/magda/pull/3850), [#3864](https://github.com/magda-io/magda/pull/3864): New opt-in **Agent Workspace** and **Agent Skills** (closes #3849, #3861).
+  - **Agent Workspace** (Settings → Agent Workspace) gives each user with the `agentWorkspace/access` permission a private, sandboxed coding and data-analysis agent in the browser. It works with the user's own permissions through the bundled `mgd` CLI, so it can find, read, analyse and publish datasets for them, and asks before making changes.
+  - **Agent Skills** are reusable agent workflows (a `SKILL.md` plus supporting files) stored in the catalogue. After a task, the agent can save its workflow as a skill, published only with the user's approval. Skills are synced into the user's Workspace and, with `mgd agent-skill`, into local coding agents, so a workflow worked out once can be repeated by anyone it is shared with.
+  - **Sharing:** a user's skills stay private until shared with selected users. System skills are available to everyone by default, or to an OrgUnit and selected users. Recipients choose which shared skills to install (Settings → Agent Workspace → **Shared Skills**, or `mgd agent-skill install`), and can fork one into their own skill to change it; the original is never modified.
+  - Enable with `global.agentWorkspace.enabled`. It needs Kubernetes Agent Sandbox v1.0.4+ and an LLM backend; see the [Agent Workspace deployment guide](docs/docs/agent-workspace-deployment.md).
+- [#3895](https://github.com/magda-io/magda/issues/3895): Agent Workspace can install approved Python dependencies on demand with pinned `uv` or venv-scoped pip. Environments, package caches and install temporaries persist on the per-user PVC; the default PVC size increases from 5 GiB to 10 GiB for new Workspaces.
+- [#3884](https://github.com/magda-io/magda/pull/3884): Semantic indexers now index distributions without a `dataset-format` aspect (e.g. files added with `mgd dataset add-file` when `magda-minion-format` isn't deployed), using the DCAT format instead (closes #3871). Existing indexers recrawl all distributions once on their next start. `mgd` sets the format of link-only distributions from the URL, labels compressed files by their content (`data.csv.gz` is `CSV`), and `dist replace-file` accepts `--format`.
+- [#3880](https://github.com/magda-io/magda/pull/3880): Single record registry updates are now authorised inside the mutation transaction, so a failed or denied update changes nothing (closes #3872). Creating a record with `PUT` that another request creates at the same time now requires update permission instead of overwriting it, and these endpoints return JSON `ApiError` bodies. Registry defaults change: blocking IO thread pool 4 → 8, DB connection pool (`db.default.poolMaxSize`) 15 → 20; keep the DB pool larger than the DB operation thread pools if you override them.
+- [#3878](https://github.com/magda-io/magda/pull/3878): Bulk registry mutation requests are limited to `bulkMutationMaxRecords` records (default 1000). **Behaviour change:** larger requests are rejected with a 400 error. Closes #3874.
+- [#3876](https://github.com/magda-io/magda/pull/3876): Single record registry updates are now authorised using only the record's own tenant's aspects (multi-tenant deployments), and a record created by `PUT` is rolled back if the request fails.
+- [#3870](https://github.com/magda-io/magda/pull/3870): Fix bulk record updates (e.g. `mgd dataset publish` / `unpublish`) failing with a 500 error for users with Agent Skill permissions (closes #3869). Adds the authorization API endpoint `POST /v0/opa/batchDecision`. **Behaviour change:** a bulk update is all-or-nothing and is denied (403) if any record isn't permitted. Agent Skill records and archives are now written only by Agent Services, admins and users with unconstrained permissions, and unconstrained `object/record/*` permissions now also apply to Agent Skill records.
+
+## v7.1.1
+
+- [#3891](https://github.com/magda-io/magda/pull/3891): Fix the release pipeline never publishing the `latest` Docker image tag for stable releases.
+
+## v7.1.0
+
+- [#3888](https://github.com/magda-io/magda/pull/3888): Move `magda-scss-compiler` (from Node 20) and `magda-semantic-search-api` (from Node 18) to Node 22 (`node:22-alpine`), and fix two scss-compiler issues:
+  - The compiled UI stylesheet could differ between runs, because the SCSS files were compiled in a random order.
+  - The map styles (Leaflet CSS) were missing from the compiled UI stylesheet, and a broken `@import` was left in its place.
+- [#3888](https://github.com/magda-io/magda/pull/3888): Upgrade magda-embedding-api to 1.2.0 and magda-preview-map to 2.1.1.
+- [#3888](https://github.com/magda-io/magda/pull/3888): Upgrade the connectors, minions, OpenFaaS functions & auth plugins to Node v22.23.4: magda-ckan-connector 2.2.0, magda-csw-connector 2.1.0, magda-project-open-data-connector 2.1.0, magda-dap-connector 2.1.0, magda-minion-linked-data-rating 2.1.0, magda-minion-visualization 2.1.0, magda-minion-ckan-exporter 2.1.0, magda-minion-broken-link 3.1.0, magda-function-history-report 2.1.0, magda-function-esri-url-processor 2.1.0, magda-auth-google 4.0.1, magda-auth-internal 4.0.1, magda-auth-arcgis 3.0.1 & magda-auth-facebook 3.0.1.
+- [#3888](https://github.com/magda-io/magda/pull/3888): Upgrade magda-minion-format to 2.0.3, magda-pdf-semantic-indexer to 1.0.2 and magda-csv-semantic-indexer to 1.0.0-alpha.3 (Node v24.22.1).
+- [#3859](https://github.com/magda-io/magda/pull/3859): Fix owner-scoped `storage/object/*` permissions not matching objects uploaded through the Storage API (closes #3853). Uploads now store the owner under the `magda-owner-id` metadata key that authorization reads. Objects uploaded by earlier versions (owner stored under `magda-user-id`) keep their owner. Replacing an existing object now keeps its owner, and is authorised against the existing object's owner, not the uploader.
+- [#3843](https://github.com/magda-io/magda/pull/3843): Add opt-in WebSocket proxying to magda-gateway routes (`websocket: true`). WebSocket connections are checked by the same authentication and access control as other requests, and only accepted from the Magda site's own origin by default (configurable via `websocketAllowedOrigins`).
+
+## v7.0.1
+
+- [#3840](https://github.com/magda-io/magda/pull/3840): Upgrade the auth plugins in the `local-deployment` chart to their official v7-compatible releases: `magda-auth-google` & `magda-auth-internal` v4.0.0, `magda-auth-arcgis` & `magda-auth-facebook` v3.0.0. The other v7-compatible plugins are also released: `magda-auth-oidc` v3.0.0, `magda-auth-okta` v2.0.0 & `magda-auth-aaf` v2.0.0. All require Magda v7.0.0 or above.
+
 ## v7.0.0
 
-- #3637: Provider-agnostic PostgreSQL support — Magda now runs against in-cluster PostgreSQL, AWS RDS, Azure Database for PostgreSQL and GCP Cloud SQL through one connection contract (closes #3636, #3734, #3735, #3736):
-  - Service-to-database traffic is encrypted by default, and the in-cluster PostgreSQL serves TLS by default.
-  - Deployments can run under a non-default privileged database username (`global.postgresql.auth.username`).
-  - Works with SCRAM authentication on PostgreSQL 14/15+ (DB migrator Flyway upgraded 4.2 → 12.11), and existing deployments upgrade in place without re-applying already-applied migrations.
-  - A version-mismatched authentication plugin now fails at render time with an actionable message instead of misbehaving at runtime (`global.magdaCompatibilityCheck`).
-- #3767: Support strict TLS certificate verification (`sslmode=verify-ca` / `verify-full`) for database connections, so managed-DB connections can be protected against man-in-the-middle attacks (#3739).
-- #3773: Let external authentication-plugin charts receive the PostgreSQL server CA so they too can use `verify-ca`/`verify-full`; previously only magda-core's own workloads got the CA (#3772).
-- #3749: Upgrade the bundled in-cluster PostgreSQL from 13.7 to 17.5 (bitnami `postgresql` subchart 10.9.1 → 16.7.24). **This is a breaking change — please refer to the official version release notes for upgrading instructions.**
-  - registry-api can now authenticate against PostgreSQL 15+ (SCRAM); its previous JDBC driver failed every connection with "authentication type 10 is not supported", blocking fresh v7 installs.
-  - The bundled wal-g is a custom Magda build (`ghcr.io/magda-io/magda-wal-g:3.0.8-magda-edcda8b`) because no released wal-g can back up PostgreSQL 15+ in the mode Magda uses. Temporary, pending an upstream release containing [wal-g/wal-g#2262](https://github.com/wal-g/wal-g/pull/2262).
-  - `helm template`/`helm install` prints harmless `coalesce.go:316: warning: cannot overwrite table with non table` warnings per bundled-PostgreSQL instance. This is expected — the chart still renders correctly — and is not a bug.
-- #3750: Add an automated in-cluster PostgreSQL major-upgrade path for v6 to v7. See the [PostgreSQL major upgrade runbook](./docs/docs/postgres-major-upgrade-runbook.md).
-- #3776: Report clear, actionable guidance when the migrator's database user lacks CREATE on the `public` schema (removed as an implicit grant in PostgreSQL 15+), instead of a mid-migration "permission denied" that was easily mistaken for a TLS/CA failure; error detection no longer depends on the server's message language (#3744, closes #3770).
-- #3777: Fix backup-retention pruning that could misreport a benign empty result as an error, or silently hide a real deletion failure, because it relied on wal-g's exact output wording (#3763).
-- #3752: Fix the backup CronJob silently succeeding — and still pruning the existing backup chain — after a failed `wal-g backup-push` (#3746).
-- #3792: Fix broken data previews:
-  - ArcGIS FeatureServer distributions now preview correctly (bundled `magda-minion-format` 2.0.2 fixes `f=geojson` format detection).
-  - Map preview for magda-item distributions works behind the gateway again (bundled `magda-preview-map` 2.0.0 relative-baseUrl fix), and the default OpenStreetMap base map now loads (gateway `/preview-map/*` CSP allows `tile.openstreetmap.org`).
-- #3793: Fix the map preview's "Open in National Map" button sending users to a dead site: its default target, nationalmap.gov.au, has been discontinued. The button is now hidden unless a remote TerriaMap is configured via `openInExternalTerriaMapTargetUrl` (magda-io/magda-preview-map#54).
-- #3800: Replace the map preview's hidden "Open in National Map" button with a built-in **Open full map** button: when no external TerriaMap is configured, it opens the deployment's own preview map with the full TerriaJS UI (workbench, Add data, tools) in a new window, loaded with the same dataset and selected WMS layer / WFS feature type as the preview. A configured `openInExternalTerriaMapTargetUrl` keeps the external behaviour (magda-io/magda-preview-map#53).
-  - Upgrade magda-preview-map to 2.1.0, which adds a lazy **Magda data catalog** to the full map so users can add further datasets beside the one they opened; the Registry decides which datasets each viewer sees (magda-io/magda-preview-map#55).
-- #3801: Fix map preview and full map features blocked by the gateway's `/preview-map/*` Content Security Policy: local file upload ("Upload data"), region-mapped CSVs (state / LGA / SA2 columns) and the "Natural Earth II" base map now work. Preview-map's own duplicate report-only policy is turned off so the gateway is the single source of the policy. See the new [Map Preview & Full Map: Content Security Policy](./docs/docs/preview-map-content-security-policy.md) doc (magda-io/magda-preview-map#56).
-- #3802: Show the map preview's **Open full map** button for datasets whose files are stored in Magda. The button was hidden for Storage API files, a rule that only applies to an external TerriaMap; the same-origin built-in full map loads them like the embedded preview does (magda-io/magda-preview-map#53).
-- #3804: Fix the dataset search "Any Location" (region) facet map showing CARTO "API key required" watermarked tiles: its base map now defaults to OpenStreetMap, and a licensed tile provider can be configured through the new web-server `regionFacetBaseMap` option (`url`, `attribution`, `subdomains`). The add/edit dataset spatial area map also moves to the `https://tile.openstreetmap.org` host recommended by OSM (the `a`/`b`/`c` subdomains are legacy), so the gateway's default CSP `imgSrc` now allows just `https://tile.openstreetmap.org`, replacing `https://*.tile.openstreetmap.org` and `https://*.basemaps.cartocdn.com` (#3798).
+- [#3836](https://github.com/magda-io/magda/pull/3836): Replace the retired Data61 logo in the default site footer with the CSIRO logo, linking to https://www.csiro.au/. Customised footers are not changed.
+- [#3835](https://github.com/magda-io/magda/pull/3835): Add **Home Page** (taglines, highlights & stories) and **UI Text** pages to the settings UI's **Site Content** section, replacing the legacy `/admin` editors:
+  - Highlights rotate daily in a set order and can be featured until a date. Their background images are no longer stretched, and their links work with full URLs.
+  - Stories can be reordered, and UI texts can be reset to their defaults.
+  - The legacy `/admin` pages are removed, including `/admin/accounts` (use **Access Controls › Users / Roles** instead). `/admin` now redirects to `/admin/connectors`.
+- [#3832](https://github.com/magda-io/magda/pull/3832): Add a **Site Content** section to the settings UI to manage the header navigation, the footer (menus, links & copyright), the logos & website icon, and the static pages, replacing the legacy `/admin` editors. The Users, Roles, Org Units, Resources & Access Groups pages are grouped under **Access Controls**.
+  - **Behaviour change:** footer links to site paths (e.g. `/page/about`) now open in the same window, like the header. Set "New window" on a link to keep the previous behaviour. Footer links also use their saved target & rel.
+  - Header & footer links to API paths (`/api/*`, `/auth/*`) opening in the same window no longer show the UI's "not found" page.
+- [#3834](https://github.com/magda-io/magda/pull/3834): Fix the Organisations page and organisation search failing with a 500 error when no dataset has a publisher. The datasets index version is bumped to `53` (the index is rebuilt on upgrade).
+- [#3831](https://github.com/magda-io/magda/pull/3831): Fix the settings UI's create forms (org unit, access group, permission & resource) showing values from the previously opened form, and a duplicate caret on registry record aspect panels.
+- [#3830](https://github.com/magda-io/magda/pull/3830): Upgrade the UI component library `rsuite` from v5 to v6 (6.2.5), including its theme.
+- #3808: Add the `distribution-contract` aspect (part of #3806) to describe how to access a distribution's file, API or service: protocol, endpoint, specification & documentation links, authentication (never credentials), operations and pagination, with where each value came from and whether it was reviewed. The distribution page shows it in a **How to use** tab. See the [Distribution Contract guide](./docs/docs/distribution-contract.md).
+- #3807: Add the `data-dictionary` aspect (part of #3806) to describe a distribution's fields, entities, keys, relationships and dimensions, with where each value came from and whether it was reviewed. The distribution page shows it in a searchable **Structure** section. See the [Data Dictionary guide](./docs/docs/data-dictionary.md).
+- [#3637](https://github.com/magda-io/magda/pull/3637): Support external PostgreSQL providers (AWS RDS, Azure Database for PostgreSQL, GCP Cloud SQL) as well as the in-cluster PostgreSQL (closes #3636, #3734, #3735, #3736):
+  - Database connections use TLS by default, and the in-cluster PostgreSQL serves TLS by default.
+  - A non-default privileged database username can be used (`global.postgresql.auth.username`).
+  - Support SCRAM authentication (PostgreSQL 14+). The DB migrator's Flyway is upgraded from 4.2 to 12.11; existing deployments upgrade without re-running migrations.
+  - An authentication plugin of an incompatible version is reported when the chart is rendered (`global.magdaCompatibilityCheck`).
+- [#3767](https://github.com/magda-io/magda/pull/3767): Support verifying the database server's certificate (`sslmode=verify-ca` / `verify-full`) (#3739).
+- [#3773](https://github.com/magda-io/magda/pull/3773): Make the PostgreSQL CA available to external authentication plugin charts, so they can also use `verify-ca` / `verify-full` (#3772).
+- #3749: Upgrade the in-cluster PostgreSQL from 13.7 to 17.5. **This is a breaking change — please refer to the official version release notes for upgrading instructions.**
+  - Fix registry-api failing to connect to PostgreSQL 15+ (SCRAM authentication).
+  - Backups use a custom wal-g build (`ghcr.io/magda-io/magda-wal-g:3.0.8-magda-edcda8b`), as no released wal-g can back up PostgreSQL 15+ the way Magda does. Temporary, until a wal-g release includes [wal-g/wal-g#2262](https://github.com/wal-g/wal-g/pull/2262).
+  - `helm template` / `helm install` print a harmless `coalesce.go:316: warning: cannot overwrite table with non table` warning per bundled PostgreSQL instance.
+- #3750: Add an automated in-cluster PostgreSQL major upgrade path from v6 to v7. See the [PostgreSQL major upgrade runbook](./docs/docs/postgres-major-upgrade-runbook.md).
+- [#3776](https://github.com/magda-io/magda/pull/3776): Show a clear error when the migrator's database user can't create objects in the `public` schema (no longer granted by default in PostgreSQL 15+), and detect such errors whatever the server's language (#3744, closes #3770).
+- [#3777](https://github.com/magda-io/magda/pull/3777): Fix backup retention pruning misreporting its result, which could hide a real deletion failure (#3763).
+- [#3752](https://github.com/magda-io/magda/pull/3752): Fix the backup CronJob succeeding, and still pruning old backups, after a failed backup (#3746).
+- [#3792](https://github.com/magda-io/magda/pull/3792): Fix data previews:
+  - ArcGIS FeatureServer distributions now preview (magda-minion-format 2.0.2).
+  - The map preview works behind the gateway again, and its default OpenStreetMap base map loads (magda-preview-map 2.0.0).
+- [#3793](https://github.com/magda-io/magda/pull/3793): Hide the map preview's "Open in National Map" button unless an external TerriaMap is configured (`openInExternalTerriaMapTargetUrl`), as nationalmap.gov.au has been discontinued (magda-io/magda-preview-map#54).
+- [#3800](https://github.com/magda-io/magda/pull/3800): Add an **Open full map** button to the map preview. When no external TerriaMap is configured, it opens the dataset in the deployment's own full map, with the full TerriaJS UI (magda-io/magda-preview-map#53).
+  - Upgrade magda-preview-map to 2.1.0, which adds a **Magda data catalog** to the full map so users can add other datasets they can access (magda-io/magda-preview-map#55).
+- [#3801](https://github.com/magda-io/magda/pull/3801): Fix map preview & full map features blocked by the gateway's Content Security Policy: file upload, region-mapped CSVs and the "Natural Earth II" base map. See [Map Preview & Full Map: Content Security Policy](./docs/docs/preview-map-content-security-policy.md) (magda-io/magda-preview-map#56).
+- [#3802](https://github.com/magda-io/magda/pull/3802): Show the **Open full map** button for datasets whose files are stored in Magda (magda-io/magda-preview-map#53).
+- [#3804](https://github.com/magda-io/magda/pull/3804): Fix the dataset search region facet map showing "API key required" tiles. It now uses OpenStreetMap by default, and another tile provider can be set with the new web-server `regionFacetBaseMap` option. The gateway's default CSP `imgSrc` now allows `https://tile.openstreetmap.org` instead of `https://*.tile.openstreetmap.org` and `https://*.basemaps.cartocdn.com` (#3798).
+- [#3826](https://github.com/magda-io/magda/pull/3826): Set a default 1Gi memory limit for the bundled MinIO, which previously had none and could starve other workloads on the node. Raise `storage-api.minio.resources.limits.memory` for much larger or many concurrent uploads.
 
 ## v6.2.1
 

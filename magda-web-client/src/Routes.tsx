@@ -24,64 +24,14 @@ import { config } from "./config";
 import RequireAdmin from "./Components/RequireAdmin";
 import LandingPage from "./Components/LandingPage";
 
-const AdminPage = makeAsync(() =>
-    import("Components/Admin/AdminPage").then((module) => module.default)
-);
-
-const AccountsAdminPage = makeAsync(() =>
-    import("Components/Account/AccountsAdminPage").then(
-        (module) => module.default
-    )
-);
-
 const ConnectorsAdminPage = makeAsync(() =>
     import("Components/Dataset/ConnectorsAdminPage").then(
         (module) => module.default
     )
 );
 
-const HeaderNavigationAdminPage = makeAsync(() =>
-    import("Components/Header/HeaderNavigationAdminPage").then(
-        (module) => module.default
-    )
-);
-const FooterNavigationAdminPage = makeAsync(() =>
-    import("Components/Footer/FooterNavigationAdminPage").then(
-        (module) => module.default
-    )
-);
-const FooterNavigationLinksAdminPage = makeAsync(() =>
-    import("Components/Footer/FooterNavigationLinksAdminPage").then(
-        (module) => module.default
-    )
-);
-const FooterCopyrightAdminPage = makeAsync(() =>
-    import("Components/Footer/FooterCopyrightAdminPage").then(
-        (module) => module.default
-    )
-);
-
-const HighlightsAdminPage = makeAsync(() =>
-    import("Components/Home/HighlightsAdminPage").then(
-        (module) => module.default
-    )
-);
-const HomeAdminPage = makeAsync(() =>
-    import("Components/Home/HomeAdminPage").then((module) => module.default)
-);
 const StaticPage = makeAsync(() =>
     import("Components/Static/StaticPage").then((module) => module.default)
-);
-const AdminStaticPagesPage = makeAsync(() =>
-    import("Components/Static/StaticPagesAdminPage").then(
-        (module) => module.default
-    )
-);
-const StoriesAdminPage = makeAsync(() =>
-    import("Components/Home/StoriesAdminPage").then((module) => module.default)
-);
-const LanguageAdminPage = makeAsync(() =>
-    import("Components/i18n/LanguageAdminPage").then((module) => module.default)
 );
 const DatasetRoutes = makeAsync(() =>
     import("Components/Dataset/Add/Routes").then((module) => module.default)
@@ -94,6 +44,9 @@ const SettingsRoutes = makeAsync(() =>
     import("Components/Settings/Routes").then((module) => module.default)
 );
 
+// the legacy admin pages have moved to Settings; only the connectors page is left
+const AdminRedirect = () => <Redirect to="/admin/connectors" />;
+
 const Routes = () => {
     return (
         <Switch>
@@ -103,62 +56,7 @@ const Routes = () => {
             <Route
                 exact
                 path="/admin"
-                component={RequireAdmin(
-                    withHeader(AdminPage, { includeSearchBox: true })
-                )}
-            />
-            <Route
-                exact
-                path="/admin/home"
-                component={RequireAdmin(
-                    withHeader(HomeAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                exact
-                path="/admin/home-stories"
-                component={RequireAdmin(withHeader(StoriesAdminPage))}
-            />
-            <Route
-                exact
-                path="/admin/home-highlights"
-                component={RequireAdmin(withHeader(HighlightsAdminPage))}
-            />
-            <Route
-                exact
-                path="/admin/header-navigation"
-                component={RequireAdmin(
-                    withHeader(HeaderNavigationAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                path="/admin/footer-navigation/:size"
-                component={RequireAdmin(
-                    withHeader(FooterNavigationAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                path="/admin/footer-navigation-links/:size/:category"
-                component={RequireAdmin(
-                    withHeader(FooterNavigationLinksAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
-            />
-            <Route
-                exact
-                path="/admin/footer-copyright"
-                component={RequireAdmin(
-                    withHeader(FooterCopyrightAdminPage, {
-                        includeSearchBox: true
-                    })
-                )}
+                component={RequireAdmin(AdminRedirect)}
             />
             <Route
                 exact
@@ -168,21 +66,6 @@ const Routes = () => {
                         includeSearchBox: true
                     })
                 )}
-            />
-            <Route
-                exact
-                path="/admin/accounts"
-                component={RequireAdmin(withHeader(AccountsAdminPage))}
-            />
-            <Route
-                exact
-                path="/admin/pages"
-                component={RequireAdmin(withHeader(AdminStaticPagesPage))}
-            />
-            <Route
-                exact
-                path="/admin/i18n"
-                component={RequireAdmin(withHeader(LanguageAdminPage))}
             />
             <Route
                 exact

@@ -120,7 +120,7 @@ A JWT built directly with `acs-cmd jwt` only works for API calls — there's no 
 > no template "magda.compatibility-check" associated with template "gotpl"
 > ```
 >
-> This is the contract behaving as designed (see [helm-helper-contracts.md](./helm-helper-contracts.md)). A v7+ plugin must instead be installed **in the same Helm release as `magda`**, as a chart **dependency** (an umbrella/wrapper chart), so the compatibility check resolves _and_ the pod receives `PGSSLMODE`. The current `magda-auth-internal` (v4.0.0-alpha.0+) is a v7 plugin, so use this approach:
+> This is the contract behaving as designed (see [helm-helper-contracts.md](./helm-helper-contracts.md)). A v7+ plugin must instead be installed **in the same Helm release as `magda`**, as a chart **dependency** (an umbrella/wrapper chart), so the compatibility check resolves _and_ the pod receives `PGSSLMODE`. The current `magda-auth-internal` (v4.0.0+) is a v7 plugin, so use this approach:
 >
 > ```yaml
 > # umbrella/Chart.yaml
@@ -132,7 +132,7 @@ A JWT built directly with `acs-cmd jwt` only works for API calls — there's no 
 >     version: <VERSION>
 >     repository: oci://ghcr.io/magda-io/charts
 >   - name: magda-auth-internal
->     version: <PLUGIN_VERSION> # a v7-line release, e.g. 4.0.0-alpha.0
+>     version: <PLUGIN_VERSION> # a v7-line release, e.g. 4.0.0
 >     repository: oci://ghcr.io/magda-io/charts
 > ```
 >

@@ -1,0 +1,109 @@
+{{- /* Render-time validation only; this template emits no manifest. */ -}}
+{{- $runtimeType := .Values.warmPool.type | toString | lower -}}
+{{- if not (has $runtimeType (list "runc" "gvisor" "kata")) -}}
+{{- fail (printf "agent-services.warmPool.type must be one of runc, gvisor, or kata; got %q" .Values.warmPool.type) -}}
+{{- end -}}
+
+{{- $size := .Values.warmPool.size -}}
+{{- $sizeKind := kindOf $size -}}
+{{- if not (has $sizeKind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services.warmPool.size must be a non-negative integer; got %v (%s)" $size $sizeKind) -}}
+{{- end -}}
+{{- $sizeFloat := float64 $size -}}
+{{- if or (lt $sizeFloat 0.0) (ne $sizeFloat (floor $sizeFloat)) -}}
+{{- fail (printf "agent-services.warmPool.size must be a non-negative integer; got %v" $size) -}}
+{{- end -}}
+
+{{- if and (ne $runtimeType "runc") (empty (get .Values.runtimeClasses $runtimeType)) -}}
+{{- fail (printf "agent-services.runtimeClasses.%s is required when warmPool.type=%s" $runtimeType $runtimeType) -}}
+{{- end -}}
+
+{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
+{{- $model := coalesce .Values.llm.model (get $globalModel "alias") -}}
+{{- if empty $model -}}
+{{- fail "agent-services: llm.model or global.defaultAgentModel.alias is required" -}}
+{{- end -}}
+{{- if ne (kindOf $model) "string" -}}
+{{- fail (printf "agent-services: llm.model or global.defaultAgentModel.alias must be a non-empty string; got %s" (kindOf $model)) -}}
+{{- end -}}
+{{- if empty (trim $model) -}}
+{{- fail "agent-services: llm.model or global.defaultAgentModel.alias is required" -}}
+{{- end -}}
+{{- if ne $model (trim $model) -}}
+{{- fail "agent-services: llm.model or global.defaultAgentModel.alias must not have leading or trailing whitespace" -}}
+{{- end -}}
+
+{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
+{{- if and (ne (kindOf $reasoningEffort) "invalid") (ne (kindOf $reasoningEffort) "string") -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %v (%s)" $reasoningEffort (kindOf $reasoningEffort)) -}}
+{{- end -}}
+{{- if and (eq (kindOf $reasoningEffort) "string") (not (has $reasoningEffort (list "" "off" "low" "medium" "high" "xhigh" "max"))) -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %q" $reasoningEffort) -}}
+{{- end -}}
+
+{{- $contextWindow := get $globalModel "contextWindow" -}}
+{{- if and (hasKey .Values.llm "contextWindow") (ne (kindOf .Values.llm.contextWindow) "invalid") -}}
+{{- $contextWindow = .Values.llm.contextWindow -}}
+{{- end -}}
+{{- $contextWindowKind := kindOf $contextWindow -}}
+{{- if not (has $contextWindowKind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services: llm.contextWindow or global.defaultAgentModel.contextWindow must be a positive integer; got %v (%s)" $contextWindow $contextWindowKind) -}}
+{{- end -}}
+{{- $contextWindowFloat := float64 $contextWindow -}}
+{{- if or (le $contextWindowFloat 0.0) (ne $contextWindowFloat (floor $contextWindowFloat)) -}}
+{{- fail (printf "agent-services effective contextWindow must be a positive integer; got %v" $contextWindow) -}}
+{{- end -}}
+
+{{- $maxTokens := get $globalModel "maxTokens" -}}
+{{- if and (hasKey .Values.llm "maxTokens") (ne (kindOf .Values.llm.maxTokens) "invalid") -}}
+{{- $maxTokens = .Values.llm.maxTokens -}}
+{{- end -}}
+{{- $maxTokensKind := kindOf $maxTokens -}}
+{{- if not (has $maxTokensKind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services: llm.maxTokens or global.defaultAgentModel.maxTokens must be a positive integer; got %v (%s)" $maxTokens $maxTokensKind) -}}
+{{- end -}}
+{{- $maxTokensFloat := float64 $maxTokens -}}
+{{- if or (le $maxTokensFloat 0.0) (ne $maxTokensFloat (floor $maxTokensFloat)) -}}
+{{- fail (printf "agent-services effective maxTokens must be a positive integer; got %v" $maxTokens) -}}
+{{- end -}}
+{{- if gt $maxTokensFloat $contextWindowFloat -}}
+{{- fail (printf "agent-services effective maxTokens (%v) must not exceed contextWindow (%v)" $maxTokens $contextWindow) -}}
+{{- end -}}
+
+{{- range $name, $value := dict
+    "skillArchive.maxCompressedBytes" .Values.skillArchive.maxCompressedBytes
+    "skillArchive.maxUncompressedBytes" .Values.skillArchive.maxUncompressedBytes
+    "skillArchive.maxEntries" .Values.skillArchive.maxEntries
+    "skillArchive.maxPathLength" .Values.skillArchive.maxPathLength
+    "skillArchive.maxNestingDepth" .Values.skillArchive.maxNestingDepth
+    "skillArchive.maxMarkdownBytes" .Values.skillArchive.maxMarkdownBytes -}}
+{{- $kind := kindOf $value -}}
+{{- if not (has $kind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services.%s must be a positive integer; got %v (%s)" $name $value $kind) -}}
+{{- end -}}
+{{- $number := float64 $value -}}
+{{- if or (le $number 0.0) (ne $number (floor $number)) -}}
+{{- fail (printf "agent-services.%s must be a positive integer; got %v" $name $value) -}}
+{{- end -}}
+{{- end -}}
+{{- if gt (float64 .Values.skillArchive.maxMarkdownBytes) (float64 .Values.skillArchive.maxUncompressedBytes) -}}
+{{- fail "agent-services.skillArchive.maxMarkdownBytes must not exceed maxUncompressedBytes" -}}
+{{- end -}}
+{{- if or (empty (trim .Values.registryApiUrl)) (empty (trim .Values.storageApiUrl)) (empty (get .Values.global "defaultDatasetBucket" | default "" | toString | trim)) -}}
+{{- fail "agent-services registryApiUrl, storageApiUrl, and global.defaultDatasetBucket must be non-empty" -}}
+{{- end -}}
+{{- $tenantIdKind := kindOf .Values.tenantId -}}
+{{- if not (has $tenantIdKind (list "int" "int64" "float64")) -}}
+{{- fail (printf "agent-services.tenantId must be a non-negative integer; got %v (%s)" .Values.tenantId $tenantIdKind) -}}
+{{- end -}}
+{{- $tenantIdFloat := float64 .Values.tenantId -}}
+{{- if or (lt $tenantIdFloat 0.0) (ne $tenantIdFloat (floor $tenantIdFloat)) -}}
+{{- fail "agent-services.tenantId must be a non-negative integer" -}}
+{{- end -}}
+
+{{- $namespaceOverride := dig "agentWorkspace" "sandboxNamespace" "" .Values.global | toString | trim -}}
+{{- if $namespaceOverride -}}
+{{- if or (gt (len $namespaceOverride) 63) (not (regexMatch "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$" $namespaceOverride)) -}}
+{{- fail (printf "global.agentWorkspace.sandboxNamespace must be a valid DNS-1123 label of at most 63 characters; got %q" $namespaceOverride) -}}
+{{- end -}}
+{{- end -}}

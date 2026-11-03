@@ -86,6 +86,8 @@ featureFlags:
   # featureFlags.enableAutoMetadataFetchButton -- turn on / off the auto metadata fetch button.
   # Users are still able to add an "API / dataset URL" via "Manually enter metadata" button
   enableAutoMetadataFetchButton: true
+  # featureFlags.agentWorkspace -- expose the administrator-only integrated Agent Workspace settings page.
+  agentWorkspace: false
 
 # -- Whether use Magda to store dataset data files by default
 # When use Magda's metadata creation tool to create a dataset, user can choose to upload data files to Magda's storage (via storage API).

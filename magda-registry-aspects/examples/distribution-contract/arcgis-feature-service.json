@@ -1,0 +1,99 @@
+{
+    "schemaVersion": "1.0",
+    "resourceRole": "query-service",
+    "accessMode": "query-only",
+    "protocol": "ArcGIS Feature Service",
+    "endpointUrl": "https://example.org/arcgis/rest/services/TreeCrops/FeatureServer/0",
+    "specification": {
+        "type": "arcgis-service-definition",
+        "url": "https://example.org/arcgis/rest/services/TreeCrops/FeatureServer/0?f=pjson",
+        "version": "11.1",
+        "fingerprint": "sha256:9c1f7e5d3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a19087f6e5d4c3b2a1908",
+        "retrievedAt": "2026-09-14T10:00:00Z"
+    },
+    "operations": [
+        {
+            "id": "query-features",
+            "sourceIdentifier": "query",
+            "label": "Query features",
+            "purpose": "Query mapped tree-crop features with attribute/spatial filters",
+            "interactionType": "query",
+            "method": "GET",
+            "path": "/query",
+            "endpointUrl": "https://example.org/arcgis/rest/services/TreeCrops/FeatureServer/0/query",
+            "parameters": [
+                {
+                    "name": "where",
+                    "location": "query",
+                    "type": "string",
+                    "required": true,
+                    "default": "1=1",
+                    "description": "SQL-92 WHERE clause over the layer fields"
+                },
+                {
+                    "name": "outFields",
+                    "location": "query",
+                    "type": "string",
+                    "default": "*",
+                    "description": "Comma-separated field names to return"
+                },
+                {
+                    "name": "geometry",
+                    "location": "query",
+                    "type": "string",
+                    "description": "Spatial filter geometry",
+                    "format": "esriGeometryEnvelope"
+                },
+                {
+                    "name": "f",
+                    "location": "query",
+                    "type": "string",
+                    "default": "json",
+                    "enum": ["json", "geojson", "pbf"]
+                },
+                {
+                    "name": "resultOffset",
+                    "location": "query",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                {
+                    "name": "resultRecordCount",
+                    "location": "query",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2000
+                }
+            ],
+            "response": {
+                "mediaTypes": ["application/json", "application/geo+json"],
+                "recordsPath": "/features",
+                "dictionaryEntity": "layer-0",
+                "pagination": {
+                    "type": "offset-limit",
+                    "limitParameter": "resultRecordCount",
+                    "offsetParameter": "resultOffset"
+                }
+            },
+            "interactiveExampleCandidate": true
+        }
+    ],
+    "sourceCapabilities": {
+        "allowedMethods": ["GET", "POST"],
+        "maximumRecordsPerRequest": 2000,
+        "bulkExportAvailable": false,
+        "supportsSpatialFilter": true,
+        "supportsAttributeFilter": true,
+        "supportsPagination": true,
+        "outputFormats": ["json", "geojson", "pbf"],
+        "supportsStatistics": true
+    },
+    "provenance": {
+        "method": "authoritative-import",
+        "sourceType": "arcgis-service-definition",
+        "generator": "example-arcgis-import/1.0",
+        "generatedAt": "2026-09-14T10:00:00Z",
+        "reviewStatus": "unreviewed"
+    },
+    "lastVerified": "2026-09-14T10:05:00Z"
+}

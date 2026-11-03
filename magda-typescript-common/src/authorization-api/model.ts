@@ -76,6 +76,10 @@ export interface APIKeyRecord {
     expiry_time?: Date;
     last_successful_attempt_time?: Date;
     last_failed_attempt_time?: Date;
+    /** Human-readable operational name. */
+    name?: string;
+    /** True only for credentials managed by a trusted Magda service. */
+    system_managed?: boolean;
 }
 export interface Role {
     id: string;

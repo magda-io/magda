@@ -820,6 +820,50 @@ describe("onRecordFoundStorageObject", () => {
         );
     });
 
+    it("should index a distribution that has no dataset-format aspect", async () => {
+        testEnv.createEmbeddingTextStub.resolves({
+            text: "embedding text: test1"
+        });
+        const userConfig = testEnv.updateUserConfig({
+            itemType: "storageObject",
+            formatTypes: ["csv"],
+            autoDownloadFile: false
+        });
+
+        testEnv.chunker.chunk
+            .withArgs("embedding text: test1")
+            .returns([{ text: "test1", length: 5, position: 0, overlap: 0 }]);
+        testEnv.embeddingApiClient.get
+            .withArgs(["test1"])
+            .resolves([[0.1, 0.2, 0.3]]);
+
+        const record = createRecord({
+            id: "id1",
+            aspects: {
+                "dcat-distribution-strings": {
+                    format: "CSV",
+                    downloadURL: "magda://storage-api/ds1/dist1/file.csv"
+                }
+            }
+        });
+
+        const onRecordFound = onRecordFoundStorageObject(
+            userConfig,
+            testEnv.chunker,
+            testEnv.embeddingApiClient,
+            testEnv.opensearchApiClient,
+            testEnv.minioClient,
+            testEnv.registry
+        );
+        await onRecordFound(record, testEnv.registry);
+
+        expect(
+            testEnv.createEmbeddingTextStub.firstCall.args[0].format
+        ).to.equal("CSV");
+        expect(testEnv.opensearchApiClient.bulkIndexDocument.calledOnce).to.be
+            .true;
+    });
+
     it("should call deleteByQuery after indexing", async () => {
         testEnv.createEmbeddingTextStub.resolves({
             text: "embedding text: test1"

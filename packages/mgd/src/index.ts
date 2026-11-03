@@ -11,6 +11,7 @@ import { registerApiCommands } from "./commands/api.js";
 import { registerFileCommands } from "./commands/file.js";
 import { registerAspectCommands } from "./commands/aspect.js";
 import { registerSkillsCommands } from "./commands/skills.js";
+import { registerAgentSkillCommands } from "./commands/agentSkill.js";
 
 const program = new Command();
 
@@ -28,6 +29,7 @@ registerApiCommands(program);
 registerFileCommands(program);
 registerAspectCommands(program);
 registerSkillsCommands(program);
+registerAgentSkillCommands(program);
 
 try {
     await program.parseAsync(process.argv);

@@ -1,0 +1,93 @@
+{
+    "schemaVersion": "1.0",
+    "resourceRole": "data-service",
+    "accessMode": "authenticated-query",
+    "protocol": "REST",
+    "endpointUrl": "https://data.example.org/restricted/v2",
+    "documentationUrl": "https://data.example.org/restricted/docs",
+    "authentication": {
+        "type": "api-key",
+        "description": "API key issued by the custodian on request. Send it in the X-API-Key header.",
+        "location": "header",
+        "name": "X-API-Key",
+        "documentationUrl": "https://data.example.org/restricted/docs/access"
+    },
+    "operations": [
+        {
+            "id": "list-measurements",
+            "label": "List measurements",
+            "purpose": "Page through water-quality measurements of one monitoring site",
+            "interactionType": "query",
+            "method": "GET",
+            "path": "/sites/{siteId}/measurements",
+            "parameters": [
+                {
+                    "name": "siteId",
+                    "location": "path",
+                    "type": "string",
+                    "required": true,
+                    "description": "Monitoring site code"
+                },
+                {
+                    "name": "page",
+                    "location": "query",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 1
+                },
+                {
+                    "name": "per_page",
+                    "location": "query",
+                    "type": "integer",
+                    "default": 100,
+                    "maximum": 500
+                }
+            ],
+            "response": {
+                "mediaTypes": ["application/json"],
+                "recordsPath": "/data",
+                "pagination": {
+                    "type": "page",
+                    "pageParameter": "page",
+                    "limitParameter": "per_page",
+                    "totalPath": "/meta/total"
+                }
+            }
+        },
+        {
+            "id": "request-extract",
+            "label": "Request a bulk extract",
+            "purpose": "Ask the custodian service to prepare a bulk extract for approved users",
+            "interactionType": "action",
+            "method": "POST",
+            "path": "/extracts",
+            "authentication": {
+                "type": "oauth2",
+                "description": "Requires an OAuth 2.0 access token with the extract scope, granted to approved users only.",
+                "scopes": ["extracts:create"],
+                "documentationUrl": "https://data.example.org/restricted/docs/oauth"
+            },
+            "request": {
+                "required": true,
+                "mediaTypes": ["application/json"],
+                "description": "Extract request: site codes and date range"
+            },
+            "response": {
+                "mediaTypes": ["application/json"],
+                "statusCodes": [202]
+            }
+        }
+    ],
+    "sourceCapabilities": {
+        "allowedMethods": ["GET", "POST"],
+        "maximumRecordsPerRequest": 500,
+        "bulkExportAvailable": true,
+        "rateLimit": "60 requests per minute per API key"
+    },
+    "provenance": {
+        "method": "manual",
+        "reviewStatus": "custodian-approved",
+        "reviewedBy": "Data custodian",
+        "reviewedAt": "2026-09-20T03:00:00Z"
+    }
+}

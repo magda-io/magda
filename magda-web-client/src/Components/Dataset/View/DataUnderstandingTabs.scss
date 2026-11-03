@@ -1,0 +1,79 @@
+@import "variables";
+
+.data-understanding {
+    margin-top: 24px;
+    margin-bottom: 24px;
+
+    &__tabs {
+        display: flex;
+        flex-wrap: wrap;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    // underlined section tabs, distinct from the Structure section's entity
+    // selector buttons
+    &__tab {
+        margin-bottom: -2px;
+        padding: 8px 16px;
+        border: none;
+        border-bottom: 3px solid transparent;
+        background: none;
+        color: #313131;
+        font-size: 1.15em;
+        font-weight: bold;
+        cursor: pointer;
+
+        &:hover {
+            color: $AU-color-foreground-action;
+        }
+
+        &--selected {
+            border-bottom-color: $AU-color-foreground-action;
+            color: $AU-color-foreground-action;
+        }
+    }
+
+    &__panel {
+        > .data-dictionary,
+        > .distribution-contract {
+            margin-top: 12px;
+        }
+
+        // keep the tab bar visible when a section scrolls itself into view
+        // (e.g. following an entity link)
+        > .data-dictionary {
+            scroll-margin-top: 64px;
+        }
+    }
+
+    // the tab label names the panel; the heading is kept for screen readers
+    &__panel-heading {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+
+    @media print {
+        &__tabs {
+            display: none;
+        }
+
+        &__panel[hidden] {
+            display: block !important;
+        }
+
+        &__panel-heading {
+            position: static;
+            width: auto;
+            height: auto;
+            margin: 16px 0 8px;
+            overflow: visible;
+            clip: auto;
+        }
+    }
+}

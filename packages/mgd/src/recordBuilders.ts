@@ -119,9 +119,44 @@ export function storageDownloadUrl(
     return "magda://storage-api/" + parts.map(encodeURIComponent).join("/");
 }
 
+// Single-stream compression suffixes. `data.csv.gz` is reported as CSV, so
+// consumers can tell what the data is; they handle the compression themselves.
+const COMPRESSION_EXTENSIONS = new Set([
+    "BR",
+    "BZ2",
+    "GZ",
+    "GZIP",
+    "XZ",
+    "ZST"
+]);
+
 export function detectFormat(fileName: string): string | undefined {
-    const m = /\.([A-Za-z0-9]+)$/.exec(fileName);
-    return m ? m[1].toUpperCase() : undefined;
+    const m = /(?:\.([A-Za-z0-9]+))?\.([A-Za-z0-9]+)$/.exec(fileName);
+    if (!m) return undefined;
+    const [inner, outer] = [m[1]?.toUpperCase(), m[2].toUpperCase()];
+    return inner && COMPRESSION_EXTENSIONS.has(outer) ? inner : outer;
+}
+
+// Extensions of server-side scripts: they name the endpoint, not the data.
+const SCRIPT_EXTENSIONS = new Set(["ASP", "ASPX", "CGI", "JSP", "PHP"]);
+
+/** Best-effort format of a link distribution, from its URL path. */
+export function detectFormatFromUrl(url: string): string | undefined {
+    let pathname: string;
+    try {
+        pathname = new URL(url).pathname;
+    } catch {
+        return undefined;
+    }
+    const lastSegment = pathname.split("/").pop() ?? "";
+    let fileName: string;
+    try {
+        fileName = decodeURIComponent(lastSegment);
+    } catch {
+        fileName = lastSegment;
+    }
+    const format = detectFormat(fileName);
+    return format && !SCRIPT_EXTENSIONS.has(format) ? format : undefined;
 }
 
 export async function parseAspectValue(v: string): Promise<unknown> {

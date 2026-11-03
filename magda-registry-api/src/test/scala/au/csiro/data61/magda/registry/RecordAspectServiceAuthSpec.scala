@@ -328,5 +328,69 @@ class RecordAspectServiceAuthSpec extends ApiSpec {
       }
     }
 
+    describe("Record auth context data") {
+      it(
+        "should only include aspects of the record in the request's tenant, not of a same ID record in another tenant"
+      ) { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/record/create",
+          UnconditionalTrueDecision
+        )
+        List(TENANT_1 -> "aspect-a", TENANT_2 -> "aspect-b").foreach {
+          case (tenantId, aspectId) =>
+            Post("/v0/aspects", AspectDefinition(aspectId, aspectId, None)) ~> addUserId() ~> addTenantIdHeader(
+              tenantId
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            Post(
+              "/v0/records",
+              Record(
+                "same-id-record",
+                s"record in tenant ${tenantId}",
+                aspects = Map(aspectId -> JsObject("a" -> JsString("data")))
+              )
+            ) ~> addUserId() ~> addTenantIdHeader(tenantId) ~> param
+              .api(Full)
+              .routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+        }
+        param.authFetcher.resetMock()
+        param.authFetcher.setAuthDecision(
+          "object/record/update",
+          UnconditionalTrueDecision
+        )
+
+        Put(
+          "/v0/records/same-id-record/aspects/aspect-a",
+          JsObject("a" -> JsString("new data"))
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val authCalls =
+          param.authFetcher.getAuthCallLogsByOperationUri(
+            "object/record/update"
+          )
+        // current & proposed state
+        authCalls.length shouldBe 2
+        authCalls.foreach { call =>
+          val record = call._3.get.asJsObject
+            .fields("object")
+            .asJsObject
+            .fields("record")
+            .asJsObject
+          record.fields.contains("aspect-a") shouldBe true
+          record.fields.contains("aspect-b") shouldBe false
+        }
+      }
+    }
   }
 }

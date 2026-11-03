@@ -87,11 +87,49 @@ try {
         throw new Error(`installed package did not create ${binPath}`);
     }
 
-    // 5. `mgd --version` must succeed and report the package version.
+    // 5. The build-time-only common package must not be installed in the clean
+    //    consumer, while the bundled reserved-name validation still executes.
+    const commonPath = path.join(
+        projDir,
+        "node_modules",
+        "@magda",
+        "typescript-common"
+    );
+    if (fs.existsSync(commonPath)) {
+        throw new Error(
+            "@magda/typescript-common was installed as an mgd runtime dependency"
+        );
+    }
+
+    // 6. `mgd --version` must succeed and report the package version.
     const version = run(binPath, ["--version"], { cwd: projDir }).trim();
     if (version !== expectedVersion) {
         throw new Error(
             `mgd --version reported "${version}", expected "${expectedVersion}"`
+        );
+    }
+
+    // 7. A path imported from the build-time common package must have been
+    //    bundled into mgd.js, not left as a runtime import.
+    const reservedDraft = path.join(workDir, "python-dependencies");
+    fs.mkdirSync(reservedDraft);
+    fs.writeFileSync(
+        path.join(reservedDraft, "SKILL.md"),
+        "---\nname: python-dependencies\ndescription: Reserved test\n---\n\n# Test\n"
+    );
+    let rejected = false;
+    try {
+        run(binPath, ["agent-skill", "validate", reservedDraft], {
+            cwd: projDir
+        });
+    } catch (error) {
+        rejected = /reserved for a runtime-bundled Agent Skill/.test(
+            `${error.stdout || ""}\n${error.stderr || ""}`
+        );
+    }
+    if (!rejected) {
+        throw new Error(
+            "standalone mgd did not enforce the bundled reserved-name validation"
         );
     }
 

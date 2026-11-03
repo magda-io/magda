@@ -1,0 +1,117 @@
+{
+    "schemaVersion": "1.0",
+    "resourceRole": "query-service",
+    "accessMode": "public-query",
+    "protocol": "STAC",
+    "endpointUrl": "https://example.org/stac/v1",
+    "documentationUrl": "https://example.org/stac/docs",
+    "specification": {
+        "type": "ogc-api",
+        "url": "https://example.org/stac/v1/api",
+        "version": "1.0.0",
+        "retrievedAt": "2026-09-14T10:00:00Z"
+    },
+    "authentication": {
+        "type": "none"
+    },
+    "operations": [
+        {
+            "id": "search-items",
+            "sourceIdentifier": "getItemSearch",
+            "label": "Search items",
+            "purpose": "Find imagery items of the collection by area, time range and collection",
+            "interactionType": "query",
+            "method": "GET",
+            "path": "/search",
+            "endpointUrl": "https://example.org/stac/v1/search",
+            "parameters": [
+                {
+                    "name": "collections",
+                    "location": "query",
+                    "type": "string",
+                    "description": "Comma-separated collection ids",
+                    "example": "sentinel-2-l2a"
+                },
+                {
+                    "name": "bbox",
+                    "location": "query",
+                    "type": "string",
+                    "format": "minX,minY,maxX,maxY",
+                    "description": "WGS 84 bounding box"
+                },
+                {
+                    "name": "datetime",
+                    "location": "query",
+                    "type": "string",
+                    "format": "RFC 3339 date-time or interval",
+                    "example": "2026-01-01T00:00:00Z/2026-02-01T00:00:00Z"
+                },
+                {
+                    "name": "limit",
+                    "location": "query",
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 1,
+                    "maximum": 1000
+                }
+            ],
+            "response": {
+                "mediaTypes": ["application/geo+json"],
+                "recordsPath": "/features",
+                "dictionaryEntity": "stac-item",
+                "pagination": {
+                    "type": "next-link",
+                    "limitParameter": "limit",
+                    "nextLinkRelation": "next",
+                    "totalPath": "/numberMatched"
+                }
+            },
+            "interactiveExampleCandidate": true
+        },
+        {
+            "id": "get-collection-items",
+            "sourceIdentifier": "getFeatures",
+            "label": "Get collection items (OGC API Features)",
+            "interactionType": "query",
+            "method": "GET",
+            "path": "/collections/{collectionId}/items",
+            "parameters": [
+                {
+                    "name": "collectionId",
+                    "location": "path",
+                    "type": "string",
+                    "required": true
+                },
+                {
+                    "name": "limit",
+                    "location": "query",
+                    "type": "integer",
+                    "default": 10
+                }
+            ],
+            "response": {
+                "mediaTypes": ["application/geo+json"],
+                "recordsPath": "/features",
+                "dictionaryEntity": "stac-item",
+                "pagination": {
+                    "type": "next-link",
+                    "limitParameter": "limit",
+                    "nextLinkRelation": "next"
+                }
+            }
+        }
+    ],
+    "sourceCapabilities": {
+        "allowedMethods": ["GET", "POST"],
+        "maximumRecordsPerRequest": 1000,
+        "supportsSpatialFilter": true,
+        "supportsTemporalFilter": true,
+        "supportsPagination": true
+    },
+    "provenance": {
+        "method": "harvested",
+        "sourceType": "stac",
+        "generatedAt": "2026-09-14T10:00:00Z",
+        "reviewStatus": "unreviewed"
+    }
+}

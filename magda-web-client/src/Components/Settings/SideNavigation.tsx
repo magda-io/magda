@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement } from "react";
+import React, { FunctionComponent, ReactElement, useState } from "react";
 import { withRouter } from "react-router-dom";
 import CommonLink from "../Common/CommonLink";
 import { Location, History } from "history";
@@ -8,7 +8,21 @@ import {
     MdAccountTree,
     MdCollectionsBookmark,
     MdPageview,
-    MdOutlineFolderSpecial
+    MdOutlineFolderSpecial,
+    MdOutlineWeb,
+    MdKeyboardArrowDown,
+    MdKeyboardArrowRight,
+    MdOutlineVerticalAlignTop,
+    MdOutlineVerticalAlignBottom,
+    MdOutlineImage,
+    MdOutlineArticle,
+    MdOutlineHome,
+    MdOutlineTextFields,
+    MdSecurity,
+    MdSmartToy,
+    MdOpenInBrowser,
+    MdOutlineLibraryBooks,
+    MdPeopleOutline
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -17,6 +31,12 @@ import { useSelector } from "react-redux";
 import uniq from "lodash/uniq";
 import { User } from "reducers/userManagementReducer";
 import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants.js";
+import { config } from "../../config";
+import {
+    AGENT_SKILL_READ_OPERATIONS,
+    AGENT_WORKSPACE_ACCESS_OPERATION,
+    SHARED_SKILL_OPERATIONS
+} from "./agentWorkspaceAccess";
 import {
     getUrlWithPopUpQueryString,
     showSideNav
@@ -28,14 +48,28 @@ type PropsType = {
     history: History;
 };
 
-type MenuItem = {
+export type MenuItem = {
+    // the page path; for a group, a unique key (a group isn't a link)
     path: string;
     icon: ReactElement;
     title: string;
     active?: boolean;
+    // highlight only on this exact path, not on its sub-pages
+    exact?: boolean;
     requireRoleIds?: string[];
+    // all of these operations are required
     requireOperationUris?: string[];
+    // at least one of these operations is required
+    requireAnyOperationUris?: string[];
+    // second level menu items. A menu item with children is a group and is not a link itself.
+    // A group is hidden when none of its children is available (e.g. due to access).
+    children?: MenuItem[];
 };
+
+const contentManagementOperationUris = [
+    "object/content/read",
+    "object/content/update"
+];
 
 const defaultMenuItems: MenuItem[] = [
     {
@@ -61,55 +95,177 @@ const defaultMenuItems: MenuItem[] = [
             "object/faas/function/invoke"
         ]
     },
+    ...(config.featureFlags.agentWorkspace
+        ? [
+              {
+                  // A non-clickable group. Each child is shown independently;
+                  // the group appears when any child is available.
+                  title: "Agent Workspace",
+                  path: "/settings/agent-workspace-group",
+                  icon: <MdSmartToy />,
+                  children: [
+                      {
+                          title: "Open Workspace",
+                          path: "/settings/agent-workspace",
+                          exact: true,
+                          icon: <MdOpenInBrowser />,
+                          requireOperationUris: [
+                              AGENT_WORKSPACE_ACCESS_OPERATION
+                          ]
+                      },
+                      {
+                          title: "Agent Skills",
+                          path: "/settings/agent-workspace/skills",
+                          icon: <MdOutlineLibraryBooks />,
+                          requireAnyOperationUris: AGENT_SKILL_READ_OPERATIONS
+                      },
+                      {
+                          title: "Shared Skills",
+                          path: "/settings/agent-workspace/shared-skills",
+                          icon: <MdPeopleOutline />,
+                          requireAnyOperationUris: SHARED_SKILL_OPERATIONS
+                      }
+                  ]
+              }
+          ]
+        : []),
     {
-        title: "Users",
-        path: "/settings/users",
-        requireOperationUris: [
-            "authObject/user/read",
-            "authObject/user/update"
-        ],
-        icon: <MdSupervisorAccount />
-    },
-    {
-        title: "Roles",
-        path: "/settings/roles",
-        requireOperationUris: [
-            "authObject/role/read",
-            "authObject/role/update"
-        ],
-        icon: <MdSwitchAccount />
-    },
-    {
-        title: "Resources",
-        path: "/settings/resources",
-        requireOperationUris: [
-            "authObject/resource/read",
-            "authObject/resource/update"
-        ],
-        icon: <MdCollectionsBookmark />
-    },
-    {
-        title: "Org Units",
-        path: "/settings/orgUnits",
-        requireOperationUris: [
-            "authObject/orgUnit/read",
-            "authObject/orgUnit/update"
-        ],
-        icon: <MdAccountTree />
-    },
-    {
-        path: "/settings/accessGroups",
-        title: "Access Groups",
-        icon: <MdOutlineFolderSpecial />,
-        requireOperationUris: ["object/accessGroup/read"]
+        title: "Access Controls",
+        path: "/settings/accessControls",
+        icon: <MdSecurity />,
+        children: [
+            {
+                title: "Users",
+                path: "/settings/users",
+                requireOperationUris: [
+                    "authObject/user/read",
+                    "authObject/user/update"
+                ],
+                icon: <MdSupervisorAccount />
+            },
+            {
+                title: "Roles",
+                path: "/settings/roles",
+                requireOperationUris: [
+                    "authObject/role/read",
+                    "authObject/role/update"
+                ],
+                icon: <MdSwitchAccount />
+            },
+            {
+                title: "Org Units",
+                path: "/settings/orgUnits",
+                requireOperationUris: [
+                    "authObject/orgUnit/read",
+                    "authObject/orgUnit/update"
+                ],
+                icon: <MdAccountTree />
+            },
+            {
+                title: "Resources",
+                path: "/settings/resources",
+                requireOperationUris: [
+                    "authObject/resource/read",
+                    "authObject/resource/update"
+                ],
+                icon: <MdCollectionsBookmark />
+            },
+            {
+                path: "/settings/accessGroups",
+                title: "Access Groups",
+                icon: <MdOutlineFolderSpecial />,
+                requireOperationUris: ["object/accessGroup/read"]
+            }
+        ]
     },
     {
         title: "Registry Records",
         path: "/settings/records",
         requireOperationUris: ["object/record/read", "object/record/update"],
         icon: <MdPageview />
+    },
+    {
+        title: "Site Content",
+        path: "/settings/content",
+        icon: <MdOutlineWeb />,
+        children: [
+            {
+                title: "Header",
+                path: "/settings/content/header",
+                icon: <MdOutlineVerticalAlignTop />,
+                requireOperationUris: contentManagementOperationUris
+            },
+            {
+                title: "Footer",
+                path: "/settings/content/footer",
+                icon: <MdOutlineVerticalAlignBottom />,
+                requireOperationUris: contentManagementOperationUris
+            },
+            {
+                title: "Logos",
+                path: "/settings/content/logos",
+                icon: <MdOutlineImage />,
+                requireOperationUris: contentManagementOperationUris
+            },
+            {
+                title: "Home Page",
+                path: "/settings/content/home",
+                icon: <MdOutlineHome />,
+                requireOperationUris: contentManagementOperationUris
+            },
+            {
+                title: "Pages",
+                path: "/settings/content/pages",
+                icon: <MdOutlineArticle />,
+                requireOperationUris: contentManagementOperationUris
+            },
+            {
+                title: "UI Text",
+                path: "/settings/content/ui-text",
+                icon: <MdOutlineTextFields />,
+                requireOperationUris: contentManagementOperationUris
+            }
+        ]
     }
 ];
+
+/**
+ * Whether the user's `whoami` roles and operations satisfy a menu item. This
+ * is a navigation hint only; routes and APIs enforce authorization.
+ */
+export function isMenuItemAllowed(
+    item: MenuItem,
+    userRoleIds: string[],
+    userOpUris: string[]
+): boolean {
+    if (userRoleIds.indexOf(ADMIN_USERS_ROLE_ID) !== -1) {
+        // admin user will see all menu items
+        return true;
+    }
+    if (item?.requireRoleIds?.length) {
+        for (const roleId of item.requireRoleIds) {
+            if (userRoleIds.indexOf(roleId) === -1) {
+                return false;
+            }
+        }
+    }
+    if (item?.requireOperationUris?.length) {
+        for (const opUri of item.requireOperationUris) {
+            if (userOpUris.indexOf(opUri) === -1) {
+                return false;
+            }
+        }
+    }
+    if (
+        item?.requireAnyOperationUris?.length &&
+        !item.requireAnyOperationUris.some(
+            (opUri) => userOpUris.indexOf(opUri) !== -1
+        )
+    ) {
+        return false;
+    }
+    return true;
+}
 
 /* eslint-disable jsx-a11y/anchor-is-valid */
 const SideNavigation: FunctionComponent<PropsType> = (props) => {
@@ -136,56 +292,39 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
     const userLoadingError = useSelector<StateType, Error | null>(
         (state) => state?.userManagement?.whoAmIError
     );
-    const menuItems = (props.menuItems?.length
+    const menuItems = props.menuItems?.length
         ? props.menuItems
-        : defaultMenuItems
-    ).map((item) => {
-        if (props.location.pathname.indexOf(item.path) === 0) {
-            item.active = true;
-        } else {
-            item.active = false;
-        }
-        return item;
-    });
+        : defaultMenuItems;
+    const isActive = (item: MenuItem) =>
+        item.exact
+            ? props.location.pathname.replace(/\/+$/, "") === item.path
+            : props.location.pathname.indexOf(item.path) === 0;
+    // groups are collapsed by default, except the group of the current page.
+    // Clicking a group title expands / collapses it.
+    const [toggledGroups, setToggledGroups] = useState<{
+        [path: string]: boolean;
+    }>({});
+    const isGroupExpanded = (group: MenuItem, children: MenuItem[]) =>
+        typeof toggledGroups[group.path] === "boolean"
+            ? toggledGroups[group.path]
+            : children.some(isActive);
+    const toggleGroup = (group: MenuItem, children: MenuItem[]) =>
+        setToggledGroups((groups) => ({
+            ...groups,
+            [group.path]: !isGroupExpanded(group, children)
+        }));
 
     function accessFilter(item: MenuItem): boolean {
         if (
             (item?.requireRoleIds?.length ||
-                item?.requireOperationUris?.length) &&
+                item?.requireOperationUris?.length ||
+                item?.requireAnyOperationUris?.length) &&
             (isUserLoading || userLoadingError)
         ) {
             // any require access check items will not will be shown until user data is available
             return false;
         }
-        if (
-            userRoleIds.findIndex(
-                (roleId) => roleId === ADMIN_USERS_ROLE_ID
-            ) !== -1
-        ) {
-            // admin user will see all menu items
-            return true;
-        }
-        if (item?.requireRoleIds?.length) {
-            if (!userRoleIds.length) {
-                return false;
-            }
-            for (const roleId of item.requireRoleIds) {
-                if (userRoleIds.indexOf(roleId) === -1) {
-                    return false;
-                }
-            }
-        }
-        if (item?.requireOperationUris?.length) {
-            if (!userOpUris.length) {
-                return false;
-            }
-            for (const opUri of item.requireOperationUris) {
-                if (userOpUris.indexOf(opUri) === -1) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return isMenuItemAllowed(item, userRoleIds, userOpUris);
     }
 
     return (
@@ -195,18 +334,81 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
             }`}
         >
             <div className="sidenav">
-                {menuItems.filter(accessFilter).map((item, idx) => (
-                    <CommonLink
-                        key={idx}
-                        to={getUrlWithPopUpQueryString(item.path, location)}
-                        className={item?.active ? "active" : ""}
-                    >
-                        <span>
-                            {item.icon}
-                            {item.title}
-                        </span>
-                    </CommonLink>
-                ))}
+                {menuItems.filter(accessFilter).map((item, idx) => {
+                    if (!item?.children?.length) {
+                        return (
+                            <CommonLink
+                                key={idx}
+                                to={getUrlWithPopUpQueryString(
+                                    item.path,
+                                    location
+                                )}
+                                className={isActive(item) ? "active" : ""}
+                            >
+                                <span>
+                                    {item.icon}
+                                    {item.title}
+                                </span>
+                            </CommonLink>
+                        );
+                    }
+                    const children = item.children.filter(accessFilter);
+                    if (!children.length) {
+                        return null;
+                    }
+                    const isExpanded = isGroupExpanded(item, children);
+                    return (
+                        <div key={idx} className="sidenav-group">
+                            <a
+                                role="button"
+                                tabIndex={0}
+                                aria-expanded={isExpanded}
+                                className={`sidenav-group-title${
+                                    // highlight a collapsed group when one of its pages is open
+                                    !isExpanded && children.some(isActive)
+                                        ? " active"
+                                        : ""
+                                }`}
+                                onClick={() => toggleGroup(item, children)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        toggleGroup(item, children);
+                                    }
+                                }}
+                            >
+                                <span>
+                                    {item.icon}
+                                    {item.title}
+                                    {isExpanded ? (
+                                        <MdKeyboardArrowDown className="sidenav-group-caret" />
+                                    ) : (
+                                        <MdKeyboardArrowRight className="sidenav-group-caret" />
+                                    )}
+                                </span>
+                            </a>
+                            {isExpanded
+                                ? children.map((child, childIdx) => (
+                                      <CommonLink
+                                          key={childIdx}
+                                          to={getUrlWithPopUpQueryString(
+                                              child.path,
+                                              location
+                                          )}
+                                          className={`sidenav-sub-item${
+                                              isActive(child) ? " active" : ""
+                                          }`}
+                                      >
+                                          <span>
+                                              {child.icon}
+                                              {child.title}
+                                          </span>
+                                      </CommonLink>
+                                  ))
+                                : null}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

@@ -1,27 +1,34 @@
 package au.csiro.data61.magda.registry
 
 import akka.actor.{ActorRef, ActorSystem}
+import akka.event.Logging
+import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.directives.AuthDirectives.requireUserId
+import au.csiro.data61.magda.ServerError
+import au.csiro.data61.magda.directives.AuthDirectives.{getJwt, requireUserId}
 import au.csiro.data61.magda.directives.TenantDirectives.requiresSpecifiedTenantId
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.{
-  requireDeleteRecordAspectPermission,
-  requireRecordAspectUpdatePermission
+import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
+import au.csiro.data61.magda.registry.RecordMutationAuthorization.{
+  MutationFailure,
+  authorizeRecordMutation,
+  mutationResult,
+  requireUnconditionalPermission,
+  runInMutationTransaction
 }
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 
 import javax.ws.rs.Path
-import scalikejdbc.DB
+import scalikejdbc.DBSession
 import spray.json.JsObject
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 import au.csiro.data61.magda.directives.CommonDirectives.{
   onCompleteBlockingTask,
   sanitizedJsonEntity
@@ -46,6 +53,8 @@ class RecordAspectsService(
       config,
       recordPersistence
     ) {
+
+  private val logger = Logging(system, getClass)
 
   private val defaultQueryTimeout = config
     .getDuration(
@@ -158,46 +167,22 @@ class RecordAspectsService(
               parameters(
                 'merge.as[Boolean].?
               ) { merge =>
-                requireRecordAspectUpdatePermission(
-                  authClient,
-                  recordId,
-                  aspectId,
-                  Left(aspect),
-                  merge.getOrElse(false)
-                ) {
-                  onCompleteBlockingTask {
-                    val theResult = DB localTx { implicit session =>
-                      session.queryTimeout(this.defaultQueryTimeout)
-                      recordPersistence.putRecordAspectById(
-                        tenantId,
-                        recordId,
-                        aspectId,
-                        aspect,
-                        userId,
-                        false,
-                        merge.getOrElse(false)
-                      ) match {
-                        case Success(result) =>
-                          complete(
-                            StatusCodes.OK,
-                            List(
-                              RawHeader("x-magda-event-id", result._2.toString)
-                            ),
-                            result._1
-                          )
-                        case Failure(exception) =>
-                          complete(
-                            StatusCodes.BadRequest,
-                            ApiError(exception.getMessage)
-                          )
-                      }
-                    }
-                    webHookActor ! WebHookActor
-                      .Process(
-                        ignoreWaitingForResponse = false,
-                        Some(List(aspectId))
-                      )
-                    theResult
+                getJwt { jwt =>
+                  completeRecordAspectMutation(
+                    jwt,
+                    tenantId,
+                    recordId,
+                    webHookAspectIds = Some(List(aspectId))
+                  ) { implicit session =>
+                    recordPersistence.putRecordAspectById(
+                      tenantId,
+                      recordId,
+                      aspectId,
+                      aspect,
+                      userId,
+                      false,
+                      merge.getOrElse(false)
+                    )
                   }
                 }
               }
@@ -271,35 +256,30 @@ class RecordAspectsService(
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
         requireUserId { userId =>
-          // delete a record aspect should be considered as update operation for the record
-          // we will not implement aspect level auth for now
-          requireDeleteRecordAspectPermission(authClient, recordId, aspectId) {
-            requiresSpecifiedTenantId { tenantId =>
-              onCompleteBlockingTask {
-                val theResult = DB localTx { implicit session =>
-                  session.queryTimeout(this.defaultQueryTimeout)
-                  recordPersistence.deleteRecordAspect(
-                    tenantId,
-                    recordId,
-                    aspectId,
-                    userId
-                  ) match {
-                    case Success(result) =>
-                      complete(
-                        StatusCodes.OK,
-                        List(RawHeader("x-magda-event-id", result._2.toString)),
-                        DeleteResult(result._1)
-                      )
-                    case Failure(exception) =>
-                      complete(
-                        StatusCodes.BadRequest,
-                        ApiError(exception.getMessage)
-                      )
+          requiresSpecifiedTenantId { tenantId =>
+            getJwt { jwt =>
+              def deleteRecordAspect(implicit session: DBSession) =
+                recordPersistence
+                  .deleteRecordAspect(tenantId, recordId, aspectId, userId)
+                  .map {
+                    case (deleted, eventId) => (DeleteResult(deleted), eventId)
                   }
+              // delete a record aspect should be considered as update operation for the record
+              // we will not implement aspect level auth for now
+              completeRecordAspectMutation(
+                jwt,
+                tenantId,
+                recordId,
+                // when record cannot found, only user has unconditional record update access can proceed to this API (and potentially know the aspect has been already deleted)
+                onRecordNotFound = Some { implicit session: DBSession =>
+                  requireUnconditionalPermission(
+                    authClient,
+                    jwt,
+                    "object/record/update"
+                  )
+                  mutationResult(deleteRecordAspect)
                 }
-                webHookActor ! WebHookActor.Process()
-                theResult
-              }
+              )(deleteRecordAspect(_))
             }
           }
         }
@@ -393,39 +373,16 @@ class RecordAspectsService(
         requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
             sanitizedJsonEntity(as[JsonPatch]) { aspectPatch =>
-              requireRecordAspectUpdatePermission(
-                authClient,
-                recordId,
-                aspectId,
-                Right(aspectPatch)
-              ) {
-                onCompleteBlockingTask {
-                  val theResult = DB localTx { implicit session =>
-                    session.queryTimeout(this.defaultQueryTimeout)
+              getJwt { jwt =>
+                completeRecordAspectMutation(jwt, tenantId, recordId) {
+                  implicit session =>
                     recordPersistence.patchRecordAspectById(
                       tenantId,
                       recordId,
                       aspectId,
                       aspectPatch,
                       userId
-                    ) match {
-                      case Success(result) =>
-                        complete(
-                          StatusCodes.OK,
-                          List(
-                            RawHeader("x-magda-event-id", result._2.toString)
-                          ),
-                          result._1
-                        )
-                      case Failure(exception) =>
-                        complete(
-                          StatusCodes.BadRequest,
-                          ApiError(exception.getMessage)
-                        )
-                    }
-                  }
-                  webHookActor ! WebHookActor.Process()
-                  theResult
+                    )
                 }
               }
             }
@@ -433,6 +390,77 @@ class RecordAspectsService(
         }
     }
   }
+
+  /**
+    * Run a mutation on a record's aspect when the user has `object/record/update` permission on the record's current
+    * and proposed state (see `RecordMutationAuthorization`), and complete the request with the mutation result.
+    * The mutation is rolled back when it fails or the user has no permission.
+    * It responds BadRequest with the error when the mutation fails, and InternalServerError for any other failure
+    * (e.g. failing to load the record for the auth decision).
+    * There is no way to construct the full record context data for the auth decision without the record,
+    * so it responds BadRequest when the record doesn't exist, unless `onRecordNotFound` is supplied.
+    * The webhook actor is notified after the transaction ends.
+    *
+    * @param webHookAspectIds the aspects changed, for the webhook actor to process. `None` for all aspects.
+    */
+  private def completeRecordAspectMutation[T](
+      jwt: Option[String],
+      tenantId: SpecifiedTenantId,
+      recordId: String,
+      onRecordNotFound: Option[DBSession => (T, Long)] = None,
+      webHookAspectIds: Option[List[String]] = None
+  )(
+      mutation: DBSession => Try[(T, Long)]
+  )(implicit m: ToEntityMarshaller[T]): Route =
+    onCompleteBlockingTask {
+      val theResult = runInMutationTransaction(this.defaultQueryTimeout) {
+        implicit session =>
+          authorizeRecordMutation(
+            authClient,
+            jwt,
+            tenantId,
+            recordId,
+            onRecordNotFound = () =>
+              onRecordNotFound match {
+                case Some(f) => f(session)
+                case None =>
+                  throw ServerError(
+                    s"Cannot locate request record by id: ${recordId}",
+                    StatusCodes.BadRequest
+                  )
+              }
+          )(mutation(session))
+      } match {
+        case Success((result, eventId)) =>
+          complete(
+            StatusCodes.OK,
+            List(RawHeader("x-magda-event-id", eventId.toString)),
+            result
+          )
+        case Failure(ServerError(msg, statusCode)) =>
+          complete(statusCode, ApiError(msg))
+        case Failure(MutationFailure(exception)) =>
+          complete(
+            StatusCodes.BadRequest,
+            ApiError(exception.getMessage)
+          )
+        case Failure(exception) =>
+          logger.error(
+            exception,
+            "Failed to change an aspect of record {}",
+            recordId
+          )
+          complete(
+            StatusCodes.InternalServerError,
+            ApiError("An error occurred while processing the request.")
+          )
+      }
+      webHookActor ! WebHookActor.Process(
+        ignoreWaitingForResponse = false,
+        webHookAspectIds
+      )
+      theResult
+    }
 
   override def route: Route =
     super.route ~

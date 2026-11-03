@@ -26,6 +26,8 @@ import {
 } from "./testUtils.js";
 
 const ENV_SETUP_TIME_OUT = 600000; // -- 10 mins
+// stock "Agent Workspace Users" role created by the V2_4 auth DB migration
+const AGENT_WORKSPACE_USERS_ROLE_ID = "00000000-3854-4200-8000-000000000001";
 const jwtSecret = uuidV4();
 const authApiClient = new AuthApiClient(
     "http://localhost:6104/v0",
@@ -995,6 +997,298 @@ describe("registry auth integration tests", () => {
             expect(record.aspects["dcat-dataset-strings"]["title"]).to.equal(
                 "test dataset updated name"
             );
+        });
+
+        it("should allow data steward to publish its own draft dataset & distribution via bulk aspect update", async () => {
+            // see https://github.com/magda-io/magda/issues/3869
+            const dataStewardUser = await authApiClient.createUser({
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const dataStewardUserId = dataStewardUser.id;
+            // the Agent Workspace Users role adds the Agent Skill write rules
+            // (with built-in function calls) to the `object/record/update` residual rules
+            await authApiClient.addUserRoles(dataStewardUserId, [
+                DATA_STEWARDS_ROLE_ID,
+                AGENT_WORKSPACE_USERS_ROLE_ID
+            ]);
+
+            const datasetId = await createTestDatasetByUser(dataStewardUserId, {
+                id: "",
+                name: "test dataset",
+                aspects: {
+                    "dcat-dataset-strings": {
+                        title: "test dataset",
+                        description: "this is a test dataset"
+                    }
+                },
+                tenantId: 0,
+                sourceTag: ""
+            });
+            const distributionId = await createTestDistributionByUser(
+                dataStewardUserId
+            );
+
+            const result = await getRegistryClient(
+                dataStewardUserId
+            ).putRecordsAspect(
+                [datasetId, distributionId],
+                "publishing",
+                { state: "published" },
+                true
+            );
+            expect(result).to.not.be.an.instanceof(Error);
+
+            for (const recordId of [datasetId, distributionId]) {
+                const record = unionToThrowable(
+                    await getRegistryClient(
+                        DEFAULT_ADMIN_USER_ID
+                    ).getRecord(recordId, ["publishing"])
+                );
+                expect(record.aspects["publishing"]["state"]).to.equal(
+                    "published"
+                );
+            }
+        });
+
+        it("should not allow data steward to update other user's draft dataset via bulk aspect update", async () => {
+            const dataStewardUser = await authApiClient.createUser({
+                displayName: "Test dataStewardUser",
+                email: "dataStewward@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const dataStewardUserId = dataStewardUser.id;
+            // the Agent Workspace Users role adds the Agent Skill write rules
+            // (with built-in function calls) to the `object/record/update` residual rules
+            await authApiClient.addUserRoles(dataStewardUserId, [
+                DATA_STEWARDS_ROLE_ID,
+                AGENT_WORKSPACE_USERS_ROLE_ID
+            ]);
+
+            const dataStewardUser2 = await authApiClient.createUser({
+                displayName: "Test dataStewardUser2",
+                email: "dataStewward2@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            await authApiClient.addUserRoles(dataStewardUser2.id, [
+                DATA_STEWARDS_ROLE_ID
+            ]);
+
+            const datasetId = await createTestDatasetByUser(dataStewardUserId);
+            const otherUserDatasetId = await createTestDatasetByUser(
+                dataStewardUser2.id
+            );
+
+            const result = await getRegistryClient(
+                dataStewardUserId
+            ).putRecordsAspect(
+                [datasetId, otherUserDatasetId],
+                "publishing",
+                { state: "published" },
+                true
+            );
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(403);
+
+            const record = unionToThrowable(
+                await getRegistryClient(dataStewardUserId).getRecord(
+                    datasetId,
+                    ["publishing"]
+                )
+            );
+            expect(record.aspects["publishing"]["state"]).to.equal("draft");
+        });
+
+        it("should not allow a user with draft-only update permission to publish a dataset via bulk aspect update", async () => {
+            // a bulk update must check the proposed state too, like single record updates
+            const role = await authApiClient.createRole(
+                "Role with draft dataset access only"
+            );
+            await authApiClient.createRolePermission(role.id, {
+                name: "draft dataset permission",
+                description: "",
+                operationUris: [
+                    "object/dataset/draft/create",
+                    "object/dataset/draft/read",
+                    "object/dataset/draft/update"
+                ],
+                allow_exemption: false,
+                org_unit_ownership_constraint: false,
+                user_ownership_constraint: true,
+                pre_authorised_constraint: false,
+                resourceUri: "object/dataset/draft"
+            });
+            const user = await authApiClient.createUser({
+                displayName: "Test draft only user",
+                email: "draftOnly@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            await authApiClient.addUserRoles(user.id, [role.id]);
+
+            const datasetId = await createTestDatasetByUser(user.id, {
+                id: "",
+                name: "test dataset",
+                aspects: {
+                    "dcat-dataset-strings": {
+                        title: "test dataset",
+                        description: "this is a test dataset"
+                    }
+                },
+                tenantId: 0,
+                sourceTag: ""
+            });
+
+            // the user can still update the draft dataset
+            let result = await getRegistryClient(user.id).putRecordsAspect(
+                [datasetId],
+                "dcat-dataset-strings",
+                { title: "test dataset updated" },
+                true
+            );
+            expect(result).to.not.be.an.instanceof(Error);
+
+            result = await getRegistryClient(user.id).putRecordsAspect(
+                [datasetId],
+                "publishing",
+                { state: "published" },
+                true
+            );
+            expect(result).to.be.an.instanceof(ServerError);
+            expect((result as ServerError).statusCode).to.equal(403);
+
+            const record = unionToThrowable(
+                await getRegistryClient(
+                    DEFAULT_ADMIN_USER_ID
+                ).getRecord(datasetId, ["publishing", "dcat-dataset-strings"])
+            );
+            expect(record.aspects["publishing"]["state"]).to.equal("draft");
+            expect(record.aspects["dcat-dataset-strings"]["title"]).to.equal(
+                "test dataset updated"
+            );
+        });
+
+        describe("Agent Skill records", () => {
+            function userSkillRecord(userId: string): Record {
+                const id = `agent-skill-${userId}-useful-skill`;
+                const now = new Date().toISOString();
+                return {
+                    id,
+                    name: "useful-skill",
+                    aspects: {
+                        "agent-skill": {
+                            name: "useful-skill",
+                            type: "user",
+                            userId,
+                            createdAt: now,
+                            createdBy: userId,
+                            description: "a useful skill",
+                            archiveKey: `agent-services/skills/user-skills/${userId}/${id}.zip`,
+                            updatedAt: now,
+                            updatedBy: userId,
+                            checksum: "0".repeat(64),
+                            state: "READY"
+                        },
+                        "access-control": { ownerId: userId }
+                    },
+                    tenantId: 0,
+                    sourceTag: ""
+                };
+            }
+
+            async function createUserWithRoles(roleIds: string[]) {
+                const user = await authApiClient.createUser({
+                    displayName: "Test User",
+                    email: "testUser@test.com",
+                    source: "internal",
+                    sourceId: uuidV4()
+                });
+                await authApiClient.addUserRoles(user.id, roleIds);
+                return user.id;
+            }
+
+            it("should not allow typed Agent Skill grants alone to write Agent Skill records via the generic Registry API", async () => {
+                // Agent Services is the only non-admin writer of Agent Skill records
+                const userId = await createUserWithRoles([
+                    AGENT_WORKSPACE_USERS_ROLE_ID
+                ]);
+                const result = await getRegistryClient(userId).putRecord(
+                    userSkillRecord(userId)
+                );
+                expect(result).to.be.an.instanceof(ServerError);
+                expect((result as ServerError).statusCode).to.equal(403);
+            });
+
+            it("should respond 403 rather than 500 to users with Agent Skill grants when unconditional permission is required", async () => {
+                // e.g. deleting a record that doesn't exist requires `object/record/delete` permission on any record
+                const userId = await createUserWithRoles([
+                    DATA_STEWARDS_ROLE_ID,
+                    AGENT_WORKSPACE_USERS_ROLE_ID
+                ]);
+                const registryClient = getRegistryClient(userId);
+                const notExistRecordId = uuidV4();
+                for (const result of [
+                    await registryClient.deleteRecord(notExistRecordId),
+                    await registryClient.deleteRecordAspect(
+                        notExistRecordId,
+                        "dcat-dataset-strings"
+                    ),
+                    await registryClient.deleteBySource("tag", "test-source")
+                ]) {
+                    expect(result).to.be.an.instanceof(ServerError);
+                    expect((result as ServerError).statusCode).to.equal(403);
+                }
+            });
+
+            it("should allow unconstrained generic record grants to operate on any record, including Agent Skill records", async () => {
+                const role = await authApiClient.createRole(
+                    "Role with unconstrained generic record permissions"
+                );
+                await authApiClient.createRolePermission(role.id, {
+                    name: "unconstrained record permission",
+                    description: "",
+                    operationUris: [
+                        "object/record/create",
+                        "object/record/read",
+                        "object/record/update",
+                        "object/record/delete"
+                    ],
+                    allow_exemption: false,
+                    org_unit_ownership_constraint: false,
+                    user_ownership_constraint: false,
+                    pre_authorised_constraint: false,
+                    resourceUri: "object/record"
+                });
+                const userId = await createUserWithRoles([role.id]);
+                const registryClient = getRegistryClient(userId);
+
+                // an Agent Skill record of another user
+                const skillOwnerId = await createUserWithRoles([
+                    AGENT_WORKSPACE_USERS_ROLE_ID
+                ]);
+                let result: any = await registryClient.putRecord(
+                    userSkillRecord(skillOwnerId)
+                );
+                expect(result).to.not.be.an.instanceof(Error);
+                result = await registryClient.getRecord(
+                    `agent-skill-${skillOwnerId}-useful-skill`,
+                    ["agent-skill"]
+                );
+                expect(result).to.not.be.an.instanceof(Error);
+
+                // operations that require unconditional permission
+                result = await registryClient.deleteRecord(uuidV4());
+                expect(result).to.not.be.an.instanceof(Error);
+                result = await registryClient.deleteBySource(
+                    "tag",
+                    "test-source"
+                );
+                expect(result).to.not.be.an.instanceof(Error);
+            });
         });
 
         it("should not allow a user to access distributions that he has no access via `dereference`", async () => {

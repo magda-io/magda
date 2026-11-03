@@ -1,4 +1,4 @@
-import { MgdApiError } from "./errors.js";
+import { MgdApiError, UsageError } from "./errors.js";
 
 export type OutputMode = "human" | "json" | "jsonl";
 
@@ -44,10 +44,13 @@ export function printError(e: unknown, mode: OutputMode): void {
                       code: e.code,
                       message: e.message,
                       status: e.status,
-                      ...(e.hint ? { hint: e.hint } : {})
+                      ...(e.hint ? { hint: e.hint } : {}),
+                      ...(e.outcome ? { outcome: e.outcome } : {}),
+                      ...(e.details ? { details: e.details } : {})
                   }
                 : {
-                      code: "error",
+                      code:
+                          e instanceof UsageError && e.code ? e.code : "error",
                       message: e instanceof Error ? e.message : String(e)
                   };
         process.stderr.write(JSON.stringify({ error }) + "\n");
@@ -56,6 +59,11 @@ export function printError(e: unknown, mode: OutputMode): void {
         process.stderr.write(colors.red(`Error: ${msg}`) + "\n");
         if (e instanceof MgdApiError && e.hint) {
             process.stderr.write(colors.dim(`Hint: ${e.hint}`) + "\n");
+        }
+        if (e instanceof MgdApiError && e.outcome === "unknown") {
+            process.stderr.write(
+                "The request may already have been applied by the server; its result is unknown. Do not resend it blindly.\n"
+            );
         }
     }
 }

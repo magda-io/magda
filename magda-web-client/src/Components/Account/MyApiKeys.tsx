@@ -90,8 +90,9 @@ const MyApiKeys: FunctionComponent<PropsType> = (props) => {
                     onClick={() =>
                         createApiKeyFormRef.current?.open(userId, refreshData)
                     }
+                    startIcon={<BsFillKeyFill />}
                 >
-                    <BsFillKeyFill /> Create New API Key
+                    Create New API Key
                 </Button>
                 <CreateUserApiKeyPopUp ref={createApiKeyFormRef} />
                 <Table

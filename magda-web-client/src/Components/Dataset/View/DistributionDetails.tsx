@@ -12,6 +12,7 @@ import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessU
 import "./DatasetDetails.scss";
 import { config } from "config";
 import DiscourseComments from "Components/Dataset/View/DiscourseComments";
+import DataUnderstandingTabs from "Components/Dataset/View/DataUnderstandingTabs";
 import { getPluginExtraVisualisationSections } from "../../../externalPluginComponents";
 
 const extraVisualisationSections = getPluginExtraVisualisationSections();
@@ -159,6 +160,23 @@ class DistributionDetails extends Component<{
                             : null}
                     </div>
                 )}
+
+                {/* Data Understanding tabs (Structure, How to use) are shown
+                    after the previews, but independently of the preview gate
+                    above: a non-previewable / query-only distribution can
+                    still be understood through its data dictionary and
+                    contract. */}
+                {distribution?.dataDictionary ||
+                distribution?.distributionContract ? (
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <DataUnderstandingTabs
+                                key={distribution.identifier}
+                                distribution={distribution}
+                            />
+                        </div>
+                    </div>
+                ) : null}
 
                 {config.discourseSiteUrl &&
                 config.discourseIntegrationDistributionPage ? (

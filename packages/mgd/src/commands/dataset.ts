@@ -28,6 +28,7 @@ import {
     storageDownloadUrl,
     getValidObjectKey,
     detectFormat,
+    detectFormatFromUrl,
     DATASETS_BUCKET_DEFAULT
 } from "../recordBuilders.js";
 import { uploadFile } from "../transfer.js";
@@ -433,7 +434,7 @@ export function registerDatasetCommands(program: Command): void {
         .option("--desc <description>", "distribution description")
         .option(
             "--format <format>",
-            "data format (default: from file extension)"
+            "data format (default: from the file or URL extension)"
         )
         .option("--bucket <bucket>", "storage bucket", DATASETS_BUCKET_DEFAULT)
         .option(
@@ -513,7 +514,9 @@ export function registerDatasetCommands(program: Command): void {
                     accessURL: opts.accessUrl,
                     format:
                         opts.format ??
-                        (fileName ? detectFormat(fileName) : undefined),
+                        (fileName
+                            ? detectFormat(fileName)
+                            : detectFormatFromUrl(opts.accessUrl)),
                     byteSize,
                     owner,
                     publishingState,

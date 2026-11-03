@@ -20,7 +20,7 @@ import Whisper from "rsuite/Whisper";
 import Popover from "rsuite/Popover";
 import { useAsync, useAsyncCallback } from "react-async-hook";
 import Form from "rsuite/Form";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../helpers/rsuiteTypes";
 import { OperationRecord } from "@magda/typescript-common/dist/authorization-api/model";
 import {
     queryResOperations,
@@ -88,6 +88,8 @@ const AccessGroupFormPopUp: ForwardRefRenderFunction<RefType, PropsType> = (
             onComplete?: SubmitCompleteHandlerType
         ) => {
             onCompleteRef.current = onComplete;
+            // reset form data so a reopened form never shows the values from its previous session
+            setGroupData(undefined);
             selectedGroupId = selectedGroupId?.trim();
             setGroupId(selectedGroupId);
             if (selectedGroupId === groupId) {

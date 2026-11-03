@@ -1,6 +1,9 @@
 # Magda Documentation
 
 - [How to build and run](./building-and-running.md)
+- [Agent Workspace architecture](./architecture/agent-workspace.md)
+- [Agent Skills architecture](./architecture/agent-skills.md)
+- [Agent Workspace deployment and operations](./agent-workspace-deployment.md)
 - [Architecture Decision Records (ADRs)](./adrs/)
 - [How to Release a New Version](./ci-version-release.md)
 - [Testing a PR with a Preview Release Before Merging](./pr-preview-release-testing.md)
@@ -15,6 +18,8 @@
 - [How to deploy Magda on Amazon AWS EKS](./deploy-to-aws.md)
 - [How to deploy Magda on Microsoft Azure Cloud AKS](./deploy-to-azure.md)
 - [How to use APIs](./using-api.md)
+- [Data Dictionary: authoring and consuming the `data-dictionary` aspect](./data-dictionary.md)
+- [Distribution Contract: authoring and consuming the `distribution-contract` aspect](./distribution-contract.md)
 - [`mgd` CLI — terminal & coding-agent access to a catalog (search, download, create/edit datasets; Claude Code / Codex / opencode skills)](https://github.com/magda-io/magda/tree/main/packages/mgd)
 - [How to document APIs](./api-documentation-howto.md)
 - [How API docs are generated & served (`magda-apidocs-server`)](../../magda-apidocs-server/README.md)

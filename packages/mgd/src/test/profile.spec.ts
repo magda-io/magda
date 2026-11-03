@@ -7,6 +7,7 @@ import {
     loadConfig,
     saveConfig,
     resolveProfile,
+    resolveProfileSelection,
     noProfileError,
     ConfigFile
 } from "../profile.js";
@@ -80,6 +81,31 @@ describe("profile store", () => {
             apiKeyId: "id2",
             apiKey: "key2"
         });
+    });
+
+    it("marks one-off profile and URL overrides as ineligible for global activation", () => {
+        const cfg: ConfigFile = {
+            activeProfile: "p1",
+            profiles: {
+                p1: { baseUrl: "https://a/api" },
+                p2: { baseUrl: "https://b/api" }
+            }
+        };
+        expect(resolveProfileSelection(cfg, env).mayActivateSkills).to.equal(
+            true
+        );
+        const namedOverride = resolveProfileSelection(cfg, {
+            ...env,
+            MGD_PROFILE: "p2"
+        });
+        expect(namedOverride.mayActivateSkills).to.equal(false);
+        expect(namedOverride.mayPersistAgentSkillIdentity).to.equal(true);
+        const credentialOverride = resolveProfileSelection(cfg, {
+            ...env,
+            MGD_BASE_URL: "https://override/api"
+        });
+        expect(credentialOverride.mayActivateSkills).to.equal(false);
+        expect(credentialOverride.mayPersistAgentSkillIdentity).to.equal(false);
     });
 
     it("MGD_PROFILE selects a named profile", () => {

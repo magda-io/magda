@@ -1,0 +1,31 @@
+{{- /* Render-time model and credential validation; emits no manifest. */ -}}
+{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
+{{- $alias := coalesce .Values.model.alias (get $globalModel "alias") -}}
+{{- if empty $alias -}}
+{{- fail "litellm: model.alias or global.defaultAgentModel.alias is required" -}}
+{{- end -}}
+{{- if ne (kindOf $alias) "string" -}}
+{{- fail (printf "litellm: model.alias or global.defaultAgentModel.alias must be a non-empty string; got %s" (kindOf $alias)) -}}
+{{- end -}}
+{{- if empty (trim $alias) -}}
+{{- fail "litellm: model.alias or global.defaultAgentModel.alias is required" -}}
+{{- end -}}
+{{- if ne $alias (trim $alias) -}}
+{{- fail "litellm: model.alias or global.defaultAgentModel.alias must not have leading or trailing whitespace" -}}
+{{- end -}}
+{{- $providerModel := coalesce .Values.model.providerModel (get $globalModel "providerModel") -}}
+{{- if empty $providerModel -}}
+{{- fail "litellm: model.providerModel or global.defaultAgentModel.providerModel is required" -}}
+{{- end -}}
+{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
+{{- if and (ne (kindOf $reasoningEffort) "invalid") (ne (kindOf $reasoningEffort) "string") -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %v (%s)" $reasoningEffort (kindOf $reasoningEffort)) -}}
+{{- end -}}
+{{- if and (eq (kindOf $reasoningEffort) "string") (not (has $reasoningEffort (list "" "off" "low" "medium" "high" "xhigh" "max"))) -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %q" $reasoningEffort) -}}
+{{- end -}}
+{{- $secretName := .Values.providerSecret.name | default "" -}}
+{{- $secretKey := .Values.providerSecret.key | default "" -}}
+{{- if ne (empty $secretName) (empty $secretKey) -}}
+{{- fail "litellm: providerSecret.name and providerSecret.key must either both be set or both be empty" -}}
+{{- end -}}

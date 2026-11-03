@@ -165,8 +165,9 @@ const AccessGroupDatasetsPanel: FunctionComponent<PropsType> = (props) => {
                         appearance="primary"
                         disabled={addDataset.loading}
                         onClick={() => addDataset.execute(datasetId)}
+                        startIcon={<MdAddCircle />}
                     >
-                        <MdAddCircle /> Add dataset to the group
+                        Add dataset to the group
                     </Button>
                     {addDataset.loading ? <Loader /> : null}
                 </div>

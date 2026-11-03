@@ -29,4 +29,10 @@
         height: 600px !important;
         max-height: 600px;
     }
+    // since rsuite v6, `.rs-tree-view` is the scroll container. Give it the full height
+    // so node dropdown menus aren't clipped when the tree only has a few nodes.
+    .rs-tree-view {
+        height: 600px;
+        max-height: 600px;
+    }
 }

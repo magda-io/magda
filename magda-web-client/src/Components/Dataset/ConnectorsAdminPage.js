@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 
 import Spinner from "Components/Common/Spinner";
+import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 
 import {
     listConnectors,
@@ -8,9 +9,8 @@ import {
     stopConnector,
     deleteConnector
 } from "actions/adminActions";
-import AdminHeader from "Components/Admin/AdminHeader";
 
-class StoriesAdminPage extends Component {
+class ConnectorsAdminPage extends Component {
     state = {
         connectors: null
     };
@@ -34,32 +34,34 @@ class StoriesAdminPage extends Component {
             a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
         );
         return (
-            <div>
-                <AdminHeader title="Connectors" />
-                <button className="au-btn" onClick={() => this.refresh()}>
-                    Refresh
-                </button>
-                {!connectors ? (
-                    <Spinner />
-                ) : (
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>URL</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedConnectors.map(
-                                this.renderConnector.bind(this)
-                            )}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+            <MagdaDocumentTitle prefixes={["Connectors", "Admin"]}>
+                <div>
+                    <h1>Admin / Connectors</h1>
+                    <button className="au-btn" onClick={() => this.refresh()}>
+                        Refresh
+                    </button>
+                    {!connectors ? (
+                        <Spinner />
+                    ) : (
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>URL</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedConnectors.map(
+                                    this.renderConnector.bind(this)
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </MagdaDocumentTitle>
         );
     }
 
@@ -115,4 +117,4 @@ class StoriesAdminPage extends Component {
     }
 }
 
-export default StoriesAdminPage;
+export default ConnectorsAdminPage;

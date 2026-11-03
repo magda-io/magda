@@ -10,7 +10,7 @@ import {
 } from "../../api-clients/AuthApis";
 import { useAsync, useAsyncCallback } from "react-async-hook";
 import reportError from "../../helpers/reportError";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../helpers/rsuiteTypes";
 import Placeholder from "rsuite/Placeholder";
 import Message from "rsuite/Message";
 import Loader from "rsuite/Loader";
@@ -89,8 +89,9 @@ const AssignUserRoleButton: FunctionComponent<PropsType> = (props) => {
                 color="blue"
                 appearance="primary"
                 onClick={() => setIsOpen(true)}
+                startIcon={<MdAssignmentReturn />}
             >
-                <MdAssignmentReturn /> Assign Role to User
+                Assign Role to User
             </Button>
             <Modal
                 className="assign-user-role-form-popup"

@@ -1,98 +1,139 @@
 package object.record
 
 import data.common.breakdownOperationUri
-import data.common.verifyRecordPermission
-import data.common.isPublishedDataset
+import data.common.hasNoConstraintPermission
 import data.common.isDraftDataset
-import data.common.isPublishedDistribution
 import data.common.isDraftDistribution
+import data.common.isPublishedDataset
+import data.common.isPublishedDistribution
+import data.common.verifyRecordPermission
+import data.object.agentSkill.verifyPermission as verifyAgentSkillPermission
+import data.object.agentSkillInstallation.verifyPermission as verifyAgentSkillInstallationPermission
 import data.object.dataset.verifyPermission as verifyDatasetPermission
-import data.object.organization.verifyPermission as verifyOrgPermission
 import data.object.distribution.verifyPermission as verifyDistributionPermission
+import data.object.organization.verifyPermission as verifyOrgPermission
 
 default allow = false
 
 allow {
-    verifyPermission(input.operationUri)
+	verifyPermission(input.operationUri)
+}
+
+# Unconstrained generic record grants (no ownership, org unit or pre-authorised
+# constraint) are deliberate grants to trusted users (no built-in role has one).
+# They apply to every record, including typed Agent Skill records.
+verifyPermission(operationUri) {
+	hasNoConstraintPermission(operationUri)
+}
+
+# Agent Skill records are read with the typed Agent Skill read rules.
+# They're written by Agent Services only (with its internal admin session),
+# after it authorises the caller with the typed Agent Skill operations. So
+# there are no typed write rules here: generic writes on Agent Skill records
+# are limited to admins and unconstrained grants above.
+verifyPermission(operationUri) {
+	input.object.record["agent-skill"].type == "system"
+
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	operationType == "read"
+	verifyAgentSkillPermission("object/agentSkill/system/read", "record")
+}
+
+verifyPermission(operationUri) {
+	input.object.record["agent-skill"].type == "user"
+
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	operationType == "read"
+	verifyAgentSkillPermission("object/agentSkill/user/read", "record")
+}
+
+# Agent Skill installation records are read with the typed installation read
+# rules, and written by Agent Services only, the same as Agent Skill records.
+verifyPermission(operationUri) {
+	input.object.record["agent-skill-installation"]
+
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	operationType == "read"
+	verifyAgentSkillInstallationPermission("object/agentSkill/install/read", "record")
+}
+
+# A concrete typed publication or installation never falls back to constrained
+# generic object/record grants.
+verifyPermission(operationUri) {
+	not input.object.record["agent-skill"]
+	not input.object.record["agent-skill-installation"]
+	verifyNonAgentSkillPermission(operationUri)
 }
 
 # delegated to published dataset rules
-verifyPermission(operationUri) {
-    isPublishedDataset("record")
+verifyNonAgentSkillPermission(operationUri) {
+	isPublishedDataset("record")
 
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-    inputOperationUri := concat("/", ["object", "dataset", "published", operationType])
-    # proxy to dataset related permission decision
-    verifyDatasetPermission(inputOperationUri, "record")
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "dataset", "published", operationType])
+	verifyDatasetPermission(inputOperationUri, "record")
 }
 
 # delegated to draft dataset rules
-verifyPermission(operationUri) {
-    isDraftDataset("record")
+verifyNonAgentSkillPermission(operationUri) {
+	isDraftDataset("record")
 
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-    inputOperationUri := concat("/", ["object", "dataset", "draft", operationType])
-    # proxy to dataset related permission decision
-    verifyDatasetPermission(inputOperationUri, "record")
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "dataset", "draft", operationType])
+	verifyDatasetPermission(inputOperationUri, "record")
 }
 
 # delegated to rules for other dataset type (reserved for future)
-verifyPermission(operationUri) {
-    input.object.record["dcat-dataset-strings"]
-    not isDraftDataset("record")
-    not isPublishedDataset("record")
-    input.object.record.publishing.state
+verifyNonAgentSkillPermission(operationUri) {
+	input.object.record["dcat-dataset-strings"]
+	not isDraftDataset("record")
+	not isPublishedDataset("record")
+	input.object.record.publishing.state
 
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-    inputOperationUri := concat("/", ["object", "dataset", "*", operationType])
-    # proxy to dataset related permission decision
-    verifyDatasetPermission(inputOperationUri, "record")
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "dataset", "*", operationType])
+	verifyDatasetPermission(inputOperationUri, "record")
 }
 
 # delegated to published distribution rules
-verifyPermission(operationUri) {
-    isPublishedDistribution("record")
+verifyNonAgentSkillPermission(operationUri) {
+	isPublishedDistribution("record")
 
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-    inputOperationUri := concat("/", ["object", "distribution", "published", operationType])
-    # proxy to distribution related permission decision
-    verifyDistributionPermission(inputOperationUri, "record")
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "distribution", "published", operationType])
+	verifyDistributionPermission(inputOperationUri, "record")
 }
 
 # delegated to draft distribution rules
-verifyPermission(operationUri) {
-    isDraftDistribution("record")
+verifyNonAgentSkillPermission(operationUri) {
+	isDraftDistribution("record")
 
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-    inputOperationUri := concat("/", ["object", "distribution", "draft", operationType])
-    # proxy to distribution related permission decision
-    verifyDistributionPermission(inputOperationUri, "record")
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "distribution", "draft", operationType])
+	verifyDistributionPermission(inputOperationUri, "record")
 }
 
 # delegated to rules for other distribution type (reserved for future)
-verifyPermission(operationUri) {
-    input.object.record["dcat-distribution-strings"]
-    not isDraftDistribution("record")
-    not isPublishedDistribution("record")
-    input.object.record.publishing.state
+verifyNonAgentSkillPermission(operationUri) {
+	input.object.record["dcat-distribution-strings"]
+	not isDraftDistribution("record")
+	not isPublishedDistribution("record")
+	input.object.record.publishing.state
 
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-    inputOperationUri := concat("/", ["object", "distribution", "*", operationType])
-    # proxy to distribution related permission decision
-    verifyDistributionPermission(inputOperationUri, "record")
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "distribution", "*", operationType])
+	verifyDistributionPermission(inputOperationUri, "record")
 }
 
-verifyPermission(operationUri) {
-    # organization-details' existence proves it's a organization record
-    input.object.record["organization-details"]
+verifyNonAgentSkillPermission(operationUri) {
+	input.object.record["organization-details"]
 
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
-    inputOperationUri := concat("/", ["object", "organization", operationType])
-    # proxy to organization related permission decision
-    verifyOrgPermission(inputOperationUri, "record")
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	inputOperationUri := concat("/", ["object", "organization", operationType])
+	verifyOrgPermission(inputOperationUri, "record")
 }
 
-# handle all other not specified record types with general access control rules
-verifyPermission(operationUri) {
-    verifyRecordPermission(operationUri, "record")
+# Handle all remaining non-skill record types with general access-control rules.
+verifyNonAgentSkillPermission(operationUri) {
+	verifyRecordPermission(operationUri, "record")
 }

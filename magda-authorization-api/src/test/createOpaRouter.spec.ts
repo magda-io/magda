@@ -18,6 +18,7 @@ import Database from "../Database.js";
 import mockApiKeyStore from "./mockApiKeyStore.js";
 import { ANONYMOUS_USERS_ROLE_ID } from "magda-typescript-common/src/authorization-api/constants.js";
 const testDataSimple = require("../../../magda-typescript-common/src/test/sampleOpaResponses/simple.json");
+const testDataAgentSkillBuiltinCalls = require("../../../magda-typescript-common/src/test/sampleUntranslatableOpaResponses/agentSkillBuiltinCalls.json");
 import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 
 describe("Auth api router", function (this) {
@@ -559,6 +560,153 @@ describe("Auth api router", function (this) {
                 Date.now() - 20000,
                 Date.now() + 20000
             );
+        });
+    });
+
+    describe("Test `/batchDecision`", () => {
+        function createOpaQueryNockScope(
+            onRequest: ((jsonData: any) => void) | null,
+            response: { [key: string]: any },
+            statusCode: number = 200
+        ) {
+            return nock(opaBaseUrl)
+                .post("/v1/query")
+                .once()
+                .reply(function (uri, requestBody) {
+                    if (onRequest) {
+                        onRequest(requestBody);
+                    }
+                    return [statusCode, JSON.stringify(response)];
+                });
+        }
+
+        it("should return 400 status code if `items` is not an array of objects", async () => {
+            const scope = createOpaQueryNockScope(null, {});
+            for (const items of [undefined, {}, [1], [{}, "a"]]) {
+                const res = await request(app)
+                    .post(`/batchDecision`)
+                    .send({ operationUri: "object/record/update", items });
+                expect(res.status).to.be.equal(400);
+                expect(res.text).to.contain("`items` must be an array");
+            }
+            expect(scope.isDone()).to.be.equal(false);
+        });
+
+        it("should return 400 status code if not specify operation uri", async () => {
+            const scope = createOpaQueryNockScope(null, {});
+            const res = await request(app)
+                .post(`/batchDecision`)
+                .send({ items: [{}] });
+            expect(res.status).to.be.equal(400);
+            expect(res.text).to.contain(
+                "Please specify `operationUri` for the request"
+            );
+            expect(scope.isDone()).to.be.equal(false);
+        });
+
+        it("should evaluate all items in one OPA query and return results in item order", async () => {
+            let data: any;
+            const scope = createOpaQueryNockScope(
+                (requestData) => {
+                    data = requestData;
+                },
+                // decision for item 1 is undefined (e.g. no rule matched in a custom policy without default rule)
+                { result: [{ decisions: { "0": true, "2": false } }] }
+            );
+
+            const items = [
+                { object: { record: { id: "record-1" } } },
+                { object: { record: { id: "record-2" } } },
+                { object: { record: { id: "record-3" } } }
+            ];
+            const res = await request(app)
+                .post(`/batchDecision`)
+                .send({
+                    operationUri: "object/record/update",
+                    input: { extra: "shared" },
+                    items
+                });
+
+            expect(res.status).to.be.equal(200);
+            expect(res.body).to.be.deep.equal({
+                results: [true, false, false]
+            });
+            expect(scope.isDone()).to.be.equal(true);
+
+            expect(data.query).to.contain("data.entrypoint.allow");
+            expect(data.input.items).to.be.deep.equal(items);
+            expect(data.input.base.operationUri).to.equal(
+                "object/record/update"
+            );
+            expect(data.input.base.resourceUri).to.equal("object/record");
+            expect(data.input.base.extra).to.equal("shared");
+            expect(data.input.base.user.roles).to.be.an("array");
+            expect(data.input.base.user.roles[0].id).to.equal(
+                ANONYMOUS_USERS_ROLE_ID
+            );
+            expect(data.input.base.timestamp).to.be.a("number");
+        });
+
+        it("should remove shared fields (e.g. `user`) from items so items can't add to them", async () => {
+            let data: any;
+            const scope = createOpaQueryNockScope(
+                (requestData) => {
+                    data = requestData;
+                },
+                { result: [{ decisions: { "0": true } }] }
+            );
+
+            const res = await request(app)
+                .post(`/batchDecision`)
+                .send({
+                    operationUri: "object/record/update",
+                    items: [
+                        {
+                            user: { managingOrgUnitIds: ["xxx"] },
+                            operationUri: "object/record/read",
+                            object: { record: { id: "record-1" } }
+                        }
+                    ]
+                });
+
+            expect(res.status).to.be.equal(200);
+            expect(scope.isDone()).to.be.equal(true);
+            expect(data.input.items).to.be.deep.equal([
+                { object: { record: { id: "record-1" } } }
+            ]);
+        });
+
+        it("should return 500 status code when OPA responds with an error", async () => {
+            const scope = createOpaQueryNockScope(
+                null,
+                { code: "internal_error" },
+                500
+            );
+            const res = await request(app)
+                .post(`/batchDecision`)
+                .send({
+                    operationUri: "object/record/update",
+                    items: [{ object: { record: { id: "record-1" } } }]
+                });
+            expect(res.status).to.be.equal(500);
+            expect(res.text).to.contain("Failed to get auth decisions");
+            expect(scope.isDone()).to.be.equal(true);
+        });
+    });
+
+    describe("Test `/decision` with residual rules that can't be translated", () => {
+        it("should return 500 status code rather than an incorrect decision", async () => {
+            // see https://github.com/magda-io/magda/issues/3869
+            const scope = createOpaNockScope(
+                null,
+                testDataAgentSkillBuiltinCalls
+            );
+            const res = await request(app).get(
+                `/decision/object/record/update`
+            );
+            expect(res.status).to.be.equal(500);
+            expect(res.text).to.contain("can't locate operator: regex.match");
+            expect(scope.isDone()).to.be.equal(true);
         });
     });
 

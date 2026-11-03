@@ -8,10 +8,12 @@
         height: 100%;
         width: 220px;
         background-color: #30384d;
+        // scroll within the nav when the menu is taller than the page
+        overflow-y: auto;
+        // the item highlights are wider than the nav
         overflow-x: hidden;
         padding-top: 20px;
         float: left;
-        overflow-x: visible;
     }
 
     .side-navigation a {
@@ -60,6 +62,36 @@
                 background: none !important;
                 color: #30384d !important;
             }
+        }
+    }
+
+    // two-level menu: group title & its sub items
+    .side-navigation a.sidenav-group-title {
+        svg.sidenav-group-caret {
+            left: auto;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            top: 15px;
+        }
+    }
+
+    .side-navigation a.sidenav-sub-item {
+        height: 40px;
+
+        span {
+            height: 40px;
+            line-height: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            padding-left: 62px;
+        }
+
+        svg {
+            left: 33px;
+            top: 11px;
+            width: 18px;
+            height: 18px;
         }
     }
 }

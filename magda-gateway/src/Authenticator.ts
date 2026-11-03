@@ -15,6 +15,7 @@ import destroySession from "magda-typescript-common/src/session/destroySession.j
 import createAuthApiKeyMiddleware from "./createAuthApiKeyMiddleware.js";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash.js";
 import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl.js";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 
 export type SessionCookieOptions = CookieOptions;
 
@@ -32,6 +33,10 @@ export interface AuthenticatorOptions {
     enableSessionForAPIKeyAccess?: boolean;
     externalUrl: string;
     appBasePath?: string;
+    jwtSecret?: string;
+    agentManagerUrl?: string;
+    systemUserId?: string;
+    agentManagerControlSecret?: string;
 }
 
 type AuthPluginSessionData = {
@@ -74,6 +79,10 @@ export default class Authenticator {
     private authApiBaseUrl: string;
     private appBaseUrl: string;
     private externalUrl: string;
+    private jwtSecret?: string;
+    private agentManagerUrl?: string;
+    private systemUserId?: string;
+    private agentManagerControlSecret?: string;
 
     constructor(options: AuthenticatorOptions) {
         this.authApiBaseUrl = options.authApiBaseUrl;
@@ -81,6 +90,10 @@ export default class Authenticator {
             options.appBasePath ? options.appBasePath : "/"
         );
         this.externalUrl = addTrailingSlash(options.externalUrl);
+        this.jwtSecret = options.jwtSecret;
+        this.agentManagerUrl = options.agentManagerUrl?.replace(/\/$/, "");
+        this.systemUserId = options.systemUserId;
+        this.agentManagerControlSecret = options.agentManagerControlSecret;
 
         if (!this.authApiBaseUrl) {
             throw new Error("Authenticator requires valid auth API base URL");
@@ -229,7 +242,57 @@ export default class Authenticator {
      * @param {express.NextFunction} next
      * @memberof Authenticator
      */
+    private async cleanupAgentWorkspace(req: express.Request): Promise<void> {
+        const userId = req.user?.id;
+        if (
+            !this.agentManagerUrl ||
+            !this.jwtSecret ||
+            !this.systemUserId ||
+            !this.agentManagerControlSecret ||
+            !userId
+        )
+            return;
+        const response = await fetch(
+            `${this.agentManagerUrl}/private/users/${encodeURIComponent(
+                userId
+            )}/session?wait=true`,
+            {
+                method: "DELETE",
+                headers: {
+                    "X-Magda-Session": buildJwt(
+                        this.jwtSecret,
+                        this.systemUserId
+                    ),
+                    "X-Magda-Agent-Control": this.agentManagerControlSecret
+                },
+                signal: AbortSignal.timeout(180000)
+            }
+        );
+        if (!response.ok) {
+            throw new Error(
+                `Agent Workspace cleanup returned HTTP ${response.status}`
+            );
+        }
+    }
+
+    private isSameOriginLogout(req: express.Request): boolean {
+        if (req.get("Sec-Fetch-Site")) {
+            return req.get("Sec-Fetch-Site") === "same-origin";
+        }
+        const source = req.get("Origin") || req.get("Referer");
+        if (!source) return false;
+        try {
+            return new URL(source).origin === new URL(this.externalUrl).origin;
+        } catch {
+            return false;
+        }
+    }
+
     private async logout(req: express.Request, res: express.Response) {
+        if (this.agentManagerUrl && !this.isSameOriginLogout(req)) {
+            res.status(403).send("Same-origin logout request required");
+            return;
+        }
         const redirectUrl: string | null = req?.query?.["redirect"]
             ? (req.query["redirect"] as string)
             : null;
@@ -248,6 +311,21 @@ export default class Authenticator {
         }
 
         const logoutWithSession = async () => {
+            try {
+                await this.cleanupAgentWorkspace(req);
+            } catch (error) {
+                console.error(
+                    "Failed to destroy Agent Workspace on logout",
+                    error
+                );
+                res.status(503).send({
+                    isError: true,
+                    errorCode: 503,
+                    errorMessage:
+                        "Could not destroy the current Agent Workspace. Please retry logout."
+                });
+                return;
+            }
             const authPlugin = (req?.user?.authPlugin
                 ? req.user.authPlugin
                 : req?.session?.authPlugin) as

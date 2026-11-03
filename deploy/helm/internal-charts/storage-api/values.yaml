@@ -81,6 +81,11 @@ minio:
   resources:
     requests:
       memory: 256Mi
+    # -- (string) Memory limit for MinIO. Without a limit, the bundled MinIO release's memory usage keeps growing and can starve other workloads on the node.
+    # Under load MinIO's own memory stays around 250Mi; the rest of the usage up to the limit is file cache, which the kernel reclaims instead of OOM-killing MinIO.
+    # Increase it if you raise `uploadLimit` well above the default or expect many large concurrent uploads.
+    limits:
+      memory: 1Gi
   persistence:
     size: 10Gi
   DeploymentUpdate:

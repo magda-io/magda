@@ -2,7 +2,9 @@ import recursiveReadDir from "recursive-readdir";
 import path from "path";
 
 const getScssFileList = async (clientRoot: string) => {
-    return await recursiveReadDir(clientRoot + "/src", [
+    // recursive-readdir lists files as its async stat calls complete, so sort
+    // the list to make the compiled css (and the cascade) the same every run
+    const files = await recursiveReadDir(clientRoot + "/src", [
         (file, stats) => {
             // --- ignore pancake directory
             if (stats.isDirectory() && path.basename(file) === "pancake") {
@@ -27,6 +29,7 @@ const getScssFileList = async (clientRoot: string) => {
             return false;
         }
     ]);
+    return files.sort();
 };
 
 export default getScssFileList;

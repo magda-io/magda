@@ -625,6 +625,12 @@ buildtest:helm-charts:
 
     # The plugin<->Magda helper-contract handshake. Magda's own charts never
     # exercise it, so without this it would first run in a user's cluster.
+    - echo "chart assertions - Agent Services feature and runtime matrix"
+    - bash deploy/helm/magda-core/tests/agent-services-render.sh
+
+    - echo "chart assertions - Agent Workspace Minikube and GKE deployment profiles"
+    - bash deploy/helm/magda-core/tests/agent-workspace-profiles.sh
+
     - echo "chart assertions - plugin compatibility handshake"
     - bash deploy/helm/magda-core/tests/compatibility-check.sh
 
@@ -776,6 +782,16 @@ dockerize:typescript:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
     - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
+    - |
+      RUNTIME_IMAGE="$CI_REGISTRY/magda-data/magda/magda-agent-runtime:$CI_COMMIT_REF_SLUG"
+      RUNTIME_MANIFEST="$(docker buildx imagetools inspect "$RUNTIME_IMAGE")"
+      printf '%s\n' "$RUNTIME_MANIFEST"
+      for platform in linux/amd64 linux/arm64; do
+        if ! printf '%s\n' "$RUNTIME_MANIFEST" | grep -Eq "Platform:[[:space:]]+$platform"; then
+          echo "Runtime image $RUNTIME_IMAGE is missing platform $platform"
+          exit 1
+        fi
+      done
 
 dockerize:migrators:
   stage: buildtest
@@ -1058,14 +1074,17 @@ Release-to-Docker-Hub-Github-Container:
       alias: docker
       command: ["--mtu=1360"]
   rules:
-    # Strict Semvar validation. match any version string. Should release version tag
+    # GitLab applies only the first matching rule, so the non-pre-release rule must come
+    # before the general semver rule (which also matches non-pre-release versions).
+    # Regex matches non-pre-release version only e.g. v1.0.2; Should release version tag & `latest` tag
+    - if: $CI_COMMIT_TAG =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+      variables:
+        RELEASE_VERSION_TAG: "true"
+        RELEASE_LATEST_TAG: "true"
+    # Strict Semvar validation. match any (pre-release) version string. Should release version tag
     - if: $CI_COMMIT_TAG =~ /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
       variables:
         RELEASE_VERSION_TAG: "true"
-    # Regex matches non-pre-release version only e.g. v1.0.2; Should release `latest` tag
-    - if: $CI_COMMIT_TAG =~ /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
-      variables:
-        RELEASE_LATEST_TAG: "true"
     - if: $CI_COMMIT_BRANCH == "main"
       variables:
         RELEASE_MAIN_TAG: "true"

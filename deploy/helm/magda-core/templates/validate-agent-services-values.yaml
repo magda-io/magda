@@ -1,0 +1,60 @@
+{{- /* Cross-chart feature validation; emits no manifest. */ -}}
+{{- $agentWorkspaceEnabled := dig "agentWorkspace" "enabled" false .Values.global -}}
+{{- $llmServicesEnabled := dig "llmServices" "enabled" false .Values.global -}}
+{{- if and $agentWorkspaceEnabled (not $llmServicesEnabled) -}}
+{{- fail "global.agentWorkspace.enabled=true requires global.llmServices.enabled=true because the managed runtime uses the authenticated Magda LLM facade" -}}
+{{- end -}}
+
+{{- if $llmServicesEnabled -}}
+{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
+{{- $globalAlias := get $globalModel "alias" -}}
+{{- $llmServices := index .Values "llm-services" -}}
+{{- $configuredAllowedModels := get $llmServices "allowedModels" -}}
+{{- if not (kindIs "slice" $configuredAllowedModels) -}}
+{{- fail (printf "llm-services.allowedModels must be an array of non-empty strings; got %s" (kindOf $configuredAllowedModels)) -}}
+{{- end -}}
+{{- $allowedModels := list -}}
+{{- if eq (len $configuredAllowedModels) 0 -}}
+{{- if ne (kindOf $globalAlias) "string" -}}
+{{- fail "llm-services: global.defaultAgentModel.alias must be a non-empty string when allowedModels is empty" -}}
+{{- end -}}
+{{- $trimmedGlobalAlias := trim $globalAlias -}}
+{{- if empty $trimmedGlobalAlias -}}
+{{- fail "llm-services: global.defaultAgentModel.alias must be a non-empty string when allowedModels is empty" -}}
+{{- end -}}
+{{- if ne $globalAlias $trimmedGlobalAlias -}}
+{{- fail "llm-services: global.defaultAgentModel.alias must not have leading or trailing whitespace" -}}
+{{- end -}}
+{{- $allowedModels = append $allowedModels $globalAlias -}}
+{{- else -}}
+{{- range $index, $configuredModel := $configuredAllowedModels -}}
+{{- if ne (kindOf $configuredModel) "string" -}}
+{{- fail (printf "llm-services.allowedModels[%d] must be a non-empty string; got %s" $index (kindOf $configuredModel)) -}}
+{{- end -}}
+{{- $configuredModel = trim $configuredModel -}}
+{{- if empty $configuredModel -}}
+{{- fail (printf "llm-services.allowedModels[%d] must be a non-empty string" $index) -}}
+{{- end -}}
+{{- if has $configuredModel $allowedModels -}}
+{{- fail (printf "llm-services.allowedModels contains duplicate model ID %q" $configuredModel) -}}
+{{- end -}}
+{{- $allowedModels = append $allowedModels $configuredModel -}}
+{{- end -}}
+{{- end -}}
+
+{{- $litellm := get $llmServices "litellm" | default dict -}}
+{{- $bundledLiteLlm := get $litellm "enabled" -}}
+{{- $litellmModel := get $litellm "model" | default dict -}}
+{{- $litellmAlias := coalesce (get $litellmModel "alias") $globalAlias -}}
+{{- if $agentWorkspaceEnabled -}}
+{{- $agentServices := index .Values "agent-services" -}}
+{{- $agentLlm := get $agentServices "llm" | default dict -}}
+{{- $agentAlias := coalesce (get $agentLlm "model") $globalAlias -}}
+{{- if not (has $agentAlias $allowedModels) -}}
+{{- fail (printf "Agent Workspace model %q must be included in llm-services.allowedModels" $agentAlias) -}}
+{{- end -}}
+{{- if and $bundledLiteLlm (ne $agentAlias $litellmAlias) -}}
+{{- fail (printf "Agent Workspace model %q must match bundled LiteLLM alias %q" $agentAlias $litellmAlias) -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}

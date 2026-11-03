@@ -11,9 +11,13 @@
         },
         "resourceUri": {
             "title": "Resource URI",
-            "description": "One access group can only grant access to the same type of resources. The Resource URI specifies the type of resources that the access group manages. At this moment, only registry records `object/record` is supported.",
+            "description": "One access group can only grant access to the same type of resources. The Resource URI specifies the type of resources that the access group manages: registry records (`object/record`), or the read grant of one published Agent Skill managed by Agent Services (`object/agentSkill/user` or `object/agentSkill/system`).",
             "type": "string",
-            "enum": ["object/record"]
+            "enum": [
+                "object/record",
+                "object/agentSkill/user",
+                "object/agentSkill/system"
+            ]
         },
         "description": {
             "title": "Description",

@@ -3,10 +3,20 @@ import os from "node:os";
 import path from "node:path";
 import { UsageError } from "./errors.js";
 
+export interface CachedAgentSkillSource {
+    key: string;
+    canonicalBaseUrl: string;
+    tenantId: string;
+    userId: string;
+    verifiedAt: string;
+}
+
 export interface Profile {
     baseUrl: string;
     apiKeyId?: string;
     apiKey?: string;
+    /** Last online-verified Agent Skill source identity for offline activation. */
+    agentSkillSource?: CachedAgentSkillSource;
 }
 
 export interface ConfigFile {
@@ -42,12 +52,18 @@ export async function saveConfig(
 ): Promise<void> {
     const file = configPath(env);
     await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
-    await fs.writeFile(file, JSON.stringify(cfg, null, 2) + "\n", {
-        mode: 0o600
-    });
-    // mkdir/writeFile modes don't apply if dir/file pre-existed — enforce:
+    const temporary = `${file}.${process.pid}.${Date.now()}.tmp`;
+    const handle = await fs.open(temporary, "wx", 0o600);
+    try {
+        await handle.writeFile(JSON.stringify(cfg, null, 2) + "\n", "utf8");
+        await handle.sync();
+    } finally {
+        await handle.close();
+    }
+    // Apply directory permissions before the atomic rename. The temp file was
+    // created 0600, so no fallible work remains after the commit point.
     await fs.chmod(path.dirname(file), 0o700);
-    await fs.chmod(file, 0o600);
+    await fs.rename(temporary, file);
 }
 
 export function resolveProfile(
@@ -72,8 +88,42 @@ export function resolveProfile(
     };
 }
 
-const ENV_HINT =
-    "set MGD_BASE_URL/MGD_API_KEY_ID/MGD_API_KEY for a one-off.";
+export interface ProfileSelection {
+    name: string;
+    profile?: Profile;
+    configuredActiveProfile: string;
+    oneOffOverride: boolean;
+    mayPersistAgentSkillIdentity: boolean;
+    mayActivateSkills: boolean;
+}
+
+export function resolveProfileSelection(
+    cfg: ConfigFile,
+    env: NodeJS.ProcessEnv = process.env
+): ProfileSelection {
+    const selected = resolveProfile(cfg, env);
+    const configuredActiveProfile = cfg.activeProfile || "default";
+    const oneOffOverride = Boolean(
+        env.MGD_PROFILE ||
+            env.MGD_BASE_URL ||
+            env.MGD_API_KEY_ID ||
+            env.MGD_API_KEY
+    );
+    const credentialOverride = Boolean(
+        env.MGD_BASE_URL || env.MGD_API_KEY_ID || env.MGD_API_KEY
+    );
+    return {
+        ...selected,
+        configuredActiveProfile,
+        oneOffOverride,
+        mayPersistAgentSkillIdentity:
+            !credentialOverride && Boolean(cfg.profiles[selected.name]),
+        mayActivateSkills:
+            !oneOffOverride && selected.name === configuredActiveProfile
+    };
+}
+
+const ENV_HINT = "set MGD_BASE_URL/MGD_API_KEY_ID/MGD_API_KEY for a one-off.";
 
 /**
  * Build a context-aware error for when no usable profile could be resolved.

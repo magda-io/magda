@@ -1,0 +1,105 @@
+{
+    "schemaVersion": "1.0",
+    "resourceRole": "data-service",
+    "accessMode": "public-query",
+    "protocol": "REST",
+    "endpointUrl": "https://example.org/api",
+    "specification": {
+        "type": "openapi",
+        "url": "https://example.org/openapi.json",
+        "version": "3.1.0",
+        "fingerprint": "sha256:4f2b6c1d8e9a0b3c5d7e9f1a2b4c6d8e0f1a3b5c7d9e1f2a4b6c8d0e2f4a6b8c"
+    },
+    "operations": [
+        {
+            "id": "list-sites",
+            "sourceIdentifier": "listSites",
+            "label": "List sites",
+            "purpose": "Browse every monitoring site with its current status; start here to find site codes",
+            "interactionType": "query",
+            "method": "GET",
+            "path": "/sites",
+            "propertyProvenance": {
+                "purpose": {
+                    "method": "manual",
+                    "reviewStatus": "custodian-approved",
+                    "sourceFingerprint": "sha256:4f2b6c1d8e9a0b3c5d7e9f1a2b4c6d8e0f1a3b5c7d9e1f2a4b6c8d0e2f4a6b8c"
+                }
+            },
+            "parameters": [
+                {
+                    "name": "status",
+                    "sourceIdentifier": "status",
+                    "location": "query",
+                    "type": "string",
+                    "enum": ["active", "closed"],
+                    "description": "Only sites in this status. Closed sites keep their historical data.",
+                    "propertyProvenance": {
+                        "description": {
+                            "method": "manual",
+                            "reviewStatus": "reviewed"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "sourceIdentifier": "cursor",
+                    "location": "query",
+                    "type": "string"
+                },
+                {
+                    "name": "limit",
+                    "sourceIdentifier": "limit",
+                    "location": "query",
+                    "type": "integer",
+                    "maximum": 200
+                }
+            ],
+            "response": {
+                "mediaTypes": ["application/json"],
+                "recordsPath": "/items",
+                "pagination": {
+                    "type": "cursor",
+                    "limitParameter": "limit",
+                    "cursorParameter": "cursor",
+                    "nextCursorPath": "/paging/nextCursor",
+                    "totalPath": "/paging/total"
+                }
+            }
+        },
+        {
+            "id": "site-summary",
+            "label": "Site summary",
+            "purpose": "Daily summary statistics for one site, curated by the custodian",
+            "interactionType": "read",
+            "method": "GET",
+            "path": "/sites/{code}/summary",
+            "provenance": {
+                "method": "manual",
+                "reviewStatus": "custodian-approved"
+            },
+            "parameters": [
+                {
+                    "name": "code",
+                    "location": "path",
+                    "type": "string",
+                    "required": true
+                },
+                {
+                    "name": "day",
+                    "location": "query",
+                    "type": "date",
+                    "provenance": {
+                        "method": "agent-generated",
+                        "reviewStatus": "unreviewed"
+                    }
+                }
+            ]
+        }
+    ],
+    "provenance": {
+        "method": "harvested",
+        "sourceType": "openapi",
+        "reviewStatus": "unreviewed"
+    }
+}

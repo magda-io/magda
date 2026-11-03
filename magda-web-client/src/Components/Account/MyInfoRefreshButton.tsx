@@ -13,8 +13,9 @@ const MyInfoRefreshButton: FunctionComponent = (props) => {
             appearance="primary"
             {...props}
             onClick={() => dispatch(requestWhoAmI())}
+            startIcon={<MdRefresh />}
         >
-            <MdRefresh /> Refresh
+            Refresh
         </Button>
     );
 };

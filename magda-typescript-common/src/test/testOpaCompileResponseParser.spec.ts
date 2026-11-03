@@ -14,6 +14,7 @@ const testDataUnconditionalTrueSimple = require("./sampleOpaResponses/unconditio
 const testDataDatasetPermissionWithOrgUnitConstraint = require("./sampleOpaResponses/datasetPermissionWithOrgUnitConstraint.json");
 const testDataSingleTermAspectRef = require("./sampleOpaResponses/singleTermAspectRef.json");
 const testExtraLargeResponse = require("./sampleOpaResponses/extraLargeResponse.json");
+const testDataAgentSkillBuiltinCalls = require("./sampleUntranslatableOpaResponses/agentSkillBuiltinCalls.json");
 
 describe("Test extra large opa response", () => {
     it("should process extra large opa response in timely manager", function () {
@@ -420,5 +421,22 @@ describe("Test OpaCompileResultParser with testDataSingleTermAspectRef", functio
         expect(result).to.be.equal(
             `input.object.record.dcat-dataset-strings AND \ninput.object.record.publishing.state = "published"`
         );
+    });
+});
+
+/**
+ * Residual rules produced by OPA (v0.37.2) for `object/record/update` with unknown `input.object.record`
+ * for a user with Agent Skill owner permissions. The Agent Skill write rules call built-in functions
+ * (e.g. `regex.match`) on the unknown record, which can't be translated (e.g. to SQL).
+ * The parser must fail loudly rather than silently drop or mistranslate those rules,
+ * so policy authors find out and choose a different evaluation path (e.g. full evaluation per record).
+ * See https://github.com/magda-io/magda/issues/3869
+ */
+describe("Test OpaCompileResultParser with built-in function calls on unknowns", function () {
+    it("should throw an error rather than produce residual rules", function () {
+        const parser = new OpaCompileResponseParser();
+        expect(() =>
+            parser.parse(JSON.stringify(testDataAgentSkillBuiltinCalls))
+        ).to.throw(/can't locate operator: regex\.match/);
     });
 });

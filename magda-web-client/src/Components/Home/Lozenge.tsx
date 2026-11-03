@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { Link } from "react-router-dom";
+import CommonLink from "Components/Common/CommonLink";
 
 export type PropsType = {
     url?: string;
@@ -10,7 +10,8 @@ const Lozenge: FunctionComponent<PropsType> = (props) => {
     if (!props?.url || !props?.text) return null;
     return (
         <div className="homepage-lozenge">
-            {<Link to={props.url || "/"}>{props.text}</Link>}
+            {/* `CommonLink` supports both site paths & external URLs */}
+            <CommonLink to={props.url}>{props.text}</CommonLink>
         </div>
     );
 };

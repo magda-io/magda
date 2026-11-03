@@ -1,6 +1,6 @@
 {
   "name": "@magda/migrator-registry-aspects",
-  "version": "6.2.1",
+  "version": "7.1.0",
   "description": "Setting up built-in registry aspect definitions.",
   "license": "Apache-2.0",
   "type": "module",
@@ -15,7 +15,7 @@
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
-    "test": "echo \"test cases to be added\"",
+    "test": "mocha",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push"
@@ -29,15 +29,25 @@
     "userId": "00000000-0000-4000-8000-000000000000"
   },
   "dependencies": {
-    "@magda/registry-aspects": "^6.2.1",
-    "@magda/typescript-common": "^6.2.1",
+    "@magda/registry-aspects": "^7.1.0",
+    "@magda/typescript-common": "^7.1.0",
     "fs-extra": "^11.2.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.11",
     "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.6",
     "@types/yargs": "^12.0.8",
+    "chai": "^5.0.0-rc.0",
+    "mocha": "^10.2.0",
     "typescript": "~5.3.3"
+  },
+  "mocha": {
+    "import": "tsx/esm",
+    "spec": [
+      "src/test/**/*.spec.ts"
+    ]
   },
   "magda": {
     "language": "typescript",

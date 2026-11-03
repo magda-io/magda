@@ -1,0 +1,93 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/hyper-schema#",
+    "title": "Agent Skill",
+    "description": "Publication metadata for a validated Agent Skill ZIP managed by Agent Services.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "type",
+        "createdAt",
+        "createdBy",
+        "description",
+        "archiveKey",
+        "updatedAt",
+        "updatedBy",
+        "checksum",
+        "state"
+    ],
+    "properties": {
+        "name": {
+            "description": "Immutable canonical name derived from root SKILL.md and identical to the Registry record name.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 46,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "type": {
+            "description": "Immutable publication type.",
+            "type": "string",
+            "enum": ["system", "user"]
+        },
+        "userId": {
+            "description": "Immutable intended Workspace user for a user publication. Omitted for system publications.",
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "createdAt": {
+            "description": "Immutable UTC creation time.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "createdBy": {
+            "description": "Immutable authenticated creator UUID.",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "description": {
+            "description": "Description derived from SKILL.md frontmatter.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+        },
+        "archiveKey": {
+            "description": "Immutable object key in the deployment default Storage API bucket.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^agent-services/skills/(system-skills|user-skills)/.+\\.zip$"
+        },
+        "updatedAt": {
+            "description": "UTC time of the most recent successful publication when state is READY; retained from the previous success while an update is PENDING.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "updatedBy": {
+            "description": "Authenticated UUID that most recently published the archive.",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
+        },
+        "checksum": {
+            "description": "Lowercase SHA-256 checksum of the exact published ZIP bytes.",
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+        },
+        "state": {
+            "description": "Internal publication consistency state. Only READY records are catalogued or synchronized.",
+            "type": "string",
+            "enum": ["PENDING", "READY", "DELETING"]
+        }
+    },
+    "allOf": [
+        {
+            "if": {
+                "properties": { "type": { "const": "user" } },
+                "required": ["type"]
+            },
+            "then": { "required": ["userId"] },
+            "else": { "not": { "required": ["userId"] } }
+        }
+    ]
+}

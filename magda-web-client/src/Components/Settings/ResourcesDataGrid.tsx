@@ -121,8 +121,9 @@ const ResourcesDataGrid: FunctionComponent<PropsType> = ({
                                 setDataReloadToken(`${Math.random()}`)
                             );
                         }}
+                        startIcon={<MdAddCircle />}
                     >
-                        <MdAddCircle /> Create Resource
+                        Create Resource
                     </Button>
                 </div>
                 <div className="search-button-inner-wrapper">

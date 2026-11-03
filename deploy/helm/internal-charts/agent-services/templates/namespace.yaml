@@ -1,0 +1,20 @@
+{{- if .Values.sandboxNamespace.create -}}
+{{- $namespace := include "agent-services.sandboxNamespace" . -}}
+{{- $existing := (lookup "v1" "Namespace" "" $namespace) | default dict -}}
+{{- if or (empty $existing) (include "magda.isPartOfRelease" (dict "objectData" $existing "root" .)) -}}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $namespace }}
+  labels:
+{{ include "agent-services.installationLabels" . | indent 4 }}
+{{- with .Values.sandboxNamespace.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+  annotations:
+{{- $annotations := mergeOverwrite (dict "helm.sh/resource-policy" "keep") (.Values.sandboxNamespace.annotations | default dict) }}
+{{- range $key, $value := $annotations }}
+    {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end -}}
+{{- end -}}

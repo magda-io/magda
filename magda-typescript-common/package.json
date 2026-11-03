@@ -1,7 +1,7 @@
 {
   "name": "@magda/typescript-common",
   "description": "Common TypeScript code shared between components.",
-  "version": "6.2.1",
+  "version": "7.1.0",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "@magda/esm-utils": "^1.0.1",
-    "@magda/registry-aspects": "^6.2.1",
-    "@magda/scripts": "^6.2.1",
+    "@magda/registry-aspects": "^7.1.0",
+    "@magda/scripts": "^7.1.0",
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.0",
     "@types/cross-spawn": "^6.0.1",
@@ -41,6 +41,7 @@
     "@types/urijs": "^1.19.19",
     "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
+    "ajv": "^6.12.6",
     "c8": "^9.0.0",
     "chai": "^5.0.0-rc.0",
     "chai-as-promised": "^7.1.1",

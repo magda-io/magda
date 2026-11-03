@@ -137,8 +137,9 @@ const OperationsDataGrid: FunctionComponent<PropsType> = (props) => {
                                 () => setDataReloadToken(`${Math.random()}`)
                             );
                         }}
+                        startIcon={<MdAddCircle />}
                     >
-                        <MdAddCircle /> Create Operation
+                        Create Operation
                     </Button>
                 </div>
             </div>

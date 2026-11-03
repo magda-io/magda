@@ -24,7 +24,7 @@ import {
     getImmediateChildren,
     getOrgUnitById
 } from "api-clients/OrgUnitApis";
-import { ItemDataType } from "rsuite/esm/@types/common";
+import { ItemDataType } from "../../helpers/rsuiteTypes";
 import reportError from "../../helpers/reportError";
 
 const Paragraph = Placeholder.Paragraph;

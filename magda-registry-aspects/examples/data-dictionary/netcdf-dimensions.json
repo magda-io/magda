@@ -1,0 +1,84 @@
+{
+    "schemaVersion": "1.0",
+    "source": {
+        "type": "netcdf-metadata",
+        "profile": "CF-1.8"
+    },
+    "provenance": {
+        "method": "authoritative-import",
+        "reviewStatus": "unreviewed"
+    },
+    "entities": [
+        {
+            "id": "climate",
+            "name": "Climate variables",
+            "role": "variable-set",
+            "dimensions": [
+                {
+                    "id": "time",
+                    "name": "time",
+                    "size": 365,
+                    "unlimited": true,
+                    "fieldPath": "time"
+                },
+                {
+                    "id": "lat",
+                    "name": "latitude",
+                    "size": 720,
+                    "fieldPath": "lat"
+                },
+                {
+                    "id": "lon",
+                    "name": "longitude",
+                    "size": 1440,
+                    "fieldPath": "lon"
+                }
+            ],
+            "fields": [
+                {
+                    "path": "time",
+                    "name": "time",
+                    "type": "number",
+                    "sourceType": "float64",
+                    "dimensions": ["time"],
+                    "roles": ["coordinate"],
+                    "semanticConcept": "time",
+                    "unit": "days since 1970-01-01"
+                },
+                {
+                    "path": "lat",
+                    "name": "lat",
+                    "type": "number",
+                    "sourceType": "float32",
+                    "dimensions": ["lat"],
+                    "roles": ["coordinate"],
+                    "semanticConcept": "latitude",
+                    "unit": "degrees_north"
+                },
+                {
+                    "path": "lon",
+                    "name": "lon",
+                    "type": "number",
+                    "sourceType": "float32",
+                    "dimensions": ["lon"],
+                    "roles": ["coordinate"],
+                    "semanticConcept": "longitude",
+                    "unit": "degrees_east"
+                },
+                {
+                    "path": "temperature",
+                    "name": "temperature",
+                    "title": "Air temperature",
+                    "type": "number",
+                    "sourceType": "float32",
+                    "dimensions": ["time", "lat", "lon"],
+                    "roles": ["data-variable"],
+                    "semanticConcept": "air_temperature",
+                    "unit": "K",
+                    "unitSystem": "UDUNITS",
+                    "missingValues": [-9999]
+                }
+            ]
+        }
+    ]
+}

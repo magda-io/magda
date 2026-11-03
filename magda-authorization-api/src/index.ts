@@ -126,7 +126,8 @@ app.use(
         tenantId: argv.tenantId,
         authDecisionClient: authDecisionClient,
         failedApiKeyAuthBackOffSeconds: argv.failedApiKeyAuthBackOffSeconds,
-        registryClient
+        registryClient,
+        systemApiKeyIssuerUserId: argv.userId
     })
 );
 

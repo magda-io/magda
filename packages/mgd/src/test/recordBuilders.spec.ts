@@ -3,6 +3,7 @@ import {
     createId,
     storageDownloadUrl,
     detectFormat,
+    detectFormatFromUrl,
     buildDatasetRecord,
     buildDistributionRecord,
     removeInvalidChars,
@@ -79,6 +80,44 @@ describe("recordBuilders", () => {
         expect(detectFormat("a.csv")).to.equal("CSV");
         expect(detectFormat("a.GeoJSON")).to.equal("GEOJSON");
         expect(detectFormat("noext")).to.equal(undefined);
+        expect(detectFormat("readings.2026.csv")).to.equal("CSV");
+    });
+
+    it("reports the data format inside a compressed file", () => {
+        expect(detectFormat("data.csv.gz")).to.equal("CSV");
+        expect(detectFormat("data.JSON.BZ2")).to.equal("JSON");
+        expect(detectFormat("backup.tar.zst")).to.equal("TAR");
+        expect(detectFormat("data.gz")).to.equal("GZ");
+        expect(detectFormat("data.tgz")).to.equal("TGZ");
+        expect(detectFormat("shapes.zip")).to.equal("ZIP");
+        expect(
+            detectFormatFromUrl("https://example.com/files/data.csv.gz?x=1")
+        ).to.equal("CSV");
+    });
+
+    it("detects formats from the path of a link URL", () => {
+        expect(
+            detectFormatFromUrl("https://example.com/files/stations.GeoJSON")
+        ).to.equal("GEOJSON");
+        expect(
+            detectFormatFromUrl("https://example.com/report.csv?v=2#top")
+        ).to.equal("CSV");
+        expect(detectFormatFromUrl("https://example.com/api")).to.equal(
+            undefined
+        );
+        expect(detectFormatFromUrl("https://example.com/data.v2/")).to.equal(
+            undefined
+        );
+        expect(
+            detectFormatFromUrl(
+                "https://example.com/arcgis/rest/services/x/FeatureServer/0"
+            )
+        ).to.equal(undefined);
+        // Server-side script extensions name the endpoint, not the data.
+        expect(
+            detectFormatFromUrl("https://example.com/download.aspx?id=1")
+        ).to.equal(undefined);
+        expect(detectFormatFromUrl("not a url")).to.equal(undefined);
     });
 
     it("builds a draft dataset record with the web-client aspect set", () => {

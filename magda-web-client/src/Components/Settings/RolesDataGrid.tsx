@@ -158,8 +158,9 @@ const RolesDataGrid: FunctionComponent<PropsType> = ({
                                     setDataReloadToken(`${Math.random()}`);
                                 })
                             }
+                            startIcon={<MdAddCircle />}
                         >
-                            <MdAddCircle /> Create Role
+                            Create Role
                         </Button>
                     )}
                 </div>
