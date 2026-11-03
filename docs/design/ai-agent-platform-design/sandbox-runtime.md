@@ -80,16 +80,21 @@ user-approved cleanup. Nothing is globally installed with sudo/apt. The
 environment survives Pod replacement and suspend/resume but is removed on
 Workspace reset, termination and logout along with the PVC.
 
-PR #3896 proposes increasing newly created PVCs from **5 GiB to 10 GiB**.
+Merged #3896 increased the **new Workspace/WarmPool PVC request** from **5 GiB to 10 GiB**.
 Keep 1 CPU, 1536 MiB memory, and 1 GiB ephemeral-storage limits initially,
 with measured qualification in a real nonroot Sandbox. Cache, virtualenv and
 temporary writes must be PVC-backed. Operator configuration remains flexible;
-changing the default does not automatically resize existing PVCs. The reported
-Minikube scientific/skops check observed approximately 280 MiB PVC growth,
-493 MiB peak memory and zero measured ephemeral growth; production gVisor
-security qualification remains a separate deployment concern. See
+changing the default does not automatically resize existing PVCs. The [merged #3896 qualification](https://github.com/magda-io/magda/pull/3896) ran an isolated pinned NumPy/SciPy/scikit-learn/skops environment in a nonroot Sandbox and reproduced a RandomForest save/load. It measured approximately 279.81 MiB unique PVC growth, 493.36 MiB peak cgroup memory and zero measurable ephemeral growth for the installation. These are **one tested workload**, not general resource guarantees. Production gVisor security qualification remains a separate deployment concern. See
 [Agent Skills](./skills.md) for built-in naming and reservation policy and
 [deployment](./deployment.md) for runtime defaults.
+
+## Effective Sandbox resource visibility (#3897 / merged #3898)
+
+The runtime now includes the read-only `magda-workspace-resources` helper and the image-bundled `python-dependencies` guidance for reporting **configured** Workspace CPU, memory and requested PVC size separately from **effective** cgroup v2 CPU/memory limits and current memory use. The runtime's configured values are exposed by the Sandbox template. `/sys/fs/cgroup/cpu.max`, `memory.max` and `memory.current` are more reliable for container sizing than node-oriented `nproc`, `os.cpu_count()`, `free` or `/proc/meminfo`.
+
+Distinguish the **PVC request** from the filesystem capacity observed by `df /data`. Development StorageClasses such as Minikube hostpath can show the host disk and may not enforce the requested quota. The 10 GiB request applies to **fresh/current-template** claims; old PVCs and already-created warm Sandboxes do not automatically change. The helper does not enforce quotas or replace runtime/pod-level limits. Scientific workloads should size scikit-learn `n_jobs`, OpenMP and BLAS threads from effective cgroup CPU, including fractional limits, instead of the node's core count.
+
+In [#3898's live Minikube test](https://github.com/magda-io/magda/pull/3898), the agent correctly reported 1 CPU, 1.5 GiB RAM and a requested 10 GiB PVC rather than host figures, and asked before installing dependencies. This is test evidence for the helper/guidance, **not** a claim that every StorageClass enforces its PVC size.
 
 ## Single selected WarmPool and runtime
 
@@ -133,5 +138,5 @@ Separate application and provider evidence:
 
 - #3844: local Minikube/runc/gVisor DSH, HTTP/WebSocket, auth and lifecycle.
 - #3852: GKE L4/ingress-nginx/DSH/gVisor **and zonal GCE PD storage**; did **not** exercise full Gateway/auth or an enforcing CNI.
-- #3850: the integrated Magda Agent MVP with installation-scoped Helm/Manager and CSI fix (draft; local E2E).
+- #3850: integrated Magda Agent MVP with installation-scoped Helm/Manager and CSI fix (merged to `next`; local E2E).
 - GKE client deployment: rerun isolation matrix on Dataplane V2/qualified Calico, verify effective Workload Identity permissions, GKE ingress controller provenance, and production storage constraints before asserting end-to-end security qualification.

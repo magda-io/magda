@@ -88,6 +88,6 @@ Provider-specific GKE security controls belong in deploy-time prerequisites/qual
 
 - **#3844 (Minikube):** local DSH HTTP/WSS, network policy matrix and runc/gVisor behaviour tested.
 - **#3852 (real GKE):** external L4 ingress, gVisor/KAS, DNS/public egress, WebSockets, and PD CSI verified. **GKE NetworkPolicy isolation not enforced; Cloud IAM privileges unknown.**
-- **#3850 (MVP draft):** security-oriented Helm templates and KAS API/RuntimeClass preflight implemented, **but no real enforcing-GKE network/metadata IAM qualification shown**.
+- **#3850 (merged MVP on `next`):** security-oriented Helm templates and KAS API/RuntimeClass preflight implemented, **but no real enforcing-GKE network/metadata IAM qualification shown**.
 
 Do not advertise full GKE sandbox security qualification until the negative network matrix and Cloud identity tests pass on the selected real cluster.
