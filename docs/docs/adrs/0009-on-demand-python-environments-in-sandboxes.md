@@ -27,4 +27,4 @@ Prebundling all scientific packages, modifying system Python, Python interpreter
 
 ## Verification
 
-See [Workspace runtime](../architecture/agent-workspace.md#on-demand-python-environments-3896), [deployment guide](../agent-workspace-deployment.md#on-demand-python-environments-and-storage) and [runtime E2E](../e2e-test-cases/agent-workspace.md#on-demand-python-dependency-checks).
+See [Workspace runtime](../architecture/agent-workspace.md#on-demand-python-environments-and-resource-reporting-38963898), [deployment guide](../agent-workspace-deployment.md#on-demand-python-environments-and-storage) and [runtime E2E](../e2e-test-cases/agent-workspace.md#on-demand-python-dependency-checks).
