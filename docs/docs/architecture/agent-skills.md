@@ -254,7 +254,7 @@ ask the agent to resynchronise skills, or run `mgd agent-skill sync` in the
 Workspace. There is no create, delete, metadata editing or system ZIP action.
 The caller's own user skills also offer **Share**, and system skills offer
 **Manage access** to holders of `object/agentSkill/system/update`
-([details](#sharing-and-installed-shared-skills-3861)).
+([details](./agent-skills-authorization.md#sharing-and-installed-shared-skills-3861)).
 
 ## Workspace skill-sync status and Retry / Re-check
 
