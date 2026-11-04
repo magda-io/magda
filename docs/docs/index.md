@@ -1,5 +1,6 @@
 # Magda Documentation
 
+- [Documentation structure and lifecycle: how to place designs, architecture, ADRs and tests](./documentation-conventions.md)
 - [How to build and run](./building-and-running.md)
 - [Agent Workspace user guide](./agent-workspace-user-guide.md)
 - [Agent Workspace architecture](./architecture/agent-workspace.md)

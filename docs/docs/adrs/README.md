@@ -15,6 +15,7 @@ wondering "why was it done this way?".
   **Decision**, **Consequences**, **Alternatives considered**, and any
   implementation notes worth preserving near the decision.
 - Prefer linking to GitHub issues/PRs for tracking, and to the relevant code.
+- ADRs explain consequential choices, **not** every implemented feature. See [documentation conventions](../documentation-conventions.md).
 
 ## Index
 
@@ -28,3 +29,5 @@ wondering "why was it done this way?".
 - [0007 — Shared skill source and recipient-owned installation are distinct](./0007-agent-skill-sharing-and-recipient-installations.md)
 - [0008 — Model-mediated Agent Skill publication consent in the MVP](./0008-model-mediated-agent-skill-publication-approval.md)
 - [0009 — Isolated, on-demand Python dependencies in Agent Sandboxes](./0009-on-demand-python-environments-in-sandboxes.md)
+- [0010 — Separate distribution structure from access mechanics](./0010-separate-distribution-structure-and-access-contracts.md)
+- [0011 — Keep Data Understanding metadata provenance-aware and advisory](./0011-provenance-aware-advisory-data-understanding.md)
