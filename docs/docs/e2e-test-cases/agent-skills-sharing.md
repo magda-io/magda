@@ -11,7 +11,7 @@ Use two non-admin users holding only **Agent Workspace Users**, called Alice
 role, a user Dave holding only the typed user-read permissions (no install
 permission), and an **Agent Skills Admins** user for system access. Create
 them and their API keys through `/v0/public/{users,roles,…}` with a
-short-lived admin JWT, as described in [Workspace access checks](#workspace-access-checks),
+short-lived admin JWT, as described in [Workspace access checks](./agent-workspace.md#workspace-access-checks),
 and remove them afterwards. Run each user's `mgd` with its own profile; never
 share credentials between profiles.
 
