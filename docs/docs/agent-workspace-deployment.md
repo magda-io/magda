@@ -1,12 +1,10 @@
 # Agent Workspace deployment and operations
 
-This operator guide covers the opt-in Agent Workspace in draft PR #3850,
-including Helm setup, migration, local deployment and **partially qualified**
-GKE alpha reference configuration. Read the
+This operator guide covers the opt-in Agent Workspace on the `next` development branch (MVP [#3850](https://github.com/magda-io/magda/pull/3850) merged, sharing [#3864](https://github.com/magda-io/magda/pull/3864) merged), including Helm setup, migration, local deployment and a **partially qualified** GKE alpha reference configuration. This is not a declaration that a v8 feature release or production GKE security qualification has occurred. Read the
 [architecture](./architecture/agent-workspace.md) and
 [Agent Skills design](./architecture/agent-skills.md) for component contracts.
 The [E2E guide](./e2e-test-cases/agent-workspace.md) contains executable
-qualification checks. The profiles in `deploy/helm/` are **deployment overlays**,
+functional qualification checks, and the [GKE security case](./e2e-test-cases/agent-workspace-gke-security.md) records mandatory provider network/IAM negative tests. The [security architecture](./architecture/agent-workspace-security.md) and [user guide](./agent-workspace-user-guide.md) serve security reviewers and Workspace users respectively. The profiles in `deploy/helm/` are **deployment overlays**,
 not chart defaults; the published `magda-core` chart remains independently
 composable into `magda` or another parent chart.
 
@@ -107,7 +105,7 @@ not a technical package-installation approval boundary; the current Workspace
 execution permission does not independently prevent a model from invoking a
 package manager without consent.
 
-The default PVC request is **10 GiB per warm or claimed Sandbox**. This increases
+The default **new** PVC request is **10 GiB per warm or claimed Sandbox** (merged #3896). This increases
 provisioned capacity and potential storage cost relative to the former 5 GiB
 default, particularly when `warmPool.size` is greater than zero. CPU, memory and
 ephemeral-storage defaults remain unchanged; in particular, the 1 GiB ephemeral

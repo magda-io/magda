@@ -11,6 +11,7 @@ See [Agent Workspace architecture](./agent-workspace.md) for Sandbox lifecycle,
 self-only Workspace access and the runtime trust boundary; see
 [deployment and operations](../agent-workspace-deployment.md) for installation
 and [E2E tests](../e2e-test-cases/agent-workspace.md) for qualification.
+For the detailed source/installation permission boundary see [authorization and sharing](./agent-skills-authorization.md); for manifest/reconciliation failure handling see [sync](./agent-skills-sync.md).
 
 ## Agent Skills publication API
 
