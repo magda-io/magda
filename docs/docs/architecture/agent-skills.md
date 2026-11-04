@@ -429,7 +429,7 @@ sandbox and `ask` approval policy, and the overlay never mentions
 
 ### One approval for publishing
 
-Publishing needs exactly one meaningful user decision:
+Publishing needs exactly one meaningful user decision. The dedicated DSH Agent Skill tools were introduced in [#3850](https://github.com/magda-io/magda/pull/3850) and extended for shared-skill fork in [#3864](https://github.com/magda-io/magda/pull/3864). They do **not** intercept general `mgd` dataset/file/API mutations. Instructions on whether the agent should ask before those mutations belong in [the bundled `mgd` skill](../../../packages/mgd/skills/SKILL.md); the distinct technical trade-off is captured in [ADR 0008](../adrs/0008-model-mediated-agent-skill-publication-approval.md):
 
 - If the user clearly approved publishing **this reviewed draft** in chat ("Publish
   it", "Save this to my MAGDA account"), the model sets `userApproved: true` and
