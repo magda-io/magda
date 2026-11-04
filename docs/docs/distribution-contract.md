@@ -2,7 +2,8 @@
 
 The built-in `distribution-contract` aspect describes **how a distribution can be accessed or queried**: what kind of resource it is, its protocol and endpoint, where its native specification and documentation are, what authentication the source expects, a curated list of useful operations with their scalar parameters, request/response metadata (with links to `data-dictionary` entities), pagination hints and what the source reports it supports. It records **provenance and review state** throughout.
 
-- Design: [Distribution Contract Design](../design/distribution-contract-design.md) (part of the [Data Understanding Layer](../design/data-understanding-layer-design.md)).
+- Historical specification/design: [Distribution Contract Design](../design/distribution-contract-design.md) (part of the [Data Understanding Layer](../design/data-understanding-layer-design.md)). [#3827](https://github.com/magda-io/magda/pull/3827) prepared the design, [#3828](https://github.com/magda-io/magda/pull/3828) implemented the v7 core; automatic producers remain open in [#3814](https://github.com/magda-io/magda/issues/3814).
+- Decisions: [ADR 0010](./adrs/0010-separate-distribution-structure-and-access-contracts.md), [ADR 0011](./adrs/0011-provenance-aware-advisory-data-understanding.md).
 - JSON Schema: [`magda-registry-aspects/distribution-contract.schema.json`](../../magda-registry-aspects/distribution-contract.schema.json) (aspect id `distribution-contract`, distribution records). It is registered automatically by the registry aspects migrator.
 - Example payloads (HTTP download, REST/OpenAPI, ArcGIS Feature Service, OGC API/STAC, authenticated service, mixed provenance): [`magda-registry-aspects/examples/distribution-contract/`](../../magda-registry-aspects/examples/distribution-contract/).
 - Shared TypeScript model and helpers: `@magda/typescript-common/dist/distribution-contract/*.js`.

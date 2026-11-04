@@ -4,6 +4,8 @@
 
 Magda v7 core design. The core normalized distribution metadata is implemented by #3807 / #3820 (`data-dictionary`) and #3808 / #3828 (`distribution-contract`). The Magda v8 AI Agent Platform (#3810) is developed on `next` and is a downstream consumer of these v7 capabilities.
 
+The cross-cutting architectural decisions are captured in [ADR 0010](../docs/adrs/0010-separate-distribution-structure-and-access-contracts.md) and [ADR 0011](../docs/adrs/0011-provenance-aware-advisory-data-understanding.md). The completed core is described in the [Data Dictionary guide](../docs/data-dictionary.md) and [Distribution Contract guide](../docs/distribution-contract.md); automatic harvesting still belongs to [#3813](https://github.com/magda-io/magda/issues/3813) / [#3814](https://github.com/magda-io/magda/issues/3814).
+
 This document defines the overall architecture and user experience for helping people and machine clients understand what a dataset contains, how its distributions can be accessed, and how existing dataset-level catalogue metadata contributes context. Detailed core contracts are defined in:
 
 - [`distribution-contract-design.md`](./distribution-contract-design.md)

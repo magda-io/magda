@@ -205,40 +205,11 @@ LLM Services proxies both Responses and Chat Completions for compatibility.
 
 ## Key implementation decisions
 
-### On-demand Python environments (proposed in #3896)
+### On-demand Python environments and resource reporting (#3896/#3898)
 
-[PR #3896](https://github.com/magda-io/magda/pull/3896), tracked by
-[#3895](https://github.com/magda-io/magda/issues/3895), adds support for
-on-demand Python packages without preinstalling a large ML stack. This is
-a **pending PR**, not part of the merged `next` runtime yet. The design
-keeps Debian's system Python and pandas, adds `python3-pip` and
-`python3-venv`, and ships a pinned multi-architecture `uv` binary.
-Agents should use an isolated environment and locked/pinned dependencies,
-with pip inside a venv as a compatibility fallback; uv-managed Python
-downloads and modifications to system Python remain disabled.
+The merged [#3896](https://github.com/magda-io/magda/pull/3896) runtime retains Debian Python and pandas, provides pinned multi-architecture `uv`, Python pip/venv fallback, and purpose-specific, **PVC-backed** environments inside DSH's writable working tree (`/data/workspace/agent-harness/default-workspace/{.venvs,.cache,.tmp}`). uv-managed interpreter downloads and global system-Python modifications remain disabled. Package installation consent is requested by the bundled `python-dependencies` guidance, **not technically enforced by a separate approval gate**.
 
-DSH's `workspace-write` boundary permits agent writes in the managed
-working tree, not arbitrary paths on the PVC. Package environments, uv/pip
-caches and installation temporaries therefore reside in
-`/data/workspace/agent-harness/default-workspace/{.venvs,.cache,.tmp}`.
-The package-manager wrappers scope temporary/cache environment variables
-to their subprocesses without redirecting DSH host-process state.
-Users must explicitly approve dependency installation/synchronization;
-the bundled `python-dependencies` Agent Skill communicates this rule,
-but it is agent guidance rather than a technically enforced approval gate.
-Environments survive suspend/resume and Pod replacement, but disappear
-with reset, termination or logout and PVC deletion.
-
-PR #3896 proposes a 10 GiB default PVC for newly created and warm
-Sandboxes (up from 5 GiB) while initially retaining 1 CPU, 1536 MiB
-memory and 1 GiB ephemeral-storage limits. The reported Minikube
-qualification exercised isolated scientific/skops, system-site and pip
-fallback environments with no measured ephemeral-storage growth.
-An existing PVC does not automatically resize on Helm upgrade; operators
-must check StorageClass expansion or recreate the Workspace. See the
-[deployment guide](../agent-workspace-deployment.md) for current operational
-status and [Agent Skills architecture](./agent-skills.md#runtime-bundled-skill-naming-design-for-3896)
-for naming/reservation decisions.
+Merged [#3898](https://github.com/magda-io/magda/pull/3898) adds `magda-workspace-resources` to report configured CPU/memory and **requested** PVC size separately from effective cgroup CPU/memory, current memory use and observed `/data` filesystem capacity. Defaults remain 1 CPU, 1536 MiB memory, 1 GiB ephemeral storage and a **10 GiB new PVC request**. An existing PVC does not automatically expand; Minikube hostpath `df /data` may show host capacity, **not** an enforced user quota. Environments survive Pod replacement/suspend, but reset and logout delete them with the PVC. See [operations](../agent-workspace-deployment.md#on-demand-python-environments-and-storage), [runtime-bundled skill naming](./agent-skills.md#runtime-bundled-skill-naming-3896) and [ADR 0009](../adrs/0009-on-demand-python-environments-in-sandboxes.md).
 
 ### Stateless manager, Kubernetes-owned state
 
@@ -339,5 +310,9 @@ open sockets during destructive lifecycle operations.
   Kubernetes identity and storage cleanup.
 - [Agent Workspace E2E qualification](../e2e-test-cases/agent-workspace.md)
   — reproducible test procedures and acceptance checks.
-- [Magda v8 AI Agent Platform design (#3819)](https://github.com/magda-io/magda/tree/design/3811-ai-agent-platform/docs/design/ai-agent-platform-design)
-  — evolving architectural decisions and future work such as #3862.
+- [Workspace security and trust boundaries](./agent-workspace-security.md)
+  — protected identities, credentials and **unqualified** GKE network/IAM boundaries.
+- [LLM Services](./llm-services.md) — current facade/allowlist and future model-entitlement separation.
+- [Agent Workspace user guide](../agent-workspace-user-guide.md) — opening, resetting and reusing Workspaces.
+- [Architecture Decision Records](../adrs/) — reasons and alternatives for accepted contracts.
+- [Active Agent Workspace proposals](../../design/agent-workspace/) — explicitly unimplemented features and future work (e.g. #3838); the working design discussion is retained in PR #3819.

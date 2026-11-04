@@ -159,6 +159,8 @@ independently configurable. For component boundaries and threat model see
 cleanup and qualified infrastructure see the
 [Agent Workspace operator guide](../agent-workspace-deployment.md).
 
+For specific authority and verification contracts, see [Workspace security](./agent-workspace-security.md), [Skill sharing/authorization](./agent-skills-authorization.md), [Skill synchronization](./agent-skills-sync.md), [LLM Services](./llm-services.md), and [ADRs](../adrs/). The [user guide](../agent-workspace-user-guide.md) describes the supported workflow; [E2E cases](../e2e-test-cases/README.md) define reproducible checks.
+
 ## Minions
 
 A minion is a service that listens for new records or changes to existing records, performs some kind of operation and then writes the result back to the registry. For instance, we have a broken link minion that listens for changes to distributions, retrieves the URLs described, records whether they were able to be accessed successfully and then writes that back to the registry in its own aspect. Minions don't currently really have a responsibility within the system - their responsibility depends on what they're designed to do, which varies.

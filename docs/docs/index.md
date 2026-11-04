@@ -1,10 +1,18 @@
 # Magda Documentation
 
+- [Documentation structure and lifecycle: how to place designs, architecture, ADRs and tests](./documentation-conventions.md)
 - [How to build and run](./building-and-running.md)
+- [Agent Workspace user guide](./agent-workspace-user-guide.md)
 - [Agent Workspace architecture](./architecture/agent-workspace.md)
+- [Workspace security and trust boundaries](./architecture/agent-workspace-security.md)
 - [Agent Skills architecture](./architecture/agent-skills.md)
+- [Agent Skills authorization and sharing](./architecture/agent-skills-authorization.md)
+- [Agent Skill synchronization and provenance](./architecture/agent-skills-sync.md)
+- [LLM Services architecture](./architecture/llm-services.md)
 - [Agent Workspace deployment and operations](./agent-workspace-deployment.md)
+- [Agent Workspace / Agent Skills E2E cases](./e2e-test-cases/README.md)
 - [Architecture Decision Records (ADRs)](./adrs/)
+- [Future Agent Workspace design proposals](../design/agent-workspace/)
 - [How to Release a New Version](./ci-version-release.md)
 - [Testing a PR with a Preview Release Before Merging](./pr-preview-release-testing.md)
 - [End-to-End Full Cluster Deployment Test](./e2e-cluster-deployment-test.md)
