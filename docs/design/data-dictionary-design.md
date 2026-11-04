@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed design for a Magda v7 capability. Implementation targets the `main` branch.
+**Core implemented in Magda v7** via [#3820](https://github.com/magda-io/magda/pull/3820) / #3807: built-in JSON Schema, typed normalizer/validator, manual authoring, compatibility fixtures and read-only Structure UI. This detailed page records the **implementation-era design and compatibility rationale**, not a guarantee that all future producers/adapters below are implemented. For supported behaviour see the [Data Dictionary guide](../docs/data-dictionary.md), the authoritative [JSON Schema](../../magda-registry-aspects/data-dictionary.schema.json), [ADR 0010](../docs/adrs/0010-separate-distribution-structure-and-access-contracts.md) and [ADR 0011](../docs/adrs/0011-provenance-aware-advisory-data-understanding.md).
+
+**Still proposed:** automatic and incremental source harvesting, reviewed-annotation merge/drift policy and source-specific producers are open in [#3813](https://github.com/magda-io/magda/issues/3813). Keep the design file at its established path while code/tests/issues reference it; it is a transitional historical specification, not the current user guide. See [documentation conventions](../docs/documentation-conventions.md).
 
 This document defines the `data-dictionary` distribution aspect introduced by the [data understanding layer](./data-understanding-layer-design.md).
 

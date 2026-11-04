@@ -2,7 +2,8 @@
 
 The built-in `data-dictionary` aspect describes **what data a distribution actually contains**: its entities (tables, sheets, feature layers, API request/response bodies, variable sets), their fields and stable field paths, types, units, descriptions, semantic concepts, keys, relationships and dimensions, together with **provenance and review state**.
 
-- Design: [Unified Data Dictionary Design](../design/data-dictionary-design.md) (part of the [Data Understanding Layer](../design/data-understanding-layer-design.md)).
+- Historical specification/design: [Unified Data Dictionary Design](../design/data-dictionary-design.md) (part of the [Data Understanding Layer](../design/data-understanding-layer-design.md)). The v7 core was implemented by [#3820](https://github.com/magda-io/magda/pull/3820); automatic producers remain open in [#3813](https://github.com/magda-io/magda/issues/3813).
+- Decisions: [ADR 0010](./adrs/0010-separate-distribution-structure-and-access-contracts.md) (structure versus access), [ADR 0011](./adrs/0011-provenance-aware-advisory-data-understanding.md) (provenance and advisory semantics).
 - JSON Schema: [`magda-registry-aspects/data-dictionary.schema.json`](../../magda-registry-aspects/data-dictionary.schema.json) (aspect id `data-dictionary`, distribution records). It is registered automatically by the registry aspects migrator.
 - Example payloads for every documented v1 source family: [`magda-registry-aspects/examples/data-dictionary/`](../../magda-registry-aspects/examples/data-dictionary/).
 - Shared TypeScript model and helpers: `@magda/typescript-common/dist/data-dictionary/*.js`.

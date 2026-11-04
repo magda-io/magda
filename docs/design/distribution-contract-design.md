@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed design for a Magda v7 capability. Implementation targets the `main` branch.
+**Core implemented in Magda v7** via [#3828](https://github.com/magda-io/magda/pull/3828) / #3808; [#3827](https://github.com/magda-io/magda/pull/3827) was a design-readiness PR, not core implementation. The delivered core has the Registry JSON Schema, typed normalization/validation, fixtures, manual authoring and read-only How to use UI. This detailed page is the **implementation-era design and compatibility rationale**, not proof that future tool execution, crawling, harvesting and producer capabilities described below have shipped. See the [Distribution Contract guide](../docs/distribution-contract.md), authoritative [JSON Schema](../../magda-registry-aspects/distribution-contract.schema.json), [ADR 0010](../docs/adrs/0010-separate-distribution-structure-and-access-contracts.md) and [ADR 0011](../docs/adrs/0011-provenance-aware-advisory-data-understanding.md).
+
+**Still proposed:** automatic incremental interface harvesting, protocol/source-specific producers, source drift and reviewed-annotation merge are open under [#3814](https://github.com/magda-io/magda/issues/3814). Descriptive endpoint metadata is not execution permission. This existing path remains stable for linked code/tests/issues as a transitional historical specification; see [documentation conventions](../docs/documentation-conventions.md).
 
 This document defines the `distribution-contract` aspect introduced by the [data understanding layer](./data-understanding-layer-design.md).
 
