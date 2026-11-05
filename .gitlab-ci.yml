@@ -337,6 +337,14 @@ buildtest:registry:
       - "*/project/project/target"
     expire_in: 7 days
 
+# Evaluation harness tests are synthetic/offline; never contact dev.magda.io in CI.
+buildtest:search-relevance-eval:
+  stage: buildtest
+  image: python:3.11-slim
+  needs: []
+  script:
+    - PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s search-relevance-eval -p 'test_*.py' -v
+
 buildtest:scala-others:
   stage: buildtest
   retry: 2

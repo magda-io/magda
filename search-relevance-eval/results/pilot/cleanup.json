@@ -1,0 +1,37 @@
+{
+  "completed_utc": "2026-11-05T22:16:51.279742+00:00",
+  "local_endpoint": "http://127.0.0.1:19200",
+  "resources": [
+    {
+      "kind": "index",
+      "exact_name": "magda-relevance-eval-pilot3901-20261106",
+      "acknowledged": true
+    },
+    {
+      "kind": "pipeline",
+      "exact_name": "magda-relevance-eval-pilot3901-20261106-pipeline-baseline",
+      "acknowledged": true
+    },
+    {
+      "kind": "pipeline",
+      "exact_name": "magda-relevance-eval-pilot3901-20261106-pipeline-candidate-03-07",
+      "acknowledged": true
+    },
+    {
+      "kind": "pipeline",
+      "exact_name": "magda-relevance-eval-pilot3901-20261106-pipeline-candidate-05-05",
+      "acknowledged": true
+    },
+    {
+      "kind": "pipeline",
+      "exact_name": "magda-relevance-eval-pilot3901-20261106-pipeline-candidate-07-03",
+      "acknowledged": true
+    },
+    {
+      "kind": "pipeline",
+      "exact_name": "magda-relevance-eval-pilot3901-20261106-pipeline-candidate-keep50-03-07",
+      "acknowledged": true
+    }
+  ],
+  "scope": "Exact owned pilot index and five pipelines removed only after frozen reproduction bundle and results were saved. No production indexes, region indexes or public instance resources touched."
+}

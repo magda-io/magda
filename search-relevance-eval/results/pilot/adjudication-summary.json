@@ -1,0 +1,10 @@
+{
+  "reviewed_pairs": 22,
+  "all_initial_disagreements_reviewed": true,
+  "initial_disagreements": 1,
+  "agreed_numeric_audit": 21,
+  "audit_fraction_of_agreed_numeric": 0.1,
+  "changed_agreed_numeric_pairs": [],
+  "unresolved_reviewed_u_pairs": [],
+  "model_family_limitation": "Third independent contexts, same available model family; not human/domain-ground-truth verification."
+}

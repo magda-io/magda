@@ -1,0 +1,28 @@
+{
+  "recorded_utc": "2026-11-05T22:23:14.927152+00:00",
+  "offline_python_tests": {
+    "passed": 113,
+    "failed": 0,
+    "log_sha256": "159eb5a914124e6e2abcf8c5d0e7e45d80ef3975002e8e3fac1deec110bd64c6"
+  },
+  "baseline_scala_search_tests": {
+    "passed": 26,
+    "failed": 0,
+    "cancelled": 0
+  },
+  "live_objective_controls": {
+    "passed": 20,
+    "failed": 0
+  },
+  "independent_metric_recomputation": {
+    "scenario_query_system_rows": 945,
+    "all_matched": true,
+    "review": "analysis-review.md"
+  },
+  "ci_yaml_parsed": true,
+  "production_ranking_diff_vs_baseline": "empty",
+  "baseline_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "recommendation": "C\u2014inconclusive; held-out relevance-discrimination gate failed",
+  "public_issue_3885_to_remain_open": true,
+  "publication_note": "Final JSON compaction preserves all 945 computed rows, omits duplicated raw payloads only; CSV uses deterministic LF line endings."
+}

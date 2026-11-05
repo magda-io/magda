@@ -1,0 +1,3050 @@
+{
+  "facet_and_total_count_fidelity": [
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "facet_count_differences": [],
+      "query_id": "q01",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "facet_count_differences": [],
+      "query_id": "q01",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "facet_count_differences": [],
+      "query_id": "q01",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 201
+      },
+      "facet_count_differences": [],
+      "query_id": "q01",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "facet_count_differences": [],
+      "query_id": "q02",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "facet_count_differences": [],
+      "query_id": "q02",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "facet_count_differences": [],
+      "query_id": "q02",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 446
+      },
+      "facet_count_differences": [],
+      "query_id": "q02",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "facet_count_differences": [],
+      "query_id": "q03",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "facet_count_differences": [],
+      "query_id": "q03",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "facet_count_differences": [],
+      "query_id": "q03",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 460
+      },
+      "facet_count_differences": [],
+      "query_id": "q03",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "facet_count_differences": [],
+      "query_id": "q04",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "facet_count_differences": [],
+      "query_id": "q04",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "facet_count_differences": [],
+      "query_id": "q04",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 406
+      },
+      "facet_count_differences": [],
+      "query_id": "q04",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "facet_count_differences": [],
+      "query_id": "q05",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "facet_count_differences": [],
+      "query_id": "q05",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "facet_count_differences": [],
+      "query_id": "q05",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 482
+      },
+      "facet_count_differences": [],
+      "query_id": "q05",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q06",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q06",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q06",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q06",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q07",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q07",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q07",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 1
+      },
+      "facet_count_differences": [],
+      "query_id": "q07",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "facet_count_differences": [],
+      "query_id": "q08",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "facet_count_differences": [],
+      "query_id": "q08",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "facet_count_differences": [],
+      "query_id": "q08",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 431
+      },
+      "facet_count_differences": [],
+      "query_id": "q08",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "facet_count_differences": [],
+      "query_id": "q09",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "facet_count_differences": [],
+      "query_id": "q09",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "facet_count_differences": [],
+      "query_id": "q09",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 392
+      },
+      "facet_count_differences": [],
+      "query_id": "q09",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "facet_count_differences": [],
+      "query_id": "q10",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "facet_count_differences": [],
+      "query_id": "q10",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "facet_count_differences": [],
+      "query_id": "q10",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 451
+      },
+      "facet_count_differences": [],
+      "query_id": "q10",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "facet_count_differences": [],
+      "query_id": "q11",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "facet_count_differences": [],
+      "query_id": "q11",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "facet_count_differences": [],
+      "query_id": "q11",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 379
+      },
+      "facet_count_differences": [],
+      "query_id": "q11",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "facet_count_differences": [],
+      "query_id": "q12",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "facet_count_differences": [],
+      "query_id": "q12",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "facet_count_differences": [],
+      "query_id": "q12",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 428
+      },
+      "facet_count_differences": [],
+      "query_id": "q12",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "facet_count_differences": [],
+      "query_id": "q13",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "facet_count_differences": [],
+      "query_id": "q13",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "facet_count_differences": [],
+      "query_id": "q13",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 397
+      },
+      "facet_count_differences": [],
+      "query_id": "q13",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q14",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q14",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q14",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q14",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q15",
+      "same_total_hits": true,
+      "system": "candidate_07_03"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q15",
+      "same_total_hits": true,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q15",
+      "same_total_hits": true,
+      "system": "candidate_03_07"
+    },
+    {
+      "baseline_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "candidate_total": {
+        "relation": "eq",
+        "value": 453
+      },
+      "facet_count_differences": [],
+      "query_id": "q15",
+      "same_total_hits": true,
+      "system": "candidate_05_05"
+    }
+  ],
+  "input_sha256": {
+    "search-relevance-eval/.local/development-runs.jsonl": "c70fcf4f5c7eee7336e9d2e2f959683a8708e9d2c8cd12931f33062f3818e168",
+    "search-relevance-eval/.local/heldout-runs.jsonl": "12984c4955a0e7da243d0c0a2706ad02b00d10c56ed5da1028efbecc04376673",
+    "search-relevance-eval/anchors.jsonl": "bc7a560c9832f5a65726ab2f3c607ba93e506a2ac6336fe7815b474a3512b244",
+    "search-relevance-eval/queries.jsonl": "63894b9559ead64e408e01df41e3f515ccf3e8b82add5b93b6601f963b5450b3"
+  },
+  "latency": {
+    "development": {
+      "baseline": {
+        "median_ms": 58.26439599999844,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_03_07": {
+        "median_ms": 61.69777050000014,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_05_05": {
+        "median_ms": 63.43249999999934,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_07_03": {
+        "median_ms": 61.679645500000824,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_keep50_03_07": {
+        "median_ms": 60.7041869999998,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "keyword": {
+        "median_ms": 52.48189599999975,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "vector": {
+        "median_ms": 18.5191039999999,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      }
+    },
+    "heldout": {
+      "baseline": {
+        "median_ms": 55.76018750000067,
+        "p95_ms": 65.47430239999605,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_03_07": {
+        "median_ms": 63.08187500000173,
+        "p95_ms": 71.01484555000113,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_05_05": {
+        "median_ms": 63.43518749999966,
+        "p95_ms": 76.3896062500006,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_07_03": {
+        "median_ms": 62.88908299999996,
+        "p95_ms": 71.11050450000013,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_keep50_03_07": {
+        "median_ms": 60.65935400000111,
+        "p95_ms": 72.88543719999616,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "keyword": {
+        "median_ms": 46.1981249999992,
+        "p95_ms": 54.4374350999945,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "vector": {
+        "median_ms": 31.474667000000345,
+        "p95_ms": 91.3353139499975,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      }
+    }
+  },
+  "latency_guard": {
+    "baseline_heldout_p95_ms": 65.47430239999605,
+    "budget_ms": 98.21145359999407,
+    "candidate_heldout_p95_ms": 71.01484555000113,
+    "passed": true
+  },
+  "limitations": [
+    "No relevance grades are inferred from these operational checks.",
+    "Latency is local warmed OpenSearch HTTP only, excluding embedding/public API; samples are correlated repeats.",
+    "Count invariance is checked against the baseline, not against an independent full-corpus truth."
+  ],
+  "objective_known_answer_summary": {
+    "development": {
+      "baseline": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_05_05": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_07_03": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_keep50_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "keyword": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "vector": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      }
+    },
+    "heldout": {
+      "baseline": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_05_05": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_07_03": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_keep50_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "keyword": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "vector": {
+        "mrr_at_10": 0.5,
+        "success_at_5": 0.5,
+        "tasks": 2
+      }
+    }
+  },
+  "objective_per_query": [
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "baseline"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_05_05"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_07_03"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "keyword"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "vector"
+    },
+    {
+      "best_known_rank": null,
+      "mrr_at_10": 0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 0,
+      "system": "vector"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "baseline"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_05_05"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_07_03"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "keyword"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "baseline"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_05_05"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_07_03"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "keyword"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "vector"
+    }
+  ],
+  "ranking_stability": [
+    {
+      "query_id": "q01",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-qld-40b98318-11ab-4c1b-8e41-9b11a2db6071",
+        "ds-vic-37d506a0-b5b6-4920-8ca1-919a982a6080",
+        "ds-vic-1f41d7a5-a40e-4657-a9b4-a56702c40dd7",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-wa-8564ccc3-540b-4fdd-90df-5bdae24f8670",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-moretonbay-https://www.arcgis.com/home/item.html?id=696cdb2fde5440c19b9860be557a1623&sublayer=0",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-vic-fb051afd-1cf4-4537-9c54-fd728896dec7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q01",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-qld-40b98318-11ab-4c1b-8e41-9b11a2db6071",
+        "ds-vic-37d506a0-b5b6-4920-8ca1-919a982a6080",
+        "ds-vic-1f41d7a5-a40e-4657-a9b4-a56702c40dd7",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-8564ccc3-540b-4fdd-90df-5bdae24f8670",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-moretonbay-https://www.arcgis.com/home/item.html?id=696cdb2fde5440c19b9860be557a1623&sublayer=0",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-vic-fb051afd-1cf4-4537-9c54-fd728896dec7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q01",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-qld-40b98318-11ab-4c1b-8e41-9b11a2db6071",
+        "ds-vic-37d506a0-b5b6-4920-8ca1-919a982a6080",
+        "ds-vic-1f41d7a5-a40e-4657-a9b4-a56702c40dd7",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-8564ccc3-540b-4fdd-90df-5bdae24f8670",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-moretonbay-https://www.arcgis.com/home/item.html?id=696cdb2fde5440c19b9860be557a1623&sublayer=0",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-vic-fb051afd-1cf4-4537-9c54-fd728896dec7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q01",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-qld-40b98318-11ab-4c1b-8e41-9b11a2db6071",
+        "ds-vic-37d506a0-b5b6-4920-8ca1-919a982a6080",
+        "ds-vic-1f41d7a5-a40e-4657-a9b4-a56702c40dd7",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-8564ccc3-540b-4fdd-90df-5bdae24f8670",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-moretonbay-https://www.arcgis.com/home/item.html?id=696cdb2fde5440c19b9860be557a1623&sublayer=0",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-vic-fb051afd-1cf4-4537-9c54-fd728896dec7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q01",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-qld-40b98318-11ab-4c1b-8e41-9b11a2db6071",
+        "ds-vic-37d506a0-b5b6-4920-8ca1-919a982a6080",
+        "ds-vic-1f41d7a5-a40e-4657-a9b4-a56702c40dd7",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-8564ccc3-540b-4fdd-90df-5bdae24f8670",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-moretonbay-https://www.arcgis.com/home/item.html?id=696cdb2fde5440c19b9860be557a1623&sublayer=0",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-vic-fb051afd-1cf4-4537-9c54-fd728896dec7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q01",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-qld-40b98318-11ab-4c1b-8e41-9b11a2db6071",
+        "ds-vic-37d506a0-b5b6-4920-8ca1-919a982a6080",
+        "ds-vic-1f41d7a5-a40e-4657-a9b4-a56702c40dd7",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-8564ccc3-540b-4fdd-90df-5bdae24f8670",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-moretonbay-https://www.arcgis.com/home/item.html?id=696cdb2fde5440c19b9860be557a1623&sublayer=0",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-vic-fb051afd-1cf4-4537-9c54-fd728896dec7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q01",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "vector",
+      "top10_ids": [
+        "ds-qld-40b98318-11ab-4c1b-8e41-9b11a2db6071",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972"
+      ],
+      "top10_jaccard_with_baseline": 0.2
+    },
+    {
+      "query_id": "q02",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-aurin-e7279fde-1a54-41c8-8392-b5cc430ae00c",
+        "ds-aurin-effaba06-d599-45a5-a6b5-1c5ea63495a4",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-qld-f2c13d31-f5d9-4cef-97bf-a37d1f6d9cb6"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q02",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-aurin-e7279fde-1a54-41c8-8392-b5cc430ae00c",
+        "ds-qld-f2c13d31-f5d9-4cef-97bf-a37d1f6d9cb6",
+        "ds-dga-fb590b66-1448-4ad7-a46f-c87177c76ab1",
+        "ds-aurin-effaba06-d599-45a5-a6b5-1c5ea63495a4"
+      ],
+      "top10_jaccard_with_baseline": 0.6666666666666666
+    },
+    {
+      "query_id": "q02",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-aurin-effaba06-d599-45a5-a6b5-1c5ea63495a4",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-aurin-e7279fde-1a54-41c8-8392-b5cc430ae00c",
+        "ds-qld-f2c13d31-f5d9-4cef-97bf-a37d1f6d9cb6"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q02",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-aurin-e7279fde-1a54-41c8-8392-b5cc430ae00c",
+        "ds-qld-f2c13d31-f5d9-4cef-97bf-a37d1f6d9cb6",
+        "ds-dga-fb590b66-1448-4ad7-a46f-c87177c76ab1",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-qld-b2026840-7160-4af4-8a39-f7fb9d4b3fad"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q02",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-aurin-effaba06-d599-45a5-a6b5-1c5ea63495a4",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-aurin-341f47e7-fe38-49bc-a4e2-7f33c2ecf20a"
+      ],
+      "top10_jaccard_with_baseline": 0.07142857142857142
+    },
+    {
+      "query_id": "q02",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-aurin-e7279fde-1a54-41c8-8392-b5cc430ae00c",
+        "ds-qld-f2c13d31-f5d9-4cef-97bf-a37d1f6d9cb6",
+        "ds-dga-fb590b66-1448-4ad7-a46f-c87177c76ab1",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-qld-b2026840-7160-4af4-8a39-f7fb9d4b3fad"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q02",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-qld-fe855021-d25b-4759-a754-947b1e9367a6",
+        "ds-aurin-effaba06-d599-45a5-a6b5-1c5ea63495a4",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-aurin-e7279fde-1a54-41c8-8392-b5cc430ae00c",
+        "ds-qld-f2c13d31-f5d9-4cef-97bf-a37d1f6d9cb6"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q03",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-aodn-9793055C-334A-3FDF-E054-0010E056919A",
+        "ds-ditrdca-b1cca4ed-47bd-4d83-935c-e8bf1ae2e8eb",
+        "ds-aodn-F2F686B8-7BA4-5F82-E054-6805CAA9DBF0",
+        "ds-dga-bc9f16b1-1a41-42f7-96f2-8cc50db08d61",
+        "ds-qld-827a95bc-7160-4510-9a75-b4b4d22042a6",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-nsw-d6190b60-0c23-4255-9c5f-0d1a29406a4f",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86",
+        "ds-listtas-fae5f160-03be-4d2e-94fe-9b865eb4a3ef"
+      ],
+      "top10_jaccard_with_baseline": 0.8181818181818182
+    },
+    {
+      "query_id": "q03",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-aodn-9793055C-334A-3FDF-E054-0010E056919A",
+        "ds-aodn-F2F686B8-7BA4-5F82-E054-6805CAA9DBF0",
+        "ds-dga-bc9f16b1-1a41-42f7-96f2-8cc50db08d61",
+        "ds-ditrdca-b1cca4ed-47bd-4d83-935c-e8bf1ae2e8eb",
+        "ds-qld-827a95bc-7160-4510-9a75-b4b4d22042a6",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-nsw-d6190b60-0c23-4255-9c5f-0d1a29406a4f",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86",
+        "ds-listtas-fae5f160-03be-4d2e-94fe-9b865eb4a3ef"
+      ],
+      "top10_jaccard_with_baseline": 0.8181818181818182
+    },
+    {
+      "query_id": "q03",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-ditrdca-b1cca4ed-47bd-4d83-935c-e8bf1ae2e8eb",
+        "ds-aodn-9793055C-334A-3FDF-E054-0010E056919A",
+        "ds-aodn-F2F686B8-7BA4-5F82-E054-6805CAA9DBF0",
+        "ds-dga-bc9f16b1-1a41-42f7-96f2-8cc50db08d61",
+        "ds-qld-827a95bc-7160-4510-9a75-b4b4d22042a6",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-nsw-d6190b60-0c23-4255-9c5f-0d1a29406a4f",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86",
+        "ds-listtas-fae5f160-03be-4d2e-94fe-9b865eb4a3ef"
+      ],
+      "top10_jaccard_with_baseline": 0.8181818181818182
+    },
+    {
+      "query_id": "q03",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-aodn-9793055C-334A-3FDF-E054-0010E056919A",
+        "ds-aodn-F2F686B8-7BA4-5F82-E054-6805CAA9DBF0",
+        "ds-dga-bc9f16b1-1a41-42f7-96f2-8cc50db08d61",
+        "ds-qld-827a95bc-7160-4510-9a75-b4b4d22042a6",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-nsw-d6190b60-0c23-4255-9c5f-0d1a29406a4f",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86",
+        "ds-listtas-fae5f160-03be-4d2e-94fe-9b865eb4a3ef",
+        "ds-listtas-295582f6-f6ab-4eaf-8027-88afba5f1fdf"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q03",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-ditrdca-b1cca4ed-47bd-4d83-935c-e8bf1ae2e8eb"
+      ],
+      "top10_jaccard_with_baseline": 0.0
+    },
+    {
+      "query_id": "q03",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-aodn-9793055C-334A-3FDF-E054-0010E056919A",
+        "ds-aodn-F2F686B8-7BA4-5F82-E054-6805CAA9DBF0",
+        "ds-dga-bc9f16b1-1a41-42f7-96f2-8cc50db08d61",
+        "ds-qld-827a95bc-7160-4510-9a75-b4b4d22042a6",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-nsw-d6190b60-0c23-4255-9c5f-0d1a29406a4f",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86",
+        "ds-listtas-fae5f160-03be-4d2e-94fe-9b865eb4a3ef",
+        "ds-listtas-295582f6-f6ab-4eaf-8027-88afba5f1fdf"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q03",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-ditrdca-b1cca4ed-47bd-4d83-935c-e8bf1ae2e8eb",
+        "ds-aodn-9793055C-334A-3FDF-E054-0010E056919A",
+        "ds-aodn-F2F686B8-7BA4-5F82-E054-6805CAA9DBF0",
+        "ds-dga-bc9f16b1-1a41-42f7-96f2-8cc50db08d61",
+        "ds-qld-827a95bc-7160-4510-9a75-b4b4d22042a6",
+        "ds-sa-b26b9d5a-a4b2-4b3f-aae0-5640cb67c281",
+        "ds-nsw-d6190b60-0c23-4255-9c5f-0d1a29406a4f",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86",
+        "ds-listtas-fae5f160-03be-4d2e-94fe-9b865eb4a3ef"
+      ],
+      "top10_jaccard_with_baseline": 0.8181818181818182
+    },
+    {
+      "query_id": "q04",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-vic-4b06bb83-b4bc-43fb-ba25-964b21d4f8bd",
+        "ds-dga-0f515165-8f78-4d18-88d6-6f3851136b7f",
+        "ds-dga-ffbe5893-80ee-4dbb-8eaa-d8d388562880",
+        "ds-dga-b28204cf-bdde-41d2-8f9a-86c32faa0a10",
+        "ds-nsw-93f89184-fc4f-4faf-85c1-37ed98f44900",
+        "ds-aurin-3fdf51d1-a19e-450e-9733-3d2bf880fe02",
+        "ds-listtas-e3b00439-74a4-493b-8123-7659f3c2d978",
+        "ds-listtas-9dd95b61-2ac5-4865-9cf9-a052c295ed84",
+        "ds-dga-648d7a00-96bb-40b5-ad8e-5ca51f90f441",
+        "ds-aurin-78519df5-66a9-4d32-adf8-74623c121612"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q04",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-act-https://www.data.act.gov.au/api/views/ygqg-8p9w",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-qld-56c960bf-2108-4e5e-8159-a6ead0d591a6",
+        "ds-qld-e0d5d098-a978-42db-8b4c-f6ae575fb1b5",
+        "ds-dga-f02f5945-a032-4836-aab3-48361e584507",
+        "ds-nsw-82122dec-c1be-4710-a3e9-5924b012f7bf",
+        "ds-dga-dcb4c22b-c8ea-4402-92e8-871dcf8d6082",
+        "ds-dga-ca5e9162-965f-418f-8d95-c683dfb8bf9f",
+        "ds-dga-736206bf-0b93-44f1-a5a3-de9687805fb5"
+      ],
+      "top10_jaccard_with_baseline": 0.0
+    },
+    {
+      "query_id": "q04",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-vic-4b06bb83-b4bc-43fb-ba25-964b21d4f8bd",
+        "ds-dga-0f515165-8f78-4d18-88d6-6f3851136b7f",
+        "ds-dga-ffbe5893-80ee-4dbb-8eaa-d8d388562880",
+        "ds-dga-b28204cf-bdde-41d2-8f9a-86c32faa0a10",
+        "ds-nsw-93f89184-fc4f-4faf-85c1-37ed98f44900",
+        "ds-aurin-3fdf51d1-a19e-450e-9733-3d2bf880fe02",
+        "ds-listtas-e3b00439-74a4-493b-8123-7659f3c2d978",
+        "ds-listtas-9dd95b61-2ac5-4865-9cf9-a052c295ed84",
+        "ds-dga-648d7a00-96bb-40b5-ad8e-5ca51f90f441",
+        "ds-aurin-78519df5-66a9-4d32-adf8-74623c121612"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q04",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-vic-4b06bb83-b4bc-43fb-ba25-964b21d4f8bd",
+        "ds-dga-0f515165-8f78-4d18-88d6-6f3851136b7f",
+        "ds-act-https://www.data.act.gov.au/api/views/ygqg-8p9w",
+        "ds-dga-ffbe5893-80ee-4dbb-8eaa-d8d388562880",
+        "ds-dga-b28204cf-bdde-41d2-8f9a-86c32faa0a10",
+        "ds-nsw-93f89184-fc4f-4faf-85c1-37ed98f44900",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-qld-56c960bf-2108-4e5e-8159-a6ead0d591a6",
+        "ds-qld-e0d5d098-a978-42db-8b4c-f6ae575fb1b5"
+      ],
+      "top10_jaccard_with_baseline": 0.3333333333333333
+    },
+    {
+      "query_id": "q04",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-vic-4b06bb83-b4bc-43fb-ba25-964b21d4f8bd",
+        "ds-dga-0f515165-8f78-4d18-88d6-6f3851136b7f",
+        "ds-dga-ffbe5893-80ee-4dbb-8eaa-d8d388562880",
+        "ds-dga-b28204cf-bdde-41d2-8f9a-86c32faa0a10",
+        "ds-nsw-93f89184-fc4f-4faf-85c1-37ed98f44900",
+        "ds-act-https://www.data.act.gov.au/api/views/ygqg-8p9w",
+        "ds-aurin-3fdf51d1-a19e-450e-9733-3d2bf880fe02",
+        "ds-listtas-e3b00439-74a4-493b-8123-7659f3c2d978",
+        "ds-listtas-9dd95b61-2ac5-4865-9cf9-a052c295ed84"
+      ],
+      "top10_jaccard_with_baseline": 0.6666666666666666
+    },
+    {
+      "query_id": "q04",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-vic-4b06bb83-b4bc-43fb-ba25-964b21d4f8bd",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dga-0f515165-8f78-4d18-88d6-6f3851136b7f",
+        "ds-dga-ffbe5893-80ee-4dbb-8eaa-d8d388562880",
+        "ds-dga-b28204cf-bdde-41d2-8f9a-86c32faa0a10",
+        "ds-nsw-93f89184-fc4f-4faf-85c1-37ed98f44900",
+        "ds-aurin-3fdf51d1-a19e-450e-9733-3d2bf880fe02",
+        "ds-listtas-e3b00439-74a4-493b-8123-7659f3c2d978",
+        "ds-listtas-9dd95b61-2ac5-4865-9cf9-a052c295ed84",
+        "ds-dga-648d7a00-96bb-40b5-ad8e-5ca51f90f441"
+      ],
+      "top10_jaccard_with_baseline": 0.8181818181818182
+    },
+    {
+      "query_id": "q04",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-vic-4b06bb83-b4bc-43fb-ba25-964b21d4f8bd",
+        "ds-sa-a94912bf-ddd2-449d-9150-0b921ec37d9a",
+        "ds-nsw-698c4f7b-f0ae-43c1-be57-3becdd1568c9",
+        "ds-nsw-0bffeb0f-08d4-4b21-b855-427d017ef548",
+        "ds-dga-5a8fa2db-bd9c-4eb3-b3d3-41ca7149bcdc",
+        "ds-dga-0f515165-8f78-4d18-88d6-6f3851136b7f",
+        "ds-dga-ffbe5893-80ee-4dbb-8eaa-d8d388562880",
+        "ds-dga-b28204cf-bdde-41d2-8f9a-86c32faa0a10"
+      ],
+      "top10_jaccard_with_baseline": 0.25
+    },
+    {
+      "query_id": "q05",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [],
+      "top10_jaccard_with_baseline": 0.0
+    },
+    {
+      "query_id": "q05",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-qld-c6f1cc9a-f493-45ed-9082-f8a06f81fd98",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-qld-266f5a7b-273e-44ae-aaaa-1394a1028670",
+        "ds-sa-be6da47f-2d0e-4428-ba1c-145e16166ba2",
+        "ds-qld-65e9af0a-a25f-4462-9a8a-5cf52c4d5e17",
+        "ds-nsw-a7b5e3c4-d706-4bf1-9617-258aa8f92acc",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-aodn-fc36dbef-88ee-41da-896b-a1b2cee60026",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q05",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-qld-c6f1cc9a-f493-45ed-9082-f8a06f81fd98",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-qld-266f5a7b-273e-44ae-aaaa-1394a1028670",
+        "ds-sa-be6da47f-2d0e-4428-ba1c-145e16166ba2",
+        "ds-qld-65e9af0a-a25f-4462-9a8a-5cf52c4d5e17",
+        "ds-nsw-a7b5e3c4-d706-4bf1-9617-258aa8f92acc",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-aodn-fc36dbef-88ee-41da-896b-a1b2cee60026",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q05",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-qld-c6f1cc9a-f493-45ed-9082-f8a06f81fd98",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-qld-266f5a7b-273e-44ae-aaaa-1394a1028670",
+        "ds-sa-be6da47f-2d0e-4428-ba1c-145e16166ba2",
+        "ds-qld-65e9af0a-a25f-4462-9a8a-5cf52c4d5e17",
+        "ds-nsw-a7b5e3c4-d706-4bf1-9617-258aa8f92acc",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-aodn-fc36dbef-88ee-41da-896b-a1b2cee60026",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q05",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-qld-c6f1cc9a-f493-45ed-9082-f8a06f81fd98",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-qld-266f5a7b-273e-44ae-aaaa-1394a1028670",
+        "ds-sa-be6da47f-2d0e-4428-ba1c-145e16166ba2",
+        "ds-qld-65e9af0a-a25f-4462-9a8a-5cf52c4d5e17",
+        "ds-nsw-a7b5e3c4-d706-4bf1-9617-258aa8f92acc",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-aodn-fc36dbef-88ee-41da-896b-a1b2cee60026",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q05",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-qld-c6f1cc9a-f493-45ed-9082-f8a06f81fd98",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-qld-266f5a7b-273e-44ae-aaaa-1394a1028670",
+        "ds-sa-be6da47f-2d0e-4428-ba1c-145e16166ba2",
+        "ds-qld-65e9af0a-a25f-4462-9a8a-5cf52c4d5e17",
+        "ds-nsw-a7b5e3c4-d706-4bf1-9617-258aa8f92acc",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-aodn-fc36dbef-88ee-41da-896b-a1b2cee60026",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q05",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-qld-c6f1cc9a-f493-45ed-9082-f8a06f81fd98",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-qld-266f5a7b-273e-44ae-aaaa-1394a1028670",
+        "ds-sa-be6da47f-2d0e-4428-ba1c-145e16166ba2",
+        "ds-qld-65e9af0a-a25f-4462-9a8a-5cf52c4d5e17",
+        "ds-nsw-a7b5e3c4-d706-4bf1-9617-258aa8f92acc",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-aodn-fc36dbef-88ee-41da-896b-a1b2cee60026",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q06",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [],
+      "top10_jaccard_with_baseline": 0.0
+    },
+    {
+      "query_id": "q06",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-dga-61428e58-5f16-4564-86ae-490b77bad152"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q06",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-dga-61428e58-5f16-4564-86ae-490b77bad152"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q06",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-dga-61428e58-5f16-4564-86ae-490b77bad152"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q06",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-dga-61428e58-5f16-4564-86ae-490b77bad152"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q06",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-61428e58-5f16-4564-86ae-490b77bad152"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q06",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-dga-61428e58-5f16-4564-86ae-490b77bad152"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q07",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-dga-d0db4d0b-2a5e-4317-b738-e5956b728ac0"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q07",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-dga-d0db4d0b-2a5e-4317-b738-e5956b728ac0"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q07",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-dga-d0db4d0b-2a5e-4317-b738-e5956b728ac0"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q07",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-dga-d0db4d0b-2a5e-4317-b738-e5956b728ac0"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q07",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-d0db4d0b-2a5e-4317-b738-e5956b728ac0"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q07",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-dga-d0db4d0b-2a5e-4317-b738-e5956b728ac0"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q07",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "vector",
+      "top10_ids": [
+        "ds-dga-d0db4d0b-2a5e-4317-b738-e5956b728ac0"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q08",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-ga-246540ac-d42b-4f98-9fc2-6759a3b7d969",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-aurin-b8b8e537-8b70-4415-a2a3-d3997921ebe1",
+        "ds-dga-d7d6e226-335b-40b1-8134-883264b2f346",
+        "ds-ga-a05f7892-79e7-7506-e044-00144fdd4fa6",
+        "ds-tern-1fa51cb2-5d73-53aa-bbfd-68d0370d1a78",
+        "ds-tern-422acc03-7c28-5009-b991-a7397d752600"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q08",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-aodn-5d525330-93f1-11dc-b8ca-00188b4c0af8",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-nsw-d785d81e-0f7e-440c-9e38-39f46ccb14be",
+        "ds-nsw-698c4f7b-f0ae-43c1-be57-3becdd1568c9",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-nsw-423817ea-f0e4-4a65-8b4d-1ee37db260b9",
+        "ds-tern-1fa51cb2-5d73-53aa-bbfd-68d0370d1a78"
+      ],
+      "top10_jaccard_with_baseline": 0.05263157894736842
+    },
+    {
+      "query_id": "q08",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-246540ac-d42b-4f98-9fc2-6759a3b7d969",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-dga-d7d6e226-335b-40b1-8134-883264b2f346",
+        "ds-tern-1fa51cb2-5d73-53aa-bbfd-68d0370d1a78",
+        "ds-tern-422acc03-7c28-5009-b991-a7397d752600",
+        "ds-aurin-b8b8e537-8b70-4415-a2a3-d3997921ebe1",
+        "ds-ga-a05f7892-79e7-7506-e044-00144fdd4fa6"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q08",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-aodn-5d525330-93f1-11dc-b8ca-00188b4c0af8",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-nsw-d785d81e-0f7e-440c-9e38-39f46ccb14be",
+        "ds-nsw-698c4f7b-f0ae-43c1-be57-3becdd1568c9",
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-ga-246540ac-d42b-4f98-9fc2-6759a3b7d969",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60"
+      ],
+      "top10_jaccard_with_baseline": 0.17647058823529413
+    },
+    {
+      "query_id": "q08",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-aodn-5d525330-93f1-11dc-b8ca-00188b4c0af8",
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-nsw-d785d81e-0f7e-440c-9e38-39f46ccb14be",
+        "ds-ga-246540ac-d42b-4f98-9fc2-6759a3b7d969",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-nsw-698c4f7b-f0ae-43c1-be57-3becdd1568c9",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727"
+      ],
+      "top10_jaccard_with_baseline": 0.25
+    },
+    {
+      "query_id": "q08",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-ga-246540ac-d42b-4f98-9fc2-6759a3b7d969",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-aodn-5d525330-93f1-11dc-b8ca-00188b4c0af8",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-nsw-d785d81e-0f7e-440c-9e38-39f46ccb14be",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-nsw-698c4f7b-f0ae-43c1-be57-3becdd1568c9",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952"
+      ],
+      "top10_jaccard_with_baseline": 0.3333333333333333
+    },
+    {
+      "query_id": "q08",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-aodn-5d525330-93f1-11dc-b8ca-00188b4c0af8",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-ga-9bde4d29-c929-4119-9c9b-dac0e8dd6c8b",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-ga-246540ac-d42b-4f98-9fc2-6759a3b7d969",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-nsw-0bffeb0f-08d4-4b21-b855-427d017ef548"
+      ],
+      "top10_jaccard_with_baseline": 0.25
+    },
+    {
+      "query_id": "q09",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-nsw-0bffeb0f-08d4-4b21-b855-427d017ef548",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-nsw-423817ea-f0e4-4a65-8b4d-1ee37db260b9",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-ga-9456a1ee-400d-43fa-bce3-58d1cd8cdf55",
+        "ds-aodn-{0565FECF-C0C7-4BA6-8207-866A0D0F1B48}",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q09",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-ga-9456a1ee-400d-43fa-bce3-58d1cd8cdf55",
+        "ds-nsw-0bffeb0f-08d4-4b21-b855-427d017ef548",
+        "ds-nsw-423817ea-f0e4-4a65-8b4d-1ee37db260b9",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-aodn-{0565FECF-C0C7-4BA6-8207-866A0D0F1B48}",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q09",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-nsw-0bffeb0f-08d4-4b21-b855-427d017ef548",
+        "ds-nsw-423817ea-f0e4-4a65-8b4d-1ee37db260b9",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-ga-9456a1ee-400d-43fa-bce3-58d1cd8cdf55",
+        "ds-aodn-{0565FECF-C0C7-4BA6-8207-866A0D0F1B48}",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q09",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-ga-9456a1ee-400d-43fa-bce3-58d1cd8cdf55",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-aodn-{0565FECF-C0C7-4BA6-8207-866A0D0F1B48}",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-nsw-93f89184-fc4f-4faf-85c1-37ed98f44900",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839",
+        "ds-nsw-73bbd175-b673-4581-9749-9c0934df912e"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q09",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-nsw-0bffeb0f-08d4-4b21-b855-427d017ef548",
+        "ds-nsw-423817ea-f0e4-4a65-8b4d-1ee37db260b9",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-vic-1f41d7a5-a40e-4657-a9b4-a56702c40dd7",
+        "ds-dga-254cab81-3fb5-4c33-84c8-43d62680b738",
+        "ds-nsw-69598f6f-a692-4ba8-95db-80baee278c92"
+      ],
+      "top10_jaccard_with_baseline": 0.125
+    },
+    {
+      "query_id": "q09",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-ga-9456a1ee-400d-43fa-bce3-58d1cd8cdf55",
+        "ds-aodn-{0565FECF-C0C7-4BA6-8207-866A0D0F1B48}",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-nsw-93f89184-fc4f-4faf-85c1-37ed98f44900",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839",
+        "ds-nsw-73bbd175-b673-4581-9749-9c0934df912e"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q09",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-nsw-0bffeb0f-08d4-4b21-b855-427d017ef548",
+        "ds-nsw-423817ea-f0e4-4a65-8b4d-1ee37db260b9",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-ga-9456a1ee-400d-43fa-bce3-58d1cd8cdf55",
+        "ds-aodn-{0565FECF-C0C7-4BA6-8207-866A0D0F1B48}",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q10",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-dap-csiro:8067",
+        "ds-ga-cdbaeeb2-9757-4976-abd7-88bf0c7a504f",
+        "ds-ga-80719382-bb14-45c7-99f1-73fa4964f974",
+        "ds-tern-4563f439-5d89-55e5-8212-425712a370e9",
+        "ds-dga-8610e3d9-e486-47c2-9238-d3cc532e1390",
+        "ds-listtas-dba39a14-a5fc-49d3-b163-b0a3b7a3b9f2",
+        "ds-wa-473b4723-ce9d-4a46-8303-04ba5a3ca5e7",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839"
+      ],
+      "top10_jaccard_with_baseline": 0.3333333333333333
+    },
+    {
+      "query_id": "q10",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-dga-8610e3d9-e486-47c2-9238-d3cc532e1390",
+        "ds-listtas-dba39a14-a5fc-49d3-b163-b0a3b7a3b9f2",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dap-csiro:8067",
+        "ds-ga-cdbaeeb2-9757-4976-abd7-88bf0c7a504f",
+        "ds-ga-80719382-bb14-45c7-99f1-73fa4964f974",
+        "ds-tern-4563f439-5d89-55e5-8212-425712a370e9",
+        "ds-wa-473b4723-ce9d-4a46-8303-04ba5a3ca5e7",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839"
+      ],
+      "top10_jaccard_with_baseline": 0.3333333333333333
+    },
+    {
+      "query_id": "q10",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dap-csiro:8067",
+        "ds-ga-cdbaeeb2-9757-4976-abd7-88bf0c7a504f",
+        "ds-ga-80719382-bb14-45c7-99f1-73fa4964f974",
+        "ds-tern-4563f439-5d89-55e5-8212-425712a370e9",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-dga-8610e3d9-e486-47c2-9238-d3cc532e1390",
+        "ds-listtas-dba39a14-a5fc-49d3-b163-b0a3b7a3b9f2",
+        "ds-wa-473b4723-ce9d-4a46-8303-04ba5a3ca5e7",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839"
+      ],
+      "top10_jaccard_with_baseline": 0.3333333333333333
+    },
+    {
+      "query_id": "q10",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-dga-8610e3d9-e486-47c2-9238-d3cc532e1390",
+        "ds-listtas-dba39a14-a5fc-49d3-b163-b0a3b7a3b9f2",
+        "ds-wa-473b4723-ce9d-4a46-8303-04ba5a3ca5e7",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-ga-e2b329d9-f809-4a7d-a3ac-fb4ef409d588",
+        "ds-ga-a05f7892-e42b-7506-e044-00144fdd4fa6",
+        "ds-aodn-779bf65f-8165-4647-bdde-480d05c719e8",
+        "ds-ga-0627da9e-9729-4f50-9355-6773f1e48cde"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q10",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dap-csiro:8067",
+        "ds-ga-cdbaeeb2-9757-4976-abd7-88bf0c7a504f",
+        "ds-ga-80719382-bb14-45c7-99f1-73fa4964f974",
+        "ds-tern-4563f439-5d89-55e5-8212-425712a370e9",
+        "ds-vic-fb051afd-1cf4-4537-9c54-fd728896dec7",
+        "ds-aurin-fce0f503-94d5-4899-b565-07cf2b7bea3c",
+        "ds-aurin-a52cddc8-870d-4df6-b8f7-4906ab09605c",
+        "ds-aurin-effaba06-d599-45a5-a6b5-1c5ea63495a4",
+        "ds-dga-a6dcf88f-229a-48d3-8150-5d59e4b312d0"
+      ],
+      "top10_jaccard_with_baseline": 0.0
+    },
+    {
+      "query_id": "q10",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-dga-8610e3d9-e486-47c2-9238-d3cc532e1390",
+        "ds-listtas-dba39a14-a5fc-49d3-b163-b0a3b7a3b9f2",
+        "ds-wa-473b4723-ce9d-4a46-8303-04ba5a3ca5e7",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-ga-e2b329d9-f809-4a7d-a3ac-fb4ef409d588",
+        "ds-ga-a05f7892-e42b-7506-e044-00144fdd4fa6",
+        "ds-aodn-779bf65f-8165-4647-bdde-480d05c719e8",
+        "ds-ga-0627da9e-9729-4f50-9355-6773f1e48cde"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q10",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dap-csiro:8067",
+        "ds-ga-cdbaeeb2-9757-4976-abd7-88bf0c7a504f",
+        "ds-ga-80719382-bb14-45c7-99f1-73fa4964f974",
+        "ds-tern-4563f439-5d89-55e5-8212-425712a370e9",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-dga-8610e3d9-e486-47c2-9238-d3cc532e1390",
+        "ds-listtas-dba39a14-a5fc-49d3-b163-b0a3b7a3b9f2",
+        "ds-wa-473b4723-ce9d-4a46-8303-04ba5a3ca5e7",
+        "ds-ga-4d823834-aa35-4581-ad44-dd6ea6677839"
+      ],
+      "top10_jaccard_with_baseline": 0.3333333333333333
+    },
+    {
+      "query_id": "q11",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-vic-fd720bba-22ee-45e0-b935-e89c829f0849",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-60005d41-26c1-4d51-8630-09616ab6c968",
+        "ds-dap-csiro:61406",
+        "ds-aodn-bf87eec2-cd06-4748-93cf-54226dac83fd",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q11",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-60005d41-26c1-4d51-8630-09616ab6c968",
+        "ds-dap-csiro:61406",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-vic-fd720bba-22ee-45e0-b935-e89c829f0849",
+        "ds-aodn-bf87eec2-cd06-4748-93cf-54226dac83fd",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-ga-a05f7892-ff7a-7506-e044-00144fdd4fa6"
+      ],
+      "top10_jaccard_with_baseline": 0.42857142857142855
+    },
+    {
+      "query_id": "q11",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-vic-fd720bba-22ee-45e0-b935-e89c829f0849",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-ga-d86397f2-cde2-40bc-99ce-0f8f965a29d4",
+        "ds-ga-a05f7892-7fed-7506-e044-00144fdd4fa6",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q11",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-wa-60005d41-26c1-4d51-8630-09616ab6c968",
+        "ds-dap-csiro:61406",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-aodn-bf87eec2-cd06-4748-93cf-54226dac83fd",
+        "ds-ga-a05f7892-ff7a-7506-e044-00144fdd4fa6",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-aodn-23c589ee-e3d9-c448-e053-10a3070abc3f",
+        "ds-ga-e1c3d319-3849-33aa-e044-00144fdd4fa6",
+        "ds-aodn-b59ec191-1ce1-4d77-ba45-4cb83ef8571c"
+      ],
+      "top10_jaccard_with_baseline": 0.1111111111111111
+    },
+    {
+      "query_id": "q11",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-vic-fd720bba-22ee-45e0-b935-e89c829f0849",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9",
+        "ds-ga-d86397f2-cde2-40bc-99ce-0f8f965a29d4",
+        "ds-ga-a05f7892-7fed-7506-e044-00144fdd4fa6",
+        "ds-dga-a9f3ed5c-36fd-4576-aa0a-8bdf464bbd86"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q11",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-60005d41-26c1-4d51-8630-09616ab6c968",
+        "ds-dap-csiro:61406",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-vic-fd720bba-22ee-45e0-b935-e89c829f0849",
+        "ds-aodn-bf87eec2-cd06-4748-93cf-54226dac83fd",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-ga-a05f7892-ff7a-7506-e044-00144fdd4fa6"
+      ],
+      "top10_jaccard_with_baseline": 0.42857142857142855
+    },
+    {
+      "query_id": "q11",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-dga-8da6dd8a-207d-4388-acca-5846a0b46972",
+        "ds-wa-60005d41-26c1-4d51-8630-09616ab6c968",
+        "ds-dap-csiro:61406",
+        "ds-vic-fd720bba-22ee-45e0-b935-e89c829f0849",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-dga-5541b2d1-6a67-4fe3-b3dc-857587fd5b5a",
+        "ds-aodn-bf87eec2-cd06-4748-93cf-54226dac83fd",
+        "ds-sa-e0286abe-d1ba-4cbd-a48b-628b854f3cf9"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q12",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-vic-3f918a57-41b8-47ec-a153-e07667a8185d",
+        "ds-ga-9bde4d29-c929-4119-9c9b-dac0e8dd6c8b",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-dga-254cab81-3fb5-4c33-84c8-43d62680b738",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-dga-8bd33cf7-9b40-49f0-b498-f111891551dd",
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b"
+      ],
+      "top10_jaccard_with_baseline": 0.42857142857142855
+    },
+    {
+      "query_id": "q12",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-vic-3f918a57-41b8-47ec-a153-e07667a8185d",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-dga-8bd33cf7-9b40-49f0-b498-f111891551dd",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-ga-80719382-bb14-45c7-99f1-73fa4964f974",
+        "ds-vic-e441230e-0c2a-4a31-a9cd-ebb5e51b5435",
+        "ds-marlin-d1d9b539-92ad-4a0b-9841-c9d729dd1d4f",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q12",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-9bde4d29-c929-4119-9c9b-dac0e8dd6c8b",
+        "ds-dga-254cab81-3fb5-4c33-84c8-43d62680b738",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-ga-ea22ba38-d889-458f-bd68-e5cea1b003a2",
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-ga-02a0c4fd-d17c-4cec-b462-10bcc5ff8f5e",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f",
+        "ds-sa-a94912bf-ddd2-449d-9150-0b921ec37d9a",
+        "ds-act-https://www.data.act.gov.au/api/views/ygqg-8p9w"
+      ],
+      "top10_jaccard_with_baseline": 0.05263157894736842
+    },
+    {
+      "query_id": "q12",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-vic-3f918a57-41b8-47ec-a153-e07667a8185d",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-dga-8bd33cf7-9b40-49f0-b498-f111891551dd",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-ga-80719382-bb14-45c7-99f1-73fa4964f974",
+        "ds-vic-e441230e-0c2a-4a31-a9cd-ebb5e51b5435",
+        "ds-marlin-d1d9b539-92ad-4a0b-9841-c9d729dd1d4f",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q12",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-9bde4d29-c929-4119-9c9b-dac0e8dd6c8b",
+        "ds-dga-254cab81-3fb5-4c33-84c8-43d62680b738",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-ga-ea22ba38-d889-458f-bd68-e5cea1b003a2",
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-ga-02a0c4fd-d17c-4cec-b462-10bcc5ff8f5e",
+        "ds-vic-3f918a57-41b8-47ec-a153-e07667a8185d",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f"
+      ],
+      "top10_jaccard_with_baseline": 0.17647058823529413
+    },
+    {
+      "query_id": "q12",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-vic-3f918a57-41b8-47ec-a153-e07667a8185d",
+        "ds-ga-9bde4d29-c929-4119-9c9b-dac0e8dd6c8b",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-dga-254cab81-3fb5-4c33-84c8-43d62680b738",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-ga-ea22ba38-d889-458f-bd68-e5cea1b003a2",
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-ga-02a0c4fd-d17c-4cec-b462-10bcc5ff8f5e",
+        "ds-dga-d170213c-4391-4d10-ac24-b0c11768da3f"
+      ],
+      "top10_jaccard_with_baseline": 0.17647058823529413
+    },
+    {
+      "query_id": "q12",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-vic-3f918a57-41b8-47ec-a153-e07667a8185d",
+        "ds-dga-bceedb7c-4adf-40f0-aa75-c17e8082991b",
+        "ds-ga-9bde4d29-c929-4119-9c9b-dac0e8dd6c8b",
+        "ds-dga-254cab81-3fb5-4c33-84c8-43d62680b738",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-ga-ea22ba38-d889-458f-bd68-e5cea1b003a2",
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-dga-8bd33cf7-9b40-49f0-b498-f111891551dd",
+        "ds-ga-02a0c4fd-d17c-4cec-b462-10bcc5ff8f5e"
+      ],
+      "top10_jaccard_with_baseline": 0.25
+    },
+    {
+      "query_id": "q13",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aurin-d22af33d-c268-4ac8-bb01-b3e40f79e142",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-dga-220fd916-0e90-43c5-ae01-dd6fee8ef1b6",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975",
+        "ds-dga-374033c5-47ce-441b-8f0d-380507e039cb"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q13",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aurin-d22af33d-c268-4ac8-bb01-b3e40f79e142",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-dga-220fd916-0e90-43c5-ae01-dd6fee8ef1b6",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975",
+        "ds-aurin-bb50c4d4-ca51-4d04-86b1-c5cae943ffe0"
+      ],
+      "top10_jaccard_with_baseline": 0.8181818181818182
+    },
+    {
+      "query_id": "q13",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aurin-d22af33d-c268-4ac8-bb01-b3e40f79e142",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-dga-220fd916-0e90-43c5-ae01-dd6fee8ef1b6",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975",
+        "ds-dga-374033c5-47ce-441b-8f0d-380507e039cb",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q13",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "vector",
+      "top10_ids": [
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-aurin-bb50c4d4-ca51-4d04-86b1-c5cae943ffe0",
+        "ds-aurin-effaba06-d599-45a5-a6b5-1c5ea63495a4"
+      ],
+      "top10_jaccard_with_baseline": 0.16666666666666666
+    },
+    {
+      "query_id": "q13",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aurin-d22af33d-c268-4ac8-bb01-b3e40f79e142",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-dga-220fd916-0e90-43c5-ae01-dd6fee8ef1b6",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975",
+        "ds-dga-374033c5-47ce-441b-8f0d-380507e039cb"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q13",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aurin-d22af33d-c268-4ac8-bb01-b3e40f79e142",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-dga-220fd916-0e90-43c5-ae01-dd6fee8ef1b6",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975",
+        "ds-aurin-bb50c4d4-ca51-4d04-86b1-c5cae943ffe0"
+      ],
+      "top10_jaccard_with_baseline": 0.8181818181818182
+    },
+    {
+      "query_id": "q13",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-aurin-d22af33d-c268-4ac8-bb01-b3e40f79e142",
+        "ds-sa-5cd861db-574a-4359-af12-8f7a1b84d3f5",
+        "ds-aurin-8f9ceec8-3e70-49d1-b6c9-c1c511696c0f",
+        "ds-dga-220fd916-0e90-43c5-ae01-dd6fee8ef1b6",
+        "ds-vic-57922932-23cb-4d2e-b155-4ad67db7296d",
+        "ds-ga-bc90625f-e3aa-45e8-a4fc-aa08c4a4d916",
+        "ds-aurin-ca2128b2-f7ba-43d4-a37e-8daca9945cee",
+        "ds-dga-76ad69c9-365b-4083-ba2c-68ce88971975",
+        "ds-dga-374033c5-47ce-441b-8f0d-380507e039cb"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q14",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-ga-1a7d8ad9-9d2a-4697-9253-32e2b22f0acf",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-dga-807b5d11-9f98-4c81-84dd-0b22d57c67eb",
+        "ds-vic-e6f17cb8-b874-49fe-bfed-ccdc68c80be6",
+        "ds-vic-179a4558-7fc2-49d6-a911-d390d7cd28ac",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-vic-187fbb93-b982-4f06-9cde-caad185dc6c3",
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb"
+      ],
+      "top10_jaccard_with_baseline": 0.6666666666666666
+    },
+    {
+      "query_id": "q14",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-807b5d11-9f98-4c81-84dd-0b22d57c67eb",
+        "ds-vic-179a4558-7fc2-49d6-a911-d390d7cd28ac",
+        "ds-ga-1a7d8ad9-9d2a-4697-9253-32e2b22f0acf",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-aurin-341f47e7-fe38-49bc-a4e2-7f33c2ecf20a",
+        "ds-vic-e6f17cb8-b874-49fe-bfed-ccdc68c80be6",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-vic-187fbb93-b982-4f06-9cde-caad185dc6c3"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q14",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-ga-1a7d8ad9-9d2a-4697-9253-32e2b22f0acf",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-vic-e6f17cb8-b874-49fe-bfed-ccdc68c80be6",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-vic-187fbb93-b982-4f06-9cde-caad185dc6c3",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-ga-763e304a-9a85-484a-a3ad-6d57cb19a993",
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-vic-9c6d7c73-b4b6-4ae2-92c6-466a5f2fde83"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q14",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-dga-807b5d11-9f98-4c81-84dd-0b22d57c67eb",
+        "ds-vic-179a4558-7fc2-49d6-a911-d390d7cd28ac",
+        "ds-aurin-341f47e7-fe38-49bc-a4e2-7f33c2ecf20a",
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-aurin-2e68a3ae-823b-4e92-a0be-c579646a8912",
+        "ds-aurin-10f214e5-1dfc-4126-a0a3-440c14d481c1",
+        "ds-nsw-4040bcf0-5cd3-4afd-bfa3-ea9c4dd10942"
+      ],
+      "top10_jaccard_with_baseline": 0.0625
+    },
+    {
+      "query_id": "q14",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-ga-1a7d8ad9-9d2a-4697-9253-32e2b22f0acf",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-vic-e6f17cb8-b874-49fe-bfed-ccdc68c80be6",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-vic-187fbb93-b982-4f06-9cde-caad185dc6c3",
+        "ds-aodn-40015103-491a-4de2-8437-63ee194aabfb",
+        "ds-ga-763e304a-9a85-484a-a3ad-6d57cb19a993",
+        "ds-vic-9c6d7c73-b4b6-4ae2-92c6-466a5f2fde83"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q14",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-dga-807b5d11-9f98-4c81-84dd-0b22d57c67eb",
+        "ds-vic-179a4558-7fc2-49d6-a911-d390d7cd28ac",
+        "ds-ga-1a7d8ad9-9d2a-4697-9253-32e2b22f0acf",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-aurin-341f47e7-fe38-49bc-a4e2-7f33c2ecf20a",
+        "ds-vic-e6f17cb8-b874-49fe-bfed-ccdc68c80be6",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-vic-187fbb93-b982-4f06-9cde-caad185dc6c3"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q14",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-ga-1a7d8ad9-9d2a-4697-9253-32e2b22f0acf",
+        "ds-dga-807b5d11-9f98-4c81-84dd-0b22d57c67eb",
+        "ds-ga-b72cc8db-4479-465b-9045-ffa664578571",
+        "ds-vic-179a4558-7fc2-49d6-a911-d390d7cd28ac",
+        "ds-vic-e6f17cb8-b874-49fe-bfed-ccdc68c80be6",
+        "ds-aodn-0ff26c91-2070-432f-bd1a-a65bb580316b",
+        "ds-nsw-502bc2d3-6737-40e4-bd8d-a83071e10aa1",
+        "ds-vic-7c3c835a-ebce-4cb1-a436-9a5ffa617b81",
+        "ds-aurin-341f47e7-fe38-49bc-a4e2-7f33c2ecf20a",
+        "ds-vic-187fbb93-b982-4f06-9cde-caad185dc6c3"
+      ],
+      "top10_jaccard_with_baseline": 0.5384615384615384
+    },
+    {
+      "query_id": "q15",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "candidate_07_03",
+      "top10_ids": [
+        "ds-wa-fed54998-acf2-49ec-949e-407aacd748da",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-ga-a05f7892-79e7-7506-e044-00144fdd4fa6",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-tern-1fa51cb2-5d73-53aa-bbfd-68d0370d1a78"
+      ],
+      "top10_jaccard_with_baseline": 0.42857142857142855
+    },
+    {
+      "query_id": "q15",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_keep50_03_07",
+      "top10_ids": [
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-dga-8f5892af-b877-4422-b765-49e9ac8bdb40",
+        "ds-aodn-f52ad676-81c3-4387-80d8-11604e18577a",
+        "ds-wa-fed54998-acf2-49ec-949e-407aacd748da",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6"
+      ],
+      "top10_jaccard_with_baseline": 0.1111111111111111
+    },
+    {
+      "query_id": "q15",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "keyword",
+      "top10_ids": [
+        "ds-wa-fed54998-acf2-49ec-949e-407aacd748da",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-ga-a05f7892-79e7-7506-e044-00144fdd4fa6",
+        "ds-tern-1fa51cb2-5d73-53aa-bbfd-68d0370d1a78",
+        "ds-tern-422acc03-7c28-5009-b991-a7397d752600",
+        "ds-aodn-cff31d16-4daa-4efd-89d0-228c4fab2cbc",
+        "ds-qld-d0e247b3-2ece-4b98-bb18-22ac330c0d99",
+        "ds-ga-8d566736-361e-4ebf-b82b-be10e3626fd7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q15",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "vector",
+      "top10_ids": [
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-aodn-f52ad676-81c3-4387-80d8-11604e18577a",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-dga-8f5892af-b877-4422-b765-49e9ac8bdb40",
+        "ds-sa-8c101ee9-db55-435a-99d1-defe180c0363",
+        "ds-dga-f02f5945-a032-4836-aab3-48361e584507"
+      ],
+      "top10_jaccard_with_baseline": 0.0
+    },
+    {
+      "query_id": "q15",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": true,
+      "system": "baseline",
+      "top10_ids": [
+        "ds-wa-fed54998-acf2-49ec-949e-407aacd748da",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-ga-ac31095a-ff21-40d2-bdba-46ee5ebbc4e3",
+        "ds-ga-a05f7892-79e7-7506-e044-00144fdd4fa6",
+        "ds-tern-1fa51cb2-5d73-53aa-bbfd-68d0370d1a78",
+        "ds-tern-422acc03-7c28-5009-b991-a7397d752600",
+        "ds-qld-d0e247b3-2ece-4b98-bb18-22ac330c0d99",
+        "ds-aodn-cff31d16-4daa-4efd-89d0-228c4fab2cbc",
+        "ds-ga-8d566736-361e-4ebf-b82b-be10e3626fd7"
+      ],
+      "top10_jaccard_with_baseline": 1.0
+    },
+    {
+      "query_id": "q15",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_03_07",
+      "top10_ids": [
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-aodn-f52ad676-81c3-4387-80d8-11604e18577a",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26",
+        "ds-dga-8f5892af-b877-4422-b765-49e9ac8bdb40",
+        "ds-wa-fed54998-acf2-49ec-949e-407aacd748da",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6"
+      ],
+      "top10_jaccard_with_baseline": 0.1111111111111111
+    },
+    {
+      "query_id": "q15",
+      "repeat_ranking_and_score_variants": 1,
+      "same_leader_as_baseline": false,
+      "system": "candidate_05_05",
+      "top10_ids": [
+        "ds-nsw-ee151a43-d09d-4229-a317-2967f60bb0e4",
+        "ds-wa-fed54998-acf2-49ec-949e-407aacd748da",
+        "ds-dga-0257a9da-b558-4d86-a987-535c775cf8d8",
+        "ds-ga-a05f7892-ff37-7506-e044-00144fdd4fa6",
+        "ds-wa-b628afdc-4480-41e4-8c99-5aca2b0c8727",
+        "ds-nsw-447f05bd-7ea1-4371-9877-23585fd84c60",
+        "ds-aodn-f52ad676-81c3-4387-80d8-11604e18577a",
+        "ds-dga-485fd1aa-c588-425b-b2e4-35e591e147ef",
+        "ds-nsw-0e3b9d43-8817-441e-8350-6121431c5952",
+        "ds-nsw-efe655e5-4881-43d6-9fd7-24c57eb5fd26"
+      ],
+      "top10_jaccard_with_baseline": 0.17647058823529413
+    }
+  ]
+}

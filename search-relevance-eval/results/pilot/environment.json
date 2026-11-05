@@ -1,0 +1,22 @@
+{
+  "issue": 3901,
+  "baseline_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "production_ranking_files_modified": false,
+  "source_catalogue": "https://dev.magda.io/api",
+  "source_permissions": "anonymous HTTP GET, no API key or cookies",
+  "public_deployment_opensearch_version": "not exposed/verified",
+  "public_deployment_index_version": "not exposed/verified",
+  "public_deployment_embedding_model": "not exposed/verified; source vectors excluded by Search API",
+  "replay_opensearch_version": "2.19.1",
+  "replay_embedding_image": "ghcr.io/magda-io/magda-embedding-api:1.1.0",
+  "replay_embedding_image_digest": "sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec",
+  "replay_embedding_model": "Alibaba-NLP/gte-base-en-v1.5",
+  "replay_embedding_dtype": "q8",
+  "replay_embedding_max_length": 1024,
+  "replay_embedding_pooling": "cls",
+  "replay_embedding_normalize": true,
+  "replay_embedding_dimension": 768,
+  "embedding_source": "Frozen local image dist/libs/EmbeddingEncoder.js defaults; generated vectors cached by exact input SHA256. Model repository commit not independently verified.",
+  "compatibility_scope": "Controlled same-corpus/same-embedding reindex comparison of pinned main vs isolated experimental DSL, NOT a replay of undisclosed production index vectors/settings.",
+  "live_readiness_probe_caveat": "An initial anonymous GET /v0/search/status/ready was performed before source inspection showed that handler may ensure a missing pipeline. No mutation HTTP method or deliberate public pipeline change was attempted; a public state change was not observed or independently excluded. Subsequent acquisition allowlist uses only pure read endpoints."
+}

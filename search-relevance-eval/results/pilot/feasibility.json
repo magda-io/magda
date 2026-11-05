@@ -1,0 +1,428 @@
+{
+  "acquisition_mode": "frozen cache replay",
+  "anonymous": true,
+  "base_url": "https://dev.magda.io/api",
+  "blind_metadata": {
+    "bytes": 1914022,
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/indexed-metadata.jsonl",
+    "sha256": "b15a8ebba7f8e49a6d082a01c24396aadb1ba656f820e81f31500bf30be8a70a"
+  },
+  "cache_directory": "/private/tmp/magda-3901-data/cache",
+  "cache_hits": 627,
+  "cache_http_audit": {
+    "attempts": 630,
+    "bytes": 251502,
+    "methods": [
+      "GET"
+    ],
+    "min_request_start_interval_seconds": 0.6947860717773438,
+    "note": "All acquisition-client network attempts across cache resumes; standalone initial probes are separate.",
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/http-attempts.jsonl",
+    "sha256": "e245caa9c9130f4c8c82cf7f7e62cfb57b7a76b44b9aa35fe622fff1aa65f48f",
+    "status_counts": {
+      "200": 629,
+      "406": 1
+    }
+  },
+  "content_downloads": false,
+  "corpus": {
+    "bytes": 3685629,
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/corpus.jsonl",
+    "sha256": "7e115a663c3d7c8a8794903b2940e0d3fda058f4bb6e7b76520c730e5d655e43"
+  },
+  "corpus_duplicate_ids": 0,
+  "coverage": {
+    "dataset_fields": {
+      "accessNotes": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 494
+      },
+      "accrualPeriodicity": {
+        "non_empty": 241,
+        "non_null": 241,
+        "present": 494
+      },
+      "accrualPeriodicityRecurrenceRule": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 494
+      },
+      "catalog": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "contactPoint": {
+        "non_empty": 387,
+        "non_null": 387,
+        "present": 494
+      },
+      "description": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "distributions": {
+        "non_empty": 475,
+        "non_null": 494,
+        "present": 494
+      },
+      "hasQuality": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "identifier": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "indexed": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "issued": {
+        "non_empty": 416,
+        "non_null": 416,
+        "present": 494
+      },
+      "keywords": {
+        "non_empty": 441,
+        "non_null": 494,
+        "present": 494
+      },
+      "landingPage": {
+        "non_empty": 368,
+        "non_null": 368,
+        "present": 494
+      },
+      "languages": {
+        "non_empty": 100,
+        "non_null": 494,
+        "present": 494
+      },
+      "modified": {
+        "non_empty": 412,
+        "non_null": 412,
+        "present": 494
+      },
+      "provenance": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 494
+      },
+      "publisher": {
+        "non_empty": 490,
+        "non_null": 490,
+        "present": 494
+      },
+      "publishingState": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "quality": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "queryContext": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "queryContextVector": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 494
+      },
+      "score": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "source": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "spatial": {
+        "non_empty": 358,
+        "non_null": 358,
+        "present": 494
+      },
+      "temporal": {
+        "non_empty": 261,
+        "non_null": 261,
+        "present": 494
+      },
+      "tenantId": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "themes": {
+        "non_empty": 319,
+        "non_null": 494,
+        "present": 494
+      },
+      "title": {
+        "non_empty": 494,
+        "non_null": 494,
+        "present": 494
+      },
+      "years": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 494
+      }
+    },
+    "datasets_with_distributions": 475,
+    "distribution_duplicate_id_occurrences": 0,
+    "distribution_fields": {
+      "accessURL": {
+        "non_empty": 822,
+        "non_null": 822,
+        "present": 1892
+      },
+      "byteSize": {
+        "non_empty": 391,
+        "non_null": 391,
+        "present": 1892
+      },
+      "description": {
+        "non_empty": 936,
+        "non_null": 936,
+        "present": 1892
+      },
+      "downloadURL": {
+        "non_empty": 1051,
+        "non_null": 1051,
+        "present": 1892
+      },
+      "format": {
+        "non_empty": 1771,
+        "non_null": 1771,
+        "present": 1892
+      },
+      "identifier": {
+        "non_empty": 1892,
+        "non_null": 1892,
+        "present": 1892
+      },
+      "issued": {
+        "non_empty": 1045,
+        "non_null": 1045,
+        "present": 1892
+      },
+      "license": {
+        "non_empty": 1744,
+        "non_null": 1746,
+        "present": 1892
+      },
+      "mediaType": {
+        "non_empty": 890,
+        "non_null": 890,
+        "present": 1892
+      },
+      "modified": {
+        "non_empty": 1124,
+        "non_null": 1124,
+        "present": 1892
+      },
+      "publishingState": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 1892
+      },
+      "queryContext": {
+        "non_empty": 1892,
+        "non_null": 1892,
+        "present": 1892
+      },
+      "queryContextVector": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 1892
+      },
+      "rights": {
+        "non_empty": 399,
+        "non_null": 399,
+        "present": 1892
+      },
+      "score": {
+        "non_empty": 1892,
+        "non_null": 1892,
+        "present": 1892
+      },
+      "source": {
+        "non_empty": 1892,
+        "non_null": 1892,
+        "present": 1892
+      },
+      "tenantId": {
+        "non_empty": 1892,
+        "non_null": 1892,
+        "present": 1892
+      },
+      "title": {
+        "non_empty": 1892,
+        "non_null": 1892,
+        "present": 1892
+      },
+      "useStorageApi": {
+        "non_empty": 0,
+        "non_null": 0,
+        "present": 1892
+      }
+    },
+    "distribution_query_context_nonempty": 1892,
+    "distribution_vector_nonnull": 0,
+    "distributions": 1892,
+    "publisher_names_nonempty": 312,
+    "publisher_objects_including_null": 319
+  },
+  "finished_at": "2026-11-05T14:09:00.627705+00:00",
+  "http_method": "GET",
+  "implementation": {
+    "bytes": 24414,
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/acquire.py",
+    "sha256": "6214f16f0b3b0672e17f76a8a03d3c6c0a9e96bf8cb852f78347778addb4f11b"
+  },
+  "indexed_metadata_progress": {
+    "bytes": 1914022,
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/indexed-metadata-0500.jsonl",
+    "sha256": "b15a8ebba7f8e49a6d082a01c24396aadb1ba656f820e81f31500bf30be8a70a"
+  },
+  "inventory": {
+    "complete": true,
+    "cutoff_pages": 1000,
+    "duplicates": 0,
+    "first_page_fetched_at": "2026-11-05T13:56:59.320432+00:00",
+    "last_page_fetched_at": "2026-11-05T14:00:29.962006+00:00",
+    "last_page_token": "2776347",
+    "next_page_token": null,
+    "page_receipts": {
+      "bytes": 225224,
+      "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/inventory-page-receipts.json",
+      "sha256": "a82ae48af0a7c16accaa056a1aed7b33da4c7d21bc120b9d401747a912d9bde1"
+    },
+    "page_size": 1000,
+    "pages": 114,
+    "scope": "anonymous Registry records with dcat-dataset-strings aspect",
+    "snapshot": {
+      "bytes": 207146255,
+      "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/inventory.jsonl",
+      "sha256": "6aadbc4e40e84fd941cca76514494dc8dd702bd33ac66fe010464a16bb8774c3"
+    },
+    "source_cutoff": "terminal cursor",
+    "unique_records": 113117
+  },
+  "issue": 3901,
+  "limitations": [
+    "Public anonymous deployment only, not production representative.",
+    "Live Registry pagination is not a transactional point-in-time snapshot.",
+    "Inventory covers public Registry dcat-dataset-strings records, not necessarily every indexed Search document.",
+    "Metadata-title lookup can miss duplicate/common titles outside top 10; skipped IDs are not replaced.",
+    "Stratified oversampling changes publisher prevalence; not a self-weighting sample.",
+    "Search lookup is retrieval only: only exact presampled identifiers are retained.",
+    "Null and empty indexed fields, including vectors, are preserved without trimming.",
+    "Source commits and live model/config are unverifiable and unknown."
+  ],
+  "live_embedding_model": "unknown",
+  "lookup": {
+    "attempted": 500,
+    "retained": 494,
+    "skipped_public_missing": [
+      {
+        "hitCount": 16552,
+        "id": "ds-tern-537d0dbf-3b28-5255-95f2-597fe55ab269",
+        "reason": "no exact identifier among 10 public published search lookup results"
+      },
+      {
+        "hitCount": 16628,
+        "id": "ds-tern-54721bab-2d8a-56e3-80fa-5cf3f8d4cfc7",
+        "reason": "no exact identifier among 10 public published search lookup results"
+      },
+      {
+        "hitCount": 18711,
+        "id": "ds-ga-1e8069d6-d053-4239-9786-7c17f6b4f582",
+        "reason": "no exact identifier among 10 public published search lookup results"
+      },
+      {
+        "hitCount": 16511,
+        "id": "ds-tern-95899c9f-99e2-5e23-8e0e-10f163718cd6",
+        "reason": "no exact identifier among 10 public published search lookup results"
+      },
+      {
+        "hitCount": 18555,
+        "id": "ds-ga-ec32928e-ab48-4df4-a38a-aa8fd54a2b2c",
+        "reason": "no exact identifier among 10 public published search lookup results"
+      },
+      {
+        "hitCount": 18306,
+        "id": "ds-ga-a05f7892-f37c-7506-e044-00144fdd4fa6",
+        "reason": "no exact identifier among 10 public published search lookup results"
+      }
+    ]
+  },
+  "lookup_protocol": {
+    "acceptance": "exact identifier equality only",
+    "limit_per_lookup": 10,
+    "missing_policy": "skip, no output-driven replacements",
+    "order": [
+      "quoted metadata title",
+      "quoted metadata title plus Registry publisher filter",
+      "bare identifier"
+    ],
+    "publishingState": "published"
+  },
+  "lookup_receipts": {
+    "bytes": 1086937,
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/lookup-receipts.json",
+    "sha256": "3ba4ec201ae7f76d4c484af40a7762f257d17f66f1a6361189188055b0a4b6a0"
+  },
+  "max_requests_per_second": 1.3333333333333333,
+  "network_requests": 0,
+  "public_liveness": {
+    "receipt": {
+      "attempt": 1,
+      "bytes": 2,
+      "curl_exit": 0,
+      "finished_at": "2026-11-05T13:56:58.660638+00:00",
+      "method": "GET",
+      "response_headers": "HTTP/2 200 \ndate: Thu, 05 Nov 2026 13:56:58 GMT\ncontent-type: text/plain; charset=UTF-8\ncontent-length: 2\naccess-control-allow-credentials: true\naccess-control-expose-headers: Content-Range,X-Content-Range,Accept-Ranges,Content-Length,x-magda-event-id\ncache-control: public, max-age=60\ncontent-security-policy: connect-src 'self' https://tiles.magda.io https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;img-src 'self' data: https://*.googletagmanager.com https://*.google-analytics.com https://*.googleusercontent.com https://tile.openstreetmap.org;script-src 'self' https://*.googletagmanager.com github.com objects.githubusercontent.com;worker-src 'self' blob:;default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';object-src 'none';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests\ncross-origin-opener-policy: same-origin\ncross-origin-resource-policy: same-origin\nreferrer-policy: strict-origin-when-cross-origin\nstrict-transport-security: max-age=31536000; includeSubDomains\nvary: Origin, Accept-Encoding\nx-xss-protection: 0\ncf-cache-status: DYNAMIC\nnel: {\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}\nreport-to: {\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=9KA1SVsOwBEovj86gStz30qtEIk%2FHKLDvo0drKV1CZWmQftFcqAmCZVEmrlrkoevSEXx2Pdj4z8VmUd%2BE2h8%2F8tiSb%2BtCy8KvSIEus46CWtbnwqyWQXKxMb%2B5GEcsmU%3D\"}]}\nserver: cloudflare\ncf-ray: a55c5d6a5c05dc2b-SYD\nalt-svc: h3=\":443\"; ma=86400\n\n",
+      "sha256": "565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3",
+      "started_at": "2026-11-05T13:56:58.565364+00:00",
+      "status": 200,
+      "url": "https://dev.magda.io/api/v0/search/status/live"
+    },
+    "value": "OK"
+  },
+  "readiness_probe": "not called by this acquisition utility: documented ready GET can create a search pipeline",
+  "request_start_interval_seconds": 0.75,
+  "run_directory": "/private/tmp/magda-3901-data/run-20261105T140856456589Z",
+  "schema_version": 1,
+  "selected_inventory_metadata": {
+    "bytes": 726443,
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/selected-inventory-metadata.jsonl",
+    "sha256": "2085c1d3148d44b7e63d6f624fbfb436dcd6d53fbfb80b5d205f93fd8a9c4be1"
+  },
+  "selection": {
+    "bytes": 152158,
+    "path": "/private/tmp/magda-3901-data/run-20261105T140856456589Z/selection.json",
+    "publisher_strata": 1346,
+    "publishers_selected": 313,
+    "requested": 500,
+    "seed": "issue3901-pilot-v1",
+    "selected": 500,
+    "sha256": "8d9022d55501a9146f3ea953621731d2b5c6d080f1325defe283b828e4798fa9"
+  },
+  "source_commits_live": "unknown",
+  "started_at": "2026-11-05T14:08:56.456942+00:00",
+  "status": "complete",
+  "transport": "raw HTTP via curl; curated CLI has no bulk Registry cursor",
+  "updated_at": "2026-11-05T14:09:00.627713+00:00"
+}

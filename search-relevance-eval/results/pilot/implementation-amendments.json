@@ -1,0 +1,26 @@
+{
+  "recorded_utc": "2026-11-05T22:23:37.574636+00:00",
+  "changed_frozen_implementation_files": [
+    {
+      "path": "run.py",
+      "frozen_sha256": "fce552c299ddbe4a444d557786451f091808e12ff0d3dc1f1751b551d4271718",
+      "final_sha256": "7b36b467bfde092053ed0e1ad7bdcf78f52e8a793f9c5c9d4915e65c8fd0c780"
+    },
+    {
+      "path": "evaluate.py",
+      "frozen_sha256": "9dfbaf5dc7bf2478277e99b1561fcbab4e3901ea85f1f09bc8133d8606aa5d04",
+      "final_sha256": "3fbe5baf362696ff0f310f1ac0a6468ee857ce0ccbb47f0d569c3b6907ed5cc6"
+    }
+  ],
+  "reasons": [
+    "evaluate.py: preflight correction preserved structured criteria/spatial/temporal evidence and removed unmarked IDs; invalid development-v1 assessments excluded and all final judgments rerun with corrected v2 packets.",
+    "evaluate.py: zero pooled IDCG corrected to undefined to implement the already-frozen protocol, before final metric computation.",
+    "run.py: disable environment proxies and reject redirects/non-origin paths for local replay safety after measured runs. Query transformation, embeddings, executed DSL and measured outputs did not change.",
+    "CSV output uses deterministic LF line endings; publish_results.py removes only duplicated raw payloads and formats arrays for review, preserving all computed metric values."
+  ],
+  "tasks_corpus_weights_rankings_changed": false,
+  "post_run_transport_patch_changes_latency_measurements": false,
+  "offline_test_command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s search-relevance-eval -p 'test_*.py' -v",
+  "offline_test_log_sha256": "159eb5a914124e6e2abcf8c5d0e7e45d80ef3975002e8e3fac1deec110bd64c6",
+  "offline_test_count": 113
+}

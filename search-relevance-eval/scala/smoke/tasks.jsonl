@@ -1,0 +1,2 @@
+{"id":"smoke-unfiltered","query":"water quality","vector":[0.1,0.2,0.3]}
+{"id":"smoke-filtered","query":"water quality","vector":[0.1,0.2,0.3],"filters":{"publisher":"Example Publisher","format":"CSV","dateFrom":"2020-01-01","dateTo":"2024-01-01","regions":["ste:1"]}}
