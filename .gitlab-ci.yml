@@ -207,6 +207,9 @@ buildtest:search-with-index-cache:
     - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.TenantDataSetSearchSpec"
     - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.FacetSpec"
     - sbt -DelasticSearch.serverUrl=http://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.RegionsApiSpec"
+    # Run query-builder unit tests and real-engine access-filter regressions
+    # against the same ready OpenSearch service (no separate opt-in env needed).
+    - sbt -DelasticSearch.serverUrl=http://docker:9200 "searchApi/test"
     - cd magda-opensearch
     - docker-compose down
   artifacts:

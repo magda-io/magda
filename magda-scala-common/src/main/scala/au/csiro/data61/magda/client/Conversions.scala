@@ -353,7 +353,8 @@ object Conversions {
       case _ => None
     }
 
-    val publishing = hit.aspects.getOrElse("publishing", JsObject())
+    val publishing =
+      distributionRecord.aspects.getOrElse("publishing", JsObject())
 
     Distribution(
       identifier = Some(distributionRecord.id),

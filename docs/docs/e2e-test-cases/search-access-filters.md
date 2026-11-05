@@ -13,8 +13,8 @@ kubectl --context minikube -n magda port-forward svc/opensearch 19200:9200
 Then run the [integration suite](../../../magda-search-api/src/test/scala/au/csiro/data61/magda/search/elasticsearch/ElasticSearchAccessFilterSpec.scala) from the repository root:
 
 ```sh
-MAGDA_SEARCH_TEST_OPENSEARCH_URL=http://127.0.0.1:19200 \
-  sbt 'searchApi/testOnly *ElasticSearchAccessFilterSpec'
+sbt -DelasticSearch.serverUrl=http://127.0.0.1:19200 \
+  'searchApi/testOnly *ElasticSearchAccessFilterSpec'
 ```
 
 The [query-builder unit suite](../../../magda-search-api/src/test/scala/au/csiro/data61/magda/search/elasticsearch/ElasticSearchQueryerSpec.scala) needs no cluster:
@@ -23,9 +23,23 @@ The [query-builder unit suite](../../../magda-search-api/src/test/scala/au/csiro
 sbt 'searchApi/testOnly *ElasticSearchQueryerSpec'
 ```
 
-When running sbt in Docker on macOS, the endpoint may instead be `http://host.docker.internal:19200`. Supply a reachable HTTP endpoint without authentication. Without the environment variable, these optional tests are canceled; ordinary query-builder unit tests remain runnable.
+When running sbt in Docker on macOS, the endpoint may instead be `http://host.docker.internal:19200`. Supply a reachable HTTP endpoint without authentication. The explicit `elasticSearch.serverUrl` system property uses the same convention as the existing Scala integration suites. The older `MAGDA_SEARCH_TEST_OPENSEARCH_URL` environment variable remains a fallback for local runs; the system property takes precedence. Without either explicit setting, these optional tests are canceled rather than connecting to the default catalog URL.
+
+The `buildtest:search-with-index-cache` job in [the GitLab pipeline](../../../.gitlab-ci.yml) now runs `sbt -DelasticSearch.serverUrl=http://docker:9200 "searchApi/test"` against its existing OpenSearch service, after the other search suites. This runs both the unit tests and the real-engine regressions automatically; CI does not need a separate environment variable.
 
 The suite serializes actual `ElasticSearchQueryer.buildQuery` requests and POSTs their JSON bodies to OpenSearch. Each test creates and deletes only its own `magda-search-access-test-<UUID>` index. Never point destructive test tooling at a production cluster. If the process is forcibly terminated, inspect and remove only the exact test index left behind.
+
+## Full-service authorization regressions
+
+[The TypeScript search authorization suite](../../../magda-int-test-ts/src/tests/searchApiAuth.spec.ts) complements the generated-query tests: it creates dataset/distribution records through the real Registry API, indexes them through the real Indexer, and searches through the real Search API with OPA decisions for anonymous users, ordinary users, and administrators. Its `#3886` cases verify restricted/draft matching distributions on accessible published parents with accessible unrelated siblings, including explicit publishing-state requests and legacy distributions without a publishing aspect.
+
+```sh
+yarn --cwd magda-int-test-ts test --grep '#3886'
+```
+
+Use the normal [integration harness prerequisites](../../../magda-int-test-ts/README.md). The existing `buildtest:integration-tests` CI job runs these cases automatically. For deterministic branch isolation, these fixtures assert the Indexer-produced access metadata before modifying only their indexed vectors: keyword cases remove vectors, while vector-only cases use a real query embedding for the matching distribution and distant vectors for its parent and sibling. Registry records, authorization metadata, OPA decisions, and HTTP search responses are not mocked. The existing [semantic relevance tests](../../../magda-int-test-ts/src/tests/searchApi.spec.ts) continue to use unmodified model embeddings for both in-memory radial and quantized on-disk top-k search.
+
+**Local safety:** the integration harness cleans up and prunes Docker resources. Run it only against a disposable Docker daemon, as CI does, not a daemon containing unrelated stopped containers or volumes. The generated-query suite above is the lighter option for testing against minikube and deletes only its UUID-named indexes.
 
 ## Regression coverage
 
@@ -37,6 +51,10 @@ The suite serializes actual `ElasticSearchQueryer.buildQuery` requests and POSTs
 - Parent publisher/date facets remain effective. A text match in a CSV distribution plus a separate PDF sibling still satisfies the dataset-level PDF facet; this patch does not change that existing any-sibling behavior.
 
 For a broader deployment smoke test, also verify region filters, nontrivial residual authorization rules, returned inner-hit distributions, facet alternatives, and both `k` and radial `minScore`/`maxDistance` configurations with your actual mappings.
+
+## Index rebuild on upgrade
+
+The full-service cases exposed that distribution conversion read the parent dataset's publishing aspect. The Indexer now retains each distribution record's own state. Missing distribution states stay missing in the response and are treated as published when filtering, matching OPA's legacy-record rules. The datasets index version is bumped from `53` to `54` so upgrade rebuilds existing documents; otherwise old parent-derived state values would continue to undermine draft-distribution filtering. This affects index contents, not Registry records.
 
 ## Version-specific caveats
 

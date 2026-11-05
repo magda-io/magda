@@ -34,7 +34,7 @@ import scala.concurrent.duration._
 import scala.io.Source
 
 /** Optional real-engine regressions for #3886. Never touches a catalog index.
-  * Set MAGDA_SEARCH_TEST_OPENSEARCH_URL to an isolated OpenSearch 2.19.1 endpoint.
+  * Pass -DelasticSearch.serverUrl=<test OpenSearch URL>, as in the CI search job.
   * Requests are serialized from the production query builder, not hand-written DSL.
   */
 class ElasticSearchAccessFilterSpec
@@ -102,8 +102,11 @@ class ElasticSearchAccessFilterSpec
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-    endpoint = sys.env
-      .get("MAGDA_SEARCH_TEST_OPENSEARCH_URL")
+    // Opt in explicitly, rather than connecting to common.conf's default URL
+    // during cluster-free unit tests. CI already supplies this system property.
+    endpoint = sys.props
+      .get("elasticSearch.serverUrl")
+      .orElse(sys.env.get("MAGDA_SEARCH_TEST_OPENSEARCH_URL"))
       .filter(_.trim.nonEmpty)
       .map(_.trim.stripSuffix("/"))
       .getOrElse("")
@@ -123,7 +126,7 @@ class ElasticSearchAccessFilterSpec
     // treats an exception from beforeEach as a suite abort.
     if (endpoint.isEmpty) {
       cancel(
-        "Set MAGDA_SEARCH_TEST_OPENSEARCH_URL to run real OpenSearch access-filter tests"
+        "Pass -DelasticSearch.serverUrl=<test OpenSearch URL> to run access-filter integration tests"
       )
     }
     super.withFixture(test)
@@ -478,6 +481,23 @@ class ElasticSearchAccessFilterSpec
   }
 
   describe("real OpenSearch vector prefiltering") {
+    it(
+      "includes legacy distributions without a state in published radial and top-k searches"
+    ) {
+      val legacy =
+        JsObject(child(vector = Vector(0.3, 0.3)).fields - "publishingState")
+      insert(
+        "legacy" -> dataset(Vector(legacy)),
+        "draft" -> dataset(
+          Vector(child(state = "draft", vector = Vector(0.0, 0.0)))
+        )
+      )
+      Seq(None, Some(1)).foreach { k =>
+        configure(hybrid = true, k = k)
+        search(generated(input)).keySet shouldBe Set("legacy")
+      }
+    }
+
     it(
       "does not rank an accessible parent using its restricted perfect-vector sibling"
     ) {

@@ -341,14 +341,16 @@ class ElasticSearchQueryerSpec
             s"keeps radial $configKey access filters outside kNN but inside the correct document context"
           ) {
             HybridSearchConfig.setAppConfig(
-              ConfigFactory.parseString(s"""
-                                           |${HybridSearchConfig.configPath} {
-                                           |  k = null
-                                           |  minScore = null
-                                           |  maxDistance = null
-                                           |  $configKey = $threshold
-                                           |}
-                                           |""".stripMargin).withFallback(config)
+              ConfigFactory
+                .parseString(s"""
+                                |${HybridSearchConfig.configPath} {
+                                |  k = null
+                                |  minScore = null
+                                |  maxDistance = null
+                                |  $configKey = $threshold
+                                |}
+                                |""".stripMargin)
+                .withFallback(config)
             )
             val q = withFacets(
               input.copy(
@@ -496,6 +498,26 @@ class ElasticSearchQueryerSpec
       named(body, "term").flatMap(_.asJsObject.fields.keys) should not contain "distributions.publishingState"
       assertChildOnly(knnFilter(body, "distributions.queryContextVector"), q)
       assertKeywordAccess(body, q, "or")
+    }
+
+    it("treats missing distribution states as published, but not as draft") {
+      val legacyPublished = render(
+        boolQuery().not(existsQuery("distributions.publishingState"))
+      )
+      val published = render(
+        Queries.publishingStateQuery(Set(Specified("published")), true).get
+      )
+      items(field(field(published, "bool"), "should")) should contain(
+        legacyPublished
+      )
+      val draft = render(
+        Queries.publishingStateQuery(Set(Specified("draft")), true).get
+      )
+      named(draft, "exists") shouldBe empty
+      val root = render(
+        Queries.publishingStateQuery(Set(Specified("published"))).get
+      )
+      named(root, "exists") shouldBe empty
     }
 
     Seq(true, false).foreach { denyDataset =>
