@@ -1,0 +1,34 @@
+{
+  "definition": "same normalized Unicode/case/punctuation title AND same normalized publisher name; no semantic/temporal-version family inference",
+  "datasets": 494,
+  "families": 494,
+  "families_with_multiple_records": 0,
+  "max_family_size": 1,
+  "limitations": "Near duplicates with different titles/publishers remain distinct. Do not retrospectively expand a family based on system outcomes.",
+  "fields": {
+    "hasQuality": {
+      "present": 494,
+      "nonnull": 494
+    },
+    "quality": {
+      "present": 494,
+      "nonnull": 494
+    },
+    "publishingState": {
+      "present": 494,
+      "nonnull": 494
+    },
+    "spatial": {
+      "present": 494,
+      "nonnull": 358
+    },
+    "years": {
+      "present": 494,
+      "nonnull": 0
+    },
+    "indexed": {
+      "present": 494,
+      "nonnull": 494
+    }
+  }
+}

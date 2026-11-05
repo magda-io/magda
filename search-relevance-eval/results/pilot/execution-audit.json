@@ -1,0 +1,48 @@
+{
+  "recorded_at_utc": "2026-11-05T18:53:42.078708+00:00",
+  "artifact_sha256": {
+    ".local/baseline-requests.jsonl": "2fb130cfcda51e4485851263399a00db0ae880f4a787e4d284fb9f55ea079754",
+    ".local/mapping.json": "c4b39845141504c78c06d3bdcb6cbfafbd38e1ca5b64ab5e25440e70f189c884",
+    ".local/search-config.json": "ba418995c49cd21cc7d0946b1d3eba3b11a3a78290770df5dc67e3288bac0afc",
+    ".local/development-runs.jsonl": "c70fcf4f5c7eee7336e9d2e2f959683a8708e9d2c8cd12931f33062f3818e168",
+    ".local/heldout-runs.jsonl": "12984c4955a0e7da243d0c0a2706ad02b00d10c56ed5da1028efbecc04376673"
+  },
+  "invalid_packet_v1": {
+    "reason": "Structured task criteria and nested spatial/temporal evidence were accidentally removed by shared document-key sanitizer. First development judging canceled; any outputs excluded, preserved locally; no heldout judging used v1.",
+    "preserved_outputs": [
+      {
+        "path": ".local/development-judgments-A-1abc14ec86fcfeda.jsonl",
+        "sha256": "84587f0de8eec876448f2ed840c581477402e07741c613d99065acb72a1c8cda"
+      },
+      {
+        "path": ".local/development-judgments-A-3ad4525089fb50b0.jsonl",
+        "sha256": "9814d44966172c5445f652b8793ad2446fcbb5a39f3b23a4a2c53c1d19224031"
+      },
+      {
+        "path": ".local/development-judgments-A-42bf0cda0c1fc352.jsonl",
+        "sha256": "de0b27189c5daec9b6f220340be47a6f48567f0ff75a77832f165370768e66f7"
+      },
+      {
+        "path": ".local/development-judgments-A-9eada181a93510fa.jsonl",
+        "sha256": "376a9b607acebd38679474ca149b0c806ceb061c5fc7433e3f286dbff8b53fe7"
+      },
+      {
+        "path": ".local/development-judgments-B-1abc14ec86fcfeda.jsonl",
+        "sha256": "b19a5310f53b4f16e308155f66407741898707ebd8d79acbcb5b0cda6af31043"
+      },
+      {
+        "path": ".local/development-judgments-B-3ad4525089fb50b0.jsonl",
+        "sha256": "5876d23f6a78a7f78a99889effe088bc9f3effb4a6cbd59d7b9ac364e1253348"
+      },
+      {
+        "path": ".local/development-judgments-B-42bf0cda0c1fc352.jsonl",
+        "sha256": "1b6a8c07831411b6532b1491d59f0863392e4a7e1dda4b0c765a1fdb00aa0fd0"
+      },
+      {
+        "path": ".local/development-judgments-B-9eada181a93510fa.jsonl",
+        "sha256": "2fa2479eb4aa16e331b66d245c7e808052a8718fb2657b965b7dcc1f0daa510d"
+      }
+    ]
+  },
+  "production_ranking_diff": "must remain empty vs ba181562"
+}

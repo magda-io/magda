@@ -1,0 +1,15 @@
+{
+  "decision": "retain_15_task_pilot_do_not_expand_to_40",
+  "timing": "Before any held-out system execution, held-out pooling, held-out judging or held-out metric inspection",
+  "basis": [
+    "The sample is 494 datasets, about 0.44% of the anonymous Registry inventory; equal-publisher oversampling, index lookup failures, and changed IDF/candidate competition preclude a production-representativeness claim.",
+    "The public deployment's exact embedding model, vectors, OpenSearch version and runtime configuration are not externally verified. All local systems are matched to each other, but not established as an exact production replay.",
+    "The tasks are externally informed constructed needs plus explicitly biased supplements, not real user logs or human relevance judgments. More similarly constructed tasks would not repair the external-validity gap.",
+    "A packet preflight audit found structured success criteria and nested temporal/spatial text were over-filtered. Initial development judging is invalid, preserved for audit, and will be rerun with corrected lossless packets. No held-out outcomes informed this correction or stop decision.",
+    "The local objective controls passed, including actual normalization weight reversal, but correctness proof is not relevance or population evidence."
+  ],
+  "weights_changed_after_development": false,
+  "tasks_changed_after_freeze": false,
+  "heldout_tasks_to_complete": 10,
+  "recommendation_ceiling": "Pilot evidence can identify local regressions and engineering feasibility, but cannot justify recommendation A under the preregistered promotion guardrails. Default C remains appropriate unless stronger negative evidence supports B."
+}

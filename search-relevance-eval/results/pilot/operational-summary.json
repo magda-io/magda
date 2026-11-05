@@ -1,0 +1,404 @@
+{
+  "latency": {
+    "development": {
+      "baseline": {
+        "median_ms": 58.26439599999844,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_03_07": {
+        "median_ms": 61.69777050000014,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_05_05": {
+        "median_ms": 63.43249999999934,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_07_03": {
+        "median_ms": 61.679645500000824,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "candidate_keep50_03_07": {
+        "median_ms": 60.7041869999998,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "keyword": {
+        "median_ms": 52.48189599999975,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      },
+      "vector": {
+        "median_ms": 18.5191039999999,
+        "p95_ms": null,
+        "p95_omission": "fewer than 100 samples",
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 50,
+        "tasks": 5
+      }
+    },
+    "heldout": {
+      "baseline": {
+        "median_ms": 55.76018750000067,
+        "p95_ms": 65.47430239999605,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_03_07": {
+        "median_ms": 63.08187500000173,
+        "p95_ms": 71.01484555000113,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_05_05": {
+        "median_ms": 63.43518749999966,
+        "p95_ms": 76.3896062500006,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_07_03": {
+        "median_ms": 62.88908299999996,
+        "p95_ms": 71.11050450000013,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "candidate_keep50_03_07": {
+        "median_ms": 60.65935400000111,
+        "p95_ms": 72.88543719999616,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "keyword": {
+        "median_ms": 46.1981249999992,
+        "p95_ms": 54.4374350999945,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      },
+      "vector": {
+        "median_ms": 31.474667000000345,
+        "p95_ms": 91.3353139499975,
+        "p95_omission": null,
+        "repeat_dependence": "repeated requests are correlated; not independent tasks",
+        "requests": 100,
+        "tasks": 10
+      }
+    }
+  },
+  "latency_guard": {
+    "baseline_heldout_p95_ms": 65.47430239999605,
+    "budget_ms": 98.21145359999407,
+    "candidate_heldout_p95_ms": 71.01484555000113,
+    "passed": true
+  },
+  "objective_known_answer_summary": {
+    "development": {
+      "baseline": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_05_05": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_07_03": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "candidate_keep50_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "keyword": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      },
+      "vector": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 1
+      }
+    },
+    "heldout": {
+      "baseline": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_05_05": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_07_03": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "candidate_keep50_03_07": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "keyword": {
+        "mrr_at_10": 1.0,
+        "success_at_5": 1,
+        "tasks": 2
+      },
+      "vector": {
+        "mrr_at_10": 0.5,
+        "success_at_5": 0.5,
+        "tasks": 2
+      }
+    }
+  },
+  "objective_per_query": [
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "baseline"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_05_05"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_07_03"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "keyword"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q01",
+      "split": "development",
+      "success_at_5": 1,
+      "system": "vector"
+    },
+    {
+      "best_known_rank": null,
+      "mrr_at_10": 0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 0,
+      "system": "vector"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "baseline"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_05_05"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_07_03"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q06",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "keyword"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "baseline"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_05_05"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_07_03"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "candidate_keep50_03_07"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "keyword"
+    },
+    {
+      "best_known_rank": 1,
+      "mrr_at_10": 1.0,
+      "query_id": "q07",
+      "split": "heldout",
+      "success_at_5": 1,
+      "system": "vector"
+    }
+  ],
+  "count_mismatch_cases": [],
+  "nonstable_repeat_cases": [],
+  "weight_overlap_summary": {
+    "baseline": {
+      "mean_top10_jaccard_with_baseline": 1.0,
+      "changed_leaders": 0
+    },
+    "candidate_03_07": {
+      "mean_top10_jaccard_with_baseline": 0.5874025756378698,
+      "changed_leaders": 9
+    },
+    "candidate_05_05": {
+      "mean_top10_jaccard_with_baseline": 0.6383312765665706,
+      "changed_leaders": 7
+    },
+    "candidate_07_03": {
+      "mean_top10_jaccard_with_baseline": 0.6927905427905428,
+      "changed_leaders": 2
+    },
+    "candidate_keep50_03_07": {
+      "mean_top10_jaccard_with_baseline": 0.6035557035557035,
+      "changed_leaders": 9
+    },
+    "keyword": {
+      "mean_top10_jaccard_with_baseline": 1.0,
+      "changed_leaders": 0
+    },
+    "vector": {
+      "mean_top10_jaccard_with_baseline": 0.1227979671400724,
+      "changed_leaders": 12
+    }
+  }
+}

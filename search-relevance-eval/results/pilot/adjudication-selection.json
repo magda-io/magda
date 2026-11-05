@@ -1,0 +1,35 @@
+{
+  "pairs": 213,
+  "conflict_pairs": [
+    "p_b5cffd896abca98ae1d6ecd4d98cb45c"
+  ],
+  "agreed_numeric_pairs": 210,
+  "common_mode_audit_pairs": [
+    "p_080ab591e754af8a1b8948ff2d54567f",
+    "p_10fa148b69e68880878d1c46eab946b9",
+    "p_1d50b9ba8819d252c0489e7bfa5fcb0b",
+    "p_243a18a404cffa93ec7651ffe225f62b",
+    "p_26248a216c6c69241365268898fb8b9f",
+    "p_3c192168106de0ee56d9f5774fee9e71",
+    "p_4c7f9bd9cb94467d0767e2d511c3f761",
+    "p_4d90f856bb5b7987742e642bf04b3c05",
+    "p_5b216f3b88471f9a8f25c78895fa9319",
+    "p_71531b8275ab3064e66939cc9b2977be",
+    "p_7525b6e15526a04b52e84ba2b4c000e2",
+    "p_7a97dc88dff4dcbaf1633e7ac19e91f8",
+    "p_8374d1e81adf8981172b50db71acc228",
+    "p_90b604d19ebab67054143edc54a72f0c",
+    "p_96661b5ab60884f7079e9940fb797851",
+    "p_a6688c8ce845ccc31343da3c9fe0ae8c",
+    "p_adc62d7065f67b5632826e1010a5b0e1",
+    "p_b2bfc21e77859051f0add7a65010d8cb",
+    "p_c0a2e2c315dd97c8d8f0c0eda2140d35",
+    "p_ed7d4b9fdfbdcd01c1f41b7132610eb4",
+    "p_f636104cc34d6db8ab96263c1f3ad6e4"
+  ],
+  "seed": 5901,
+  "raw_assessment_sha256": {
+    "A": "40193780c3bf5a44fa42e19ecdd983c283b50bfaff7c0a3e5443aed1fa50bc76",
+    "B": "12cefb381943f498b31801f92d081f9b0e3d6d8e0f8a379d3571d87b8cfe7b5b"
+  }
+}

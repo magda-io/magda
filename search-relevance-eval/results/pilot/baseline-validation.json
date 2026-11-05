@@ -1,0 +1,11 @@
+{
+  "recorded_utc": "2026-11-05T22:07:22.024125+00:00",
+  "command": "sbt -DelasticSearch.serverUrl=http://127.0.0.1:19200 searchApi/test",
+  "baseline_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "tests_succeeded": 26,
+  "tests_failed": 0,
+  "tests_cancelled": 0,
+  "exit_code": 0,
+  "log_sha256": "c42ced5343351700769fceb1de6e8ef06fcb2b3d73a70aec6052368324862e58",
+  "scope": "Unchanged main production Scala search tests, including live access-filter fixtures. This is not proof that experimental candidate handles every real OPA identity or top-k mode."
+}

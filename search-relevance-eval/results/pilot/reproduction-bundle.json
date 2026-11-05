@@ -1,0 +1,100 @@
+{
+  "created_utc": "2026-11-05T22:07:21.227220+00:00",
+  "artifact_path": "search-relevance-eval/.local/magda-3901-frozen-evaluation-inputs.tar.gz",
+  "committed_to_git": false,
+  "bytes": 58472927,
+  "sha256": "e52c3d913b2e7b7a05b9888299438607946d3c5ba555599fcb38441070ad13bd",
+  "members": [
+    {
+      "name": "corpus.jsonl",
+      "bytes": 3685629,
+      "sha256": "7e115a663c3d7c8a8794903b2940e0d3fda058f4bb6e7b76520c730e5d655e43"
+    },
+    {
+      "name": "selection.json",
+      "bytes": 152158,
+      "sha256": "8d9022d55501a9146f3ea953621731d2b5c6d080f1325defe283b828e4798fa9"
+    },
+    {
+      "name": "acquisition-manifest.json",
+      "bytes": 10671,
+      "sha256": "2352a69acfe2dd921e85a99a8b3ca526dd24b5efff115fe55ee809cc6db04cff"
+    },
+    {
+      "name": "embedded-corpus.jsonl",
+      "bytes": 44358276,
+      "sha256": "80862a1ef9b1d4eadc039ca8f6410b3b32b4d7b428581fcbf8baa6dac88cff65"
+    },
+    {
+      "name": "embedded-queries.jsonl",
+      "bytes": 287491,
+      "sha256": "84c8c613bcf4e494ef42ba06aacaf8c998203485fa69e90b85adc1f30bfddaca"
+    },
+    {
+      "name": "baseline-requests.jsonl",
+      "bytes": 2248397,
+      "sha256": "2fb130cfcda51e4485851263399a00db0ae880f4a787e4d284fb9f55ea079754"
+    },
+    {
+      "name": "mapping.json",
+      "bytes": 18593,
+      "sha256": "c4b39845141504c78c06d3bdcb6cbfafbd38e1ca5b64ab5e25440e70f189c884"
+    },
+    {
+      "name": "search-config.json",
+      "bytes": 1529,
+      "sha256": "ba418995c49cd21cc7d0946b1d3eba3b11a3a78290770df5dc67e3288bac0afc"
+    },
+    {
+      "name": "development-runs.jsonl",
+      "bytes": 36450369,
+      "sha256": "c70fcf4f5c7eee7336e9d2e2f959683a8708e9d2c8cd12931f33062f3818e168"
+    },
+    {
+      "name": "heldout-runs.jsonl",
+      "bytes": 62249214,
+      "sha256": "12984c4955a0e7da243d0c0a2706ad02b00d10c56ed5da1028efbecc04376673"
+    },
+    {
+      "name": "development-runs.jsonl.requests.jsonl",
+      "bytes": 3375953,
+      "sha256": "0e1d734ed3372a61803abe5582067e1ab97bab03d727b49f18a4368971f35754"
+    },
+    {
+      "name": "heldout-runs.jsonl.requests.jsonl",
+      "bytes": 10748464,
+      "sha256": "511f4d22e63549cb88cd83e8b5f12e728323dd4cb3118193de05d835d1789d03"
+    },
+    {
+      "name": "queries.jsonl",
+      "bytes": 31409,
+      "sha256": "63894b9559ead64e408e01df41e3f515ccf3e8b82add5b93b6601f963b5450b3"
+    },
+    {
+      "name": "anchors.jsonl",
+      "bytes": 2350,
+      "sha256": "bc7a560c9832f5a65726ab2f3c607ba93e506a2ac6336fe7815b474a3512b244"
+    },
+    {
+      "name": "protocol.json",
+      "bytes": 7806,
+      "sha256": "640f4873c57aa93d2d7710449af84e9e02e15e0e7b829b5154f6b54fd4d57767"
+    },
+    {
+      "name": "protocol.md",
+      "bytes": 30261,
+      "sha256": "fb2728fd174f228cf0fe9535639bd68b7546a4d1ed9b2462b2b2c298758b32d6"
+    },
+    {
+      "name": "judging-prompt.md",
+      "bytes": 3488,
+      "sha256": "0fbdcbfbd5b4f629732ae9f91be03631d0c0d63778bc8dba0eb05b8cbda6b6bc"
+    },
+    {
+      "name": "analysis/wn_s.pl",
+      "bytes": 7494480,
+      "sha256": "9993123ea6fa50319b8b51b01722173270e8990007da6364e4811a327cc6cf4b"
+    }
+  ],
+  "scope": "Exact selected public snapshot, frozen vectors, production-exported queries/mapping, measured raw outputs and registered tasks. Not a full public catalogue export; no secrets or distribution file contents."
+}

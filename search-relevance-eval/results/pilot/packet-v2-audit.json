@@ -1,0 +1,221 @@
+{
+  "created_utc": "2026-11-05T18:54:48.992562+00:00",
+  "reason": "Preflight packet evidence preservation/privacy correction; frozen tasks, corpus, rankings and weights unchanged. Invalid v1 outputs excluded before metrics.",
+  "implementation_sha256": {
+    "evaluate.py": "0d4fb73beb743551f6988e9cc499c98068206250114334036b14cfce38809460",
+    "make_judge_batches.py": "3009c652c6c39fcb86cadb112d1613552d349dd113168b2f7ee5963832e77128",
+    "judging-prompt.md": "0fbdcbfbd5b4f629732ae9f91be03631d0c0d63778bc8dba0eb05b8cbda6b6bc"
+  },
+  "packets": [
+    {
+      "role": "A",
+      "phase": "development",
+      "group": "298bb1fb52933d6b",
+      "pairs": 11,
+      "packet_sha256": "a4b8853dc5afecf035588d82a6b26a917440f39d308790a598893dc3af5efb85"
+    },
+    {
+      "role": "A",
+      "phase": "development",
+      "group": "3660a78fc9ef5147",
+      "pairs": 10,
+      "packet_sha256": "3e5b4eeee28d77bef1fb98acf4ca4ce0468affa277af73076c68d870ba7a9479"
+    },
+    {
+      "role": "A",
+      "phase": "development",
+      "group": "5c51b694ac826ade",
+      "pairs": 24,
+      "packet_sha256": "8b34b2deffb3d4d4dca000d3cd1184cf2a18aee9ad7bd2bcf341a3942366277a"
+    },
+    {
+      "role": "A",
+      "phase": "development",
+      "group": "824fe0cadf2ed75c",
+      "pairs": 10,
+      "packet_sha256": "ce34e223b8a1593d6e01ed8ff66b70b21ec8dc495c4116125d1ec8c47f1f0774"
+    },
+    {
+      "role": "A",
+      "phase": "development",
+      "group": "af584499f274ecfa",
+      "pairs": 14,
+      "packet_sha256": "bcc94036f594d5a882382520257b4c6290bbec9aa417f99e93bce57284aa4d03"
+    },
+    {
+      "role": "B",
+      "phase": "development",
+      "group": "298bb1fb52933d6b",
+      "pairs": 11,
+      "packet_sha256": "74a54e20bd60082fb87d79f228f17f283012779f454058fae96eef066f2d8a38"
+    },
+    {
+      "role": "B",
+      "phase": "development",
+      "group": "3660a78fc9ef5147",
+      "pairs": 10,
+      "packet_sha256": "2b12e6aa446a5e3394e169f836c137a01d932f28ee5b3e600346c038937fc9ea"
+    },
+    {
+      "role": "B",
+      "phase": "development",
+      "group": "5c51b694ac826ade",
+      "pairs": 24,
+      "packet_sha256": "29ab811702f401730f566f19dc5ef3e510710d75d5e22fa3fdf4959978855344"
+    },
+    {
+      "role": "B",
+      "phase": "development",
+      "group": "824fe0cadf2ed75c",
+      "pairs": 10,
+      "packet_sha256": "687a9ba7d432aa0d19f8ad6ee1ddc2c28fe1e5b057baf6183f4e7b68f1202ba5"
+    },
+    {
+      "role": "B",
+      "phase": "development",
+      "group": "af584499f274ecfa",
+      "pairs": 14,
+      "packet_sha256": "a7baa39a5e88697476b5027977b28b0120604a7c74f72457cebd0772ac8fb60f"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "15cc5e06a1ec0a67",
+      "pairs": 20,
+      "packet_sha256": "ec1e69980015a9712d8476571ca5919a8e0825bce50ee41ae1f4f4c42ca038e4"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "5c00161942748906",
+      "pairs": 20,
+      "packet_sha256": "6e09b195b3f0e79c6676025ad955935f0f68f2c0bac4f788ac7e6121032af33f"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "8758fc1738aae0fd",
+      "pairs": 1,
+      "packet_sha256": "7645c8ca60fc9a06f4bf0b818ae6a339bd633ac17fecc90f7a91c6e104d9a2eb"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "8f6c677c12bdfb97",
+      "pairs": 1,
+      "packet_sha256": "78df4326770a79062d35f0b67ca883ddd5a2396da6065d24ac31be806616f309"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "9e0aa71a63db543e",
+      "pairs": 12,
+      "packet_sha256": "828ad8fd657ceca84c67c66f0d71719d87f3b3df0eb74b8224e875923035977f"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "b8fcbfd259fc0722",
+      "pairs": 21,
+      "packet_sha256": "178da0f02a8b717f85d925c6115fae417717fbc135b39faba52af593cf1a34a4"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "c525630a7f073ba1",
+      "pairs": 16,
+      "packet_sha256": "2262dca2697b18a8a9d88052736c9820009f95d289e53e78c73052166d33f7a4"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "ddb1b8de9bbe93f8",
+      "pairs": 19,
+      "packet_sha256": "5f4296eb75638373d5c4e109acf983cda2e6a00ffcebf22321be39ade129732b"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "e232ecc38e709c77",
+      "pairs": 18,
+      "packet_sha256": "682d216f16193832a7170478c26d8fbdba5a8bef678803dc5ff8a1e0d58eb52d"
+    },
+    {
+      "role": "A",
+      "phase": "heldout",
+      "group": "ff0a6baea531c032",
+      "pairs": 16,
+      "packet_sha256": "b7c7c40c1c9923cafffd0a2599f1b0892fa873edf8bbebf642fd1cd1e0b4783f"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "15cc5e06a1ec0a67",
+      "pairs": 20,
+      "packet_sha256": "72c167c3296465e713226deb7408eee69a8fd6a565be2dfcef445651b4a027d3"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "5c00161942748906",
+      "pairs": 20,
+      "packet_sha256": "a9774061dea19e55b1172f85bb38f461ae43d1317bd99ea15caf75f72ea0d276"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "8758fc1738aae0fd",
+      "pairs": 1,
+      "packet_sha256": "7645c8ca60fc9a06f4bf0b818ae6a339bd633ac17fecc90f7a91c6e104d9a2eb"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "8f6c677c12bdfb97",
+      "pairs": 1,
+      "packet_sha256": "78df4326770a79062d35f0b67ca883ddd5a2396da6065d24ac31be806616f309"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "9e0aa71a63db543e",
+      "pairs": 12,
+      "packet_sha256": "de79ca6d84b45024e514c257ef883856a5e0555f1c129eb8167476c9d7013ea4"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "b8fcbfd259fc0722",
+      "pairs": 21,
+      "packet_sha256": "7b6a0d5cc3e0565e883ae8175c0010521749cf6988a8ea285dbcb4e10a59b42c"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "c525630a7f073ba1",
+      "pairs": 16,
+      "packet_sha256": "c52dffe8ea94fec658fb6d00aa8975476a4e56e5aaec0b1688926647f538e7e8"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "ddb1b8de9bbe93f8",
+      "pairs": 19,
+      "packet_sha256": "50ed79a5b5c6cc2fc096c828a219e926d3b501b2ea0ac5de94d4a2c8348c5bb4"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "e232ecc38e709c77",
+      "pairs": 18,
+      "packet_sha256": "fc9f18eab224a9a194769dbc7fc0f1681f357603080378a2d8a7b913f8557a65"
+    },
+    {
+      "role": "B",
+      "phase": "heldout",
+      "group": "ff0a6baea531c032",
+      "pairs": 16,
+      "packet_sha256": "c6bd1c980d17ed47e1d8ad4ed37659c13362ecc699a5ed76b489abc296c43ff8"
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "protocol_id": "magda-3901-methodology-v1",
+  "issue": "https://github.com/magda-io/magda/issues/3901",
+  "branch": "eval/hybrid-search-fusion-3901",
+  "initial_base_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "status": "methodology_fixed_corpus_and_tasks_not_yet_registered",
+  "author_exposure": "No system rankings, prototype logs or relevance results inspected by this protocol author",
+  "not_a_completed_benchmark": true,
+  "evaluation_only": true,
+  "public_mutations_permitted": false,
+  "freeze_required_before_relevance_runs": [
+    "corpus_manifest",
+    "tasks_splits_intent_groups_and_provenance",
+    "restricted_objective_anchor_manifest",
+    "protocol_and_system_configurations",
+    "metadata_view_and_duplicate_rules",
+    "judge_prompts_parameters_and_seed_commitments"
+  ],
+  "systems": {
+    "primary_baseline": "baseline",
+    "primary_candidate": "candidate_03_07",
+    "weight_component_order": ["keyword", "vector"],
+    "primary_candidate_weights": [0.3, 0.7],
+    "primary_weights_tunable": false,
+    "registered_runs": [
+      "baseline",
+      "candidate_03_07",
+      "candidate_05_05",
+      "candidate_07_03",
+      "candidate_keep50_03_07",
+      "keyword",
+      "vector"
+    ],
+    "secondary_candidate_weights": [[0.5, 0.5], [0.7, 0.3]],
+    "candidate_removes_dataset_vector_boost_50": true,
+    "matched_boost_50_sensitivity_weights": [0.3, 0.7],
+    "compound_intervention_warning": "Primary comparison also removes boost50; do not attribute effect to normalization alone without matched control or independent equivalence evidence",
+    "normalization_and_other_configuration_lock": "before development runs; all amendments before held-out access"
+  },
+  "pilot": {
+    "total": 15,
+    "development": 5,
+    "held_out": 10,
+    "category_allocations": {
+      "exact_lookup": {"development": 1, "held_out": 2},
+      "natural_language_discovery": {"development": 1, "held_out": 2},
+      "vocabulary_mismatch": {"development": 1, "held_out": 2},
+      "distribution_format": {"development": 1, "held_out": 1},
+      "ambiguous_competitors": {"development": 1, "held_out": 1},
+      "plausibly_missing_answer": {"development": 0, "held_out": 2}
+    },
+    "external_or_legitimate_real_need_source_target_total": 6,
+    "external_or_legitimate_real_need_source_target_held_out": 4
+  },
+  "expansion": {
+    "decision_before_any_held_out_unblinding": true,
+    "single_fixed_expansion_total": 40,
+    "development": 10,
+    "held_out": 30,
+    "category_allocations": {
+      "exact_lookup": {"development": 2, "held_out": 5},
+      "natural_language_discovery": {"development": 2, "held_out": 7},
+      "vocabulary_mismatch": {"development": 2, "held_out": 6},
+      "distribution_format": {"development": 2, "held_out": 4},
+      "ambiguous_competitors": {"development": 2, "held_out": 4},
+      "plausibly_missing_answer": {"development": 0, "held_out": 4}
+    },
+    "minimum_development_resolved_pair_fraction": 0.8,
+    "external_or_legitimate_real_need_source_target_total": 16,
+    "external_or_legitimate_real_need_source_target_held_out": 12,
+    "other_required_gates": [
+      "reproducible diverse corpus with realistic distractors",
+      "independently verifiable anchors",
+      "safe equivalent systems and normalization proof",
+      "budget for two independent judgments and adjudication",
+      "independent source needs available without inspecting held-out output"
+    ],
+    "held_out_outcomes_must_not_determine_expansion": true
+  },
+  "pool": {
+    "depth_distinct_datasets_per_system": 10,
+    "union_all_registered_runs": true,
+    "pair_key": ["task_id", "stable_dataset_id"],
+    "within_run_duplicate_id_policy": "first occurrence; first ten distinct datasets under identical retrieval limits",
+    "distinct_near_duplicate_ids_retained_primary": true,
+    "family_sensitivity": "collapse within original top10 without refill, maximum resolved pooled family grade",
+    "blind_fields": ["system", "rank", "score", "weights", "originating_target_ids", "expected_answers"],
+    "shuffle": "deterministic seeded; different seed per judge; commit seeds before ordering",
+    "all_top10_pairs_require_judgment_record": true
+  },
+  "judging": {
+    "initial_judges": 2,
+    "different_families_preferred": true,
+    "same_family_is_correlated_not_human_validation": true,
+    "grades": [0, 1, 2, 3, "U"],
+    "evidence_required": true,
+    "persist_raw_observable_responses_and_exact_inputs": true,
+    "do_not_require_hidden_chain_of_thought": true,
+    "rejudge": "all numeric disagreements, one-U pairs, objective-anchor conflicts, and evidence-supported both-U pairs",
+    "agreed_numeric_audit_fraction": 0.1,
+    "agreed_numeric_audit_rounding": "ceil; minimum one; grade stratification where possible",
+    "unresolved_conflict_grade": "U",
+    "agreement": ["5x5 contingency table", "exact agreement", "U rates", "numeric absolute difference", "quadratic-weighted Cohen kappa on both-numeric subset"]
+  },
+  "metrics": {
+    "population": "held-out positive-intent tasks; development separate",
+    "primary": "pooled agent-judged NDCG@10 at original ranks",
+    "gain": "2^grade - 1",
+    "discount": "log2(rank+1)",
+    "unknown_primary_computation_gain": 0,
+    "unknown_is_not_asserted_irrelevant": true,
+    "unknown_zero_ndcg_is_not_a_mathematical_lower_bound": true,
+    "idcg": "common pooled qrels per task and scenario",
+    "zero_idcg": "undefined for all systems; report and exclude equally from macro mean",
+    "macro_weight": "equal per defined task",
+    "win_tie_loss_absolute_tolerance": 1e-12,
+    "objective_metrics": ["Success@5", "MRR@10"],
+    "objective_eligibility": "frozen independently verifiable complete binary success predicate",
+    "missing_answer_population": "separate absence audit and top5 hard-mismatch diagnostics; not primary positive-intent NDCG",
+    "bootstrap": {
+      "unit": "paired query; paired intent-group if grouping remains",
+      "resamples": 10000,
+      "seed": 3901,
+      "interval": "95% percentile",
+      "pilot_inference": "descriptive only; no statistical-significance claim"
+    },
+    "sensitivity": [
+      "judge A original; U gain 0",
+      "judge B original; U gain 0",
+      "resolved qrels",
+      "U gain 7 corresponding to grade 3; recompute IDCG",
+      "numeric disagreement minimum and maximum; remaining U gain 0; recompute IDCG",
+      "binary gain grade>=2",
+      "duplicate-family collapse without refill",
+      "optional condensed original-top10 unknown removal without refill; coverage required"
+    ],
+    "latency_p95_minimum_comparable_requests": 100,
+    "latency_budget_must_be_frozen_before_measurement": true
+  },
+  "positive_recommendation_guardrails": {
+    "expanded_stage_required": true,
+    "minimum_defined_positive_intent_held_out_tasks": 20,
+    "minimum_absolute_mean_ndcg_improvement": 0.03,
+    "paired_95_percent_interval_lower_endpoint_above_zero": true,
+    "minimum_category_mean_difference": -0.05,
+    "objective_success5_losses_allowed": 0,
+    "objective_mean_mrr10_decrease_allowed": false,
+    "maximum_system_top10_held_out_U_exposure": 0.2,
+    "correctness_failures_allowed": 0,
+    "normalization_verified": true,
+    "material_semantic_mismatch_allowed": false,
+    "acceptable_predeclared_latency_required": true,
+    "principal_judge_unknown_sensitivity_reversal_allowed": false,
+    "human_validation_still_required_before_risky_production_change": true
+  },
+  "default_when_inadequate_evidence": "C: inconclusive",
+  "selection_bias_statement": "Catalogue-derived supplements remain privileged collection-derived tasks after paraphrasing; external constructed questions are not observed user logs. Neither establishes representative real-user utility.",
+  "authoritative_detail": "protocol.md"
+}
