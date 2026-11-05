@@ -54,7 +54,11 @@ const indexerApiClient = new IndexerApiClient({
 
 const searchApiUrl = "http://localhost:6102/v0";
 
-async function getDataset(datasetId: string, userId?: string) {
+async function getDataset(
+    query: string,
+    userId?: string,
+    publishingState?: string
+) {
     const config: RequestInit = {};
     if (userId) {
         config.headers = {
@@ -70,7 +74,10 @@ async function getDataset(datasetId: string, userId?: string) {
         "get",
         urijs(searchApiUrl)
             .segmentCoded("datasets")
-            .search({ query: datasetId })
+            .search({
+                query,
+                ...(publishingState ? { publishingState } : {})
+            })
             .toString(),
         undefined,
         undefined,
@@ -89,6 +96,16 @@ describe("search api auth integration tests", function (this) {
     serviceRunner.enableSearchApi = true;
     serviceRunner.jwtSecret = jwtSecret;
     serviceRunner.authApiDebugMode = false;
+    // Keep this auth suite on the default radial/in-memory search path. The
+    // separate searchApi suite also covers quantized on-disk top-k search.
+    const hybridConfig = "elasticSearch.indices.datasets.hybridSearch";
+    serviceRunner.searchApiConfig = [
+        `${hybridConfig}.enabled = true`,
+        `${hybridConfig}.knnVectorFieldConfig.mode = "in_memory"`,
+        `${hybridConfig}.k = null`,
+        `${hybridConfig}.maxDistance = null`,
+        `${hybridConfig}.minScore = 0.5`
+    ].join("\n");
     const openSearchUrl = `http://${
         serviceRunner.dockerServiceForwardHost || "localhost"
     }:9200`;
@@ -126,6 +143,252 @@ describe("search api auth integration tests", function (this) {
             }
         );
     });
+
+    for (const matchingBranch of ["keyword", "vector"] as const) {
+        it(`should not match an accessible dataset through a hidden distribution's ${matchingBranch} content (#3886)`, async () => {
+            const query = `issue3886${uuidV4().replace(/-/g, "")}`;
+            const sectionBId = await getOrgUnitIdByName("Section B");
+            const testUser = await authApiClient.createUser({
+                displayName: "Distribution search reader",
+                email: "distribution-reader@test.com",
+                source: "internal",
+                sourceId: uuidV4()
+            });
+            const queryVector: number[] =
+                matchingBranch === "vector"
+                    ? (
+                          await fetchRequest(
+                              "POST",
+                              `http://${
+                                  serviceRunner.dockerServiceForwardHost ||
+                                  "localhost"
+                              }:3000/v1/embeddings`,
+                              { input: query }
+                          )
+                      ).data[0].embedding
+                    : [];
+            if (matchingBranch === "vector") {
+                expect(queryVector).to.have.length(768);
+                expect(queryVector.every(Number.isFinite)).to.equal(true);
+            }
+
+            const fixtures: {
+                datasetId: string;
+                matchingDistributionId: string;
+                siblingId: string;
+                state: "draft" | "published" | null;
+                restricted: boolean;
+            }[] = [];
+            for (const visibility of [
+                "public",
+                "draft",
+                "restricted",
+                "legacy"
+            ] as const) {
+                const state =
+                    visibility === "legacy"
+                        ? null
+                        : visibility === "draft"
+                        ? "draft"
+                        : "published";
+                const matchingDistributionId =
+                    await createTestDistributionByUser(
+                        DEFAULT_ADMIN_USER_ID,
+                        visibility === "restricted"
+                            ? { orgUnitId: sectionBId }
+                            : {},
+                        {
+                            aspects: {
+                                "dcat-distribution-strings": {
+                                    title:
+                                        matchingBranch === "keyword"
+                                            ? query
+                                            : "An unrelated distribution",
+                                    description: "Distribution metadata"
+                                },
+                                publishing: { state: state || "published" }
+                            }
+                        }
+                    );
+                if (visibility === "legacy") {
+                    // Historical connectors omit publishing entirely. Delete it
+                    // through Registry before indexing, not from the search
+                    // fixture, so real conversion and OPA semantics are covered.
+                    const deleted = await getRegistryClient(
+                        DEFAULT_ADMIN_USER_ID
+                    ).deleteRecordAspect(matchingDistributionId, "publishing");
+                    expect(deleted).not.to.be.an.instanceof(Error);
+                    expect(deleted).to.have.property("deleted", true);
+                }
+                const siblingId = await createTestDistributionByUser(
+                    DEFAULT_ADMIN_USER_ID,
+                    {},
+                    {
+                        aspects: {
+                            "dcat-distribution-strings": {
+                                title: "An unrelated accessible sibling",
+                                description: "Different distribution metadata"
+                            },
+                            publishing: { state: "published" }
+                        }
+                    }
+                );
+                const datasetId = await createTestDatasetByUser(
+                    DEFAULT_ADMIN_USER_ID,
+                    {
+                        aspects: {
+                            "dcat-dataset-strings": {
+                                title: "An accessible parent dataset",
+                                description: "Unrelated dataset metadata"
+                            },
+                            "dataset-distributions": {
+                                distributions: [
+                                    matchingDistributionId,
+                                    siblingId
+                                ]
+                            },
+                            publishing: { state: "published" }
+                        }
+                    } as any,
+                    {}
+                );
+                const result = await indexerApiClient.indexDataset(datasetId);
+                expect(result.successes).to.equal(1);
+                expect(result.failures).to.equal(0);
+                fixtures.push({
+                    datasetId,
+                    matchingDistributionId,
+                    siblingId,
+                    state,
+                    restricted: visibility === "restricted"
+                });
+            }
+
+            // Retain real Registry/Indexer-produced access metadata. Modify only
+            // vectors in these fixtures so each test isolates one matching branch
+            // rather than depending on an embedding model's semantic similarity.
+            for (const fixture of fixtures) {
+                const indexed = await fetchRequest(
+                    "POST",
+                    `${openSearchUrl}/${datasetIndexName}/_search`,
+                    {
+                        query: { term: { identifier: fixture.datasetId } }
+                    }
+                );
+                expect(indexed.hits.hits).to.have.length(1);
+                const hit = indexed.hits.hits[0];
+                const source = hit._source;
+                expect(source.publishingState).to.equal("published");
+                expect(source.tenantId).to.equal(0);
+                expect(source.accessControl.ownerId).to.equal(
+                    DEFAULT_ADMIN_USER_ID
+                );
+                expect(
+                    source.distributions.map((dist: any) => dist.identifier)
+                ).to.have.members([
+                    fixture.matchingDistributionId,
+                    fixture.siblingId
+                ]);
+                const matching = source.distributions.find(
+                    (dist: any) =>
+                        dist.identifier === fixture.matchingDistributionId
+                );
+                expect(matching.publishingState).to.equal(fixture.state);
+                expect(matching.accessControl.ownerId).to.equal(
+                    DEFAULT_ADMIN_USER_ID
+                );
+                expect(matching.accessControl.orgUnitId).to.equal(
+                    fixture.restricted ? sectionBId : undefined
+                );
+                expect(source.queryContextVector).to.have.length(768);
+                expect(matching.queryContextVector).to.have.length(768);
+
+                await fetchRequest(
+                    "POST",
+                    `${openSearchUrl}/${datasetIndexName}/_update/${encodeURIComponent(
+                        hit._id
+                    )}?refresh=true`,
+                    {
+                        script:
+                            matchingBranch === "keyword"
+                                ? {
+                                      lang: "painless",
+                                      source: "ctx._source.remove('queryContextVector'); for (dist in ctx._source.distributions) { dist.remove('queryContextVector'); }"
+                                  }
+                                : {
+                                      lang: "painless",
+                                      source: "ctx._source.queryContextVector = params.unrelated; for (dist in ctx._source.distributions) { dist.queryContextVector = dist.identifier == params.matchingId ? params.matching : params.unrelated; }",
+                                      params: {
+                                          matchingId:
+                                              fixture.matchingDistributionId,
+                                          matching: queryVector,
+                                          // A large l2 distance puts parent/sibling
+                                          // vectors safely below minScore=0.5.
+                                          unrelated: queryVector.map(
+                                              (value) => value + 10
+                                          )
+                                      }
+                                  }
+                    }
+                );
+            }
+
+            const identifiers = (response: any): string[] =>
+                response.dataSets.map((dataset: any) => dataset.identifier);
+            for (const userId of [undefined, testUser.id]) {
+                for (const fixture of fixtures) {
+                    const parent = await getDataset(fixture.datasetId, userId);
+                    expect(identifiers(parent)).to.include(fixture.datasetId);
+                    const returned = parent.dataSets.find(
+                        (dataset: any) =>
+                            dataset.identifier === fixture.datasetId
+                    );
+                    // The published parent and unrelated public sibling remain
+                    // visible even when its matching distribution is not.
+                    expect(
+                        returned.distributions.map(
+                            (dist: any) => dist.identifier
+                        )
+                    ).to.include(fixture.siblingId);
+                    if (fixture.state === "draft" || fixture.restricted) {
+                        expect(
+                            returned.distributions.map(
+                                (dist: any) => dist.identifier
+                            )
+                        ).not.to.include(fixture.matchingDistributionId);
+                    }
+                }
+                const response = await getDataset(query, userId, "published");
+                const visibleMatches = fixtures.filter(
+                    (fixture) =>
+                        !fixture.restricted && fixture.state !== "draft"
+                );
+                expect(response.hitCount).to.equal(visibleMatches.length);
+                expect(identifiers(response)).to.have.members(
+                    visibleMatches.map((fixture) => fixture.datasetId)
+                );
+            }
+
+            // Positive controls prove that the hidden records were indexed and
+            // do match, and that explicit publishing-state filtering still
+            // applies even to administrators with unrestricted OPA decisions.
+            const admin = await getDataset(query, DEFAULT_ADMIN_USER_ID, "*");
+            expect(admin.hitCount).to.equal(fixtures.length);
+            expect(identifiers(admin)).to.have.members(
+                fixtures.map((fixture) => fixture.datasetId)
+            );
+            const publishedAdmin = await getDataset(
+                query,
+                DEFAULT_ADMIN_USER_ID,
+                "published"
+            );
+            expect(identifiers(publishedAdmin)).to.have.members(
+                fixtures
+                    .filter((fixture) => fixture.state !== "draft")
+                    .map((fixture) => fixture.datasetId)
+            );
+        });
+    }
 
     it("should index accessControl aspect for both datasets & distributions", async () => {
         const sectionAId = await getOrgUnitIdByName("Section A");
@@ -401,8 +664,7 @@ describe("search api auth integration tests", function (this) {
             "a test role has the permission to read published datasets"
         );
         const permission = await authApiClient.createRolePermission(role.id, {
-            name:
-                "a test permission has the permission to read published datasets",
+            name: "a test permission has the permission to read published datasets",
             description:
                 "a test permission has the permission to read published datasets",
             resourceUri: "object/dataset/published",

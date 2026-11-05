@@ -17,6 +17,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 - [`sslmode=verify-full` server-certificate verification against a simulated managed database](./db-tls-verify-full.md)
 - [Large file storage (multipart upload + Range download)](./large-file-storage.md)
 - [mgd CLI (auth, search, dataset/dist CRUD, large-file round-trip)](./mgd-cli.md)
+- [Keyword and hybrid search distribution access filters](./search-access-filters.md)
 - [mgd agent skill auto-use](./mgd-skill-auto-use.md)
 - [Distribution version aspect in the Web UI](./distribution-version-web-ui.md)
 - [In-cluster PostgreSQL wal-g cross-version backup / restore (roll-forward + PITR)](./postgres-walg-cross-version-restore.md)

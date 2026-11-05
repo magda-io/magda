@@ -10,7 +10,8 @@ libraryDependencies ++= {
        "com.typesafe.akka" %% "akka-http-xml" % akkaHttpV,
        "com.monsanto.labs" %% "mwundo-core" % "0.5.0" exclude("xerces", "xercesImpl"),
        "com.monsanto.labs" %% "mwundo-spray" % "0.5.0",
-       "org.scalaz" %% "scalaz-core" % "7.2.8"
+       "org.scalaz" %% "scalaz-core" % "7.2.8",
+       "org.scalatest" %% "scalatest" % scalaTestV % Test
      )
 }
 

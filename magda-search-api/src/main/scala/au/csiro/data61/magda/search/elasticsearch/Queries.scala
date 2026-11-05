@@ -83,9 +83,17 @@ object Queries {
       val fieldName =
         if (!isDistributionQuery) "publishingState"
         else "distributions.publishingState"
+      // OPA treats legacy distributions without a publishing state as
+      // published. Keep explicit published searches consistent with that rule.
+      val legacyPublishedQuery =
+        if (isDistributionQuery && filteredValue.contains("published"))
+          List(boolQuery().not(existsQuery(fieldName)))
+        else Nil
       Some(
         BoolQuery()
-          .should(filteredValue.map(TermQuery(fieldName, _)))
+          .should(
+            filteredValue.map(TermQuery(fieldName, _)) ++ legacyPublishedQuery
+          )
           .minimumShouldMatch(1)
       )
     }

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v7.1.2
+
+- [#3886](https://github.com/magda-io/magda/issues/3886): Apply tenant, access-control and publishing-state filters to hybrid search k-NN queries and distribution keyword matching, so inaccessible distributions cannot supply a text or vector match. Dataset top-k queries also pre-filter by the selected dataset facets; radial queries use same-scope filters to avoid an OpenSearch 2.19.1 filter-rewrite bug. Index each distribution's own publishing state instead of its parent's; legacy distributions without a state remain published. The datasets index version is bumped to `54` and is rebuilt on upgrade.
+
 ## v7.1.1
 
 - [#3899](https://github.com/magda-io/magda/pull/3899): Upgrade magda-pdf-semantic-indexer to 1.0.3, fixing OOM kills when indexing scanned PDFs.
