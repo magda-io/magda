@@ -672,11 +672,15 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     val distributionsEnglishQueries = nestedQuery(
       "distributions",
-      queryString
-        .field("distributions.title")
-        .field("distributions.description")
-        .field("distributions.format")
-        .defaultOperator(defaultOperator)
+      boolQuery()
+        .must(
+          queryString
+            .field("distributions.title")
+            .field("distributions.description")
+            .field("distributions.format")
+            .defaultOperator(defaultOperator)
+        )
+        .filter(distributionFilterQuery)
     ).scoreMode(ScoreMode.Max)
 
     /**
@@ -705,18 +709,37 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     if (!hybridSearchEnabled) {
       dismax(queries).tieBreaker(0.2)
     } else {
+      def filteredKnnQuery(
+          field: String,
+          filter: QueryDefinition,
+          boost: Option[Double] = None
+      ): QueryDefinition = {
+        val k = HybridSearchConfig.k
+        val knn = KnnQuery(
+          field = field,
+          vector = inputTextVector.get,
+          filter = if (k.nonEmpty) Some(filter) else None,
+          k = k,
+          minScore = HybridSearchConfig.minScore,
+          maxDistance = HybridSearchConfig.maxDistance,
+          boost = boost
+        )
+        // OpenSearch 2.19.1 incorrectly adds k=0 when rewriting a radial
+        // query's inline filter, then rejects k together with min_score or
+        // max_distance. Radial searches can instead filter in the same query
+        // scope; in particular, child access checks must remain inside nested.
+        // Top-k searches still need inline pre-filtering to avoid losing slots.
+        if (k.nonEmpty) knn else boolQuery().must(knn).filter(filter)
+      }
+
       dismax(
         Seq(
           HybridQuery(
             Seq(
               datasetsTextQuery,
-              KnnQuery(
+              filteredKnnQuery(
                 field = HybridSearchConfig.queryContextVectorFieldName,
-                vector = inputTextVector.get,
-                filter = Some(datasetFilterQuery),
-                k = HybridSearchConfig.k,
-                minScore = HybridSearchConfig.minScore,
-                maxDistance = HybridSearchConfig.maxDistance,
+                filter = datasetFilterQuery,
                 // boost score by 50 to match the boost we set for title field in keyword search
                 boost = Some(50.0)
               )
@@ -727,14 +750,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               distributionsEnglishQueries,
               NestedQuery(
                 "distributions",
-                KnnQuery(
+                filteredKnnQuery(
                   field =
                     s"""distributions.${HybridSearchConfig.queryContextVectorFieldName}""",
-                  vector = inputTextVector.get,
-                  filter = Some(distributionFilterQuery),
-                  k = HybridSearchConfig.k,
-                  minScore = HybridSearchConfig.minScore,
-                  maxDistance = HybridSearchConfig.maxDistance
+                  filter = distributionFilterQuery
                 )
               )
             )
@@ -786,19 +805,18 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       query.publishingState
     ).getOrElse(MatchAllQuery()) :: filterClauses
 
+    // These predicates run against a single nested distribution, both for
+    // keyword and vector matching. Dataset-level facet clauses
+    // must stay in the parent query: mixing parent and child fields here makes
+    // the filter unsatisfiable in OpenSearch 2.19.
     val distributionFilterClauses = distributionTenantIdQuery :: distributionAuthQuery :: publishingStateQuery(
       query.publishingState,
       isDistributionQuery = true
-    ).getOrElse(MatchAllQuery()) :: filterClauses
+    ).getOrElse(MatchAllQuery()) :: Nil
 
-    val datasetFilterQuery =
-      if (datasetFilterClauses.isEmpty) boolQuery().must(datasetFilterClauses)
-      else matchAllQuery()
-
-    val distributionFilterQuery =
-      if (distributionFilterClauses.isEmpty)
-        boolQuery().must(distributionFilterClauses)
-      else matchAllQuery()
+    // Both lists always contain tenant, auth and publishing-state predicates.
+    val datasetFilterQuery = boolQuery().filter(datasetFilterClauses)
+    val distributionFilterQuery = boolQuery().filter(distributionFilterClauses)
 
     val textQueryClause = query.freeText flatMap { inputText =>
       val text = if (inputText.trim.length == 0) "*" else inputText

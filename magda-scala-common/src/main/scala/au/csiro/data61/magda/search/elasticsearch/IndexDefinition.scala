@@ -267,7 +267,7 @@ object IndexDefinition extends DefaultJsonProtocol {
     req
   }
 
-  val datasetsIndexVersion = 53
+  val datasetsIndexVersion = 54
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",

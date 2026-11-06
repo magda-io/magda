@@ -1,0 +1,67 @@
+# Search distribution access filters (#3886)
+
+## Run the generated-query integration suite
+
+Use an isolated **OpenSearch 2.19.1** instance with the k-NN and neural-search plugins (the bundled Magda image). The tests use two-dimensional **Faiss HNSW / l2**, matching the production engine, without an embedding service, search pipeline, registry, or catalog data.
+
+For the local minikube deployment, forward OpenSearch in a separate terminal:
+
+```sh
+kubectl --context minikube -n magda port-forward svc/opensearch 19200:9200
+```
+
+Then run the [integration suite](../../../magda-search-api/src/test/scala/au/csiro/data61/magda/search/elasticsearch/ElasticSearchAccessFilterSpec.scala) from the repository root:
+
+```sh
+sbt -DelasticSearch.serverUrl=http://127.0.0.1:19200 \
+  'searchApi/testOnly *ElasticSearchAccessFilterSpec'
+```
+
+The [query-builder unit suite](../../../magda-search-api/src/test/scala/au/csiro/data61/magda/search/elasticsearch/ElasticSearchQueryerSpec.scala) needs no cluster:
+
+```sh
+sbt 'searchApi/testOnly *ElasticSearchQueryerSpec'
+```
+
+When running sbt in Docker on macOS, the endpoint may instead be `http://host.docker.internal:19200`. Supply a reachable HTTP endpoint without authentication. The explicit `elasticSearch.serverUrl` system property uses the same convention as the existing Scala integration suites. The older `MAGDA_SEARCH_TEST_OPENSEARCH_URL` environment variable remains a fallback for local runs; the system property takes precedence. Without either explicit setting, these optional tests are canceled rather than connecting to the default catalog URL.
+
+The `buildtest:search-with-index-cache` job in [the GitLab pipeline](../../../.gitlab-ci.yml) now runs `sbt -DelasticSearch.serverUrl=http://docker:9200 "searchApi/test"` against its existing OpenSearch service, after the other search suites. This runs both the unit tests and the real-engine regressions automatically; CI does not need a separate environment variable.
+
+The suite serializes actual `ElasticSearchQueryer.buildQuery` requests and POSTs their JSON bodies to OpenSearch. Each test creates and deletes only its own `magda-search-access-test-<UUID>` index. Never point destructive test tooling at a production cluster. If the process is forcibly terminated, inspect and remove only the exact test index left behind.
+
+## Full-service authorization regressions
+
+[The TypeScript search authorization suite](../../../magda-int-test-ts/src/tests/searchApiAuth.spec.ts) complements the generated-query tests: it creates dataset/distribution records through the real Registry API, indexes them through the real Indexer, and searches through the real Search API with OPA decisions for anonymous users, ordinary users, and administrators. Its `#3886` cases verify restricted/draft matching distributions on accessible published parents with accessible unrelated siblings, including explicit publishing-state requests and legacy distributions without a publishing aspect.
+
+```sh
+yarn --cwd magda-int-test-ts test --grep '#3886'
+```
+
+Use the normal [integration harness prerequisites](../../../magda-int-test-ts/README.md). The existing `buildtest:integration-tests` CI job runs these cases automatically. For deterministic branch isolation, these fixtures assert the Indexer-produced access metadata before modifying only their indexed vectors: keyword cases remove vectors, while vector-only cases use a real query embedding for the matching distribution and distant vectors for its parent and sibling. Registry records, authorization metadata, OPA decisions, and HTTP search responses are not mocked. The existing [semantic relevance tests](../../../magda-int-test-ts/src/tests/searchApi.spec.ts) continue to use unmodified model embeddings for both in-memory radial and quantized on-disk top-k search.
+
+**Local safety:** the integration harness cleans up and prunes Docker resources. Run it only against a disposable Docker daemon, as CI does, not a daemon containing unrelated stopped containers or volumes. The generated-query suite above is the lighter option for testing against minikube and deletes only its UUID-named indexes.
+
+## Regression coverage
+
+- Keyword and hybrid search: a visible dataset with a restricted, draft, or wrong-tenant perfect-match distribution and an accessible unrelated sibling must not match the hidden content. Public distribution and dataset-metadata matches remain available.
+- Privileged searches with all tenants and `publishingState=*` can match those distributions.
+- A restricted perfect vector cannot improve its parent's score over an otherwise identical dataset with only the accessible, less-similar vector.
+- Negative controls remove only child matching filters from the generated DSL, demonstrating that the fixtures would reveal the old inclusion/ranking bug.
+- Dataset `k=1` prefiltering excludes nearest neighbors with the wrong tenant, authorization, publishing state, or publisher before selecting an eligible neighbor.
+- Parent publisher/date facets remain effective. A text match in a CSV distribution plus a separate PDF sibling still satisfies the dataset-level PDF facet; this patch does not change that existing any-sibling behavior.
+
+For a broader deployment smoke test, also verify region filters, nontrivial residual authorization rules, returned inner-hit distributions, facet alternatives, and both `k` and radial `minScore`/`maxDistance` configurations with your actual mappings.
+
+## Index rebuild on upgrade
+
+The full-service cases exposed that distribution conversion read the parent dataset's publishing aspect. The Indexer now retains each distribution record's own state. Missing distribution states stay missing in the response and are treated as published when filtering, matching OPA's legacy-record rules. The datasets index version is bumped from `53` to `54` so upgrade rebuilds existing documents; otherwise old parent-derived state values would continue to undermine draft-distribution filtering. This affects index contents, not Registry records.
+
+## Version-specific caveats
+
+**Do not copy latest nested k-NN filtering examples without checking the deployed version.** In OpenSearch 2.19.1, [BaseQueryFactory](https://github.com/opensearch-project/k-NN/blob/2.19.1.0/src/main/java/org/opensearch/knn/index/query/BaseQueryFactory.java) uses [NestedHelper](https://github.com/opensearch-project/OpenSearch/blob/2.19.1/server/src/main/java/org/opensearch/index/search/NestedHelper.java) to distinguish parent from child predicates. Direct child-only distribution filters work; mixing parent fields and child predicates in the same conjunction can return no matches. Parent publisher/date/region predicates therefore stay outside distribution matching. Dataset-vector matching retains all dataset-level constraints, using inline prefiltering in top-k mode.
+
+**Radial filter rewrite compatibility:** OpenSearch 2.19.1 [KNNQueryBuilder.doRewrite](https://github.com/opensearch-project/k-NN/blob/2.19.1.0/src/main/java/org/opensearch/knn/index/query/KNNQueryBuilder.java) reconstructs radial queries with both `k=0` and `min_score`/`max_distance` whenever an inline filter is rewritten. Validation then rejects the request with `[knn] requires exactly one of k, distance or score to be set`. The query builder avoids that engine bug by keeping top-k access predicates inline, but placing radial access predicates in an enclosing Boolean filter at the same document scope. For distribution radial queries, that Boolean query stays inside the distribution's nested scope, so an inaccessible sibling cannot provide the match or score. The integration suite exercises radial publisher/date/format filters and compares mixed-sibling scores against an accessible-only control; top-k dataset prefiltering is tested separately. This is not permission weakening: the matching child must still satisfy the access filter. Radial retrieval is still approximate and subject to engine result-window limits; do not interpret this workaround as an unlimited-recall guarantee. Verify behavior again when upgrading OpenSearch or changing vector engines.
+
+**Remaining recall limitation:** parent constraints still post-filter distribution k-NN results. With top-k, vectors belonging to excluded parents can occupy candidate slots, reducing recall. Child authorization is nevertheless enforced before distribution vector selection. Improving parent-prefilter recall requires an engine/version-verified solution, not a raw conjunction of parent and child fields.
+
+**Separate existing facet behavior:** format filtering and format aggregation are not fully child-access-scoped by this patch. Hidden sibling formats/counts need their own security review and tests. Inner-hit selection intentionally remains authorization/tenant-based and returns all accessible siblings, rather than only text/facet matches.

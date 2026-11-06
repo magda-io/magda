@@ -15,8 +15,13 @@
 - [#3876](https://github.com/magda-io/magda/pull/3876): Single record registry updates are now authorised using only the record's own tenant's aspects (multi-tenant deployments), and a record created by `PUT` is rolled back if the request fails.
 - [#3870](https://github.com/magda-io/magda/pull/3870): Fix bulk record updates (e.g. `mgd dataset publish` / `unpublish`) failing with a 500 error for users with Agent Skill permissions (closes #3869). Adds the authorization API endpoint `POST /v0/opa/batchDecision`. **Behaviour change:** a bulk update is all-or-nothing and is denied (403) if any record isn't permitted. Agent Skill records and archives are now written only by Agent Services, admins and users with unconstrained permissions, and unconstrained `object/record/*` permissions now also apply to Agent Skill records.
 
+## v7.1.2
+
+- [#3886](https://github.com/magda-io/magda/issues/3886): Apply tenant, access-control and publishing-state filters to hybrid search k-NN queries and distribution keyword matching, so inaccessible distributions cannot supply a text or vector match. Dataset top-k queries also pre-filter by the selected dataset facets; radial queries use same-scope filters to avoid an OpenSearch 2.19.1 filter-rewrite bug. Index each distribution's own publishing state instead of its parent's; legacy distributions without a state remain published. The datasets index version is bumped to `54` and is rebuilt on upgrade.
+
 ## v7.1.1
 
+- [#3899](https://github.com/magda-io/magda/pull/3899): Upgrade magda-pdf-semantic-indexer to 1.0.3, fixing OOM kills when indexing scanned PDFs.
 - [#3891](https://github.com/magda-io/magda/pull/3891): Fix the release pipeline never publishing the `latest` Docker image tag for stable releases.
 
 ## v7.1.0
