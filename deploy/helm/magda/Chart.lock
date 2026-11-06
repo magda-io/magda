@@ -31,9 +31,9 @@ dependencies:
   version: 2.1.0
 - name: magda-pdf-semantic-indexer
   repository: oci://ghcr.io/magda-io/charts
-  version: 1.0.2
+  version: 1.0.3
 - name: magda-csv-semantic-indexer
   repository: oci://ghcr.io/magda-io/charts
   version: 1.0.0-alpha.3
-digest: sha256:7ce7a12353f54feb7072405867e0064cba9c5ada67fa84ecaff0caff17eedbd8
-generated: "2026-10-28T04:50:25.480029553Z"
+digest: sha256:49284469baa9798bc5156d3fc628629e8c250edeccee87827e17a665d269ea93
+generated: "2026-11-04T10:08:38.400049+11:00"

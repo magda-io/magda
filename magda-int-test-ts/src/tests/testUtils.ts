@@ -171,25 +171,29 @@ export async function createTestDistributionByUser(
     authApiClient: AuthApiClient,
     jwtSecret: string,
     userId: string,
-    accessControlAspect?: AccessControlAspect
+    accessControlAspect?: AccessControlAspect,
+    record?: Partial<Record>
 ) {
     return await createTestDatasetByUser(
         authApiClient,
         jwtSecret,
         userId,
-        {
-            id: "",
-            name: "test dist",
-            aspects: {
-                "dcat-distribution-strings": {
-                    title: "a test distribution",
-                    description: "this is a test distribution"
+        merge(
+            {
+                id: "",
+                name: "test dist",
+                aspects: {
+                    "dcat-distribution-strings": {
+                        title: "a test distribution",
+                        description: "this is a test distribution"
+                    },
+                    "access-control": {}
                 },
-                "access-control": {}
+                tenantId: 0,
+                sourceTag: ""
             },
-            tenantId: 0,
-            sourceTag: ""
-        },
+            record
+        ),
         accessControlAspect
     );
 }

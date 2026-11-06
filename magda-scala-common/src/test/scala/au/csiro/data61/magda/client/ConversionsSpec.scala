@@ -18,6 +18,56 @@ class ConversionsSpec extends FunSpec with Matchers {
   implicit val system = ActorSystem()
   val logger = akka.event.Logging.getLogger(system, getClass)
 
+  describe("distribution publishing states") {
+    Seq("published", "draft").foreach { parentState =>
+      it(s"preserves each child's own state under a $parentState dataset") {
+        val childStates = Seq(
+          "draft-child" -> Some("draft"),
+          "published-child" -> Some("published"),
+          "legacy-child" -> None
+        )
+        val children = childStates.map {
+          case (id, state) =>
+            Registry.Record(
+              id = id,
+              name = id,
+              aspects = Map(
+                "dcat-distribution-strings" -> JsObject("title" -> JsString(id))
+              ) ++ state.map(
+                value => "publishing" -> JsObject("state" -> JsString(value))
+              ),
+              tenantId = Some(BigInt(0))
+            )
+        }
+        val record = Registry.Record(
+          id = "parent-dataset",
+          name = "parent dataset",
+          aspects = Map(
+            "dcat-dataset-strings" -> JsObject(
+              "title" -> JsString("parent dataset")
+            ),
+            "publishing" -> JsObject("state" -> JsString(parentState)),
+            "dataset-distributions" -> JsObject(
+              "distributions" -> JsArray(
+                children.map(Registry.recordFormat.write).toVector
+              )
+            )
+          ),
+          tenantId = Some(BigInt(0))
+        )
+
+        val dataset = Conversions.convertRegistryDataSet(record)(ZoneOffset.UTC)
+        dataset.publishingState shouldBe Some(parentState)
+        dataset.distributions
+          .map(
+            distribution =>
+              distribution.identifier.get -> distribution.publishingState
+          )
+          .toMap shouldBe childStates.toMap
+      }
+    }
+  }
+
   describe("Test all sample error dataset JSON data without exception thrown") {
 
     val path = getClass.getResource("/sampleErrorDatasetJson")
