@@ -23,7 +23,7 @@ global:
   defaultAgentModel:
     # Stable MAGDA/DSH-facing alias; provider upgrades do not change it.
     alias: magda-agent-default
-    providerModel: openai/gpt-5.6-sol
+    providerModel: openai/gpt-6.1-sol
     # Set to "" to omit the setting and use the provider default.
     reasoningEffort: medium
     contextWindow: 1050000
@@ -207,7 +207,7 @@ reasoning setting from both DSH and LiteLLM and let the provider choose its mode
 default. This is distinct from the explicit `off` effort. When selecting another
 model, update `providerModel`, `reasoningEffort`, `contextWindow`, and `maxTokens`
 to its capabilities. See the
-[GPT-5.6 Sol model specification](https://developers.openai.com/api/docs/models/gpt-5.6-sol).
+[GPT-6.1 Sol model specification](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
 Model settings are written into a workspace during provisioning. Existing
 PVC-backed workspaces are intentionally not rebootstraped during a Helm upgrade;

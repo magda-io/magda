@@ -73,7 +73,7 @@ for expected in \
     'name: MAGDA_LLM_MODEL, value: "magda-agent-default"' \
     'name: ALLOWED_MODELS, value: "[\"magda-agent-default\"]"' \
     'model_name: "magda-agent-default"' \
-    'model: "openai/gpt-5.6-sol"' \
+    'model: "openai/gpt-6.1-sol"' \
     'name: MAGDA_LLM_CONTEXT_WINDOW, value: "1050000"' \
     'name: MAGDA_LLM_MAX_TOKENS, value: "128000"' \
     'name: MAGDA_LLM_REASONING_EFFORT, value: "medium"' \
