@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import shutil
 
 from synthetic import freeze
 
@@ -89,6 +90,61 @@ class FreezeTests(unittest.TestCase):
             (root / "query-spec.jsonl").write_text("".join(json.dumps(q) + "\n" for q in queries))
             with self.assertRaisesRegex(ValueError, "near-identifier negatives"):
                 freeze.inspect(root)
+
+    def amendment_fixture(self, root):
+        generation, _ = contract(root)
+        for plan in generation["record_plans"]:
+            if plan["id"] in ("b029", "b030"):
+                plan["identifier_requirements"] = {"forbidden_scope_if_title_only": ["description", "queryContext", "distributions"]}
+        (root / "generation-spec.json").write_text(json.dumps(generation))
+        original = freeze.create(root)
+        archive = root / "registration-history/v1"
+        archive.mkdir(parents=True)
+        for name in list(freeze.SPEC_FILES) + ["spec-freeze.json"]:
+            shutil.copyfile(root / name, archive / name)
+        shutil.copyfile(freeze.__file__, archive / "freeze.py")
+        for plan in generation["record_plans"]:
+            if plan["id"] in ("b029", "b030"):
+                req = plan["identifier_requirements"]
+                req["forbidden_scope_if_title_only"].remove("queryContext")
+                req["derived_query_context_policy"] = "Exact production Title+Description projection is mandatory and may repeat the title identifier; this is not an additional primary metadata scope."
+        (root / "generation-spec.json").write_text(json.dumps(generation))
+        amendment = root / "amendment.json"
+        amendment.write_text(json.dumps({"independent_spec_review_passed": True, "queries_and_grades_unchanged": True}))
+        return original, archive, amendment
+
+    def test_explicit_title_context_revision_preserves_original(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original, archive, amendment = self.amendment_fixture(root)
+            revised = freeze.amend_title_context(root, archive, amendment)
+            self.assertEqual(revised["registration_revision"], 2)
+            self.assertEqual(revised["design_summary"], original["design_summary"])
+            self.assertEqual(json.loads((archive / "spec-freeze.json").read_text()), original)
+            self.assertEqual(freeze.verify(root), revised)
+            amendment.write_text("{}")
+            with self.assertRaisesRegex(ValueError, "amendment was altered"):
+                freeze.verify(root)
+
+    def test_revision_cannot_change_queries_or_matrix(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, archive, amendment = self.amendment_fixture(root)
+            generation = json.loads((root / "generation-spec.json").read_text())
+            generation["intent_doc_grades"]["s0"]["a001"] = 0
+            (root / "generation-spec.json").write_text(json.dumps(generation))
+            with self.assertRaisesRegex(ValueError, "exceeds the two approved"):
+                freeze.amend_title_context(root, archive, amendment)
+
+    def test_revision_cannot_follow_written_corpus(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, archive, amendment = self.amendment_fixture(root)
+            corpus = root / ".local/corpora/seed-1.jsonl"
+            corpus.parent.mkdir(parents=True)
+            corpus.write_text("{}\\n")
+            with self.assertRaisesRegex(ValueError, "precede all written benchmark"):
+                freeze.amend_title_context(root, archive, amendment)
 
     def test_family_composition_and_seed_independence_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

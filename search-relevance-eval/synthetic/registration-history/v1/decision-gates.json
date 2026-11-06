@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "experiment_id": "magda-3903-synthetic-v1",
+  "scope": "controlled synthetic engineering benchmark only; no production change or closure of #3885",
+  "primary_baseline": "baseline",
+  "primary_candidate": "candidate_03_07",
+  "systems": [
+    "baseline",
+    "raw_boost1",
+    "candidate_03_07",
+    "candidate_05_05",
+    "candidate_07_03",
+    "candidate_keep50_03_07",
+    "keyword",
+    "vector"
+  ],
+  "seeds": [
+    39031,
+    39032,
+    39033
+  ],
+  "weights_order": [
+    "keyword",
+    "vector"
+  ],
+  "tuning_permitted": false,
+  "minimum_valid_seeds": 3,
+  "freeze_gate": {
+    "before_generator_start": true,
+    "all_seven_architecture_file_hashes_required": true,
+    "all_180_explicit_record_plans_required": true,
+    "all_75_query_texts_and_45_intent_doc_grade_maps_required": true,
+    "all_target_ids_aliases_collision_ids_and_criteria_required": true,
+    "permission_issuer": "main after independent count/coverage/hash validation; architect handback is not generation permission",
+    "changes_after_freeze": "preserve old hashes and rationale; pre-search amendments only, re-freeze and independently revalidate",
+    "after_outcome_changes_permitted": false
+  },
+  "corpus_gate": {
+    "per_seed_total": 180,
+    "suite_counts": {
+      "A": 100,
+      "B": 80
+    },
+    "suite_a_domains": {
+      "cocoa": 20,
+      "confectionery": 50,
+      "beverage": 30
+    },
+    "ids": {
+      "A": {
+        "prefix": "a",
+        "first": 1,
+        "last": 100,
+        "zero_pad": 3
+      },
+      "B": {
+        "prefix": "b",
+        "first": 1,
+        "last": 80,
+        "zero_pad": 3
+      }
+    },
+    "same_ids_facts_and_expected_qrels_all_seeds": true,
+    "joint_index_per_seed": true,
+    "independent_text_validation_before_search": true,
+    "minimum_verified_grade3_per_semantic_or_functional_intent": 1,
+    "minimum_named_grade0_hard_negatives_per_semantic_or_functional_intent": 2,
+    "all_exact_authoritative_targets_present": true,
+    "unresolved_heldout_or_critical_pairs_allowed": 0,
+    "label_or_answer_key_leakage_allowed": false,
+    "expected_design_truth_not_human_judgment": true
+  },
+  "primary_metric": {
+    "suite": "A",
+    "kind": "semantic",
+    "split": "heldout",
+    "intent_ids": [
+      "s03",
+      "s04",
+      "s06",
+      "s07",
+      "s08",
+      "s09",
+      "s11",
+      "s12"
+    ],
+    "intent_count": 8,
+    "queries_per_intent": 3,
+    "name": "NDCG@10",
+    "gain": "2**grade - 1",
+    "discount": "log2(rank+1)",
+    "idcg_population": "all 180 independently validated corpus records for this query, not retrieved pool",
+    "aggregation": "mean of 3 paraphrase NDCGs within each intent, then equal mean of 8 heldout intent means; compute separately per seed",
+    "zero_idcg": "undefined, exclude equally with counts; noanswer diagnostic never included; missing positive coverage blocks recommendation",
+    "duplicate_policy": "first occurrence retained only for diagnostic arithmetic; any duplicate result ID fails correctness",
+    "tie_order": "actual engine returned order; never target-aware reranking",
+    "win_tie_loss_absolute_tolerance": 1e-12
+  },
+  "promotion_A": {
+    "minimum_absolute_heldout_intent_mean_ndcg_delta_per_seed": 0.05,
+    "delta": "candidate_03_07 - baseline",
+    "all_three_seeds_must_pass": true,
+    "exact_top1_accuracy_decrease_allowed_per_seed": false,
+    "critical_exact_target_displacement_allowed_per_seed": false,
+    "all_24_exact_queries_critical_including_development": true,
+    "critical_displacement_definition": "candidate best authoritative-target rank worse than baseline rank for ANY exact query, even if top1 accuracy unchanged; missing top10 target rank is infinity",
+    "correctness_pass_required": true,
+    "latency_pass_required_each_seed": true,
+    "normalization_execution_proof_required": true,
+    "unresolved_qrels_or_missing_runs_allowed": false,
+    "candidate_selection_using_sensitivity_results_allowed": false
+  },
+  "retain_raw_B": {
+    "minimum_absolute_heldout_intent_mean_ndcg_baseline_minus_candidate_per_seed": 0.05,
+    "all_three_seeds_must_pass": true,
+    "correctness_and_comparability_pass_required": true,
+    "baseline_exact_top1_below_candidate_allowed": false,
+    "baseline_critical_exact_rank_worse_than_candidate_allowed": false,
+    "unresolved_qrels_or_missing_runs_allowed": false,
+    "interpretation": "raw fusion consistently better in this controlled benchmark only; normalization failing a gate alone does not establish B"
+  },
+  "inconclusive_C": {
+    "default": true,
+    "conditions": [
+      "mixed or seed-sensitive outcomes",
+      "effect below either registered 0.05 consistency bar",
+      "candidate exact regression despite semantic gain",
+      "missing engine/model/corpus/normalization evidence",
+      "unresolved qrels or failed answerability",
+      "correctness failure or unacceptable candidate latency",
+      "only sensitivity candidate wins",
+      "quality/spatial scoring semantics not audited",
+      "insufficient independent seed variation"
+    ],
+    "not_run_is_not_completed_evidence": true
+  },
+  "latency": {
+    "unit": "milliseconds",
+    "scope": "local warmed retrieval only; exclude metadata generation and embeddings",
+    "concurrency": 1,
+    "warmup_repetitions_per_query_system_seed": 1,
+    "measured_repetitions_per_query_system_seed": 5,
+    "schedule": "deterministic SHA(query_id)-based system rotation with repetition offset; preserve actual schedule and per-request timings",
+    "primary_population": "same 44 combined heldout positive queries: 24 Asemantic +14 Bexact +6 Bfunctional; exclude development and diagnostics",
+    "samples_per_system_seed": 220,
+    "p95_estimator": "linear interpolation at index (n-1)*0.95 in sorted samples, matching inherited #3902 harness",
+    "minimum_samples_for_p95": 100,
+    "maximum_candidate_p95_formula": "max(1.5 * baseline_p95_ms, baseline_p95_ms + 25)",
+    "candidate_p95_must_be_less_than_or_equal": true,
+    "all_three_seeds_must_pass": true,
+    "report_median_p95_per_suite_and_seed": true,
+    "suite_A_heldout_samples": 120,
+    "suite_B_heldout_samples": 100,
+    "subcohort_with_fewer_than_100_samples": "p95 undefined; report n and median only"
+  },
+  "correctness": {
+    "required": [
+      "same 180-record corpus/mapping/vectors/query text/permissions/filter/depth per seed across systems",
+      "actual production query builder and analyzer evidence",
+      "raw_boost1 differs ONLY at root dataset-vector boost",
+      "matched boost50 and boost1 normalization attribution",
+      "normalization weight reversal execution proof",
+      "#3900 real-engine and service authorization regressions reused",
+      "synthetic visibility and tenant controls additional only",
+      "no unauthorized/unpublished results",
+      "result inclusion and actual ranking audited",
+      "no duplicate dataset IDs",
+      "nested distribution matches and inner hits retained",
+      "facets and counts audited",
+      "filter equivalence",
+      "radial minScore0.5 primary mode",
+      "topk k1 secondary correctness mode or explicit unsupported failure",
+      "neutral quality1 hasQualitytrue per ID across seeds",
+      "fixed quality and generic-spatial stress probes report pre-normalization factor placement",
+      "no silent quality/spatial scoring-equivalence assertion"
+    ],
+    "primary_depth": 10,
+    "primary_mode": {
+      "name": "radial",
+      "minScore": 0.5
+    },
+    "secondary_mode": {
+      "name": "topk",
+      "k": 1,
+      "promotion_metric": false
+    },
+    "quality_spatial_probe_population": "selected local correctness fixtures, not a new relevance experiment",
+    "stress_quality_schedule": "fixed per stable ID and identical across seeds; e.g. 0.25/0.6/1, hasQualitytrue; neutral remains1",
+    "stress_spatial_schedule": "fixed generic region fixture and fixed query region; no externally fetched region data",
+    "stress_results_in_primary_metric": false,
+    "missing_required_control": "not-run/failed, never an implicit pass"
+  },
+  "reporting": {
+    "per_seed_and_query_and_intent": true,
+    "secondary": [
+      "Suite A Success@5 grade>=2 and grade>=3",
+      "Suite B exact target rank/top1/MRR@10/Success@5",
+      "only explicit near_identifier_ids collision errors",
+      "Suite B functional NDCG separately",
+      "development metrics separately",
+      "ambiguity interpretations separately",
+      "noanswer absence/mismatch diagnostics separately",
+      "paired wins/ties/losses",
+      "matched-boost comparisons",
+      "keyword/vector class controls",
+      "top10 failure cases with field evidence",
+      "neutral/quality/spatial pre-normalization scoring semantics",
+      "hashes, runtime settings and seed realization variation"
+    ],
+    "confidence_intervals": "optional descriptive paired family bootstrap; no population or statistical-significance claim; never replace per-seed bar",
+    "decision_labels": [
+      "A normalized fusion promising",
+      "B retain raw fusion",
+      "C inconclusive"
+    ],
+    "production_representativeness_claim_permitted": false,
+    "production_promotion_permitted": false
+  },
+  "execution": {
+    "depth": 10,
+    "measured_repetitions": 5,
+    "warmup_requests": 1,
+    "primary_mode": "radial",
+    "min_score": 0.5,
+    "secondary_top_k": 1,
+    "latency_scope": "local_warmed",
+    "latency_population": "combined_heldout_positive",
+    "embedding_before_all_latency": true
+  }
+}

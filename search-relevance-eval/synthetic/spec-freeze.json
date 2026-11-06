@@ -1,4 +1,8 @@
 {
+  "amendment": {
+    "path": "registration-amendment-v2.json",
+    "sha256": "a357c55f12c08e237da84557b60b9aa7e8646460230fc26bf9f696950513ff5d"
+  },
   "dependency_pr": "https://github.com/magda-io/magda/pull/3902",
   "design_summary": {
     "intent_ids": [
@@ -330,20 +334,26 @@
     }
   },
   "framework_base_commit": "15533246b7679752cddbb82ccf702557842fe32f",
-  "freeze_tool_sha256": "0b9d68f195eb84664110e264125332a494f33c23fafe715d211fd10a1345ab9e",
-  "frozen_at_utc": "2026-11-05T23:53:16.502248+00:00",
+  "freeze_tool_sha256": "73bebbe9e8d0e4f769877580c9c4cd7afda031940098b8ad5bc9c3cb73938817",
+  "frozen_at_utc": "2026-11-06T00:02:16.299953+00:00",
   "independent_label_validation": "required after generation, before retrieval",
   "issue": 3903,
   "phase": "before_dataset_generation_and_search",
   "production_baseline_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "registration_revision": 2,
   "schema_version": 1,
   "spec_sha256": {
-    "architect-notes.md": "8812732e089e643503c08bd36e9aa20d9e5b76f2e068a37b03da7d499b3bee67",
+    "architect-notes.md": "183ab676ac31b239b1a207b1461a04841fe8672cb0501ad45853c75bae6fa1b7",
     "decision-gates.json": "c396debc6ad77bbb11ac403f7c195a4f13097aae30831395079e6659e87147d3",
-    "generation-spec.json": "7518298bab9b54beb874ef39d52535142d1be10a3a72d8b84930cb273af6073d",
+    "generation-spec.json": "11208fc8d07d3f6d6821ce3c403946950961411336834ae8b22dd95f05a47b2e",
     "intents.jsonl": "61b5469fbbfdaa9cd1729bd14a412f12166d94be044ff8ad020691aa5c1dbefc",
-    "protocol.md": "e7b2baab7a0b2304ce29771901aba701e45901b6bbda026f8d43e5ba5349f8fb",
+    "protocol.md": "8b92fdcc5500d7c4e120301364e71502bd3d250fb446c735e2facd8c95aaa730",
     "query-spec.jsonl": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
-    "relevance-rubric.md": "a01685610ad2b6a01b24fd7d4c7c70ffabb14f8315e1ff283c9c2398a52d6a15"
+    "relevance-rubric.md": "b4b778ffd53c860207b5187c01f84d0fa38bed1df74804bbec31b9fa8780f8fe"
+  },
+  "supersedes": {
+    "archive": "registration-history/v1",
+    "first_registration_commit": "c9139bd4b419a9c815d3135d57b8c42d4f54317f",
+    "spec_freeze_sha256": "bbc7660723f5c74baa156a55ee5eb7cfccf0ad4108e693cf1cda8976419681cf"
   }
 }

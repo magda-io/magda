@@ -108,6 +108,19 @@ def verify(root, manifest=None):
         raise ValueError("Freeze checker changed; document an explicit implementation amendment before proceeding")
     if inspect(root) != frozen["design_summary"]:
         raise ValueError("Frozen design summary differs")
+    if frozen.get("registration_revision") == 2:
+        amendment = frozen["amendment"]
+        if sha(root / amendment["path"]) != amendment["sha256"]:
+            raise ValueError("Recorded amendment was altered")
+        previous = frozen["supersedes"]
+        archive = root / previous["archive"]
+        if sha(archive / "spec-freeze.json") != previous["spec_freeze_sha256"]:
+            raise ValueError("Original registration history was altered")
+        old = json.loads((archive / "spec-freeze.json").read_text())
+        if any(sha(archive / name) != value for name, value in old["spec_sha256"].items()):
+            raise ValueError("Original archived specification was altered")
+        if sha(archive / "freeze.py") != old["freeze_tool_sha256"]:
+            raise ValueError("Original archived checker was altered")
     return frozen
 
 
@@ -131,12 +144,68 @@ def create(root):
     return manifest
 
 
+def amend_title_context(root, archive, amendment):
+    """Explicit, narrowly constrained pre-generation revision; preserve v1 bytes.
+
+    This is not a generic unfrozen edit escape hatch: only the inconsistent
+    b029/b030 primary-title scope may change. Query texts, grades, IDs, counts,
+    seeds, systems and all remaining generation requirements must be identical.
+    """
+    root, archive, amendment = map(Path, (root, archive, amendment))
+    old = json.loads((archive / "spec-freeze.json").read_text())
+    for name, digest in old["spec_sha256"].items():
+        if sha(archive / name) != digest:
+            raise ValueError("Original archived registration was altered")
+    if sha(archive / "freeze.py") != old["freeze_tool_sha256"]:
+        raise ValueError("Original freeze checker archive was altered")
+    if sha(root / "spec-freeze.json") != sha(archive / "spec-freeze.json"):
+        raise ValueError("Active registration is not the archived original")
+    for name in ("query-spec.jsonl", "intents.jsonl", "decision-gates.json"):
+        if sha(root / name) != old["spec_sha256"][name]:
+            raise ValueError("This amendment cannot change queries, criteria, seeds or decision gates")
+    if any((root / ".local" / "corpora").glob("*.jsonl")) or (root / "qrels.jsonl").exists():
+        raise ValueError("This amendment must precede all written benchmark corpora/qrels")
+    before = json.loads((archive / "generation-spec.json").read_text())
+    after = json.loads((root / "generation-spec.json").read_text())
+    for plan in before["record_plans"]:
+        if plan["id"] in ("b029", "b030"):
+            req = plan["identifier_requirements"]
+            req["forbidden_scope_if_title_only"] = [field for field in req["forbidden_scope_if_title_only"] if field != "queryContext"]
+            req["derived_query_context_policy"] = "Exact production Title+Description projection is mandatory and may repeat the title identifier; this is not an additional primary metadata scope."
+    if before != after:
+        raise ValueError("Generation amendment exceeds the two approved derived-title scope corrections")
+    details = json.loads(amendment.read_text())
+    if details.get("independent_spec_review_passed") is not True or details.get("queries_and_grades_unchanged") is not True:
+        raise ValueError("Independent pre-generation amendment approval required")
+    summary = inspect(root)
+    if summary != old["design_summary"]:
+        raise ValueError("Design identity/count/seed population changed")
+    current = dict(old)
+    current.update(registration_revision=2,
+                   frozen_at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                   spec_sha256={name: sha(root / name) for name in SPEC_FILES},
+                   freeze_tool_sha256=sha(__file__),
+                   supersedes={"archive": str(archive.relative_to(root)),
+                               "spec_freeze_sha256": sha(archive / "spec-freeze.json"),
+                               "first_registration_commit": "c9139bd4b419a9c815d3135d57b8c42d4f54317f"},
+                   amendment={"path": str(amendment.relative_to(root)), "sha256": sha(amendment)})
+    (root / "spec-freeze.json").write_text(json.dumps(current, indent=2, sort_keys=True) + "\n")
+    return verify(root)
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("action", choices=("create", "verify"))
+    p.add_argument("action", choices=("create", "verify", "amend-title-context"))
     p.add_argument("--root", type=Path, default=Path(__file__).resolve().parent)
+    p.add_argument("--archive", type=Path)
+    p.add_argument("--amendment", type=Path)
     a = p.parse_args()
-    result = create(a.root) if a.action == "create" else verify(a.root)
+    if a.action == "amend-title-context":
+        if not a.archive or not a.amendment:
+            p.error("Explicit original archive and independently reviewed amendment are required")
+        result = amend_title_context(a.root, a.archive, a.amendment)
+    else:
+        result = create(a.root) if a.action == "create" else verify(a.root)
     print(json.dumps({"phase": result["phase"], "frozen_at_utc": result["frozen_at_utc"],
                       "record_count": len(result["design_summary"]["record_ids"]),
                       "query_count": len(result["design_summary"]["query_ids"])}))
