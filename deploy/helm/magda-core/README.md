@@ -118,7 +118,7 @@ doc for how the CA is delivered to each workload.
 | global.defaultAgentModel.alias | string | `"magda-agent-default"` | Stable model alias exposed by MAGDA LLM Services and managed DSH. |
 | global.defaultAgentModel.contextWindow | int | `1050000` | Model context-window capability. |
 | global.defaultAgentModel.maxTokens | int | `128000` | Model maximum output tokens, including reasoning tokens. |
-| global.defaultAgentModel.providerModel | string | `"openai/gpt-5.6-sol"` | LiteLLM provider model routed behind the stable MAGDA alias. |
+| global.defaultAgentModel.providerModel | string | `"openai/gpt-6.1-sol"` | LiteLLM provider model routed behind the stable MAGDA alias. |
 | global.defaultAgentModel.reasoningEffort | string | `"medium"` | Provider reasoning effort. Supported values: off, low, medium, high, xhigh, and max. Set to an empty string to omit the setting and let the provider choose its model default. |
 | global.defaultDatasetBucket | string | `"magda-datasets"` | The name of the bucket to store datasets in by default |
 | global.enableLivenessProbes | bool | `false` | Whether or not enabled livenessProbes on all services |
