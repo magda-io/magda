@@ -1,0 +1,120 @@
+{
+  "captured_at_utc": "2026-11-06T15:29:50.077705+00:00",
+  "engine": {
+    "cluster_name": "opensearch",
+    "cluster_uuid": "viVc8uCxQ7uJgmpPBWapaQ",
+    "name": "magda-opensearch-data-0",
+    "tagline": "The OpenSearch Project: https://opensearch.org/",
+    "version": {
+      "build_date": "2025-02-27T01:22:24.665339607Z",
+      "build_hash": "2e4741fb45d1b150aaeeadf66d41445b23ff5982",
+      "build_snapshot": false,
+      "build_type": "tar",
+      "distribution": "opensearch",
+      "lucene_version": "9.12.1",
+      "minimum_index_compatibility_version": "7.0.0",
+      "minimum_wire_compatibility_version": "7.10.0",
+      "number": "2.19.1"
+    }
+  },
+  "node_wordnet_sha256": "9993123ea6fa50319b8b51b01722173270e8990007da6364e4811a327cc6cf4b",
+  "phase": "during_all_seed_embedding_preparation_before_latency",
+  "pinned_git_wordnet_sha256": "9993123ea6fa50319b8b51b01722173270e8990007da6364e4811a327cc6cf4b",
+  "plugins": {
+    "2IOy7DaYSFe8mDgLF3KeFQ": [
+      {
+        "name": "opensearch-alerting",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-anomaly-detection",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-asynchronous-search",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-cross-cluster-replication",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-custom-codecs",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-flow-framework",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-geospatial",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-index-management",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-job-scheduler",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-knn",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-ltr",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-ml",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-neural-search",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-notifications",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-notifications-core",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-observability",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-performance-analyzer",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-reports-scheduler",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-security-analytics",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-skills",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-sql",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "opensearch-system-templates",
+        "version": "2.19.1.0"
+      },
+      {
+        "name": "query-insights",
+        "version": "2.19.1.0"
+      }
+    ]
+  },
+  "repo_wordnet_sha256": "9993123ea6fa50319b8b51b01722173270e8990007da6364e4811a327cc6cf4b"
+}

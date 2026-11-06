@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-11-06T15:47:39.145488+00:00",
+  "compact_sha256": "b92e32025431fb8958617ec6443955427ec01113ff4356f950bf0f61cc74e604",
+  "diagnostic_only": true,
+  "exact_query_ids": 24,
+  "forced_recommendation": "C",
+  "owned_index": "magda-relevance-eval-synthetic3903-39031",
+  "phase": "post_all_latency_measurements",
+  "promotion_allowed": false,
+  "raw_sha256": "e0b2a6d023b848bbd1794ae95bd4d2d1b568edf2c00b0a7764ceab258824f245",
+  "responses": 288
+}

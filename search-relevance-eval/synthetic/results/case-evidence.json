@@ -1,0 +1,400 @@
+[
+  {
+    "dataset": {
+      "contactPoint": {
+        "email": "data@synthetic.invalid",
+        "name": "Synthetic institutional data desk"
+      },
+      "description": "A separate investigation at Dune Valley Coastal examines drinking chocolate powder intended for hot beverages through hot-drink reconstitution bench testing with water. The distribution synopses document the measured columns and units. The described study uses empirical observations from physical samples. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.",
+      "distributions": [
+        {
+          "description": "Deposited columns: powder mass added per preparation (g; e.g. 23.2); added water temperature (degrees C; e.g. 72.42); time to complete powder dissolution (seconds; e.g. 42.91). Downloadable comma-separated table; the synopsis gives the column units.",
+          "downloadURL": "https://synthetic.invalid/39031/a062/table-1.csv",
+          "format": "CSV",
+          "identifier": "a062-distribution-1",
+          "mediaType": "text/csv",
+          "publishingState": "published",
+          "queryContext": "Title: Deposited measurements\nFormat: CSV\nDescription: Deposited columns: powder mass added per preparation (g; e.g. 23.2); added water temperature (degrees C; e.g. 72.42); time to complete powder dissolution (seconds; e.g. 42.91). Downloadable comma-separated table; the synopsis gives the column units.\n",
+          "tenantId": 0,
+          "title": "Deposited measurements"
+        },
+        {
+          "description": "Deposited columns: powder mass added per preparation (g; e.g. 23.2); added water temperature (degrees C; e.g. 72.42); time to complete powder dissolution (seconds; e.g. 42.91). Downloadable JSON records with the same variables and units.",
+          "downloadURL": "https://synthetic.invalid/39031/a062/table-2.json",
+          "format": "JSON",
+          "identifier": "a062-distribution-2",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "application/json",
+          "publishingState": "published",
+          "queryContext": "Title: Variable dictionary and values\nFormat: JSON\nDescription: Deposited columns: powder mass added per preparation (g; e.g. 23.2); added water temperature (degrees C; e.g. 72.42); time to complete powder dissolution (seconds; e.g. 42.91). Downloadable JSON records with the same variables and units.\n",
+          "tenantId": 0,
+          "title": "Variable dictionary and values"
+        },
+        {
+          "description": "Deposited columns: powder mass added per preparation (g; e.g. 23.2); added water temperature (degrees C; e.g. 72.42); time to complete powder dissolution (seconds; e.g. 42.91). Downloadable JSON records with the same variables and units.",
+          "downloadURL": "https://synthetic.invalid/39031/a062/table-3.json",
+          "format": "JSON",
+          "identifier": "a062-distribution-3",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "application/json",
+          "publishingState": "published",
+          "queryContext": "Title: Study records\nFormat: JSON\nDescription: Deposited columns: powder mass added per preparation (g; e.g. 23.2); added water temperature (degrees C; e.g. 72.42); time to complete powder dissolution (seconds; e.g. 42.91). Downloadable JSON records with the same variables and units.\n",
+          "tenantId": 0,
+          "title": "Study records"
+        }
+      ],
+      "hasQuality": true,
+      "identifier": "a062",
+      "issued": "2022-10-01T00:00:00Z",
+      "keywords": [
+        "drinking chocolate powder",
+        "hot-water reconstitution"
+      ],
+      "languages": [
+        "en"
+      ],
+      "publisher": {
+        "identifier": "synthetic-institution-15",
+        "name": "Oak Testing Laboratory"
+      },
+      "publishingState": "published",
+      "quality": 1,
+      "queryContext": "Title: Interpreting the Dune Valley Coastal drinking chocolate powder series\nDescription: A separate investigation at Dune Valley Coastal examines drinking chocolate powder intended for hot beverages through hot-drink reconstitution bench testing with water. The distribution synopses document the measured columns and units. The described study uses empirical observations from physical samples. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n",
+      "source": {
+        "id": "synthetic-benchmark",
+        "name": "Locally authored synthetic benchmark metadata",
+        "url": "https://synthetic.invalid/catalogue"
+      },
+      "spatial": {
+        "text": "Fictional study location; no geographic preference"
+      },
+      "tenantId": 0,
+      "title": "Interpreting the Dune Valley Coastal drinking chocolate powder series"
+    },
+    "dataset_id": "a062",
+    "seed": 39031,
+    "source_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+    "source_line": 62
+  },
+  {
+    "dataset": {
+      "description": "The Pine Basin East series documents hot-drink reconstitution bench testing with water, focusing on drinking chocolate powder intended for hot beverages.\n\nThe simulated output columns are time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08).\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe deposit contains no personal names or participant details.\n\nThe institutional catalogue provides this synopsis for potential reuse.\n\nA field guide explains categorical entries and missing cells.",
+      "distributions": [
+        {
+          "description": "Simulated output columns: time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08). Downloadable comma-separated table; the synopsis gives the column units.",
+          "downloadURL": "https://synthetic.invalid/39031/a069/table-1.csv",
+          "format": "CSV",
+          "identifier": "a069-distribution-1",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "text/csv",
+          "publishingState": "published",
+          "queryContext": "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08). Downloadable comma-separated table; the synopsis gives the column units.\n",
+          "tenantId": 0,
+          "title": "Simulation output table"
+        },
+        {
+          "description": "Simulated output columns: time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08). Downloadable JSON records with the same variables and units.",
+          "downloadURL": "https://synthetic.invalid/39031/a069/table-2.json",
+          "format": "JSON",
+          "identifier": "a069-distribution-2",
+          "mediaType": "application/json",
+          "publishingState": "published",
+          "queryContext": "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08). Downloadable JSON records with the same variables and units.\n",
+          "tenantId": 0,
+          "title": "Simulation output table"
+        }
+      ],
+      "hasQuality": true,
+      "identifier": "a069",
+      "issued": "2024-08-01T00:00:00Z",
+      "keywords": [
+        "drinking chocolate powder",
+        "hot-water reconstitution"
+      ],
+      "languages": [
+        "en"
+      ],
+      "publisher": {
+        "identifier": "synthetic-institution-08",
+        "name": "Hazel Experimental Station"
+      },
+      "publishingState": "published",
+      "quality": 1,
+      "queryContext": "Title: Drinking chocolate powder assessed in the Pine Basin East series\nDescription: The Pine Basin East series documents hot-drink reconstitution bench testing with water, focusing on drinking chocolate powder intended for hot beverages.\n\nThe simulated output columns are time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08).\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe deposit contains no personal names or participant details.\n\nThe institutional catalogue provides this synopsis for potential reuse.\n\nA field guide explains categorical entries and missing cells.\n",
+      "source": {
+        "id": "synthetic-benchmark",
+        "name": "Locally authored synthetic benchmark metadata",
+        "url": "https://synthetic.invalid/catalogue"
+      },
+      "tenantId": 0,
+      "title": "Drinking chocolate powder assessed in the Pine Basin East series"
+    },
+    "dataset_id": "a069",
+    "seed": 39031,
+    "source_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+    "source_line": 69
+  },
+  {
+    "dataset": {
+      "contactPoint": {
+        "email": "data@synthetic.invalid",
+        "name": "Synthetic institutional data desk"
+      },
+      "description": "Entries describe an observational study rather than model predictions.\n\nA separate investigation at Maple Quay East examines hydraulic fluid circulation pumps through indoor low-noise testing during hydraulic circulation. The catalogue model or edition is PUMP-H71.\n\nThe released table lists microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4).\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe release is arranged for comparison within this study.\n\nThe notes distinguish blanks from entries recorded as zero.",
+      "distributions": [
+        {
+          "description": "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Downloadable comma-separated table; the synopsis gives the column units.",
+          "downloadURL": "https://synthetic.invalid/39032/b013/table-1.csv",
+          "format": "CSV",
+          "identifier": "b013-distribution-1",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "text/csv",
+          "publishingState": "published",
+          "queryContext": "Title: Observation table\nFormat: CSV\nDescription: Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Downloadable comma-separated table; the synopsis gives the column units.\n",
+          "tenantId": 0,
+          "title": "Observation table"
+        },
+        {
+          "description": "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Tables are supplied inside a PDF document.",
+          "downloadURL": "https://synthetic.invalid/39032/b013/table-2.pdf",
+          "format": "PDF",
+          "identifier": "b013-distribution-2",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "application/pdf",
+          "publishingState": "published",
+          "queryContext": "Title: Observation table\nFormat: PDF\nDescription: Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Tables are supplied inside a PDF document.\n",
+          "tenantId": 0,
+          "title": "Observation table"
+        },
+        {
+          "description": "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Tables are supplied inside a PDF document.",
+          "downloadURL": "https://synthetic.invalid/39032/b013/table-3.pdf",
+          "format": "PDF",
+          "identifier": "b013-distribution-3",
+          "mediaType": "application/pdf",
+          "publishingState": "published",
+          "queryContext": "Title: Variable dictionary and values\nFormat: PDF\nDescription: Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Tables are supplied inside a PDF document.\n",
+          "tenantId": 0,
+          "title": "Variable dictionary and values"
+        }
+      ],
+      "hasQuality": true,
+      "identifier": "b013",
+      "keywords": [
+        "hydraulic pumps",
+        "indoor acoustic testing"
+      ],
+      "languages": [
+        "en"
+      ],
+      "publisher": {
+        "identifier": "synthetic-institution-04",
+        "name": "Dune Agricultural Centre"
+      },
+      "publishingState": "published",
+      "quality": 1,
+      "queryContext": "Title: Hydraulic pump acceptance trials\nDescription: Entries describe an observational study rather than model predictions.\n\nA separate investigation at Maple Quay East examines hydraulic fluid circulation pumps through indoor low-noise testing during hydraulic circulation. The catalogue model or edition is PUMP-H71.\n\nThe released table lists microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4).\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe release is arranged for comparison within this study.\n\nThe notes distinguish blanks from entries recorded as zero.\n",
+      "source": {
+        "id": "synthetic-benchmark",
+        "name": "Locally authored synthetic benchmark metadata",
+        "url": "https://synthetic.invalid/catalogue"
+      },
+      "tenantId": 0,
+      "title": "Hydraulic pump acceptance trials"
+    },
+    "dataset_id": "b013",
+    "seed": 39032,
+    "source_corpus_sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805",
+    "source_line": 113
+  },
+  {
+    "dataset": {
+      "description": "The described study uses empirical observations from physical samples. Recorded columns comprise hydraulic fluid flow rate (litres/minute; e.g. 17.71); operating sound pressure level (dB(A); e.g. 50.91); microphone distance from operating pump (m; e.g. 2.33). The Oak Terrace Inner series documents indoor low-noise testing during hydraulic circulation, focusing on hydraulic fluid circulation pumps. The catalogue model or edition is FLOW-049. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.",
+      "distributions": [
+        {
+          "description": "Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 17.71); operating sound pressure level (dB(A); e.g. 50.91); microphone distance from operating pump (m; e.g. 2.33). Downloadable comma-separated table; the synopsis gives the column units.",
+          "downloadURL": "https://synthetic.invalid/39032/b049/table-1.csv",
+          "format": "CSV",
+          "identifier": "b049-distribution-1",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "text/csv",
+          "publishingState": "published",
+          "queryContext": "Title: Recorded series\nFormat: CSV\nDescription: Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 17.71); operating sound pressure level (dB(A); e.g. 50.91); microphone distance from operating pump (m; e.g. 2.33). Downloadable comma-separated table; the synopsis gives the column units.\n",
+          "tenantId": 0,
+          "title": "Recorded series"
+        },
+        {
+          "description": "Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 17.71); operating sound pressure level (dB(A); e.g. 50.91); microphone distance from operating pump (m; e.g. 2.33). Tables are supplied inside a PDF document.",
+          "downloadURL": "https://synthetic.invalid/39032/b049/table-2.pdf",
+          "format": "PDF",
+          "identifier": "b049-distribution-2",
+          "mediaType": "application/pdf",
+          "publishingState": "published",
+          "queryContext": "Title: Deposited measurements\nFormat: PDF\nDescription: Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 17.71); operating sound pressure level (dB(A); e.g. 50.91); microphone distance from operating pump (m; e.g. 2.33). Tables are supplied inside a PDF document.\n",
+          "tenantId": 0,
+          "title": "Deposited measurements"
+        }
+      ],
+      "hasQuality": true,
+      "identifier": "b049",
+      "issued": "2024-01-01T00:00:00Z",
+      "keywords": [
+        "hydraulic pumps",
+        "indoor acoustic testing"
+      ],
+      "languages": [
+        "en"
+      ],
+      "publisher": {
+        "identifier": "synthetic-institution-14",
+        "name": "North Technical College"
+      },
+      "publishingState": "published",
+      "quality": 1,
+      "queryContext": "Title: The hydraulic pumps investigation at Oak Terrace Inner\nDescription: The described study uses empirical observations from physical samples. Recorded columns comprise hydraulic fluid flow rate (litres/minute; e.g. 17.71); operating sound pressure level (dB(A); e.g. 50.91); microphone distance from operating pump (m; e.g. 2.33). The Oak Terrace Inner series documents indoor low-noise testing during hydraulic circulation, focusing on hydraulic fluid circulation pumps. The catalogue model or edition is FLOW-049. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n",
+      "source": {
+        "id": "synthetic-benchmark",
+        "name": "Locally authored synthetic benchmark metadata",
+        "url": "https://synthetic.invalid/catalogue"
+      },
+      "spatial": {
+        "text": "Fictional study location; no geographic preference"
+      },
+      "tenantId": 0,
+      "title": "The hydraulic pumps investigation at Oak Terrace Inner"
+    },
+    "dataset_id": "b049",
+    "seed": 39032,
+    "source_corpus_sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805",
+    "source_line": 149
+  },
+  {
+    "dataset": {
+      "contactPoint": {
+        "email": "data@synthetic.invalid",
+        "name": "Synthetic institutional data desk"
+      },
+      "description": "At Tern Inlet South, the study covers soft chocolate filling for confectionery centres during texture testing of chocolate by mechanical loading.\n\nThe distribution synopses document the measured columns and units.\n\nThe described study uses empirical observations from physical samples.\n\nEach table uses the same local observation key.\n\nThe edition preserves the original row ordering.\n\nThe release is arranged for comparison within this study.\n\nThe institutional catalogue provides this synopsis for potential reuse.",
+      "distributions": [
+        {
+          "description": "Deposited columns: force at fracture (newtons; e.g. 44.53); tempering hold temperature and duration (31.27 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 14.28). Downloadable comma-separated table; the synopsis gives the column units.",
+          "downloadURL": "https://synthetic.invalid/39033/a037/table-1.csv",
+          "format": "CSV",
+          "identifier": "a037-distribution-1",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "text/csv",
+          "publishingState": "published",
+          "queryContext": "Title: Variable dictionary and values\nFormat: CSV\nDescription: Deposited columns: force at fracture (newtons; e.g. 44.53); tempering hold temperature and duration (31.27 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 14.28). Downloadable comma-separated table; the synopsis gives the column units.\n",
+          "tenantId": 0,
+          "title": "Variable dictionary and values"
+        },
+        {
+          "description": "Deposited columns: force at fracture (newtons; e.g. 44.53); tempering hold temperature and duration (31.27 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 14.28). Downloadable JSON records with the same variables and units.",
+          "downloadURL": "https://synthetic.invalid/39033/a037/table-2.json",
+          "format": "JSON",
+          "identifier": "a037-distribution-2",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "application/json",
+          "publishingState": "published",
+          "queryContext": "Title: Observation table\nFormat: JSON\nDescription: Deposited columns: force at fracture (newtons; e.g. 44.53); tempering hold temperature and duration (31.27 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 14.28). Downloadable JSON records with the same variables and units.\n",
+          "tenantId": 0,
+          "title": "Observation table"
+        },
+        {
+          "description": "Deposited columns: force at fracture (newtons; e.g. 44.53); tempering hold temperature and duration (31.27 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 14.28). Downloadable comma-separated table; the synopsis gives the column units.",
+          "downloadURL": "https://synthetic.invalid/39033/a037/table-3.csv",
+          "format": "CSV",
+          "identifier": "a037-distribution-3",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "text/csv",
+          "publishingState": "published",
+          "queryContext": "Title: Study records\nFormat: CSV\nDescription: Deposited columns: force at fracture (newtons; e.g. 44.53); tempering hold temperature and duration (31.27 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 14.28). Downloadable comma-separated table; the synopsis gives the column units.\n",
+          "tenantId": 0,
+          "title": "Study records"
+        }
+      ],
+      "hasQuality": true,
+      "identifier": "a037",
+      "issued": "2022-01-01T00:00:00Z",
+      "keywords": [
+        "soft chocolate filling",
+        "chocolate texture testing"
+      ],
+      "publisher": {
+        "identifier": "synthetic-institution-13",
+        "name": "Maple Research Cooperative"
+      },
+      "publishingState": "published",
+      "quality": 1,
+      "queryContext": "Title: A Tern Inlet South account of soft chocolate filling\nDescription: At Tern Inlet South, the study covers soft chocolate filling for confectionery centres during texture testing of chocolate by mechanical loading.\n\nThe distribution synopses document the measured columns and units.\n\nThe described study uses empirical observations from physical samples.\n\nEach table uses the same local observation key.\n\nThe edition preserves the original row ordering.\n\nThe release is arranged for comparison within this study.\n\nThe institutional catalogue provides this synopsis for potential reuse.\n",
+      "source": {
+        "id": "synthetic-benchmark",
+        "name": "Locally authored synthetic benchmark metadata",
+        "url": "https://synthetic.invalid/catalogue"
+      },
+      "tenantId": 0,
+      "title": "A Tern Inlet South account of soft chocolate filling"
+    },
+    "dataset_id": "a037",
+    "seed": 39033,
+    "source_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+    "source_line": 37
+  },
+  {
+    "dataset": {
+      "description": "Recorded columns comprise tempering hold temperature and duration (29.01 degrees C for 18 minutes in an example row); force at fracture (newtons; e.g. 33.83); particle diameter (micrometres; e.g. 27.16). Physical observations were recorded, not process simulations. A separate investigation at Bramble Hill North examines solid chocolate confectionery bars through texture testing of chocolate by mechanical loading. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. The notes distinguish blanks from entries recorded as zero.",
+      "distributions": [
+        {
+          "description": "Deposited columns: tempering hold temperature and duration (29.01 degrees C for 18 minutes in an example row); force at fracture (newtons; e.g. 33.83); particle diameter (micrometres; e.g. 27.16). Downloadable comma-separated table; the synopsis gives the column units.",
+          "downloadURL": "https://synthetic.invalid/39033/a040/table-1.csv",
+          "format": "CSV",
+          "identifier": "a040-distribution-1",
+          "mediaType": "text/csv",
+          "publishingState": "published",
+          "queryContext": "Title: Deposited measurements\nFormat: CSV\nDescription: Deposited columns: tempering hold temperature and duration (29.01 degrees C for 18 minutes in an example row); force at fracture (newtons; e.g. 33.83); particle diameter (micrometres; e.g. 27.16). Downloadable comma-separated table; the synopsis gives the column units.\n",
+          "tenantId": 0,
+          "title": "Deposited measurements"
+        },
+        {
+          "description": "Deposited columns: tempering hold temperature and duration (29.01 degrees C for 18 minutes in an example row); force at fracture (newtons; e.g. 33.83); particle diameter (micrometres; e.g. 27.16). Downloadable JSON records with the same variables and units.",
+          "downloadURL": "https://synthetic.invalid/39033/a040/table-2.json",
+          "format": "JSON",
+          "identifier": "a040-distribution-2",
+          "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+          "mediaType": "application/json",
+          "publishingState": "published",
+          "queryContext": "Title: Study records\nFormat: JSON\nDescription: Deposited columns: tempering hold temperature and duration (29.01 degrees C for 18 minutes in an example row); force at fracture (newtons; e.g. 33.83); particle diameter (micrometres; e.g. 27.16). Downloadable JSON records with the same variables and units.\n",
+          "tenantId": 0,
+          "title": "Study records"
+        }
+      ],
+      "hasQuality": true,
+      "identifier": "a040",
+      "keywords": [
+        "chocolate bars",
+        "chocolate texture testing"
+      ],
+      "languages": [
+        "en"
+      ],
+      "publisher": {
+        "identifier": "synthetic-institution-12",
+        "name": "Linden Quality Research Centre"
+      },
+      "publishingState": "published",
+      "quality": 1,
+      "queryContext": "Title: The Bramble Hill North record of chocolate texture testing\nDescription: Recorded columns comprise tempering hold temperature and duration (29.01 degrees C for 18 minutes in an example row); force at fracture (newtons; e.g. 33.83); particle diameter (micrometres; e.g. 27.16). Physical observations were recorded, not process simulations. A separate investigation at Bramble Hill North examines solid chocolate confectionery bars through texture testing of chocolate by mechanical loading. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. The notes distinguish blanks from entries recorded as zero.\n",
+      "source": {
+        "id": "synthetic-benchmark",
+        "name": "Locally authored synthetic benchmark metadata",
+        "url": "https://synthetic.invalid/catalogue"
+      },
+      "tenantId": 0,
+      "title": "The Bramble Hill North record of chocolate texture testing"
+    },
+    "dataset_id": "a040",
+    "seed": 39033,
+    "source_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+    "source_line": 40
+  }
+]

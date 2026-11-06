@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "all_analysis_values_identical": true,
+  "excluded_comparison_field": "input_sha256 only; filenames/hashes necessarily differ",
+  "original_analysis_sha256": "94ca87c33547525b4851352ecd6e3cf67891372b0791b05f5d74f3459c982d1e",
+  "compact_analysis_sha256": "eda1dabeece4539f9250ec51f10e94426b1bbcdb16460c5f62dabf94141d99fe",
+  "source_runs_bytes": 1084411035,
+  "compact_rows": 1800,
+  "new_searches": 0,
+  "queries_labels_scores_timings_changed": false
+}

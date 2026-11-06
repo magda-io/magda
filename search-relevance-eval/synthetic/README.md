@@ -2,6 +2,8 @@
 
 This suite extends the existing [evaluation harness](../README.md), not production ranking. It complements the real-catalogue pilot in #3901/PR #3902; synthetic design truth is **not** human relevance ground truth or production-representative utility.
 
+**Status:** the original confirmatory validation is incomplete. Independent review verified40,488 query/document/seed labels but retained12 as U (a057 under factory-sanitation and ambiguous plant intents). Queries, criteria and proposed qrels were not changed to force agreement. Only an explicitly approved [supplementary diagnostic replay](diagnostic-protocol.md) is permitted; its recommendation is **forced C**, with promotion disabled regardless of outcomes.
+
 ## Registration and responsibilities
 
 The original 75 query texts, relevance rules, 180 stable record plans, expected grades, three seeds, eight systems, split and decision gates were frozen in commit `c9139bd4b419a9c815d3135d57b8c42d4f54317f` **before dataset generation**. An independently reviewed compatibility correction was re-frozen in commit `c70f46f5f`: title-only *primary* metadata still appears in the mandatory production-derived queryContext. It changes no query, label, ID, seed, system or weight. All original bytes/checker remain in [v1 history](registration-history/v1/archive-manifest.json); [the amendment](registration-amendment-v2.json) and active [freeze](spec-freeze.json) are auditable.
@@ -31,12 +33,41 @@ The actual Registry/Indexer/OPA baseline regressions run only inside an isolated
 ```sh
 python3 search-relevance-eval/synthetic/freeze.py verify
 python3 search-relevance-eval/synthetic/generate.py \
-  --output-dir search-relevance-eval/synthetic/.local/corpora
+  --output-dir search-relevance-eval/synthetic/.local/corpora-v4
 ```
 
 The generator refuses unknown existing bytes. Historical first-realization prose defects and pre-retrieval text corrections must be preserved, not overwritten or tuned using scores. A generator self-check is **not** the independent validation gate. The final corpus paths/hashes and full query×record qrels must be bound to a passed independent validation manifest plus explicit parent approval before any embedding/replay command can proceed.
 
-Execution and final result commands will be completed with the independently validated artifact contract; this document does not claim searches or results that have not run.
+### One-command reproduction
+
+First verify all frozen generation/evidence without network or services:
+
+```sh
+python3 search-relevance-eval/synthetic/reproduce.py --diagnostic-only --validate-only
+```
+
+Then rerun using this suite's pinned, loopback-only Docker Compose services (Java11/sbt1.4.9 must be installed):
+
+```sh
+python3 search-relevance-eval/synthetic/reproduce.py \
+  --diagnostic-only --secondary-topk --compose --allow-local-writes --sbt sbt
+```
+
+This explicitly opts into the supplemental forced-C scope; omission does **not** silently fall back to partial validation. It exclusively restores the sealed historical review sources (including rejected/corrected source snapshots) from [the hash-bound archive](review-source-archive.json), regenerates byte-identical final text/qrels, rechecks the actual independent observations and U mask, runs local controls, prepares all three vector sets before timing, and reuses the shared production exporter/replay/metrics. Use a new empty `--artifact-root` for another run; previous results are never overwritten. Existing correctly pinned local services may instead be supplied using `--engine-url` and `--embedding-url` (omit `--compose`).
+
+Compose services remain available for inspection. Remove only this suite's own project when finished:
+
+```sh
+docker compose -f search-relevance-eval/synthetic/compose.yaml down --volumes
+```
+
+The wrapper does not rerun the historical full Registry/Indexer/OPA integration suite. Those [baseline service regressions](service-regressions.md) remain separate evidence, not a claim that every normalized candidate was exercised through real OPA. See the final report/results for actual diagnostic replay status and limitations.
+
+## Results and release checks
+
+See the [report](report.md) and [machine results](results/analysis.json). Across the three seeds, the primary normalized profile improves the seven known semantic-family NDCG means by +.171/+.199/+.140, but exact lookup top1 falls17→15,18→17,15→13 out of24. This is not the unavailable eight-family confirmatory primary; recommendation stays C.
+
+Release checks:248 offline tests,26 unchanged Scala search/access-filter tests and7 actual Registry/Indexer/OPA baseline tests passed. Primary radial controls23/23 and quality/spatial probes passed; the reused radial exact-set oracle failed under k1 candidate-pool truncation, so complete normalized top-k coverage is not claimed. All21 owned benchmark resources were [cleaned up](results/cleanup.json); existing user resources were preserved.
 
 ## Offline tests
 

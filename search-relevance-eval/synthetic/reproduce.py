@@ -6,6 +6,8 @@ study. It never invents reviewer observations or bypasses a missing validation.
 Docker setup is opt-in and uses this suite's isolated Compose project only.
 """
 import argparse
+import hashlib
+import tarfile
 import importlib.util
 import json
 from pathlib import Path
@@ -35,6 +37,35 @@ def command(args):
     subprocess.run(list(map(str, args)), cwd=REPO, check=True)
 
 
+def restore_review_sources(root=ROOT):
+    """Restore exact audit inputs, never overwrite or extract arbitrary paths."""
+    root = Path(root).resolve()
+    receipt = json.loads((root / "review-source-archive.json").read_text())
+    archive = root / receipt["archive_path"]
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != receipt["archive_sha256"]:
+        raise ValueError("Historical review-source archive changed")
+    expected = {row["path"]: row for row in receipt["members"]}
+    with tarfile.open(archive, "r:gz") as source:
+        members = source.getmembers()
+        if len(members) != len(expected) or {m.name for m in members} != set(expected):
+            raise ValueError("Historical archive member set differs")
+        for member in members:
+            target = (root / member.name).resolve()
+            if not member.isfile() or not target.is_relative_to(root):
+                raise ValueError("Unsafe historical archive member")
+            data = source.extractfile(member).read()
+            record = expected[member.name]
+            if len(data) != record["bytes"] or hashlib.sha256(data).hexdigest() != record["sha256"]:
+                raise ValueError("Historical archive member bytes differ")
+            if target.exists():
+                if not target.is_file() or target.read_bytes() != data:
+                    raise ValueError("Do not overwrite altered historical review sources")
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with target.open("xb") as stream:
+                    stream.write(data)
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--artifact-root", type=Path, default=ROOT / ".local/reproduction")
@@ -44,6 +75,7 @@ def main(argv=None):
     p.add_argument("--compose", action="store_true", help="Start only this suite's pinned local services after the independent gate passes")
     p.add_argument("--allow-local-writes", action="store_true")
     p.add_argument("--diagnostic-only", action="store_true", help="Explicit supplementary replay with U preserved and recommendation forced C; never satisfies the original confirmatory protocol")
+    p.add_argument("--secondary-topk", action="store_true", help="Also attempt the secondary k1 control profile; retain/report oracle failures without claiming engine non-support")
     p.add_argument("--validate-only", action="store_true", help="Regenerate and verify frozen text/qrels/evidence with no network or subprocess services")
     a = p.parse_args(argv)
     execute = load("synthetic_reproduce_execution", ROOT / "execute.py")
@@ -55,6 +87,7 @@ def main(argv=None):
     policy = ROOT / "diagnostic-execution-policy.json"
     if not manifest.is_file() or not approval.is_file():
         raise ValueError("Independent completed-study validation and hash-bound execution approval are required; do not fabricate them")
+    restore_review_sources(ROOT)
     validation = json.loads(manifest.read_text())
     paths = {(ROOT / row["path"]).resolve().parent for row in validation["corpora"]}
     if any(not path.is_relative_to((ROOT / ".local").resolve()) for path in paths):
@@ -63,7 +96,10 @@ def main(argv=None):
         raise ValueError("The deterministic corpus variants must share their registered output directory")
     # Generate via the existing deterministic generator, never a second dataset recipe.
     generator = load("synthetic_reproduce_generation", ROOT / "generate.py")
-    generator.run(next(iter(paths)), root=ROOT, verify_existing=True)
+    # Keep the original host/timestamp/history receipt immutable. A fresh
+    # checkout has different absolute paths and may not retain rejected corpora.
+    generator.run(next(iter(paths)), root=ROOT, verify_existing=True,
+                  manifest_path=ROOT / ".local/reproduction-generation-manifest.json")
     validator = load("synthetic_reproduce_validation", ROOT / "validate.py")
     evidence_path = ROOT / validation["validation_evidence_path"]
     wrapper = json.loads(evidence_path.read_text())
@@ -108,11 +144,25 @@ def main(argv=None):
     command(common + ["quality-spatial-probe", "--engine-url", a.engine_url,
                       "--output", a.artifact_root / "quality-spatial.json", "--sbt", a.sbt,
                       "--allow-local-writes"])
+    if a.secondary_topk:
+        try:
+            command(common + ["controls", "--engine-url", a.engine_url, "--sbt", a.sbt,
+                              "--output", a.artifact_root / "controls-topk.json", "--top-k", "--allow-local-writes"])
+        except subprocess.CalledProcessError:
+            if not a.diagnostic_only:
+                raise
+            print("Secondary top-k validation failed; inspect controls-topk.json. This is not automatically engine non-support; only the explicitly forced-C radial diagnostic replay continues.")
     command(common + ["prepare", "--artifact-root", a.artifact_root,
                       "--embedding-url", a.embedding_url, "--cache", ROOT / ".local/gte-q8-cache"])
     command(common + ["run", "--artifact-root", a.artifact_root, "--engine-url", a.engine_url,
                       "--sbt", a.sbt, "--allow-local-writes"])
-    runs = [a.artifact_root / str(row["seed"]) / "runs.jsonl" for row in validation["corpora"]]
+    projector = load("synthetic_reproduce_compaction", ROOT / "compact_runs.py")
+    runs = []
+    for row in validation["corpora"]:
+        source = a.artifact_root / str(row["seed"]) / "runs.jsonl"
+        projected = source.with_name("runs-compact.jsonl")
+        projector.compact(source, projected)
+        runs.append(projected)
     correctness = ROOT / "results/correctness.json"
     if not correctness.is_file():
         raise ValueError("Rankings are retained, but no frozen correctness attestation is available; do not claim a promotion decision")

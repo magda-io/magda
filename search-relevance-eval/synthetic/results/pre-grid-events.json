@@ -1,0 +1,16 @@
+{
+  "diagnostic_only": true,
+  "events_utc": {
+    "all_seed_preparation_completed": "2026-11-06T15:29:42.666908+00:00",
+    "embedding_cache_identity_written": "2026-11-06T15:28:09.125003+00:00",
+    "primary_controls_report_completed": "2026-11-06T15:30:36.027867+00:00",
+    "quality_spatial_report_completed": "2026-11-06T15:31:41.385070+00:00",
+    "secondary_topk_report_completed": "2026-11-06T15:32:29.788731+00:00"
+  },
+  "forced_recommendation": "C",
+  "grid_status": "awaiting_parent_decision_after_secondary_topk_radial_oracle_mismatch",
+  "phase": "all_vectors_and_initial_controls_complete_primary_grid_not_started",
+  "promotion_allowed": false,
+  "recorded_at_utc": "2026-11-06T15:35:19.940435+00:00",
+  "times_are_file_mtime_not_inferred_request_start": true
+}

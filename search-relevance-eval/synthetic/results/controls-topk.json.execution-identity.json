@@ -1,0 +1,18 @@
+{
+  "approval_sha256": "654c59ada2e1f3a0c275b98d3124da374aeca7609f4f272a43ed4b0780e55149",
+  "diagnostic_only": true,
+  "diagnostic_policy_sha256": "221ecc284a9970b49507095ad6f741355d0b53351f166b61648e8dcd8022ba3b",
+  "diagnostic_validation_sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f",
+  "forced_recommendation": "C",
+  "full_validation_passed": false,
+  "known_query_document_pairs": 40488,
+  "policy_created_utc": "2026-11-06T15:24:04.079830+00:00",
+  "promotion_allowed": false,
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "uncertainty_mask_sha256": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+  "uncertainty_units": 6,
+  "unknown_query_document_pairs": 12,
+  "validated_qrels_sha256": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38",
+  "validated_query_document_pairs": 40500,
+  "validation_manifest_sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f"
+}

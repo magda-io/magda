@@ -1,0 +1,181 @@
+{
+  "all_embedded_query_hashes_identical": true,
+  "all_mapping_hashes_identical": true,
+  "all_safe_search_config_hashes_identical": true,
+  "captured_at_utc": "2026-11-06T15:46:35.786394+00:00",
+  "diagnostic_only": true,
+  "forced_recommendation": "C",
+  "grid_begin_utc": "2026-11-06T15:37:56Z",
+  "grid_end_utc": "2026-11-06T15:45:05Z",
+  "promotion_allowed": false,
+  "seeds": [
+    {
+      "duplicate_hit_ids": 0,
+      "errors": 0,
+      "failed_shards": 0,
+      "files": {
+        "baseline-requests.jsonl": {
+          "bytes": 8013171,
+          "sha256": "eb21f6f405c4e3bdc02de11dd48ead5644943617193b2a0b7fe6a99d0a189188"
+        },
+        "embedded-corpus.jsonl": {
+          "bytes": 11655274,
+          "sha256": "27a9a379e371d66448d7ece818e469b7c76507b96313e18bca794f79327e79bb"
+        },
+        "embedded-queries.jsonl": {
+          "bytes": 1323423,
+          "sha256": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c"
+        },
+        "mapping.json": {
+          "bytes": 18593,
+          "sha256": "c4b39845141504c78c06d3bdcb6cbfafbd38e1ca5b64ab5e25440e70f189c884"
+        },
+        "response-ledger.jsonl": {
+          "bytes": 9322268,
+          "sha256": "09ca6fd648efbafe9dc89761f1aef6e72a6e608aa923eb31e983d4e9afc7a592"
+        },
+        "runs.jsonl": {
+          "bytes": 370397942,
+          "sha256": "57156396ea78b38ad8c9da26ef31774a058c06e95ed89e038f8e03e49bb31d5f"
+        },
+        "runs.jsonl.requests.jsonl": {
+          "bytes": 58663671,
+          "sha256": "445f1bec431bdfe14a70fa431368e04e30447f0f3f5168deccf43b3d0b48338a"
+        },
+        "search-config.json": {
+          "bytes": 1529,
+          "sha256": "2b1e2b40cb7056923429e23e6b199808e506a420738609bc485ea941d331c259"
+        }
+      },
+      "final_run_rows": 600,
+      "matched_hybrid_facet_count_mismatch_queries": [],
+      "matched_hybrid_total_hits_mismatch_queries": [],
+      "measured_requests": 3000,
+      "queries": 75,
+      "raw_response_receipts": 3600,
+      "repeat_audit": {
+        "facet_count_repeat_variants": 0,
+        "id_score_repeat_variants": 0,
+        "request_hash_repeat_variants": 0,
+        "total_hit_repeat_variants": 0
+      },
+      "safe_elasticsearch_config_sha256": "93e5bf8bf4bfa54c862f0a34a9085eed92feafe072cd77e04229146eb316f2c8",
+      "seed": 39031,
+      "systems": 8,
+      "timeouts": 0,
+      "warmups": 600
+    },
+    {
+      "duplicate_hit_ids": 0,
+      "errors": 0,
+      "failed_shards": 0,
+      "files": {
+        "baseline-requests.jsonl": {
+          "bytes": 8013171,
+          "sha256": "da7c5eb07d4d986359743906d8fa43cdc5cab840e0adf4fc7d200ab5816a93c9"
+        },
+        "embedded-corpus.jsonl": {
+          "bytes": 11611157,
+          "sha256": "6aa76b15390ffe9e7fb86f8d99e41521cf5dabe6f3bd50c334e3dc1b9e67f955"
+        },
+        "embedded-queries.jsonl": {
+          "bytes": 1323423,
+          "sha256": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c"
+        },
+        "mapping.json": {
+          "bytes": 18593,
+          "sha256": "c4b39845141504c78c06d3bdcb6cbfafbd38e1ca5b64ab5e25440e70f189c884"
+        },
+        "response-ledger.jsonl": {
+          "bytes": 9321864,
+          "sha256": "a22b1d68ae1ad6ebc23fe7fb3c21c29c1b5fd596e81d500cf0b06d69f1c50057"
+        },
+        "runs.jsonl": {
+          "bytes": 354518424,
+          "sha256": "8efa0c15e4ce7b5df963beec0df5c37f5d36f133949a2b85b11500b590b3f44d"
+        },
+        "runs.jsonl.requests.jsonl": {
+          "bytes": 58663671,
+          "sha256": "7845d7d67ab5dce5e395bb7c0fd4f64eca4dfb2e915dc32ab59b480c3d6e3bc0"
+        },
+        "search-config.json": {
+          "bytes": 1529,
+          "sha256": "d4f34304a5259f5f4af8ab304e84b7f2660940879c7895c26dcc9b97a485a0c6"
+        }
+      },
+      "final_run_rows": 600,
+      "matched_hybrid_facet_count_mismatch_queries": [],
+      "matched_hybrid_total_hits_mismatch_queries": [],
+      "measured_requests": 3000,
+      "queries": 75,
+      "raw_response_receipts": 3600,
+      "repeat_audit": {
+        "facet_count_repeat_variants": 0,
+        "id_score_repeat_variants": 0,
+        "request_hash_repeat_variants": 0,
+        "total_hit_repeat_variants": 0
+      },
+      "safe_elasticsearch_config_sha256": "93e5bf8bf4bfa54c862f0a34a9085eed92feafe072cd77e04229146eb316f2c8",
+      "seed": 39032,
+      "systems": 8,
+      "timeouts": 0,
+      "warmups": 600
+    },
+    {
+      "duplicate_hit_ids": 0,
+      "errors": 0,
+      "failed_shards": 0,
+      "files": {
+        "baseline-requests.jsonl": {
+          "bytes": 8013171,
+          "sha256": "e196540eaa749fe27fecd434a836f143d165ca3a66459f8274e1abe9f6b8a706"
+        },
+        "embedded-corpus.jsonl": {
+          "bytes": 11584028,
+          "sha256": "81d96f6406cffc6f6c8be84f3f7ace60c5d09336f3384f02f47700a0fe33d269"
+        },
+        "embedded-queries.jsonl": {
+          "bytes": 1323423,
+          "sha256": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c"
+        },
+        "mapping.json": {
+          "bytes": 18593,
+          "sha256": "c4b39845141504c78c06d3bdcb6cbfafbd38e1ca5b64ab5e25440e70f189c884"
+        },
+        "response-ledger.jsonl": {
+          "bytes": 9324642,
+          "sha256": "8957b3895099239120a4e3c2fb0fad06d7b8cf04e002c99e8e5bb096612f5448"
+        },
+        "runs.jsonl": {
+          "bytes": 359494669,
+          "sha256": "e00f331fb1119905ce8928b8de6120d400192fd72415b5e035677cc5498ba728"
+        },
+        "runs.jsonl.requests.jsonl": {
+          "bytes": 58663671,
+          "sha256": "275985dd6b14121b65348d44aab5ba79fffb47a642f654e2ada8bbffabfcb705"
+        },
+        "search-config.json": {
+          "bytes": 1529,
+          "sha256": "e8ee7594645309fb1dd85831c8c59d7f8c6e894e8136b725d1cb14c9191973af"
+        }
+      },
+      "final_run_rows": 600,
+      "matched_hybrid_facet_count_mismatch_queries": [],
+      "matched_hybrid_total_hits_mismatch_queries": [],
+      "measured_requests": 3000,
+      "queries": 75,
+      "raw_response_receipts": 3600,
+      "repeat_audit": {
+        "facet_count_repeat_variants": 0,
+        "id_score_repeat_variants": 0,
+        "request_hash_repeat_variants": 0,
+        "total_hit_repeat_variants": 0
+      },
+      "safe_elasticsearch_config_sha256": "93e5bf8bf4bfa54c862f0a34a9085eed92feafe072cd77e04229146eb316f2c8",
+      "seed": 39033,
+      "systems": 8,
+      "timeouts": 0,
+      "warmups": 600
+    }
+  ]
+}

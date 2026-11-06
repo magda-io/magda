@@ -1,4 +1,7 @@
 import json
+import hashlib
+import io
+import tarfile
 from pathlib import Path
 import sys
 import tempfile
@@ -9,6 +12,48 @@ from synthetic import reproduce
 
 
 class ReproductionTests(unittest.TestCase):
+    def archive_fixture(self, root, member="auditoutputs/example.json"):
+        data = b'{"verbatim": true}  \n'
+        archive = root / "proof.tar.gz"
+        with tarfile.open(archive, "w:gz") as stream:
+            info = tarfile.TarInfo(member)
+            info.size = len(data)
+            stream.addfile(info, io.BytesIO(data))
+        receipt = {"archive_path": archive.name,
+                   "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+                   "members": [{"path": member, "bytes": len(data),
+                                "sha256": hashlib.sha256(data).hexdigest()}]}
+        (root / "review-source-archive.json").write_text(json.dumps(receipt))
+        return data, archive
+
+    def test_restore_preserves_verbatim_bytes_and_refuses_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data, _ = self.archive_fixture(root)
+            reproduce.restore_review_sources(root)
+            target = root / "auditoutputs/example.json"
+            self.assertEqual(target.read_bytes(), data)
+            before = target.stat().st_mtime_ns
+            reproduce.restore_review_sources(root)
+            self.assertEqual(target.stat().st_mtime_ns, before)
+            target.write_bytes(b"altered")
+            with self.assertRaisesRegex(ValueError, "overwrite altered"):
+                reproduce.restore_review_sources(root)
+            self.assertEqual(target.read_bytes(), b"altered")
+
+    def test_restore_rejects_archive_tamper_and_path_escape(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, archive = self.archive_fixture(root)
+            archive.write_bytes(archive.read_bytes() + b"changed")
+            with self.assertRaisesRegex(ValueError, "archive changed"):
+                reproduce.restore_review_sources(root)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.archive_fixture(root, "../escape.json")
+            with self.assertRaisesRegex(ValueError, "Unsafe"):
+                reproduce.restore_review_sources(root)
+
     def test_dynamic_module_loading_restores_python_path(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "example.py"

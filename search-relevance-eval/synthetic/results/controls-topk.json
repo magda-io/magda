@@ -1,0 +1,170 @@
+{
+  "auth_injections": {
+    "child": 9,
+    "root": 6
+  },
+  "authorization": "Translated synthetic ownerId != hidden, NOT real OPA evaluation",
+  "baseline_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "baseline_query_id": "smoke-unfiltered",
+  "baseline_requests_sha256": "d8f41a637fc9b0e1a4617f38aa14ab3b0d442ecb84213de0dde82c3a356342a4",
+  "controls": {
+    "eligibility/baseline": {
+      "error": "AssertionError: baseline: root IDs ['lexical-only', 'metadata-hidden-match-visible-sibling', 'metadata-nochildren', 'public-root', 'root-only-hidden-child', 'siblings', 'visible-child'] != ['lexical-only', 'metadata-hidden-match-visible-sibling', 'metadata-nochildren', 'public-root', 'root-only-hidden-child', 'siblings', 'vector-only', 'visible-child']",
+      "status": "failed"
+    },
+    "eligibility/candidate_03_07": {
+      "status": "not_run"
+    },
+    "eligibility/candidate_05_05": {
+      "status": "not_run"
+    },
+    "eligibility/candidate_07_03": {
+      "status": "not_run"
+    },
+    "eligibility/candidate_keep50_03_07": {
+      "status": "not_run"
+    },
+    "eligibility/keyword": {
+      "status": "not_run"
+    },
+    "eligibility/raw_boost1": {
+      "status": "not_run"
+    },
+    "eligibility/vector": {
+      "status": "not_run"
+    },
+    "format/CSV/baseline": {
+      "status": "not_run"
+    },
+    "format/CSV/candidate_03_07": {
+      "status": "not_run"
+    },
+    "format/CSV/candidate_05_05": {
+      "status": "not_run"
+    },
+    "format/CSV/candidate_07_03": {
+      "status": "not_run"
+    },
+    "format/CSV/candidate_keep50_03_07": {
+      "status": "not_run"
+    },
+    "format/CSV/raw_boost1": {
+      "status": "not_run"
+    },
+    "format/magda-fixture-unavailable-format/baseline": {
+      "status": "not_run"
+    },
+    "format/magda-fixture-unavailable-format/candidate_03_07": {
+      "status": "not_run"
+    },
+    "format/magda-fixture-unavailable-format/candidate_05_05": {
+      "status": "not_run"
+    },
+    "format/magda-fixture-unavailable-format/candidate_07_03": {
+      "status": "not_run"
+    },
+    "format/magda-fixture-unavailable-format/candidate_keep50_03_07": {
+      "status": "not_run"
+    },
+    "format/magda-fixture-unavailable-format/raw_boost1": {
+      "status": "not_run"
+    },
+    "inputs": {
+      "details": {
+        "auth_injections": {
+          "child": 9,
+          "root": 6
+        }
+      },
+      "status": "passed"
+    },
+    "install": {
+      "details": {
+        "eligibility_documents": 15,
+        "fusion_documents": 2
+      },
+      "status": "passed"
+    },
+    "normalization_executes": {
+      "status": "not_run"
+    }
+  },
+  "engine_url": "http://127.0.0.1:19200",
+  "error": "AssertionError: baseline: root IDs ['lexical-only', 'metadata-hidden-match-visible-sibling', 'metadata-nochildren', 'public-root', 'root-only-hidden-child', 'siblings', 'visible-child'] != ['lexical-only', 'metadata-hidden-match-visible-sibling', 'metadata-nochildren', 'public-root', 'root-only-hidden-child', 'siblings', 'vector-only', 'visible-child']",
+  "fixture_overrides": [
+    "query text: water quality",
+    "query vectors: three zeros",
+    "size/from/track_total_hits",
+    "synthetic owner predicate in root/child tenant filter groups and inner-hit projection",
+    "format controls only: smoke-filtered publisher/date/region selection wrappers removed; production format clauses retained and CSV/impossible literal substituted"
+  ],
+  "format_adaptations": {
+    "CSV": {
+      "auth_injections": {
+        "child": 9,
+        "root": 6
+      },
+      "export_query_id": "smoke-filtered",
+      "format_match_clauses": 4,
+      "removed_fixture_selection_wrappers": {
+        "publisher": 4,
+        "region": 6,
+        "temporal": 12
+      },
+      "selected_format": "CSV"
+    },
+    "magda-fixture-unavailable-format": {
+      "auth_injections": {
+        "child": 9,
+        "root": 6
+      },
+      "export_query_id": "smoke-filtered",
+      "format_match_clauses": 4,
+      "removed_fixture_selection_wrappers": {
+        "publisher": 4,
+        "region": 6,
+        "temporal": 12
+      },
+      "selected_format": "magda-fixture-unavailable-format"
+    }
+  },
+  "issue": 3901,
+  "mapping_sha256": "5bf8264a234d5bc0269dc336a48611291b27aee4d23b2df390f98ec715e8b617",
+  "resources": [
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "kind": "index",
+      "name": "magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-eligibility",
+      "path": "/magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-eligibility"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "kind": "index",
+      "name": "magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-fusion",
+      "path": "/magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-fusion"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-keyword-heavy",
+      "path": "/_search/pipeline/magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-keyword-heavy"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-vector-heavy",
+      "path": "/_search/pipeline/magda-relevance-eval-controls-05d9d9e6-0f5b-4a66-a057-09dcfb56d74c-vector-heavy"
+    }
+  ],
+  "semantics": {
+    "explicit_format": "Preserves actual independent root nested format clause: hidden/draft/wrong-tenant child format may qualify an otherwise metadata-matching accessible parent. Does NOT prove same-child format plus authorization. Publisher facet topHits may embed raw child source. Synthetic format controls are not real-dataset q04/q12 judgments.",
+    "facets": "Candidate ordinary bool union, not hybrid normalized ranking; Publisher root facet exact. Format nested facet counts all children of eligible parents, not child-auth-filtered; its root filter self-excludes selected format.",
+    "projection": "Production tenant/auth projection retained: visible draft and unrelated siblings included; hidden/wrong-tenant excluded",
+    "ranking": "Eligibility controls assert sets, not ordering"
+  },
+  "status": "failed"
+}

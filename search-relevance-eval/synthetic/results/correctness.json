@@ -1,0 +1,53 @@
+{
+  "39031": {
+    "all_green": false,
+    "baseline_actual_authorization_service_tests_passed": 7,
+    "baseline_scala_tests_passed": 26,
+    "full_candidate_opa_service_coverage": false,
+    "primary_radial_controls_passed": true,
+    "quality_spatial_probe_passed": true,
+    "scope": "Primary radial engineering checks passed; do not claim every secondary mode/all production authorization flows green. Recommendation forced C independently.",
+    "secondary_topk_fully_validated": false,
+    "secondary_topk_note": "Baseline k=1 request accepted; vector-only tied neighbour omitted relative to radial full-set oracle; remaining variant controls not run. Not engine unsupported or an observed authorization leak.",
+    "source_sha256": {
+      "results/controls-primary.json": "892b0be113e42dd647d19a5060d1018a106119a3ab1bd384c3e60d9eb67b8ff6",
+      "results/controls-topk.json": "8a9c345d87ea4261de997650b90a9f4f55dcd3d7cc7662d4795866b58f190277",
+      "results/quality-spatial.json": "03308acd428ec0863c1831aec225e0c93a6052b86b60ba057c15573da4c6622a",
+      "results/service-regressions.json": "cf882a78e23b28c0bba1967fb716659138834e27cbcd598432142fe4216998db"
+    }
+  },
+  "39032": {
+    "all_green": false,
+    "baseline_actual_authorization_service_tests_passed": 7,
+    "baseline_scala_tests_passed": 26,
+    "full_candidate_opa_service_coverage": false,
+    "primary_radial_controls_passed": true,
+    "quality_spatial_probe_passed": true,
+    "scope": "Primary radial engineering checks passed; do not claim every secondary mode/all production authorization flows green. Recommendation forced C independently.",
+    "secondary_topk_fully_validated": false,
+    "secondary_topk_note": "Baseline k=1 request accepted; vector-only tied neighbour omitted relative to radial full-set oracle; remaining variant controls not run. Not engine unsupported or an observed authorization leak.",
+    "source_sha256": {
+      "results/controls-primary.json": "892b0be113e42dd647d19a5060d1018a106119a3ab1bd384c3e60d9eb67b8ff6",
+      "results/controls-topk.json": "8a9c345d87ea4261de997650b90a9f4f55dcd3d7cc7662d4795866b58f190277",
+      "results/quality-spatial.json": "03308acd428ec0863c1831aec225e0c93a6052b86b60ba057c15573da4c6622a",
+      "results/service-regressions.json": "cf882a78e23b28c0bba1967fb716659138834e27cbcd598432142fe4216998db"
+    }
+  },
+  "39033": {
+    "all_green": false,
+    "baseline_actual_authorization_service_tests_passed": 7,
+    "baseline_scala_tests_passed": 26,
+    "full_candidate_opa_service_coverage": false,
+    "primary_radial_controls_passed": true,
+    "quality_spatial_probe_passed": true,
+    "scope": "Primary radial engineering checks passed; do not claim every secondary mode/all production authorization flows green. Recommendation forced C independently.",
+    "secondary_topk_fully_validated": false,
+    "secondary_topk_note": "Baseline k=1 request accepted; vector-only tied neighbour omitted relative to radial full-set oracle; remaining variant controls not run. Not engine unsupported or an observed authorization leak.",
+    "source_sha256": {
+      "results/controls-primary.json": "892b0be113e42dd647d19a5060d1018a106119a3ab1bd384c3e60d9eb67b8ff6",
+      "results/controls-topk.json": "8a9c345d87ea4261de997650b90a9f4f55dcd3d7cc7662d4795866b58f190277",
+      "results/quality-spatial.json": "03308acd428ec0863c1831aec225e0c93a6052b86b60ba057c15573da4c6622a",
+      "results/service-regressions.json": "cf882a78e23b28c0bba1967fb716659138834e27cbcd598432142fe4216998db"
+    }
+  }
+}

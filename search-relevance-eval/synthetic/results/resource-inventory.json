@@ -1,0 +1,390 @@
+{
+  "captured_at_utc": "2026-11-06T15:48:39.659436+00:00",
+  "diagnostic_only": true,
+  "forced_recommendation": "C",
+  "indexes": [
+    {
+      "name": "magda-relevance-eval-synthetic3903-39031",
+      "retained": true,
+      "root_document_count": 180,
+      "seed": 39031
+    },
+    {
+      "name": "magda-relevance-eval-synthetic3903-39032",
+      "retained": true,
+      "root_document_count": 180,
+      "seed": 39032
+    },
+    {
+      "name": "magda-relevance-eval-synthetic3903-39033",
+      "retained": true,
+      "root_document_count": 180,
+      "seed": 39033
+    }
+  ],
+  "phase": "after_all_latency_and_analyzer_requests",
+  "pipelines": {
+    "magda-relevance-eval-synthetic3903-39031-pipeline-baseline": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-03-07": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-05-05": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.5,
+                  0.5
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-07-03": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.7,
+                  0.3
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-keep50-03-07": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39031-pipeline-raw-boost1": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39032-pipeline-baseline": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-03-07": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-05-05": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.5,
+                  0.5
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-07-03": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.7,
+                  0.3
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-keep50-03-07": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39032-pipeline-raw-boost1": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39033-pipeline-baseline": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-03-07": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-05-05": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.5,
+                  0.5
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-07-03": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.7,
+                  0.3
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-keep50-03-07": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    },
+    "magda-relevance-eval-synthetic3903-39033-pipeline-raw-boost1": {
+      "phase_results_processors": [
+        {
+          "normalization-processor": {
+            "combination": {
+              "parameters": {
+                "weights": [
+                  0.3,
+                  0.7
+                ]
+              },
+              "technique": "arithmetic_mean"
+            },
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "promotion_allowed": false,
+  "retained_resource_policy": "Retained three owned benchmark indexes and18 exact pipelines for reproducibility. Temporary correctness indexes/pipelines were deleted. Never delete or prune user-owned cluster resources."
+}

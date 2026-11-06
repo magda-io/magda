@@ -1,0 +1,303 @@
+{
+  "acknowledged_deletions": 21,
+  "completed_at_utc": "2026-11-06T16:11:55.986235+00:00",
+  "engine_url": "http://127.0.0.1:19200",
+  "inventory_sha256": "897b21320440891867ecf9454876679661b1b9bc1f8cfb6e51405500626a9dee",
+  "inventory_sha256_after": "897b21320440891867ecf9454876679661b1b9bc1f8cfb6e51405500626a9dee",
+  "nonowned_index_uuid_sets_unchanged": true,
+  "nonowned_index_uuids_after": {
+    ".opensearch-observability": "57VcVzoaSZyiPp06og3IeQ",
+    ".plugins-ml-config": "fZqvEcezRyaD5KIADQcQmA",
+    "datasets52": "yFa9gcyUT3OqLe9NGUztEw",
+    "formats3": "JeY2itreSSCVA4Aiye-n_w",
+    "publishers8": "MhsO-tYJQaS6xG9GAA1T9w",
+    "regions27": "qqiu4eINTruygdkWurwm0A",
+    "semantic-index-v1": "RJ27S_qTSjeYGcKeFVQ2LQ",
+    "top_queries-2026.11.05-89255": "toAoaC8RRXKUzrcyWPr2kQ",
+    "top_queries-2026.11.06-89256": "D0GWj9uxQ1SjQ-KR-FiVig"
+  },
+  "nonowned_index_uuids_before": {
+    ".opensearch-observability": "57VcVzoaSZyiPp06og3IeQ",
+    ".plugins-ml-config": "fZqvEcezRyaD5KIADQcQmA",
+    "datasets52": "yFa9gcyUT3OqLe9NGUztEw",
+    "formats3": "JeY2itreSSCVA4Aiye-n_w",
+    "publishers8": "MhsO-tYJQaS6xG9GAA1T9w",
+    "regions27": "qqiu4eINTruygdkWurwm0A",
+    "semantic-index-v1": "RJ27S_qTSjeYGcKeFVQ2LQ",
+    "top_queries-2026.11.05-89255": "toAoaC8RRXKUzrcyWPr2kQ",
+    "top_queries-2026.11.06-89256": "D0GWj9uxQ1SjQ-KR-FiVig"
+  },
+  "nonowned_pipeline_definitions_unchanged": true,
+  "nonowned_pipeline_ids_before": [
+    "magda-datasets-hybrid-search"
+  ],
+  "preflight_sha256": "a2cd7ea9575d6bcbf1dc3b1054924ce01918dc8819ebae2d0505176cac712aa7",
+  "remaining_owned_indices": [],
+  "remaining_owned_pipeline_ids": [],
+  "resources": [
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.665113+00:00",
+      "kind": "index",
+      "name": "magda-relevance-eval-synthetic3903-39031",
+      "path": "/magda-relevance-eval-synthetic3903-39031",
+      "requested_at_utc": "2026-11-06T16:11:55.639036+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/magda-relevance-eval-synthetic3903-39031"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.692234+00:00",
+      "kind": "index",
+      "name": "magda-relevance-eval-synthetic3903-39032",
+      "path": "/magda-relevance-eval-synthetic3903-39032",
+      "requested_at_utc": "2026-11-06T16:11:55.669938+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/magda-relevance-eval-synthetic3903-39032"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.714205+00:00",
+      "kind": "index",
+      "name": "magda-relevance-eval-synthetic3903-39033",
+      "path": "/magda-relevance-eval-synthetic3903-39033",
+      "requested_at_utc": "2026-11-06T16:11:55.696571+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/magda-relevance-eval-synthetic3903-39033"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.730027+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39031-pipeline-baseline",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-baseline",
+      "requested_at_utc": "2026-11-06T16:11:55.718539+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-baseline"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.744137+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-03-07",
+      "requested_at_utc": "2026-11-06T16:11:55.733592+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-03-07"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.755509+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-05-05",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-05-05",
+      "requested_at_utc": "2026-11-06T16:11:55.747297+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-05-05"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.770149+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-07-03",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-07-03",
+      "requested_at_utc": "2026-11-06T16:11:55.758977+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-07-03"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.786695+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39031-pipeline-candidate-keep50-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-keep50-03-07",
+      "requested_at_utc": "2026-11-06T16:11:55.774715+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-candidate-keep50-03-07"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.801695+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39031-pipeline-raw-boost1",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-raw-boost1",
+      "requested_at_utc": "2026-11-06T16:11:55.791241+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39031-pipeline-raw-boost1"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.822290+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39032-pipeline-baseline",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-baseline",
+      "requested_at_utc": "2026-11-06T16:11:55.806161+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-baseline"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.838643+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-03-07",
+      "requested_at_utc": "2026-11-06T16:11:55.828017+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-03-07"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.852494+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-05-05",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-05-05",
+      "requested_at_utc": "2026-11-06T16:11:55.842598+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-05-05"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.865011+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-07-03",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-07-03",
+      "requested_at_utc": "2026-11-06T16:11:55.856182+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-07-03"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.878601+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39032-pipeline-candidate-keep50-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-keep50-03-07",
+      "requested_at_utc": "2026-11-06T16:11:55.868568+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-candidate-keep50-03-07"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.891217+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39032-pipeline-raw-boost1",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-raw-boost1",
+      "requested_at_utc": "2026-11-06T16:11:55.882163+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39032-pipeline-raw-boost1"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.903272+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39033-pipeline-baseline",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-baseline",
+      "requested_at_utc": "2026-11-06T16:11:55.894832+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-baseline"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.916252+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-03-07",
+      "requested_at_utc": "2026-11-06T16:11:55.907116+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-03-07"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.929433+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-05-05",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-05-05",
+      "requested_at_utc": "2026-11-06T16:11:55.920304+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-05-05"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.941322+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-07-03",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-07-03",
+      "requested_at_utc": "2026-11-06T16:11:55.933140+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-07-03"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.957341+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39033-pipeline-candidate-keep50-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-keep50-03-07",
+      "requested_at_utc": "2026-11-06T16:11:55.945493+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-candidate-keep50-03-07"
+    },
+    {
+      "acknowledged": true,
+      "completed_at_utc": "2026-11-06T16:11:55.973883+00:00",
+      "kind": "pipeline",
+      "name": "magda-relevance-eval-synthetic3903-39033-pipeline-raw-boost1",
+      "path": "/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-raw-boost1",
+      "requested_at_utc": "2026-11-06T16:11:55.962810+00:00",
+      "response": {
+        "acknowledged": true
+      },
+      "url": "http://127.0.0.1:19200/_search/pipeline/magda-relevance-eval-synthetic3903-39033-pipeline-raw-boost1"
+    }
+  ],
+  "scope": "Explicit main approval: ONLY three exact frozen seed indexes and18 exact inventoried pipelines; no wildcards/prune; original inventory remains historical.",
+  "started_at_utc": "2026-11-06T16:11:55.595501+00:00",
+  "status": "passed",
+  "user_datasets52_after": {
+    "root_document_count": 87,
+    "uuid": "yFa9gcyUT3OqLe9NGUztEw"
+  },
+  "user_datasets52_before": {
+    "root_document_count": 87,
+    "uuid": "yFa9gcyUT3OqLe9NGUztEw"
+  },
+  "verification_completed_at_utc": "2026-11-06T16:11:55.635131+00:00"
+}

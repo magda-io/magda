@@ -1,0 +1,14 @@
+{
+  "helper_sha256": "aeb7bfe7d1b46175ea6de589067fed88d90c52e5e5ae84a95512dde5b79e80c3",
+  "originals_modified": false,
+  "output": "search-relevance-eval/synthetic/results/rankings-39032.jsonl",
+  "output_bytes": 1480404,
+  "output_sha256": "6603d60ab5e4f7db766c04fb32f517e86a9054722d99fa6056dc9dd9a9758587",
+  "projection": "Only hit.metadata and facet top_hits sources/vectors removed; all IDs/ranks/scores/timings/other row fields and parent operational counts preserved.",
+  "rows": 600,
+  "schema_version": 1,
+  "searches_executed": 0,
+  "source": "search-relevance-eval/synthetic/.local/execution/39032/runs.jsonl",
+  "source_bytes": 354518424,
+  "source_sha256": "8efa0c15e4ce7b5df963beec0df5c37f5d36f133949a2b85b11500b590b3f44d"
+}

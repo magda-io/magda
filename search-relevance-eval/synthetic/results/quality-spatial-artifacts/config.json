@@ -1,0 +1,61 @@
+{
+  "config_sha": "49edc10e08a3bd6ca413afe1a4d7cf1028290f7a036f37b12a3a4252b17ada6e",
+  "elasticSearch": {
+    "basicAuth": false,
+    "clientCertKeyPath": "",
+    "clientCertPath": "",
+    "clientTlsAuthentication": false,
+    "connectTimeout": 30000,
+    "disableSslVerification": false,
+    "esInstanceSupport": false,
+    "indices": {
+      "datasets": {
+        "hybridSearch": {
+          "enabled": true,
+          "knnVectorFieldConfig": {
+            "dimension": 3,
+            "efConstruction": 100,
+            "efSearch": 100,
+            "encoder": {
+              "clip": false,
+              "name": "sq",
+              "type": "fp16"
+            },
+            "m": 16,
+            "mode": "in_memory",
+            "spaceType": "l2"
+          },
+          "minScore": 0.5,
+          "searchPipeline": {
+            "autoCreate": true,
+            "combination": {
+              "technique": "arithmetic_mean",
+              "weights": [0.3, 0.7]
+            },
+            "id": "magda-datasets-hybrid-search",
+            "normalization": {
+              "technique": "min_max"
+            }
+          }
+        },
+        "innerHitsSize": 100,
+        "version": 54
+      },
+      "formats": {
+        "version": 3
+      },
+      "publishers": {
+        "version": 8
+      },
+      "regions": {
+        "version": 27
+      }
+    },
+    "replicaCount": 0,
+    "searchIdleAfter": "60s",
+    "serverUrl": "http://localhost:9200",
+    "shardCount": 1,
+    "socketTimeout": 30000,
+    "trustedCertPath": ""
+  }
+}
