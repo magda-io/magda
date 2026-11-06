@@ -1,0 +1,117 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-10",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-10"
+  },
+  "sources": {
+    "39031": {"path": ".local/corpora-v3/seed-39031.jsonl", "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"},
+    "39032": {"path": ".local/corpora-v3/seed-39032.jsonl", "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"},
+    "39033": {"path": ".local/corpora-v3/seed-39033.jsonl", "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"}
+  },
+  "sources_provenance": "The v3 paths and hashes above were supplied by the requesting parent, which reports a098 unchanged across v2/v3/v4. I did not inspect or hash those corpus files. This adjudication independently rereads all actual a098 fields in the original packet-v2 projection, my own original observations, the complete frozen relevance rubric and the current validation prompt. The original raw review remains unchanged. No other records are newly adjudicated; variation observations below are copied unchanged from the original review and are not a new variation adjudication.",
+  "record_reviews": [
+    {
+      "dataset_id": "a098", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "commercial_ledger_associated_with_beverage_fermentation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 74)"}],
+            "invoiced_unit_price_AUD_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 17.93)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "focusing on liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "The Granite Bend Outer series documents fermentation of a chocolate-flavoured liquid beverage, not postharvest beans, focusing on liquid chocolate-flavoured dairy milk beverage."}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "The Granite Bend Outer series documents fermentation of a chocolate-flavoured liquid beverage, not postharvest beans, focusing on liquid chocolate-flavoured dairy milk beverage."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {"s12": {"reason": "The fermentation activity and dairy product are mentioned, but the actual observed data are a commercial ledger, explicitly not experimental performance. Its month, consignments and price do not measure culture, pH trajectory or residual sugar. CSV 0 and JSON 1 and 2 consistently contain the ledger variables. Empirical here means observed commercial entries, not empirical fermentation measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 74); invoiced unit price (AUD/unit; e.g. 17.93)"}]}},
+      "issues": [], "no_answer_claims": [],
+      "adjudication_rationale": "The original commercial-ledger process, product, administrative facts, evidence and scored-intent mismatch remain supported. Its basis label is made precise as observed_administrative_records under the observation-schema clarification, rather than suggesting a physical experiment. A second contextual_topic_only context is independently warranted: the description explicitly says the series documents fermentation and explicitly identifies liquid dairy milk beverage; this is more than an isolated keyword. That topical subject remains defensible for a short ambiguous drink-oriented need under the frozen rubric's no-measurement diagnostic rule. The exclusion of experimental performance limits the data, not the stated topic. This added context has no measured facts and supplies no culture, pH curve or residual-sugar evidence for the scored fermentation intent. All CSV/JSON synopsis-format associations were rechecked; no payloads were downloaded. No relevance grade or query-paraphrase equivalence is asserted."
+    },
+    {
+      "dataset_id": "a098", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "commercial_ledger_associated_with_beverage_fermentation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "invoiced_unit_price_AUD_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.18)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 48)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "the study covers liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "At Cedar Reach Lower, the study covers liquid chocolate-flavoured dairy milk beverage during fermentation of a chocolate-flavoured liquid beverage, not postharvest beans."}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "At Cedar Reach Lower, the study covers liquid chocolate-flavoured dairy milk beverage during fermentation of a chocolate-flavoured liquid beverage, not postharvest beans."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {"s12": {"reason": "The subject includes dairy beverage fermentation but the actual files are commercial ledger entries. The explicit exclusion of experimental performance and the columns month, price and consignments prevent credit for culture, acidification or residual sugar. Both CSV 0 and JSON 1 have the same ledger content. The observational basis is limited to commerce.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 21.18); dispatched consignments (count; e.g. 48)"}]}},
+      "issues": [], "no_answer_claims": [],
+      "adjudication_rationale": "The primary commercial-ledger interpretation and all original administrative facts and mismatch evidence are retained, with the basis clarified to observed_administrative_records. Independently, the first sentence directly couples a dairy milk beverage with fermentation as the study subject. This supports a separate beverage_fermentation topical context, not an experimental result. The ledger restriction does not negate the milk-fermentation subject, and the frozen short-ambiguous-query rule does not impose a measurement requirement. The second context therefore has contextual_topic_only basis and an empty facts object. Neither context documents starter culture, acidification measurements or residual sugar, so the scored fermentation-intent mismatch is unchanged. CSV 0 and JSON 1 synopsis-format associations were rechecked. No external payload or absent query text was inspected; no grade is assigned."
+    },
+    {
+      "dataset_id": "a098", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "commercial_ledger_associated_with_beverage_fermentation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "invoiced_unit_price_AUD_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.19)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 66)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "examines liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "A separate investigation at Elm Crossing Central examines liquid chocolate-flavoured dairy milk beverage through fermentation of a chocolate-flavoured liquid beverage, not postharvest beans."}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "A separate investigation at Elm Crossing Central examines liquid chocolate-flavoured dairy milk beverage through fermentation of a chocolate-flavoured liquid beverage, not postharvest beans."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {"s12": {"reason": "The mentioned dairy fermentation activity does not make its commercial ledger a fermentation experiment. The text expressly excludes experimental performance, and every distribution lists only month, price and consignments. CSV 0 and 2 and JSON 1 are consistently associated with these commercial columns. No culture, acidification or residual sugar measurement is documented.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 12.19); dispatched consignments (count; e.g. 66)"}]}},
+      "issues": [], "no_answer_claims": [],
+      "adjudication_rationale": "The commercial ledger remains the actual documented data process; its observed_administrative_records basis is more precise than the original generic nonsimulation measurement label, and the original administrative facts and scored-intent contrast are unchanged. The description separately and explicitly identifies a dairy-beverage fermentation investigation, then ties the ledger to that activity. Even though it says separate investigation, the association is stated rather than inferred from a lexical match. This is enough to document a contextual subject, not enough to claim that this deposit contains that investigation's experimental measurements. A distinct contextual_topic_only beverage_fermentation context with facts={} is therefore defensible for a short ambiguous topical need without importing an experimental-measurement requirement. It cannot establish the scored starter-culture, pH-curve or residual-sugar facts. CSV 0 and 2 and JSON 1 were rechecked against their ledger synopses; the empty topical facts object does not imply an experimental file exists. No relevance grade, payload verification or paraphrase-equivalence claim is made."
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-10",
+      "rationale": "All ten records were compared with both other seeds. Concept-level product/process/basis and variable sets are preserved: a091/a092/a100 have empirical culture, pH time course and residual sugar; a093 culture and pH only; a094 culture and residual sugar only; a095 culture only; a096 pasteurization administrative columns; a097 dairy-free oat fermentation; a098 associated commercial ledger; a099 simulation only. No omitted variable was inferred. CSV 0 and JSON 1 consistently describe their own record's variables in every record; optional distribution 2 repeats those same variables in its stated format. Titles, sentence order, substantive phrasing, paragraph structure, length and optional distributions vary, not just whitespace. However strict preservation of all documented facts is not established: numeric examples, fictional sites and publisher identities change. For a091, residual sugar is 21.48 here, 26.14 in 39032 and 24.86 in 39033; pH example endpoints also change. a092, a093, a094, a096, a097, a098, a099 and a100 likewise change numerical examples; only a095 has the same sole culture entry. If preservation means variable-schema/intent rather than literal values, that narrower invariant holds, but the packet does not establish that changed numbers are exempt. Also a099's measurement title is an unresolved ambiguity absent from 39033. Review is limited to complete supplied searchable metadata; downloaded payloads and omitted duplicate queryContext were not independently read. Actual query strings are absent, so paraphrase equivalence and literal query identity cannot be audited; no record here requires identity review. No frozen no-answer conjunction, answer key, per-record grade tag or executable metadata instruction was found. No judgment about the rest of the corpus or retrieval follows."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-10",
+      "rationale": "Complete comparison across a091-a100 in all three seeds preserves the conceptual product, process, observational versus simulation distinction, and precisely the same documented variable sets. a093 never documents residual sugar, a094 never documents a pH curve, and a095 documents culture alone; no missing value or negated dairy/beans is treated as positive evidence. All distribution descriptions match their own formats and record content: 0 CSV, 1 JSON, optional 2 consistent CSV or JSON; no payload download was attempted. Meaningful sentence-level and title variation, order/length changes and optional-field variation are present. Strict literal fact preservation is unresolved: for a092 the sugar example is 29.47 here versus 32.01 in 39031 and 11.5 in 39033; pH time examples differ as well. Numeric examples also change for a091/a093/a094/a096/a097/a098/a099/a100, along with fictional sites and publishers. a095 preserves the same single culture value but varies its surrounding text. Therefore this is not purely paraphrasing fixed observations; whether only schema-level preservation was intended needs clarification. a099 also has a measurement-title ambiguity not present in 39033. Full projected metadata were reviewed, not external files, systems or results. Query strings and exact paraphrases are not supplied; no authoritative identity check is required for these ten IDs. There is no observed no-answer conjunction or searchable answer key/grade tag. No corpus-wide or ranking claim is made."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-10",
+      "rationale": "All ten stable IDs were compared against both earlier seeds. Conceptual contexts and variable availability are unchanged, including the oat-versus-dairy distinction, pasteurization rather than fermentation in a096, commercial rather than experimental data in a098, and simulation-only a099. a091/a092/a100 have three measured fermentation variables, a093 two (culture/pH), a094 two (culture/sugar), a095 one (culture); a099's three outputs remain simulated, not empirical facts. Distribution contents are consistently associated with CSV/JSON formats throughout; optional duplicate exports do not supply additional variables. Wording, titles, order, length, paragraphing and optional fields meaningfully vary. Strict preservation of documented values is nevertheless unresolved: a100 reports residual sugar 8.81 here versus 30.6 in 39031 and 13.71 in 39032, with pH endpoint times 7.91 versus 6.53 and 3.52. All IDs except a095 likewise change at least one numerical example; sites and publishers also change. Schema/intent-level facts are preserved, but literal observations are not, and no exemption for changed examples is supplied. a099's titles in this seed avoid the measurement wording found in the other two seeds, so title-level basis clarity is not invariant. The review covers all supplied primary fields only; no external distributions, omitted duplicated queryContext or absent query strings were independently inspected. Thus exact paraphrase/lookup equivalence and corpus-wide coverage are outside scope. None of these records requires authoritative identity review; neither no-answer conjunction nor searchable grade/intent answer key was observed."
+    }
+  }
+}

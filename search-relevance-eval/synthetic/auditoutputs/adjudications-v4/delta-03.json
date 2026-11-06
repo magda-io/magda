@@ -1,0 +1,1140 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "delta-auditor-03",
+    "context_id": "explicitunavailable; freshdelta03",
+    "model": "gpt-6.1-sol(runtime label)",
+    "parameters": "notexposed",
+    "rankings_seen": false,
+    "generator_context": false
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "record_reviews": [
+    {
+      "seed": 39032,
+      "dataset_id": "a089",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "drink_formulation",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "liquid drink recipe formulation"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_sugar_fraction": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns: sugar fraction in liquid recipe (percent by mass; e.g. 11.73)"
+              }
+            ],
+            "simulated_liquid_viscosity": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "liquid viscosity (mPa s; e.g. 21.16)"
+              }
+            ],
+            "simulated_cocoa_fraction": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.9)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s11": {
+          "reason": "Product/process and all three output variables are documented, but only as simulations. No measured formulation experiment is supported. All three distribution descriptions explicitly identify simulated columns; the repaired third title now agrees, and the other titles are neutral. Local observation key denotes a row key, not proof of physical observation.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Downloadable comma-separated table; the synopsis gives the column units."
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.1.description",
+              "quote": "Simulated output columns:"
+            },
+            {
+              "field": "distributions.2.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.2.description",
+              "quote": "Simulated output columns:"
+            },
+            {
+              "field": "distributions.2.title",
+              "quote": "Simulation output table"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a096",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "operational_reporting",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "observed administrative entries"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "These are observed administrative entries, not model predictions."
+              }
+            ]
+          },
+          "facts": {
+            "facility_location_code": [
+              {
+                "field": "distributions.0.description",
+                "quote": "facility location code (categorical site code; e.g. Hazel Ridge Coastal)"
+              }
+            ],
+            "completed_operations": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 14)"
+              }
+            ],
+            "reporting_interval": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "beverage_pasteurization",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The Hazel Ridge Coastal series documents thermal pasteurization of a drink rather than starter-driven fermentation"
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s12": {
+          "reason": "The topic explicitly contrasts thermal pasteurization with starter-driven fermentation. Released columns support administrative operations, site and month, not starter culture, acidification curves or residual sugar. The physical-sample assertion has been replaced by a truthful administrative basis. CSV and both JSON descriptions agree; Observation table can truthfully describe administrative observations and does not itself assert a physical experiment.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"
+            },
+            {
+              "field": "description",
+              "quote": "These are observed administrative entries, not model predictions."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.2.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.2.description",
+              "quote": "Deposited columns: facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06)."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a099",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "beverage_fermentation",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_acidification_curve": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 2.94/4.7)"
+              }
+            ],
+            "simulated_residual_sugar_g_per_litre": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "residual sugar after fermentation (g/litre; e.g. 29.68)"
+              }
+            ],
+            "simulated_starter_culture": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s12": {
+          "reason": "Fermented dairy drink and all required variables are explicitly represented, but every entry is simulated. The inoculation and time-course wording describes simulated output fields, not an empirical trial. Both repaired distribution titles now truthfully say Simulation output table; there is no surviving observed-measurements title.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Downloadable comma-separated table; the synopsis gives the column units."
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.1.description",
+              "quote": "Downloadable JSON records with the same variables and units."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a005",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "harvested_cacao_material",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "warehouse bags of harvested cacao material from the crop"
+              }
+            ]
+          },
+          "process": {
+            "value": "operational_reporting",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Fern Hollow Outer); completed operations (count; e.g. 89)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Entries describe an observational study rather than model predictions."
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 89)"
+              }
+            ]
+          },
+          "facts": {
+            "reporting_interval": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ],
+            "facility_location_code": [
+              {
+                "field": "distributions.0.description",
+                "quote": "facility location code (categorical site code; e.g. Fern Hollow Outer)"
+              }
+            ],
+            "completed_operations": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 89)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "harvested_cacao_material",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "warehouse bags of harvested cacao material from the crop"
+              }
+            ]
+          },
+          "process": {
+            "value": "postharvest_pest_storage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "postharvest pest inspection covers warehouse bags of harvested cacao material from the crop"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field"
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s01": {
+          "reason": "Warehouse inspection of harvested crop material is explicitly distinct from treatment of living trees in the field. Operation counts are not pest counts; no control treatment or application rate is positively documented. The repair identifies bag contents at the generic harvested-cacao level, not specifically beans. Cacao trees in a keyword is contextual vocabulary, not evidence that the inspected product is living trees.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "completed operations (count; e.g. 89)"
+            },
+            {
+              "field": "keywords.0",
+              "quote": "cacao trees"
+            }
+          ]
+        },
+        "s02": {
+          "reason": "The explicit topic is postharvest warehouse pest inspection, not harvest-yield measurement. A reporting month is an administrative interval, not a documented harvest season; no harvest mass or hectares are listed. Downloadable CSV is present, so the contrast is not missing format.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "postharvest pest inspection covers warehouse bags of harvested cacao material from the crop"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Fern Hollow Outer); completed operations (count; e.g. 89). Downloadable comma-separated table; the synopsis gives the column units."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a020",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "cacao_seedlings",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "cacao seedlings raised for planting"
+              }
+            ]
+          },
+          "process": {
+            "value": "operational_reporting",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Pine Basin North); completed operations (count; e.g. 19)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "These are observed administrative entries, not model predictions."
+              }
+            ]
+          },
+          "facts": {
+            "reporting_interval": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ],
+            "facility_location_code": [
+              {
+                "field": "distributions.0.description",
+                "quote": "facility location code (categorical site code; e.g. Pine Basin North)"
+              }
+            ],
+            "completed_operations": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 19)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "cacao_seedlings",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "cacao seedlings raised for planting"
+              }
+            ]
+          },
+          "process": {
+            "value": "factory_landscaping",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "factory grounds landscaping with young cacao plants, rather than nursery propagation"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "examines cacao seedlings raised for planting through factory grounds landscaping with young cacao plants"
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s04": {
+          "reason": "Seedlings are explicitly the product, but their use is factory grounds landscaping, expressly not nursery propagation. Operational counts/site/month do not document seedling survival, propagation method or rooting duration. The revised administrative provenance agrees with both distribution synopses. Independently retain factory-landscaping context for ambiguous diagnostics without inventing experimental variables.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "factory grounds landscaping with young cacao plants, rather than nursery propagation"
+            },
+            {
+              "field": "description",
+              "quote": "These are observed administrative entries, not model predictions."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.1.description",
+              "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Pine Basin North); completed operations (count; e.g. 19)."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a029",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "solid_milk_chocolate",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "solid milk chocolate bars"
+              }
+            ]
+          },
+          "process": {
+            "value": "bar_packaging",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "wrapping and package performance assessment"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_barrier_performance": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns: wrapper oxygen transmission (cm3/m2/day; e.g. 17.05)"
+              }
+            ],
+            "simulated_wrapper_material": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "wrapper material examined (category: foil / coated paper)"
+              }
+            ],
+            "simulated_seal_failure_rate": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "failed wrapper seals (percent of seals tested; e.g. 8.38)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s05": {
+          "reason": "Solid milk-chocolate packaging and all three required output variables are explicit, but no empirical packaging assessment was performed. Both repaired JSON titles now identify simulation outputs; the CSV title Recorded series is neutral and its description explicitly labels simulated columns. Generic editorial references to variables or reporting arrangements do not establish physical sampling against the categorical simulation-only statement.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Simulated output columns:"
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.2.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.2.title",
+              "quote": "Simulation output table"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a046",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "edible chocolate ingredients reserved for dessert preparation"
+              }
+            ]
+          },
+          "process": {
+            "value": "operational_reporting",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Recorded columns comprise completed operations (count; e.g. 88); facility location code (categorical site code; e.g. Fern Hollow East); reporting interval (calendar month; e.g. 2024-06)."
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "These are observed administrative entries, not model predictions."
+              }
+            ]
+          },
+          "facts": {
+            "completed_operations": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 88)"
+              }
+            ],
+            "facility_location_code": [
+              {
+                "field": "distributions.0.description",
+                "quote": "facility location code (categorical site code; e.g. Fern Hollow East)"
+              }
+            ],
+            "reporting_interval": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "edible chocolate ingredients reserved for dessert preparation"
+              }
+            ]
+          },
+          "process": {
+            "value": "ingredient_marketing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "examines edible chocolate ingredients reserved for dessert preparation through marketing and promotional dispatch for dessert ingredients"
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s07": {
+          "reason": "The dessert-ingredient product is supported, but the stated process is marketing/promotional dispatch rather than storage experiments. No storage temperature, ingredient-quality measurement or moisture percentage is released. The corrected observed-administrative basis is coherent with operational counts, site and month across CSV/JSON/CSV. The topical marketing context does not become an experimental storage context.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"
+            },
+            {
+              "field": "description",
+              "quote": "These are observed administrative entries, not model predictions."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.2.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.2.description",
+              "quote": "Deposited columns: completed operations (count; e.g. 88); facility location code (categorical site code; e.g. Fern Hollow East); reporting interval (calendar month; e.g. 2024-06)."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a049",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "edible chocolate ingredients reserved for dessert preparation"
+              }
+            ]
+          },
+          "process": {
+            "value": "ingredient_storage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "storage assessment before use of the material"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_moisture_percent": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns: material moisture by mass (percent; e.g. 3.93)"
+              }
+            ],
+            "simulated_storage_temperature": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "storage chamber temperature (degrees C; e.g. 5.27)"
+              }
+            ],
+            "simulated_ingredient_quality": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 79.93)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s07": {
+          "reason": "The product and storage process match and all required variables are represented in explicitly simulated columns. These are not measured storage/quality/moisture results. The repaired JSON title now correctly names simulation output; the CSV title is neutral. Actual distribution associations, not downloaded files, establish the documented content/format consistency.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Downloadable comma-separated table; the synopsis gives the column units."
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.1.description",
+              "quote": "Downloadable JSON records with the same variables and units."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a057",
+      "reviewer_id": "delta-auditor-03",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false,
+      "contexts": [
+        {
+          "product": {
+            "value": "ornamental_plants_and_grounds_maintenance_tools",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "ornamental plants and their grounds-maintenance tools outside confectionery production areas"
+              }
+            ]
+          },
+          "process": {
+            "value": "equipment_sanitation",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "sanitation and equipment cleaning verification"
+              }
+            ]
+          },
+          "basis": {
+            "value": "representative_measurements_not_simulation",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Entries describe an observational study rather than model predictions."
+              },
+              {
+                "field": "description",
+                "quote": "The distribution synopses document the measured columns and units."
+              }
+            ]
+          },
+          "facts": {
+            "microbial_swabs": [
+              {
+                "field": "distributions.0.description",
+                "quote": "microbial growth from surface swabs (CFU/swab; e.g. 106)"
+              }
+            ],
+            "equipment_cleaning": [
+              {
+                "field": "distributions.0.description",
+                "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"
+              }
+            ],
+            "residue_mass_mg": [
+              {
+                "field": "distributions.0.description",
+                "quote": "residue remaining on cleaned surface (mg; e.g. 1.35)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s08": {
+          "reason": "All three documented empirical sanitation variables are present for ornamental grounds-maintenance tools outside confectionery production areas. This is positively supported equipment sanitation, not automatically food-production machinery. The complete frozen rubric specifies factory, not seedling/crop plant, but does not restrict factory sanitation to production equipment. The actual queries range from confectionery equipment to hygiene verification at a sweets works; the latter does not implicitly exclude factory grounds. The revised object wording alone therefore does not settle the product/process boundary. I retain the concrete process equipment_sanitation and U for the declared s08 contrast, rather than forcing factory_sanitation or a categorical exclusion.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "ornamental plants and their grounds-maintenance tools outside confectionery production areas"
+            },
+            {
+              "field": "description",
+              "quote": "sanitation and equipment cleaning verification"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: microbial growth from surface swabs (CFU/swab; e.g. 106); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 1.35)."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "issues": [
+        {
+          "reason": "U: after complete frozen-rubric and actual-query inspection, s08 still has no explicit production-equipment-only or grounds-exclusion condition. Sanitation of ancillary grounds tools may fit broad factory hygiene wording, whereas the narrower confectionery-equipment wording may not. All three empirical variables are present. The metadata establishes grounds-tools sanitation, but not an undisputed canonical factory-sanitation scope match or mismatch. No landscaping-operation process is invented merely from ornamental plants; no criteria are silently narrowed to make the contrast succeed.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variation_review_by_seed": {
+    "39032": {
+      "reviewed_dataset_ids": [
+        "a089",
+        "a096",
+        "a099"
+      ],
+      "all_assigned_actual_fields_read": true,
+      "full_frozen_rubric_reviewed": true,
+      "review_scope": "Exactly three unchanged assigned v4 rows, retaining original reviewer identity. The changed (39032,a079) row is excluded entirely. Original source review SHA-256: e6332d0167ec9f8a8170eadb90bd72ee23867e3447ecf025d659a20d3e316d6a.",
+      "independent_findings": "a089 and a099 explicitly document simulation-only formulation and beverage-fermentation outputs, respectively; repaired simulation titles are truthful and format/column associations agree. Their simulated variables are fully recorded but are not empirical measurements. a096 separately documents operational administrative reporting and beverage-pasteurization topical context; neither its site/month/operation columns nor Observation table title establish physical-sample provenance or fermentation measurements.",
+      "diagnostic_context_review": "The complete rubric confirms short ambiguous queries impose no empirical-measurement, CSV or simulation-exclusion condition. Simulation basis therefore does not erase the explicitly documented drink-formulation or beverage-fermentation topics. Administrative basis does not erase the separately documented pasteurization topic, but an unlisted topic is not forced into a frozen diagnostic process map.",
+      "remaining_issues": [],
+      "limits": [
+        "The original review is preserved without modification. This is the original reviewer reconsidering only its read-display withholding and related scope reasoning, not a fresh independent reviewer.",
+        "All 58 lines of the directly permitted relevance-rubric.md were read without truncation and programmatically confirmed identical to the packet embedded rubric. All 75 current query-spec.jsonl rows were read; its supplied frozen SHA-256 was checked. The previous full-rubric display limitation is resolved.",
+        "The original packet actual fields were completely read in chunks of at most 100 lines. This adjudication reuses that exhaustive actual-field inspection and its exact quotes. The nine rows are represented as unchanged v4 rows on the parent-provided byte-identity attestation; v4 corpus files were not opened independently.",
+        "Only permitted validation/rubric/query sources, the original assigned packet and this reviewer own original review were inspected. No generator, label file, rankings, embeddings, other reviewer artifact or network source was accessed.",
+        "Distribution verification means explicit metadata association of listed formats and columns, not downloaded binary verification. No data files were downloaded.",
+        "Administrative counts, sites and months are not experimental facts. Contextual-topic contexts have empty facts. Simulated variables remain explicitly simulated and never count as empirical measurements.",
+        "No identity review is required for the nine assigned records; no frozen no-answer conjunction is supported in their actual fields. This is not a corpus-wide absence or coverage audit.",
+        "No same-dataset cross-seed pair is assigned, so this packet alone does not establish cross-seed preservation."
+      ]
+    },
+    "39033": {
+      "reviewed_dataset_ids": [
+        "a005",
+        "a020",
+        "a029",
+        "a046",
+        "a049",
+        "a057"
+      ],
+      "all_assigned_actual_fields_read": true,
+      "full_frozen_rubric_reviewed": true,
+      "review_scope": "Exactly six unchanged assigned v4 rows, retaining original reviewer identity. All projected actual metadata fields remain within the earlier exhaustive review.",
+      "independent_findings": "a005 supports generic harvested cacao material, not specifically beans or inspected living trees, and independently documents postharvest warehouse-pest context alongside an administrative ledger. a020 documents factory landscaping with seedlings, separate from its ledger and expressly not nursery propagation. a046 documents ingredient marketing rather than storage experimentation, separate from administrative observations. a029 and a049 explicitly identify simulation-only packaging and ingredient-storage outputs, with truthful repaired distribution titles. a057 documents empirical grounds-tools sanitation with all three sanitation variables, but retains a genuine s08 product/process scope U under the complete broad factory-hygiene criteria.",
+      "diagnostic_context_review": "Postharvest-pest storage and factory-landscaping topics are explicitly supported even without experimental measurements, so those contexts are recorded with empty facts rather than discarded for short ambiguous diagnostics. Simulated bar packaging and ingredient storage remain supported topical processes despite failing an empirical-data requirement. Ingredient marketing is not relabeled ingredient storage. Ornamental plants and grounds-maintenance tools alone are not evidence of a performed factory-landscaping process.",
+      "paraphrase_scope_review": "The registered s08 queries include observed chocolate processing plant sanitation swab data; empirical factory cleaning validation for confectionery equipment; and measured hygiene verification at a cacao sweets works. These preserve the central sanitation need but do not establish identical treatment of ancillary grounds tools: broad plant/works hygiene wording has no implicit grounds exclusion. The unresolved boundary is retained rather than resolved by adding an unregistered production-only requirement.",
+      "remaining_issues": [
+        {
+          "seed": 39033,
+          "dataset_id": "a057",
+          "issue": "U: factory-sanitation versus ancillary grounds-tools scope remains unresolved; actual empirical variables are fully documented."
+        }
+      ],
+      "limits": [
+        "The original review is preserved without modification. This is the original reviewer reconsidering only its read-display withholding and related scope reasoning, not a fresh independent reviewer.",
+        "All 58 lines of the directly permitted relevance-rubric.md were read without truncation and programmatically confirmed identical to the packet embedded rubric. All 75 current query-spec.jsonl rows were read; its supplied frozen SHA-256 was checked. The previous full-rubric display limitation is resolved.",
+        "The original packet actual fields were completely read in chunks of at most 100 lines. This adjudication reuses that exhaustive actual-field inspection and its exact quotes. The nine rows are represented as unchanged v4 rows on the parent-provided byte-identity attestation; v4 corpus files were not opened independently.",
+        "Only permitted validation/rubric/query sources, the original assigned packet and this reviewer own original review were inspected. No generator, label file, rankings, embeddings, other reviewer artifact or network source was accessed.",
+        "Distribution verification means explicit metadata association of listed formats and columns, not downloaded binary verification. No data files were downloaded.",
+        "Administrative counts, sites and months are not experimental facts. Contextual-topic contexts have empty facts. Simulated variables remain explicitly simulated and never count as empirical measurements.",
+        "No identity review is required for the nine assigned records; no frozen no-answer conjunction is supported in their actual fields. This is not a corpus-wide absence or coverage audit.",
+        "No same-dataset cross-seed pair is assigned, so this packet alone does not establish cross-seed preservation."
+      ]
+    }
+  }
+}

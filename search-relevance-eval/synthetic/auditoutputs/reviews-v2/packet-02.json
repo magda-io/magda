@@ -1,0 +1,519 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-02",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-02"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a011", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "fermentation_batch_mass_kg": [{"field": "distributions.0.description", "quote": "fermentation batch mass (kg; e.g. 164.79)"}],
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 152.23)"}],
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 34.01)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The observed material is harvested cacao beans undergoing pre-drying fermentation, not a fermented chocolate dairy beverage. No starter culture, acidification curve or residual beverage sugar is documented; shared fermentation language does not change the subject.", "evidence": [{"field": "description", "quote": "postharvest cacao beans through fermentation of harvested beans before drying, not dairy drink processing"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a012", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fermentation_batch_mass_kg": [{"field": "distributions.0.description", "quote": "fermentation batch mass (kg; e.g. 278.6)"}],
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 124.05)"}],
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 36.82)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "This is physical observation of bean fermentation before drying, explicitly distinguished from dairy drink processing. The measured batch mass, bean time and bean temperature do not document beverage culture, acidification or residual sugar.", "evidence": [{"field": "description", "quote": "postharvest cacao beans through fermentation of harvested beans before drying, not dairy drink processing"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a013", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}, {"field": "keywords.0", "quote": "cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "This deposit concerns fermentation of harvested beans before drying"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 43.55)"}],
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 140.23)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a014", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 85.05)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a015", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_drying", "evidence": [{"field": "description", "quote": "drying of beans on racks after fermentation has ended"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 55)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Alderbank Inner)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "The same bean product is studied, but this is rack drying after fermentation, not fermentation measurement. The documented fields are operational counts, month and site code, not fermentation time, bean temperature or fermentation batch mass. The historical mention of fermentation is not a measured fermentation variable.", "evidence": [{"field": "description", "quote": "drying of beans on racks after fermentation has ended"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 55); facility location code (categorical site code; e.g. Alderbank Inner)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a016", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "rooting_duration_days": [{"field": "distributions.0.description", "quote": "time until roots appeared (days; e.g. 19.4)"}],
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}],
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 75.41)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "These are cacao crop plants, so there is subject overlap, but nursery propagation is not field pest management. Rooting, propagation method and seedling survival are documented; pest counts, control treatment and treatment application rate are not.", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants of cacao seedlings raised for planting"}]},
+        "s08": {"reason": "This concerns raising living cacao seedlings, not sanitation in a confectionery factory. No equipment-cleaning intervention, microbial swab or residue mass is documented; publisher identity does not change the study subject.", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants of cacao seedlings raised for planting"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a017", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "rooting_duration_days": [{"field": "distributions.0.description", "quote": "time until roots appeared (days; e.g. 37.78)"}],
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 71.86)"}],
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "The physical study follows seedling propagation, with rooting and survival observations. It is not a confectionery-factory sanitation record and documents none of equipment cleaning, microbial swabs or residue mass.", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting through nursery propagation of young crop plants"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a018", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 76.07)"}],
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a019", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 83.21)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a020", "seed": 39031, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}, {"field": "description", "quote": "young cacao plants"}]},
+        "process": {"value": "factory_landscaping", "evidence": [{"field": "description", "quote": "factory grounds landscaping with young cacao plants, rather than nursery propagation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 86)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Reed Marsh South)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "The product overlaps: actual text identifies cacao seedlings, not a different species or an explicitly ornamental product. The decisive distinction is factory grounds landscaping rather than nursery propagation. Operational counts, reporting month and site code do not establish seedling survival, propagation method or rooting duration. The excluded process is not counted as a positive context.", "evidence": [{"field": "description", "quote": "factory grounds landscaping with young cacao plants, rather than nursery propagation"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 86); reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh South)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a011", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 141.91)"}],
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 34.75)"}],
+          "fermentation_batch_mass_kg": [{"field": "distributions.0.description", "quote": "fermentation batch mass (kg; e.g. 98.91)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The observed fermentation is of harvested cacao beans before drying, explicitly not dairy drink processing. Bean time, temperature and batch mass are not evidence for beverage starter culture, acidification or residual sugar.", "evidence": [{"field": "description", "quote": "postharvest cacao beans through fermentation of harvested beans before drying, not dairy drink processing"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a012", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}, {"field": "keywords.0", "quote": "cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "This deposit concerns fermentation of harvested beans before drying"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 47.16)"}],
+          "fermentation_batch_mass_kg": [{"field": "distributions.0.description", "quote": "fermentation batch mass (kg; e.g. 271.45)"}],
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 154.59)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The positive subject and measured columns identify bean fermentation. Dairy processing is explicitly excluded, not a second positive context; shared fermentation wording does not establish a chocolate dairy beverage or its fermentation variables.", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}, {"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 47.16); fermentation batch mass (kg; e.g. 271.45); bean fermentation elapsed time (hours; e.g. 154.59)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a013", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "focusing on postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 118.87)"}],
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 37.31)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a014", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 123.78)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a015", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_drying", "evidence": [{"field": "description", "quote": "drying of beans on racks after fermentation has ended"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Quartz Field Central)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 22)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "This records operations during post-fermentation rack drying of the same bean product. The completed operations, calendar month and site code do not measure fermentation duration, bean temperature or fermentation batch mass. Fermentation is mentioned only as an already-ended stage.", "evidence": [{"field": "description", "quote": "drying of beans on racks after fermentation has ended"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Quartz Field Central); completed operations (count; e.g. 22)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a016", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}],
+          "rooting_duration_days": [{"field": "distributions.0.description", "quote": "time until roots appeared (days; e.g. 25.45)"}],
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 80.71)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "Cacao plants overlap the crop domain, but this is nursery propagation rather than field pest management. Propagation method, rooting time and survival are not pest counts or a documented pest-control treatment/application rate.", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants of cacao seedlings raised for planting"}]},
+        "s08": {"reason": "The subject is living cacao seedlings and their propagation, not a confectionery factory undergoing sanitation. No equipment-cleaning, swab or residue measurement is documented.", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants of cacao seedlings raised for planting"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a017", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "rooting_duration_days": [{"field": "distributions.0.description", "quote": "time until roots appeared (days; e.g. 31.52)"}],
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}],
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 98)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "The empirical subject is cacao seedlings in nursery propagation. Rooting time, propagation method and survival do not document factory equipment cleaning, microbial swabs or residue mass; institutional context is not a sanitation experiment.", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting during nursery propagation of young crop plants"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a018", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}],
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 90.16)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a019", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 71.4)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a020", "seed": 39032, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}, {"field": "description", "quote": "young cacao plants"}]},
+        "process": {"value": "factory_landscaping", "evidence": [{"field": "description", "quote": "factory grounds landscaping with young cacao plants, rather than nursery propagation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. North Meadow West)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 89)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "Actual product text still says cacao seedlings; ornamental status is not explicitly documented and is not inferred from vocabulary. The mismatch is landscaping rather than propagation, with operational counts, month and site rather than propagation method, survival or rooting time. The negated nursery process is not positively measured.", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting during factory grounds landscaping with young cacao plants, rather than nursery propagation"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. North Meadow West); completed operations (count; e.g. 89)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a011", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 73.08)"}],
+          "fermentation_batch_mass_kg": [{"field": "distributions.0.description", "quote": "fermentation batch mass (kg; e.g. 162.21)"}],
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 38.04)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The study covers fermentation of postharvest beans before drying, explicitly excluding dairy drink processing. Neither the product nor its measured bean time, mass and temperature establish beverage fermentation with culture, acidification and residual sugar measurements.", "evidence": [{"field": "description", "quote": "postharvest cacao beans during fermentation of harvested beans before drying, not dairy drink processing"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a012", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 45.26)"}],
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 139.4)"}],
+          "fermentation_batch_mass_kg": [{"field": "distributions.0.description", "quote": "fermentation batch mass (kg; e.g. 71.59)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "Fermentation overlap is real, but the positive subject is cacao beans before drying, not a dairy beverage. The explicit exclusion and bean-specific measured columns do not support starter culture, beverage acidification or residual sugar.", "evidence": [{"field": "description", "quote": "postharvest cacao beans during fermentation of harvested beans before drying, not dairy drink processing"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a013", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "focusing on postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 93.15)"}],
+          "bean_temperature": [{"field": "distributions.0.description", "quote": "bean core temperature (degrees C; e.g. 36.97)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a014", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "focusing on postharvest cacao beans"}]},
+        "process": {"value": "bean_fermentation", "evidence": [{"field": "description", "quote": "fermentation of harvested beans before drying, not dairy drink processing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "fermentation_duration": [{"field": "distributions.0.description", "quote": "bean fermentation elapsed time (hours; e.g. 111.91)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a015", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_beans", "evidence": [{"field": "description", "quote": "postharvest cacao beans"}]},
+        "process": {"value": "bean_drying", "evidence": [{"field": "description", "quote": "drying of beans on racks after fermentation has ended"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Silver Creek Outer)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 40)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "The bean product matches, but the observed process is drying on racks after fermentation has ended. The file variables are site code, completed operations and month. Mention of the prior fermentation stage supplies none of its duration, temperature or batch-mass measurements.", "evidence": [{"field": "description", "quote": "drying of beans on racks after fermentation has ended"}, {"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Silver Creek Outer); completed operations (count; e.g. 40); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a016", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "rooting_duration_days": [{"field": "distributions.0.description", "quote": "time until roots appeared (days; e.g. 22.21)"}],
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 92.14)"}],
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "The cacao crop connection is genuine, but the observed process is nursery propagation. Rooting time, seedling survival and propagation method do not establish pest counts, control treatment or application rate in field pest management.", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants of cacao seedlings raised for planting"}]},
+        "s08": {"reason": "This studies propagation of living cacao seedlings rather than sanitation at a confectionery factory. No equipment cleaning, microbial swab or residue-mass variable is documented.", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants of cacao seedlings raised for planting"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a017", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 86.97)"}],
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}],
+          "rooting_duration_days": [{"field": "distributions.0.description", "quote": "time until roots appeared (days; e.g. 36.86)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "The actual study concerns nursery propagation and follows seedling survival, propagation method and rooting duration. It does not describe a confectionery-factory sanitation process or equipment cleaning, microbial swabs or residue mass.", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants of cacao seedlings raised for planting"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a018", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "propagation_method": [{"field": "distributions.0.description", "quote": "propagation method used (category: graft / cutting)"}],
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 88.56)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a019", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}]},
+        "process": {"value": "nursery_propagation", "evidence": [{"field": "description", "quote": "nursery propagation of young crop plants"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "seedling_survival": [{"field": "distributions.0.description", "quote": "surviving seedlings at follow-up (percent; e.g. 87.83)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a020", "seed": 39033, "reviewer_id": "auditor-packet-02",
+      "contexts": [{
+        "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting"}, {"field": "description", "quote": "young cacao plants"}]},
+        "process": {"value": "factory_landscaping", "evidence": [{"field": "description", "quote": "factory grounds landscaping with young cacao plants, rather than nursery propagation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Pine Basin North)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 19)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "Cacao seedlings are positively documented, so a wrong-product argument is not needed or supported. The actual process is factory grounds landscaping rather than nursery propagation. Month, site code and operations counts are not propagation method, seedling survival or rooting duration; the negated propagation phrase supplies no positive measurement.", "evidence": [{"field": "description", "quote": "cacao seedlings raised for planting through factory grounds landscaping with young cacao plants, rather than nursery propagation"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Pine Basin North); completed operations (count; e.g. 19)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-02",
+      "rationale": "Compared every ID a011-a020 with both other seeds after reading every supplied primary field. Product/process, empirical basis and measured-variable availability are preserved: a011/a012 have bean time, temperature and batch mass; a013 only time and temperature; a014 only time; a015 drying operations/month/site; a016/a017 rooting time, propagation method and survival; a018 only method and survival; a019 only survival; a020 landscaping operations/month/site. Absence of other variables is not positive evidence. All distributions were checked individually: a011/a015/a019 have CSV, JSON, CSV; a017 has CSV, JSON, JSON; the other records have CSV, JSON. Format descriptions and column content agree within each record. Meaningful text variation includes alternate subject/basis sentence forms, varied order, paragraph versus continuous prose, different title constructions and substantial length changes, not merely site substitution; for example a014 is short with variables only in distribution descriptions, unlike its longer other-seed versions. The shared scaffold and repeated generic file titles remain conspicuous, but titles are subject/site descriptions rather than answer keys or grade labels. Same-subject pairs a011/a012 and a016/a017 describe different sites/examples and are not exact duplicate records. Numeric examples, sites and publishers change across seeds: preservation here means semantic measurement types, not identical observed values. Identity review is not required for any packet record. Scope limitation: distribution_content_verified refers to the supplied metadata's format/content association, not downloaded bytes. Omitted duplicate queryContext text was not inspected, and query/paraphrase strings are not supplied, so paraphrase equivalence and full-corpus coverage cannot be audited from this packet. No supplied field supports either frozen no-answer conjunction."
+    },
+    "39032": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-02",
+      "rationale": "Compared all ten actual records against seeds 39031 and 39033. Each retains the same positive product/process, empirical basis and documented variable set; the additional fermentation and nursery variables absent from a013/a014/a018/a019 remain unsupported, not inferred from the process. a020 positively identifies cacao seedlings used for factory landscaping: an ornamental-product subtype is not established. Every distribution's content/format association was checked: a011/a017 use CSV, JSON, JSON; a012/a020 use CSV, JSON, CSV; the remaining six use CSV, JSON. Repeated distributions retain the same variables within each record. Wording variation includes different titles, clause forms and order, optional contextual fields, variable order, length and paragraph layout. In particular a018 places variables in distribution synopses while its other-seed descriptions enumerate them, and a014 expands markedly from seed 39031. Semantic facts are preserved, but numeric example values, fictional sites and publishers are not invariant. No identity-required records occur in this packet; no no-answer conjunction is positively supported. Scope is metadata only, not distribution-byte validation; duplicate queryContext copies and actual query/paraphrase strings were not available for independent inspection, and this is not a full-corpus coverage assessment."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-02",
+      "rationale": "Compared every a011-a020 record with the two other seed versions. Bean fermentation, bean drying, nursery propagation and factory landscaping remain distinct, with the same measured-variable subsets and physical-observation basis in every corresponding record. No negated dairy processing or nursery propagation is counted positively. a020's product is supported as cacao seedlings; its landscaping process, not an unsupported ornamental subtype, supplies the contrast. Distribution checks cover CSV, JSON, CSV for a013/a014; CSV, JSON, JSON for a017/a018/a019; CSV, JSON for a011/a012/a015/a016/a020. Every distribution description retains its record's variables and matches its format label. Titles and prose show alternate subject/basis formulations, sentence ordering, differing length and paragraph structure beyond substitutions; a018 changes from short distribution-led seed 39032 prose to a longer description enumerating both columns, and a011 changes from inline seed 39031 prose to reordered paragraphs. Standardized scaffolding remains, so this is not evidence of unrestricted natural-language diversity. Variable types and context meanings are preserved, not numeric observations or site/publisher identities: examples change across seeds. None of the ten records requires authoritative-identity review, and no supplied field supports either no-answer conjunction. Metadata association was checked, not downloaded file contents. Omitted queryContext text and unavailable query/paraphrase strings limit verification to the supplied record fields and intent definitions; no global coverage or query-equivalence claim is made."
+    }
+  }
+}

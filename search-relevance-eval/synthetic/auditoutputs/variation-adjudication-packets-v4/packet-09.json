@@ -1,0 +1,902 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [
+    {
+      "after_record_sha256": "510ea42a389171644502367df601caf6b57061e7b43690832efeeea42ce699b5",
+      "before_record_sha256": "af36600aeffc311c6ed5d5d32162541fc5453b9145a2283fcdad090f29e1aa12",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: liquid viscosity (mPa s; e.g. 6.42); sugar fraction in liquid recipe (percent by mass; e.g. 6.85); cocoa fraction in liquid recipe (percent by mass; e.g. 4.1). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: JSON\nDescription: Simulated output columns: liquid viscosity (mPa s; e.g. 6.42); sugar fraction in liquid recipe (percent by mass; e.g. 6.85); cocoa fraction in liquid recipe (percent by mass; e.g. 4.1). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.1.title"
+        }
+      ],
+      "dataset_id": "a089",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39031
+    },
+    {
+      "after_record_sha256": "45f88e50f5baf209641329fcfced803edea1e625a465f99f4258a22971f17ce5",
+      "before_record_sha256": "722e0485b7eee63b94812cc8e6c81c38ae6eaf8d832d6d1ccc49e3f18fd3be31",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: sugar fraction in liquid recipe (percent by mass; e.g. 11.73); liquid viscosity (mPa s; e.g. 21.16); cocoa fraction in liquid recipe (percent by mass; e.g. 3.9). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: JSON\nDescription: Simulated output columns: sugar fraction in liquid recipe (percent by mass; e.g. 11.73); liquid viscosity (mPa s; e.g. 21.16); cocoa fraction in liquid recipe (percent by mass; e.g. 3.9). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.2.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.2.title"
+        }
+      ],
+      "dataset_id": "a089",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "b0c64ae94de37b8b36748eb928b89cb96a6d49e30d8aeaa7eb50489dbb516adf",
+      "before_record_sha256": "e72d96ce600b395159fb03a6f471a3be12ee7b71f2ed6dc496b84e6d96d4be00",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "The released table lists reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81). These are observed administrative entries, not model predictions. At Reed Marsh East, the study covers liquid chocolate-flavoured dairy milk beverage during bottle and container design for a drink, rather than recipe formulation. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. The depositor prepared a compact over",
+            "view for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name."
+          ],
+          "before_chunks_concat_exact": [
+            "The released table lists reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81). The described study uses empirical observations from physical samples. At Reed Marsh East, the study covers liquid chocolate-flavoured dairy milk beverage during bottle and container design for a drink, rather than recipe formulation. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. The depositor prepared a compact",
+            " overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Bottle design as recorded at Reed Marsh East\nDescription: The released table lists reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81). These are observed administrative entries, not model predictions. At Reed Marsh East, the study covers liquid chocolate-flavoured dairy milk beverage during bottle and container design for a drink, rather than recipe formulation. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers re",
+            "main local to that edition. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Bottle design as recorded at Reed Marsh East\nDescription: The released table lists reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81). The described study uses empirical observations from physical samples. At Reed Marsh East, the study covers liquid chocolate-flavoured dairy milk beverage during bottle and container design for a drink, rather than recipe formulation. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifie",
+            "rs remain local to that edition. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a086",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    },
+    {
+      "after_record_sha256": "06e9669e1b03b045bd72881900372fb31730042539619c4c3688e320adfdf155",
+      "before_record_sha256": "247208a3d47afab54e90763f8a4d14e01725032140905a0b0d725688adf890e7",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: cocoa fraction in liquid recipe (percent by mass; e.g. 3.44); liquid viscosity (mPa s; e.g. 24.82); sugar fraction in liquid recipe (percent by mass; e.g. 4.47). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: CSV\nDescription: Simulated output columns: cocoa fraction in liquid recipe (percent by mass; e.g. 3.44); liquid viscosity (mPa s; e.g. 24.82); sugar fraction in liquid recipe (percent by mass; e.g. 4.47). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.0.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.0.title"
+        }
+      ],
+      "dataset_id": "a089",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    }
+  ],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "a081",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a082",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a083",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a084",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a085",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a086",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations",
+              "facility_location_code",
+              "reporting_interval"
+            ],
+            "process": "container_design",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations",
+              "facility_location_code",
+              "reporting_interval"
+            ],
+            "process": "container_design",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations",
+              "facility_location_code",
+              "reporting_interval"
+            ],
+            "process": "container_design",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a087",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_oat_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_oat_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_oat_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a088",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments",
+              "invoiced_unit_price",
+              "reporting_interval"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments",
+              "invoiced_unit_price",
+              "reporting_interval"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments",
+              "invoiced_unit_price",
+              "reporting_interval"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a089",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a090",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "cocoa_fraction",
+              "liquid_viscosity",
+              "sugar_fraction"
+            ],
+            "process": "drink_formulation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-09.json",
+  "original_review_sha256": "1b38d4bde54bf984ff97aa39e64603694ba3efd5088523ed1e16bcde2d8a85f6",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-09",
+    "generator_context": false,
+    "id": "auditor-packet-09",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": true,
+      "rationale_chunks_concat_exact": [
+        "All ten IDs were compared with both other seeds after reading every projected field. The semantic product/process/basis and documented variable sets are preserved: a081/a082/a090 have empirical dairy formulation fractions plus viscosity; a083 has sugar and cocoa fractions only; a084 has viscosity and cocoa fraction only; a085 has cocoa fraction only; a086 is container design with operations/month/site; a087 is non-dairy oat formulation with all three variables; a088 is an observed commercial ledger with price/month/dispatches; a089 has simulated outputs only. Missing variables were not inferred. Every distribution format matches its own comma",
+        "-separated/JSON content description, including optional third distributions. Main descriptions in this seed carry the variables directly, unlike some distribution-only descriptions in other seeds. Titles, clause order, paragraph layout, length and optional spatial fields vary meaningfully, although many titles and editorial passages remain visibly templated. Repeated distribution content is an explicitly described alternate-format/duplicate export, not a second independent experiment. Scope of passed is semantic-fact preservation and wording variation, NOT exact numerical or site preservation: for example a081 cocoa examples change 2.02 to 2.",
+        "9 to 3.91 and its site changes Cedar Reach Central to Silver Creek Upper to Alderbank Lower; publishers also change. These are not identical observational releases. No authoritative-identity review was required for these IDs. No record supports either no-answer conjunction. Only packet-projected metadata was reviewed; file bytes and omitted duplicate queryContext text were not independently accessed, and actual query paraphrase texts were not supplied."
+      ],
+      "reviewer_id": "auditor-packet-09"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten IDs were compared with seeds 39031 and 39033. Semantic subjects, processes, empirical-versus-simulation distinctions and variable sets are preserved, including a083's absent viscosity, a084's absent sugar fraction, a085's single cocoa fraction, a086's container-design operations/month/site rather than recipe metrics, a087's explicit absence of dairy, and a088's commercial ledger rather than experimental formulation data. This seed provides variables only in distribution synopses for a084, a086 and a089; those fields were reviewed rather than treating main-description omission as data absence. CSV/JSON format labels and all optional th",
+        "ird-distribution content descriptions agree with their advertised variables and units. Meaningful wording, clause order, title, length, paragraph and optional-field differences exist, with substantial recurring template language. Numerical examples and fictional site/publisher identities change across seeds, so only semantic variable/constraint preservation is supported, not preservation of exact observational facts. Unresolved naming issue: a089 distributions.2.title calls explicit simulation outputs 'Deposited measurements'; this seed therefore is not marked passed. Review was limited to all supplied projected metadata, not downloaded bytes",
+        ", omitted duplicate queryContext text or unavailable actual query paraphrases. No identity-required records or no-answer conjunctions occur in this packet."
+      ],
+      "reviewer_id": "auditor-packet-09"
+    },
+    "39033": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten IDs were compared with the other two seeds. Product/process/basis and positively documented variable sets remain semantically stable; no missing variable was treated as measured, no oat record was treated as dairy, and a089's output variables remain simulation-only. Variables move wholly into distributions for a081, a083, a084 and a090, while the metadata still supplies the physical empirical basis and product/process context. All distribution format labels match comma-separated or JSON content descriptions and the same record's variable units, including optional third distributions. Titles, sentence/paragraph ordering, length, editor",
+        "ial notes and optional spatial fields differ meaningfully, but recurring templates remain. Example values, fictional sites and publisher identities are not preserved verbatim across seeds; for example a086 completed operations are 54, 83 and 81 and site codes also differ, so this is semantic rather than exact observation preservation. Unresolved naming issue: a089 distributions.0.title says 'Deposited measurements' despite explicit simulated-only content; this seed is not marked passed. Scope is supplied projected metadata only; no file-byte verification, independent reading of omitted duplicate queryContext or paraphrase-query equivalence ch",
+        "eck was possible. No identity review was required and neither frozen no-answer conjunction is supported by any reviewed record."
+      ],
+      "reviewer_id": "auditor-packet-09"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-09.json",
+      "sha256": "1b38d4bde54bf984ff97aa39e64603694ba3efd5088523ed1e16bcde2d8a85f6"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "a081"
+    ],
+    [
+      39031,
+      "a082"
+    ],
+    [
+      39031,
+      "a083"
+    ],
+    [
+      39031,
+      "a084"
+    ],
+    [
+      39031,
+      "a085"
+    ],
+    [
+      39031,
+      "a086"
+    ],
+    [
+      39031,
+      "a087"
+    ],
+    [
+      39031,
+      "a088"
+    ],
+    [
+      39031,
+      "a089"
+    ],
+    [
+      39031,
+      "a090"
+    ],
+    [
+      39032,
+      "a081"
+    ],
+    [
+      39032,
+      "a082"
+    ],
+    [
+      39032,
+      "a083"
+    ],
+    [
+      39032,
+      "a084"
+    ],
+    [
+      39032,
+      "a085"
+    ],
+    [
+      39032,
+      "a086"
+    ],
+    [
+      39032,
+      "a087"
+    ],
+    [
+      39032,
+      "a088"
+    ],
+    [
+      39032,
+      "a089"
+    ],
+    [
+      39032,
+      "a090"
+    ],
+    [
+      39033,
+      "a081"
+    ],
+    [
+      39033,
+      "a082"
+    ],
+    [
+      39033,
+      "a083"
+    ],
+    [
+      39033,
+      "a084"
+    ],
+    [
+      39033,
+      "a085"
+    ],
+    [
+      39033,
+      "a086"
+    ],
+    [
+      39033,
+      "a087"
+    ],
+    [
+      39033,
+      "a088"
+    ],
+    [
+      39033,
+      "a089"
+    ],
+    [
+      39033,
+      "a090"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "a081",
+      "full_raw_record_sha256": "930dea4e6865cdf9a788d1445cce635a4edae6fcd7c399ce703360d89ad8bc18",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "930dea4e6865cdf9a788d1445cce635a4edae6fcd7c399ce703360d89ad8bc18",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a082",
+      "full_raw_record_sha256": "e22e6b0392975bc1f8f2b106c1f58bd8caf2b461902205a49a549c158b9bb439",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "e22e6b0392975bc1f8f2b106c1f58bd8caf2b461902205a49a549c158b9bb439",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a083",
+      "full_raw_record_sha256": "307344f487058b2b118a27180029719d57eb8642488132b5b0783b59b86e9b4a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "307344f487058b2b118a27180029719d57eb8642488132b5b0783b59b86e9b4a",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a084",
+      "full_raw_record_sha256": "8a7b0016ae768437ca55c7161d2152cc0a2400b894cfc6daf6130501cfedaaf8",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "8a7b0016ae768437ca55c7161d2152cc0a2400b894cfc6daf6130501cfedaaf8",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a085",
+      "full_raw_record_sha256": "4ee28b05e2f05c5640a1b11e260c5dd2148b78bc83a6bd314cc81f5e18b705c8",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4ee28b05e2f05c5640a1b11e260c5dd2148b78bc83a6bd314cc81f5e18b705c8",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a086",
+      "full_raw_record_sha256": "78a1064d13fb510fa68000f72b8c1c0017bd3f8a3cf4dc02b6a20fedd70e6035",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "78a1064d13fb510fa68000f72b8c1c0017bd3f8a3cf4dc02b6a20fedd70e6035",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a087",
+      "full_raw_record_sha256": "32d9d7926afdb53214babf751b2870c33725220d0b96b306b794f3d239dc6c2a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "32d9d7926afdb53214babf751b2870c33725220d0b96b306b794f3d239dc6c2a",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a088",
+      "full_raw_record_sha256": "9617107171b30ee4a0454950db8d2ef6171d826dafe8b28718502776d51b993d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "9617107171b30ee4a0454950db8d2ef6171d826dafe8b28718502776d51b993d",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a090",
+      "full_raw_record_sha256": "9b4b16fddfb12f0288f48decc08976f47b4c64884f0c034498bc86287f3afa4e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "9b4b16fddfb12f0288f48decc08976f47b4c64884f0c034498bc86287f3afa4e",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a081",
+      "full_raw_record_sha256": "f77375ba6206dd5ac2e5e3851bbf5f2e4c76a6b5f81d52651fb576083b55b821",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "f77375ba6206dd5ac2e5e3851bbf5f2e4c76a6b5f81d52651fb576083b55b821",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a082",
+      "full_raw_record_sha256": "d97c596f576147e0cba9fd4ac7c668b6bd73587f36b9a0b6a4d2d04e6c91d685",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d97c596f576147e0cba9fd4ac7c668b6bd73587f36b9a0b6a4d2d04e6c91d685",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a083",
+      "full_raw_record_sha256": "3991c66f36a8d5c6e0aa36068c11e9ac0340029b8b68e3f1eed926fa4e601755",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3991c66f36a8d5c6e0aa36068c11e9ac0340029b8b68e3f1eed926fa4e601755",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a084",
+      "full_raw_record_sha256": "6818bcf7327fd4dc222635ece1795b681b4500b77f0157205f89ef51408ba210",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6818bcf7327fd4dc222635ece1795b681b4500b77f0157205f89ef51408ba210",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a085",
+      "full_raw_record_sha256": "f7a2f6993074ac577c8e6984f632ea5dc2da54110f26cdc8714adec82f617ce6",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "f7a2f6993074ac577c8e6984f632ea5dc2da54110f26cdc8714adec82f617ce6",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a086",
+      "full_raw_record_sha256": "06e0adefd424eb0d0f1869f3439b109bc64e438740d2e6ae28a3c6b1d04ae5a8",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "06e0adefd424eb0d0f1869f3439b109bc64e438740d2e6ae28a3c6b1d04ae5a8",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a087",
+      "full_raw_record_sha256": "a7bd07d0cd7ab0b69490fd5ed418a80cdd16cb418865c94dbe306d027b6bb888",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "a7bd07d0cd7ab0b69490fd5ed418a80cdd16cb418865c94dbe306d027b6bb888",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a088",
+      "full_raw_record_sha256": "6d0c85415a1e11888831b0ebba9434dadb8854d4aea9e7e5f3a143fa21024480",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6d0c85415a1e11888831b0ebba9434dadb8854d4aea9e7e5f3a143fa21024480",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a090",
+      "full_raw_record_sha256": "159e8534ece5cad409f147e21a06e98f9a050381aa2214672e80aa2d0de633d1",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "159e8534ece5cad409f147e21a06e98f9a050381aa2214672e80aa2d0de633d1",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a081",
+      "full_raw_record_sha256": "56561188cd603a1bb4431047fbebf6c059e6ae338c41bba62b658351b4cdc5fd",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "56561188cd603a1bb4431047fbebf6c059e6ae338c41bba62b658351b4cdc5fd",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a082",
+      "full_raw_record_sha256": "efe6252f63aaa3fd2ffc1a84cc1923cbbf568cfe4298f3e25269ebea29eb14c5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "efe6252f63aaa3fd2ffc1a84cc1923cbbf568cfe4298f3e25269ebea29eb14c5",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a083",
+      "full_raw_record_sha256": "633779ad70898b9b8fbf7db0671f3d16a6c319339d344afc305fd39a17effdbf",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "633779ad70898b9b8fbf7db0671f3d16a6c319339d344afc305fd39a17effdbf",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a084",
+      "full_raw_record_sha256": "799560757114c582ca1ee14a2236cc1e6517b3a2382cbc2cc4e6caea6e866766",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "799560757114c582ca1ee14a2236cc1e6517b3a2382cbc2cc4e6caea6e866766",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a085",
+      "full_raw_record_sha256": "84b32379d9ae8bc25ba7305b0a3d2bc2eec7acae32866c63adf00c58c3732ecc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "84b32379d9ae8bc25ba7305b0a3d2bc2eec7acae32866c63adf00c58c3732ecc",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a087",
+      "full_raw_record_sha256": "2b007c22c1c8fdaa2029918e7127e45cde861675e5f25656903078ea10c0c965",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2b007c22c1c8fdaa2029918e7127e45cde861675e5f25656903078ea10c0c965",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a088",
+      "full_raw_record_sha256": "6128f17e348c4930c9066694bce4bb69d1f4e08bda319b0573334cb303c1cae0",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6128f17e348c4930c9066694bce4bb69d1f4e08bda319b0573334cb303c1cae0",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a090",
+      "full_raw_record_sha256": "3c1160f4ee140f05f236672b1ddffc58768b16968f86fcc70ad4f2dc747cc8f9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3c1160f4ee140f05f236672b1ddffc58768b16968f86fcc70ad4f2dc747cc8f9",
+      "seed": 39033
+    }
+  ]
+}

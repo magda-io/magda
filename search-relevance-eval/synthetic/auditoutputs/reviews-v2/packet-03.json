@@ -1,0 +1,468 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-03",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-03"
+  },
+  "record_reviews": [
+    {
+      "seed": 39031, "dataset_id": "a021", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 2.13)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 6.29)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Solid bars undergoing wrapper assessment, not a refrigerated dairy beverage shelf-life experiment. CSV is present but its columns concern wrappers, not storage temperature, spoilage days or microbial counts.", "evidence": [{"field": "description", "quote": "solid milk chocolate bars during wrapping and package performance assessment"}, {"field": "distributions.0.format", "quote": "CSV"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a022", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 3.27)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 3.5)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "The documented product is a solid bar and the process is packaging assessment, not refrigerated beverage shelf life. CSV/JSON both describe wrapper material, seal failures and oxygen transmission; none documents the beverage measurements.", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment of solid milk chocolate bars"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a023", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 10.09)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a024", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 1.99)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a025", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a026", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_formulation", "evidence": [{"field": "description", "quote": "bar recipe preparation rather than wrapper testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 60)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Bramble Hill West)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "Recipe preparation is explicitly distinguished from wrapper testing. The observed columns are operation counts, site codes and reporting month; no wrapper material, oxygen barrier or seal-failure performance is documented. Recipe proportions are not inferred either.", "evidence": [{"field": "description", "quote": "bar recipe preparation rather than wrapper testing"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 60); facility location code (categorical site code; e.g. Bramble Hill West); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a027", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_dark_chocolate", "evidence": [{"field": "description", "quote": "solid dark chocolate bars without dairy ingredients"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 13.8)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 2.45)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "Packaging process and all three wrapper variables are supported, but the product explicitly excludes dairy and is dark rather than milk chocolate. This is a product contrast, not absence of packaging evidence.", "evidence": [{"field": "description", "quote": "solid dark chocolate bars without dairy ingredients"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a028", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "commercial_dispatch_ledger_associated_with_bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}, {"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 39)"}],
+          "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 13.46)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "The packaging subject and solid milk chocolate are named, but the actual files are an observed commercial ledger, not experimental packaging performance. Month, consignments and price do not evidence wrapper material, oxygen transmission or seal failure. The basis denotes non-simulated ledger observations only.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 39); invoiced unit price (AUD/unit; e.g. 13.46)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a029", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {}, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "Product/process match the subject, but no empirical measurements exist. The three variables below are simulated outputs, deliberately excluded from measured facts. CSV and JSON descriptions consistently identify simulation despite generic table titles.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: failed wrapper seals (percent of seals tested; e.g. 5.28); wrapper material examined (category: foil / coated paper); wrapper oxygen transmission (cm3/m2/day; e.g. 6.55)."}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a030", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 3.13)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 4.56)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a021", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 5.24)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 17.85)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Solid milk chocolate bars and their wrapping performance are documented, not a chilled dairy beverage. CSV/JSON wrapper columns do not provide temperature, spoilage duration or microbial counts.", "evidence": [{"field": "description", "quote": "solid milk chocolate bars during wrapping and package performance assessment"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a022", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 8.64)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 8.74)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "The complete description gives a solid-bar packaging subject, with the actual three variables supplied by both distribution synopses. These are not refrigerated beverage shelf-life measurements; the CSV format alone cannot establish that subject.", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment of solid milk chocolate bars"}, {"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 8.64); wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 8.74)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a023", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 12.87)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a024", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 1.62)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a025", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a026", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_formulation", "evidence": [{"field": "description", "quote": "bar recipe preparation rather than wrapper testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 35)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Quartz Field Coastal)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "The same broad product is present, but the stated process is recipe preparation rather than wrapper testing. All three distributions describe reporting month, operation counts and site code, not packaging material/barrier/seal measurements. No recipe composition measurement is implied by the process label.", "evidence": [{"field": "description", "quote": "bar recipe preparation rather than wrapper testing"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 35); facility location code (categorical site code; e.g. Quartz Field Coastal)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a027", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_dark_chocolate", "evidence": [{"field": "description", "quote": "solid dark chocolate bars without dairy ingredients"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 3.74)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 16.21)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "Empirical packaging measurements are genuinely documented, including all three variables. The decisive distinction is non-dairy dark bars rather than solid milk chocolate, not a process or measurement omission.", "evidence": [{"field": "description", "quote": "solid dark chocolate bars without dairy ingredients"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a028", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "commercial_dispatch_ledger_associated_with_bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}, {"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 47)"}],
+          "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 11.58)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "The files record commercial dispatch/price/month for the packaging-associated subject, not empirical wrapper performance. Non-simulated ledger observations are not evidence of any of the three required packaging variables. The general study wording is qualified explicitly by the ledger sentence.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 47); invoiced unit price (AUD/unit; e.g. 11.58); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a029", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {}, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "The matching packaging variables exist only as simulated outputs. The text explicitly denies any physical trial or empirical observations, so none is counted as measured. Both CSV and JSON descriptions consistently state simulation.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: wrapper material examined (category: foil / coated paper); wrapper oxygen transmission (cm3/m2/day; e.g. 14.17); failed wrapper seals (percent of seals tested; e.g. 4.48)."}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a030", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 3.22)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 6.52)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a021", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 6.81)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 12.98)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "This is packaging assessment of solid milk chocolate, not refrigerated shelf life of a liquid dairy beverage. CSV is genuinely associated with wrapper measurements, not temperature/spoilage/microbiology.", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment, focusing on solid milk chocolate bars"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a022", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 1.95)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 5.78)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Solid-bar packaging is stated explicitly. The three distributions consistently repeat wrapper material, seal failure and oxygen transmission, not refrigerated beverage shelf-life variables. Their CSV/JSON formats do not change that subject distinction.", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment of solid milk chocolate bars"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a023", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 17.39)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a024", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 5.88)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a025", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a026", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_formulation", "evidence": [{"field": "description", "quote": "bar recipe preparation rather than wrapper testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Tern Inlet East)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 28)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "Recipe preparation, explicitly not wrapper testing, is the process. The observations are month, facility code and completed-operation counts, not material/barrier/seal performance. No formulation ingredients or percentages are inferred from the process wording.", "evidence": [{"field": "description", "quote": "bar recipe preparation rather than wrapper testing"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Tern Inlet East); completed operations (count; e.g. 28)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a027", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_dark_chocolate", "evidence": [{"field": "description", "quote": "solid dark chocolate bars without dairy ingredients"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 10.86)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 4.55)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "All three packaging variables are empirically supported, but the product is explicitly dark chocolate without dairy. It therefore cannot be treated as evidence for the specified milk-chocolate product; process overlap is real.", "evidence": [{"field": "description", "quote": "solid dark chocolate bars without dairy ingredients"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a028", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "commercial_dispatch_ledger_associated_with_bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}, {"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 24.56)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 43)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "This is an observed commercial ledger associated with the packaging activity, not a physical packaging-performance experiment. The actual price/month/dispatch columns in both distributions supply none of the requested wrapper material, barrier or seal variables. The non-simulation basis is limited to ledger observations.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 24.56); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 43)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a029", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {}, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s05": {"reason": "The subject and output variable names match packaging, but every entry is simulated and empirical observations are expressly absent. The quoted variables are outputs, not positively measured facts. All three distribution descriptions preserve that distinction, regardless of generic titles.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: wrapper oxygen transmission (cm3/m2/day; e.g. 17.05); wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 8.38)."}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a030", "reviewer_id": "auditor-packet-03",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+        "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "barrier_performance": [{"field": "distributions.0.description", "quote": "wrapper oxygen transmission (cm3/m2/day; e.g. 17.06)"}],
+          "seal_failure_rate": [{"field": "distributions.0.description", "quote": "failed wrapper seals (percent of seals tested; e.g. 5.86)"}],
+          "wrapper_material": [{"field": "distributions.0.description", "quote": "wrapper material examined (category: foil / coated paper)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true, "reviewer_id": "auditor-packet-03",
+      "rationale": "All ten actual records were read in full and compared with both other seeds, including every title, description, keyword, publisher, spatial field when present, and every distribution title/format/description. Product, process, empirical-versus-simulation basis and documented column sets are preserved: a021/a022/a030 have three empirical wrapper variables; a023 lacks documented seal failures; a024 lacks documented oxygen transmission; a025 documents only material; a026 documents recipe-operation count/site/month, not wrapper or ingredient composition measurements; a027 is explicitly non-dairy dark chocolate with all three wrapper measurements; a028 is an observed commercial ledger with month/dispatch/price; a029 contains simulated outputs only. CSV comma-separated and JSON record descriptions consistently attach the same variables/units and basis to each distribution; optional third distributions do not add variables. Evidence verification concerns metadata association, not downloaded file bytes. This seed has genuinely different titles, subject/basis/column sentence ordering, paragraphing and description lengths, although stock reuse prose is conspicuously templated. Sites and numerical examples differ across seeds (for example a021 oxygen transmission 6.29 versus 17.85 and 12.98), and publishers may change: preservation here is semantic design facts and variable units, not identical observations, provenance or byte content. No titles are merely category prefixes or answer keys; no grade/intent leakage or prohibited s05 tokens enclosure/slabs was observed in actual fields. Same-context near-duplicates exist by design (a021/a022/a030), but different sites/examples prevent an assertion that they are duplicate data. No record requires identity review and no authoritative SKU/version is invented. No lunar-cultivation/isotope or RUN-X9999/cryogenic-vacuum conjunction is evidenced. Query text/paraphrases are absent from this packet; paraphrase equivalence and coverage beyond these ten IDs cannot be independently checked. Omitted queryContext copies are accepted only as the stated duplication limitation, not independently inspected."
+    },
+    "39032": {
+      "passed": true, "reviewer_id": "auditor-packet-03",
+      "rationale": "All ten complete field projections were reviewed independently, then compared against 39031 and 39033. Each ID preserves the product/process/basis/column-set distinctions described in the record evidence, including the two-variable a023/a024 subsets, material-only a025, operation/site/month a026, non-dairy dark a027, commercial ledger a028 and exclusively simulated a029. No omitted or negated measurement was counted. Every distribution's CSV or JSON designation agrees with its serialization description and associated columns/units; optional third distributions repeat the same content. Main descriptions sometimes defer all variable evidence to distributions (a022/a026/a027/a028); those complete distribution descriptions were actually reviewed. Text variation includes changed subject introductions, reordered basis and variable statements, substantially different lengths and paragraph layouts, and new titles, rather than only changed place names. Nevertheless the language is strongly templated, not independently authored natural-language diversity. All a021-a030 sites change and numerical examples change where numeric columns exist; publishers also often change. Thus semantic claims/units are preserved, not literal sample values, geography or provenance. Metadata-only distribution verification does not establish downloadable bytes. No identity-required record or no-answer conjunction occurs; no query paraphrase text or broader-corpus coverage can be validated from this packet. Actual fields show no answer-key/grade/intent leakage and no prohibited s05 enclosure/slabs tokens."
+    },
+    "39033": {
+      "passed": true, "reviewer_id": "auditor-packet-03",
+      "rationale": "All ten full actual records, every optional field present and all distribution entries were reviewed, not inferred from another seed. Product/process/basis and positive measurement-column sets match the other two seeds for every ID; especially a029 has no empirical measured facts, a028 supplies only ledger facts, and a026 supplies counts/site/month rather than ingredients or wrapper tests. CSV/JSON descriptions and repeated optional distributions remain consistently associated with those variables and units. Sentence ordering, title phrasing, paragraph layout, optional fields and main-description lengths change meaningfully; several short main descriptions move the sole column documentation into distributions (including a021-a025/a028/a030), which remain available and were reviewed. Repeated generic prose limits linguistic variety but is not evidence of another measurement or hidden label. All ten sites and the numeric examples vary across seeds, with some publishers varying; the preserved facts are semantic subject/process/basis and column availability, not fixed observations or provenance. No claim of byte-level distribution validation is made. No required identity, frozen no-answer conjunction, answer-key/intent leakage, category-only title or prohibited s05 enclosure/slabs token was found in actual fields. Exact query/paraphrase strings and records outside this packet are unavailable, and the stated duplicated queryContext omission cannot be independently verified here."
+    }
+  }
+}

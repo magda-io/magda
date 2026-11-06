@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "audit_kind": "independent_ground_truth_scope_dispute",
+  "status": "unresolved_U_not_validation_passed",
+  "pre_retrieval": true,
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "query_spec_sha256": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+  "intent_id": "s08",
+  "affected_query_ids": [
+    "s08p1",
+    "s08p2",
+    "s08p3"
+  ],
+  "query_texts": [
+    {
+      "id": "s08p1",
+      "query": "observed chocolate processing plant sanitation swab data"
+    },
+    {
+      "id": "s08p2",
+      "query": "empirical factory cleaning validation for confectionery equipment"
+    },
+    {
+      "id": "s08p3",
+      "query": "measured hygiene verification at a cacao sweets works"
+    }
+  ],
+  "affected_query_seed_pairs": 9,
+  "planned_grade": 0,
+  "independently_validated_grade": "U",
+  "frozen_record_requirement": {
+    "product": "confectionery_factory_ornamental_plants",
+    "process": "factory_sanitation",
+    "facts": [
+      "equipment_cleaning",
+      "microbial_swabs",
+      "residue_mass_mg"
+    ]
+  },
+  "actual_records": [
+    {
+      "seed": 39031,
+      "corpus_path": ".local/corpora-v4/seed-39031.jsonl",
+      "corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "dataset_id": "a057",
+      "searchable_evidence": [
+        {
+          "field": "description",
+          "quote": "At Hazel Ridge Upper, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification.\n\nVariables documented in the files are equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17).\n\nPhysical observations were recorded, not process simulations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nRows retain local observation keys for reuse."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "independent_status": "U for s08 relevance boundary; measurement support itself is clear"
+    },
+    {
+      "seed": 39032,
+      "corpus_path": ".local/corpora-v4/seed-39032.jsonl",
+      "corpus_sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805",
+      "dataset_id": "a057",
+      "searchable_evidence": [
+        {
+          "field": "description",
+          "quote": "The released table lists microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1). Physical observations were recorded, not process simulations. At Dune Valley North, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "independent_status": "U for s08 relevance boundary; measurement support itself is clear"
+    },
+    {
+      "seed": 39033,
+      "corpus_path": ".local/corpora-v4/seed-39033.jsonl",
+      "corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "dataset_id": "a057",
+      "searchable_evidence": [
+        {
+          "field": "description",
+          "quote": "Entries describe an observational study rather than model predictions. At Fern Hollow South, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification. The distribution synopses document the measured columns and units. Local row keys are not catalogue product identifiers. Readers should retain the supplied units when combining tables."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: microbial growth from surface swabs (CFU/swab; e.g. 106); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 1.35). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "independent_status": "U for s08 relevance boundary; measurement support itself is clear"
+    }
+  ],
+  "decision": "Do not manufacture an independent nursery or former-factory-site narrative to force grade0. The frozen requirement explicitly combines confectionery-factory ornamental plants with factory_sanitation. Removing current factory sanitation association changes a frozen canonical requirement, not merely its wording. Current factory grounds-tool sanitation has all three measured variables and can be defensibly relevant to the visibly broad factory hygiene need; no production-machinery-only condition is stated. Record U rather than treating an exclusion flag or product-code inequality as semantic proof of irrelevance.",
+  "criterion_changes_or_label_amendment_authorized": false,
+  "strict_manifest_may_pass": false,
+  "consequence": "Frozen rubric says conceptual disputes remain U and unresolved heldout evidence blocks A/B. Primary controlled comparison remains incomplete/C unless honestly resolved before retrieval. A separate explicitly approved diagnostic/sensitivity execution policy would need to preserve U and nonpromotion; C is not weakening the strict validation gate.",
+  "other_subject_issues": "a059/a079 seed39033 are explicitly simulation-only and a096 seed39033 explicitly pasteurization rather than fermentation, so primary zero can follow decisive hard mismatch regardless a disputed positive product-to-measurement association. Full-rubric reading and original reviewer adjudication remain necessary; their judgments are not silently cleared.",
+  "runtime_interruption_note": "All original manual review artifacts remain preserved; this triage introduces no new dataset prose, expected labels or engine execution."
+}

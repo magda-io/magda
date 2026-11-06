@@ -1,0 +1,741 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-04",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-04"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a031",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (27.48 degrees C for 25 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 27.23)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 16.17)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a032",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (31.46 degrees C for 13 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 14.96)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 10.6)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a033",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 29.72)"}],
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (30.36 degrees C for 17 minutes in an example row)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a034",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 20.9)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 14.76)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a035",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 24.8)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a036",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "colour_testing", "evidence": [{"field": "description", "quote": "visual colour inspection, rather than mechanical snap testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 67)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Oak Terrace West)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The bars are the right broad material, but the activity is expressly visual inspection, not mechanical texture testing. The deposited columns are operational count, month and site, not fracture force, tempering or particle size; a colour value is not documented either.",
+          "evidence": [
+            {"field": "description", "quote": "visual colour inspection, rather than mechanical snap testing"},
+            {"field": "distributions.0.description", "quote": "Deposited columns: completed operations (count; e.g. 67); reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Oak Terrace West)."}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a037",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "soft_chocolate_filling", "evidence": [{"field": "description", "quote": "soft chocolate filling for confectionery centres"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (29.42 degrees C for 11 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 22.63)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 32.22)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "All three texture variables and empirical basis are documented, so this is a genuine related texture study. The decisive mismatch with the supplied solid-chocolate intent is its explicitly soft filling product, not a missing measurement. No solid bar sample is documented.",
+          "evidence": [{"field": "description", "quote": "focusing on soft chocolate filling for confectionery centres"}, {"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 32.22)"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a038",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "commercial_ledger_associated_with_texture_testing", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}, {"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 5.7)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 29)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "Texture testing and solid bars supply activity context only. Actual empirical records are commercial prices, months and consignments; the explicit ledger qualification rules out interpreting the activity phrase as measured mechanical performance. None of the three required texture measurements is documented.",
+          "evidence": [{"field": "description", "quote": "not a report of experimental performance"}, {"field": "distributions.0.description", "quote": "Deposited columns: invoiced unit price (AUD/unit; e.g. 5.7); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 29)."}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a039",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_tempering_conditions": [{"field": "distributions.0.description", "quote": "Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row)"}],
+          "simulated_fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 33.27)"}],
+          "simulated_particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 16.18)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "Product, mechanical process and all three output variables align, but they are expressly simulated rather than physical measurements. The explicit empirical exclusion is decisive; the outputs above must not be counted as empirical facts. A distribution title misleadingly calls them measurements, recorded as an issue rather than overriding the explicit simulation statement.",
+          "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.1.title", "quote": "Deposited measurements"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Misleading cross-field labelling: distributions.1.title says 'Deposited measurements' although description explicitly excludes physical trials and empirical observations, and every distribution description says 'Simulated output columns'. Simulation basis is unambiguous, but the measurement title should be clarified; no empirical variable is positively supported."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a040",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 25.81)"}],
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (27.57 degrees C for 14 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 14.37)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a031",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (28.77 degrees C for 13 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 12.36)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 36.47)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a032",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 24.69)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 21.4)"}],
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (28.07 degrees C for 22 minutes in an example row)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a033",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 17.2)"}],
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (29.34 degrees C for 25 minutes in an example row)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a034",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 25.33)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 25.45)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a035",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 39.68)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a036",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "colour_testing", "evidence": [{"field": "description", "quote": "visual colour inspection, rather than mechanical snap testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 22)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Juniper Vale Coastal)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "This is expressly visual colour inspection of bars instead of mechanical snap testing. The three files consistently list a month, operation count and site code, not mechanical texture variables or quantitative colour results.",
+          "evidence": [{"field": "description", "quote": "visual colour inspection, rather than mechanical snap testing"}, {"field": "distributions.2.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 22); facility location code (categorical site code; e.g. Juniper Vale Coastal)."}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a037",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "soft_chocolate_filling", "evidence": [{"field": "description", "quote": "soft chocolate filling for confectionery centres"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (31.56 degrees C for 18 minutes in an example row)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 30.49)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 14.45)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The physical study really documents all three requested texture variables, but its tested material is soft confectionery filling, not the specified solid chocolate. This product distinction, not lexical absence or variable absence, supports the contrast.",
+          "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading of soft chocolate filling for confectionery centres"}, {"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 14.45)"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a038",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "commercial_ledger_associated_with_texture_testing", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}, {"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 74)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 11.44)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The catalogue associates the ledger with a solid-bar texture-testing activity, but expressly denies that it reports experimental performance. Its actual columns are shipping counts, month and invoiced price. Neither the empirical basis of those business records nor the activity keyword establishes a measured texture variable.",
+          "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}, {"field": "distributions.0.description", "quote": "Deposited columns: dispatched consignments (count; e.g. 74); reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 11.44)."}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a039",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_fracture_force": [{"field": "distributions.0.description", "quote": "Simulated output columns: force at fracture (newtons; e.g. 43.98)"}],
+          "simulated_tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row)"}],
+          "simulated_particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 25.84)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "This documents model outputs for the correct material and variables, not empirical measurements. The explicit exclusion of physical observations determines the basis despite generic observational titles; the measurement-labelled title is separately flagged.",
+          "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.2.title", "quote": "Deposited measurements"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Misleading cross-field labelling: distributions.2.title says 'Deposited measurements' while the complete description excludes physical or empirical observations and each file synopsis identifies simulated outputs. The simulation-only interpretation is decisive, but this title remains an unresolved wording issue; no empirical variable is supported."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a040",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 25.14)"}],
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (30.01 degrees C for 12 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 34.79)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a031",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (31.31 degrees C for 19 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 39.79)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 20.4)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a032",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (31.74 degrees C for 12 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 30.27)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 13.87)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a033",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (29.63 degrees C for 14 minutes in an example row)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 34.04)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a034",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 38.81)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 25.07)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a035",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 15.83)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a036",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "colour_testing", "evidence": [{"field": "description", "quote": "visual colour inspection, rather than mechanical snap testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 86)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Maple Quay East)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The same broad solid-bar product does not make visual inspection a mechanical texture experiment. The description explicitly contrasts the processes, and all three distributions contain only operation count, site code and reporting month. No fracture, tempering, particle-size or numerical colour observation is documented.",
+          "evidence": [{"field": "description", "quote": "visual colour inspection, rather than mechanical snap testing"}, {"field": "distributions.0.description", "quote": "Deposited columns: completed operations (count; e.g. 86); facility location code (categorical site code; e.g. Maple Quay East); reporting interval (calendar month; e.g. 2024-06)."}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a037",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "soft_chocolate_filling", "evidence": [{"field": "description", "quote": "soft chocolate filling for confectionery centres"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 44.53)"}],
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (31.27 degrees C for 19 minutes in an example row)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 14.28)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The measurements and physical mechanical process are supported, but the tested product is expressly soft filling for centres. It is related chocolate texture evidence, not documented solid-chocolate specimens. The product restriction in the supplied intent makes this contrast defensible.",
+          "evidence": [{"field": "description", "quote": "soft chocolate filling for confectionery centres during texture testing of chocolate by mechanical loading"}, {"field": "keywords.0", "quote": "soft chocolate filling"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a038",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "commercial_ledger_associated_with_texture_testing", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}, {"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 34)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.36)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The product and activity phrases overlap, but the record explicitly describes an observed commercial ledger rather than performance results. All three file synopses agree on consignments, month and price. Empirical business data cannot be promoted to positively measured fracture, tempering or particle-size data.",
+          "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.2.description", "quote": "Deposited columns: dispatched consignments (count; e.g. 34); reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 12.36)."}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a039",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_tempering_conditions": [{"field": "distributions.0.description", "quote": "Simulated output columns: tempering hold temperature and duration (29.8 degrees C for 10 minutes in an example row)"}],
+          "simulated_particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 35.82)"}],
+          "simulated_fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 37.9)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The solid-bar mechanical variables are explicitly computer outputs, not empirical measurements. The metadata directly excludes physical trials and empirical observations, so no required variable is positively measured in physical samples even though the same variable names appear in CSV and JSON.",
+          "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.2.description", "quote": "Simulated output columns:"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a040",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+        "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "tempering_conditions": [{"field": "distributions.0.description", "quote": "tempering hold temperature and duration (29.01 degrees C for 18 minutes in an example row)"}],
+          "fracture_force": [{"field": "distributions.0.description", "quote": "force at fracture (newtons; e.g. 33.83)"}],
+          "particle_size_micrometres": [{"field": "distributions.0.description", "quote": "particle diameter (micrometres; e.g. 27.16)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "All ten IDs were compared across all three seeds after reading every supplied field. Product/process/basis and documented variable sets are preserved: a031/a032/a040 have physical force, tempering and particle diameter; a033 has force and tempering only; a034 force and particle diameter only; a035 force only; a036 visual inspection with operations/month/site; a037 physical texture measurements of soft filling; a038 observed commercial ledger with price/month/consignments; a039 simulated texture outputs only. Unlisted variables were not inferred. CSV and JSON descriptions consistently attach the same per-record columns, units and example values to their respective formats; additional third distributions repeat those columns, not new measurements. Wording varies beyond a location substitution: for example, a031 moves from a compact basis-first paragraph here to a subject-first, variable-explicit multipart description in 39032, then a subject-first description delegating variables to files in 39033. a033 moves from a long variable-first account to a shorter basis-first account and then a subject-first variable-explicit account. Generic reuse boilerplate remains repetitive. Literal example numbers, site names and publishers change across seeds; preservation is of semantic measurement claims, not literal observations or institutional identity. These are not identical factual editions. The unresolved a039 distribution title 'Deposited measurements' in this seed conflicts with its simulation-only framing, so an unqualified variation approval is withheld. No identity-required records occur in this packet. No prohibited s06 tokens brittleness or molded, answer keys, intent codes or no-answer conjunctions occur in actual supplied fields. Omitted duplicate queryContext was not separately inspected; paraphrase query texts and file bytes are not provided, so equivalence of those queries and actual payload content cannot be verified. Distribution verification is metadata format/content association only."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "All ten versions were reviewed against both other seeds. The same positive variable subsets, soft-filling product distinction, visual-inspection process distinction, commercial-ledger limitation and simulation-only basis remain explicit. a032 changes from an observational subject-first account in 39031 to a variable-first physical-sample account here, then a short subject-first account relying on distribution synopses in 39033. a034 relocates its force/diameter evidence from distribution-only in 39031 into its description here and in 39033, without adding tempering. a035 expands from a compact distribution-dependent account to a long variable-explicit account here and contracts again in 39033, without acquiring new measured variables. Every CSV synopsis says comma-separated table and every JSON synopsis says JSON records; all associated variables and units agree within each record, including optional third files. Extra files do not add facts. Example values, publishers and locations are changed rather than invariant. Semantic facts and scope are preserved, but literal observation values and catalogue identity context are not. Titles, clause order, evidence location, paragraph structure and length vary meaningfully, although the core terminology and reuse boilerplate are repetitive. a039 retains explicit simulation basis but its third-file title 'Deposited measurements' remains misleading, preventing unqualified approval. No identity-required records, positive forbidden s06 synonym tokens, searchable answer keys or supported frozen no-answer conjunctions were observed. Actual paraphrase wording, omitted duplicate queryContext and downloadable file bytes were outside the supplied primary fields; no claim is made about query equivalence or payload verification."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "The complete ten-record seed was compared with both prior versions. The same product/process/basis and exact documented variable subsets survive: no particle-size measurement is added to a033, no tempering to a034, and neither to a035; a036 retains operations/site/month rather than mechanical measurements; a037 remains soft filling; a038 remains a non-performance commercial ledger; a039 remains wholly simulated. Simulated outputs are recorded under explicitly simulated fact keys, never empirical facts. Format labels and synopsis content agree for every CSV/JSON file; all optional third distributions repeat the existing variables. Here a039 uses dictionary/study-record titles rather than the misleading measurement title seen in 39031 and 39032. Text changes include physical-basis paraphrases, subject/basis/variable clause reordering, variables moving between descriptions and distribution synopses, substantial length/paragraph changes, and changed contextual names. a040, for example, shifts from subject-first empirical-sample prose in 39031 to subject-first physical-observation prose in 39032 and variable-first observational prose here. This is meaningful presentation variation despite repeated core phrases. Facts-preserved means semantic variables and study scope only: row examples, institutions and site names differ across all seeds, so exact factual edition identity and numerical values are not preserved. The two other seeds' a039 title issues remain unresolved and this seed-specific assessment does not clear them. No identity-required records or supported no-answer conjunctions occur, and no prohibited s06 synonym tokens, answer keys or intent codes were found in supplied fields. All provided primary fields were read; omitted duplicate queryContext, unsupplied paraphrase query text and actual file bytes were not independently reviewed. Distribution checking establishes metadata association, not download contents."
+    }
+  }
+}

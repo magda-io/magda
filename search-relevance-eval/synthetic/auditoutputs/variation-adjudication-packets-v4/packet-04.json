@@ -1,0 +1,943 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [
+    {
+      "after_record_sha256": "3e8034ca79eb4e955d648a225d74ebd069d7361c231c7313e6afcdd46a4d3e4d",
+      "before_record_sha256": "41cf03c5ccb17420445b52b6cce59d9911ced0a7b4c8449c36cbe69bc91b59e3",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row); force at fracture (newtons; e.g. 33.27); particle diameter (micrometres; e.g. 16.18). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: CSV\nDescription: Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row); force at fracture (newtons; e.g. 33.27); particle diameter (micrometres; e.g. 16.18). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.0.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.0.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row); force at fracture (newtons; e.g. 33.27); particle diameter (micrometres; e.g. 16.18). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: JSON\nDescription: Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row); force at fracture (newtons; e.g. 33.27); particle diameter (micrometres; e.g. 16.18). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.1.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row); force at fracture (newtons; e.g. 33.27); particle diameter (micrometres; e.g. 16.18). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: CSV\nDescription: Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row); force at fracture (newtons; e.g. 33.27); particle diameter (micrometres; e.g. 16.18). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.2.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.2.title"
+        }
+      ],
+      "dataset_id": "a039",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39031
+    },
+    {
+      "after_record_sha256": "d1b6ea78d11691bfddda200e9de2dcb242b1d0a2a15605cb478da3c4d16f3a02",
+      "before_record_sha256": "7679ddbf61cbd396085be103c25e9fe8e6edccce86a058fd57c7b6764f9a2832",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: JSON\nDescription: Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.1.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: JSON\nDescription: Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.2.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.2.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation results from Linden Grove Inner chocolate texture testing\nDescription: The distribution synopses document the simulated columns and units.\n\nThis deposit concerns texture testing of chocolate by mechanical loading of solid chocolate confectionery bars at Linden Grove Inner.\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nEach table uses the same local observation key.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.\n\nThe release is arranged for comparison within this study.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observations from Linden Grove Inner chocolate texture testing\nDescription: The distribution synopses document the simulated columns and units.\n\nThis deposit concerns texture testing of chocolate by mechanical loading of solid chocolate confectionery bars at Linden Grove Inner.\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nEach table uses the same local observation key.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.\n\nThe release is arranged for comparison within this study.\n"
+          ],
+          "field": "queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation results from Linden Grove Inner chocolate texture testing"
+          ],
+          "before_chunks_concat_exact": [
+            "Observations from Linden Grove Inner chocolate texture testing"
+          ],
+          "field": "title"
+        }
+      ],
+      "dataset_id": "a039",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    }
+  ],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "a031",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a032",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a033",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a034",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a035",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a036",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "colour_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "colour_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "colour_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a037",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "soft_chocolate_filling"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "soft_chocolate_filling"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "soft_chocolate_filling"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a038",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_aud_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_aud_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_aud_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a039",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_fracture_force",
+              "simulated_particle_size_micrometres",
+              "simulated_tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_fracture_force",
+              "simulated_particle_size_micrometres",
+              "simulated_tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_fracture_force",
+              "simulated_particle_size_micrometres",
+              "simulated_tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a040",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "fracture_force",
+              "particle_size_micrometres",
+              "tempering_conditions"
+            ],
+            "process": "texture_testing",
+            "product": "solid_chocolate"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-04.json",
+  "original_review_sha256": "6ed6724b56bad33a3c827f77d1931d70fa7a78f9ab39b03172fd00eaa1318930",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-04",
+    "generator_context": false,
+    "id": "auditor-packet-04",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten IDs were compared across all three seeds after reading every supplied field. Product/process/basis and documented variable sets are preserved: a031/a032/a040 have physical force, tempering and particle diameter; a033 has force and tempering only; a034 force and particle diameter only; a035 force only; a036 visual inspection with operations/month/site; a037 physical texture measurements of soft filling; a038 observed commercial ledger with price/month/consignments; a039 simulated texture outputs only. Unlisted variables were not inferred. CSV and JSON descriptions consistently attach the same per-record columns, units and example value",
+        "s to their respective formats; additional third distributions repeat those columns, not new measurements. Wording varies beyond a location substitution: for example, a031 moves from a compact basis-first paragraph here to a subject-first, variable-explicit multipart description in 39032, then a subject-first description delegating variables to files in 39033. a033 moves from a long variable-first account to a shorter basis-first account and then a subject-first variable-explicit account. Generic reuse boilerplate remains repetitive. Literal example numbers, site names and publishers change across seeds; preservation is of semantic measurement",
+        " claims, not literal observations or institutional identity. These are not identical factual editions. The unresolved a039 distribution title 'Deposited measurements' in this seed conflicts with its simulation-only framing, so an unqualified variation approval is withheld. No identity-required records occur in this packet. No prohibited s06 tokens brittleness or molded, answer keys, intent codes or no-answer conjunctions occur in actual supplied fields. Omitted duplicate queryContext was not separately inspected; paraphrase query texts and file bytes are not provided, so equivalence of those queries and actual payload content cannot be verifi",
+        "ed. Distribution verification is metadata format/content association only."
+      ],
+      "reviewer_id": "auditor-packet-04"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten versions were reviewed against both other seeds. The same positive variable subsets, soft-filling product distinction, visual-inspection process distinction, commercial-ledger limitation and simulation-only basis remain explicit. a032 changes from an observational subject-first account in 39031 to a variable-first physical-sample account here, then a short subject-first account relying on distribution synopses in 39033. a034 relocates its force/diameter evidence from distribution-only in 39031 into its description here and in 39033, without adding tempering. a035 expands from a compact distribution-dependent account to a long variable",
+        "-explicit account here and contracts again in 39033, without acquiring new measured variables. Every CSV synopsis says comma-separated table and every JSON synopsis says JSON records; all associated variables and units agree within each record, including optional third files. Extra files do not add facts. Example values, publishers and locations are changed rather than invariant. Semantic facts and scope are preserved, but literal observation values and catalogue identity context are not. Titles, clause order, evidence location, paragraph structure and length vary meaningfully, although the core terminology and reuse boilerplate are repetitiv",
+        "e. a039 retains explicit simulation basis but its third-file title 'Deposited measurements' remains misleading, preventing unqualified approval. No identity-required records, positive forbidden s06 synonym tokens, searchable answer keys or supported frozen no-answer conjunctions were observed. Actual paraphrase wording, omitted duplicate queryContext and downloadable file bytes were outside the supplied primary fields; no claim is made about query equivalence or payload verification."
+      ],
+      "reviewer_id": "auditor-packet-04"
+    },
+    "39033": {
+      "passed": true,
+      "rationale_chunks_concat_exact": [
+        "The complete ten-record seed was compared with both prior versions. The same product/process/basis and exact documented variable subsets survive: no particle-size measurement is added to a033, no tempering to a034, and neither to a035; a036 retains operations/site/month rather than mechanical measurements; a037 remains soft filling; a038 remains a non-performance commercial ledger; a039 remains wholly simulated. Simulated outputs are recorded under explicitly simulated fact keys, never empirical facts. Format labels and synopsis content agree for every CSV/JSON file; all optional third distributions repeat the existing variables. Here a039 us",
+        "es dictionary/study-record titles rather than the misleading measurement title seen in 39031 and 39032. Text changes include physical-basis paraphrases, subject/basis/variable clause reordering, variables moving between descriptions and distribution synopses, substantial length/paragraph changes, and changed contextual names. a040, for example, shifts from subject-first empirical-sample prose in 39031 to subject-first physical-observation prose in 39032 and variable-first observational prose here. This is meaningful presentation variation despite repeated core phrases. Facts-preserved means semantic variables and study scope only: row example",
+        "s, institutions and site names differ across all seeds, so exact factual edition identity and numerical values are not preserved. The two other seeds' a039 title issues remain unresolved and this seed-specific assessment does not clear them. No identity-required records or supported no-answer conjunctions occur, and no prohibited s06 synonym tokens, answer keys or intent codes were found in supplied fields. All provided primary fields were read; omitted duplicate queryContext, unsupplied paraphrase query text and actual file bytes were not independently reviewed. Distribution checking establishes metadata association, not download contents."
+      ],
+      "reviewer_id": "auditor-packet-04"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-04.json",
+      "sha256": "6ed6724b56bad33a3c827f77d1931d70fa7a78f9ab39b03172fd00eaa1318930"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "a031"
+    ],
+    [
+      39031,
+      "a032"
+    ],
+    [
+      39031,
+      "a033"
+    ],
+    [
+      39031,
+      "a034"
+    ],
+    [
+      39031,
+      "a035"
+    ],
+    [
+      39031,
+      "a036"
+    ],
+    [
+      39031,
+      "a037"
+    ],
+    [
+      39031,
+      "a038"
+    ],
+    [
+      39031,
+      "a039"
+    ],
+    [
+      39031,
+      "a040"
+    ],
+    [
+      39032,
+      "a031"
+    ],
+    [
+      39032,
+      "a032"
+    ],
+    [
+      39032,
+      "a033"
+    ],
+    [
+      39032,
+      "a034"
+    ],
+    [
+      39032,
+      "a035"
+    ],
+    [
+      39032,
+      "a036"
+    ],
+    [
+      39032,
+      "a037"
+    ],
+    [
+      39032,
+      "a038"
+    ],
+    [
+      39032,
+      "a039"
+    ],
+    [
+      39032,
+      "a040"
+    ],
+    [
+      39033,
+      "a031"
+    ],
+    [
+      39033,
+      "a032"
+    ],
+    [
+      39033,
+      "a033"
+    ],
+    [
+      39033,
+      "a034"
+    ],
+    [
+      39033,
+      "a035"
+    ],
+    [
+      39033,
+      "a036"
+    ],
+    [
+      39033,
+      "a037"
+    ],
+    [
+      39033,
+      "a038"
+    ],
+    [
+      39033,
+      "a039"
+    ],
+    [
+      39033,
+      "a040"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "a031",
+      "full_raw_record_sha256": "3b22b597b31db116091d272b27a8dabfd50f6bae168b74a0154d471302f926ff",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3b22b597b31db116091d272b27a8dabfd50f6bae168b74a0154d471302f926ff",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a032",
+      "full_raw_record_sha256": "b71baad99b4c608066d6b2237402679961bda6bb242658d8c46fa8c70d7fd6e3",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b71baad99b4c608066d6b2237402679961bda6bb242658d8c46fa8c70d7fd6e3",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a033",
+      "full_raw_record_sha256": "99d7dda6b2d27d49151627d9bee603b4cc855d134f840590abb4904cff08d818",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "99d7dda6b2d27d49151627d9bee603b4cc855d134f840590abb4904cff08d818",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a034",
+      "full_raw_record_sha256": "f4428af4507b5cbc0af9144f921c443bb340a18939de9fcbf674cf0d15b23757",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "f4428af4507b5cbc0af9144f921c443bb340a18939de9fcbf674cf0d15b23757",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a035",
+      "full_raw_record_sha256": "c95e89e4a2653dc0aabaefcb16d04a7e4fb76e68337344a7f24173f048d7b5e2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c95e89e4a2653dc0aabaefcb16d04a7e4fb76e68337344a7f24173f048d7b5e2",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a036",
+      "full_raw_record_sha256": "2737aef034e57fef4f4078cef7c4c0ffb015b5c81ce18b6919acda239b82b030",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2737aef034e57fef4f4078cef7c4c0ffb015b5c81ce18b6919acda239b82b030",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a037",
+      "full_raw_record_sha256": "2bf70da727756a494488f629f6a36c18b64921f6fd0936ff986f3fde93f1ab73",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2bf70da727756a494488f629f6a36c18b64921f6fd0936ff986f3fde93f1ab73",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a038",
+      "full_raw_record_sha256": "e845dbee5eb24c8d4d43a434e836270f09bdc3d7c03ed120b5eb0645de2f6582",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "e845dbee5eb24c8d4d43a434e836270f09bdc3d7c03ed120b5eb0645de2f6582",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a040",
+      "full_raw_record_sha256": "4eccbf819c425b7be4df054a4d2f5bb66345cccea49058299e6eb43e4b5506a7",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4eccbf819c425b7be4df054a4d2f5bb66345cccea49058299e6eb43e4b5506a7",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a031",
+      "full_raw_record_sha256": "58a052a612c49a445533e47b66dcc61b8f52e69dfa3e28dc0da7cd42dead100d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "58a052a612c49a445533e47b66dcc61b8f52e69dfa3e28dc0da7cd42dead100d",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a032",
+      "full_raw_record_sha256": "756c836d116b517f2aa106b83a3bde7506b6bcd83c16a2d8254104f05ff71db5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "756c836d116b517f2aa106b83a3bde7506b6bcd83c16a2d8254104f05ff71db5",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a033",
+      "full_raw_record_sha256": "07d3857bab15c9b5fed36f850c814974a01acdb34a8360aa55381a5480c4383b",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "07d3857bab15c9b5fed36f850c814974a01acdb34a8360aa55381a5480c4383b",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a034",
+      "full_raw_record_sha256": "9d43c3c338a2800e80673e06a6b834b9266435bccbdbe9b71e83ee0ec870a601",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "9d43c3c338a2800e80673e06a6b834b9266435bccbdbe9b71e83ee0ec870a601",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a035",
+      "full_raw_record_sha256": "a4380619838fecff96ebbdcc0c0b601278f946d18353f16e6f394bb3a84d7d0e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "a4380619838fecff96ebbdcc0c0b601278f946d18353f16e6f394bb3a84d7d0e",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a036",
+      "full_raw_record_sha256": "47f9a6426e8b642e48d6269847da2b4862e500c2bdf8fdfca662be08cb1eeb7f",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "47f9a6426e8b642e48d6269847da2b4862e500c2bdf8fdfca662be08cb1eeb7f",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a037",
+      "full_raw_record_sha256": "c5b0714618f44cdadab85b7901141ce1de0ec98bdc8fa1ac32df48aa41b04b10",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c5b0714618f44cdadab85b7901141ce1de0ec98bdc8fa1ac32df48aa41b04b10",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a038",
+      "full_raw_record_sha256": "3a0f517ed13cc718b2138526af12f0b184702917880c15c7c5add83d2fa1e9ea",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3a0f517ed13cc718b2138526af12f0b184702917880c15c7c5add83d2fa1e9ea",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a040",
+      "full_raw_record_sha256": "2b408e0bc7b4dddde3253ddcb6fdf701bf1869cbdc365c79ad3d1c12d7ff268c",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2b408e0bc7b4dddde3253ddcb6fdf701bf1869cbdc365c79ad3d1c12d7ff268c",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a031",
+      "full_raw_record_sha256": "35b6b5273c2148c42215431a1fdd4ee6143ec991f77a35d8df20a88bac1c7ebc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "35b6b5273c2148c42215431a1fdd4ee6143ec991f77a35d8df20a88bac1c7ebc",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a032",
+      "full_raw_record_sha256": "528f77102bcb5034a0daee902cf88aa11efd25acc84f53e37553fc9d97d9ae74",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "528f77102bcb5034a0daee902cf88aa11efd25acc84f53e37553fc9d97d9ae74",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a033",
+      "full_raw_record_sha256": "301bb69e6c05471b64037f88a8c448ead30c71af300f2b8eb062a0ced7ab4e01",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "301bb69e6c05471b64037f88a8c448ead30c71af300f2b8eb062a0ced7ab4e01",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a034",
+      "full_raw_record_sha256": "57519bf00e50c0c9651d3c785a093830972d6e0f46b027b86ac869b21a7ba71b",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "57519bf00e50c0c9651d3c785a093830972d6e0f46b027b86ac869b21a7ba71b",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a035",
+      "full_raw_record_sha256": "34fca45feb7126e8b8a533bd068a230a430470cb9149a80ccd26044f21583dca",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "34fca45feb7126e8b8a533bd068a230a430470cb9149a80ccd26044f21583dca",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a036",
+      "full_raw_record_sha256": "fdaa473c8da02aaea3f4cecccf630474599a0a31a9bced9c17590ab8123e77ed",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "fdaa473c8da02aaea3f4cecccf630474599a0a31a9bced9c17590ab8123e77ed",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a037",
+      "full_raw_record_sha256": "89cdc26a4dafba2fe0050c2a16726f636a101556e327c7f67d51ffd45ed6c24a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "89cdc26a4dafba2fe0050c2a16726f636a101556e327c7f67d51ffd45ed6c24a",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a038",
+      "full_raw_record_sha256": "4f8aa1df0b84bf1d44e4e35cf30b67bbbf4785320682dffd0ff148e2d06f4c93",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4f8aa1df0b84bf1d44e4e35cf30b67bbbf4785320682dffd0ff148e2d06f4c93",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a039",
+      "full_raw_record_sha256": "4509f0ed0a2ce405bf1efe1464709c741d37c702fd6940ec6adcecd1732c0145",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4509f0ed0a2ce405bf1efe1464709c741d37c702fd6940ec6adcecd1732c0145",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a040",
+      "full_raw_record_sha256": "2985d676bb2d136055e2a3ae5dab9079a3a8d4855fb0bf8f0660d5b526422218",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2985d676bb2d136055e2a3ae5dab9079a3a8d4855fb0bf8f0660d5b526422218",
+      "seed": 39033
+    }
+  ]
+}

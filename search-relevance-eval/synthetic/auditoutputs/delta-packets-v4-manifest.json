@@ -1,0 +1,21 @@
+{
+  "packet_paths": [
+    "auditoutputs/delta-packets-v4/delta-v4-01.json"
+  ],
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "actual_record_reviews_requested": 2,
+  "semantic_observations_generated": false
+}

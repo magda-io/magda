@@ -1,0 +1,512 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-10",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-10"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a091", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 21.48)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 3.86/4.7)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "This is dairy beverage fermentation, explicitly not postharvest beans. The recorded sugar, pH time course and culture concern that beverage, not cacao bean temperature or bean batch mass; hours paired with pH do not establish a completed bean fermentation duration. All three distributions carry the same variables: CSV at 0 and JSON at 1 and 2, consistently described.", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}, {"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a092", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 32.01)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 3.86/4.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "The material is a dairy drink and the process expressly excludes postharvest beans. Shared fermentation terminology does not document cacao bean temperature, batch mass or a bean process. Description and CSV 0 / JSON 1 and 2 agree on the three beverage columns.", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}, {"field": "description", "quote": "focusing on liquid chocolate-flavoured dairy milk beverage"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a093", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 4.78/4.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a094", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 30.52)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a095", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a096", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_pasteurization", "evidence": [{"field": "description", "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 19)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Maple Quay West)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "Same dairy beverage, but heat pasteurization is explicitly contrasted with starter-driven fermentation. Actual columns are administrative operation counts, month and site, not culture, acidification or residual sugar. CSV 0 and 2 and JSON 1 consistently describe those administrative columns; no temperature or fermentation variable is inferred from the process name.", "evidence": [{"field": "description", "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 19); reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Maple Quay West)"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a097", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 25.62)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 3.11/4.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "Fermentation and all three experimental variables are documented, but on an oat beverage expressly containing no dairy milk, not the dairy product specified by s12. Dairy must not be counted from its negated occurrence. CSV 0 and JSON 1 agree on the oat study's variables.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a098", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "commercial_ledger_associated_with_beverage_fermentation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 74)"}],
+          "invoiced_unit_price_AUD_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 17.93)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The fermentation activity and dairy product are mentioned, but the actual observed data are a commercial ledger, explicitly not experimental performance. Its month, consignments and price do not measure culture, pH trajectory or residual sugar. CSV 0 and JSON 1 and 2 consistently contain the ledger variables. Empirical here means observed commercial entries, not empirical fermentation measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 74); invoiced unit price (AUD/unit; e.g. 17.93)"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a099", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_acidification_curve": [{"field": "distributions.0.description", "quote": "Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 5.65/4.7)"}],
+          "simulated_starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "simulated_residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 19.17)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The dairy fermentation subject and all three output variables match conceptually, but the record explicitly reports simulation only and denies any physical observations. These are modeled variables, not positively measured empirical facts. CSV 0 and JSON 1 consistently identify simulated output columns; their generic titles introduce the separate ambiguity reported below.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]}},
+      "issues": [{"issue": "Distribution 0 is titled as measurements despite the explicit simulation-only basis; distribution 1 also uses an observation label. The detailed descriptions resolve the basis, but title-level measurement wording is misleading and remains unresolved. No empirical fact is credited.", "evidence": [{"field": "distributions.0.title", "quote": "Deposited measurements"}, {"field": "distributions.1.title", "quote": "Observation table"}, {"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a100", "seed": 39031, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 30.6)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 6.53/4.7)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a091", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 26.14)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 6.36/4.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "The study is dairy drink fermentation and explicitly not postharvest beans. Beverage sugar, culture and pH-time pairs do not establish cacao bean temperature, mass or bean fermentation duration. The description and CSV 0 / JSON 1 and 2 agree on the beverage variables.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a092", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 7.03/4.7)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 29.47)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "Fermentation concerns a liquid dairy drink, not cacao beans; the explicit exclusion is decisive rather than lexical overlap. The pH-time course is not a bean-temperature or batch-mass record. CSV 0 and JSON 1 consistently describe the three beverage columns.", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}, {"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a093", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 6.78/4.7)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a094", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 17.2)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a095", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a096", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_pasteurization", "evidence": [{"field": "description", "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Hazel Ridge Coastal)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 14)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The dairy material overlaps, but the described activity is thermal pasteurization rather than culture fermentation. The actual observations listed are site code, operations count and month, not fermentation performance. The physical-sample basis sentence does not add any unlisted laboratory variable. CSV 0 and JSON 1 and 2 consistently carry these administrative columns.", "evidence": [{"field": "description", "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"}, {"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a097", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 6.07/4.7)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 17.14)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "All three fermentation variables are present, but on an oat drink expressly without dairy milk. Thus the contrast is product-specific, not an absence of experimental fermentation data. CSV 0 and JSON 1 both describe the same oat-study variables.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a098", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "commercial_ledger_associated_with_beverage_fermentation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "invoiced_unit_price_AUD_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.18)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 48)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The subject includes dairy beverage fermentation but the actual files are commercial ledger entries. The explicit exclusion of experimental performance and the columns month, price and consignments prevent credit for culture, acidification or residual sugar. Both CSV 0 and JSON 1 have the same ledger content. The observational basis is limited to commerce.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 21.18); dispatched consignments (count; e.g. 48)"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a099", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_acidification_curve": [{"field": "distributions.0.description", "quote": "Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 2.94/4.7)"}],
+          "simulated_residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 29.68)"}],
+          "simulated_starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "Dairy fermentation and the three modeled outputs are present, but all entries are expressly simulations with no empirical trial. This cannot supply the required physically measured observations. Both CSV 0 and JSON 1 describe simulated output columns; their titles have the unresolved measurement/observation ambiguity below.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]}},
+      "issues": [{"issue": "Distribution 1 claims measurements in its title while the record denies any empirical observations; distribution 0 uses an observation label. Detailed descriptions establish simulation, but title-level wording remains misleading. No empirical measurement is credited.", "evidence": [{"field": "distributions.1.title", "quote": "Deposited measurements"}, {"field": "distributions.0.title", "quote": "Observation table"}, {"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a100", "seed": 39032, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 3.52/4.7)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 13.71)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a091", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 4.31/4.7)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 24.86)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "The actual material is a dairy drink; postharvest beans are expressly excluded. The measured beverage pH-time curve, culture and sugar cannot establish bean temperature, batch mass or bean fermentation duration. CSV 0 and JSON 1 agree on these three drink variables.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a092", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 11.5)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 7.32/4.7)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s03": {"reason": "This is empirically observed dairy drink fermentation, not postharvest bean fermentation. Shared fermentation wording is not evidence for the bean product or its temperature and mass. Description and CSV 0 / JSON 1 consistently list sugar, pH-time curve and culture for the drink.", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}, {"field": "description", "quote": "focusing on liquid chocolate-flavoured dairy milk beverage"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a093", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 2.87/4.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a094", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 9.37)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a095", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a096", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_pasteurization", "evidence": [{"field": "description", "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Kestrel Point East)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 83)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The dairy beverage overlaps but the process is explicitly heat pasteurization instead of starter fermentation. Site, completed-operation count and month are the only documented columns; the general physical-sample assertion adds no culture, pH or residual sugar measurement. CSV 0 and JSON 1 agree on the administrative data.", "evidence": [{"field": "description", "quote": "thermal pasteurization of a drink rather than starter-driven fermentation"}, {"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a097", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 12.47)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 6.91/4.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The process and three measured variables genuinely overlap, but the material is explicitly oat beverage containing no dairy milk. This is a product mismatch, not missing fermentation evidence, and negated dairy is not a positive identity. CSV 0 and JSON 1 consistently describe those oat beverage measurements.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a098", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "commercial_ledger_associated_with_beverage_fermentation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "invoiced_unit_price_AUD_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.19)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 66)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The mentioned dairy fermentation activity does not make its commercial ledger a fermentation experiment. The text expressly excludes experimental performance, and every distribution lists only month, price and consignments. CSV 0 and 2 and JSON 1 are consistently associated with these commercial columns. No culture, acidification or residual sugar measurement is documented.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 12.19); dispatched consignments (count; e.g. 66)"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a099", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "Simulated output columns: residual sugar after fermentation (g/litre; e.g. 31.82)"}],
+          "simulated_acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 4.99/4.7)"}],
+          "simulated_starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s12": {"reason": "The dairy fermentation subject and three modeled variables are genuine topical overlap, but the explicit simulation-only statement denies the required empirical observations. Facts here are labeled simulated and not counted as measurements. CSV 0 and 2 and JSON 1 all describe simulated columns; their titles do not claim measurements in this seed.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a100", "seed": 39033, "reviewer_id": "auditor-packet-10",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "beverage_fermentation", "evidence": [{"field": "description", "quote": "fermentation of a chocolate-flavoured liquid beverage, not postharvest beans"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "residual_sugar_g_per_litre": [{"field": "distributions.0.description", "quote": "residual sugar after fermentation (g/litre; e.g. 8.81)"}],
+          "starter_culture": [{"field": "distributions.0.description", "quote": "starter culture inoculated (recorded culture: Lactobacillus / Streptococcus)"}],
+          "acidification_curve": [{"field": "distributions.0.description", "quote": "acidification time course (hours/pH; example pairs 0/6.6, 7.91/4.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-10",
+      "rationale": "All ten records were compared with both other seeds. Concept-level product/process/basis and variable sets are preserved: a091/a092/a100 have empirical culture, pH time course and residual sugar; a093 culture and pH only; a094 culture and residual sugar only; a095 culture only; a096 pasteurization administrative columns; a097 dairy-free oat fermentation; a098 associated commercial ledger; a099 simulation only. No omitted variable was inferred. CSV 0 and JSON 1 consistently describe their own record's variables in every record; optional distribution 2 repeats those same variables in its stated format. Titles, sentence order, substantive phrasing, paragraph structure, length and optional distributions vary, not just whitespace. However strict preservation of all documented facts is not established: numeric examples, fictional sites and publisher identities change. For a091, residual sugar is 21.48 here, 26.14 in 39032 and 24.86 in 39033; pH example endpoints also change. a092, a093, a094, a096, a097, a098, a099 and a100 likewise change numerical examples; only a095 has the same sole culture entry. If preservation means variable-schema/intent rather than literal values, that narrower invariant holds, but the packet does not establish that changed numbers are exempt. Also a099's measurement title is an unresolved ambiguity absent from 39033. Review is limited to complete supplied searchable metadata; downloaded payloads and omitted duplicate queryContext were not independently read. Actual query strings are absent, so paraphrase equivalence and literal query identity cannot be audited; no record here requires identity review. No frozen no-answer conjunction, answer key, per-record grade tag or executable metadata instruction was found. No judgment about the rest of the corpus or retrieval follows."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-10",
+      "rationale": "Complete comparison across a091-a100 in all three seeds preserves the conceptual product, process, observational versus simulation distinction, and precisely the same documented variable sets. a093 never documents residual sugar, a094 never documents a pH curve, and a095 documents culture alone; no missing value or negated dairy/beans is treated as positive evidence. All distribution descriptions match their own formats and record content: 0 CSV, 1 JSON, optional 2 consistent CSV or JSON; no payload download was attempted. Meaningful sentence-level and title variation, order/length changes and optional-field variation are present. Strict literal fact preservation is unresolved: for a092 the sugar example is 29.47 here versus 32.01 in 39031 and 11.5 in 39033; pH time examples differ as well. Numeric examples also change for a091/a093/a094/a096/a097/a098/a099/a100, along with fictional sites and publishers. a095 preserves the same single culture value but varies its surrounding text. Therefore this is not purely paraphrasing fixed observations; whether only schema-level preservation was intended needs clarification. a099 also has a measurement-title ambiguity not present in 39033. Full projected metadata were reviewed, not external files, systems or results. Query strings and exact paraphrases are not supplied; no authoritative identity check is required for these ten IDs. There is no observed no-answer conjunction or searchable answer key/grade tag. No corpus-wide or ranking claim is made."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-10",
+      "rationale": "All ten stable IDs were compared against both earlier seeds. Conceptual contexts and variable availability are unchanged, including the oat-versus-dairy distinction, pasteurization rather than fermentation in a096, commercial rather than experimental data in a098, and simulation-only a099. a091/a092/a100 have three measured fermentation variables, a093 two (culture/pH), a094 two (culture/sugar), a095 one (culture); a099's three outputs remain simulated, not empirical facts. Distribution contents are consistently associated with CSV/JSON formats throughout; optional duplicate exports do not supply additional variables. Wording, titles, order, length, paragraphing and optional fields meaningfully vary. Strict preservation of documented values is nevertheless unresolved: a100 reports residual sugar 8.81 here versus 30.6 in 39031 and 13.71 in 39032, with pH endpoint times 7.91 versus 6.53 and 3.52. All IDs except a095 likewise change at least one numerical example; sites and publishers also change. Schema/intent-level facts are preserved, but literal observations are not, and no exemption for changed examples is supplied. a099's titles in this seed avoid the measurement wording found in the other two seeds, so title-level basis clarity is not invariant. The review covers all supplied primary fields only; no external distributions, omitted duplicated queryContext or absent query strings were independently inspected. Thus exact paraphrase/lookup equivalence and corpus-wide coverage are outside scope. None of these records requires authoritative identity review; neither no-answer conjunction nor searchable grade/intent answer key was observed."
+    }
+  }
+}

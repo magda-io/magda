@@ -20,7 +20,34 @@ SYSTEMS = ("baseline", "candidate_03_07", "candidate_05_05", "candidate_07_03",
            "candidate_keep50_03_07", "keyword", "vector")
 WEIGHTS = {"candidate_03_07": [.3, .7], "candidate_05_05": [.5, .5],
            "candidate_07_03": [.7, .3], "candidate_keep50_03_07": [.3, .7]}
+EXTRA_SYSTEMS = ("raw_boost1",)  # Explicit opt-in; the #3902 default stays seven.
 PREFIX = "magda-relevance-eval-"
+
+
+def selected_systems(value=None):
+    """Accept a fixed allowlisted subset, never arbitrary post-hoc weights/DSL."""
+    if value is None:
+        return SYSTEMS
+    if isinstance(value, str):
+        value = json.loads(value) if value.lstrip().startswith("[") else value.split(",")
+    if not isinstance(value, (list, tuple)) or not value or any(not isinstance(v, str) for v in value):
+        raise ValueError("Systems must be a nonempty list or comma-separated names")
+    value = tuple(v.strip() for v in value)
+    if len(set(value)) != len(value) or any(v not in SYSTEMS + EXTRA_SYSTEMS for v in value):
+        raise ValueError("Unknown or duplicate evaluation system")
+    return value
+
+
+def remove_root_vector_boost(node):
+    """Remove ONLY exact root field kNN boosts, including facet query copies."""
+    if isinstance(node, list):
+        return [remove_root_vector_boost(value) for value in node]
+    if not isinstance(node, dict):
+        return node
+    out = {key: remove_root_vector_boost(value) for key, value in node.items()}
+    if "knn" in out and "queryContextVector" in out["knn"]:
+        out["knn"]["queryContextVector"].pop("boost", None)
+    return out
 
 
 def load_jsonl(path):
@@ -74,7 +101,7 @@ def request(base, method, path, body=None, content_type="application/json"):
         raise RuntimeError(f"{method} {path}: {error.code} {error.read().decode()[:3000]}") from error
 
 
-def embed_texts(endpoint, texts, cache, batch_size=8):
+def embed_texts(endpoint, texts, cache, batch_size=8, expected_model=None):
     """Cache by exact UTF-8 text; model/digest must be frozen in experiment manifest."""
     cache.mkdir(parents=True, exist_ok=True)
     missing = {}
@@ -85,7 +112,12 @@ def embed_texts(endpoint, texts, cache, batch_size=8):
     items = sorted(missing.items())
     for start in range(0, len(items), batch_size):
         group = items[start:start + batch_size]
-        result = request(endpoint, "POST", "/v1/embeddings", {"input": [v for _, v in group]})
+        payload = {"input": [v for _, v in group]}
+        if expected_model is not None:
+            payload["model"] = expected_model
+        result = request(endpoint, "POST", "/v1/embeddings", payload)
+        if expected_model is not None and result.get("model") != expected_model:
+            raise ValueError("Embedding response model differs from frozen expected model")
         rows = result.get("data", [])
         rows = sorted(rows, key=lambda row: row.get("index", 0))
         if len(rows) != len(group):
@@ -129,7 +161,8 @@ def prepare(args):
             item["queryContext"] = text
             slots.append(item)
             texts.append(text)
-    vectors = embed_texts(local_url(args.embedding_url), texts, pathlib.Path(args.cache), args.batch_size)
+    vectors = embed_texts(local_url(args.embedding_url), texts, pathlib.Path(args.cache), args.batch_size,
+                          expected_model=getattr(args, "expected_model", None))
     dimensions = {len(vector) for vector in vectors}
     if len(dimensions) != 1:
         raise ValueError("Mixed vector dimensions")
@@ -213,8 +246,12 @@ def detach_inner_hits(node, projections):
 
 def experimental(body, system):
     """A separate experimental candidate, not an alternative production implementation."""
+    if system not in SYSTEMS + EXTRA_SYSTEMS:
+        raise ValueError("Unknown evaluation system: " + system)
     if system == "baseline":
         return copy.deepcopy(body)
+    if system == "raw_boost1":
+        return remove_root_vector_boost(body)
     out = copy.deepcopy(body)
     projections = []
     query = detach_inner_hits(out["query"], projections)
@@ -251,19 +288,70 @@ def hits(response, metadata):
     return out
 
 
+def facet_counts(value):
+    """Retain bucket/count evidence, not facet top_hits metadata or vectors."""
+    if isinstance(value, list):
+        return [facet_counts(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+    return {key: facet_counts(item) for key, item in value.items()
+            if key not in ("hits", "_source", "queryContextVector", "distributions.queryContextVector")}
+
+
+def response_receipt(response, **identity):
+    signature = [{"id": hit["_id"], "rank": rank, "score": hit.get("_score")}
+                 for rank, hit in enumerate(response.get("hits", {}).get("hits", []), 1)]
+    return dict(identity, parsed_json_sha256=hashlib.sha256(
+        json.dumps(response, sort_keys=True).encode()).hexdigest(), hits=signature,
+        total_hits=response.get("hits", {}).get("total"),
+        aggregations=facet_counts(response.get("aggregations")),
+        timed_out=response.get("timed_out"), shards=response.get("_shards"), took=response.get("took"))
+
+
 def run(args):
     if not args.allow_local_writes:
         raise ValueError("Pass --allow-local-writes for owned evaluation pipelines")
     owned(args.index)
+    systems = selected_systems(getattr(args, "systems", None))
+    if args.depth < 1 or args.repetitions < 1:
+        raise ValueError("Depth and repetitions must be positive")
+    ledger = getattr(args, "raw_output", None)
+    if ledger:
+        ledger = pathlib.Path(ledger)
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        with ledger.open("x", encoding="utf8"):
+            pass  # Never silently overwrite an earlier raw repetition ledger.
+
+    def execute(path, body, qid, system, phase, repetition):
+        identity = {"query_id": qid, "system": system, "phase": phase,
+                    "warmup": phase == "warmup", "latency_scope": "local_warmed",
+                    "seed": getattr(args, "seed", None), "repetition": repetition, "index": args.index,
+                    "request_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()}
+        start = time.perf_counter()
+        try:
+            response = request(args.engine_url, "POST", path, body)
+        except Exception as error:
+            if ledger:
+                with ledger.open("a", encoding="utf8") as stream:
+                    stream.write(json.dumps(dict(identity, error_type=type(error).__name__, error=str(error)), sort_keys=True) + "\n")
+            raise
+        elapsed = (time.perf_counter() - start) * 1000
+        if ledger:
+            with ledger.open("a", encoding="utf8") as stream:
+                stream.write(json.dumps(response_receipt(response, elapsed_ms=elapsed, **identity), sort_keys=True) + "\n")
+        if response.get("timed_out") or response.get("_shards", {}).get("failed"):
+            raise ValueError("Incomplete search response")
+        return response, elapsed
+
     pipeline_prefix = owned(args.index + "-pipeline")
     exports = load_jsonl(args.requests)
     metadata = {d["identifier"]: d for d in load_jsonl(args.corpus)}
     pipeline_names = {}
-    pipeline_names["baseline"] = pipeline_prefix + "-baseline"
-    request(args.engine_url, "PUT", "/_search/pipeline/" + pipeline_names["baseline"], pipeline_body([.3, .7]))
-    for system, weights in WEIGHTS.items():
-        pipeline_names[system] = pipeline_prefix + "-" + system.replace("_", "-")
-        request(args.engine_url, "PUT", "/_search/pipeline/" + pipeline_names[system], pipeline_body(weights))
+    for system in systems:
+        if system in ("baseline", "raw_boost1") or system in WEIGHTS:
+            pipeline_names[system] = pipeline_prefix + "-" + system.replace("_", "-")
+            request(args.engine_url, "PUT", "/_search/pipeline/" + pipeline_names[system],
+                    pipeline_body(WEIGHTS.get(system, [.3, .7])))
     rows = []
     requests_out = []
     for exported in exports:
@@ -274,37 +362,36 @@ def run(args):
         if "hybrid" not in json.dumps(body["query"]):
             raise ValueError("Baseline request is not active hybrid")
         # Rotate order deterministically per task to reduce cold-cache/system order bias.
-        rotation = int(hashlib.sha256(qid.encode()).hexdigest()[:8], 16) % len(SYSTEMS)
-        order = SYSTEMS[rotation:] + SYSTEMS[:rotation]
+        rotation = int(hashlib.sha256(qid.encode()).hexdigest()[:8], 16) % len(systems)
+        order = systems[rotation:] + systems[:rotation]
         entries = {}
         for system in order:
             current = experimental(body, system)
             current["size"] = args.depth
             pipeline = pipeline_names.get(system)
             path = "/" + args.index + "/_search" + ("?search_pipeline=" + pipeline if pipeline else "")
-            request(args.engine_url, "POST", path, current)  # one excluded warmup per system
+            execute(path, current, qid, system, "warmup", 0)  # excluded warmup
             entries[system] = {"body": current, "path": path, "pipeline": pipeline, "samples": [], "variants": set()}
         # Interleave configurations rather than measuring one system's full block first.
         for repetition in range(args.repetitions):
             offset = repetition % len(order)
             for system in order[offset:] + order[:offset]:
                 entry = entries[system]
-                start = time.perf_counter()
-                response = request(args.engine_url, "POST", entry["path"], entry["body"])
-                entry["samples"].append((time.perf_counter() - start) * 1000)
-                if response.get("timed_out") or response.get("_shards", {}).get("failed"):
-                    raise ValueError("Incomplete search response")
+                response, elapsed = execute(entry["path"], entry["body"], qid, system, "measured", repetition + 1)
+                entry["samples"].append(elapsed)
                 entry["response"] = response
                 signature = [(h["_id"], h.get("_score")) for h in response["hits"]["hits"]]
                 entry["variants"].add(hashlib.sha256(json.dumps(signature).encode()).hexdigest())
         for system in order:
             entry = entries[system]
             current, response, samples = entry["body"], entry["response"], entry["samples"]
-            row = {"system": system, "query_id": qid, "hits": hits(response, metadata),
+            row = {"system": system, "query_id": qid, "seed": getattr(args, "seed", None),
+                   "latency_scope": "local_warmed", "warmup": False, "hits": hits(response, metadata),
                    "latency_ms": statistics.median(samples), "latency_samples_ms": samples,
                    "ranking_score_variants": sorted(entry["variants"]),
                    "total_hits": response["hits"].get("total"), "aggregations": response.get("aggregations"),
-                   "config": {"warmup_excluded": 1, "repetitions": args.repetitions, "weights": WEIGHTS.get(system),
+                   "config": {"warmup_excluded": 1, "repetitions": args.repetitions,
+                              "latency_scope": "local_warmed", "weights": WEIGHTS.get(system),
                               "index": args.index, "request_sha256": hashlib.sha256(json.dumps(current, sort_keys=True).encode()).hexdigest()}}
             rows.append(row)
             requests_out.append({"system": system, "query_id": qid, "body": current, "pipeline": entry["pipeline"]})
@@ -334,6 +421,9 @@ def parser():
         a.add_argument("--" + name, required=True)
     a.add_argument("--depth", type=int, default=10)
     a.add_argument("--repetitions", type=int, default=3)
+    a.add_argument("--systems", type=selected_systems, default=None,
+                   help="Explicit fixed system names, comma-separated or a JSON list; default remains seven")
+    a.add_argument("--raw-output", help="New JSONL ledger of every warmup/measured response receipt")
     a.add_argument("--allow-local-writes", action="store_true")
     a.set_defaults(func=run)
     return p

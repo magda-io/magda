@@ -1,0 +1,39 @@
+name: magda-relevance-eval-3903
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.19.1@sha256:72fe2fc84be8295906b8efca020b46c58ed45c8da60cd9b8b49e1991e38e89a4
+    environment:
+      discovery.type: single-node
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: -Xms1g -Xmx1g
+    ports:
+      - "127.0.0.1:19210:9200"
+    volumes:
+      - ../../magda-opensearch/wn_s.pl:/usr/share/opensearch/config/analysis/wn_s.pl:ro
+      - opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent 'http://localhost:9200/_cluster/health?wait_for_status=yellow' >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+  embedding:
+    image: ghcr.io/magda-io/magda-embedding-api@sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec
+    command: ["node", "./node_modules/fastify-cli/cli.js", "start", "dist/app.js"]
+    environment:
+      FASTIFY_PORT: "3000"
+      FASTIFY_PLUGIN_TIMEOUT: "600000"
+      FASTIFY_BODY_LIMIT: "10485760"
+    ports:
+      - "127.0.0.1:13010:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/status/readiness').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+volumes:
+  opensearch-data:

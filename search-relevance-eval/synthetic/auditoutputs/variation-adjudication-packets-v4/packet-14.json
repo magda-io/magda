@@ -1,0 +1,821 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "b031",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "documented_release_identity",
+              "physical_specification_dimensions_mm",
+              "reporting_interval"
+            ],
+            "process": "technical_documentation",
+            "product": "torque_gauge"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "documented_release_identity",
+              "physical_specification_dimensions_mm",
+              "reporting_interval"
+            ],
+            "process": "technical_documentation",
+            "product": "torque_gauge"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "documented_release_identity",
+              "physical_specification_dimensions_mm",
+              "reporting_interval"
+            ],
+            "process": "technical_documentation",
+            "product": "torque_gauge"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b032",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "documented_release_identity",
+              "physical_specification_dimensions_mm",
+              "reporting_interval"
+            ],
+            "process": "technical_documentation",
+            "product": "torque_gauge"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "documented_release_identity",
+              "physical_specification_dimensions_mm",
+              "reporting_interval"
+            ],
+            "process": "technical_documentation",
+            "product": "torque_gauge"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "documented_release_identity",
+              "physical_specification_dimensions_mm",
+              "reporting_interval"
+            ],
+            "process": "technical_documentation",
+            "product": "torque_gauge"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b033",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b034",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b035",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "dry_surface_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "dry_surface_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "dry_surface_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b036",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "U",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "U",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "U",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b037",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "water_film_depth_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "water_film_depth_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "water_film_depth_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b038",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "water_film_depth_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "water_film_depth_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "water_film_depth_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b039",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "surface_roughness_mm",
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b040",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "wet_friction_coefficient"
+            ],
+            "process": "wet_pavement_testing",
+            "product": "running_shoe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-14.json",
+  "original_review_sha256": "ea48dca94d10cb9e0462a749513a8761cacc1bbd2b7e2c10739ae1c7e4dd2cfa",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-14",
+    "generator_context": false,
+    "id": "auditor-packet-14",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten actual seed-39031 records and all their projected fields were read, including every distribution title/description/format, keyword, publisher and available spatial field; no temporal fields were present. Across the three seeds, each ID retains its exact catalogue model, product, documented process/ledger qualification, column concepts and units. b031/b032 have physical dimensions, reporting month and release identity; b033/b039 have friction and roughness only; b034/b040 have friction only; b035 has unloaded mass/month; b036 has price/carton dimensions only; b037/b038 have friction, roughness and water depth. Missing water depth or ro",
+        "ughness was not inferred from the testing topic; excluded sensors and absent water were not counted as measured variables. Every record has CSV and PDF whose descriptions explicitly associate the same listed columns with comma-separated tables and PDF tables respectively. Extra distributions: b034 CSV, b035 PDF, b039 PDF, b040 CSV; these repeat the same local column facts, not new contexts. Verification is of supplied metadata association, not downloaded file bytes. No whole records are identical, no answer keys/grade codes/intent tags or no-answer conjunctions appear in the actual fields. Titles and prose are noticeably templated, but titles",
+        " are not bare category labels and descriptions supply subject, protocol and catalogue identity. Meaningful wording variation exists in sentence ordering, paragraph structure, basis phrasing and whether columns are in description or only distributions; filler remains repetitive. Strict all-facts-preserved is unresolved: numerical examples and study/publisher attribution change, not just wording. Seed-39031 numerical examples (dimensions for b031/b032; friction/roughness/depth where present) are b031 63.59, b032 77.05, b033 0.85/0.52, b034 0.56, b035 mass 1179.69, b036 price 128.51/carton 133 x 90 x 65, b037 0.43/1.14/1.62, b038 0.41/1.74/1.62,",
+        " b039 0.56/0.75, b040 0.63. These literal values are evidenced in the corresponding record facts and differ from other seeds. Since they are labelled e.g., they need not be contradictory measurements of identical samples, but exact factual invariance cannot be certified. Also unresolved in every seed: b036 is commercial observational content, so the experimental-basis dichotomy cannot faithfully encode it. No query texts or other corpus packets were supplied/read; paraphrase equivalence, full-corpus coverage and external authoritative identity cannot be independently certified from this packet. Identity observations refer only to explicit cat",
+        "alogue assertions in the actual descriptions, not row keys or semantically similar components."
+      ],
+      "reviewer_id": "auditor-packet-14"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten seed-39032 records and all actual projected fields were read. Relative to both other seeds, product/protocol, exact identities TG-420 versus TG-042 and PACE-033 through PACE-040, and per-ID variable concepts/units are preserved. b036 retains the commercial-ledger exclusion and does not acquire traction measurements. b033/b039 still lack documented water depth and b034/b040 still document only friction. CSV/PDF labels agree with the explicit comma-separated-table/PDF-table content synopses, and all distributions within each record list the same column facts. Extra distributions are b032 CSV, b034 CSV, b035 CSV, b037 CSV, b038 PDF and b",
+        "040 CSV. Distribution verification concerns metadata, not file bytes. Text variation is more than location replacement: b033 changes from inline physical-observation wording and column order to a multi-paragraph empirical-sample account; b037 moves its columns out of the description to distribution synopses and changes basis phrasing; b040 changes from a long multi-paragraph column account to a short synopsis pointing to distributions. Shared generic filler and title frames remain, so this is not fully independent natural prose. No literal record duplicates or searchable answer keys/intent codes were observed. Strict fact preservation remains",
+        " unverified because numerical examples and institutional/location assertions change. Seed-39032 examples are b031 dimensions 59.29, b032 dimensions 79.23, b033 friction/roughness 0.56/1.36, b034 friction 0.47, b035 mass 1690.55, b036 carton 299 x 90 x 65/price 94.63, b037 friction/roughness/depth 0.38/0.51/1.72, b038 0.36/1.74/0.95, b039 0.63/0.76, b040 friction 0.38. Each is literally evidenced in that record's facts; these are not unchanged copies of seed 39031 or 39033 values. Their e.g. status leaves whether factual equality was intended unresolved, despite stable measurement concepts. b036's commercial basis is U, not an invented experim",
+        "ental or simulation claim. Review scope is supplied searchable metadata only; no omitted queryContext copies, actual query paraphrases, downloaded distributions, source corpora or other reviews were inspected. Full-corpus coverage and paraphrase equivalence are outside this packet's observable evidence."
+      ],
+      "reviewer_id": "auditor-packet-14"
+    },
+    "39033": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten seed-39033 records and every actual projected field were read through the packet end. The same per-ID column sets, units, exact catalogue strings and product/process distinctions are maintained across all three seeds. TG-420 and TG-042 remain distinct models; PACE identifiers are explicit catalogue identities of complete shoes, not components or row keys. b031/b032 do not become temperature probes through the negated sensor phrase; b035's no-water statement does not become a positive measured depth; b036 remains a commercial ledger rather than performance data. Every record's CSV/PDF format agrees with its explicit content synopsis, a",
+        "nd optional distributions repeat identical per-record columns: b032 PDF, b038 PDF, b039 PDF, b040 PDF. Verification is metadata/content association only. No actual field supports either frozen no-answer conjunction. Titles use common location/topic frames and filler is repetitive; nevertheless real phrasing, order, length, paragraph and optional-field changes exist, not solely different titles. For example b031 changes a short distribution-directed account into a long inline-column account, b034 becomes a short distribution-directed account instead of the longer seed-39031 account, and b039 uses an observational-study opening instead of the s",
+        "eed-39032 physical-observation opening. No duplicate whole records or answer-key/grade/intent leakage was observed. Variable concepts are preserved, but literal numeric and attribution facts are not. Seed-39033 examples are b031 dimensions 96.59, b032 dimensions 118.05, b033 friction/roughness 0.83/0.52, b034 friction 0.37, b035 mass 665.05, b036 price 55.92/carton 315 x 90 x 65, b037 friction/roughness/depth 0.64/0.99/0.41, b038 0.68/0.8/0.48, b039 0.7/1.19, b040 friction 0.44. These exact examples are quoted in record facts and differ from the other seeds. The examples are marked e.g., so a scientific contradiction is not established, but s",
+        "trict all-facts-preserved cannot be asserted without deciding whether such numeric and attribution perturbation is permitted. This plus b036's unsupported experimental-basis encoding keeps this variation result unresolved. Actual query texts are absent, so paraphrase equivalence and designated exact-query lookup requirements cannot be independently assessed; catalogue identity here means only the explicit assertion in the provided actual description. No external identity authority, distribution bytes or full-corpus coverage was checked."
+      ],
+      "reviewer_id": "auditor-packet-14"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-14.json",
+      "sha256": "ea48dca94d10cb9e0462a749513a8761cacc1bbd2b7e2c10739ae1c7e4dd2cfa"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "b031"
+    ],
+    [
+      39031,
+      "b032"
+    ],
+    [
+      39031,
+      "b033"
+    ],
+    [
+      39031,
+      "b034"
+    ],
+    [
+      39031,
+      "b035"
+    ],
+    [
+      39031,
+      "b036"
+    ],
+    [
+      39031,
+      "b037"
+    ],
+    [
+      39031,
+      "b038"
+    ],
+    [
+      39031,
+      "b039"
+    ],
+    [
+      39031,
+      "b040"
+    ],
+    [
+      39032,
+      "b031"
+    ],
+    [
+      39032,
+      "b032"
+    ],
+    [
+      39032,
+      "b033"
+    ],
+    [
+      39032,
+      "b034"
+    ],
+    [
+      39032,
+      "b035"
+    ],
+    [
+      39032,
+      "b036"
+    ],
+    [
+      39032,
+      "b037"
+    ],
+    [
+      39032,
+      "b038"
+    ],
+    [
+      39032,
+      "b039"
+    ],
+    [
+      39032,
+      "b040"
+    ],
+    [
+      39033,
+      "b031"
+    ],
+    [
+      39033,
+      "b032"
+    ],
+    [
+      39033,
+      "b033"
+    ],
+    [
+      39033,
+      "b034"
+    ],
+    [
+      39033,
+      "b035"
+    ],
+    [
+      39033,
+      "b036"
+    ],
+    [
+      39033,
+      "b037"
+    ],
+    [
+      39033,
+      "b038"
+    ],
+    [
+      39033,
+      "b039"
+    ],
+    [
+      39033,
+      "b040"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "b031",
+      "full_raw_record_sha256": "ba827145b8b43fb2a438b8807ae2a8e669c1f0d381f6f3aa73000d8161db4a2b",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "ba827145b8b43fb2a438b8807ae2a8e669c1f0d381f6f3aa73000d8161db4a2b",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b032",
+      "full_raw_record_sha256": "d86f7f79546b8f9c3861438cb6504b50bd63c78a2720a3f9b7a5cb2f8724737e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d86f7f79546b8f9c3861438cb6504b50bd63c78a2720a3f9b7a5cb2f8724737e",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b033",
+      "full_raw_record_sha256": "58d1b691f2f46388003344df6b73c044f80172b296f4353f4cd725bd30d5cee3",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "58d1b691f2f46388003344df6b73c044f80172b296f4353f4cd725bd30d5cee3",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b034",
+      "full_raw_record_sha256": "fa74c2e457f9203556caa5a5c1d07ee3923f3aecf6fb950f13b966bb14fe3501",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "fa74c2e457f9203556caa5a5c1d07ee3923f3aecf6fb950f13b966bb14fe3501",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b035",
+      "full_raw_record_sha256": "bb755b02b37e60caeeba07f005599fe6530c0a1d8a06bb7e416b11ac61bab3c9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "bb755b02b37e60caeeba07f005599fe6530c0a1d8a06bb7e416b11ac61bab3c9",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b036",
+      "full_raw_record_sha256": "2a62b9f2ee30ee7f69af0a5dc4f0d998da972a8c3a0c555ccd81020ef9c76f28",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2a62b9f2ee30ee7f69af0a5dc4f0d998da972a8c3a0c555ccd81020ef9c76f28",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b037",
+      "full_raw_record_sha256": "5c2c72440f5d36c29ccf743d3ef6d601e751073fef2944a86ee1852d6b9eabb8",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "5c2c72440f5d36c29ccf743d3ef6d601e751073fef2944a86ee1852d6b9eabb8",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b038",
+      "full_raw_record_sha256": "b1e75be8acfbaeceb2d8142ffe5994e670d7b0e185c4ed4ad0d2b9f01c3cbf1f",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b1e75be8acfbaeceb2d8142ffe5994e670d7b0e185c4ed4ad0d2b9f01c3cbf1f",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b039",
+      "full_raw_record_sha256": "44d6f9373292f7b7ed5eeccfaf9bb4cc2c6dcb9436a031b76db26bfdf026386d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "44d6f9373292f7b7ed5eeccfaf9bb4cc2c6dcb9436a031b76db26bfdf026386d",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b040",
+      "full_raw_record_sha256": "1b0ea9b5461eaad638362fbd160d2a33c2cabfbf0272aecc3fa306e6486b9514",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "1b0ea9b5461eaad638362fbd160d2a33c2cabfbf0272aecc3fa306e6486b9514",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b031",
+      "full_raw_record_sha256": "17bae6d0800ec09d8719caa7c7a20d708476783c34a49fd0fb9a82fb422c5c4d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "17bae6d0800ec09d8719caa7c7a20d708476783c34a49fd0fb9a82fb422c5c4d",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b032",
+      "full_raw_record_sha256": "fc25e79bd039aea3a8975057712dcc0dbfda531bd7586c3e840ced2168003a98",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "fc25e79bd039aea3a8975057712dcc0dbfda531bd7586c3e840ced2168003a98",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b033",
+      "full_raw_record_sha256": "bc44cb45729132c223bd960147fbbe4f2c79c2ec5e477699b204ef78f0b477f0",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "bc44cb45729132c223bd960147fbbe4f2c79c2ec5e477699b204ef78f0b477f0",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b034",
+      "full_raw_record_sha256": "3696547f723ba19a08f33636d677b9bc2afa837701ed901cb7d2a52da44205c8",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3696547f723ba19a08f33636d677b9bc2afa837701ed901cb7d2a52da44205c8",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b035",
+      "full_raw_record_sha256": "c379be80ff079f74f996703a62ec8c7aa932361774ef1db5437977a14e77cd92",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c379be80ff079f74f996703a62ec8c7aa932361774ef1db5437977a14e77cd92",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b036",
+      "full_raw_record_sha256": "5c197d12a4fe2b96d109765a1daa2e395a44253f3818800739fdfd6b272c807e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "5c197d12a4fe2b96d109765a1daa2e395a44253f3818800739fdfd6b272c807e",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b037",
+      "full_raw_record_sha256": "299118a08181282137e8b6023d360801865b6d44e5c10af803240ac1fe05581a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "299118a08181282137e8b6023d360801865b6d44e5c10af803240ac1fe05581a",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b038",
+      "full_raw_record_sha256": "d05e67b896719e790134622c8f002080e171bc74b86f0f98d60e37d99f1365da",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d05e67b896719e790134622c8f002080e171bc74b86f0f98d60e37d99f1365da",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b039",
+      "full_raw_record_sha256": "21384e41123bc585eca0c4284cd2c6022b923b51a712d1922354c3d34cf1bd87",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "21384e41123bc585eca0c4284cd2c6022b923b51a712d1922354c3d34cf1bd87",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b040",
+      "full_raw_record_sha256": "d7bf49755e3b55c125e766556abc1e11c4ef37e0f01333f1eac9515cbc4cd5c5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d7bf49755e3b55c125e766556abc1e11c4ef37e0f01333f1eac9515cbc4cd5c5",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b031",
+      "full_raw_record_sha256": "fcc03ce5b9f4dc5963ba44161ec1abddeee4a375b5a514462edfdd853fea6c29",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "fcc03ce5b9f4dc5963ba44161ec1abddeee4a375b5a514462edfdd853fea6c29",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b032",
+      "full_raw_record_sha256": "80ff417d06c830dbdc0c5082047ec0e6b15289788b2d782c2d0135015c14bead",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "80ff417d06c830dbdc0c5082047ec0e6b15289788b2d782c2d0135015c14bead",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b033",
+      "full_raw_record_sha256": "dc7014378c9621e142f67c21a8960084e4ada0a4b969d13c3cfd5705e9d5a4d0",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "dc7014378c9621e142f67c21a8960084e4ada0a4b969d13c3cfd5705e9d5a4d0",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b034",
+      "full_raw_record_sha256": "86d0308361788b221a4d3bb8f44c3f95f1e787d07022e6f612f39f834f50dca3",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "86d0308361788b221a4d3bb8f44c3f95f1e787d07022e6f612f39f834f50dca3",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b035",
+      "full_raw_record_sha256": "d021d5b0e3584c55300516b84bbde57910a1c6b222d46e91a1268169fea70c74",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d021d5b0e3584c55300516b84bbde57910a1c6b222d46e91a1268169fea70c74",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b036",
+      "full_raw_record_sha256": "562878f036348173496d1d0bb96c8acdb03c7c750e22c4648bbdc0ef08b2e235",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "562878f036348173496d1d0bb96c8acdb03c7c750e22c4648bbdc0ef08b2e235",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b037",
+      "full_raw_record_sha256": "b4b33b91424245272ae2b77a255bd188a3829eea5d397491b54f8ba011ec26f1",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b4b33b91424245272ae2b77a255bd188a3829eea5d397491b54f8ba011ec26f1",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b038",
+      "full_raw_record_sha256": "dee04cc454f0cd8c4fabed6874f0d24fa489b9519af55069f22ce3c7ca226e60",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "dee04cc454f0cd8c4fabed6874f0d24fa489b9519af55069f22ce3c7ca226e60",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b039",
+      "full_raw_record_sha256": "be7fcfa869c4a7253e6f86d39e3999ea99b1609af77722f780968f4fdf019db1",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "be7fcfa869c4a7253e6f86d39e3999ea99b1609af77722f780968f4fdf019db1",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b040",
+      "full_raw_record_sha256": "61349dacf136dcd28e256b5c05297b861981453fa146c4631be02b8579e91803",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "61349dacf136dcd28e256b5c05297b861981453fa146c4631be02b8579e91803",
+      "seed": 39033
+    }
+  ]
+}

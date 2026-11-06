@@ -1,0 +1,510 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-16",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-16"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "b051", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.26)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 40.99)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-051", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-051."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b052", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 43.03)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-052", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-052."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b053", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1514.43)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-053", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-053."}]},
+      "hard_negatives": {"f02": {"reason": "Same pump product, but an unloaded inventory expressly excludes operating circulation trials. Only unit mass and reporting month are documented; no operating sound, microphone distance or flow measurement is supported. The exclusion is not a positive calibration measurement.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1514.43)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b054", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "commercial_ledger_associated_with_indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 285 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 227.64)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-054", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-054."}]},
+      "hard_negatives": {"f02": {"reason": "The acoustic-testing context and keyword do not make this a performance dataset. The explicit commercial-ledger qualification and carton/cost columns support commercial observations only, not sound pressure, measurement distance or hydraulic flow. Advertised cost is a listed price, not a measured operating response.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 285 x 90 x 65); advertised retail cost (AUD/unit; e.g. 227.64)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b055", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 42.96)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.78)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 12.45)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-055", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-055."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b056", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 36.92)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.34)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 8.53)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-056", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-056."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b057", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.37)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 36.38)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-057", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-057."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b058", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 42.69)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-058", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-058."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b059", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 539.25)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-059", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-059."}]},
+      "hard_negatives": {"f02": {"reason": "An unloaded inventory is not an operating indoor acoustic/circulation test. The explicit exclusion of operating trials and the mass/month columns do not document any of the three operating acoustic/flow facts.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 539.25); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b060", "seed": 39031, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "commercial_ledger_associated_with_indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 194 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 79.23)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-060", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-060."}]},
+      "hard_negatives": {"f02": {"reason": "The title, keyword and study setting concern indoor acoustics, but the released material expressly is a commercial ledger rather than experimental performance. Its carton dimensions and advertised prices do not positively measure noise, microphone distance or fluid flow.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 194 x 90 x 65); advertised retail cost (AUD/unit; e.g. 79.23)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b051", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.64)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 54.72)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-051", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-051."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b052", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 50.55)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-052", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-052."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b053", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1174.7)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-053", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-053."}]},
+      "hard_negatives": {"f02": {"reason": "The same pump category is inventoried unloaded, expressly without operating calibration or circulation. Unit mass and calendar reporting month are supported, not operating noise, sound-measurement distance or flow.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 1174.7); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b054", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "commercial_ledger_associated_with_indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 187.32)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 233 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-054", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-054."}]},
+      "hard_negatives": {"f02": {"reason": "Indoor testing is contextual, not a claim of measured acoustic performance in the deposit. The explicit ledger qualification and cost/carton columns do not document operating sound pressure, microphone distance or hydraulic flow; listed advertised prices are commercial observations.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 187.32); shipping carton dimensions (length x width x height in mm; e.g. 233 x 90 x 65)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b055", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 53.85)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.52)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 24.6)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-055", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-055."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b056", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.57)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 33.38)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 39.16)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-056", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-056."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b057", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.3)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 35.22)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-057", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-057."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b058", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 41.64)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-058", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-058."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b059", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1426.34)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-059", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-059."}]},
+      "hard_negatives": {"f02": {"reason": "This is an unloaded bench inventory, not indoor operating acoustic testing. Its explicit lack of an operating circulation trial and its mass/month variables leave all three requested acoustic/flow measurements undocumented; negated calibration is not a measured calibration result.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 1426.34); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b060", "seed": 39032, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "commercial_ledger_associated_with_indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 175 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 107.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-060", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-060."}]},
+      "hard_negatives": {"f02": {"reason": "Although associated with an indoor testing activity, the deposit explicitly reports a commercial ledger, not experimental performance. Carton sizes and advertised prices are the documented observations; sound pressure, measurement distance and fluid flow are not documented.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 175 x 90 x 65); advertised retail cost (AUD/unit; e.g. 107.7)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b051", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 39.35)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.89)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-051", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-051."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b052", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 48.47)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-052", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-052."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b053", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1629.56)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-053", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-053."}]},
+      "hard_negatives": {"f02": {"reason": "Hydraulic pumps are present, but the actual process is unloaded inventory with operating trials expressly excluded. Reporting month and unloaded mass do not support any operating noise, microphone distance or hydraulic flow measurement.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1629.56)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b054", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "commercial_ledger_associated_with_indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 316 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 93.39)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-054", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-054."}]},
+      "hard_negatives": {"f02": {"reason": "Acoustic testing is only the associated study context. The deposit explicitly disclaims experimental performance and lists carton dimensions and advertised cost, not sound pressure, microphone distance or hydraulic flow.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 316 x 90 x 65); advertised retail cost (AUD/unit; e.g. 93.39)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b055", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.62)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 10.57)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 38.12)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-055", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-055."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b056", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.58)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 44.53)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 31.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-056", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-056."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b057", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 53.79)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.98)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-057", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-057."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b058", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 40.05)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-058", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-058."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b059", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1220.05)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-059", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-059."}]},
+      "hard_negatives": {"f02": {"reason": "The actual activity is unloaded bench inventory with operating calibration/circulation expressly excluded. Documented mass and reporting month are not acoustic or hydraulic operating-performance measurements; no positive evidence of the requested three facts appears elsewhere.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1220.05)."}]}},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b060", "seed": 39033, "reviewer_id": "auditor-packet-16",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "commercial_ledger_associated_with_indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 314 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 165.77)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-060", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-060."}]},
+      "hard_negatives": {"f02": {"reason": "The trials-related title and acoustic keyword identify context, but the description expressly restricts the deposit to a commercial ledger rather than experimental performance. The only columns are carton sizes and advertised prices, not operating sound, microphone distance or fluid flow. The qualification resolves the broad title without supplying extra measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 314 x 90 x 65); advertised retail cost (AUD/unit; e.g. 165.77)."}, {"field": "title", "quote": "What the Reed Marsh North hydraulic pumps trials recorded"}]}},
+      "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-16",
+      "rationale": "Compared all ten IDs with both other seed versions after reading every actual projected field. Preserved semantic observations: b051/b057 document sound pressure and microphone distance, not flow; b052/b058 document sound pressure only; b055/b056 document all three; b053/b059 remain unloaded inventories with mass/month only and no operating trials; b054/b060 remain commercial ledgers with carton dimensions and advertised price, not performance. FLOW-051 through FLOW-060 remain exact description-field identities, with distinct numeric suffixes and no component substitution. All listed distributions were checked: CSV descriptions explicitly supply comma-separated tables and PDF descriptions explicitly supply tables inside PDF; every sibling retains its record's same column set and units. Third distribution presence/formats vary without introducing variables. Titles, sites, publishers, paragraph order, introductory phrasing, basis phrasing and amount of explanatory prose vary meaningfully, although reusable boilerplate remains. Numeric e.g. values and fictional sites/publishers are NOT identical across seeds; preservation here is of documented measurement concepts, units, product, process, empirical-versus-simulation basis and identity, not literal observations. No literal duplicate whole records, answer keys or intent/grade tags found in searchable fields. No frozen no-answer conjunction is supported. Scope: metadata content association only, not verification of downloaded file bytes; omitted duplicate queryContext was not independently inspected. No complete-corpus coverage or query-paraphrase equivalence claim is possible from this packet's query IDs alone."
+    },
+    "39032": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-16",
+      "rationale": "All ten records compared against 39031 and 39033. Each keeps its FLOW identity and measurement concept/unit set: b051/b057 distance+sound, b052/b058 sound only, b055/b056 distance+sound+flow, b053/b059 unloaded mass+reporting month, b054/b060 carton dimensions+advertised cost. Missing performance variables are not inferred from context, negated trials or field-guide notes. Commercial ledgers are empirical commercial observations, not positive acoustic performance evidence. Each CSV synopsis matches its comma-separated format and each PDF synopsis explicitly describes contained tables; all sibling column sets agree, including optional third distributions. Semantic facts and exclusions persist through changed title constructions, descriptive sentence forms/order, prose lengths, paragraph layouts and optional spatial fields. For example b051 becomes a long joined narrative, while b055 is short and shifts variable evidence to distributions; b057 loses its third distribution without losing its two documented variables. Reused wording exists, but variation is not merely title prefix changes. Actual example numbers, fictional site/publisher names and some format multiplicities change, so these are not exact observation-preserving copies. No unsupported frozen no-answer conjunction or searchable answer-key/grade/intent leakage found. Verification is limited to supplied metadata, not downloadable bytes or omitted duplicated queryContext; query text and other corpus records were not inspected."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-16",
+      "rationale": "Reviewed every supplied field for all ten records and compared each with both prior seeds. Exact description identities FLOW-051 through FLOW-060, hydraulic pump subject, observational basis and all documented variable concepts/units persist. b051/b057 still lack flow evidence, b052/b058 still lack distance and flow evidence, b055/b056 retain all three operating measurements; inventories b053/b059 still expressly exclude operating trials and document only mass/month; ledgers b054/b060 still disclaim experimental performance and document carton dimensions and advertised price. The broad b060 trials title is qualified by its explicit commercial-ledger description, not treated as new measured facts. All CSV/PDF labels agree with content synopses and each sibling repeats the same per-record variables. Third-distribution changes do not add facts. New title formulations, reordered variable listings, changed empirical-study phrasing and substantially different paragraph/prose lengths provide textual variation despite obvious shared templates. Numeric examples and fictional study sites/publishers differ, so only semantic fact-set/identity preservation is supported, not invariant measured numbers or real-world study provenance. No duplicated complete records, searchable intent/grade tags or frozen no-answer conjunction found. Metadata-only content association was verified; no files were downloaded, omitted queryContext copies were not reread, and query paraphrase equivalence/full-corpus coverage cannot be established from this packet."
+    }
+  }
+}

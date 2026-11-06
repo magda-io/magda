@@ -1,0 +1,569 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-12",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-12"
+  },
+  "sources": {
+    "39031": {"path": ".local/corpora-v3/seed-39031.jsonl", "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"},
+    "39032": {"path": ".local/corpora-v3/seed-39032.jsonl", "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"},
+    "39033": {"path": ".local/corpora-v3/seed-39033.jsonl", "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"}
+  },
+  "record_reviews": [
+    {
+      "seed": 39031, "dataset_id": "b011", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "shoe_component", "evidence": [{"field": "description", "quote": "replacement shoe components supplied separately from complete footwear"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 30.64)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RUN-X120-LACE)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-LACE", "rationale": "The actual catalogue model is the replacement lace component only. The scalar retains the complete suffix, not the parent SKU. Frozen exact-query text and objective target-ID criteria now resolve the prior missing-query U without assuming uninspected target metadata.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]},
+      "hard_negatives": {
+        "f01": {"reason": "A separately supplied lace under dimensional/release inspection is not a complete running shoe undergoing measured wet-pavement performance. The documented columns are dimensions, edition identity and month, not wet friction, roughness or water-film depth.", "evidence": [{"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}, {"field": "distributions.0.description", "quote": "Deposited columns: physical specification inspection (dimensions in mm; e.g. 30.64); documented release identity (edition code; e.g. RUN-X120-LACE); reporting interval (calendar month; e.g. 2024-06)."}]},
+        "x01": {"reason": "Frozen x01 requests RUN-X120 and authoritatively identifies b001, not this b011. Actual RUN-X120-LACE has a distinct component suffix and explicitly excludes the complete parent shoe. The rubric allows case/hyphen aliases of the parent only, not suffix/component equivalence. Prior U resolved by supplied frozen query and criterion, not a similar-word inference about b001.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]},
+        "x05": {"reason": "Frozen x05 requests RUN-X120-SOLE and authoritatively identifies b005. Actual b011 is RUN-X120-LACE and explicitly describes a lace, not a sole. The distinct LACE versus SOLE component suffix is decisive; no uninspected b005 metadata claim is needed. Prior U resolved.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b012", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "during wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 156 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 252.46)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "TRAIL-X121", "rationale": "Actual full catalogue SKU, with both TRAIL prefix and 121 numeric suffix retained. The basis category describes observed ledger entries only: experimental traction performance and its representativeness are explicitly not claimed. The prior ledger caution is retained as this interpretation, not treated as an unresolved contradiction.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]},
+      "hard_negatives": {
+        "f01": {"reason": "The product and activity wording overlap but the release explicitly concerns a commercial ledger, not experimental performance. Carton dimensions and advertised cost supply none of the three wet-traction measurements; the non-simulation basis must not be mistaken for experimental performance evidence.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 156 x 90 x 65); advertised retail cost (AUD/unit; e.g. 252.46)."}]},
+        "x04": {"reason": "Frozen x04 requests RUN-X121 with authoritative ID b002. Actual b012 explicitly identifies TRAIL-X121. The numeric portion matches but the TRAIL versus RUN prefix differs; the rubric provides no such prefix alias. Prior U resolved from the actual SKU and now-available query, not the control label.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]},
+        "x10": {"reason": "Frozen x10 requests TRAIL-X120 with authoritative ID b004. Actual b012 explicitly identifies TRAIL-X121: the prefix matches but final digit 1 differs from 0. Exact lookup does not treat that as a case/hyphen alias. Prior U resolved.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b013", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 36.85)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 15.25)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.98)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "PUMP-H71", "rationale": "Scalar is actual model only. The separately quoted actual title Hydraulic pump acceptance trials exactly matches frozen x11's title query and b013 authoritative ID; no concatenated title/model identity is asserted.", "evidence": [{"field": "title", "quote": "Hydraulic pump acceptance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H71."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b014", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.02)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 43.57)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 39.92)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "PUMP-H72", "rationale": "Scalar is actual model only; endurance-trials title remains separately evidenced. Similar acoustic columns do not make this the acceptance-trials title record.", "evidence": [{"field": "title", "quote": "Hydraulic pump endurance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H72."}]},
+      "hard_negatives": {
+        "x11": {"reason": "Frozen x11 requests Hydraulic pump acceptance trials with authoritative b013. Actual b014 title says endurance trials and its model is PUMP-H72 rather than the separately reviewed b013 PUMP-H71. Functional similarity does not satisfy exact title identity.", "evidence": [{"field": "title", "quote": "Hydraulic pump endurance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H72."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b015", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.71)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 46.84)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "HPT-71", "rationale": "Actual catalogue identifier ends in digit 1; there is no documented flow column.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-71."}]},
+      "hard_negatives": {
+        "x13": {"reason": "Frozen x13 requests HPT-7I, authoritative b016, ending in capital I. Actual HPT-71 ends in digit 1. The literal difference remains decisive despite similar pump subject matter.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-71."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b016", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 56.56)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "HPT-7I", "rationale": "Actual catalogue identifier ends in capital I, not digit 1. Only operating sound is positively documented.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-7I."}]},
+      "hard_negatives": {
+        "x12": {"reason": "Frozen x12 requests HPT-71 with authoritative b015. Actual b016 has HPT-7I, ending in capital I rather than digit 1. Sound-pressure observations neither equate the identifiers nor imply omitted distance/flow measurements.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-7I."}, {"field": "distributions.0.description", "quote": "Deposited columns: operating sound pressure level (dB(A); e.g. 56.56)."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b017", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "pump_interface_standard", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 78.42)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. ZTS-20471:2013)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "ZTS-20471:2013", "rationale": "Actual complete edition identifier only. Subject is a fictional interface specification, explicitly not an operating pump; colon/year is identity-bearing, not explanatory prose.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2013."}, {"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+      "hard_negatives": {
+        "f02": {"reason": "The object is explicitly a specification rather than an operating pump. The documentation columns are dimensions, month and edition identity, not operating sound, microphone distance or flow.", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}, {"field": "distributions.0.description", "quote": "Deposited columns: physical specification inspection (dimensions in mm; e.g. 78.42); reporting interval (calendar month; e.g. 2024-06); documented release identity (edition code; e.g. ZTS-20471:2013)."}]},
+        "x15": {"reason": "Frozen x15 requests ZTS-20471:2024, authoritative b018. Actual b017 identifies the 2013 edition. Sharing the base number does not establish version identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2013."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b018", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "pump_interface_standard", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. ZTS-20471:2024)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 33.09)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "ZTS-20471:2024", "rationale": "Actual complete edition identifier only. The fictional specification's role is evidenced separately; it is not a pump performance record.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2024."}, {"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+      "hard_negatives": {
+        "f02": {"reason": "Specification documentation explicitly excludes an operating pump. Reporting month, edition and physical dimensions do not document sound pressure, microphone distance or hydraulic flow.", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); documented release identity (edition code; e.g. ZTS-20471:2024); physical specification inspection (dimensions in mm; e.g. 33.09)."}]},
+        "x14": {"reason": "Frozen x14 requests ZTS-20471:2013, authoritative b017. Actual b018 identifies ZTS-20471:2024, a distinct edition despite the same base number.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2024."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b019", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 31.47)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.05)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 44.31)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLW-0081", "rationale": "Actual identifier contains two numeric zeros, not letters O.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-0081."}]},
+      "hard_negatives": {
+        "x17": {"reason": "Frozen x17 requests FLW-OO81 with two letters O, authoritative b020. Actual b019 has FLW-0081 with two zeros. Matching functional columns do not establish exact model equality.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-0081."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "b020", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 31.05)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.72)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 37.52)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLW-OO81", "rationale": "Actual identifier contains two capital letters O, not numeric zeros.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-OO81."}]},
+      "hard_negatives": {
+        "x16": {"reason": "Frozen x16 requests FLW-0081 with two zeros, authoritative b019. Actual b020 has FLW-OO81 with two letters O. Semantic acoustic similarity cannot equate those model strings.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-OO81."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b011", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "shoe_component", "evidence": [{"field": "description", "quote": "replacement shoe components supplied separately from complete footwear"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RUN-X120-LACE)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 27.28)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-LACE", "rationale": "Actual scalar SKU is specifically the lace component, not its parent or a sole. Frozen exact-query text and objective target-ID criteria now resolve prior missing-query U without assuming uninspected target metadata.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]},
+      "hard_negatives": {
+        "f01": {"reason": "A separately supplied lace under technical documentation is not complete-shoe wet-pavement performance evidence. Documented dimensions, edition and reporting month do not supply friction, roughness or water depth.", "evidence": [{"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); documented release identity (edition code; e.g. RUN-X120-LACE); physical specification inspection (dimensions in mm; e.g. 27.28)."}]},
+        "x01": {"reason": "Frozen x01 requests RUN-X120, authoritative b001, whereas actual b011 is RUN-X120-LACE and explicitly excludes the complete parent running shoe. The LACE suffix is not a permitted parent case/hyphen alias. Prior U resolved by literal query plus actual component evidence.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]},
+        "x05": {"reason": "Frozen x05 requests RUN-X120-SOLE, authoritative b005. Actual b011 specifies RUN-X120-LACE and describes a replacement lace only; LACE is not SOLE. Both the full suffix and role contradict component equality. Prior U resolved without inventing b005 metadata.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b012", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "during wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 332 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 107.28)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "TRAIL-X121", "rationale": "Full actual SKU retains TRAIL and 121. Observed non-simulated ledger entries support only the commercial measurements: experimental traction performance and its representativeness are explicitly not claimed. The original ledger caution is an interpretive qualification, not an unresolved metadata contradiction.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]},
+      "hard_negatives": {
+        "f01": {"reason": "Contextual wet-pavement testing does not turn a commercial ledger into experimental performance evidence. Carton dimensions and advertised cost supply none of wet friction, roughness or water-film depth.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 332 x 90 x 65); advertised retail cost (AUD/unit; e.g. 107.28)."}]},
+        "x04": {"reason": "Frozen x04 requests RUN-X121, authoritative b002. Actual TRAIL-X121 differs in the TRAIL versus RUN prefix despite matching 121. No prefix equivalence is registered. Prior U resolved from the now-available literal query and actual SKU.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]},
+        "x10": {"reason": "Frozen x10 requests TRAIL-X120, authoritative b004. Actual TRAIL-X121 retains the same prefix but ends in digit 1 instead of 0. This is not a permitted case/hyphen alias. Prior U resolved.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b013", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.88)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 23.3)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 49.4)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "PUMP-H71", "rationale": "Scalar contains only the actual catalogue model. The separately quoted title Hydraulic pump acceptance trials matches frozen x11's literal query and authoritative b013 criterion; title is not concatenated into the SKU.", "evidence": [{"field": "title", "quote": "Hydraulic pump acceptance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H71."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b014", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 15.6)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.21)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 43.28)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "PUMP-H72", "rationale": "Actual model only; the independently quoted endurance title is distinct from acceptance trials.", "evidence": [{"field": "title", "quote": "Hydraulic pump endurance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H72."}]},
+      "hard_negatives": {
+        "x11": {"reason": "Frozen x11 requests Hydraulic pump acceptance trials with authoritative b013. Actual b014 title is Hydraulic pump endurance trials and model PUMP-H72. Shared acoustic variables do not erase the title difference or establish exact identity.", "evidence": [{"field": "title", "quote": "Hydraulic pump endurance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H72."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b015", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 51.52)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.37)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "HPT-71", "rationale": "Actual identifier ends in digit 1; sound and distance are documented, not flow.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-71."}]},
+      "hard_negatives": {
+        "x13": {"reason": "Frozen x13 requests HPT-7I, authoritative b016. Actual HPT-71 ends in digit 1 rather than capital I. Similar indoor acoustic testing cannot equate the full identifiers.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-71."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b016", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 51.91)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "HPT-7I", "rationale": "Actual catalogue identifier ends in capital I, not digit 1. Only sound is positively documented; no distance or flow is inferred.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-7I."}]},
+      "hard_negatives": {
+        "x12": {"reason": "Frozen x12 requests HPT-71, authoritative b015. Actual HPT-7I ends in capital I instead of digit 1. Its sound-pressure column establishes a functional observation, not exact identifier equivalence or any omitted variable.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-7I."}, {"field": "distributions.0.description", "quote": "Deposited columns: operating sound pressure level (dB(A); e.g. 51.91)."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b017", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "pump_interface_standard", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. ZTS-20471:2013)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 38.01)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "ZTS-20471:2013", "rationale": "Actual full edition string only. The specification role and explicit non-operating-pump exclusion belong to interpretation, not the identifier scalar.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2013."}, {"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+      "hard_negatives": {
+        "f02": {"reason": "Explicit interface-specification documentation is not acoustic/flow testing of an operating hydraulic pump. Dimensions, edition and month do not supply noise, microphone distance or flow.", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}, {"field": "distributions.0.description", "quote": "Deposited columns: documented release identity (edition code; e.g. ZTS-20471:2013); physical specification inspection (dimensions in mm; e.g. 38.01); reporting interval (calendar month; e.g. 2024-06)."}]},
+        "x15": {"reason": "Frozen x15 requests ZTS-20471:2024, authoritative b018. Actual b017 identifies 2013. The edition year remains distinct even with the same base number.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2013."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b018", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "pump_interface_standard", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. ZTS-20471:2024)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 94.98)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "ZTS-20471:2024", "rationale": "Actual complete edition identifier only. The fictional specification is explicitly not an operating pump; that role is not appended to the scalar.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2024."}, {"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+      "hard_negatives": {
+        "f02": {"reason": "The explicit non-operating interface specification and technical-documentation process differ from operating-pump low-noise testing. Edition, dimensions and month are not noise, distance or flow measurements.", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}, {"field": "distributions.0.description", "quote": "Deposited columns: documented release identity (edition code; e.g. ZTS-20471:2024); physical specification inspection (dimensions in mm; e.g. 94.98); reporting interval (calendar month; e.g. 2024-06)."}]},
+        "x14": {"reason": "Frozen x14 requests ZTS-20471:2013, authoritative b017. Actual b018 identifies the 2024 edition, so its complete version identifier differs.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2024."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b019", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.46)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 48.2)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 13.97)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLW-0081", "rationale": "Actual identifier contains two zeros rather than letters O.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-0081."}]},
+      "hard_negatives": {
+        "x17": {"reason": "Frozen x17 requests FLW-OO81 with capital letters O, authoritative b020. Actual FLW-0081 has numeric zeros. Shared acoustic measurements cannot equate those literal identifiers.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-0081."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "b020", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 38.74)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 26.71)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.26)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLW-OO81", "rationale": "Actual identifier contains two capital letters O, not zeros.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-OO81."}]},
+      "hard_negatives": {
+        "x16": {"reason": "Frozen x16 requests FLW-0081 with two zeros, authoritative b019. Actual FLW-OO81 instead has letters O. Similar sound, distance and flow columns do not resolve the exact-character mismatch.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-OO81."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b011", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "shoe_component", "evidence": [{"field": "description", "quote": "replacement shoe components supplied separately from complete footwear"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RUN-X120-LACE)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 69.17)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-LACE", "rationale": "Actual model scalar retains the LACE suffix. It denotes a replacement lace only, not the complete parent shoe or a sole. Prior U is resolved from frozen queries and objective identity criteria without claiming to inspect absent target metadata.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]},
+      "hard_negatives": {
+        "f01": {"reason": "Lace-only technical release inspection is not measured wet-pavement performance of a complete running shoe. The documented month, edition and dimensions supply none of the traction variables.", "evidence": [{"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); documented release identity (edition code; e.g. RUN-X120-LACE); physical specification inspection (dimensions in mm; e.g. 69.17)."}]},
+        "x01": {"reason": "Frozen x01 requests RUN-X120 with authoritative b001. Actual b011 has full SKU RUN-X120-LACE and explicitly excludes the complete parent running shoe. Case/hyphen aliases do not remove component suffixes. This actual component evidence plus frozen objective criterion resolves prior U.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]},
+        "x05": {"reason": "Frozen x05 requests RUN-X120-SOLE with authoritative b005. Actual b011 identifies RUN-X120-LACE and expressly says replacement lace only. LACE versus SOLE is a distinct component identity, not a semantic alias. Prior U resolved without imputing uninspected target fields.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-LACE."}, {"field": "description", "quote": "This record documents the replacement lace component only, not the complete parent running shoe."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b012", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 207 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 49.6)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "TRAIL-X121", "rationale": "Actual complete SKU, retaining prefix and numeric suffix. The non-simulation basis denotes observed commercial entries, not experimentally representative traction performance; that exclusion is explicit. The original ledger caution remains as an interpretation, not an unresolved metadata failure.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]},
+      "hard_negatives": {
+        "f01": {"reason": "The synopsis explicitly qualifies the release as a commercial ledger rather than experimental performance. Nested columns are carton dimensions and advertised cost, not wet friction, surface roughness or water-film depth; the nearby traction-testing language supplies no missing measurement.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 207 x 90 x 65); advertised retail cost (AUD/unit; e.g. 49.6)."}]},
+        "x04": {"reason": "Frozen x04 requests RUN-X121, authoritative b002. Actual b012 identifies TRAIL-X121. The numeric portion agrees but TRAIL versus RUN is a prefix mismatch with no registered alias. Prior U resolved by literal query and actual SKU.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]},
+        "x10": {"reason": "Frozen x10 requests TRAIL-X120, authoritative b004. Actual b012 is TRAIL-X121, ending in digit 1 rather than 0. Prefix agreement does not satisfy full exact identity, and case/hyphen alias rules cannot erase this digit difference. Prior U resolved.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X121."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b013", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 16.49)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.41)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 48.66)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "PUMP-H71", "rationale": "Actual model scalar only. The separately evidenced Hydraulic pump acceptance trials title matches frozen x11's title query and authoritative b013 criterion; title and model are not a fabricated concatenated identifier.", "evidence": [{"field": "title", "quote": "Hydraulic pump acceptance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H71."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b014", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.23)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 36.11)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 18.61)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "PUMP-H72", "rationale": "Actual catalogue model only. Its separately evidenced title is endurance, not acceptance trials.", "evidence": [{"field": "title", "quote": "Hydraulic pump endurance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H72."}]},
+      "hard_negatives": {
+        "x11": {"reason": "Frozen x11 requests Hydraulic pump acceptance trials, authoritative b013. Actual b014 has Hydraulic pump endurance trials and PUMP-H72. The title differs decisively despite comparable operating sound, distance and flow measurements.", "evidence": [{"field": "title", "quote": "Hydraulic pump endurance trials"}, {"field": "description", "quote": "The catalogue model or edition is PUMP-H72."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b015", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.44)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 43.7)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "HPT-71", "rationale": "Actual identifier ends in digit 1. No flow column is positively documented alongside sound and distance.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-71."}]},
+      "hard_negatives": {
+        "x13": {"reason": "Frozen x13 requests HPT-7I, authoritative b016, ending in capital I. Actual HPT-71 ends in digit 1 and is not the same exact model despite acoustic similarity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-71."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b016", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 46.06)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "HPT-7I", "rationale": "Actual identifier ends in capital I rather than digit 1. Only operating sound is documented; contextual hydraulic circulation does not supply omitted distance or flow.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-7I."}]},
+      "hard_negatives": {
+        "x12": {"reason": "Frozen x12 requests HPT-71, authoritative b015. Actual HPT-7I ends in capital I rather than digit 1. Its sound-only data do not equate exact model identity or positively document omitted distance/flow measurements.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is HPT-7I."}, {"field": "distributions.0.description", "quote": "Deposited columns: operating sound pressure level (dB(A); e.g. 46.06)."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b017", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "pump_interface_standard", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 29.69)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. ZTS-20471:2013)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "ZTS-20471:2013", "rationale": "Complete actual edition string only. Subject is a fictional interface specification, explicitly not an operating pump; its role is not part of the scalar.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2013."}, {"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+      "hard_negatives": {
+        "f02": {"reason": "A specification under release inspection is explicitly not an operating hydraulic pump. Reporting month, dimensions and edition identity are documented, not operating sound, microphone distance or hydraulic flow.", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); physical specification inspection (dimensions in mm; e.g. 29.69); documented release identity (edition code; e.g. ZTS-20471:2013)."}]},
+        "x15": {"reason": "Frozen x15 requests ZTS-20471:2024, authoritative b018. Actual b017 identifies ZTS-20471:2013. The different year is a distinct edition, not a permitted alias.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2013."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b018", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "pump_interface_standard", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. ZTS-20471:2024)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 86.41)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "ZTS-20471:2024", "rationale": "Complete actual edition identifier only. The fictional specification role is independently quoted and not appended to the scalar.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2024."}, {"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}]},
+      "hard_negatives": {
+        "f02": {"reason": "Explicit non-operating interface documentation differs from indoor sound/flow testing of an operating pump. Month, edition identity and dimensions supply none of the required acoustic or flow measurements.", "evidence": [{"field": "description", "quote": "a fictional hydraulic-pump interface specification, not an operating pump"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); documented release identity (edition code; e.g. ZTS-20471:2024); physical specification inspection (dimensions in mm; e.g. 86.41)."}]},
+        "x14": {"reason": "Frozen x14 requests ZTS-20471:2013, authoritative b017. Actual b018 explicitly identifies ZTS-20471:2024, so the full edition identifier differs despite its common base number.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is ZTS-20471:2024."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b019", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 9.04)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.82)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 36.74)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLW-0081", "rationale": "Actual model has two numeric zeros, not capital letters O.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-0081."}]},
+      "hard_negatives": {
+        "x17": {"reason": "Frozen x17 requests FLW-OO81 with capital letters O, authoritative b020. Actual b019 has FLW-0081 with zeros; comparable sound, distance and flow observations do not satisfy this exact-character identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-0081."}]}
+      }, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "b020", "reviewer_id": "auditor-packet-12",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 23.6)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.63)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 38.55)"}]
+        }, "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLW-OO81", "rationale": "Actual identifier contains two capital letters O, not zeros.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-OO81."}]},
+      "hard_negatives": {
+        "x16": {"reason": "Frozen x16 requests FLW-0081 with zeros, authoritative b019. Actual b020 identifies FLW-OO81 with two letters O. Functional measurement similarity does not establish the requested exact model identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLW-OO81."}]}
+      }, "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true, "reviewer_id": "auditor-packet-12",
+      "rationale": "Scope: this adjudication contains ALL 30 unique packet assignments, ten per seed, b011 through b020; no packet records are omitted. This is the original independent auditor's recheck, not a fresh independent context. Original reviews-v2/packet-12.json is preserved unchanged (SHA256 ca59f7b775090d1f22b9d7bf1e5a2af2c6d8b86f80d558d383b81aed2c412eda). I read the complete frozen rubric and 75 query-spec rows and re-read actual packet fields and my own review. The added exact-query context resolves b011 x01/x05 and b012 x04/x10: RUN-X120-LACE differs from requested RUN-X120 and RUN-X120-SOLE, while TRAIL-X121 differs from requested RUN-X121 and TRAIL-X120. Full SKU/component evidence, not declared contrast names, is decisive. All identity scalars now contain actual catalogue model/edition strings only; title and role interpretation remain in rationale and quoted evidence. All original contexts/facts and literal measurement evidence are retained; no negated or absent variable was promoted to measured. Compared with both other seeds, this seed preserves the ten products, documented processes, basis distinctions, measurement types and full identifiers; acceptance/endurance titles remain intentionally fixed. Wording meaningfully varies narrative structure, paragraphing, order, length and placement of measured variables between description/distributions. b011 has dimensions/edition/month; b012 only carton dimensions/cost; b013/b014/b019/b020 have sound/distance/flow; b015 has sound/distance only; b016 sound only; b017/b018 dimensions/edition/month. Distribution formats/content associations checked: b011 CSV/PDF/PDF, b012 CSV/PDF/PDF, b013 CSV/PDF/CSV, b014 CSV/PDF/CSV, b015 CSV/PDF, b016 CSV/PDF, b017 CSV/PDF/PDF, b018 CSV/PDF/PDF, b019 CSV/PDF/CSV, b020 CSV/PDF. Each synopsis repeats the record's own columns and explicitly describes comma-separated downloads or PDF tables consistently with the format. Numerical examples, fictional locations and publishers differ across seeds: preservation means core claims/types, not identical numerical observations. Publisher/spatial text supplies context only; no temporal field is projected. The newly read f01 paraphrases all concern observed complete running-footwear traction on wet paved surfaces; none asks for a lace or a commercial ledger. The f02 paraphrases all concern indoor hydraulic-circulation sound testing; none asks for a non-operating interface specification. The frozen success criteria state the same three measured facts for each respective group; query wording does not itself enumerate every required fact. No corpus-wide paraphrase, coverage, no-answer absence or ranking conclusion is claimed. No actual field supports either frozen no-answer conjunction or contains answer-key labels. Final v3 source references/hashes are supplied by the parent, whose assertion of unchanged b011-b020 metadata is the basis for carrying this actual v2 packet evidence to v3; I did not inspect full v3 corpora or independently hash them. Format checks are metadata-level, not downloaded-file checks."
+    },
+    "39032": {
+      "passed": true, "reviewer_id": "auditor-packet-12",
+      "rationale": "All ten actual records compared with both other seeds; all30 are included in this adjudication, not merely the affected rows. RUN-X120-LACE remains explicitly lace-only; TRAIL-X121 remains an observed commercial ledger, explicitly not experimental performance. PUMP-H71 acceptance versus PUMP-H72 endurance, HPT-71 digit 1 versus HPT-7I capital I, ZTS-20471:2013 versus :2024, and FLW-0081 zeros versus FLW-OO81 capital letters O are all preserved. b015 still lacks documented flow and b016 still documents only sound; missing columns are not inferred from product/process wording. Complete frozen query/rubric context resolves the prior b011/b012 exact U through full literal SKU differences and pre-registered authoritative IDs, without inventing the missing targets' searchable fields. Interpretation and title evidence have been separated from scalar SKU strings for every row. Descriptions meaningfully vary sentence/paragraph arrangement, length, fact ordering, contextual prose and where column evidence appears; this is not merely substituting category prefixes. All distributions checked: b011 CSV/PDF/CSV, b012 CSV/PDF/PDF, b013 CSV/PDF/PDF, b014 CSV/PDF/CSV, b015 CSV/PDF, b016 CSV/PDF/CSV, b017 CSV/PDF/PDF, b018 CSV/PDF/CSV, b019 CSV/PDF/CSV, b020 CSV/PDF. Format descriptions consistently specify comma-separated downloads or PDF tables and repeat their own record's same columns, with no additional performance variable in optional third distributions. Keywords/title/publisher/optional spatial text introduce no conflicting product claims; there is no projected temporal field. Core concepts, units and column types are stable, but numeric examples/sites/publishers are not invariant observations. Newly read f01 and f02 paraphrases preserve the corresponding wet-pavement-footwear and indoor-hydraulic-acoustic needs; the explicit success criteria, not bare synonyms, supply all required columns. No semantic query was changed. The ledger basis category applies to observed commercial quantities only, not representative experimental performance. No unresolved record-level issue remains from this recheck; packet-wide coverage of absent targets and all-corpus no-answer absence are outside scope. Original raw review remains unchanged; full original contexts and factual evidence are preserved in these rows. Parent-supplied v3 references and unchanged-metadata assertion are not independently verified full-corpus hashes. Format verification concerns metadata association, not actual downloaded bytes."
+    },
+    "39033": {
+      "passed": true, "reviewer_id": "auditor-packet-12",
+      "rationale": "All ten full projected records compared with 39031/39032; this file covers all30 unique seed/ID assignments without omission. Product roles, documented processes, observed-not-simulated basis, measurement types and full literal identifiers are preserved. Some concise descriptions defer measurements entirely to distribution synopses, notably b012/b013/b019; other records use longer alternate paragraph/sentence ordering. This is meaningful length, structure and evidence-placement variation, with exact acceptance/endurance titles intentionally retained. b011 still explicitly excludes the complete parent shoe; b012 still explicitly excludes experimental performance; b017/b018 still explicitly exclude an operating pump. All distributions checked: b011 CSV/PDF, b012 CSV/PDF, b013 CSV/PDF, b014 CSV/PDF/PDF, b015 CSV/PDF/PDF, b016 CSV/PDF/CSV, b017 CSV/PDF/CSV, b018 CSV/PDF, b019 CSV/PDF, b020 CSV/PDF/CSV. Each distribution description associates the advertised format with its own record's same columns; no nested text supplies an undocumented traction, distance or flow variable. Keywords/publisher/optional spatial fields give context, not new performance claims, and no temporal field is projected. Core fact types and models persist, while numerical example values and fictional sites/publishers differ and cannot be claimed to be identical observations. Reading full frozen queries/rubric resolves prior b011/b012 U: LACE is neither the parent RUN-X120 nor SOLE; TRAIL-X121 is neither RUN-X121 nor TRAIL-X120. The objective authoritative-ID rule and actual full identifiers both support those contrasts; uninspected target metadata is not assumed. All scalar identities are actual model/edition strings only, with interpretation/title evidence retained separately. Original review remains untouched; all original context and measurement evidence is retained in this complete adjudication. Newly available f01/f02 paraphrases consistently express observed wet paved running-footwear traction and indoor hydraulic-circulation acoustic testing respectively, not components, commercial ledgers or interface documents; the registered criteria still explicitly supply the three required measurement columns for each need. No actual packet text supports either no-answer conjunction; this is not a whole-corpus absence claim. No record-level U remains from the addressed issues, no query or expected grade was changed, and no ranking/system evidence was inspected. V3 source references are parent-supplied and carried on the stated byte-identical metadata assertion, not independent full-corpus verification. Format checks are metadata consistency only, not downloaded-file inspection."
+    }
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "actual_text_only": true,
+  "generator_or_expected_grades_used": false,
+  "titles": [
+    {
+      "seed": 39031,
+      "dataset_id": "a029",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "f1fc6a9542d2fac8faaa51ee2f511b357be0da0fb628b00d7d50de4a2ca2909f",
+      "title": "Wrapper assessment of milk chocolate at Dune Valley East",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "3e8034ca79eb4e955d648a225d74ebd069d7361c231c7313e6afcdd46a4d3e4d",
+      "title": "Chocolate bars and chocolate texture testing at Quartz Field East",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a049",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "64bc01312c823d1cbfd42137c40df212dc3184adf70b32c7bfa518800dcd0a44",
+      "title": "The dessert ingredients investigation at Juniper Vale East",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a059",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "7599e100f4209d3a1e1f61b92a96c2afb6cb05ff7d9c2750f30c00c8eb109114",
+      "title": "Working records for Cedar Reach East equipment sanitation",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a069",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "d3a403c51954d315e78879b19cc8ae0c17f392655548cf6ca205fff67734106c",
+      "title": "Drinking chocolate powder assessed in the Pine Basin East series",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a079",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "ea469bebf607fdf8fce5edb27729ddbb4d6887f2db43a5f2fbe8294115f4b4a7",
+      "title": "What the Ivy Brook East chocolate milk trials recorded",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a089",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "510ea42a389171644502367df601caf6b57061e7b43690832efeeea42ce699b5",
+      "title": "Chocolate milk under examination at Bramble Hill East",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a099",
+      "before_corpus_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+      "before_record_sha256": "27d248ca69ee858602a8efc95fcd1eef5508b23471753d39e2813c37cb970bed",
+      "title": "Examining beverage fermentation at Oak Terrace East",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a029",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "daa58224e13d8fac662c09599225aff7e1891b8309929b4dbe71d93e483a3bff",
+      "title": "Milk chocolate at Silver Creek Inner: technical account",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "dd571f3c30e0f4c3cb2eedf3ab64c1020ca2e8a931a19de43a085cc330974a0e",
+      "title": "Observations from Linden Grove Inner chocolate texture testing",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a049",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "725f77bb154f89b00b0bcfc4d3bdc30c68373b7e493a42582ae3cb5d0ec1970d",
+      "title": "Looking back on Elm Crossing Inner ingredient storage",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a059",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "e04f73d03ecee9fca3c6c69bccd8418d8cee39b1a1ef7012091ad20257dea039",
+      "title": "The Reed Marsh Inner record of equipment sanitation",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a069",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "a9e5c9905834a31c4bb44a264e1401dc9c1331257ca63c8a25b09e2e2c1e1ca7",
+      "title": "Drinking chocolate powder records deposited by Kestrel Point Inner",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a079",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "337a0126b6089b92bd6b17be8a461c014b0b6f7c1e6fc7730eb774e92a863631",
+      "title": "From field notes to archive: Dune Valley Inner chocolate milk",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a089",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "45f88e50f5baf209641329fcfced803edea1e625a465f99f4258a22971f17ce5",
+      "title": "Drink formulation revisited at Quartz Field Inner",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a099",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "c8a6723c9b23819abe66a3cdbcfee25b8af43a25f1538b65a14d0683d8befc66",
+      "title": "Chocolate milk in the Juniper Vale Inner record",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a029",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "777f5e53b49c430b0c0b00860733538dcf50cfd1e3f89df2ea00a7e18594d186",
+      "title": "Alderbank Coastal results concerning milk chocolate",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "4509f0ed0a2ce405bf1efe1464709c741d37c702fd6940ec6adcecd1732c0145",
+      "title": "North Meadow Coastal technical notes on chocolate bars",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a049",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "aab5d94094e42e2705073d406993012519be47a7c0fd609d7845ef129ad3b7f0",
+      "title": "A practical examination of ingredient storage at Granite Bend Coastal",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a059",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "42b371c63a831a7f120111321d9ad217213f7daaf863adce34304df507265b82",
+      "title": "Equipment sanitation in the Tern Inlet Coastal investigation",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a069",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "432eb4e1ca7c165252e50f45a94f3c47a92f9caab42a52a1ad32cee11436788e",
+      "title": "Inside the Maple Quay Coastal hot-water reconstitution study",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a079",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "20ae3ba417448f20e612c2a7c96d6f944f6637a74afaa1a1bc6d699b0f04ecbe",
+      "title": "Notes on chocolate milk from Fern Hollow Coastal",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a089",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "06e9669e1b03b045bd72881900372fb31730042539619c4c3688e320adfdf155",
+      "title": "Chocolate milk: the Silver Creek Coastal assessment",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a099",
+      "before_corpus_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+      "before_record_sha256": "17eb72e54a94b46b0e5fe69a78880e3c7b281e57637ee4170f91e48a341ff0fd",
+      "title": "Study notes from Linden Grove Coastal on beverage fermentation",
+      "explicit_basis_quote": "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "potentially_empirical_root_title": false
+    }
+  ],
+  "no_validation_pass_claimed": true
+}

@@ -1,0 +1,478 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-01",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-01"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a001", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 14)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}],
+          "treatment_application_rate": [{"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 3.28)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s02": {"reason": "Same crop, but these are field pest-control trials, not harvest-yield recording. The listed quantities are insects and treatment, not harvested mass, harvested area or season. Litres/hectare is an application rate, not a measured harvested plot area. CSV availability does not remove the process mismatch.", "evidence": [{"field": "description", "quote": "field pest management trials"}, {"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14); applied pest-control treatment (category: neem oil / untreated)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a002", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 21)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}],
+          "treatment_application_rate": [{"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 10.81)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a003", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 8)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a004", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 8)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a005", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "U: cacao crop is stated, but material in the inspected warehouse bags is unspecified", "evidence": [{"field": "description", "quote": "focusing on cacao trees grown as a crop"}, {"field": "description", "quote": "postharvest pest inspection of warehouse bags"}]},
+        "process": {"value": "postharvest_pest_storage", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags, rather than crop treatment in the field"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 60)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Hazel Ridge Inner)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "An explicit postharvest warehouse inspection process excludes crop treatment in the field. The count is of completed operations, not pests; neither applied treatment nor rate is documented. Product wording is ambiguous, but the process distinction is explicit.", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags, rather than crop treatment in the field"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 60)"}]},
+        "s02": {"reason": "Warehouse pest inspection is not harvest-yield recording. Calendar month is a reporting interval, not the main/secondary harvest-season variable. No harvested mass or area is documented; the operations count must not be converted into yield.", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 60); facility location code (categorical site code; e.g. Hazel Ridge Inner)"}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": ["U: description simultaneously frames the subject as cacao trees grown as a crop and the process as postharvest inspection of warehouse bags. It does not identify what those bags contain; an unambiguous physical product cannot be inferred. Operational columns are documented, but no pest-count measurement is supported."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a006", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 873.5)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 7.02)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a007", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 387.95)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 4.96)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a008", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 616.85)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 3.52)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a009", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 341.99)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a010", "seed": 39031, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 467.21)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 5.06)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s02": {"reason": "The crop, harvest process and all three measurements are supported; this is not a topical mismatch. The decisive difference is format: both distributions are PDF, whereas s02 requires CSV. No machine-readable table is claimed.", "evidence": [{"field": "description", "quote": "Only PDF tables are deposited; no machine-readable table is available."}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.1.format", "quote": "PDF"}, {"field": "distributions.0.description", "quote": "Tables are supplied inside a PDF document."}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a001", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 10)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}],
+          "treatment_application_rate": [{"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 10.03)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s02": {"reason": "The crop overlaps, but the documented process is field pest management, not harvest-yield recording. Its columns record insects, treatment and application rate, not harvest mass, harvested area or season; the rate denominator hectare is not plot-area evidence.", "evidence": [{"field": "description", "quote": "field pest management trials"}, {"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 10); applied pest-control treatment (category: neem oil / untreated); treatment application volume (litres/hectare; e.g. 10.03)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a002", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 21)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}],
+          "treatment_application_rate": [{"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 7.28)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a003", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 19)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a004", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 14)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a005", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "U: cacao crop is stated, but material in the inspected warehouse bags is unspecified", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}, {"field": "description", "quote": "postharvest pest inspection of warehouse bags"}]},
+        "process": {"value": "postharvest_pest_storage", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags, rather than crop treatment in the field"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 22)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Dune Valley Central)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "The explicit warehouse-bag postharvest process differs from field crop treatment. The table counts completed operations, not insects, and documents no treatment assignment or application rate. Physical-product ambiguity remains, independently of the clear process exclusion.", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags, rather than crop treatment in the field"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 22)"}]},
+        "s02": {"reason": "Postharvest warehouse inspection is not crop harvest-yield recording. Reporting month, site code and operations count do not document harvested mass, harvested area or harvest season. A reporting calendar month must not be relabelled as the stated harvest-season category.", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags"}, {"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Dune Valley Central); reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 22)"}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": ["U: the investigation says cacao trees grown as a crop while describing postharvest inspection of warehouse bags. Bag contents are not identified, so the actual physical product is ambiguous. Only operational columns, not pest measurements, are documented."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a006", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 565.11)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 2.7)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a007", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 324.71)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 2.93)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a008", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 358.34)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 7.54)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a009", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 762.56)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a010", "seed": 39032, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 795.55)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 3.56)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s02": {"reason": "Product, harvest process, mass, area and season all match the subject requirement. The independent contrast is only the required CSV format: both actual distributions are PDF and the description explicitly excludes machine-readable tables. It must not be described as topically unrelated.", "evidence": [{"field": "description", "quote": "Only PDF tables are deposited; no machine-readable table is available."}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.1.format", "quote": "PDF"}, {"field": "distributions.0.description", "quote": "Tables are supplied inside a PDF document."}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a001", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 26)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}],
+          "treatment_application_rate": [{"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 6.48)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s02": {"reason": "This is empirical cacao field pest management, not crop harvest-yield recording. The table supports pest count, treatment category and per-hectare treatment volume, not harvested mass, harvested plot area or harvest season. Shared crop vocabulary and CSV format do not establish the missing process or measurements.", "evidence": [{"field": "description", "quote": "field pest management trials"}, {"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 6.48); insects counted per inspected tree (count; e.g. 26); applied pest-control treatment (category: neem oil / untreated)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a002", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 21)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}],
+          "treatment_application_rate": [{"field": "distributions.0.description", "quote": "treatment application volume (litres/hectare; e.g. 7.53)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a003", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 18)"}],
+          "control_treatment": [{"field": "distributions.0.description", "quote": "applied pest-control treatment (category: neem oil / untreated)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a004", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "field_pest_management", "evidence": [{"field": "description", "quote": "field pest management trials"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"pest_counts": [{"field": "distributions.0.description", "quote": "insects counted per inspected tree (count; e.g. 26)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a005", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "U: cacao crop is stated, but material in the inspected warehouse bags is unspecified", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}, {"field": "description", "quote": "postharvest pest inspection of warehouse bags"}]},
+        "process": {"value": "postharvest_pest_storage", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags, rather than crop treatment in the field"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 89)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Fern Hollow Outer)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "Warehouse-bag postharvest inspection explicitly contrasts with treatment in the field. Completed operations are not counted pests, and no treatment category or rate is measured here. Product ambiguity is unresolved but does not erase the stated process distinction.", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags, rather than crop treatment in the field"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 89)"}]},
+        "s02": {"reason": "The actual process is postharvest pest inspection rather than harvest-yield recording. Site, reporting month and completed operations do not establish harvested mass, area or the stated harvest-season variable. The reporting month is not evidence of a measured harvest season.", "evidence": [{"field": "description", "quote": "postharvest pest inspection of warehouse bags"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Fern Hollow Outer); completed operations (count; e.g. 89)"}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": ["U: the description refers to cacao trees grown as a crop while describing postharvest warehouse-bag inspection, without identifying bag contents. The physical product remains ambiguous. Operational counts are supported, not pest counts."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a006", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 181)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 3.27)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a007", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 611.35)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 6.9)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a008", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 813.69)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 1.39)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a009", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 870.81)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a010", "seed": 39033, "reviewer_id": "auditor-packet-01",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "cacao_crop", "evidence": [{"field": "description", "quote": "cacao trees grown as a crop"}]},
+        "process": {"value": "harvest_yield", "evidence": [{"field": "description", "quote": "crop harvest yield recording"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "harvest_mass": [{"field": "distributions.0.description", "quote": "harvested bean mass (kg; e.g. 369.53)"}],
+          "hectares": [{"field": "distributions.0.description", "quote": "harvested plot area (hectares; e.g. 3.28)"}],
+          "season": [{"field": "distributions.0.description", "quote": "harvest season (category: main / secondary)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s02": {"reason": "The harvest subject and all three required measurements are supported. Only the required CSV delivery is absent: the complete distribution list is PDF-only and agrees with the explicit exclusion of machine-readable tables. This is a format contrast, not semantic irrelevance to harvest yield.", "evidence": [{"field": "description", "quote": "Only PDF tables are deposited; no machine-readable table is available."}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.1.format", "quote": "PDF"}, {"field": "distributions.0.description", "quote": "Tables are supplied inside a PDF document."}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false, "reviewer_id": "auditor-packet-01",
+      "rationale": "Reviewed all ten IDs against both other seed versions, including every supplied title, complete description, keyword, distribution title/description/format, publisher and optional spatial field; no temporal fields were supplied. Measurement concepts and units are preserved per ID: a001/a002 insect count, treatment and rate; a003 count/treatment only; a004 count only; a005 operational month/site/count only; a006/a007 mass/area/season; a008 mass/area only; a009 mass only; a010 mass/area/season in PDF only. Unlisted treatment rates, seasons and areas are not inferred. All CSV descriptions identify comma-separated tables, JSON descriptions identify JSON records with the same columns, and both PDF distributions of a010 identify PDF tables; no metadata format/content conflict was found. Verification is of supplied metadata association, not fetched file bytes. The forbidden positive tokens arthropod/suppression and orchard/productivity are absent from the corresponding supplied records. No frozen no-answer conjunction or explicit answer-key/intent/grade leakage appears. All identity_review_required flags are false; identity values are null because no authoritative identity audit is assigned here. Same-intent pairs a001/a002 and a006/a007 have distinct titles, locations and numeric examples rather than identical complete records. Wording varies beyond title substitution: a001's description directly lists measurements here, whereas 39032/39033 place them only in distributions; a002 and a004 are much longer here, while a003 and a006 expand in other seeds. Nevertheless strict factual preservation is not established: a001 distributions.0.description says insects counted per inspected tree (count; e.g. 14) and treatment application volume (litres/hectare; e.g. 3.28), versus count 10/rate 10.03 in 39032 and count 26/rate 6.48 in 39033. Its description location changes from Silver Creek Central to Oak Terrace Upper to Quartz Field Lower. Numeric examples change in every ID across seeds, and publisher/location context changes too. These are substantive text facts, not mere paraphrases, even though measurement concepts remain stable. a005's unresolved crop-tree versus warehouse-bag material ambiguity also persists across all three versions. No query text is supplied, so actual paraphrase equivalence and exact-lookup query semantics cannot be independently assessed from intent identifiers alone; corpus-wide coverage outside these ten IDs is not claimed. Formulaic catalogue-style titles recur; none supplies an authoritative SKU, hidden label or different measured fact. If strict policy treats these recurrent prose shells as template-only titles, that style boundary needs adjudication rather than an inferred acceptance."
+    },
+    "39032": {
+      "passed": false, "reviewer_id": "auditor-packet-01",
+      "rationale": "All ten complete primary-field projections reviewed and compared with 39031 and 39033. The same per-ID measurement concepts, units, process distinctions, empirical basis and CSV/JSON versus PDF-only availability persist; absent variables are not promoted to measurements. Distribution titles are generic, but each description supplies the appropriate same-record columns and serialization. Metadata format/content association is verified, not actual file bytes. All records have meaningful changes in description ordering, verbosity, paragraph structure, title wording and optional spatial presence; examples include a003 moving its count/treatment list into a longer description here, a006 expanding with units and reuse notes, and a007 becoming a short distribution-directed synopsis. However changing reported examples and study context prevents an unconditional facts-preserved finding: a006 distributions.0.description documents harvested bean mass (kg; e.g. 565.11) and harvested plot area (hectares; e.g. 2.7), versus mass 873.5/area 7.02 in 39031 and mass 181/area 3.27 in 39033. a005 completed operations changes from 60 to 22 to 89, with facility location codes Hazel Ridge Inner, Dune Valley Central and Fern Hollow Outer. a002 pest count stays 21, but its application-rate examples change from 10.81 to 7.28 to 7.53 litres/hectare. Every ID changes at least one numeric example, and locations/publishers are not invariant. The examples are marked e.g.; this limits their interpretation as actual rows, but does not make their literal numeric content preserved. a005 also continues to leave warehouse-bag contents unspecified while saying cacao trees grown as a crop. That ambiguity is not resolved by lexical similarity. No prohibited positive synonym tokens, explicit answer-key/intent/grade codes, or frozen no-answer conjunction are evidenced in the supplied searchable fields. All assigned identities are not required. The three supplied s01p/s02p IDs contain no actual query strings, so paraphrase semantic equivalence cannot be verified; this packet also cannot establish global positive/exact coverage. Repeated catalogue-title prose shells are observable, not a factual variation guarantee; a strict template-only-title interpretation remains a style-policy uncertainty."
+    },
+    "39033": {
+      "passed": false, "reviewer_id": "auditor-packet-01",
+      "rationale": "Reviewed all ten records through every supplied searchable field and compared each stable ID with 39031/39032. Product/process wording, empirical rather than simulation basis, measurement concept sets and units remain stable except the same unresolved physical-product ambiguity in a005. CSV/JSON content descriptions are internally aligned with their format fields and record-specific measurements; a010 has two PDF descriptions and two PDF format fields, consistently excluding machine-readable tables. No downloaded bytes were inspected. Meaningful textual variation exists: a003 becomes a long prose description, a004 becomes short, a008 moves its measured values out of its description into distributions, and a010 uses a longer paragraph-separated description. It is not solely reordered titles, though recurring catalogue prose shells remain obvious. Strict factual preservation is disputed because numeric examples and study attribution change: a008 distributions.0.description now says harvested plot area (hectares; e.g. 1.39) and harvested bean mass (kg; e.g. 813.69), compared with 3.52/616.85 in 39031 and 7.54/358.34 in 39032. a009 mass changes 341.99 to 762.56 to 870.81 kg; a010 area changes 5.06 to 3.56 to 3.28 hectares and mass changes 467.21 to 795.55 to 369.53 kg. a003 counts are 8/19/18 and a004 counts are 8/14/26. Together with the a001/a002/a005/a006/a007 comparisons documented in the other seed rationales, all ten IDs have changed numeric examples. Fictional location and publisher changes likewise exceed pure rewording. Thus concepts are preserved but literal reported example facts are not; whether such changes were intended cannot be resolved from this packet alone. a005 still does not identify bag contents. No excluded positive synonym tokens, explicit answer-key/grade/intent leakage or no-answer conjunction were found in these records. No identity review is required for any supplied record. Actual query strings are absent, so paraphrase equivalence and identity-query wording cannot be independently audited, and no global corpus coverage claim is made. Recurrent generic title shells raise a policy-boundary question if template-only titles are categorically prohibited; no hidden identity or answer key is inferred from them."
+    }
+  }
+}

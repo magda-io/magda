@@ -1,0 +1,14 @@
+{
+  "approved_by": "parent-agent",
+  "created_utc": "2026-11-06T15:24:04.080826+00:00",
+  "diagnostic_only": true,
+  "diagnostic_policy_sha256": "221ecc284a9970b49507095ad6f741355d0b53351f166b61648e8dcd8022ba3b",
+  "diagnostic_validation_sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f",
+  "execution_allowed": true,
+  "production_source_manifest_sha256": "97ba128bb2421515d9c5e8aa9a425f8f82648e00cfd2c3e21b37bfa5c09c99e4",
+  "promotion_allowed": false,
+  "reason": "Explicitly authorized local supplementary replay only; original strict confirmatory gate remains failed and A/B are forbidden.",
+  "schema_version": 1,
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "supplementary_probe_spec_sha256": "61401482d79c099e4aaa4872afcb69f6b2680ca68904838360eeecde8b2d64d5"
+}

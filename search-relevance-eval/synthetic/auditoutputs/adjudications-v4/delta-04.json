@@ -1,0 +1,1053 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "delta-auditor-04",
+    "context_id": "explicitunavailable; freshdelta04",
+    "model": "gpt-6.1-sol(runtime label)",
+    "parameters": "notexposed",
+    "rankings_seen": false,
+    "generator_context": false
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "record_reviews": [
+    {
+      "seed": 39033,
+      "dataset_id": "a059",
+      "reviewer_id": "delta-auditor-04",
+      "contexts": [
+        {
+          "product": {
+            "value": "U: unspecified simulated equipment/surface; food-production equipment association not established",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "equipment cleaning cycle completed"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "residue remaining on cleaned surface"
+              }
+            ]
+          },
+          "process": {
+            "value": "equipment_cleaning_simulation; factory-specific process U",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_equipment_cleaning_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"
+              }
+            ],
+            "simulated_residue_mass_mg_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "residue remaining on cleaned surface (mg; e.g. 2.91)"
+              }
+            ],
+            "simulated_microbial_swabs_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "microbial growth from surface swabs (CFU/swab; e.g. 95.17)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "confectionery_factory",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "chocolate confectionery factory production equipment"
+              }
+            ]
+          },
+          "process": {
+            "value": "factory_sanitation",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "sanitation and equipment cleaning verification"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "A separate investigation at Tern Inlet Coastal examines chocolate confectionery factory production equipment through sanitation and equipment cleaning verification."
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s08": {
+          "reason": "Cleaning cycles, residue mass and swab growth are positively documented only as simulated outputs, not required empirical sanitation observations. The confectionery-factory process is an explicit contextual topic, but the text calls its investigation separate; do not silently associate these outputs with that investigation. The corrected JSON distribution title is truthful; CSV's Variable dictionary and values title is neutral, not an empirical claim. Under the now completely inspected frozen rubric, the explicit simulation-only basis independently settles the empirical-need mismatch, whatever the unresolved simulated-product association. That uncertainty remains recorded; it is not silently resolved by the decisive basis conflict. The separate factory-sanitation topic is defensible for plant diagnostics without linking it to physical measurements.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "description",
+              "quote": "A separate investigation at Tern Inlet Coastal examines chocolate confectionery factory production equipment through sanitation and equipment cleaning verification."
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.0.title",
+              "quote": "Variable dictionary and values"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false,
+      "issues": [
+        "Unresolved subject association: the only explicit food-production equipment investigation is described as separate. Its topical product/process are supported, but assigning them to the simulation output would require an unstated link."
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a069",
+      "reviewer_id": "delta-auditor-04",
+      "contexts": [
+        {
+          "product": {
+            "value": "drinking_chocolate_powder",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "drinking chocolate powder intended for hot beverages"
+              }
+            ]
+          },
+          "process": {
+            "value": "hot_drink_reconstitution",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This deposit concerns hot-drink reconstitution bench testing with water of drinking chocolate powder intended for hot beverages at Maple Quay Coastal."
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_water_temperature_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "added water temperature (degrees C; e.g. 74.85)"
+              }
+            ],
+            "simulated_powder_dose_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "powder mass added per preparation (g; e.g. 18.18)"
+              }
+            ],
+            "simulated_dissolution_time_seconds_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "time to complete powder dissolution (seconds; e.g. 74.54)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s09": {
+          "reason": "The powder, hot-water reconstitution process and all three named output variables match the subject, but every entry is explicitly simulated. None is an empirical measurement. The amended JSON title now says Simulation output table; Recorded series for CSV does not itself assert physical observations.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Simulated output columns: added water temperature (degrees C; e.g. 74.85); powder mass added per preparation (g; e.g. 18.18); time to complete powder dissolution (seconds; e.g. 74.54)."
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.0.title",
+              "quote": "Recorded series"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a076",
+      "reviewer_id": "delta-auditor-04",
+      "contexts": [
+        {
+          "product": {
+            "value": "operational_administrative_records",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74)"
+              }
+            ]
+          },
+          "process": {
+            "value": "operational_reporting_ledger",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 74)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical observations were recorded, not process simulations."
+              },
+              {
+                "field": "description",
+                "quote": "Variables documented in the files are reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74)."
+              }
+            ]
+          },
+          "facts": {
+            "reporting_interval_calendar_month": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ],
+            "facility_location_code": [
+              {
+                "field": "distributions.0.description",
+                "quote": "facility location code (categorical site code; e.g. Elm Crossing East)"
+              }
+            ],
+            "completed_operations_count": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 74)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "sealed cartons of liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "ambient_transport_logistics",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "At Elm Crossing East, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial."
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s10": {
+          "reason": "The repaired sentence positively associates the dairy beverage with ambient carton transport, not merely a negated shelf-life subject. Refrigerated shelf-life trials are expressly excluded. CSV and JSON describe operational reporting columns only; no storage-temperature, spoilage-day or microbial-count measurement is positively documented. These are unlisted requirements, not explicit missing-cell flags. The broad Physical observations statement does not convert the ledger into a food-storage experiment. Ambient transport remains a valid explicit topical context for ambiguous diagnostics without invented measurements.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "At Elm Crossing East, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74)."
+            },
+            {
+              "field": "description",
+              "quote": "Physical observations were recorded, not process simulations."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a079",
+      "reviewer_id": "delta-auditor-04",
+      "contexts": [
+        {
+          "product": {
+            "value": "U: unspecified simulated beverage; dairy/chocolate association not established",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "viable microbes in beverage samples (CFU/ml; e.g. 279.16)"
+              }
+            ]
+          },
+          "process": {
+            "value": "refrigerated_shelf_life",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_microbial_count_cfu_per_ml_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "viable microbes in beverage samples (CFU/ml; e.g. 279.16)"
+              }
+            ],
+            "simulated_spoilage_days_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "elapsed time until observed spoilage (days; e.g. 8.28)"
+              }
+            ],
+            "simulated_storage_temperature_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "storage chamber temperature (degrees C; e.g. 2.54)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "refrigerated_shelf_life",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "refrigerated shelf-life assessment"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "A separate investigation at Fern Hollow Coastal examines liquid chocolate-flavoured dairy milk beverage through refrigerated shelf-life assessment."
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s10": {
+          "reason": "CSV is documented and all three required variable types are present as simulation outputs, but no empirical observations exist. The wording observed spoilage is inside a simulated-output list and is not evidence of a physical spoilage observation. Both repaired distribution titles now truthfully say Simulation output table. The chocolate dairy subject is explicitly a separate investigation, so its association with these simulated rows remains unresolved rather than assumed. The explicit simulation-only basis independently settles the empirical shelf-life mismatch even if the dairy-product association remains U. The separate refrigerated dairy-beverage investigation supplies an explicit topical process for drink and storage diagnostics; those diagnostics do not require empirical columns or exclude simulation.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54)."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.2.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "description",
+              "quote": "A separate investigation at Fern Hollow Coastal examines liquid chocolate-flavoured dairy milk beverage through refrigerated shelf-life assessment."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false,
+      "issues": [
+        "Unresolved subject association: the dairy-beverage investigation is expressly separate. Title and keywords establish a chocolate-milk topic but do not explicitly identify the product underlying the simulated beverage rows."
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a086",
+      "reviewer_id": "delta-auditor-04",
+      "contexts": [
+        {
+          "product": {
+            "value": "operational_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The released table lists reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81)."
+              }
+            ]
+          },
+          "process": {
+            "value": "operational_reporting_ledger",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 81)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "These are observed administrative entries, not model predictions."
+              }
+            ]
+          },
+          "facts": {
+            "reporting_interval_calendar_month": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ],
+            "facility_location_code": [
+              {
+                "field": "distributions.0.description",
+                "quote": "facility location code (categorical site code; e.g. Reed Marsh East)"
+              }
+            ],
+            "completed_operations_count": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 81)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "the study covers liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "container_design",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "bottle and container design for a drink, rather than recipe formulation"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "At Reed Marsh East, the study covers liquid chocolate-flavoured dairy milk beverage during bottle and container design for a drink, rather than recipe formulation."
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s11": {
+          "reason": "The metadata explicitly supports beverage container design as a topic, separately from the administrative operations ledger; recipe formulation is expressly contrasted away. Cocoa fraction, sugar fraction and viscosity are not positively documented in the listed columns. Observed administrative entries is now a truthful non-simulation basis without claiming physical-sample experiments. Deposited measurements is generic enough to include operational counts and supplies no recipe measurements.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "These are observed administrative entries, not model predictions."
+            },
+            {
+              "field": "description",
+              "quote": "bottle and container design for a drink, rather than recipe formulation"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81)."
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Deposited measurements"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a089",
+      "reviewer_id": "delta-auditor-04",
+      "contexts": [
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "the study covers liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "drink_formulation",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "during liquid drink recipe formulation"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              }
+            ]
+          },
+          "facts": {
+            "simulated_cocoa_fraction_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.44)"
+              }
+            ],
+            "simulated_liquid_viscosity_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "liquid viscosity (mPa s; e.g. 24.82)"
+              }
+            ],
+            "simulated_sugar_fraction_not_empirical": [
+              {
+                "field": "distributions.0.description",
+                "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 4.47)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s11": {
+          "reason": "The product and formulation process are positively associated, and cocoa fraction, sugar fraction and viscosity are explicitly documented, but solely as simulated output rather than empirical recipe observations. The corrected CSV title now truthfully says Simulation output table; the remaining Recorded series title makes no affirmative physical-observation claim.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "At Silver Creek Coastal, the study covers liquid chocolate-flavoured dairy milk beverage during liquid drink recipe formulation."
+            },
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Simulated output columns: cocoa fraction in liquid recipe (percent by mass; e.g. 3.44); liquid viscosity (mPa s; e.g. 24.82); sugar fraction in liquid recipe (percent by mass; e.g. 4.47)."
+            },
+            {
+              "field": "distributions.0.title",
+              "quote": "Simulation output table"
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Recorded series"
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "issues": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a096",
+      "reviewer_id": "delta-auditor-04",
+      "contexts": [
+        {
+          "product": {
+            "value": "operational_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The released table lists facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06)."
+              }
+            ]
+          },
+          "process": {
+            "value": "operational_reporting_ledger",
+            "evidence": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 83)"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "These are observed administrative entries, not model predictions."
+              }
+            ]
+          },
+          "facts": {
+            "facility_location_code": [
+              {
+                "field": "distributions.0.description",
+                "quote": "facility location code (categorical site code; e.g. Kestrel Point East)"
+              }
+            ],
+            "completed_operations_count": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed operations (count; e.g. 83)"
+              }
+            ],
+            "reporting_interval_calendar_month": [
+              {
+                "field": "distributions.0.description",
+                "quote": "reporting interval (calendar month; e.g. 2024-06)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "U: subtype of the pasteurized drink is not unambiguously specified",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East."
+              }
+            ]
+          },
+          "process": {
+            "value": "beverage_pasteurization",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East."
+              },
+              {
+                "field": "keywords.1",
+                "quote": "drink pasteurization"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This deposit concerns thermal pasteurization of a drink"
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": false
+        },
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "title",
+                "quote": "Archived chocolate milk observations from Kestrel Point East"
+              },
+              {
+                "field": "keywords.0",
+                "quote": "chocolate milk"
+              }
+            ]
+          },
+          "process": {
+            "value": "U: title and product keyword do not independently specify the chocolate-milk process",
+            "evidence": [
+              {
+                "field": "title",
+                "quote": "Archived chocolate milk observations from Kestrel Point East"
+              }
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {
+                "field": "title",
+                "quote": "Archived chocolate milk observations from Kestrel Point East"
+              }
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s12": {
+          "reason": "Thermal pasteurization is affirmatively stated, and starter-driven fermentation is the rejected alternative. The title/keyword positively document a chocolate-milk topic, but the description attaches the fully specified dairy-beverage phrase to the contrasted fermentation clause rather than unambiguously to the pasteurized drink. Administrative observations do not establish a starter culture, acidification curve or residual-sugar measurement. None of these is an explicit missing-cell field; they are not positively documented variables. The physical-sample provenance claim has been replaced with observed administrative entries. The expressly contrasted pasteurization-versus-starter-fermentation process independently settles the primary-need mismatch, regardless of the unresolved dairy-subtype association. Generic drink context is positive, but beverage_pasteurization is not in the frozen d01 process map; no new diagnostic process rule is invented.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "This deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East."
+            },
+            {
+              "field": "title",
+              "quote": "Archived chocolate milk observations from Kestrel Point East"
+            },
+            {
+              "field": "description",
+              "quote": "These are observed administrative entries, not model predictions."
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06)."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": null,
+        "evidence": []
+      },
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false,
+      "issues": [
+        "Subject-association ambiguity: title and keyword positively establish chocolate milk as a topic, and pasteurization is the stated process, but the description's explicit dairy-beverage noun phrase is inside the rather-than fermentation alternative. Do not assert an unambiguous positive dairy-pasteurization measurement association; only topical context is recorded."
+      ]
+    }
+  ],
+  "variation_review_by_seed": {
+    "39033": {
+      "reviewed_dataset_ids": [
+        "a059",
+        "a069",
+        "a076",
+        "a079",
+        "a086",
+        "a089",
+        "a096"
+      ],
+      "scope": "Only seven assigned records from seed 39033, rechecked against the complete permitted rubric, prompt and frozen query specification in the same reviewer context. Original packet was fully read in sequential chunks of at most 100 lines through line 2115 in the original review. Parent supplied unchanged-byte V4 identity for those seven; no new corpus records were opened.",
+      "actual_searchable_fields_reviewed": "All supplied title, complete description, all nested distribution titles/descriptions/formats, keyword, publisher and optional spatial fields were inspected. No temporal fields were supplied. No identity review was required for any assigned record; no authoritative identity is invented. Generic row identifiers are not catalogue identities.",
+      "observations": [
+        "Simulation records a059, a069, a079 and a089 consistently identify their columns as simulated; all five targeted distribution-title repairs now say Simulation output table. Neutral remaining titles do not independently assert empirical trials. Every documented simulated required variable is recorded with a simulated/not-empirical fact key, never counted as a physical measurement.",
+        "a076, a086 and a096 have only month, site and operations-count columns. Their ledger process and explicit contextual topic are separately recorded, with topical facts empty. No storage, recipe or fermentation measurements are inferred from those columns or from generic notes about missing cells.",
+        "a076's repaired affirmative sentence supports chocolate dairy beverage in ambient carton transport. a086 explicitly supports beverage container design while excluding recipe formulation. a096's administrative provenance correction is supported, but its dairy-product association with pasteurization remains syntactically ambiguous.",
+        "a059 and a079 explicitly refer to a separate investigation; topic evidence is not silently promoted into an association between that separate product study and deposited simulation rows. Their primary simulated product remains U. No outside-grounds equipment is reclassified as food-production machinery, and no landscaping claim is present.",
+        "CSV/JSON column association was checked in each distribution synopsis, including a079's third JSON distribution. distribution_content_verified means this metadata association only; no binary or downloadable files were accessed. Topical contexts lack topical measurement columns and therefore use false, independently of whether the catalog offers files.",
+        "No assigned actual field documents either frozen no-answer conjunction. No answer keys, grade codes, intent tags or instructions were detected in actual searchable fields. No duplicate complete record was detected among the seven assigned records; corpus-wide duplication and cross-seed preservation are outside this packet's observable scope.",
+        "Complete direct rubric inspection resolves the original inline-rubric display limitation. Simulation-only primary-need conflicts and explicit non-fermentation process conflict remain decisive without coercing uncertain product associations. Diagnostic contexts are assessed separately under the frozen process maps, not the empirical measurement rule."
+      ],
+      "issues": [
+        "Subject links remain U for a059 and a079, and a096 retains dairy-subtype/process association ambiguity. Their primary empirical contrasts are nevertheless independently verified for reasons that do not depend on resolving those associations. See scoped adjudication metadata.",
+        "No full-corpus coverage, cross-seed stability or production queryContext equivalence was independently reverified. V4 source identity for the assigned records relies on the parent-provided unchanged-byte statement. No global semantic certification is made."
+      ],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false
+    }
+  },
+  "adjudication": {
+    "review_type": "same original independent reviewer, pre-search scoped recheck; not another independent context",
+    "original_review": {
+      "path": "auditoutputs/delta-reviews-v3-final/delta-04.json",
+      "sha256": "05b511899c96dab9522ef8060da79055225eab276b5b0ce4872edcdd135edfc1",
+      "preserved_unchanged": true
+    },
+    "actual_metadata_packet": {
+      "path": "auditoutputs/delta-packets-v3-final/delta-04.json",
+      "sha256": "38744ccff1e80727cf41c2069641e0deb2a376b3af1a5fb1e1b2a6a6a8c39d50"
+    },
+    "rubric_read": {
+      "path": "relevance-rubric.md",
+      "sha256": "b4b778ffd53c860207b5187c01f84d0fa38bed1df74804bbec31b9fa8780f8fe",
+      "complete_lines_read": "1-58",
+      "prior_truncation_limitation_resolved": true
+    },
+    "validation_prompt_read": {
+      "path": "validation-prompt.md",
+      "sha256": "4e4225ec97c270f678ed89e392ea6538e40a5842bac8cd9b5c49a70b5da8d52e",
+      "complete_lines_read": "1-28"
+    },
+    "query_spec_read": {
+      "path": "query-spec.jsonl",
+      "sha256": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+      "complete_lines_read": "1-75"
+    },
+    "v4_source_binding_basis": "Current V4 paths/hashes and complete-byte identity of these seven V3/V4 records were supplied by the parent. Actual searchable evidence was inspected in the original packet. This reviewer did not open V4 corpora or independently reprove the parent byte-identity statement. References are not additional inspected records.",
+    "record_review_boolean_scope": "semantic_review_passed remains false for a059, a079 and a096 because their stated subject-association uncertainties are not erased. It is true for the other four assigned records after complete rubric inspection. Primary empirical hard-negative mismatches are independently evidenced for all seven; this scoped adjudication does not certify the whole matrix, corpus or experiment.",
+    "primary_need_assessments": {
+      "a059": {
+        "intent": "s08",
+        "decisive_conflict": "simulation_only",
+        "contrast_verified": true,
+        "association_U_retained": true,
+        "uncertainty_scope": "Whether the simulated surface/equipment rows concern confectionery production. This cannot overturn the expressly non-empirical basis. The separate factory-sanitation topic itself is explicit."
+      },
+      "a069": {
+        "intent": "s09",
+        "decisive_conflict": "simulation_only",
+        "contrast_verified": true,
+        "association_U_retained": false
+      },
+      "a076": {
+        "intent": "s10",
+        "decisive_conflict": "ambient transport expressly not refrigerated shelf-life; only administrative columns documented",
+        "contrast_verified": true,
+        "association_U_retained": false
+      },
+      "a079": {
+        "intent": "s10",
+        "decisive_conflict": "simulation_only",
+        "contrast_verified": true,
+        "association_U_retained": true,
+        "uncertainty_scope": "Whether simulated beverage rows specifically concern chocolate dairy beverage. Simulation independently conflicts with empirical need; separate topical refrigerated dairy-beverage study remains explicit."
+      },
+      "a086": {
+        "intent": "s11",
+        "decisive_conflict": "container design rather than recipe formulation; administrative rather than recipe-measurement columns",
+        "contrast_verified": true,
+        "association_U_retained": false
+      },
+      "a089": {
+        "intent": "s11",
+        "decisive_conflict": "simulation_only",
+        "contrast_verified": true,
+        "association_U_retained": false
+      },
+      "a096": {
+        "intent": "s12",
+        "decisive_conflict": "pasteurization rather than starter-driven fermentation; administrative columns",
+        "contrast_verified": true,
+        "association_U_retained": true,
+        "uncertainty_scope": "Chocolate-milk topic is affirmative in title/keyword, but its linkage to the pasteurized drink is not syntactically unambiguous. The explicit pasteurization process conflict is independent of subtype. Separate topical contexts preserve the uncertainty."
+      }
+    },
+    "diagnostic_context_assessments": {
+      "a059": {
+        "defensible_contexts": [
+          "factory_sanitation for d03 plant"
+        ],
+        "rationale": "A separate investigation explicitly examines confectionery-factory production equipment through sanitation. d03 requires neither experimental measurements nor association of that topic with the simulated table."
+      },
+      "a069": {
+        "defensible_contexts": [
+          "hot_drink_reconstitution for d01 drink and frozen d02 process map"
+        ],
+        "rationale": "The deposit directly concerns drinking-chocolate powder intended for hot beverages and hot-water reconstitution. Simulation is not excluded by diagnostic rules."
+      },
+      "a076": {
+        "defensible_contexts": [
+          "ambient_transport_logistics for frozen d04 storage process map"
+        ],
+        "rationale": "The repaired sentence affirmatively describes sealed beverage cartons in ambient transport. Its topical facts are empty. Product words alone do not add ambient transport to d01, whose process map does not include it."
+      },
+      "a079": {
+        "defensible_contexts": [
+          "refrigerated_shelf_life for d01 drink and d04 storage"
+        ],
+        "rationale": "The separate dairy-beverage shelf-life investigation is explicit topical evidence. Neither diagnostic requires measured columns, and product association of the simulated rows need not be invented."
+      },
+      "a086": {
+        "defensible_contexts": [
+          "container_design topic"
+        ],
+        "rationale": "Container design is explicit but is not a listed process in d01-d04. Do not change it into formulation merely because the material is a beverage."
+      },
+      "a089": {
+        "defensible_contexts": [
+          "drink_formulation for d01 drink"
+        ],
+        "rationale": "Liquid chocolate dairy beverage recipe formulation is explicitly associated. Diagnostic drink has no simulation exclusion."
+      },
+      "a096": {
+        "defensible_contexts": [
+          "beverage_pasteurization of a generic drink; chocolate-milk topic separately documented"
+        ],
+        "rationale": "Dairy specificity is unnecessary to understand the generic drink context. However, beverage_pasteurization is not in the frozen d01-d04 process maps. No diagnostic rule is expanded and no starter-fermentation process is inferred."
+      }
+    },
+    "scoped_query_intent_check": {
+      "checked_primary_query_ids": [
+        "s08p1",
+        "s08p2",
+        "s08p3",
+        "s09p1",
+        "s09p2",
+        "s09p3",
+        "s10p1",
+        "s10p2",
+        "s10p3",
+        "s11p1",
+        "s11p2",
+        "s11p3",
+        "s12p1",
+        "s12p2",
+        "s12p3"
+      ],
+      "assessment": "The inspected variants consistently state observed, empirical or measured needs for their respective sanitation, powder reconstitution, chilled dairy shelf-life, dairy formulation and cultured dairy fermentation intents. The frozen product/process/fact constraints were not weakened. Each decisive basis/process conflict holds across the corresponding variants. This is a scoped equivalence check, not a full-matrix paraphrase audit.",
+      "short_diagnostics": "drink, dessert, plant and storage were read directly. Their frozen process maps override the empirical semantic algorithm. No CSV, measurement or simulation exclusion was added to diagnostics."
+    },
+    "numeric_relevance_grades_supplied": false,
+    "unresolved_association_dataset_ids": [
+      "a059",
+      "a079",
+      "a096"
+    ]
+  }
+}

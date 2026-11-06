@@ -1,0 +1,501 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-18",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-18"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "b071", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 328.21)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-071", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-071."}]},
+      "hard_negatives": {"f03": {"reason": "The subject is the required kind of probe, but the observed activity is unloaded inventory, explicitly not operating calibration. Month and unit mass do not establish calibration error, a calibration temperature range, or reference uncertainty. Both CSV and PDF describe only the inventory columns.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 328.21)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b072", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 242 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 101.04)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-072", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-072."}]},
+      "hard_negatives": {"f03": {"reason": "Calibration is the associated activity, not a positively measured performance outcome. The explicit commercial-ledger disclaimer and the carton/cost column list support a distinction from an experimental calibration record; none of the three required calibration facts is documented. All three CSV/PDF/CSV distributions repeat the commercial columns, not hidden performance measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 242 x 90 x 65); advertised retail cost (AUD/unit; e.g. 101.04)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b073", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.04)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.24)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-073", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-073."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b074", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.06)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.25)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-074", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-074."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b075", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.11)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-075", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-075."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b076", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.14)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-076", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-076."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b077", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1333.18)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-077", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-077."}]},
+      "hard_negatives": {"f03": {"reason": "The probes are inventoried without an operating calibration trial. The measured mass and calendar reporting interval are not calibration error, reference uncertainty, or temperature test points. The CSV and PDF content descriptions agree on those inventory columns.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 1333.18); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b078", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 308 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 71.36)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-078", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-078."}]},
+      "hard_negatives": {"f03": {"reason": "Despite the calibration activity description, the record explicitly identifies the observations as a commercial ledger, not experimental performance. The CSV/PDF describe carton sizes and advertised costs only; no calibration error, temperature range, or reference uncertainty is positively documented.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 308 x 90 x 65); advertised retail cost (AUD/unit; e.g. 71.36)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b079", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "during cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.26)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-079", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-079."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b080", "seed": 39031, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.06)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.23)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-080", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-080."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b071", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 273.39)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-071", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-071."}]},
+      "hard_negatives": {"f03": {"reason": "This is an unloaded inventory of probes, expressly excluding an operating calibration trial. Only reporting month and unit mass are described, not any of the three calibration requirements. CSV/PDF/CSV synopses consistently associate these formats with the inventory columns.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 273.39)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b072", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 48.07)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 355 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-072", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-072."}]},
+      "hard_negatives": {"f03": {"reason": "The subject/activity wording is related, but the record limits the observations to a commercial ledger, not experimental performance. Neither the CSV nor the PDF supplies calibration error, calibration points, or reference uncertainty; their actual column lists are cost and carton dimensions.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 48.07); shipping carton dimensions (length x width x height in mm; e.g. 355 x 90 x 65)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b073", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "documents cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.26)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.04)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-073", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-073."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b074", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "documents cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.06)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.12)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-074", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-074."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b075", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "during cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.13)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-075", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-075."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b076", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.1)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-076", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-076."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b077", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 389.69)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-077", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-077."}]},
+      "hard_negatives": {"f03": {"reason": "The cold-room equipment role identifies the product, not the performed test. The stated process excludes operating calibration; mass and reporting month cannot be counted as calibration error, calibration-range coverage, or uncertainty. The three distributions consistently describe inventory content.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 389.69)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b078", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 357 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 202.33)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-078", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-078."}]},
+      "hard_negatives": {"f03": {"reason": "The general calibration subject is qualified by an explicit commercial-ledger statement. Carton geometry and advertised price are positively documented; experimental probe error, calibration temperature points and reference uncertainty are not. CSV/PDF/PDF content synopses agree on the commercial columns.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 357 x 90 x 65); advertised retail cost (AUD/unit; e.g. 202.33)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b079", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.04)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.16)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-079", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-079."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b080", "seed": 39032, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.22)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.08)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-080", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-080."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b071", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 154.76)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-071", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-071."}]},
+      "hard_negatives": {"f03": {"reason": "The description explicitly excludes an operating calibration trial. Its inventory observations concern unloaded mass and calendar reporting month, not calibration error, reference uncertainty or the required calibration range. Both CSV and PDF are associated with the same inventory columns.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 154.76); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b072", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 256.71)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 314 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-072", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-072."}]},
+      "hard_negatives": {"f03": {"reason": "The explicit observed-ledger qualification limits the calibration association: it does not report experimental performance. The actual columns document advertised cost and shipping dimensions, not error, test-point temperatures or reference uncertainty. All three CSV/PDF/CSV descriptions agree on these commercial columns.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 256.71); shipping carton dimensions (length x width x height in mm; e.g. 314 x 90 x 65)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b073", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.09)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.07)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-073", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-073."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b074", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "through cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.04)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.1)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-074", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-074."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b075", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "documents cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.17)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-075", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-075."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b076", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "documents cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.01)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-076", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-076."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b077", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 495.42)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-077", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-077."}]},
+      "hard_negatives": {"f03": {"reason": "The process is expressly unloaded inventory with no operating calibration trial. Calendar month and unloaded mass are positively described, but none of the calibration measurements is. The two CSV and one PDF distribution consistently document only inventory content.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 495.42)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b078", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 177.96)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 243 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-078", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-078."}]},
+      "hard_negatives": {"f03": {"reason": "The calibration wording describes an association; the explicit commercial-ledger disclaimer excludes a performance report. The cost and carton-dimension columns in both CSV and PDF do not establish calibration error, the required temperature range, or reference uncertainty.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 177.96); shipping carton dimensions (length x width x height in mm; e.g. 243 x 90 x 65)."}]}},
+      "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b079", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration of temperature sensor probes"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.21)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.05)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-079", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-079."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b080", "seed": 39033, "reviewer_id": "auditor-packet-18",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "documents cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.2)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.04)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-080", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-080."}]},
+      "hard_negatives": {}, "no_answer_claims": [], "issues": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-18",
+      "rationale": "All ten records were compared with both other seeds, including every supplied title, description, keyword, distribution title/format/content synopsis, publisher and optional spatial field. Product class and literal SENSE-071 through SENSE-080 identities are preserved. The semantic measurement sets are preserved: b071/b077 inventory month and mass; b072/b078 carton dimensions and advertised cost in an observed commercial ledger; b073/b074/b079/b080 probe-minus-reference error, inclusive -20 to +5 C test range and reference uncertainty; b075 error and range only; b076 error only. No missing quantity was inferred from generic notes. All distributions associate CSV with a comma-separated table and PDF with tables inside a PDF, consistently with the actual documented columns; extra distributions repeat the same columns rather than adding facts. Wording varies meaningfully in sentence order, description length, paragraphing, title construction, column order and whether facts occur in the main description or only distribution synopses. This is not merely a title prefix change. However, unqualified preservation of all literal facts cannot be certified: b071 mass examples are 328.21, 273.39 and 154.76 g, b073 error examples are 0.24, -0.26 and 0.09 C, and other numerical examples also change. These are explicitly examples, not proof of different underlying observations, but they are not unchanged numeric content. Study sites change for every stable ID; publishers also change for most IDs. For example b072 is Granite Bend Coastal / North Technical College here, Cedar Reach Outer / Maple Research Cooperative in 39032, and Elm Crossing Inner / Elm Process Research Group in 39033. Thus the core semantic design is stable, but a stronger wording-only or immutable-provenance preservation claim is unsupported; this is the unresolved cross-seed qualification underlying passed=false, not an internal contradiction of these individual records. No answer-key tags, required no-answer conjunctions, or duplicate complete records were observed. Similar stock prose does not make the separately identified models the same record. Query paraphrase texts and actual downloadable file bytes are not supplied: review covers all projected packet metadata, not paraphrase equivalence, file-byte contents, or whole-corpus coverage. The distribution boolean means metadata format/content association verified, not a file download."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-18",
+      "rationale": "All ten complete projections were independently read and compared across 39031/39032/39033. Identities, probe product class, observed rather than simulation basis and measurement-category membership remain stable for every ID. Inventory records b071/b077 explicitly exclude operating calibration; commercial ledgers b072/b078 remain commercial rather than calibration-performance records. b073/b074/b079/b080 retain all three calibration facts, b075 retains error and inclusive -20 to +5 C range without reference uncertainty, and b076 retains error alone without a stated range or reference uncertainty. CSV/PDF metadata consistently describes those same actual columns, including every optional third distribution. Titles, clauses, paragraph structure, length, column order, contextual names and distribution titles vary, and several descriptions defer the complete measured facts to distribution synopses, so the text variation is substantial rather than category-prefix-only. Unqualified all-facts-preserved certification is withheld: numerical examples and provenance are not fixed across seeds. For example b074 probe-minus-reference error examples are 0.25 / 0.12 / -0.1 C and reference-uncertainty examples are 0.06 / 0.06 / 0.04 C; b072 carton examples are 242 x 90 x 65 / 355 x 90 x 65 / 314 x 90 x 65 mm. These e.g. values are illustrative, not evidence that the underlying observations changed, but the literal numerical content did change. Every stable ID has a different stated site across seeds; b074 publishers are Juniper Engineering Laboratory / Dune Agricultural Centre / Cedar Materials Laboratory. Core measurement concepts are preserved, but treating this as solely a factual-invariant paraphrase would require qualification. This cross-seed numeric/provenance qualification, not a within-record unsupported measurement, is why passed=false. No observed leakage, no-answer conjunction or duplicate complete record. The metadata is complete for this packet; no query paraphrase equivalence, downloadable byte-level content or coverage outside these ten IDs is asserted. Distribution verification refers to the complete metadata associations, not fetched files."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-18",
+      "rationale": "Reviewed all ten actual seed-39033 records and compared each with both earlier seed versions. All ten SENSE identities and the temperature-probe product concept are unchanged. Inventory versus commercial-ledger versus physical-calibration distinctions and positively documented variable types are preserved, including b075 having only error/range and b076 having only error; the generic field-guide and missing-cell notes supply no extra measurements. Each CSV/PDF distribution's content description agrees with its format and with every sibling distribution; optional additions repeat existing variable sets. Meaningful variation includes reordered clauses/columns, empirical-basis paraphrases, changing paragraph structure and length, varied titles and descriptive facts sometimes moving to distribution-only evidence. Literal numerical/provenance preservation is not established: b075 error examples are 0.11 / 0.13 / -0.17 C and b076 error examples are 0.14 / 0.1 / -0.01 C; b079 uncertainty examples are 0.06 / 0.04 / 0.05 C and b080 error examples are 0.23 / -0.22 / 0.2 C. These are explicitly illustrative values, so do not prove changed observations; nevertheless the numeric text is not invariant. Every ID changes its named study site, and publisher names/identifiers also vary for most. For example b080 is Fern Hollow South / Granite Product Studies Unit, Bramble Hill West / Fern Measurement Institute and Dune Valley North / Granite Product Studies Unit across the three seeds. Semantic variable coverage is stable, but a stronger all-literal-facts or provenance-preserved wording-only claim remains unsupported; passed=false records that qualification only. Individual-record semantic review found no contradiction or unsupported positive measurement. No answer-key leakage, duplicate complete record or supported frozen no-answer conjunction was observed. All supplied fields were reviewed; query paraphrase texts, actual downloadable bytes and remaining corpus records are outside this packet, so no conclusions on those are asserted. Distribution verification is metadata association verification, not a download."
+    }
+  }
+}

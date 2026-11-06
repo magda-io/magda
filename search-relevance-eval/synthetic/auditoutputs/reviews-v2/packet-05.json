@@ -1,0 +1,552 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-05",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-05"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a041", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.65)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 91.85)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 2.47)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s09": {"reason": "This is pre-use storage of edible dessert ingredients, not powder reconstitution into a hot drink. Chamber temperature is not water temperature; no powder dose or dissolution time is documented.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material of edible chocolate ingredients reserved for dessert preparation"}]},
+        "s11": {"reason": "The subject is dessert ingredients in storage, not formulation of a chocolate dairy beverage. Quality score and moisture do not establish cocoa fraction, sugar fraction or liquid viscosity.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material of edible chocolate ingredients reserved for dessert preparation"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a042", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 6.09)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 61.87)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 4.3)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s09": {"reason": "Storage assessment of dessert ingredients is a different activity and material role from hot-drink powder reconstitution; none of powder dose, water temperature or dissolution time is documented.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material, focusing on edible chocolate ingredients reserved for dessert preparation"}]},
+        "s11": {"reason": "The documented activity is ingredient storage, not dairy-drink formulation. The three stored-material columns do not measure cocoa/sugar fractions or viscosity.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material, focusing on edible chocolate ingredients reserved for dessert preparation"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a043", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.4)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 80.05)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a044", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 2.76)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.75)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a045", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.66)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a046", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_marketing", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 17)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Hazel Ridge West)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "Explicitly marketing/promotional dispatch rather than storage experiments. The columns are month, operations count and site code, not storage temperature, ingredient quality or moisture; their empirical status does not supply those absent measurements.", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [{"reason": "U: empirical administrative observations are documented, but the additional physical-sample provenance claim is unexplained by the marketing process and exclusively administrative columns. The basis value captures the stated non-simulation status, not independent confirmation of physical sampling or experimental performance.", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 17); facility location code (categorical site code; e.g. Hazel Ridge West)."}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a047", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "non_edible_chocolate_scented_material", "evidence": [{"field": "description", "quote": "non-edible chocolate-scented display material for confectionery shops"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.12)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 94.89)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 3.93)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "The storage variables are documented, including a score named ingredient quality, but the actual material is explicitly non-edible shop display material. That score label does not turn it into edible chocolate for desserts.", "evidence": [{"field": "description", "quote": "non-edible chocolate-scented display material for confectionery shops"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a048", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "commercial_ledger_associated_with_ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 2.3)"}],
+          "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 10)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "There is real topical association with storage of edible dessert ingredients; it is not wholly unrelated. However, observed ledger month, price and consignment counts are not storage temperature, quality or moisture measurements, and experimental performance is explicitly disclaimed. Non-simulation basis here means observed ledger entries only.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 2.3); dispatched consignments (count; e.g. 10)."}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a049", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {}, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "The product, storage process and output variable concepts overlap, but every entry is simulated, expressly without empirical observations. No output is counted as a positively measured fact. The documented simulated outputs are moisture percent, chamber temperature in degrees C and quality score on a 0-100 scale.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: material moisture by mass (percent; e.g. 3.91); storage chamber temperature (degrees C; e.g. 7.49); ingredient quality assessment score (points on a 0-100 scale; e.g. 61.75)."}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [{"reason": "U: the distribution title suggests observations despite explicit simulation-only descriptions. Format/content association is otherwise consistent: CSV and JSON carry the same simulated columns. Resolve the misleading title rather than treating these as measurements.", "evidence": [{"field": "distributions.0.title", "quote": "Observation table"}, {"field": "description", "quote": "no physical trial or empirical observations were collected"}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a050", "seed": 39031, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 86.29)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.26)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 2.24)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a041", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 3.93)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.29)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 68.66)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s09": {"reason": "Pre-use storage of edible dessert ingredients is not reconstitution of drinking powder. The three documented columns describe stored material; chamber temperature does not establish water temperature, dose or dissolution time.", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation during storage assessment before use of the material"}]},
+        "s11": {"reason": "This documents stored dessert ingredients rather than dairy-drink formulation. Moisture, chamber temperature and a quality score do not establish cocoa/sugar fractions or viscosity.", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation during storage assessment before use of the material"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a042", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 83.04)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 1.98)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 6.47)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s09": {"reason": "The actual material role is dessert ingredients assessed before use, not powder dissolved in hot water. No dose, water temperature or dissolution-time column is documented.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material, focusing on edible chocolate ingredients reserved for dessert preparation"}]},
+        "s11": {"reason": "Ingredient storage is distinct from formulation of chocolate dairy drinks. The quality score is not a formulation fraction and neither moisture nor chamber temperature measures viscosity.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material, focusing on edible chocolate ingredients reserved for dessert preparation"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a043", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 85)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.49)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a044", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 4.03)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 3.51)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a045", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.28)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a046", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_marketing", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 28)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Cedar Reach Coastal)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "The actual process is marketing/promotional dispatch rather than storage experiments. Operations count, site code and month are administrative observations, not evidence of storage temperature, ingredient quality or moisture.", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [{"reason": "U: physical-sample provenance is asserted but unexplained for the entirely administrative marketing columns. The basis value records stated empirical/non-simulation status only; physical sampling and experimental performance are not independently established.", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}, {"field": "distributions.0.description", "quote": "Deposited columns: completed operations (count; e.g. 28); facility location code (categorical site code; e.g. Cedar Reach Coastal); reporting interval (calendar month; e.g. 2024-06)."}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a047", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "non_edible_chocolate_scented_material", "evidence": [{"field": "description", "quote": "non-edible chocolate-scented display material for confectionery shops"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 3.47)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.28)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 87.4)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "Despite storage conditions, moisture and a quality score, the described subject is explicitly non-edible display material. The generic ingredient-storage title/keyword and score label do not establish edible dessert chocolate.", "evidence": [{"field": "description", "quote": "non-edible chocolate-scented display material for confectionery shops"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a048", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "commercial_ledger_associated_with_ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.36)"}],
+          "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 67)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "There is a topical association with edible-ingredient storage, but the content is explicitly a commercial ledger rather than experimental performance. Month, price and consignments do not measure storage temperature, quality or moisture. Non-simulation status applies to ledger observations only.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 12.36); dispatched consignments (count; e.g. 67)."}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a049", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {}, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "The storage material and variable concepts match, but the empirical requirement is expressly excluded. Moisture percent, chamber temperature and quality score are simulated outputs, not measured facts.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: material moisture by mass (percent; e.g. 2.87); storage chamber temperature (degrees C; e.g. 5.06); ingredient quality assessment score (points on a 0-100 scale; e.g. 90.93)."}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [{"reason": "U: an observation-table distribution title is ambiguous/misleading for a release explicitly containing no empirical observations. Distribution descriptions and CSV/JSON formats consistently identify the same simulated columns; that does not resolve the title wording.", "evidence": [{"field": "distributions.2.title", "quote": "Observation table"}, {"field": "description", "quote": "no physical trial or empirical observations were collected"}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a050", "seed": 39032, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 7.45)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 80.44)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 5.11)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a041", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 75.02)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 3.06)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.45)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s09": {"reason": "The release concerns storage of dessert ingredients, not hot-drink powder reconstitution. Neither water temperature, powder dose nor dissolution time follows from stored-material quality, moisture and chamber temperature.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material, focusing on edible chocolate ingredients reserved for dessert preparation"}]},
+        "s11": {"reason": "Ingredient storage is not dairy-drink formulation. No cocoa fraction, sugar fraction or liquid viscosity is documented; the three actual columns serve another process and material role.", "evidence": [{"field": "description", "quote": "storage assessment before use of the material, focusing on edible chocolate ingredients reserved for dessert preparation"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a042", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 6.61)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 77.23)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 5.47)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s09": {"reason": "Edible ingredients reserved for desserts are assessed in storage, not reconstituted as a hot drink. The released variables are not powder dose, water temperature or dissolution time.", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation through storage assessment before use of the material"}]},
+        "s11": {"reason": "The material role and process are dessert-ingredient storage rather than dairy-beverage formulation. A quality score, moisture and chamber temperature supply none of the formulation fractions or liquid-viscosity measurement.", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation through storage assessment before use of the material"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a043", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.36)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 77.55)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a044", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 3.7)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 7.8)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a045", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.25)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a046", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_marketing", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 88)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Fern Hollow East)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "The process explicitly excludes storage experiments in favour of marketing/promotional dispatch. Month, site code and completed operations do not positively document storage temperature, quality score or moisture.", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [{"reason": "U: exclusively administrative marketing columns do not explain the asserted physical-sample provenance. Empirical/non-simulation status is stated, but physical sampling and experimental performance are not independently established by those columns.", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}, {"field": "distributions.0.description", "quote": "Deposited columns: completed operations (count; e.g. 88); facility location code (categorical site code; e.g. Fern Hollow East); reporting interval (calendar month; e.g. 2024-06)."}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a047", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "non_edible_chocolate_scented_material", "evidence": [{"field": "description", "quote": "non-edible chocolate-scented display material for confectionery shops"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 89.24)"}],
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 1.65)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.89)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "Storage, quality-score and moisture observations are present, but their subject is non-edible chocolate-scented shop display material, not an edible dessert ingredient. The quality-score label does not override the explicit product description.", "evidence": [{"field": "description", "quote": "non-edible chocolate-scented display material for confectionery shops"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a048", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "commercial_ledger_associated_with_ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 13.86)"}],
+          "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 68)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "The metadata associates the ledger with storage of edible dessert ingredients, so topical overlap is real. It nevertheless expressly excludes experimental performance and lists only month, price and consignments, not storage temperature, quality or moisture. The empirical basis refers only to ledger entries.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 13.86); dispatched consignments (count; e.g. 68)."}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a049", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {}, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s07": {"reason": "The same product/process and storage-output concepts are documented, but the text explicitly excludes any physical trial or empirical observations. Moisture, chamber temperature and quality score are simulated, not positively measured facts.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: material moisture by mass (percent; e.g. 3.93); storage chamber temperature (degrees C; e.g. 5.27); ingredient quality assessment score (points on a 0-100 scale; e.g. 79.93)."}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [{"reason": "The JSON distribution title asserts deposited measurements while its description and the dataset explicitly identify simulation-only outputs. CSV/JSON descriptions consistently associate the simulated variables, but the measurement title remains misleading and requires correction.", "evidence": [{"field": "distributions.1.title", "quote": "Deposited measurements"}, {"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]}],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a050", "seed": 39033, "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+        "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "moisture_percent": [{"field": "distributions.0.description", "quote": "material moisture by mass (percent; e.g. 1.1)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.7)"}],
+          "ingredient_quality": [{"field": "distributions.0.description", "quote": "ingredient quality assessment score (points on a 0-100 scale; e.g. 61.23)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true, "reviewer_id": "auditor-packet-05",
+      "rationale": "Compared every a041-a050 version with both other seeds. Conceptual facts and units are preserved: a041/a042/a050 document chamber temperature, quality score and moisture; a043 temperature plus quality only; a044 moisture plus temperature only; a045 temperature only. a046 retains marketing, month/site/operations columns and the unresolved physical-sample provenance wording. a047 retains explicitly non-edible display material with all three storage variables. a048 retains a storage-associated commercial ledger with month, unit price and consignments, expressly not experimental performance. a049 retains only simulated moisture/temperature/quality outputs, not measured facts; observation/measurement distribution-title issues persist across seeds. Meaningful descriptive variation is present, not merely shuffled titles: a041 gives a long measurement-first synopsis here versus a short distribution-referencing synopsis in 39032 and a differently ordered multi-paragraph synopsis in 39033; a043 and a045 likewise change length, sentence order and whether measured variables appear in the main description. Site names, publishers and numerical examples change; exact numerical/site/publisher facts are therefore NOT invariant, only the semantic measurement schema and subject/process/basis distinctions. All present title, description, keyword, publisher and optional spatial fields were read; no separate temporal field occurs. Within each record all distribution formats were checked against their descriptions: CSV means a comma-separated table, JSON means records carrying the same variables/units; optional third distributions repeat that record's columns rather than adding measurements. This verifies metadata association only, not downloaded file bytes. None requires identity review; no SKU or authoritative version is inferred. No prohibited pantry/supplies wording was observed in edible ingredient-storage records, no answer-key/grade/intent tags in searchable fields, and neither frozen no-answer conjunction is supported. Same-schema records have different site/examples and are not exact duplicate metadata; whether their underlying datasets duplicate cannot be established without prohibited access. Review is limited to this packet, not corpus-wide coverage or omitted query paraphrases/queryContext copies. Variation preservation does not clear the separately recorded unresolved issues."
+    },
+    "39032": {
+      "passed": true, "reviewer_id": "auditor-packet-05",
+      "rationale": "All ten stable IDs were compared across all three seeds. The full versus two-variable versus one-variable storage distinctions remain: a041/a042/a050 have temperature/quality/moisture, a043 temperature/quality, a044 moisture/temperature, a045 temperature. Omitted variables are not counted. Marketing administrative columns (a046), non-edible display product (a047), storage-associated ledger columns (a048), and simulation-only output status (a049) also persist. Meaningful text variation includes a041's compact inline description versus long multi-paragraph descriptions in the other seeds, a042's explicit measured-column sentence here versus distribution-only column documentation in 39031/39033, and a043's long field-guide synopsis here versus shorter versions elsewhere. Titles, sentence ordering, examples, locations, publishers and optional spatial/third-distribution presence vary; examples and catalogue circumstances are not literally preserved. Every projected field was reviewed, including all distribution titles/descriptions/formats and all keyword/publisher/spatial entries; no separate temporal field is supplied. CSV/comma-separated and JSON/record descriptions agree and repeat the same per-record columns and units, including optional third distributions. Format/content verification is metadata-only, not download inspection. a046's unexplained physical-sample claim and a049's observation/measurement titles remain unresolved, not cured by variation. a047's generic ingredient labels do not override its explicit non-edible product. None of these records requires authoritative identity review; none supports either no-answer conjunction. No searchable answer-key/grade/intent leakage or prohibited pantry/supplies token was observed in the relevant edible storage records. Distinct sites/examples distinguish same-schema records at the metadata level; underlying-data duplication is not testable here. This is packet-limited semantic comparison, not verification of omitted query wording, corpus-wide coverage or retrieval."
+    },
+    "39033": {
+      "passed": true, "reviewer_id": "auditor-packet-05",
+      "rationale": "Compared all a041-a050 records against both earlier seeds, preserving product/process/basis and the documented measurement schema: complete temperature/quality/moisture for a041/a042/a050, temperature/quality for a043, moisture/temperature for a044, temperature alone for a045. a046 remains marketing with month/site/operations, a047 non-edible display material with storage variables, a048 an observed commercial ledger (month/price/consignments) rather than storage experimental performance, and a049 simulations with no empirical measured facts. Locations, numerical examples and publishers differ and must not be represented as unchanged measured values. Descriptions genuinely vary in length, ordering and explicit column placement: a045 expands substantially here from the short distribution-referencing earlier versions; a043 is compact here after a long 39032 version; a041 changes ordering and wording. All present primary fields, including publisher, keyword and optional spatial entries, were reviewed; there is no separate temporal field. Checked each distribution's CSV or JSON format against its comma-separated or JSON-record description and same-record variables/units; optional extra distributions add no new measured variables. This is metadata-content association, not verification of actual downloaded files. Physical-sample provenance ambiguity in a046 persists. a049 now has the more explicit misleading title Deposited measurements despite simulation-only descriptions; the issue is recorded rather than cleared. No identity-required records occur; no authoritative SKU/version is invented. No answer-key/grade/intent leakage or prohibited pantry/supplies token was observed in the edible storage records, and neither no-answer conjunction has positive evidence. Same-schema records are not identical metadata, but underlying duplication is outside allowed inspection. Variation preservation is not a global semantic pass: it does not resolve these issues or establish corpus-wide coverage, omitted paraphrase equivalence or retrieval behaviour."
+    }
+  }
+}

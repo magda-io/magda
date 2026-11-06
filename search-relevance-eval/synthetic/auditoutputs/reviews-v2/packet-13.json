@@ -1,0 +1,549 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-13",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-13"
+  },
+  "record_reviews": [
+    {
+      "seed": 39031, "dataset_id": "b021", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 40.28)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.34)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "AX-101", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-101."}]},
+      "hard_negatives": {
+        "x19": {"reason": "This documents pump model AX-101 with numeral zero, not the distinct AX-1O1 with letter O documented by b022. Acoustic similarity cannot establish that other part identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-101."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b022", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 48.62)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "AX-1O1", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-1O1."}]},
+      "hard_negatives": {
+        "x18": {"reason": "The authoritative model contains letter O: AX-1O1. It is not AX-101 with zero, documented by b021; same pump-testing topic is insufficient for an exact part lookup.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-1O1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b023", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 254.2)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "PROBE-I1", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-I1."}]},
+      "hard_negatives": {
+        "f03": {"reason": "These are physical inventory observations, not an operating cold-room calibration trial. Month and unloaded mass do not measure calibration error, a temperature range, or reference-instrument uncertainty. The negated calibration is not a measured fact.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 254.2)"}]},
+        "x21": {"reason": "PROBE-I1 contains letter I followed by numeral 1; it is not PROBE-11, the two-numeral identity of b024.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-I1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b024", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 172 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 260.67)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "PROBE-11", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-11."}]},
+      "hard_negatives": {
+        "f03": {"reason": "The calibration activity is contextual only: this is explicitly an observed commercial ledger, not experimental performance. Carton dimensions and advertised cost supply none of calibration error, test-point temperature range, or reference uncertainty. Observational basis does not turn commerce into calibration measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 172 x 90 x 65); advertised retail cost (AUD/unit; e.g. 260.67)"}]},
+        "x20": {"reason": "The actual model is PROBE-11, two numeral ones, not PROBE-I1 with letter I documented by b023.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-11."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b025", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "friction_survey", "evidence": [{"field": "description", "quote": "a pavement friction survey release, not footwear testing"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 24.91)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RFS-2.0)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "Riverbend friction survey release 2.0 / RFS-2.0", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.0"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.0."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b026", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "friction_survey", "evidence": [{"field": "description", "quote": "a pavement friction survey release, not footwear testing"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RFS-2.1)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 92.56)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "Riverbend friction survey release 2.1 / RFS-2.1", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.1"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.1."}]},
+      "hard_negatives": {
+        "x22": {"reason": "This is the explicitly titled 2.1 release, not the authoritative 2.0 release documented by b025. Same survey family and technical variables do not erase edition differences.", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.1"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b027", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.24)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "DIST-K47", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K47."}, {"field": "distributions.0.title", "quote": "Deposited measurements for DIST-K47"}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b028", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.2)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "DIST-K74", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K74."}, {"field": "distributions.0.title", "quote": "Observation table for DIST-K74"}]},
+      "hard_negatives": {
+        "x23": {"reason": "Distribution metadata explicitly identifies model DIST-K74, not DIST-K47 documented by b027. Both concern probe calibration, but the digit order and actual instrument identity are different.", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K74."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b029", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 575.06)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TITLE-T82 A closer look at bench inventory in North Meadow East", "evidence": [{"field": "title", "quote": "TITLE-T82 A closer look at bench inventory in North Meadow East"}]},
+      "hard_negatives": {
+        "f03": {"reason": "Cold-room probes are the product, but the actual observations are unloaded inventory mass and month. An operating calibration trial is explicitly excluded, so calibration error, temperature range and reference uncertainty cannot be inferred.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 575.06); reporting interval (calendar month; e.g. 2024-06)"}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b030", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 233)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 204 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TITLE-T28 From Alderbank South: temperature probes study", "evidence": [{"field": "title", "quote": "TITLE-T28 From Alderbank South: temperature probes study"}]},
+      "hard_negatives": {
+        "f03": {"reason": "This is a commercial ledger associated with calibration, not calibration performance data. Its distributed variables are retail cost and carton size, not error, temperature coverage, or reference uncertainty.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 233); shipping carton dimensions (length x width x height in mm; e.g. 204 x 90 x 65)"}]},
+        "x24": {"reason": "The authoritative identifying title begins TITLE-T28, not TITLE-T82 in b029. Shared temperature-probe subject matter cannot satisfy that title identity.", "evidence": [{"field": "title", "quote": "TITLE-T28 From Alderbank South: temperature probes study"}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b021", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.53)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 53.79)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "AX-101", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-101."}]},
+      "hard_negatives": {
+        "x19": {"reason": "This is explicitly model AX-101 with zero. It is not the letter-O model AX-1O1 in b022, notwithstanding their shared acoustic testing process.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-101."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b022", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 38.56)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "AX-1O1", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-1O1."}]},
+      "hard_negatives": {
+        "x18": {"reason": "The identified part is AX-1O1 with letter O, not the numeric AX-101 in b021. A common product family and sound-pressure column do not resolve this exact-identity mismatch.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-1O1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b023", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1273.67)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "PROBE-I1", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-I1."}]},
+      "hard_negatives": {
+        "f03": {"reason": "The study expressly excludes operating calibration and records inventory month and unloaded mass. Those observations cannot evidence calibration error, -20 to +5 C coverage, or reference uncertainty merely because the inventory items are cold-room probes.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1273.67)"}]},
+        "x21": {"reason": "The authoritative model is PROBE-I1, letter I plus numeral 1, not the two-numeral PROBE-11 identity in b024.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-I1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b024", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 314 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 100.84)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "PROBE-11", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-11."}]},
+      "hard_negatives": {
+        "f03": {"reason": "Actual content is explicitly commercial, despite the calibration activity description. Carton dimensions and advertised retail cost are not empirical calibration error, test temperatures or reference uncertainty; no such positive measurements are listed.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 314 x 90 x 65); advertised retail cost (AUD/unit; e.g. 100.84)"}]},
+        "x20": {"reason": "This explicitly identifies PROBE-11 with two numeral ones rather than PROBE-I1 with letter I in b023.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-11."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b025", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "friction_survey", "evidence": [{"field": "description", "quote": "a pavement friction survey release, not footwear testing"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RFS-2.0)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 56.36)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "Riverbend friction survey release 2.0 / RFS-2.0", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.0"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.0."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b026", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "friction_survey", "evidence": [{"field": "description", "quote": "a pavement friction survey release, not footwear testing"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 109.67)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RFS-2.1)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "Riverbend friction survey release 2.1 / RFS-2.1", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.1"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.1."}]},
+      "hard_negatives": {
+        "x22": {"reason": "The title and edition both identify release 2.1. The exact lookup concerns the 2.0 identity documented by b025, not this neighboring version of the same survey.", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.1"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b027", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.23)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "DIST-K47", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K47."}, {"field": "distributions.0.title", "quote": "Variable dictionary and values for DIST-K47"}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b028", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.2)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "DIST-K74", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K74."}, {"field": "distributions.0.title", "quote": "Observation table for DIST-K74"}]},
+      "hard_negatives": {
+        "x23": {"reason": "The distributed instrument is DIST-K74, not DIST-K47 in b027. Actual model evidence rather than the shared calibration subject distinguishes the exact lookup.", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K74."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b029", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1523.23)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TITLE-T82 Bench inventory of temperature probes at Ivy Brook Inner", "evidence": [{"field": "title", "quote": "TITLE-T82 Bench inventory of temperature probes at Ivy Brook Inner"}]},
+      "hard_negatives": {
+        "f03": {"reason": "This inventory concerns probes but explicitly has no operating calibration trial. Its month and unloaded mass columns cannot supply calibration error, a test temperature interval or reference uncertainty.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1523.23); reporting interval (calendar month; e.g. 2024-06)"}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b030", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 144 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 50.09)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TITLE-T28 Following Quartz Field West temperature probes through cold-room calibration", "evidence": [{"field": "title", "quote": "TITLE-T28 Following Quartz Field West temperature probes through cold-room calibration"}]},
+      "hard_negatives": {
+        "f03": {"reason": "The calibration wording describes an associated activity, not measured performance. The explicit commercial-ledger qualification and carton-size/cost columns do not evidence calibration error, temperature coverage or reference uncertainty.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 144 x 90 x 65); advertised retail cost (AUD/unit; e.g. 50.09)"}]},
+        "x24": {"reason": "This title identifies TITLE-T28, not TITLE-T82 in b029. It is a different authoritative record even though both concern temperature probes.", "evidence": [{"field": "title", "quote": "TITLE-T28 Following Quartz Field West temperature probes through cold-room calibration"}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b021", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.21)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 46.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "AX-101", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-101."}]},
+      "hard_negatives": {
+        "x19": {"reason": "The actual model is AX-101 containing zero, not the letter-O AX-1O1 in b022. Similar measured acoustics do not substitute for an exact part identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-101."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b022", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 43.11)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "AX-1O1", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-1O1."}]},
+      "hard_negatives": {
+        "x18": {"reason": "AX-1O1 contains letter O and is not the AX-101 numeric part documented by b021. Acoustic-testing relevance does not establish the other model's identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is AX-1O1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b023", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1586.81)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "PROBE-I1", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-I1."}]},
+      "hard_negatives": {
+        "f03": {"reason": "The product is a cold-room probe, but this is unloaded inventory with operating calibration explicitly excluded. Month and unloaded mass do not provide any of calibration error, a calibration temperature range, or reference uncertainty.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1586.81)"}]},
+        "x21": {"reason": "The actual model PROBE-I1 has letter I followed by numeral 1, not the two numeral ones of PROBE-11 documented by b024.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-I1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b024", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 104.27)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 220 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "PROBE-11", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-11."}]},
+      "hard_negatives": {
+        "f03": {"reason": "This is explicitly an observed commercial ledger, not experimental calibration performance. Retail cost and carton dimensions do not substantiate calibration error, test-point range or reference uncertainty; calibration is the associated activity only.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 104.27); shipping carton dimensions (length x width x height in mm; e.g. 220 x 90 x 65)"}]},
+        "x20": {"reason": "PROBE-11 uses two numeral ones. It is not PROBE-I1, whose first suffix character is letter I in b023.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PROBE-11."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b025", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "friction_survey", "evidence": [{"field": "description", "quote": "a pavement friction survey release, not footwear testing"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 50.71)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RFS-2.0)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "Riverbend friction survey release 2.0 / RFS-2.0", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.0"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.0."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b026", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "friction_survey", "evidence": [{"field": "description", "quote": "a pavement friction survey release, not footwear testing"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 23.31)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RFS-2.1)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "Riverbend friction survey release 2.1 / RFS-2.1", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.1"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.1."}]},
+      "hard_negatives": {
+        "x22": {"reason": "This authoritative title and edition identify survey release 2.1, not the 2.0 release in b025. Version suffixes remain distinct despite the shared survey and documentation process.", "evidence": [{"field": "title", "quote": "Riverbend friction survey release 2.1"}, {"field": "description", "quote": "The catalogue model or edition is RFS-2.1."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b027", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.13)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "DIST-K47", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K47."}, {"field": "distributions.0.title", "quote": "Variable dictionary and values for DIST-K47"}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b028", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.08)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "DIST-K74", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K74."}, {"field": "distributions.0.title", "quote": "Observation table for DIST-K74"}]},
+      "hard_negatives": {
+        "x23": {"reason": "The instrument is explicitly DIST-K74 in the distribution, not DIST-K47 in b027. Their common cold-room calibration topic does not overcome the transposed model digits.", "evidence": [{"field": "distributions.0.description", "quote": "The instrument model documented here is DIST-K74."}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b029", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 934.32)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TITLE-T82 Bench inventory across the Kestrel Point Coastal series", "evidence": [{"field": "title", "quote": "TITLE-T82 Bench inventory across the Kestrel Point Coastal series"}]},
+      "hard_negatives": {
+        "f03": {"reason": "The actual process is explicitly unloaded inventory without an operating calibration trial. Month and unloaded mass are positively documented; calibration error, range and reference uncertainty are not, despite the cold-room probe product.", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 934.32)"}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b030", "reviewer_id": "auditor-packet-13",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 260 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 259.3)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TITLE-T28 The temperature probes investigation at Silver Creek North", "evidence": [{"field": "title", "quote": "TITLE-T28 The temperature probes investigation at Silver Creek North"}]},
+      "hard_negatives": {
+        "f03": {"reason": "The record explicitly qualifies itself as an observed commercial ledger rather than experimental performance. Its positive variables are carton size and advertised cost, not calibration error, calibration temperatures or reference uncertainty.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 260 x 90 x 65); advertised retail cost (AUD/unit; e.g. 259.3)"}]},
+        "x24": {"reason": "The actual title begins TITLE-T28, not TITLE-T82 in b029. Both concern probes, but the authoritative title identities are distinct.", "evidence": [{"field": "title", "quote": "TITLE-T28 The temperature probes investigation at Silver Creek North"}]}
+      },
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-13",
+      "rationale": "Compared all ten IDs against both other seeds after reading all actual fields. Preserved semantic facts: b021 has sound pressure plus microphone distance, b022 only sound pressure; b023/b029 have inventory month and unloaded mass with calibration explicitly excluded; b024/b030 are commercial ledgers with carton dimensions and advertised cost, not calibration performance; b025/b026 have month, dimensional inspection and release code; b027 has calibration error and -20 to +5 C coverage; b028 has calibration error only. Flow rate and reference-instrument uncertainty are not positively documented anywhere in this packet. AX-101 versus AX-1O1, PROBE-I1 versus PROBE-11, RFS-2.0 versus RFS-2.1, distribution-only DIST-K47 versus DIST-K74, and title-only TITLE-T82 versus TITLE-T28 remain distinct. Every distribution's format and description were checked: the CSV comma-separated tables and PDF-contained tables consistently associate the same listed variables, units and within-record example values; optional third distributions add no new measured variable. This seed's b027 and b030 rely on distribution synopses for variables rather than listing them in the main description, but the primary projected metadata remains complete. Titles, subject/process sentence constructions, paragraph structure, field ordering and explanatory length vary, not merely punctuation. Repeated catalogue boilerplate limits stylistic diversity. Literal numeric examples, fictional locations, some publishers and full TITLE-T82/T28 titles change across seeds; preservation means variable semantics, units, exclusions and identifying tokens, not identical underlying observations or identical full titles. No frozen no-answer conjunction is supported. Verification is metadata-only; query strings/paraphrase equivalence and file bytes were not supplied for inspection."
+    },
+    "39032": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-13",
+      "rationale": "All ten IDs were compared with 39031 and 39033. Variable sets, units, product distinctions, non-simulation observational basis and the explicit inventory/commercial limitations are preserved. b021 still has sound pressure and microphone distance, b022 sound pressure alone; b023/b029 inventory month and mass; b024/b030 carton dimensions and advertised cost; b025/b026 release identity, dimensional inspection and month; b027 error plus the inclusive -20 to +5 C interval; b028 error alone. No omitted flow rate, reference uncertainty or negated operating calibration was counted as measured. Exact model/edition distinctions remain intact, with DIST identities still in distribution fields and TITLE identities still in titles. All CSV/PDF descriptions match their format and their record's actual variables, including additional CSV distributions for b021, b022, b025 and b029 and the extra PDF for b028. Body wording meaningfully changes subject/process framing and information placement, e.g. b021 is shorter and moves quantities entirely to distributions, while b027 lists them in its body; titles and paragraph organization also vary. Recurrent boilerplate remains conspicuous. Seeded example numbers, locations, some publishers and full TITLE title wording are different, not preserved observations; variable semantics and authoritative identifying tokens are preserved. RFS exact titles remain deliberately stable. No no-answer conjunction is supported. Only supplied metadata was verified, not downloadable bytes or absent query/paraphrase strings."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-13",
+      "rationale": "Read and compared all ten versions with both earlier seeds. The same positively supported variable sets and exclusions persist: acoustic pressure plus distance for b021 and pressure alone for b022; month/mass inventory with no operating trial for b023/b029; commercial size/cost rather than experimental calibration for b024/b030; release identity/month/dimensional inspection for b025/b026; calibration error with inclusive -20 to +5 C test points for b027; error only for b028. There is no positive evidence for flow rate or reference-instrument uncertainty. Exact AX, PROBE, RFS, DIST and TITLE distinguishing characters and suffixes are retained; distribution-only and title-only identity placements remain supported. Every distribution was checked, including third PDFs for b024/b030 and the third CSV for b025: format labels agree with table-container descriptions and no nested distribution introduces conflicting columns or values within its record. b023/b025/b026 omit body variable lists but distributions retain the complete variable evidence. Meaningful surface variation includes revised subject/process wording, title wording, paragraph organization, length and whether variables occur in the body or distributions, though much explanatory language is recycled template prose. Example numbers, fictional context and some publishers change, so these are not identical empirical rows across seeds. Full TITLE-T82 and TITLE-T28 titles vary while their identity tokens remain fixed; RFS titles stay exact. No frozen no-answer conjunction is supported. Review covers all supplied primary metadata, not file bytes or unavailable query texts/paraphrase equivalence."
+    }
+  }
+}

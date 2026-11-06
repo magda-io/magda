@@ -1,0 +1,1544 @@
+{
+  "schema_version": 1,
+  "actual_text_only_scan": true,
+  "generator_or_plan_grade_used": false,
+  "physical_sample_claim_with_administrative_only_columns": [
+    {
+      "seed": 39031,
+      "dataset_id": "a020",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "807ce7403758c814fbafbef1e8383d0df0c1b0cb2f7bc28ea3f12ea1e178207f",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: completed operations (count; e.g. 86); reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh South). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "completed operations",
+        "reporting interval",
+        "facility location code"
+      ]
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a046",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "a4cdd361024ef92715abaa58652574d254e6257f003ae3c097df46259882a15c",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 17); facility location code (categorical site code; e.g. Hazel Ridge West). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "reporting interval",
+        "completed operations",
+        "facility location code"
+      ]
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "b035",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "bb755b02b37e60caeeba07f005599fe6530c0a1d8a06bb7e416b11ac61bab3c9",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: unloaded unit mass (g; e.g. 1179.69); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "unloaded unit mass",
+        "reporting interval"
+      ]
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "b059",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "e9d282a2b1bece2c4788037fa87588e7ac841a3b96b047ab18ba4f30f32a5967",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: unloaded unit mass (g; e.g. 539.25); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "unloaded unit mass",
+        "reporting interval"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a005",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "90689ce8b8aefd3eaa62e0f0e8a5f362753679c4722b09074483476b31d457f0",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: facility location code (categorical site code; e.g. Dune Valley Central); reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 22). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "facility location code",
+        "reporting interval",
+        "completed operations"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a046",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "44ec3054d04a1270798c69306951a770f226b2f0addd34aec4044f442a8081d4",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: completed operations (count; e.g. 28); facility location code (categorical site code; e.g. Cedar Reach Coastal); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "completed operations",
+        "facility location code",
+        "reporting interval"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a076",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "6109af57a21474b41644ad677625734f77a4c62b58f27efe73046b41fa3380d7",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "facility location code",
+        "completed operations",
+        "reporting interval"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a096",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "f19690d35d395dae3ba411f95d43d3bd05485e1b23b40d70eea9a776c29310d5",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "facility location code",
+        "completed operations",
+        "reporting interval"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "b023",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "00ca1418428a6a7dff79931d23c71331de1e9f9f10ead03c3ac744717e25deb8",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1273.67). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "reporting interval",
+        "unloaded unit mass"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "b035",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "c379be80ff079f74f996703a62ec8c7aa932361774ef1db5437977a14e77cd92",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1690.55). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "reporting interval",
+        "unloaded unit mass"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "b077",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "38b5ce21ad49e8185001784677593fce2c84489bf7dd5cfe2a2a59a85b6b9611",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 389.69). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "reporting interval",
+        "unloaded unit mass"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a020",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "b2fe9acf2a1227b9d06d32f047a92113836bbdd21297dd609d33107e458ffba6",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Pine Basin North); completed operations (count; e.g. 19). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "reporting interval",
+        "facility location code",
+        "completed operations"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a046",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "0802ee2b3219b9bc86fc7f5fcede8246e679f3da7ec044ad14eec7a943fe8de8",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: completed operations (count; e.g. 88); facility location code (categorical site code; e.g. Fern Hollow East); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "completed operations",
+        "facility location code",
+        "reporting interval"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a086",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "e72d96ce600b395159fb03a6f471a3be12ee7b71f2ed6dc496b84e6d96d4be00",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "reporting interval",
+        "facility location code",
+        "completed operations"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a096",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "9b9aa55eb06aabd5acdc6eb446a41a51d0f1ab18a29d8b490abd79cb6a6c01f8",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "facility location code",
+        "completed operations",
+        "reporting interval"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "b035",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "d021d5b0e3584c55300516b84bbde57910a1c6b222d46e91a1268169fea70c74",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 665.05). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "reporting interval",
+        "unloaded unit mass"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "b071",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "478d4eff36eaad82dae9d926ccb980f238f1de12d11a9a4911a2551923136db8",
+      "physical_claim": "The described study uses empirical observations from physical samples.",
+      "actual_distribution_description": "Deposited columns: unloaded unit mass (g; e.g. 154.76); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+      "independently_parsed_column_headings": [
+        "unloaded unit mass",
+        "reporting interval"
+      ]
+    }
+  ],
+  "simulation_observation_title_findings": [
+    [
+      39031,
+      "a029",
+      2,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a039",
+      0,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a039",
+      1,
+      "Deposited measurements"
+    ],
+    [
+      39031,
+      "a039",
+      2,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a049",
+      0,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a059",
+      0,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a059",
+      1,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a069",
+      0,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a069",
+      1,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a089",
+      1,
+      "Observation table"
+    ],
+    [
+      39031,
+      "a099",
+      0,
+      "Deposited measurements"
+    ],
+    [
+      39031,
+      "a099",
+      1,
+      "Observation table"
+    ],
+    [
+      39032,
+      "a039",
+      1,
+      "Observation table"
+    ],
+    [
+      39032,
+      "a039",
+      2,
+      "Deposited measurements"
+    ],
+    [
+      39032,
+      "a049",
+      2,
+      "Observation table"
+    ],
+    [
+      39032,
+      "a059",
+      0,
+      "Observation table"
+    ],
+    [
+      39032,
+      "a069",
+      1,
+      "Deposited measurements"
+    ],
+    [
+      39032,
+      "a079",
+      1,
+      "Observation table"
+    ],
+    [
+      39032,
+      "a089",
+      2,
+      "Deposited measurements"
+    ],
+    [
+      39032,
+      "a099",
+      0,
+      "Observation table"
+    ],
+    [
+      39032,
+      "a099",
+      1,
+      "Deposited measurements"
+    ],
+    [
+      39033,
+      "a029",
+      1,
+      "Deposited measurements"
+    ],
+    [
+      39033,
+      "a029",
+      2,
+      "Observation table"
+    ],
+    [
+      39033,
+      "a049",
+      1,
+      "Deposited measurements"
+    ],
+    [
+      39033,
+      "a059",
+      1,
+      "Deposited measurements"
+    ],
+    [
+      39033,
+      "a069",
+      1,
+      "Observation table"
+    ],
+    [
+      39033,
+      "a079",
+      0,
+      "Deposited measurements"
+    ],
+    [
+      39033,
+      "a079",
+      2,
+      "Observation table"
+    ],
+    [
+      39033,
+      "a089",
+      0,
+      "Deposited measurements"
+    ]
+  ],
+  "physical_sample_nonadmin_candidates": [
+    [
+      39031,
+      "a001",
+      [
+        "treatment application volume",
+        "insects counted per inspected tree",
+        "applied pest-control treatment"
+      ]
+    ],
+    [
+      39031,
+      "a002",
+      [
+        "insects counted per inspected tree",
+        "applied pest-control treatment",
+        "treatment application volume"
+      ]
+    ],
+    [
+      39031,
+      "a003",
+      [
+        "insects counted per inspected tree",
+        "applied pest-control treatment"
+      ]
+    ],
+    [
+      39031,
+      "a008",
+      [
+        "harvested bean mass",
+        "harvested plot area"
+      ]
+    ],
+    [
+      39031,
+      "a014",
+      [
+        "bean fermentation elapsed time"
+      ]
+    ],
+    [
+      39031,
+      "a018",
+      [
+        "surviving seedlings at follow-up",
+        "propagation method used"
+      ]
+    ],
+    [
+      39031,
+      "a027",
+      [
+        "wrapper material examined",
+        "wrapper oxygen transmission",
+        "failed wrapper seals"
+      ]
+    ],
+    [
+      39031,
+      "a030",
+      [
+        "wrapper oxygen transmission",
+        "failed wrapper seals",
+        "wrapper material examined"
+      ]
+    ],
+    [
+      39031,
+      "a040",
+      [
+        "force at fracture",
+        "tempering hold temperature and duration",
+        "particle diameter"
+      ]
+    ],
+    [
+      39031,
+      "a051",
+      [
+        "equipment cleaning cycle completed",
+        "microbial growth from surface swabs",
+        "residue remaining on cleaned surface"
+      ]
+    ],
+    [
+      39031,
+      "a053",
+      [
+        "microbial growth from surface swabs",
+        "equipment cleaning cycle completed"
+      ]
+    ],
+    [
+      39031,
+      "a062",
+      [
+        "powder mass added per preparation",
+        "added water temperature",
+        "time to complete powder dissolution"
+      ]
+    ],
+    [
+      39031,
+      "a064",
+      [
+        "powder mass added per preparation",
+        "time to complete powder dissolution"
+      ]
+    ],
+    [
+      39031,
+      "a065",
+      [
+        "powder mass added per preparation"
+      ]
+    ],
+    [
+      39031,
+      "a072",
+      [
+        "storage chamber temperature",
+        "viable microbes in beverage samples",
+        "elapsed time until observed spoilage"
+      ]
+    ],
+    [
+      39031,
+      "a073",
+      [
+        "storage chamber temperature",
+        "elapsed time until observed spoilage"
+      ]
+    ],
+    [
+      39031,
+      "a075",
+      [
+        "storage chamber temperature"
+      ]
+    ],
+    [
+      39031,
+      "a080",
+      [
+        "storage chamber temperature",
+        "elapsed time until observed spoilage",
+        "viable microbes in beverage samples"
+      ]
+    ],
+    [
+      39031,
+      "a081",
+      [
+        "cocoa fraction in liquid recipe",
+        "liquid viscosity",
+        "sugar fraction in liquid recipe"
+      ]
+    ],
+    [
+      39031,
+      "a082",
+      [
+        "sugar fraction in liquid recipe",
+        "liquid viscosity",
+        "cocoa fraction in liquid recipe"
+      ]
+    ],
+    [
+      39031,
+      "a091",
+      [
+        "residual sugar after fermentation",
+        "acidification time course",
+        "starter culture inoculated"
+      ]
+    ],
+    [
+      39031,
+      "a095",
+      [
+        "starter culture inoculated"
+      ]
+    ],
+    [
+      39031,
+      "b002",
+      [
+        "tested pavement surface roughness",
+        "wet sliding friction coefficient",
+        "water-film depth on pavement"
+      ]
+    ],
+    [
+      39031,
+      "b003",
+      [
+        "tested pavement surface roughness",
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39031,
+      "b009",
+      [
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness"
+      ]
+    ],
+    [
+      39031,
+      "b011",
+      [
+        "physical specification inspection",
+        "documented release identity",
+        "reporting interval"
+      ]
+    ],
+    [
+      39031,
+      "b020",
+      [
+        "hydraulic fluid flow rate",
+        "microphone distance from operating pump",
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39031,
+      "b022",
+      [
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39031,
+      "b027",
+      [
+        "calibration test-point range",
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39031,
+      "b034",
+      [
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39031,
+      "b037",
+      [
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness",
+        "water-film depth on pavement"
+      ]
+    ],
+    [
+      39031,
+      "b039",
+      [
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness"
+      ]
+    ],
+    [
+      39031,
+      "b040",
+      [
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39031,
+      "b043",
+      [
+        "tested pavement surface roughness",
+        "water-film depth on pavement",
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39031,
+      "b045",
+      [
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness"
+      ]
+    ],
+    [
+      39031,
+      "b049",
+      [
+        "hydraulic fluid flow rate",
+        "operating sound pressure level",
+        "microphone distance from operating pump"
+      ]
+    ],
+    [
+      39031,
+      "b050",
+      [
+        "microphone distance from operating pump",
+        "operating sound pressure level",
+        "hydraulic fluid flow rate"
+      ]
+    ],
+    [
+      39031,
+      "b052",
+      [
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39031,
+      "b058",
+      [
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39031,
+      "b062",
+      [
+        "operating sound pressure level",
+        "hydraulic fluid flow rate",
+        "microphone distance from operating pump"
+      ]
+    ],
+    [
+      39031,
+      "b070",
+      [
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39031,
+      "b074",
+      [
+        "reference thermometer uncertainty",
+        "calibration test-point range",
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39031,
+      "b075",
+      [
+        "calibration test-point range",
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39032,
+      "a001",
+      [
+        "insects counted per inspected tree",
+        "applied pest-control treatment",
+        "treatment application volume"
+      ]
+    ],
+    [
+      39032,
+      "a003",
+      [
+        "insects counted per inspected tree",
+        "applied pest-control treatment"
+      ]
+    ],
+    [
+      39032,
+      "a006",
+      [
+        "harvest season",
+        "harvested bean mass",
+        "harvested plot area"
+      ]
+    ],
+    [
+      39032,
+      "a011",
+      [
+        "bean fermentation elapsed time",
+        "bean core temperature",
+        "fermentation batch mass"
+      ]
+    ],
+    [
+      39032,
+      "a014",
+      [
+        "bean fermentation elapsed time"
+      ]
+    ],
+    [
+      39032,
+      "a018",
+      [
+        "propagation method used",
+        "surviving seedlings at follow-up"
+      ]
+    ],
+    [
+      39032,
+      "a019",
+      [
+        "surviving seedlings at follow-up"
+      ]
+    ],
+    [
+      39032,
+      "a022",
+      [
+        "wrapper oxygen transmission",
+        "wrapper material examined",
+        "failed wrapper seals"
+      ]
+    ],
+    [
+      39032,
+      "a032",
+      [
+        "particle diameter",
+        "force at fracture",
+        "tempering hold temperature and duration"
+      ]
+    ],
+    [
+      39032,
+      "a037",
+      [
+        "tempering hold temperature and duration",
+        "force at fracture",
+        "particle diameter"
+      ]
+    ],
+    [
+      39032,
+      "a043",
+      [
+        "ingredient quality assessment score",
+        "storage chamber temperature"
+      ]
+    ],
+    [
+      39032,
+      "a044",
+      [
+        "material moisture by mass",
+        "storage chamber temperature"
+      ]
+    ],
+    [
+      39032,
+      "a052",
+      [
+        "microbial growth from surface swabs",
+        "residue remaining on cleaned surface",
+        "equipment cleaning cycle completed"
+      ]
+    ],
+    [
+      39032,
+      "a060",
+      [
+        "residue remaining on cleaned surface",
+        "microbial growth from surface swabs",
+        "equipment cleaning cycle completed"
+      ]
+    ],
+    [
+      39032,
+      "a061",
+      [
+        "added water temperature",
+        "powder mass added per preparation",
+        "time to complete powder dissolution"
+      ]
+    ],
+    [
+      39032,
+      "a064",
+      [
+        "time to complete powder dissolution",
+        "powder mass added per preparation"
+      ]
+    ],
+    [
+      39032,
+      "a065",
+      [
+        "powder mass added per preparation"
+      ]
+    ],
+    [
+      39032,
+      "a074",
+      [
+        "viable microbes in beverage samples",
+        "storage chamber temperature"
+      ]
+    ],
+    [
+      39032,
+      "a077",
+      [
+        "viable microbes in beverage samples",
+        "elapsed time until observed spoilage",
+        "storage chamber temperature"
+      ]
+    ],
+    [
+      39032,
+      "a078",
+      [
+        "viable microbes in beverage samples",
+        "storage chamber temperature",
+        "elapsed time until observed spoilage"
+      ]
+    ],
+    [
+      39032,
+      "a082",
+      [
+        "liquid viscosity",
+        "cocoa fraction in liquid recipe",
+        "sugar fraction in liquid recipe"
+      ]
+    ],
+    [
+      39032,
+      "a085",
+      [
+        "cocoa fraction in liquid recipe"
+      ]
+    ],
+    [
+      39032,
+      "a091",
+      [
+        "residual sugar after fermentation",
+        "starter culture inoculated",
+        "acidification time course"
+      ]
+    ],
+    [
+      39032,
+      "a100",
+      [
+        "starter culture inoculated",
+        "acidification time course",
+        "residual sugar after fermentation"
+      ]
+    ],
+    [
+      39032,
+      "b002",
+      [
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness",
+        "water-film depth on pavement"
+      ]
+    ],
+    [
+      39032,
+      "b008",
+      [
+        "water-film depth on pavement",
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness"
+      ]
+    ],
+    [
+      39032,
+      "b009",
+      [
+        "tested pavement surface roughness",
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39032,
+      "b017",
+      [
+        "documented release identity",
+        "physical specification inspection",
+        "reporting interval"
+      ]
+    ],
+    [
+      39032,
+      "b018",
+      [
+        "documented release identity",
+        "physical specification inspection",
+        "reporting interval"
+      ]
+    ],
+    [
+      39032,
+      "b022",
+      [
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39032,
+      "b031",
+      [
+        "reporting interval",
+        "physical specification inspection",
+        "documented release identity"
+      ]
+    ],
+    [
+      39032,
+      "b033",
+      [
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness"
+      ]
+    ],
+    [
+      39032,
+      "b044",
+      [
+        "wet sliding friction coefficient",
+        "water-film depth on pavement",
+        "tested pavement surface roughness"
+      ]
+    ],
+    [
+      39032,
+      "b049",
+      [
+        "hydraulic fluid flow rate",
+        "operating sound pressure level",
+        "microphone distance from operating pump"
+      ]
+    ],
+    [
+      39032,
+      "b050",
+      [
+        "operating sound pressure level",
+        "microphone distance from operating pump",
+        "hydraulic fluid flow rate"
+      ]
+    ],
+    [
+      39032,
+      "b055",
+      [
+        "operating sound pressure level",
+        "microphone distance from operating pump",
+        "hydraulic fluid flow rate"
+      ]
+    ],
+    [
+      39032,
+      "b069",
+      [
+        "probe reading minus reference temperature",
+        "calibration test-point range"
+      ]
+    ],
+    [
+      39032,
+      "b070",
+      [
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39032,
+      "b073",
+      [
+        "probe reading minus reference temperature",
+        "calibration test-point range",
+        "reference thermometer uncertainty"
+      ]
+    ],
+    [
+      39032,
+      "b075",
+      [
+        "probe reading minus reference temperature",
+        "calibration test-point range"
+      ]
+    ],
+    [
+      39032,
+      "b076",
+      [
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39032,
+      "b079",
+      [
+        "reference thermometer uncertainty",
+        "probe reading minus reference temperature",
+        "calibration test-point range"
+      ]
+    ],
+    [
+      39032,
+      "b080",
+      [
+        "calibration test-point range",
+        "probe reading minus reference temperature",
+        "reference thermometer uncertainty"
+      ]
+    ],
+    [
+      39033,
+      "a004",
+      [
+        "insects counted per inspected tree"
+      ]
+    ],
+    [
+      39033,
+      "a006",
+      [
+        "harvested bean mass",
+        "harvest season",
+        "harvested plot area"
+      ]
+    ],
+    [
+      39033,
+      "a007",
+      [
+        "harvested plot area",
+        "harvest season",
+        "harvested bean mass"
+      ]
+    ],
+    [
+      39033,
+      "a009",
+      [
+        "harvested bean mass"
+      ]
+    ],
+    [
+      39033,
+      "a014",
+      [
+        "bean fermentation elapsed time"
+      ]
+    ],
+    [
+      39033,
+      "a018",
+      [
+        "propagation method used",
+        "surviving seedlings at follow-up"
+      ]
+    ],
+    [
+      39033,
+      "a021",
+      [
+        "wrapper material examined",
+        "failed wrapper seals",
+        "wrapper oxygen transmission"
+      ]
+    ],
+    [
+      39033,
+      "a024",
+      [
+        "wrapper material examined",
+        "failed wrapper seals"
+      ]
+    ],
+    [
+      39033,
+      "a030",
+      [
+        "wrapper oxygen transmission",
+        "failed wrapper seals",
+        "wrapper material examined"
+      ]
+    ],
+    [
+      39033,
+      "a031",
+      [
+        "tempering hold temperature and duration",
+        "particle diameter",
+        "force at fracture"
+      ]
+    ],
+    [
+      39033,
+      "a033",
+      [
+        "tempering hold temperature and duration",
+        "force at fracture"
+      ]
+    ],
+    [
+      39033,
+      "a037",
+      [
+        "force at fracture",
+        "tempering hold temperature and duration",
+        "particle diameter"
+      ]
+    ],
+    [
+      39033,
+      "a042",
+      [
+        "storage chamber temperature",
+        "ingredient quality assessment score",
+        "material moisture by mass"
+      ]
+    ],
+    [
+      39033,
+      "a043",
+      [
+        "storage chamber temperature",
+        "ingredient quality assessment score"
+      ]
+    ],
+    [
+      39033,
+      "a052",
+      [
+        "microbial growth from surface swabs",
+        "equipment cleaning cycle completed",
+        "residue remaining on cleaned surface"
+      ]
+    ],
+    [
+      39033,
+      "a054",
+      [
+        "equipment cleaning cycle completed",
+        "residue remaining on cleaned surface"
+      ]
+    ],
+    [
+      39033,
+      "a055",
+      [
+        "equipment cleaning cycle completed"
+      ]
+    ],
+    [
+      39033,
+      "a060",
+      [
+        "microbial growth from surface swabs",
+        "equipment cleaning cycle completed",
+        "residue remaining on cleaned surface"
+      ]
+    ],
+    [
+      39033,
+      "a061",
+      [
+        "added water temperature",
+        "time to complete powder dissolution",
+        "powder mass added per preparation"
+      ]
+    ],
+    [
+      39033,
+      "a062",
+      [
+        "added water temperature",
+        "powder mass added per preparation",
+        "time to complete powder dissolution"
+      ]
+    ],
+    [
+      39033,
+      "a070",
+      [
+        "added water temperature",
+        "time to complete powder dissolution",
+        "powder mass added per preparation"
+      ]
+    ],
+    [
+      39033,
+      "a072",
+      [
+        "elapsed time until observed spoilage",
+        "storage chamber temperature",
+        "viable microbes in beverage samples"
+      ]
+    ],
+    [
+      39033,
+      "a077",
+      [
+        "viable microbes in beverage samples",
+        "elapsed time until observed spoilage",
+        "storage chamber temperature"
+      ]
+    ],
+    [
+      39033,
+      "a082",
+      [
+        "sugar fraction in liquid recipe",
+        "cocoa fraction in liquid recipe",
+        "liquid viscosity"
+      ]
+    ],
+    [
+      39033,
+      "a083",
+      [
+        "sugar fraction in liquid recipe",
+        "cocoa fraction in liquid recipe"
+      ]
+    ],
+    [
+      39033,
+      "a084",
+      [
+        "liquid viscosity",
+        "cocoa fraction in liquid recipe"
+      ]
+    ],
+    [
+      39033,
+      "a085",
+      [
+        "cocoa fraction in liquid recipe"
+      ]
+    ],
+    [
+      39033,
+      "a090",
+      [
+        "liquid viscosity",
+        "sugar fraction in liquid recipe",
+        "cocoa fraction in liquid recipe"
+      ]
+    ],
+    [
+      39033,
+      "a092",
+      [
+        "residual sugar after fermentation",
+        "acidification time course",
+        "starter culture inoculated"
+      ]
+    ],
+    [
+      39033,
+      "a093",
+      [
+        "starter culture inoculated",
+        "acidification time course"
+      ]
+    ],
+    [
+      39033,
+      "a094",
+      [
+        "starter culture inoculated",
+        "residual sugar after fermentation"
+      ]
+    ],
+    [
+      39033,
+      "b001",
+      [
+        "water-film depth on pavement",
+        "wet sliding friction coefficient",
+        "tested pavement surface roughness"
+      ]
+    ],
+    [
+      39033,
+      "b003",
+      [
+        "tested pavement surface roughness",
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39033,
+      "b005",
+      [
+        "physical specification inspection",
+        "documented release identity",
+        "reporting interval"
+      ]
+    ],
+    [
+      39033,
+      "b008",
+      [
+        "tested pavement surface roughness",
+        "water-film depth on pavement",
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39033,
+      "b009",
+      [
+        "tested pavement surface roughness",
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39033,
+      "b019",
+      [
+        "hydraulic fluid flow rate",
+        "microphone distance from operating pump",
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39033,
+      "b021",
+      [
+        "microphone distance from operating pump",
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39033,
+      "b040",
+      [
+        "wet sliding friction coefficient"
+      ]
+    ],
+    [
+      39033,
+      "b044",
+      [
+        "tested pavement surface roughness",
+        "wet sliding friction coefficient",
+        "water-film depth on pavement"
+      ]
+    ],
+    [
+      39033,
+      "b050",
+      [
+        "operating sound pressure level",
+        "microphone distance from operating pump",
+        "hydraulic fluid flow rate"
+      ]
+    ],
+    [
+      39033,
+      "b052",
+      [
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39033,
+      "b055",
+      [
+        "microphone distance from operating pump",
+        "hydraulic fluid flow rate",
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39033,
+      "b057",
+      [
+        "operating sound pressure level",
+        "microphone distance from operating pump"
+      ]
+    ],
+    [
+      39033,
+      "b062",
+      [
+        "hydraulic fluid flow rate",
+        "microphone distance from operating pump",
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39033,
+      "b064",
+      [
+        "operating sound pressure level"
+      ]
+    ],
+    [
+      39033,
+      "b067",
+      [
+        "reference thermometer uncertainty",
+        "calibration test-point range",
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39033,
+      "b069",
+      [
+        "probe reading minus reference temperature",
+        "calibration test-point range"
+      ]
+    ],
+    [
+      39033,
+      "b074",
+      [
+        "calibration test-point range",
+        "reference thermometer uncertainty",
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39033,
+      "b076",
+      [
+        "probe reading minus reference temperature"
+      ]
+    ],
+    [
+      39033,
+      "b079",
+      [
+        "probe reading minus reference temperature",
+        "reference thermometer uncertainty",
+        "calibration test-point range"
+      ]
+    ]
+  ]
+}

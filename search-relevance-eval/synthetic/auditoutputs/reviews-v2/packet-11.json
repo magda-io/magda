@@ -1,0 +1,651 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-11",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-11"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "b001", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.68)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.56)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.71)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120 (aliases run-x120 and RUNX120); complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x04": {"reason": "Whole-shoe RUN-X120 is not the RUN-X121 identity of x04; the final digit differs.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x05": {"reason": "The record identifies complete footwear, not the separately identified RUN-X120-SOLE component sought by x05.", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}, {"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x06": {"reason": "RUN-X120 contains numeral 1; x06's RUN-XI20 contains letter I. No alias here equates them.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120."}]},
+        "x07": {"reason": "RUN-X120 ends in numeral 0, unlike x07's letter-O identity RUN-X12O.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x08": {"reason": "The authoritative string is unsuffixed RUN-X120, not the RUN-X120-V2 edition of x08.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x09": {"reason": "The authoritative string is unsuffixed RUN-X120, not the RUN-X120-V1 edition of x09.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x10": {"reason": "RUN and TRAIL are different model prefixes; this is not x10's TRAIL-X120 despite the shared suffix.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b002", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.94)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.47)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.33)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X121; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X121."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "A complete wet-road shoe study can be useful functionally, but RUN-X121 is not x01's RUN-X120; its last digit differs.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X121."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b003", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.35)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.5)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X210; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X210."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "RUN-X210 is a distinct digit sequence from x01's RUN-X120. Similar wet-pavement measurements do not establish identity; no water-film measurement is documented here.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X210."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b004", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.45)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TRAIL-X120; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X120."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The authoritative prefix is TRAIL, not RUN. Shared X120 and shoe testing do not make this x01's RUN-X120. Only friction is documented, not roughness or film depth.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X120."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b005", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "shoe_component", "evidence": [{"field": "description", "quote": "replacement shoe components supplied separately from complete footwear"}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RUN-X120-SOLE)"}],
+          "physical_specification_inspection_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 63.03)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-SOLE; sole assembly component only", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-SOLE."}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+      "hard_negatives": {
+        "f01": {"reason": "This is separately supplied component release inspection, not whole-running-shoe wet pavement performance testing. The files document identity, month and dimensions, not friction, pavement roughness or water-film depth.", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+        "x01": {"reason": "The authoritative identifier includes the SOLE suffix and explicitly denotes a component; occurrence of RUN-X120 within it is not the unsuffixed complete-shoe identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-SOLE."}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b006", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing_not_performance_measurement", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "A separate investigation at Fern Hollow West examines complete running shoes for road use through wet pavement traction testing."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 132 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 244.89)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X1200; commercial ledger associated with complete running shoes", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "f01": {"reason": "Wet-traction wording describes the associated activity, while the deposit explicitly disclaims experimental performance and supplies price/carton dimensions. Empirical commercial entries are not wet friction, roughness or film-depth measurements; no such facts are credited.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 132 x 90 x 65); advertised retail cost (AUD/unit; e.g. 244.89)."}]},
+        "x01": {"reason": "The complete authoritative string RUN-X1200 has an additional terminal zero; a RUN-X120 substring does not establish x01 identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]},
+        "x02": {"reason": "Changing case cannot remove the additional zero in RUN-X1200; it is not the declared run-x120 alias of RUN-X120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]},
+        "x03": {"reason": "Ignoring hyphenation still leaves RUNX1200, not the RUNX120 alias documented for the x03 target.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b007", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.62)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.5)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.76)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-XI20; complete running shoe (letter I)", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The identifier has letter I in XI20, not numeral 1 in X120; functional similarity is not x01 identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x02": {"reason": "Case normalization of RUN-XI20 cannot change I to 1; it is not the run-x120 alias.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x03": {"reason": "Hyphen removal leaves RUNXI20, not RUNX120; the I/1 distinction persists.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x07": {"reason": "RUN-XI20 and x07's RUN-X12O differ both at I versus 1 and terminal 0 versus O.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b008", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.78)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.92)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.57)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X12O; complete running shoe (terminal letter O)", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The authoritative identifier ends in letter O, not the numeral 0 of x01's RUN-X120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x02": {"reason": "Case equivalence leaves o versus 0 distinct; RUN-X12O is not the run-x120 alias.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x03": {"reason": "Removing hyphenation leaves RUNX12O, not RUNX120; O/0 is not a punctuation difference.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x06": {"reason": "RUN-X12O is not x06's RUN-XI20: numeral 1 versus letter I and terminal O versus 0 remain distinct.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b009", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.76)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.97)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-V2; complete running shoe, V2 edition", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The V2 edition suffix is part of the authoritative identity, not the unsuffixed RUN-X120 of x01. No water-film measurement is documented.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}]},
+        "x09": {"reason": "V2 is not the V1 edition requested by x09, irrespective of similar shoe testing.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b010", "seed": 39031, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.61)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-V1; complete running shoe, V1 edition", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "RUN-X120-V1 is explicitly versioned, not the unsuffixed x01 identity. Only friction is documented; neither roughness nor water-film depth is evidenced.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}]},
+        "x08": {"reason": "The authoritative V1 suffix differs from x08's V2 suffix.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b001", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.65)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.53)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.28)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120 (aliases run-x120 and RUNX120); complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x04": {"reason": "The declared whole-shoe identifier is RUN-X120 rather than x04's RUN-X121; the final digit differs.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x05": {"reason": "This identifies complete shoes with an unsuffixed model, not x05's RUN-X120-SOLE assembly.", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}, {"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x06": {"reason": "Numeral 1 in RUN-X120 is not the letter I of x06's RUN-XI20. The listed aliases do not erase that distinction.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120."}]},
+        "x07": {"reason": "The terminal numeral 0 in RUN-X120 is distinct from the terminal O of x07's RUN-X12O.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x08": {"reason": "The actual model is unsuffixed RUN-X120, not the V2 edition of x08.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x09": {"reason": "The actual model is unsuffixed RUN-X120, not the V1 edition of x09.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x10": {"reason": "The RUN prefix does not match x10's TRAIL prefix despite the common X120 suffix.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b002", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.57)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.61)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.96)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X121; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X121."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "This is an empirical full-shoe traction record, but its authoritative RUN-X121 has a different final digit from x01's RUN-X120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X121."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b003", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.28)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.51)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X210; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X210."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The RUN-X210 digit order is not x01's RUN-X120. Its documented friction and roughness are not evidence of identity or an unlisted film-depth column.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X210."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b004", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.51)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TRAIL-X120; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X120."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The TRAIL-X120 prefix differs from x01's RUN-X120. A shared X120 fragment and friction testing do not establish exact identity; no roughness or film-depth measurement is documented.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X120."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b005", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "shoe_component", "evidence": [{"field": "description", "quote": "replacement shoe components supplied separately from complete footwear"}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RUN-X120-SOLE)"}],
+          "physical_specification_inspection_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 101.28)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-SOLE; sole assembly component only", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-SOLE."}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+      "hard_negatives": {
+        "f01": {"reason": "Separately supplied sole component documentation/release inspection is not the full-shoe wet-pavement process. Deposited identity, dimensions and reporting month provide no friction, surface roughness or water-film measurements.", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+        "x01": {"reason": "The SOLE suffix and express component-only scope distinguish this from x01's unsuffixed complete RUN-X120 shoe.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-SOLE."}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b006", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing_not_performance_measurement", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "This deposit concerns wet pavement traction testing of complete running shoes for road use at Alderbank Coastal."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 84.76)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 281 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X1200; commercial ledger associated with complete running shoes", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "f01": {"reason": "The broad testing association does not override the explicit commercial-ledger qualification. Observed cost and carton dimensions are not experimental wet friction, pavement roughness or film-depth measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 84.76); shipping carton dimensions (length x width x height in mm; e.g. 281 x 90 x 65)."}]},
+        "x01": {"reason": "RUN-X1200 includes an additional zero and is not x01's unsuffixed RUN-X120 exact identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]},
+        "x02": {"reason": "Case equivalence cannot remove the additional zero; this is not the run-x120 alias.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]},
+        "x03": {"reason": "Hyphenation equivalence yields RUNX1200, not the target alias RUNX120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b007", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.7)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.41)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-XI20; complete running shoe (letter I)", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "RUN-XI20 has letter I rather than numeral 1, so it is not x01's RUN-X120 despite directly documented traction measurements.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x02": {"reason": "Case folding RUN-XI20 preserves the I/1 difference from run-x120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x03": {"reason": "Removing hyphens does not turn RUNXI20 into RUNX120; I remains a letter.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x07": {"reason": "RUN-XI20 differs from x07's RUN-X12O both in the first character after X (I/1) and last character (0/O).", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b008", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.55)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.58)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.56)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X12O; complete running shoe (terminal letter O)", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "RUN-X12O has a terminal letter O, not x01's numeral 0 in RUN-X120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x02": {"reason": "Case normalization does not equate letter O with digit 0 in the run-x120 alias.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x03": {"reason": "Hyphen removal leaves RUNX12O rather than RUNX120; the terminal character remains different.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x06": {"reason": "This RUN-X12O string is distinct from x06's RUN-XI20 at both 1/I and O/0 positions.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b009", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.77)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.54)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-V2; complete running shoe, V2 edition", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The authoritative V2 edition is not x01's unsuffixed RUN-X120 identity; no film-depth measurement is supplied by the two-column synopsis.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}]},
+        "x09": {"reason": "The V2 suffix differs from x09's V1 edition, even with the same shoe family and testing process.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b010", "seed": 39032, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.37)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-V1; complete running shoe, V1 edition", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "This is explicitly RUN-X120-V1, not the unsuffixed x01 identity. Friction is documented, while roughness and water-film depth are not.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}]},
+        "x08": {"reason": "V1 is a different authoritative edition from x08's V2.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b001", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.68)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.57)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.41)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120 (aliases run-x120 and RUNX120); complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x04": {"reason": "RUN-X120 ends in 0, not the final 1 of x04's RUN-X121.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x05": {"reason": "The actual record is complete footwear and unsuffixed RUN-X120, not the RUN-X120-SOLE component identity required by x05.", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}, {"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x06": {"reason": "This RUN-X120 has numeral 1, unlike the letter I of x06's RUN-XI20. Neither declared alias authorizes that substitution.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120."}]},
+        "x07": {"reason": "The terminal character is numeral 0, unlike letter O in x07's RUN-X12O.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x08": {"reason": "An unsuffixed RUN-X120 is not the separately identified RUN-X120-V2 edition of x08.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x09": {"reason": "An unsuffixed RUN-X120 is not the separately identified RUN-X120-V1 edition of x09.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]},
+        "x10": {"reason": "The authoritative RUN prefix differs from the TRAIL prefix of x10's TRAIL-X120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b002", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.06)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.22)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.61)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X121; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X121."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The full-shoe empirical traction subject is related, but its RUN-X121 identity differs by the terminal digit from x01's RUN-X120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X121."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b003", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.44)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X210; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X210."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The authoritative RUN-X210 is not the RUN-X120 digit sequence of x01. The two documented wet-test quantities do not establish exact identity or an unlisted water-film measurement.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X210."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b004", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.63)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "TRAIL-X120; complete running shoe", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X120."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The model's TRAIL prefix differs from x01's RUN prefix, even with the shared X120 fragment. Only friction is evidenced, not roughness or film depth.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TRAIL-X120."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b005", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "shoe_component", "evidence": [{"field": "description", "quote": "replacement shoe components supplied separately from complete footwear"}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "physical_specification_inspection_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 70.66)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. RUN-X120-SOLE)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-SOLE; sole assembly component only", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-SOLE."}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+      "hard_negatives": {
+        "f01": {"reason": "The positive subject is sole-component documentation and release inspection, explicitly not the complete shoe. Identity, inspection dimensions and month do not supply the whole-shoe wet friction/roughness/film-depth measurements needed for f01.", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]},
+        "x01": {"reason": "The authoritative RUN-X120-SOLE component string is not the unsuffixed RUN-X120 whole-shoe identity; the text expressly excludes the parent shoe.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-SOLE."}, {"field": "description", "quote": "This record documents the sole assembly component only, not the complete parent running shoe."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b006", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing_not_performance_measurement", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "This deposit concerns wet pavement traction testing of complete running shoes for road use at Dune Valley East."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 206.41)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 157 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X1200; commercial ledger associated with complete running shoes", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "f01": {"reason": "The explicit observed-ledger qualification limits this to commercial data despite its wet-testing association. Retail cost and shipping dimensions do not positively document wet friction, pavement roughness or water-film depth, and experimental performance is expressly disclaimed.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 206.41); shipping carton dimensions (length x width x height in mm; e.g. 157 x 90 x 65)."}]},
+        "x01": {"reason": "The authoritative RUN-X1200 has an extra zero relative to x01's RUN-X120; a prefix match is not identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]},
+        "x02": {"reason": "Case equivalence does not delete the additional zero, so RUN-X1200 is not the target's run-x120 alias.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]},
+        "x03": {"reason": "After hyphen removal the string is RUNX1200, not the declared RUNX120 alias of the target.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X1200."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b007", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.76)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.12)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.75)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-XI20; complete running shoe (letter I)", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "The authoritative string contains I, not numeral 1, and is therefore not x01's RUN-X120 despite similar empirical testing.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x02": {"reason": "Case equivalence does not substitute 1 for I, so the string is not the target's run-x120 alias.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x03": {"reason": "Hyphenation equivalence leaves RUNXI20, not RUNX120; this is a character identity difference.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]},
+        "x07": {"reason": "RUN-XI20 is different from x07's RUN-X12O at I/1 and 0/O; no equivalence is documented.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-XI20."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b008", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.06)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.08)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.41)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X12O; complete running shoe (terminal letter O)", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "RUN-X12O ends in letter O rather than the digit 0 of x01's RUN-X120; testing similarity cannot establish identity.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x02": {"reason": "Case normalization preserves the letter-versus-digit distinction between RUN-X12O and run-x120.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x03": {"reason": "Removing the hyphen leaves RUNX12O, not RUNX120. The last character is not a punctuation variant.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]},
+        "x06": {"reason": "RUN-X12O differs from x06's RUN-XI20 at numeral 1 versus I and terminal O versus 0.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X12O."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b009", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.97)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.83)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-V2; complete running shoe, V2 edition", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "This expressly identifies the V2 edition, not x01's unsuffixed RUN-X120 identity; film depth is not documented among the deposited columns.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}]},
+        "x09": {"reason": "The authoritative V2 edition is not the V1 edition sought by x09.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V2."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b010", "seed": 39033, "reviewer_id": "auditor-packet-11",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.43)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "RUN-X120-V1; complete running shoe, V1 edition", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}, {"field": "description", "quote": "complete running shoes for road use"}]},
+      "hard_negatives": {
+        "x01": {"reason": "RUN-X120-V1 is a distinct versioned identity from x01's unsuffixed model. Only friction is positively documented, not surface roughness or water-film depth.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}]},
+        "x08": {"reason": "The V1 edition is not the V2 edition required by x08.", "evidence": [{"field": "description", "quote": "The catalogue model or edition is RUN-X120-V1."}]}
+      },
+      "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-11",
+      "rationale": "All ten IDs were compared across all three seeds after reading every supplied projected field. Products, actual process distinctions, empirical versus commercial basis, exact model strings/roles, aliases for b001, measurement-column types and units are preserved. b001/b002/b007/b008 retain friction, roughness and film depth; b003/b009 retain friction and roughness only; b004/b010 retain friction only; b005 retains component inspection dimensions, edition identity and month; b006 retains commercial price and carton dimensions, never performance measurements. Text variation is meaningful: titles, clause order, paragraphing, length, presence of column lists in the main description, optional spatial text, publishers, sites and two-versus-three distribution arrangements vary, not merely a category prefix. Each distribution's entire synopsis was checked: distribution 0 consistently claims CSV/comma-separated tables, distribution 1 PDF/document tables, and optional distribution 2's CSV or PDF wording matches its format and repeats that record's documented columns/values. Verification is of metadata association, not downloaded file bytes. Strict all-facts preservation is unresolved: numeric examples and study context change, not just wording. For b001, distributions.0.description roughness/friction/film examples are 1.68/0.56/1.71 in 39031, 1.65/0.53/1.28 in 39032 and 1.41/0.57/0.68 in 39033. Its description site changes Ivy Brook Central to Elm Crossing Upper to Granite Bend Lower, with different publishers. No packet evidence states these altered values/context are interchangeable wording-only variations. Thus concept/column preservation is supported, but unchanged measured facts cannot be certified. The packet supplies intent definitions/IDs, not literal query/paraphrase texts; paraphrase equivalence and complete-corpus coverage are outside this packet review. No actual record supports either frozen no-answer conjunction. No searchable instruction, grade code or answer-key claim was observed."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-11",
+      "rationale": "All ten seed-39032 records and all their projected title, description, distribution, keyword, publisher and present spatial fields were reviewed against both other versions. Measurement types, units, model strings/roles, component exclusions, b001 aliases and the commercial-ledger distinction are preserved; descriptions and titles meaningfully change structure, length, ordering and whether columns appear in the description or only distributions. Optional spatial fields and distribution counts/titles also vary. CSV/PDF format labels match their full synopses and associated columns in every distribution; no measured variable is added from an omission or negation. This is metadata-level verification, not inspection of underlying files. A strict facts-preserved result remains unresolved because explicit numerical examples and context differ across seeds: b005 distributions.0.description physical specification examples are 63.03 mm in 39031, 101.28 mm in 39032, and 70.66 mm in 39033, although the component remains RUN-X120-SOLE and reporting month 2024-06. b006 advertised retail cost changes 244.89 to 84.76 to 206.41 AUD/unit, while carton length changes 132 to 281 to 157 mm; these are not paraphrases of identical numeric facts. Seed-39032 b006 explicitly calls the deposit an observed commercial ledger, not experimental performance, so its testing association was not counted as positively measured performance. Stable concept-level coverage does not certify numeric/context preservation. Literal query texts and underlying distribution bytes were not supplied; no wider corpus, actual rankings or omitted duplicated queryContext copies were inspected."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-11",
+      "rationale": "All ten seed-39033 records were exhaustively reviewed and compared with 39031/39032. Actual product/process/basis distinctions, exact digit/letter/prefix/suffix identities, b001 aliases and the same per-ID measurement-column sets and units survive. The separately supplied sole assembly stays component-only; RUN-X1200 remains commercial price/carton data and is not treated as a wet-performance experiment. Meaningful variation includes title wording, sentence ordering, paragraphs, substantial description-length changes, columns in description versus synopses, optional spatial text and publisher/site context. Every supplied distribution synopsis repeats the correct per-record columns/values, with comma-separated wording for CSV and document-table wording for PDF, including all optional third distributions. This verifies metadata association only. Strict fact-value preservation is unresolved: b003 distributions.0.description roughness/friction examples change from 0.35/0.5 in 39031 to 1.28/0.51 in 39032 and 1.44/0.7 in 39033; b009 friction changes 0.76 to 0.54 to 0.83; b010 friction changes 0.61 to 0.37 to 0.43. The numerical and site/publisher changes are substantive rather than textual synonyms, although all column types remain supported. No evidence in this packet establishes permission to regard those changed explicit facts as preserved. Literal query/paraphrase text, underlying file bytes and corpus-wide positive/absence coverage cannot be certified from the permitted materials. No record supports a frozen no-answer conjunction; no searchable grade/intent leakage or instruction was observed."
+    }
+  }
+}

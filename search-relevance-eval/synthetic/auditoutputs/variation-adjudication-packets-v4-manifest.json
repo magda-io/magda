@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "packets": [
+    {
+      "original_packet": 1,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-01.json",
+      "sha256": "36c91c5da01953e4e50aca245444aebefec3cbdaae76e57fe515eecabb0c889b",
+      "reviewed_pairs": 30,
+      "changed_records": 3,
+      "unchanged_records_with_full_byte_proof": 27
+    },
+    {
+      "original_packet": 4,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-04.json",
+      "sha256": "20e2da5d56af3df194cd317d505babe43527a846006fcd605303665b50ff6bfc",
+      "reviewed_pairs": 30,
+      "changed_records": 2,
+      "unchanged_records_with_full_byte_proof": 28
+    },
+    {
+      "original_packet": 6,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-06.json",
+      "sha256": "8184b296c9fff69cf58c9bc30dc7f5520cdb5ad6cdbf60b79734c07f7e8da3a3",
+      "reviewed_pairs": 30,
+      "changed_records": 6,
+      "unchanged_records_with_full_byte_proof": 24
+    },
+    {
+      "original_packet": 8,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-08.json",
+      "sha256": "8439badd76d69a96887fc0ce15848949a0538541715736bd7580b54c9d30d04c",
+      "reviewed_pairs": 30,
+      "changed_records": 5,
+      "unchanged_records_with_full_byte_proof": 25
+    },
+    {
+      "original_packet": 9,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-09.json",
+      "sha256": "a768bc00f73bd6658e561049d130686dd5aee58bff215ec98a4b54802b2ceae1",
+      "reviewed_pairs": 30,
+      "changed_records": 4,
+      "unchanged_records_with_full_byte_proof": 26
+    },
+    {
+      "original_packet": 10,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-10.json",
+      "sha256": "f80120db622513ec94e249d7617b99b6704072f1f73416b277c42f59a2882947",
+      "reviewed_pairs": 30,
+      "changed_records": 4,
+      "unchanged_records_with_full_byte_proof": 26
+    },
+    {
+      "original_packet": 11,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-11.json",
+      "sha256": "775fb816e55c1b4ac89173c943e017954bf3740fba43e22c4d88e57fcd53fe46",
+      "reviewed_pairs": 30,
+      "changed_records": 0,
+      "unchanged_records_with_full_byte_proof": 30
+    },
+    {
+      "original_packet": 14,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-14.json",
+      "sha256": "f28cf8966314931e7a34cd5aca16c104624534dade5ff7f53ba896a58c09de28",
+      "reviewed_pairs": 30,
+      "changed_records": 0,
+      "unchanged_records_with_full_byte_proof": 30
+    },
+    {
+      "original_packet": 18,
+      "path": "auditoutputs/variation-adjudication-packets-v4/packet-18.json",
+      "sha256": "727baa4d2b41e74d75920bf76fad94b64bf0ee5702913f602928056c1f93a720",
+      "reviewed_pairs": 30,
+      "changed_records": 0,
+      "unchanged_records_with_full_byte_proof": 30
+    }
+  ],
+  "manual_judgments_generated": false,
+  "all_original_observation_sets_compared_programmatically_not_relabelled": true
+}

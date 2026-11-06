@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "status": "final_v3_scope_verified_semantic_delta_review_pending",
+  "fixture_delta_scope_passed": true,
+  "actual_text_label_validation_passed": false,
+  "changes": [
+    {
+      "seed": 39031,
+      "dataset_id": "a005",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "ff4c88fd6cfbdb922157d597e1eef6c342b35998184a0deea438bdd6fa685b17",
+      "after_record_sha256": "d0926be2a52d55b76f99ad052a1b889c7bb912ca80ca28e98a053af386579c84"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a020",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "807ce7403758c814fbafbef1e8383d0df0c1b0cb2f7bc28ea3f12ea1e178207f",
+      "after_record_sha256": "b76c4a3a143a09ec111e57139dc8c597873b3993ffd41237c1e3ccaca1ee6dc8"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a029",
+      "changed_fields": [
+        "distributions.2.queryContext",
+        "distributions.2.title"
+      ],
+      "before_record_sha256": "fcde9aaf8aede41f12388463ebccd9e74b3197908473231f49aca3752eeb3f17",
+      "after_record_sha256": "f1fc6a9542d2fac8faaa51ee2f511b357be0da0fb628b00d7d50de4a2ca2909f"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a039",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title",
+        "distributions.1.queryContext",
+        "distributions.1.title",
+        "distributions.2.queryContext",
+        "distributions.2.title"
+      ],
+      "before_record_sha256": "41cf03c5ccb17420445b52b6cce59d9911ced0a7b4c8449c36cbe69bc91b59e3",
+      "after_record_sha256": "3e8034ca79eb4e955d648a225d74ebd069d7361c231c7313e6afcdd46a4d3e4d"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a046",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "a4cdd361024ef92715abaa58652574d254e6257f003ae3c097df46259882a15c",
+      "after_record_sha256": "0eb173df0e0e6f9c3af53d7ec37313dc10514118872a703db4113c32a47c73cb"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a049",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title"
+      ],
+      "before_record_sha256": "092d0487692e550f96ce6d1ee661cb6083a6bdeb8f4a175bdd3c879cb04c7016",
+      "after_record_sha256": "64bc01312c823d1cbfd42137c40df212dc3184adf70b32c7bfa518800dcd0a44"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a057",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "979395e0d097c5439740dbd047ccbc6f83857b9546f31d80a22cffd8412b6569",
+      "after_record_sha256": "2597249077aec9ec7ae9c9de9326c709d87e798b447e98dd0fe7c168d701b119"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a059",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title",
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "2a4126c58ad34f03f7e911106063659bfc55e292426ef25f2b694b646bca25b4",
+      "after_record_sha256": "7599e100f4209d3a1e1f61b92a96c2afb6cb05ff7d9c2750f30c00c8eb109114"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a069",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title",
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "b2782904f90a4c3ed4261e01ebc9f131512b09c05755881eb27539ab97f9331c",
+      "after_record_sha256": "d3a403c51954d315e78879b19cc8ae0c17f392655548cf6ca205fff67734106c"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a076",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "ab954fdb961750f2f5175f8807bf80469b6f4aac7e3e45618322eb78791d50b5",
+      "after_record_sha256": "e94a67ac7081e466ad874541f1b863ee238a7c3d91a2e492013ad96b626dce3e"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a089",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "af36600aeffc311c6ed5d5d32162541fc5453b9145a2283fcdad090f29e1aa12",
+      "after_record_sha256": "510ea42a389171644502367df601caf6b57061e7b43690832efeeea42ce699b5"
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a099",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title",
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "d84ee6c76f43a8642c6e1814a810adac35530e2257a0ac58c18859886377dc15",
+      "after_record_sha256": "27d248ca69ee858602a8efc95fcd1eef5508b23471753d39e2813c37cb970bed"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a005",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "90689ce8b8aefd3eaa62e0f0e8a5f362753679c4722b09074483476b31d457f0",
+      "after_record_sha256": "ea9b178099d84ff5ab8e93c63b528e0d3523b77904e7b0291754263c2f4a5ba5"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a039",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title",
+        "distributions.2.queryContext",
+        "distributions.2.title"
+      ],
+      "before_record_sha256": "7679ddbf61cbd396085be103c25e9fe8e6edccce86a058fd57c7b6764f9a2832",
+      "after_record_sha256": "dd571f3c30e0f4c3cb2eedf3ab64c1020ca2e8a931a19de43a085cc330974a0e"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a046",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "44ec3054d04a1270798c69306951a770f226b2f0addd34aec4044f442a8081d4",
+      "after_record_sha256": "389a55b08216c107c1d6604e76d3a5d93a64b87d78b6915e301597c75985670b"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a049",
+      "changed_fields": [
+        "distributions.2.queryContext",
+        "distributions.2.title"
+      ],
+      "before_record_sha256": "21505df12eb8e6721e19cfad3ed6b84a8b848c9605518f0d1bbd7556b5075cdb",
+      "after_record_sha256": "725f77bb154f89b00b0bcfc4d3bdc30c68373b7e493a42582ae3cb5d0ec1970d"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a057",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "2121a180f5794c2fae44a503ce296a297ab0dcbd334f525bd6d8efc5f7f24f55",
+      "after_record_sha256": "f3f2e06ec190d0a9747483bbce1619b5b0bc438aba21b4e2941e89d24c4520d3"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a059",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title"
+      ],
+      "before_record_sha256": "a7b34d81e07d46eca1d26eb90cc829067c86628e3a1f94edb17ffb2a5056f833",
+      "after_record_sha256": "e04f73d03ecee9fca3c6c69bccd8418d8cee39b1a1ef7012091ad20257dea039"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a069",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "3e02934b7bfeaa3af599ead4e16d89faf862bb8bbe0688d0428850e4a0567895",
+      "after_record_sha256": "a9e5c9905834a31c4bb44a264e1401dc9c1331257ca63c8a25b09e2e2c1e1ca7"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a076",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "6109af57a21474b41644ad677625734f77a4c62b58f27efe73046b41fa3380d7",
+      "after_record_sha256": "73ee6f060d2d36e0beae0506446a02e8cc136b750f797ea7cddbf29335c11dfd"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a079",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "701ec0db6b6b0fe4f439167ee99c93c460c5cf2a72ada9bbf084a135cb6da6cd",
+      "after_record_sha256": "337a0126b6089b92bd6b17be8a461c014b0b6f7c1e6fc7730eb774e92a863631"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a089",
+      "changed_fields": [
+        "distributions.2.queryContext",
+        "distributions.2.title"
+      ],
+      "before_record_sha256": "722e0485b7eee63b94812cc8e6c81c38ae6eaf8d832d6d1ccc49e3f18fd3be31",
+      "after_record_sha256": "45f88e50f5baf209641329fcfced803edea1e625a465f99f4258a22971f17ce5"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a096",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "f19690d35d395dae3ba411f95d43d3bd05485e1b23b40d70eea9a776c29310d5",
+      "after_record_sha256": "a4627cf3259343838263fec493fbfe1436f3c5273ba4219debfce8221b2f9ee9"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a099",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title",
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "89293ace59f97e841dc1c09e9a222e9e4004f773e315ecf509e1c00dc922ce68",
+      "after_record_sha256": "c8a6723c9b23819abe66a3cdbcfee25b8af43a25f1538b65a14d0683d8befc66"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a005",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "92e92039b4cfd7d165326f96bcfbbc1b66d8613d1f0f1340b7d3d9ae946e093a",
+      "after_record_sha256": "ec20e045b7a520a720dfec1da1f15a9914841d91fee024e85f846ec308e9fc9b"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a020",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "b2fe9acf2a1227b9d06d32f047a92113836bbdd21297dd609d33107e458ffba6",
+      "after_record_sha256": "bd9c44cc3b4e045777c5d7558b263c7d380a79db52494ea6f3a7de258f16b5e9"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a029",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title",
+        "distributions.2.queryContext",
+        "distributions.2.title"
+      ],
+      "before_record_sha256": "2a33af620073286f8fbb5aa53f8ca9b193b31b53edd333cd4d3813cdc493beff",
+      "after_record_sha256": "777f5e53b49c430b0c0b00860733538dcf50cfd1e3f89df2ea00a7e18594d186"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a046",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "0802ee2b3219b9bc86fc7f5fcede8246e679f3da7ec044ad14eec7a943fe8de8",
+      "after_record_sha256": "d09a5e142c4061857eb7852b3b3006a0db8582017a0ed791d7c878230c6f903d"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a049",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "04949a61695d0482969e556341610364b001882dcfed34c91831101800bdf093",
+      "after_record_sha256": "aab5d94094e42e2705073d406993012519be47a7c0fd609d7845ef129ad3b7f0"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a057",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "bece7da97fc368dd792889b64c6041a0666e120213a6a93f729c961d987981c5",
+      "after_record_sha256": "04266149040657c6654002e0784b13e0b7665ab98313e9505ce55317fe4b5868"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a059",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "86a3a0225d320e911208f31ece79ff9910f8fd0774d69a902b0a0d8008b39b5f",
+      "after_record_sha256": "42b371c63a831a7f120111321d9ad217213f7daaf863adce34304df507265b82"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a069",
+      "changed_fields": [
+        "distributions.1.queryContext",
+        "distributions.1.title"
+      ],
+      "before_record_sha256": "9ab5e1c4b71ac911fa32276bfc730253605c01f008735b596910492e02c2e0b4",
+      "after_record_sha256": "432eb4e1ca7c165252e50f45a94f3c47a92f9caab42a52a1ad32cee11436788e"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a076",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "4bb387b0d75f87d3992a72d6332c96f38e90a8c89366d086e07821b332c40e3d",
+      "after_record_sha256": "006792823d0839b5bfb488333c7d902784030fdd3a906a3ab09130942fbbe8e6"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a079",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title",
+        "distributions.2.queryContext",
+        "distributions.2.title"
+      ],
+      "before_record_sha256": "26920348e0fda7c997c18f3c1a37c9c821601143e52419163bcfcb2ba0d70c8a",
+      "after_record_sha256": "20ae3ba417448f20e612c2a7c96d6f944f6637a74afaa1a1bc6d699b0f04ecbe"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a086",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "e72d96ce600b395159fb03a6f471a3be12ee7b71f2ed6dc496b84e6d96d4be00",
+      "after_record_sha256": "b0c64ae94de37b8b36748eb928b89cb96a6d49e30d8aeaa7eb50489dbb516adf"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a089",
+      "changed_fields": [
+        "distributions.0.queryContext",
+        "distributions.0.title"
+      ],
+      "before_record_sha256": "247208a3d47afab54e90763f8a4d14e01725032140905a0b0d725688adf890e7",
+      "after_record_sha256": "06e9669e1b03b045bd72881900372fb31730042539619c4c3688e320adfdf155"
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a096",
+      "changed_fields": [
+        "description",
+        "queryContext"
+      ],
+      "before_record_sha256": "9b9aa55eb06aabd5acdc6eb446a41a51d0f1ab18a29d8b490abd79cb6a6c01f8",
+      "after_record_sha256": "7f3d72887377114cb64d4246f2db71f250a2bd5fe5d6ce37e7ae4aa72739480a"
+    }
+  ],
+  "unchanged_record_rows_byte_identical": 503,
+  "observable_variation": {
+    "length_variation_records": 173,
+    "distribution_variation_records": 139
+  },
+  "sources": {
+    "39031": {
+      "old_path": ".local/corpora-v2/seed-39031.jsonl",
+      "old_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "new_path": ".local/corpora-v3/seed-39031.jsonl",
+      "new_sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "old_path": ".local/corpora-v2/seed-39032.jsonl",
+      "old_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "new_path": ".local/corpora-v3/seed-39032.jsonl",
+      "new_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"
+    },
+    "39033": {
+      "old_path": ".local/corpora-v2/seed-39033.jsonl",
+      "old_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "new_path": ".local/corpora-v3/seed-39033.jsonl",
+      "new_sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  }
+}

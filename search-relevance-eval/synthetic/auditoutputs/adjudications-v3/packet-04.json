@@ -1,0 +1,178 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-04",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-04"
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v3/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v3/seed-39032.jsonl",
+      "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"
+    },
+    "39033": {
+      "path": ".local/corpora-v3/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a038",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+          "process": {"value": "commercial_ledger_associated_with_texture_testing", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 5.7)"}],
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 29)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+          "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "At Ivy Brook Outer, the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading."}, {"field": "keywords.1", "quote": "chocolate texture testing"}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading"}, {"field": "description", "quote": "not a report of experimental performance"}]},
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The original conclusion about missing experimental texture measurements remains: the actual deposited columns are price, month and consignments, and the description expressly says this is not experimental performance. Those administrative facts do not satisfy fracture force, tempering conditions or particle size. On reconsideration under the directly read frozen rubric and observation-schema clarification, however, the complete subject sentence positively documents a separate texture-testing topic; it is not merely an isolated keyword. I therefore explicitly add a texture_testing context with contextual_topic_only basis and no facts, while retaining the actual commercial-ledger process. I also correct the old overly broad empirical basis label to observed_administrative_records; this is a classification clarification, not new physical evidence. This topical context can support interpretation of an ambiguous query with no requested measurements, without satisfying s06's experimental requirement and without assigning any grade. Administrative distribution verification is true because CSV and JSON synopses consistently describe the three business columns. Topic distribution verification is false because neither synopsis documents texture-test results. All supplied primary fields of this a038 version were reread. V3 source references are supplied provenance; these files were not opened or hashed here, and continuity from V2 is the supplied unchanged-record assertion. No other record or prior variation decision is readjudicated.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "description", "quote": "At Ivy Brook Outer, the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: invoiced unit price (AUD/unit; e.g. 5.7); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 29)."},
+            {"field": "distributions.0.format", "quote": "CSV"},
+            {"field": "distributions.0.description", "quote": "Downloadable comma-separated table"},
+            {"field": "distributions.1.format", "quote": "JSON"},
+            {"field": "distributions.1.description", "quote": "Downloadable JSON records with the same variables and units."}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a038",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+          "process": {"value": "commercial_ledger_associated_with_texture_testing", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 74)"}],
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 11.44)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+          "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "At Elm Crossing Lower, the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading."}, {"field": "keywords.1", "quote": "chocolate texture testing"}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading"}, {"field": "description", "quote": "not a report of experimental performance"}]},
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The actual business observations remain shipping counts, reporting month and invoiced price. The explicit exclusion of experimental performance prevents these from establishing any s06 measurement. Separately, the full subject sentence identifies mechanical texture testing of solid chocolate bars as the ledger's contextual activity; recording this topic is defensible independently of the keyword. The adjudication therefore preserves the commercial-ledger process, clarifies its basis as observed_administrative_records rather than physical-experiment language, and adds a distinct contextual_topic_only texture_testing context with an empty facts dictionary. This makes the formerly implicit topic explicit; it does not invent experimental data. Under the frozen ambiguity rule, lack of measurements is not itself a bar to topical interpretation for short ambiguous queries. No grade is assigned. CSV and JSON synopses agree on administrative content, hence administrative distribution verification is true. It is false for the topic-only context because no file synopsis supports texture results. All actual primary fields for this version were reread; V3 paths and hashes are supplied references, not independently accessed or verified here. The supplied assertion that a038 is unchanged connects this V2 primary-field evidence to V3. Original variation assessments, including a039 issues, are retained without readjudication.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "description", "quote": "At Elm Crossing Lower, the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: dispatched consignments (count; e.g. 74); reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 11.44)."},
+            {"field": "distributions.0.format", "quote": "CSV"},
+            {"field": "distributions.0.description", "quote": "Downloadable comma-separated table"},
+            {"field": "distributions.1.format", "quote": "JSON"},
+            {"field": "distributions.1.description", "quote": "Downloadable JSON records with the same variables and units."}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a038",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-04",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+          "process": {"value": "commercial_ledger_associated_with_texture_testing", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 34)"}],
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.36)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+          "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "This deposit concerns texture testing of chocolate by mechanical loading of solid chocolate confectionery bars at Granite Bend Central."}, {"field": "title", "quote": "Chocolate texture testing as recorded at Granite Bend Central"}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "This deposit concerns texture testing of chocolate by mechanical loading of solid chocolate confectionery bars at Granite Bend Central."}, {"field": "description", "quote": "not a report of experimental performance"}]},
+          "facts": {},
+          "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The opening sentence expressly states the deposit's chocolate-texture-testing subject, and its title reinforces that subject. The next sentence limits the actual records to a commercial ledger, not experimental performance. Those statements are compatible if recorded as distinct administrative and contextual-topic observations rather than conflated into experimental data. The old commercial process and all three financial/administrative columns are retained; the basis is clarified to observed_administrative_records, and a separate texture_testing context is added with contextual_topic_only basis and no facts. This changed representation acknowledges explicit subject evidence already present in the original text, not an expected label. All three files list consignments, month and price; none documents fracture force, tempering or particle size. Thus the added topic does not satisfy s06 measurements, but short ambiguous queries cannot inherit an unstated experimental-data requirement. No grade is assigned. Administrative distribution verification is true for the consistent CSV/JSON/CSV content association; topic verification is false because those files do not substantiate texture-result content. The complete a038 primary fields were reread. Supplied V3 source paths and hashes were not opened or independently verified; application to V3 relies on the supplied a038 unchanged-record assertion. Other records and old variation decisions are outside this adjudication.",
+          "evidence": [
+            {"field": "description", "quote": "This deposit concerns texture testing of chocolate by mechanical loading of solid chocolate confectionery bars at Granite Bend Central."},
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.2.description", "quote": "Deposited columns: dispatched consignments (count; e.g. 34); reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 12.36)."},
+            {"field": "distributions.0.format", "quote": "CSV"},
+            {"field": "distributions.0.description", "quote": "Downloadable comma-separated table"},
+            {"field": "distributions.1.format", "quote": "JSON"},
+            {"field": "distributions.1.description", "quote": "Downloadable JSON records with the same variables and units."},
+            {"field": "distributions.2.format", "quote": "CSV"},
+            {"field": "distributions.2.description", "quote": "Downloadable comma-separated table"}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "All ten IDs were compared across all three seeds after reading every supplied field. Product/process/basis and documented variable sets are preserved: a031/a032/a040 have physical force, tempering and particle diameter; a033 has force and tempering only; a034 force and particle diameter only; a035 force only; a036 visual inspection with operations/month/site; a037 physical texture measurements of soft filling; a038 observed commercial ledger with price/month/consignments; a039 simulated texture outputs only. Unlisted variables were not inferred. CSV and JSON descriptions consistently attach the same per-record columns, units and example values to their respective formats; additional third distributions repeat those columns, not new measurements. Wording varies beyond a location substitution: for example, a031 moves from a compact basis-first paragraph here to a subject-first, variable-explicit multipart description in 39032, then a subject-first description delegating variables to files in 39033. a033 moves from a long variable-first account to a shorter basis-first account and then a subject-first variable-explicit account. Generic reuse boilerplate remains repetitive. Literal example numbers, site names and publishers change across seeds; preservation is of semantic measurement claims, not literal observations or institutional identity. These are not identical factual editions. The unresolved a039 distribution title 'Deposited measurements' in this seed conflicts with its simulation-only framing, so an unqualified variation approval is withheld. No identity-required records occur in this packet. No prohibited s06 tokens brittleness or molded, answer keys, intent codes or no-answer conjunctions occur in actual supplied fields. Omitted duplicate queryContext was not separately inspected; paraphrase query texts and file bytes are not provided, so equivalence of those queries and actual payload content cannot be verified. Distribution verification is metadata format/content association only."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "All ten versions were reviewed against both other seeds. The same positive variable subsets, soft-filling product distinction, visual-inspection process distinction, commercial-ledger limitation and simulation-only basis remain explicit. a032 changes from an observational subject-first account in 39031 to a variable-first physical-sample account here, then a short subject-first account relying on distribution synopses in 39033. a034 relocates its force/diameter evidence from distribution-only in 39031 into its description here and in 39033, without adding tempering. a035 expands from a compact distribution-dependent account to a long variable-explicit account here and contracts again in 39033, without acquiring new measured variables. Every CSV synopsis says comma-separated table and every JSON synopsis says JSON records; all associated variables and units agree within each record, including optional third files. Extra files do not add facts. Example values, publishers and locations are changed rather than invariant. Semantic facts and scope are preserved, but literal observation values and catalogue identity context are not. Titles, clause order, evidence location, paragraph structure and length vary meaningfully, although the core terminology and reuse boilerplate are repetitive. a039 retains explicit simulation basis but its third-file title 'Deposited measurements' remains misleading, preventing unqualified approval. No identity-required records, positive forbidden s06 synonym tokens, searchable answer keys or supported frozen no-answer conjunctions were observed. Actual paraphrase wording, omitted duplicate queryContext and downloadable file bytes were outside the supplied primary fields; no claim is made about query equivalence or payload verification."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "The complete ten-record seed was compared with both prior versions. The same product/process/basis and exact documented variable subsets survive: no particle-size measurement is added to a033, no tempering to a034, and neither to a035; a036 retains operations/site/month rather than mechanical measurements; a037 remains soft filling; a038 remains a non-performance commercial ledger; a039 remains wholly simulated. Simulated outputs are recorded under explicitly simulated fact keys, never empirical facts. Format labels and synopsis content agree for every CSV/JSON file; all optional third distributions repeat the existing variables. Here a039 uses dictionary/study-record titles rather than the misleading measurement title seen in 39031 and 39032. Text changes include physical-basis paraphrases, subject/basis/variable clause reordering, variables moving between descriptions and distribution synopses, substantial length/paragraph changes, and changed contextual names. a040, for example, shifts from subject-first empirical-sample prose in 39031 to subject-first physical-observation prose in 39032 and variable-first observational prose here. This is meaningful presentation variation despite repeated core phrases. Facts-preserved means semantic variables and study scope only: row examples, institutions and site names differ across all seeds, so exact factual edition identity and numerical values are not preserved. The two other seeds' a039 title issues remain unresolved and this seed-specific assessment does not clear them. No identity-required records or supported no-answer conjunctions occur, and no prohibited s06 synonym tokens, answer keys or intent codes were found in supplied fields. All provided primary fields were read; omitted duplicate queryContext, unsupplied paraphrase query text and actual file bytes were not independently reviewed. Distribution checking establishes metadata association, not download contents."
+    }
+  }
+}

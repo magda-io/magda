@@ -1,0 +1,125 @@
+[
+  {
+    "seed": 39033,
+    "dataset_id": "a059",
+    "title": "Equipment sanitation in the Tern Inlet Coastal investigation",
+    "description_lines": [
+      "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "",
+      "The simulated output columns are equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 2.91); microbial growth from surface swabs (CFU/swab; e.g. 95.17).",
+      "",
+      "A separate investigation at Tern Inlet Coastal examines chocolate confectionery factory production equipment through sanitation and equipment cleaning verification.",
+      "",
+      "The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.",
+      "",
+      "This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.",
+      "",
+      "Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.",
+      "",
+      "A field guide explains categorical entries and missing cells.",
+      "",
+      "Each table uses the same local observation key.",
+      "",
+      "The deposit contains no personal names or participant details."
+    ],
+    "keywords": [
+      "confectionery factory",
+      "equipment sanitation"
+    ],
+    "distributions": [
+      {
+        "title": "Variable dictionary and values",
+        "description": "Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 2.91); microbial growth from surface swabs (CFU/swab; e.g. 95.17). Downloadable comma-separated table; the synopsis gives the column units.",
+        "format": "CSV"
+      },
+      {
+        "title": "Simulation output table",
+        "description": "Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 2.91); microbial growth from surface swabs (CFU/swab; e.g. 95.17). Downloadable JSON records with the same variables and units.",
+        "format": "JSON"
+      }
+    ]
+  },
+  {
+    "seed": 39033,
+    "dataset_id": "a079",
+    "title": "Notes on chocolate milk from Fern Hollow Coastal",
+    "description_lines": [
+      "All entries are computer simulations; no physical trial or empirical observations were collected.",
+      "",
+      "The simulated output columns are viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54).",
+      "",
+      "A separate investigation at Fern Hollow Coastal examines liquid chocolate-flavoured dairy milk beverage through refrigerated shelf-life assessment.",
+      "",
+      "The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.",
+      "",
+      "The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.",
+      "",
+      "This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.",
+      "",
+      "A field guide explains categorical entries and missing cells.",
+      "",
+      "Each table uses the same local observation key.",
+      "",
+      "Supporting notes explain the conventions used in this edition."
+    ],
+    "keywords": [
+      "chocolate milk",
+      "refrigerated shelf life"
+    ],
+    "distributions": [
+      {
+        "title": "Simulation output table",
+        "description": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54). Downloadable comma-separated table; the synopsis gives the column units.",
+        "format": "CSV"
+      },
+      {
+        "title": "Recorded series",
+        "description": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54). Downloadable JSON records with the same variables and units.",
+        "format": "JSON"
+      },
+      {
+        "title": "Simulation output table",
+        "description": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54). Downloadable JSON records with the same variables and units.",
+        "format": "JSON"
+      }
+    ]
+  },
+  {
+    "seed": 39033,
+    "dataset_id": "a096",
+    "title": "Archived chocolate milk observations from Kestrel Point East",
+    "description_lines": [
+      "The released table lists facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06).",
+      "",
+      "These are observed administrative entries, not model predictions.",
+      "",
+      "This deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East.",
+      "",
+      "Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.",
+      "",
+      "The edition preserves the original row ordering.",
+      "",
+      "Supporting notes explain the conventions used in this edition.",
+      "",
+      "Rows retain local observation keys for reuse.",
+      "",
+      "The notes distinguish blanks from entries recorded as zero."
+    ],
+    "keywords": [
+      "chocolate milk",
+      "drink pasteurization"
+    ],
+    "distributions": [
+      {
+        "title": "Study records",
+        "description": "Deposited columns: facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+        "format": "CSV"
+      },
+      {
+        "title": "Recorded series",
+        "description": "Deposited columns: facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06). Downloadable JSON records with the same variables and units.",
+        "format": "JSON"
+      }
+    ]
+  }
+]

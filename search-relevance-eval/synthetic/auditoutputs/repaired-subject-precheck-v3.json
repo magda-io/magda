@@ -1,0 +1,90 @@
+{
+  "actual_text_label_validation_passed": false,
+  "examples": [
+    {
+      "seed": 39031,
+      "dataset_id": "a005",
+      "actual_repaired_sentences": [
+        "At Hazel Ridge Inner, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field"
+      ]
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a046",
+      "actual_repaired_sentences": [
+        "These are observed administrative entries, not model predictions"
+      ]
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a057",
+      "actual_repaired_sentences": [
+        "At Hazel Ridge Upper, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification.\n\nVariables documented in the files are equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g"
+      ]
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a076",
+      "actual_repaired_sentences": [
+        "At Granite Bend West, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a005",
+      "actual_repaired_sentences": [
+        "The distribution synopses document the measured columns and units.\n\nAt Dune Valley Central, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field.\n\nThese are observed administrative entries, not model predictions.\n\nThe deposit contains no personal names or participant details.\n\nA field guide explains categorical entries and missing cells.\n\nSupporting notes explain the conventions used in this edition."
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a046",
+      "actual_repaired_sentences": [
+        "These are observed administrative entries, not model predictions"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a057",
+      "actual_repaired_sentences": [
+        "At Dune Valley North, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification"
+      ]
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a076",
+      "actual_repaired_sentences": [
+        "These are observed administrative entries, not model predictions.\n\nRecorded columns comprise facility location code (categorical site code; e.g",
+        "2024-06).\n\nAt Bramble Hill Coastal, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a005",
+      "actual_repaired_sentences": [
+        "At Fern Hollow Outer, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a046",
+      "actual_repaired_sentences": [
+        "These are observed administrative entries, not model predictions"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a057",
+      "actual_repaired_sentences": [
+        "At Fern Hollow South, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification"
+      ]
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a076",
+      "actual_repaired_sentences": [
+        "74).\n\nAt Elm Crossing East, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial.\n\nRepeated entries are retained in their original sequence"
+      ]
+    }
+  ]
+}

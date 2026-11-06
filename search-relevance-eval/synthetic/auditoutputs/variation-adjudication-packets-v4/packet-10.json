@@ -1,0 +1,954 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [
+    {
+      "after_record_sha256": "27d248ca69ee858602a8efc95fcd1eef5508b23471753d39e2813c37cb970bed",
+      "before_record_sha256": "d84ee6c76f43a8642c6e1814a810adac35530e2257a0ac58c18859886377dc15",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 5.65/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 19.17). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: CSV\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 5.65/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 19.17). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.0.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.0.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 5.65/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 19.17). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: JSON\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 5.65/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 19.17). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.1.title"
+        }
+      ],
+      "dataset_id": "a099",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39031
+    },
+    {
+      "after_record_sha256": "a4627cf3259343838263fec493fbfe1436f3c5273ba4219debfce8221b2f9ee9",
+      "before_record_sha256": "f19690d35d395dae3ba411f95d43d3bd05485e1b23b40d70eea9a776c29310d5",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "The Hazel Ridge Coastal series documents thermal pasteurization of a drink rather than starter-driven fermentation, focusing on liquid chocolate-flavoured dairy milk beverage.\n\nThese are observed administrative entries, not model predictions.\n\nThe released table lists facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06).\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nA field guide exp",
+            "lains categorical entries and missing cells.\n\nEach table uses the same local observation key."
+          ],
+          "before_chunks_concat_exact": [
+            "The Hazel Ridge Coastal series documents thermal pasteurization of a drink rather than starter-driven fermentation, focusing on liquid chocolate-flavoured dairy milk beverage.\n\nThe described study uses empirical observations from physical samples.\n\nThe released table lists facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06).\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nA field guid",
+            "e explains categorical entries and missing cells.\n\nEach table uses the same local observation key."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Hazel Ridge Coastal results concerning chocolate milk\nDescription: The Hazel Ridge Coastal series documents thermal pasteurization of a drink rather than starter-driven fermentation, focusing on liquid chocolate-flavoured dairy milk beverage.\n\nThese are observed administrative entries, not model predictions.\n\nThe released table lists facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06).\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edi",
+            "tion, and row identifiers remain local to that edition.\n\nA field guide explains categorical entries and missing cells.\n\nEach table uses the same local observation key.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Hazel Ridge Coastal results concerning chocolate milk\nDescription: The Hazel Ridge Coastal series documents thermal pasteurization of a drink rather than starter-driven fermentation, focusing on liquid chocolate-flavoured dairy milk beverage.\n\nThe described study uses empirical observations from physical samples.\n\nThe released table lists facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06).\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposite",
+            "d edition, and row identifiers remain local to that edition.\n\nA field guide explains categorical entries and missing cells.\n\nEach table uses the same local observation key.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a096",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "c8a6723c9b23819abe66a3cdbcfee25b8af43a25f1538b65a14d0683d8befc66",
+      "before_record_sha256": "89293ace59f97e841dc1c09e9a222e9e4004f773e315ecf509e1c00dc922ce68",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 2.94/4.7); residual sugar after fermentation (g/litre; e.g. 29.68); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: CSV\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 2.94/4.7); residual sugar after fermentation (g/litre; e.g. 29.68); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.0.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.0.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 2.94/4.7); residual sugar after fermentation (g/litre; e.g. 29.68); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: JSON\nDescription: Simulated output columns: acidification time course (hours/pH; example pairs 0/6.6, 2.94/4.7); residual sugar after fermentation (g/litre; e.g. 29.68); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.1.title"
+        }
+      ],
+      "dataset_id": "a099",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "7f3d72887377114cb64d4246f2db71f250a2bd5fe5d6ce37e7ae4aa72739480a",
+      "before_record_sha256": "9b9aa55eb06aabd5acdc6eb446a41a51d0f1ab18a29d8b490abd79cb6a6c01f8",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "The released table lists facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06).\n\nThese are observed administrative entries, not model predictions.\n\nThis deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting thos",
+            "e notes.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.\n\nRows retain local observation keys for reuse.\n\nThe notes distinguish blanks from entries recorded as zero."
+          ],
+          "before_chunks_concat_exact": [
+            "The released table lists facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06).\n\nThe described study uses empirical observations from physical samples.\n\nThis deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting",
+            " those notes.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.\n\nRows retain local observation keys for reuse.\n\nThe notes distinguish blanks from entries recorded as zero."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Archived chocolate milk observations from Kestrel Point East\nDescription: The released table lists facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06).\n\nThese are observed administrative entries, not model predictions.\n\nThis deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank",
+            " entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.\n\nRows retain local observation keys for reuse.\n\nThe notes distinguish blanks from entries recorded as zero.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Archived chocolate milk observations from Kestrel Point East\nDescription: The released table lists facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06).\n\nThe described study uses empirical observations from physical samples.\n\nThis deposit concerns thermal pasteurization of a drink rather than starter-driven fermentation of liquid chocolate-flavoured dairy milk beverage at Kestrel Point East.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a ",
+            "blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.\n\nRows retain local observation keys for reuse.\n\nThe notes distinguish blanks from entries recorded as zero.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a096",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    }
+  ],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "a091",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a092",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a093",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a094",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a095",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a096",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "beverage_pasteurization",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "beverage_pasteurization",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "beverage_pasteurization",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a097",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_oat_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_oat_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_oat_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a098",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_AUD_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_AUD_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_AUD_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a099",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_acidification_curve",
+              "simulated_residual_sugar_g_per_litre",
+              "simulated_starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_acidification_curve",
+              "simulated_residual_sugar_g_per_litre",
+              "simulated_starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_acidification_curve",
+              "simulated_residual_sugar_g_per_litre",
+              "simulated_starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a100",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "acidification_curve",
+              "residual_sugar_g_per_litre",
+              "starter_culture"
+            ],
+            "process": "beverage_fermentation",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-10.json",
+  "original_review_sha256": "c296003bcb7641ca261bcb4555fe3492600f029ad6ab8eb57a0d8f2abae5c305",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-10",
+    "generator_context": false,
+    "id": "auditor-packet-10",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten records were compared with both other seeds. Concept-level product/process/basis and variable sets are preserved: a091/a092/a100 have empirical culture, pH time course and residual sugar; a093 culture and pH only; a094 culture and residual sugar only; a095 culture only; a096 pasteurization administrative columns; a097 dairy-free oat fermentation; a098 associated commercial ledger; a099 simulation only. No omitted variable was inferred. CSV 0 and JSON 1 consistently describe their own record's variables in every record; optional distribution 2 repeats those same variables in its stated format. Titles, sentence order, substantive phrasi",
+        "ng, paragraph structure, length and optional distributions vary, not just whitespace. However strict preservation of all documented facts is not established: numeric examples, fictional sites and publisher identities change. For a091, residual sugar is 21.48 here, 26.14 in 39032 and 24.86 in 39033; pH example endpoints also change. a092, a093, a094, a096, a097, a098, a099 and a100 likewise change numerical examples; only a095 has the same sole culture entry. If preservation means variable-schema/intent rather than literal values, that narrower invariant holds, but the packet does not establish that changed numbers are exempt. Also a099's meas",
+        "urement title is an unresolved ambiguity absent from 39033. Review is limited to complete supplied searchable metadata; downloaded payloads and omitted duplicate queryContext were not independently read. Actual query strings are absent, so paraphrase equivalence and literal query identity cannot be audited; no record here requires identity review. No frozen no-answer conjunction, answer key, per-record grade tag or executable metadata instruction was found. No judgment about the rest of the corpus or retrieval follows."
+      ],
+      "reviewer_id": "auditor-packet-10"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "Complete comparison across a091-a100 in all three seeds preserves the conceptual product, process, observational versus simulation distinction, and precisely the same documented variable sets. a093 never documents residual sugar, a094 never documents a pH curve, and a095 documents culture alone; no missing value or negated dairy/beans is treated as positive evidence. All distribution descriptions match their own formats and record content: 0 CSV, 1 JSON, optional 2 consistent CSV or JSON; no payload download was attempted. Meaningful sentence-level and title variation, order/length changes and optional-field variation are present. Strict lite",
+        "ral fact preservation is unresolved: for a092 the sugar example is 29.47 here versus 32.01 in 39031 and 11.5 in 39033; pH time examples differ as well. Numeric examples also change for a091/a093/a094/a096/a097/a098/a099/a100, along with fictional sites and publishers. a095 preserves the same single culture value but varies its surrounding text. Therefore this is not purely paraphrasing fixed observations; whether only schema-level preservation was intended needs clarification. a099 also has a measurement-title ambiguity not present in 39033. Full projected metadata were reviewed, not external files, systems or results. Query strings and exact",
+        " paraphrases are not supplied; no authoritative identity check is required for these ten IDs. There is no observed no-answer conjunction or searchable answer key/grade tag. No corpus-wide or ranking claim is made."
+      ],
+      "reviewer_id": "auditor-packet-10"
+    },
+    "39033": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten stable IDs were compared against both earlier seeds. Conceptual contexts and variable availability are unchanged, including the oat-versus-dairy distinction, pasteurization rather than fermentation in a096, commercial rather than experimental data in a098, and simulation-only a099. a091/a092/a100 have three measured fermentation variables, a093 two (culture/pH), a094 two (culture/sugar), a095 one (culture); a099's three outputs remain simulated, not empirical facts. Distribution contents are consistently associated with CSV/JSON formats throughout; optional duplicate exports do not supply additional variables. Wording, titles, order, ",
+        "length, paragraphing and optional fields meaningfully vary. Strict preservation of documented values is nevertheless unresolved: a100 reports residual sugar 8.81 here versus 30.6 in 39031 and 13.71 in 39032, with pH endpoint times 7.91 versus 6.53 and 3.52. All IDs except a095 likewise change at least one numerical example; sites and publishers also change. Schema/intent-level facts are preserved, but literal observations are not, and no exemption for changed examples is supplied. a099's titles in this seed avoid the measurement wording found in the other two seeds, so title-level basis clarity is not invariant. The review covers all supplied",
+        " primary fields only; no external distributions, omitted duplicated queryContext or absent query strings were independently inspected. Thus exact paraphrase/lookup equivalence and corpus-wide coverage are outside scope. None of these records requires authoritative identity review; neither no-answer conjunction nor searchable grade/intent answer key was observed."
+      ],
+      "reviewer_id": "auditor-packet-10"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-10.json",
+      "sha256": "c296003bcb7641ca261bcb4555fe3492600f029ad6ab8eb57a0d8f2abae5c305"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "a091"
+    ],
+    [
+      39031,
+      "a092"
+    ],
+    [
+      39031,
+      "a093"
+    ],
+    [
+      39031,
+      "a094"
+    ],
+    [
+      39031,
+      "a095"
+    ],
+    [
+      39031,
+      "a096"
+    ],
+    [
+      39031,
+      "a097"
+    ],
+    [
+      39031,
+      "a098"
+    ],
+    [
+      39031,
+      "a099"
+    ],
+    [
+      39031,
+      "a100"
+    ],
+    [
+      39032,
+      "a091"
+    ],
+    [
+      39032,
+      "a092"
+    ],
+    [
+      39032,
+      "a093"
+    ],
+    [
+      39032,
+      "a094"
+    ],
+    [
+      39032,
+      "a095"
+    ],
+    [
+      39032,
+      "a096"
+    ],
+    [
+      39032,
+      "a097"
+    ],
+    [
+      39032,
+      "a098"
+    ],
+    [
+      39032,
+      "a099"
+    ],
+    [
+      39032,
+      "a100"
+    ],
+    [
+      39033,
+      "a091"
+    ],
+    [
+      39033,
+      "a092"
+    ],
+    [
+      39033,
+      "a093"
+    ],
+    [
+      39033,
+      "a094"
+    ],
+    [
+      39033,
+      "a095"
+    ],
+    [
+      39033,
+      "a096"
+    ],
+    [
+      39033,
+      "a097"
+    ],
+    [
+      39033,
+      "a098"
+    ],
+    [
+      39033,
+      "a099"
+    ],
+    [
+      39033,
+      "a100"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "a091",
+      "full_raw_record_sha256": "4538037ba6c7418c966ca0262ef4941f3861de2ff80fbe185a3d33432d1c3893",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4538037ba6c7418c966ca0262ef4941f3861de2ff80fbe185a3d33432d1c3893",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a092",
+      "full_raw_record_sha256": "bd880fdb0abc6948f9c2f3a930da7ffb149a78b16955c99db1f710b61b4690a7",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "bd880fdb0abc6948f9c2f3a930da7ffb149a78b16955c99db1f710b61b4690a7",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a093",
+      "full_raw_record_sha256": "ddd6f6469203a93536501c16ea9c4fc79dba017c0e479c9451d5d2b0157e7db2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "ddd6f6469203a93536501c16ea9c4fc79dba017c0e479c9451d5d2b0157e7db2",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a094",
+      "full_raw_record_sha256": "755f04dc2746bb263f7219655cc228f28b202042dee74146127250be8f6237d4",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "755f04dc2746bb263f7219655cc228f28b202042dee74146127250be8f6237d4",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a095",
+      "full_raw_record_sha256": "25cb9b20322f06f4b39ea2b585758b7565e1384326a98a7929ee78f4a6dfe6c6",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "25cb9b20322f06f4b39ea2b585758b7565e1384326a98a7929ee78f4a6dfe6c6",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a096",
+      "full_raw_record_sha256": "16782726dad1653643d40a67383e28730aa954606ef531f42f7d9b67b2611df0",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "16782726dad1653643d40a67383e28730aa954606ef531f42f7d9b67b2611df0",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a097",
+      "full_raw_record_sha256": "c8b0d7f770105001fe8c55eb82984b3895e9377eb9a0380670435226ae5b5618",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c8b0d7f770105001fe8c55eb82984b3895e9377eb9a0380670435226ae5b5618",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a098",
+      "full_raw_record_sha256": "eda4034f3ee22a72c5c24f8fde2c735f1d64458de6db8f3f7c15f84abe5f7fba",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "eda4034f3ee22a72c5c24f8fde2c735f1d64458de6db8f3f7c15f84abe5f7fba",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a100",
+      "full_raw_record_sha256": "adbab3cb686c1101724b3d01e9806ea0c75cc67f0acf7c6732c03f2dbecf4cc8",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "adbab3cb686c1101724b3d01e9806ea0c75cc67f0acf7c6732c03f2dbecf4cc8",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a091",
+      "full_raw_record_sha256": "5521c2ca5baddea4a54797ffac7516c2ef9f94488b3233588bc3dddb658b9cba",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "5521c2ca5baddea4a54797ffac7516c2ef9f94488b3233588bc3dddb658b9cba",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a092",
+      "full_raw_record_sha256": "525e3b4b7090d2fbe31f46c279f03485f2f2342a8e264a937ea22b3f51b84b28",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "525e3b4b7090d2fbe31f46c279f03485f2f2342a8e264a937ea22b3f51b84b28",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a093",
+      "full_raw_record_sha256": "2765b2559306cd34cee331684e642d714a41940716f3cb1dbc62541f696572a7",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2765b2559306cd34cee331684e642d714a41940716f3cb1dbc62541f696572a7",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a094",
+      "full_raw_record_sha256": "7cb36ed9e3113a7303b17f9c6521a1267ea61bead6430f8a3f84585be8e4b3e2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "7cb36ed9e3113a7303b17f9c6521a1267ea61bead6430f8a3f84585be8e4b3e2",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a095",
+      "full_raw_record_sha256": "f996309d67830ab793475dcf96cf447742823e788da682914ff0b73fe101e7cb",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "f996309d67830ab793475dcf96cf447742823e788da682914ff0b73fe101e7cb",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a097",
+      "full_raw_record_sha256": "a7571ca617bb3e1e9f7cf8168be6f28e111ea21393de7f8bd41193fd9cd0e984",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "a7571ca617bb3e1e9f7cf8168be6f28e111ea21393de7f8bd41193fd9cd0e984",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a098",
+      "full_raw_record_sha256": "852d376cdabbc233e56ace8bfd99ef82202fd3abe5cbdf6e63c3f55c54b5c741",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "852d376cdabbc233e56ace8bfd99ef82202fd3abe5cbdf6e63c3f55c54b5c741",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a100",
+      "full_raw_record_sha256": "5b6eb64a379833f7dab9d727a2d2ab4a4a8c423e5ac58b575f99547a8a9bf819",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "5b6eb64a379833f7dab9d727a2d2ab4a4a8c423e5ac58b575f99547a8a9bf819",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a091",
+      "full_raw_record_sha256": "d4cd6bbc32c79a942787a9b657349bce18bcf0b230f8f2e8cff7a6a4d691befc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d4cd6bbc32c79a942787a9b657349bce18bcf0b230f8f2e8cff7a6a4d691befc",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a092",
+      "full_raw_record_sha256": "33f14f1240101c1fc5fd4e0a71e57b355352a6c3016086be465d19a6c0ce20b5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "33f14f1240101c1fc5fd4e0a71e57b355352a6c3016086be465d19a6c0ce20b5",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a093",
+      "full_raw_record_sha256": "55ad03d23ff8f949f9a30a0563667819341066cc9ec857dabd895dc3b9ef720d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "55ad03d23ff8f949f9a30a0563667819341066cc9ec857dabd895dc3b9ef720d",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a094",
+      "full_raw_record_sha256": "5c4ffd8cf7a2f750cc0f94d91056f996e35bcf015cf576f1d06975d6758c3644",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "5c4ffd8cf7a2f750cc0f94d91056f996e35bcf015cf576f1d06975d6758c3644",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a095",
+      "full_raw_record_sha256": "25c96a56328038db84722288e04068f47f0c69f5f680cc61750ca2a111a0c5cc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "25c96a56328038db84722288e04068f47f0c69f5f680cc61750ca2a111a0c5cc",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a097",
+      "full_raw_record_sha256": "c4e70ef40e23aa708ffa657cbb92a944d0cda543f87e883764dc2a540f8e1aaa",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c4e70ef40e23aa708ffa657cbb92a944d0cda543f87e883764dc2a540f8e1aaa",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a098",
+      "full_raw_record_sha256": "79773e05d58ea0de773ae32f85528f9a447bb6ad9a80445a5a25038be8aa111a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "79773e05d58ea0de773ae32f85528f9a447bb6ad9a80445a5a25038be8aa111a",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a099",
+      "full_raw_record_sha256": "17eb72e54a94b46b0e5fe69a78880e3c7b281e57637ee4170f91e48a341ff0fd",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "17eb72e54a94b46b0e5fe69a78880e3c7b281e57637ee4170f91e48a341ff0fd",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a100",
+      "full_raw_record_sha256": "1039461e1b8688859420a0551fe0ed37446b5060ca90d2c6411a551674611ab6",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "1039461e1b8688859420a0551fe0ed37446b5060ca90d2c6411a551674611ab6",
+      "seed": 39033
+    }
+  ]
+}

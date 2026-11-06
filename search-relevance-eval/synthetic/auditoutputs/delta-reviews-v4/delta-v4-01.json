@@ -1,0 +1,279 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "v4-two-title-auditor",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol(runtime label)",
+    "parameters": "notexposed",
+    "context_id": "explicitunavailable; freshV4two-title"
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a039",
+      "seed": 39032,
+      "reviewer_id": "v4-two-title-auditor",
+      "exhaustive_searchable_review": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "solid_chocolate",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "solid chocolate confectionery bars"
+              }
+            ]
+          },
+          "process": {
+            "value": "texture_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "texture testing of chocolate by mechanical loading of solid chocolate confectionery bars at Linden Grove Inner."
+              },
+              {
+                "field": "title",
+                "quote": "Simulation results from Linden Grove Inner chocolate texture testing"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              },
+              {
+                "field": "title",
+                "quote": "Simulation results from Linden Grove Inner chocolate texture testing"
+              },
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns:"
+              }
+            ]
+          },
+          "facts": {
+            "fracture_force": [
+              {
+                "field": "distributions.0.description",
+                "quote": "Simulated output columns: force at fracture (newtons; e.g. 43.98)"
+              }
+            ],
+            "tempering_conditions": [
+              {
+                "field": "distributions.0.description",
+                "quote": "tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row)"
+              }
+            ],
+            "particle_size_micrometres": [
+              {
+                "field": "distributions.0.description",
+                "quote": "particle diameter (micrometres; e.g. 25.84)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s06": {
+          "reason": "The subject and process genuinely match solid-chocolate texture testing, and the three named variables are documented as simulated outputs. They are not representative physical measurements: the description expressly denies any physical trial or empirical observations. The repaired title now states simulation results rather than observational provenance, so it agrees with this decisive basis restriction. The neutral distribution title Recorded series and the local observation-key wording do not assert empirical collection in the presence of the explicit simulated-column descriptions. CSV and both JSON distributions advertise the same modeled variables; file availability cannot convert them into empirical evidence.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "title",
+              "quote": "Simulation results from Linden Grove Inner chocolate texture testing"
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Downloadable comma-separated table; the synopsis gives the column units."
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.1.description",
+              "quote": "Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units."
+            },
+            {
+              "field": "distributions.2.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.2.description",
+              "quote": "Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": "",
+        "evidence": []
+      },
+      "issues": [],
+      "no_answer_claims": [],
+      "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "a079",
+      "seed": 39032,
+      "reviewer_id": "v4-two-title-auditor",
+      "exhaustive_searchable_review": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "liquid chocolate-flavoured dairy milk beverage"
+              }
+            ]
+          },
+          "process": {
+            "value": "refrigerated_shelf_life",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "At Dune Valley Inner, the study covers liquid chocolate-flavoured dairy milk beverage during refrigerated shelf-life assessment."
+              },
+              {
+                "field": "keywords.1",
+                "quote": "refrigerated shelf life"
+              }
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+              },
+              {
+                "field": "title",
+                "quote": "Chocolate milk simulation outputs from Dune Valley Inner"
+              },
+              {
+                "field": "description",
+                "quote": "The simulated output columns are"
+              }
+            ]
+          },
+          "facts": {
+            "microbial_count_cfu_per_ml": [
+              {
+                "field": "description",
+                "quote": "The simulated output columns are viable microbes in beverage samples (CFU/ml; e.g. 104.28)"
+              }
+            ],
+            "storage_temperature": [
+              {
+                "field": "description",
+                "quote": "storage chamber temperature (degrees C; e.g. 4.57)"
+              }
+            ],
+            "spoilage_days": [
+              {
+                "field": "description",
+                "quote": "elapsed time until observed spoilage (days; e.g. 8.35)"
+              }
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s10": {
+          "reason": "The dairy beverage, refrigerated shelf-life process, all three modeled variables and downloadable CSV are explicitly supported. Nevertheless, every entry is expressly a computer simulation with no physical trial or empirical observations; it therefore cannot serve as representative measured shelf-life evidence. The repaired title consistently calls these simulation outputs. The phrase observed spoilage names a simulated endpoint inside a sentence expressly identifying simulated output columns, not a conflicting claim of empirical collection. A plain-language field guide describes variable notation, not field-note provenance or additional physical observations. The drink and storage subject context remains defensible for short exploratory diagnostics, which do not impose an empirical-measurement restriction; no extra experimental context is inferred.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            },
+            {
+              "field": "title",
+              "quote": "Chocolate milk simulation outputs from Dune Valley Inner"
+            },
+            {
+              "field": "description",
+              "quote": "The simulated output columns are viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35)."
+            },
+            {
+              "field": "distributions.0.format",
+              "quote": "CSV"
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35). Downloadable comma-separated table; the synopsis gives the column units."
+            },
+            {
+              "field": "distributions.1.format",
+              "quote": "JSON"
+            },
+            {
+              "field": "distributions.1.description",
+              "quote": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35). Downloadable JSON records with the same variables and units."
+            },
+            {
+              "field": "description",
+              "quote": "The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations."
+            }
+          ]
+        }
+      },
+      "identity": {
+        "value": "",
+        "evidence": []
+      },
+      "issues": [],
+      "no_answer_claims": [],
+      "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39032": {
+      "reviewed_dataset_ids": ["a039", "a079"],
+      "scope": "Exactly the two assigned post-repair actual records in delta-v4-01; not a whole-seed or global validation. Source references for the other seeds are copied provenance only, not claims of inspection.",
+      "titles_consistent_with_simulation_only_basis": true,
+      "distribution_formats_and_described_columns_consistent": true,
+      "findings": [
+        "a039 positively documents simulated mechanical texture testing of solid chocolate bars at Linden Grove Inner. Its title explicitly states simulation results. CSV and two JSON synopses consistently describe fracture force, tempering conditions and particle diameter with matching units and example values. The two identical JSON synopses do not establish duplicated dataset records or contradictory content.",
+        "a079 positively documents simulated refrigerated shelf-life assessment of a liquid chocolate dairy beverage at Dune Valley Inner. Its title explicitly states simulation outputs. Root description, CSV synopsis and JSON synopsis agree on microbial concentration, chamber temperature and spoilage-time variables and example values.",
+        "Facts in both reviews are documented simulated variables, not claims that physical measurements were collected. Neither record supplies an administrative ledger process. No separate empirical context is invented, and the documented product/process subject matter is not erased merely because its values are simulated.",
+        "All supplied title, complete description, keyword, publisher, distribution and available spatial fields were inspected. No temporal field is supplied for either assigned record; no spatial field is supplied for a079. Publisher names and a039's fictional location notice add no measurement evidence. No searchable answer keys, intent tags or unsupported no-answer conjunctions were found in these two records."
+      ],
+      "limitations": [
+        "The packet omits duplicate production queryContext text; I do not claim independent inspection of that omitted projection.",
+        "Format/content verification concerns advertised metadata associations, not downloaded file contents or URL availability.",
+        "No prior corpus, generator, per-record intended claims, qrels, retrieval outputs, rankings or other review artifacts were inspected. Cross-seed stability, before/after byte-level patch scope and the rest of the corpus were not independently checked in this two-record assignment."
+      ],
+      "unresolved_issues": []
+    }
+  }
+}

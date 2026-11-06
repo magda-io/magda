@@ -1,0 +1,622 @@
+{
+  "global_validation_passed": false,
+  "files": [
+    {
+      "path": "auditoutputs/reviews-v2/packet-09.json",
+      "sha256": "1b38d4bde54bf984ff97aa39e64603694ba3efd5088523ed1e16bcde2d8a85f6",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-10.json",
+      "sha256": "c296003bcb7641ca261bcb4555fe3492600f029ad6ab8eb57a0d8f2abae5c305",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-11.json",
+      "sha256": "32dbbd2a35efb0b5e442628708b837aafbe9bb790b88d0c43d0c0cbf069ef545",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-12.json",
+      "sha256": "ca59f7b775090d1f22b9d7bf1e5a2af2c6d8b86f80d558d383b81aed2c412eda",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-13.json",
+      "sha256": "d492b4f063c73f4e12dc76ac0053c997d7ff4b0420935ada8e13302e70f2bfa0",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-14.json",
+      "sha256": "ea48dca94d10cb9e0462a749513a8761cacc1bbd2b7e2c10739ae1c7e4dd2cfa",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-15.json",
+      "sha256": "1bcdbb609886582da068a0861868063cc13be4fc4ee43aa667f785a0d451bb66",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-16.json",
+      "sha256": "377c0a616299f5e412dd819318034783aa30d30909df4abd56da5d416a5551b9",
+      "count": 30
+    }
+  ],
+  "issues": [
+    {
+      "packet": 9,
+      "seed": 39032,
+      "id": "a089",
+      "issues": [
+        "distributions.2.title is 'Deposited measurements', while distributions.2.description explicitly says 'Simulated output columns:' and description denies any physical trial or empirical observations. This is misleading measurement naming; the explicit simulation-only basis is retained and no output variable is counted as empirically measured."
+      ]
+    },
+    {
+      "packet": 9,
+      "seed": 39033,
+      "id": "a089",
+      "issues": [
+        "distributions.0.title is 'Deposited measurements', but distributions.0.description says 'Simulated output columns:' and description explicitly denies physical trials or empirical observations. This misleading measurement title remains unresolved; no simulated output has been counted as empirically measured."
+      ]
+    },
+    {
+      "packet": 10,
+      "seed": 39031,
+      "id": "a099",
+      "issues": [
+        {
+          "issue": "Distribution 0 is titled as measurements despite the explicit simulation-only basis; distribution 1 also uses an observation label. The detailed descriptions resolve the basis, but title-level measurement wording is misleading and remains unresolved. No empirical fact is credited.",
+          "evidence": [
+            {
+              "field": "distributions.0.title",
+              "quote": "Deposited measurements"
+            },
+            {
+              "field": "distributions.1.title",
+              "quote": "Observation table"
+            },
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 10,
+      "seed": 39032,
+      "id": "a099",
+      "issues": [
+        {
+          "issue": "Distribution 1 claims measurements in its title while the record denies any empirical observations; distribution 0 uses an observation label. Detailed descriptions establish simulation, but title-level wording remains misleading. No empirical measurement is credited.",
+          "evidence": [
+            {
+              "field": "distributions.1.title",
+              "quote": "Deposited measurements"
+            },
+            {
+              "field": "distributions.0.title",
+              "quote": "Observation table"
+            },
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b011",
+      "issues": [
+        "U for x01 and x05: authoritative comparison records b001 and b005 and literal exact queries are outside the supplied packet. No assumption about their SKU or component role was made."
+      ]
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b012",
+      "issues": [
+        "U for x04 and x10: authoritative comparison records b002 and b004 and literal exact queries are outside the supplied packet.",
+        "The basis value denotes observed non-simulated ledger entries only, not representative experimental shoe performance; the traction context must not be promoted into a measured performance process."
+      ]
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b011",
+      "issues": [
+        "U for x01 and x05: authoritative comparison records b001 and b005 and literal exact queries are outside the supplied packet. No assumption about their SKU or component role was made."
+      ]
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b012",
+      "issues": [
+        "U for x04 and x10: authoritative comparison records b002 and b004 and literal exact queries are outside the supplied packet.",
+        "The basis value denotes observed non-simulated ledger entries only, not representative experimental shoe performance; the traction context must not be promoted into a measured performance process."
+      ]
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b011",
+      "issues": [
+        "U for x01 and x05: authoritative comparison records b001 and b005 and literal exact queries are outside the supplied packet. No assumption about their SKU or component role was made."
+      ]
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b012",
+      "issues": [
+        "U for x04 and x10: authoritative comparison records b002 and b004 and literal exact queries are outside the supplied packet.",
+        "The basis value denotes observed non-simulated ledger entries only, not representative experimental shoe performance; the traction context must not be promoted into a measured performance process."
+      ]
+    },
+    {
+      "packet": 14,
+      "seed": 39031,
+      "id": "b036",
+      "issues": [
+        "Basis U: explicitly observed commercial ledger, neither simulation-only nor positively supported representative experimental performance. Do not force the schema's two experimental-basis categories.",
+        "Title calls this a wet-road traction field report, but description excludes experimental performance; wet pavement testing is contextual association, not established measured process. No performance facts inferred from title or keywords."
+      ]
+    },
+    {
+      "packet": 14,
+      "seed": 39032,
+      "id": "b036",
+      "issues": [
+        "Basis U: observed commercial ledger does not establish representative experimental measurements and is not simulation-only; the offered basis dichotomy is insufficient.",
+        "Title and topic language frame a wet-road traction study, but the explicit ledger qualification precludes treating this as measured traction performance. Process association is retained without inventing performance variables."
+      ]
+    },
+    {
+      "packet": 14,
+      "seed": 39033,
+      "id": "b036",
+      "issues": [
+        "Basis U: observed commercial records are neither simulation-only nor demonstrated representative experimental performance; do not coerce the basis dichotomy.",
+        "Wet-road traction title/topic is broader than the explicitly commercial content. Retain association with the activity, not an unsupported assertion of measured wet-pavement performance."
+      ]
+    }
+  ],
+  "check_errors": [
+    {
+      "packet": 9,
+      "seed": 39032,
+      "id": "a089",
+      "error": "Fresh exhaustive semantic review incomplete: a089"
+    },
+    {
+      "packet": 9,
+      "seed": 39033,
+      "id": "a089",
+      "error": "Fresh exhaustive semantic review incomplete: a089"
+    },
+    {
+      "packet": 10,
+      "seed": 39031,
+      "id": "a099",
+      "error": "Fresh exhaustive semantic review incomplete: a099"
+    },
+    {
+      "packet": 10,
+      "seed": 39032,
+      "id": "a099",
+      "error": "Fresh exhaustive semantic review incomplete: a099"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b001",
+      "error": "Independently observed identity disagrees: b001"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b002",
+      "error": "Independently observed identity disagrees: b002"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b003",
+      "error": "Independently observed identity disagrees: b003"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b004",
+      "error": "Independently observed identity disagrees: b004"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b005",
+      "error": "Independently observed identity disagrees: b005"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b006",
+      "error": "Independently observed identity disagrees: b006"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b007",
+      "error": "Independently observed identity disagrees: b007"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b008",
+      "error": "Independently observed identity disagrees: b008"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b009",
+      "error": "Independently observed identity disagrees: b009"
+    },
+    {
+      "packet": 11,
+      "seed": 39031,
+      "id": "b010",
+      "error": "Independently observed identity disagrees: b010"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b001",
+      "error": "Independently observed identity disagrees: b001"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b002",
+      "error": "Independently observed identity disagrees: b002"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b003",
+      "error": "Independently observed identity disagrees: b003"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b004",
+      "error": "Independently observed identity disagrees: b004"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b005",
+      "error": "Independently observed identity disagrees: b005"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b006",
+      "error": "Independently observed identity disagrees: b006"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b007",
+      "error": "Independently observed identity disagrees: b007"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b008",
+      "error": "Independently observed identity disagrees: b008"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b009",
+      "error": "Independently observed identity disagrees: b009"
+    },
+    {
+      "packet": 11,
+      "seed": 39032,
+      "id": "b010",
+      "error": "Independently observed identity disagrees: b010"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b001",
+      "error": "Independently observed identity disagrees: b001"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b002",
+      "error": "Independently observed identity disagrees: b002"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b003",
+      "error": "Independently observed identity disagrees: b003"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b004",
+      "error": "Independently observed identity disagrees: b004"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b005",
+      "error": "Independently observed identity disagrees: b005"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b006",
+      "error": "Independently observed identity disagrees: b006"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b007",
+      "error": "Independently observed identity disagrees: b007"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b008",
+      "error": "Independently observed identity disagrees: b008"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b009",
+      "error": "Independently observed identity disagrees: b009"
+    },
+    {
+      "packet": 11,
+      "seed": 39033,
+      "id": "b010",
+      "error": "Independently observed identity disagrees: b010"
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b011",
+      "error": "Fresh exhaustive semantic review incomplete: b011"
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b012",
+      "error": "Fresh exhaustive semantic review incomplete: b012"
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b013",
+      "error": "Independently observed identity disagrees: b013"
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b014",
+      "error": "Independently observed identity disagrees: b014"
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b017",
+      "error": "Independently observed identity disagrees: b017"
+    },
+    {
+      "packet": 12,
+      "seed": 39031,
+      "id": "b018",
+      "error": "Independently observed identity disagrees: b018"
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b011",
+      "error": "Fresh exhaustive semantic review incomplete: b011"
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b012",
+      "error": "Fresh exhaustive semantic review incomplete: b012"
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b013",
+      "error": "Independently observed identity disagrees: b013"
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b014",
+      "error": "Independently observed identity disagrees: b014"
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b017",
+      "error": "Independently observed identity disagrees: b017"
+    },
+    {
+      "packet": 12,
+      "seed": 39032,
+      "id": "b018",
+      "error": "Independently observed identity disagrees: b018"
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b011",
+      "error": "Fresh exhaustive semantic review incomplete: b011"
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b012",
+      "error": "Fresh exhaustive semantic review incomplete: b012"
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b013",
+      "error": "Independently observed identity disagrees: b013"
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b014",
+      "error": "Independently observed identity disagrees: b014"
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b017",
+      "error": "Independently observed identity disagrees: b017"
+    },
+    {
+      "packet": 12,
+      "seed": 39033,
+      "id": "b018",
+      "error": "Independently observed identity disagrees: b018"
+    },
+    {
+      "packet": 13,
+      "seed": 39031,
+      "id": "b025",
+      "error": "Independently observed identity disagrees: b025"
+    },
+    {
+      "packet": 13,
+      "seed": 39031,
+      "id": "b026",
+      "error": "Independently observed identity disagrees: b026"
+    },
+    {
+      "packet": 13,
+      "seed": 39031,
+      "id": "b029",
+      "error": "Independently observed identity disagrees: b029"
+    },
+    {
+      "packet": 13,
+      "seed": 39031,
+      "id": "b030",
+      "error": "Independently observed identity disagrees: b030"
+    },
+    {
+      "packet": 13,
+      "seed": 39032,
+      "id": "b025",
+      "error": "Independently observed identity disagrees: b025"
+    },
+    {
+      "packet": 13,
+      "seed": 39032,
+      "id": "b026",
+      "error": "Independently observed identity disagrees: b026"
+    },
+    {
+      "packet": 13,
+      "seed": 39032,
+      "id": "b029",
+      "error": "Independently observed identity disagrees: b029"
+    },
+    {
+      "packet": 13,
+      "seed": 39032,
+      "id": "b030",
+      "error": "Independently observed identity disagrees: b030"
+    },
+    {
+      "packet": 13,
+      "seed": 39033,
+      "id": "b025",
+      "error": "Independently observed identity disagrees: b025"
+    },
+    {
+      "packet": 13,
+      "seed": 39033,
+      "id": "b026",
+      "error": "Independently observed identity disagrees: b026"
+    },
+    {
+      "packet": 13,
+      "seed": 39033,
+      "id": "b029",
+      "error": "Independently observed identity disagrees: b029"
+    },
+    {
+      "packet": 13,
+      "seed": 39033,
+      "id": "b030",
+      "error": "Independently observed identity disagrees: b030"
+    },
+    {
+      "packet": 14,
+      "seed": 39031,
+      "id": "b036",
+      "error": "Fresh exhaustive semantic review incomplete: b036"
+    },
+    {
+      "packet": 14,
+      "seed": 39032,
+      "id": "b036",
+      "error": "Fresh exhaustive semantic review incomplete: b036"
+    },
+    {
+      "packet": 14,
+      "seed": 39033,
+      "id": "b036",
+      "error": "Fresh exhaustive semantic review incomplete: b036"
+    }
+  ],
+  "citation_errors": [],
+  "grade_disagreements": [
+    {
+      "packet": 10,
+      "seed": 39031,
+      "id": "a098",
+      "intent": "d01",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 10,
+      "seed": 39032,
+      "id": "a098",
+      "intent": "d01",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 10,
+      "seed": 39033,
+      "id": "a098",
+      "intent": "d01",
+      "actual": 0,
+      "expected": 2
+    }
+  ],
+  "reviewed_records": 240,
+  "checked_citations": 1901
+}

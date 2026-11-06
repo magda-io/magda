@@ -1,0 +1,525 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-06",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-06"
+  },
+  "record_reviews": [
+    {
+      "seed": 39031, "dataset_id": "a051", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 64.26)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 5.28)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "Production-equipment sanitation, not cacao seedling propagation. Cleaning cycles, surface swabs and residue cannot establish survival, propagation method or rooting duration.", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification of chocolate confectionery factory production equipment"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a052", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 103.97)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 2.99)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "The subject is factory production equipment undergoing cleaning verification, not nursery propagation of cacao seedlings. None of the three nursery variables is documented.", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification of chocolate confectionery factory production equipment"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a053", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 25)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a054", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 11.02)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a055", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a056", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_production_throughput", "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Alderbank West)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 34)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "Same factory subject but explicitly throughput rather than sanitation. Site, month and completed-operation counts do not measure cleaning completion, microbial swabs or residue mass.", "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 34)"}]}},
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Title-format concern under the validation prompt's category-prefixed/template-only prohibition: title is 'Confectionery factory: the Alderbank West assessment'. It prefixes the broad product category and supplies only a fictional location/assessment wrapper, not the distinctive throughput subject. This concern is unresolved; the underlying process and variables are clear."],
+      "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a057", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "confectionery_factory_ornamental_plants", "evidence": [{"field": "description", "quote": "ornamental plants and their maintenance tools at a confectionery factory"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 80.17)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 11.02)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "DISPUTED categorical exclusion: these are ornamental-plant maintenance tools, not the production equipment described in the other sanitation records. Nevertheless this record positively documents empirical factory-site equipment sanitation and all three s08 variables. The supplied s08 definition says confectionery_factory/factory_sanitation, without an explicit production-equipment-only restriction. The actual query texts are not supplied. The narrower scope cannot be assumed solely from other records or vocabulary.", "evidence": [{"field": "description", "quote": "ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification"}, {"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17)"}]}},
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Unresolved s08 scope ambiguity: ornamental-maintenance sanitation is distinguishable from production-equipment sanitation, but a production-equipment-only requirement is not explicit in the supplied intent definition. Do not presume this is irrelevant."], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a058", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_factory_sanitation", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}, {"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 18.56)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 67)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "Commercial factory ledger, not cacao field pest management. The released price, dispatch-count and month columns establish neither pest counts nor treatment nor application rate.", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 18.56); dispatched consignments (count; e.g. 67); reporting interval (calendar month; e.g. 2024-06)"}]},
+        "s08": {"reason": "Sanitation is the associated activity, but the actual observed data are explicitly commercial rather than experimental performance. No cleaning-cycle, microbial-swab or residue measurement is documented; shipment counts are not swab counts.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 18.56); dispatched consignments (count; e.g. 67); reporting interval (calendar month; e.g. 2024-06)"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a059", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_output_equipment_cleaning_not_empirically_measured": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "simulated_output_microbial_swabs_not_empirically_measured": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 81.64)"}],
+          "simulated_output_residue_mass_mg_not_empirically_measured": [{"field": "distributions.0.description", "quote": "Simulated output columns: residue remaining on cleaned surface (mg; e.g. 9.52)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "Correct sanitation subject and named output variables, but explicitly no empirical observations. Simulated outputs are not counted as positively measured sanitation facts. Generic distribution titles do not override the explicit simulation descriptions.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39031, "dataset_id": "a060", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 81.88)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 11.25)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a051", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 36.23)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 3.69)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "This is empirical cleaning verification of factory production equipment, not nursery propagation. No cacao seedlings, survival, propagation method or rooting duration are documented.", "evidence": [{"field": "description", "quote": "examines chocolate confectionery factory production equipment through sanitation and equipment cleaning verification"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a052", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 7.86)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 3.58)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "Factory-equipment cleaning and surface contamination measurements differ in both subject and process from cacao nursery propagation. The variables cannot be reinterpreted as seedling survival or rooting data.", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment during sanitation and equipment cleaning verification"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a053", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 72.55)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a054", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 11.1)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a055", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a056", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_production_throughput", "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Pine Basin Coastal)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "Throughput recording is expressly contrasted with sanitation. Counts of completed operations, indexed by site and month, are not documented cleaning cycles, swabs or residue mass.", "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 65)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a057", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "confectionery_factory_ornamental_plants", "evidence": [{"field": "description", "quote": "ornamental plants and their maintenance tools at a confectionery factory"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 79.49)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 8.1)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "DISPUTED categorical exclusion: the subject is ornamental plants and maintenance tools rather than chocolate production equipment. Yet equipment sanitation at the factory is explicit and all three required measurements are observed. A production-equipment-only scope is not explicit in the supplied s08 definition, and the query wording is unavailable. Thus the narrower subject distinction is real, but sufficient exclusion is not established.", "evidence": [{"field": "description", "quote": "ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification"}, {"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1)"}]}},
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Unresolved s08 scope ambiguity: the supplied intent does not explicitly exclude sanitation of ornamental-plant maintenance tools at a confectionery factory. All three measurement facts are genuinely documented; do not suppress them because a contrast was declared."], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a058", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_factory_sanitation", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}, {"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 10.94)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 63)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "Factory-associated commercial data, not cacao field pest management. Dispatch counts, unit prices and calendar months do not establish pest counts, controls or application rates.", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}, {"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 63); invoiced unit price (AUD/unit; e.g. 10.94); reporting interval (calendar month; e.g. 2024-06)"}]},
+        "s08": {"reason": "The synopsis associates the ledger with sanitation but explicitly denies experimental-performance reporting. Distribution content documents commercial columns only, not any of the three required sanitation measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 63); invoiced unit price (AUD/unit; e.g. 10.94); reporting interval (calendar month; e.g. 2024-06)"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a059", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_output_equipment_cleaning_not_empirically_measured": [{"field": "distributions.0.description", "quote": "Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "simulated_output_microbial_swabs_not_empirically_measured": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 41.51)"}],
+          "simulated_output_residue_mass_mg_not_empirically_measured": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 7.81)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "The process and output names match sanitation, but the empirical-measurement constraint is expressly contradicted. These three simulated outputs do not establish physical cleaning, swab or residue observations.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39032, "dataset_id": "a060", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 63.25)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 9.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []},
+      "issues": ["Title-format concern under the validation prompt's category-prefixed/template-only prohibition: title is 'Confectionery factory: the Fern Hollow West assessment'. It prefixes the broad product category and supplies only a fictional location/assessment wrapper, not the distinctive sanitation subject. This concern is unresolved; empirical sanitation and all three variables are otherwise explicit."], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a051", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 74)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 9.96)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "Factory-equipment sanitation differs in subject and process from cacao nursery propagation. The distribution-only measurements describe cleaning, contamination and residue, not seedling survival, propagation method or rooting duration.", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification of chocolate confectionery factory production equipment"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a052", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 67.15)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 9.84)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s04": {"reason": "Explicit factory production-equipment cleaning verification, not cacao seedlings or nursery propagation. Empirical swab and residue measurements cannot substitute for nursery survival or rooting data.", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification, focusing on chocolate confectionery factory production equipment"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a053", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 24.72)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a054", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 4.59)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a055", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a056", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_production_throughput", "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Silver Creek East)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 38)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "Explicit production-throughput rather than sanitation verification. The measured site, reporting month and completed-operation count do not document the required cleaning, microbial or residue variables.", "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Silver Creek East); completed operations (count; e.g. 38)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a057", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "confectionery_factory_ornamental_plants", "evidence": [{"field": "description", "quote": "ornamental plants and their maintenance tools at a confectionery factory"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 106)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 1.35)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "DISPUTED categorical exclusion: the title and description identify ornamental plants and maintenance tools, not production equipment. Distribution descriptions nevertheless positively document all three sanitation measurements, and the description says sanitation verification at a confectionery factory. Excluding this narrower subject requires a production-equipment-only condition not explicit in the supplied s08 intent; unseen query wording cannot supply evidence here.", "evidence": [{"field": "description", "quote": "ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification"}, {"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 106); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 1.35)"}]}},
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Unresolved s08 scope ambiguity: all required empirical sanitation variables are present for ornamental-maintenance tools at the factory. The supplied intent definition does not explicitly require production equipment, so the declared contrast alone does not establish exclusion."], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a058", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_factory_sanitation", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}, {"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.2)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 33)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s01": {"reason": "The subject is factory production equipment and its associated commercial ledger, not cacao crop pest control. No pest counts, control treatments or application rates are documented.", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.2); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 33)"}]},
+        "s08": {"reason": "The sanitation activity is contextual; the actual observations are explicitly commercial, not experimental performance. Unit price, month and consignment counts cannot establish cleaning cycles, swab contamination or residual mass.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.2); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 33)"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a059", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_output_equipment_cleaning_not_empirically_measured": [{"field": "distributions.0.description", "quote": "Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "simulated_output_microbial_swabs_not_empirically_measured": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 95.17)"}],
+          "simulated_output_residue_mass_mg_not_empirically_measured": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 2.91)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s08": {"reason": "Sanitation and all three output types are documented, but only as computer simulation. The record explicitly excludes physical trials and empirical observations, so it cannot establish the required observed sanitation measurements.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "seed": 39033, "dataset_id": "a060", "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 103.58)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 8.39)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-06",
+      "rationale": "All ten actual records were read, including every supplied description, title, keyword, publisher, distribution and optional spatial field. No temporal field is supplied. Across all three seeds the independently observed variable sets are preserved by ID: a051/a052/a060 have cleaning cycles, microbial swabs and residue; a053 has cleaning and swabs only; a054 cleaning and residue only; a055 cleaning only; a056 site code/month/completed operations; a057 all three sanitation variables for ornamental-plant maintenance tools; a058 unit price/consignments/month; a059 simulation-only sanitation outputs, not empirical facts. a053 has no documented residue; a054 no documented swabs; a055 neither. Those omissions are not measurements or contradictions. Numeric examples, fictional locations and publishers change across seeds, so exact observation values are not preserved, only subject/process/basis/variable kinds and units. Wording varies meaningfully through title syntax, paragraph versus continuous prose, order of subject/basis/variables, description length and distribution-only versus description-plus-distribution documentation; much filler remains modular/template-like. Each record has CSV and JSON descriptions consistently associating its own variable set with comma-separated or JSON content; optional third distributions repeat the same variables and do not add measurements. Boolean distribution verification concerns those metadata associations only, not downloaded bytes. No identity-review-required records occur here, and no frozen no-answer conjunction is supported in this packet. No intent IDs, grade codes or answer keys were observed in actual fields. Literal s08 mismatch tokens hygiene/works were not observed in these sanitation records. Unresolved: a057's s08 exclusion requires an explicit production-equipment restriction absent from the supplied intent definition; a056's category-prefixed generic title is a concrete title-format concern. Hence variation is not certified without qualification. Actual paraphrase query texts, omitted production queryContext copies, other packets and underlying files were not inspected; query equivalence, corpus-wide coverage and corpus-wide absence cannot be certified."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-06",
+      "rationale": "All ten seed-39032 actual field sets were reviewed, including all nested distribution titles/descriptions/formats, optional spatial context and publisher/keywords. The cross-seed product/process/basis/variable-set preservation described for seed 39031 also holds here, but values, sites and publishers are not invariant. a055 puts its sole cleaning-cycle column in the distributions, not the description; it still documents no swab or residue measurements. a051/a052 have three distributions with the optional third JSON rather than seed-39031 CSV; the third only repeats existing variables. a056/a060 have two distributions rather than seed-39031 three. CSV descriptions say comma-separated table and JSON descriptions say JSON records; all use each record's actual variables, and simulation descriptions remain simulation-specific. Meaningful variation includes a052/a056/a057/a060 continuous prose versus other paragraph layouts, reordered basis and subject statements, changed title syntax, and different description lengths. The all-seed review confirms no variable-set drift, no transformation of omitted sanitation variables into positive facts, no simulated-to-empirical drift and no additional measurements in generic field-guide notes. Unresolved: a057 remains a disputed s08 exclusion despite all three empirical facts; a060's broad category-prefixed title raises the validation prompt's title-format prohibition. This is why passed is false, not a claim that the variable sets failed preservation. Full paraphrase queries and omitted duplicate queryContext text are unavailable, and no external distribution bytes or other packets were read."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-06",
+      "rationale": "All ten seed-39033 actual records and all their supplied fields were reviewed through the end of the packet. Same-ID semantic variable sets, units, empirical-versus-simulation distinctions, factory-production versus ornamental-tool subjects, throughput contrast and commercial-ledger distinction agree with both other seeds. Numerical examples, fictional site names and publisher identities differ, so only semantic measurement coverage is preserved, not literal measurement values. a051 and a057 document their measurements only in distribution synopses; a055 still has only a cleaning-cycle column; a058 includes its commercial columns in both description and distributions rather than relying on distributions alone. Optional distribution counts and third formats differ without changing content: a052/a059 have two distributions, a055/a058 three with third JSON, and a051/a054/a056/a060 three with third CSV. All CSV/JSON associations match their textual content declarations. There is meaningful sentence/paragraph order, length, title and distribution-placement variation, alongside substantial shared boilerplate. No actual field establishes either frozen no-answer conjunction, and no authoritative identity review is requested for any of these records. a059's named outputs remain explicitly non-empirical and are keyed as simulated outputs in this review, not counted as measured facts. Unresolved: a057 positively supports empirical factory-site equipment sanitation on ornamental-maintenance tools, while the supplied s08 intent does not explicitly require production equipment. Its exclusion is disputed in all seeds, so this seed is not certified unconditionally. Limitations remain metadata-only distribution verification, absence of full query paraphrases and omitted duplicate queryContext text, and no authority to infer corpus-wide coverage or absence from this packet."
+    }
+  }
+}
