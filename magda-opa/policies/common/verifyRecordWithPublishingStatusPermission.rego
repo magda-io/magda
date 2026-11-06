@@ -168,3 +168,28 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 	verifyPublishingStatus(inputObjectRefName, permissionResourceType)
 	input.object[inputObjectRefName]["access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }
+# if find an access group grant: access groups grant pre-authorised permissions on
+# registry records (`object/record`), and datasets and distributions are registry
+# records, so the grant also covers the same operation on them (#3907).
+# e.g. search asks `object/dataset/*/read`, not `object/record/read`.
+verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+	resourceType != "*"
+	verifyPublishingStatus(inputObjectRefName, resourceType)
+	hasRecordPreAuthorisedPermission(operationType, inputObjectRefName)
+}
+
+verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
+	resourceType == "*"
+	hasRecordPreAuthorisedPermission(operationType, inputObjectRefName)
+}
+
+hasRecordPreAuthorisedPermission(operationType, inputObjectRefName) {
+	input.user.permissions[i].resourceUri = "object/record"
+	input.user.permissions[i].userOwnershipConstraint = false
+	input.user.permissions[i].orgUnitOwnershipConstraint = false
+	input.user.permissions[i].preAuthorisedConstraint = true
+	input.user.permissions[i].operations[_].uri = concat("/", ["object/record", operationType])
+	input.object[inputObjectRefName]["access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
+}
