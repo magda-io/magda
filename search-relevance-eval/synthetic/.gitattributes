@@ -1,0 +1,4 @@
+# Preserve verbatim, hash-bound independent observations. Two original JSON
+# lines have trailing spaces; formatting them would invalidate the audit chain.
+# Do not relax whitespace checks for source code or other artifacts.
+auditoutputs/reviews-v2/packet-09.json -text whitespace=-blank-at-eol

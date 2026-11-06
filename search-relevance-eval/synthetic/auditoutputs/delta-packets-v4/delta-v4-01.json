@@ -1,0 +1,3922 @@
+{
+  "frozen_queries_without_qrels": [
+    {
+      "category": "semantic",
+      "id": "s01p1",
+      "intent": {
+        "measurement_facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "intent_group": "s01",
+      "intent_id": "s01",
+      "kind": "semantic",
+      "query": "observed cacao plantation pest counts and control treatment trials",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "formats_any": [],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s01p2",
+      "intent": {
+        "measurement_facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "intent_group": "s01",
+      "intent_id": "s01",
+      "kind": "semantic",
+      "query": "measured field insect damage and treatment trials in cocoa trees",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "formats_any": [],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s01p3",
+      "intent": {
+        "measurement_facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "intent_group": "s01",
+      "intent_id": "s01",
+      "kind": "semantic",
+      "query": "empirical arthropod suppression trials in Theobroma orchards",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "formats_any": [],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "arthropod",
+        "suppression"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s02p1",
+      "intent": {
+        "measurement_facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "intent_group": "s02",
+      "intent_id": "s02",
+      "kind": "semantic",
+      "query": "observed crop yields for cacao by season as CSV",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s02p2",
+      "intent": {
+        "measurement_facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "intent_group": "s02",
+      "intent_id": "s02",
+      "kind": "semantic",
+      "query": "measured cocoa harvest weight per hectare in CSV tables",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s02p3",
+      "intent": {
+        "measurement_facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "intent_group": "s02",
+      "intent_id": "s02",
+      "kind": "semantic",
+      "query": "empirical cacao orchard productivity figures in comma separated files",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "orchard",
+        "productivity"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s03p1",
+      "intent": {
+        "measurement_facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "intent_group": "s03",
+      "intent_id": "s03",
+      "kind": "semantic",
+      "query": "observed cocoa bean fermentation temperature over time",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "formats_any": [],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s03p2",
+      "intent": {
+        "measurement_facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "intent_group": "s03",
+      "intent_id": "s03",
+      "kind": "semantic",
+      "query": "measured postharvest cacao fermentation batch duration and temperature",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "formats_any": [],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s03p3",
+      "intent": {
+        "measurement_facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "intent_group": "s03",
+      "intent_id": "s03",
+      "kind": "semantic",
+      "query": "empirical cacao bean fermentation during postharvest curing before drying",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "formats_any": [],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "curing"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s04p1",
+      "intent": {
+        "measurement_facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "intent_group": "s04",
+      "intent_id": "s04",
+      "kind": "semantic",
+      "query": "observed cocoa plant nursery propagation and survival",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "formats_any": [],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s04p2",
+      "intent": {
+        "measurement_facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "intent_group": "s04",
+      "intent_id": "s04",
+      "kind": "semantic",
+      "query": "measured cacao seedling establishment trials",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "formats_any": [],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s04p3",
+      "intent": {
+        "measurement_facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "intent_group": "s04",
+      "intent_id": "s04",
+      "kind": "semantic",
+      "query": "empirical trials raising juvenile Theobroma stock in a nursery",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "formats_any": [],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "juvenile",
+        "stock"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s05p1",
+      "intent": {
+        "measurement_facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "intent_group": "s05",
+      "intent_id": "s05",
+      "kind": "semantic",
+      "query": "measured milk chocolate bar wrapper barrier tests",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "formats_any": [],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s05p2",
+      "intent": {
+        "measurement_facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "intent_group": "s05",
+      "intent_id": "s05",
+      "kind": "semantic",
+      "query": "empirical packaging performance for solid milk chocolate bars",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "formats_any": [],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s05p3",
+      "intent": {
+        "measurement_facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "intent_group": "s05",
+      "intent_id": "s05",
+      "kind": "semantic",
+      "query": "measured protective enclosure performance for solid dairy enriched cacao slabs",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "formats_any": [],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "enclosure",
+        "slabs"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s06p1",
+      "intent": {
+        "measurement_facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "intent_group": "s06",
+      "intent_id": "s06",
+      "kind": "semantic",
+      "query": "measured solid chocolate confectionery texture and fracture force",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "formats_any": [],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s06p2",
+      "intent": {
+        "measurement_facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "intent_group": "s06",
+      "intent_id": "s06",
+      "kind": "semantic",
+      "query": "observed chocolate bar snap after tempering",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "formats_any": [],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s06p3",
+      "intent": {
+        "measurement_facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "intent_group": "s06",
+      "intent_id": "s06",
+      "kind": "semantic",
+      "query": "empirical brittleness measurements for molded solid chocolate sweets",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "formats_any": [],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "brittleness",
+        "molded"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s07p1",
+      "intent": {
+        "measurement_facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "intent_group": "s07",
+      "intent_id": "s07",
+      "kind": "semantic",
+      "query": "measured dessert chocolate ingredient quality under storage conditions",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "formats_any": [],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s07p2",
+      "intent": {
+        "measurement_facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "intent_group": "s07",
+      "intent_id": "s07",
+      "kind": "semantic",
+      "query": "observed quality when storing chocolate ingredients before dessert preparation",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "formats_any": [],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s07p3",
+      "intent": {
+        "measurement_facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "intent_group": "s07",
+      "intent_id": "s07",
+      "kind": "semantic",
+      "query": "empirical pantry stability measurements for baking cacao supplies",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "formats_any": [],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "pantry",
+        "supplies"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s08p1",
+      "intent": {
+        "measurement_facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "intent_group": "s08",
+      "intent_id": "s08",
+      "kind": "semantic",
+      "query": "observed chocolate processing plant sanitation swab data",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "formats_any": [],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s08p2",
+      "intent": {
+        "measurement_facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "intent_group": "s08",
+      "intent_id": "s08",
+      "kind": "semantic",
+      "query": "empirical factory cleaning validation for confectionery equipment",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "formats_any": [],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s08p3",
+      "intent": {
+        "measurement_facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "intent_group": "s08",
+      "intent_id": "s08",
+      "kind": "semantic",
+      "query": "measured hygiene verification at a cacao sweets works",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "formats_any": [],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "hygiene",
+        "works"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s09p1",
+      "intent": {
+        "measurement_facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "intent_group": "s09",
+      "intent_id": "s09",
+      "kind": "semantic",
+      "query": "measured drinking chocolate powder reconstitution tests",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "formats_any": [],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s09p2",
+      "intent": {
+        "measurement_facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "intent_group": "s09",
+      "intent_id": "s09",
+      "kind": "semantic",
+      "query": "observed powder dose and water temperature effects for cocoa drinks",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "formats_any": [],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s09p3",
+      "intent": {
+        "measurement_facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "intent_group": "s09",
+      "intent_id": "s09",
+      "kind": "semantic",
+      "query": "empirical solubility tests when preparing a hot cacao cup from powder",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "formats_any": [],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "solubility",
+        "cup"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s10p1",
+      "intent": {
+        "measurement_facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s10",
+      "intent_id": "s10",
+      "kind": "semantic",
+      "query": "measured chilled chocolate dairy beverage shelf life in CSV tables",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s10p2",
+      "intent": {
+        "measurement_facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s10",
+      "intent_id": "s10",
+      "kind": "semantic",
+      "query": "observed chocolate milk spoilage during cold storage as CSV",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s10p3",
+      "intent": {
+        "measurement_facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s10",
+      "intent_id": "s10",
+      "kind": "semantic",
+      "query": "empirical refrigerated dairy cacao refreshment longevity in comma separated files",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "refreshment",
+        "longevity"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s11p1",
+      "intent": {
+        "measurement_facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s11",
+      "intent_id": "s11",
+      "kind": "semantic",
+      "query": "measured chocolate dairy drink formulation and liquid viscosity",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "formats_any": [],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s11p2",
+      "intent": {
+        "measurement_facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s11",
+      "intent_id": "s11",
+      "kind": "semantic",
+      "query": "observed recipe proportions for a chocolate dairy beverage",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "formats_any": [],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s11p3",
+      "intent": {
+        "measurement_facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s11",
+      "intent_id": "s11",
+      "kind": "semantic",
+      "query": "empirical balancing of cacao and sweetener in a pourable dairy refreshment",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "formats_any": [],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "balancing",
+        "pourable"
+      ]
+    },
+    {
+      "category": "semantic",
+      "id": "s12p1",
+      "intent": {
+        "measurement_facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s12",
+      "intent_id": "s12",
+      "kind": "semantic",
+      "query": "observed chocolate milk fermentation starter culture trials",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "formats_any": [],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s12p2",
+      "intent": {
+        "measurement_facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s12",
+      "intent_id": "s12",
+      "kind": "semantic",
+      "query": "measured acidification of cultured chocolate dairy drinks",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "formats_any": [],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": []
+    },
+    {
+      "category": "semantic",
+      "id": "s12p3",
+      "intent": {
+        "measurement_facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "intent_group": "s12",
+      "intent_id": "s12",
+      "kind": "semantic",
+      "query": "empirical microbial souring of a liquid dairy cacao refreshment",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "formats_any": [],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "suite": "A",
+      "synonym_absence_tokens": [
+        "souring",
+        "refreshment"
+      ]
+    },
+    {
+      "category": "functional",
+      "id": "f01p1",
+      "intent": {
+        "measurement_facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "intent_group": "f01",
+      "intent_id": "f01",
+      "kind": "functional",
+      "query": "empirically tested running shoes suitable for wet pavement",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "formats_any": [],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f01p2",
+      "intent": {
+        "measurement_facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "intent_group": "f01",
+      "intent_id": "f01",
+      "kind": "functional",
+      "query": "measured road running footwear grip on rain soaked asphalt",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "formats_any": [],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f01p3",
+      "intent": {
+        "measurement_facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "intent_group": "f01",
+      "intent_id": "f01",
+      "kind": "functional",
+      "query": "observed trainer traction tests on rain wet sealed footpaths",
+      "split": "development",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "formats_any": [],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f02p1",
+      "intent": {
+        "measurement_facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "intent_group": "f02",
+      "intent_id": "f02",
+      "kind": "functional",
+      "query": "empirically tested quiet hydraulic pumps for indoor circulation",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "formats_any": [],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f02p2",
+      "intent": {
+        "measurement_facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "intent_group": "f02",
+      "intent_id": "f02",
+      "kind": "functional",
+      "query": "low noise hydraulic fluid pumps with measured flow indoors",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "formats_any": [],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f02p3",
+      "intent": {
+        "measurement_facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "intent_group": "f02",
+      "intent_id": "f02",
+      "kind": "functional",
+      "query": "observed noise tests of hydraulic circulation units for sound sensitive interiors",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "formats_any": [],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f03p1",
+      "intent": {
+        "measurement_facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "intent_group": "f03",
+      "intent_id": "f03",
+      "kind": "functional",
+      "query": "empirically calibrated temperature probes for cold rooms from minus twenty to five Celsius",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "formats_any": [],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f03p2",
+      "intent": {
+        "measurement_facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "intent_group": "f03",
+      "intent_id": "f03",
+      "kind": "functional",
+      "query": "measured cold storage sensor calibration errors from minus twenty to five Celsius",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "formats_any": [],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "suite": "B"
+    },
+    {
+      "category": "functional",
+      "id": "f03p3",
+      "intent": {
+        "measurement_facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "intent_group": "f03",
+      "intent_id": "f03",
+      "kind": "functional",
+      "query": "observed temperature probe calibration for freezers and chillers from minus twenty to five Celsius",
+      "split": "heldout",
+      "success_criteria": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "formats_any": [],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b001"
+      ],
+      "category": "exact_lookup",
+      "control": "identity",
+      "critical": true,
+      "id": "x01",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x01",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b002",
+        "b003",
+        "b004",
+        "b005",
+        "b006",
+        "b007",
+        "b008",
+        "b009",
+        "b010",
+        "b011"
+      ],
+      "query": "RUN-X120",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b001"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b001"
+      ],
+      "category": "exact_lookup",
+      "control": "case_equivalence",
+      "critical": true,
+      "id": "x02",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x02",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b007",
+        "b008",
+        "b006"
+      ],
+      "query": "run-x120",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b001"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b001"
+      ],
+      "category": "exact_lookup",
+      "control": "hyphenation_equivalence",
+      "critical": true,
+      "id": "x03",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x03",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b006",
+        "b007",
+        "b008"
+      ],
+      "query": "RUNX120",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b001"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b002"
+      ],
+      "category": "exact_lookup",
+      "control": "single_digit",
+      "critical": true,
+      "id": "x04",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x04",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b012"
+      ],
+      "query": "RUN-X121",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b002"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b005"
+      ],
+      "category": "exact_lookup",
+      "control": "component",
+      "critical": true,
+      "id": "x05",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x05",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b011"
+      ],
+      "query": "RUN-X120-SOLE",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b005"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b007"
+      ],
+      "category": "exact_lookup",
+      "control": "one_I",
+      "critical": true,
+      "id": "x06",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x06",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b008"
+      ],
+      "query": "RUN-XI20",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b007"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b008"
+      ],
+      "category": "exact_lookup",
+      "control": "zero_O",
+      "critical": true,
+      "id": "x07",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x07",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b007"
+      ],
+      "query": "RUN-X12O",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b008"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b009"
+      ],
+      "category": "exact_lookup",
+      "control": "version",
+      "critical": true,
+      "id": "x08",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x08",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b010"
+      ],
+      "query": "RUN-X120-V2",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b009"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b010"
+      ],
+      "category": "exact_lookup",
+      "control": "version",
+      "critical": true,
+      "id": "x09",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x09",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b009"
+      ],
+      "query": "RUN-X120-V1",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b010"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b004"
+      ],
+      "category": "exact_lookup",
+      "control": "prefix",
+      "critical": true,
+      "id": "x10",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "shoe_identifier_cluster",
+      "intent_id": "x10",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b012"
+      ],
+      "query": "TRAIL-X120",
+      "split": "development",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b004"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b013"
+      ],
+      "category": "exact_lookup",
+      "control": "exact_title",
+      "critical": true,
+      "id": "x11",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x11",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b014"
+      ],
+      "query": "Hydraulic pump acceptance trials",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b013"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b015"
+      ],
+      "category": "exact_lookup",
+      "control": "acronym",
+      "critical": true,
+      "id": "x12",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x12",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b016"
+      ],
+      "query": "HPT-71",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b015"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b016"
+      ],
+      "category": "exact_lookup",
+      "control": "one_I",
+      "critical": true,
+      "id": "x13",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x13",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b015"
+      ],
+      "query": "HPT-7I",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b016"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b017"
+      ],
+      "category": "exact_lookup",
+      "control": "standard_version",
+      "critical": true,
+      "id": "x14",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x14",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b018"
+      ],
+      "query": "ZTS-20471:2013",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b017"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b018"
+      ],
+      "category": "exact_lookup",
+      "control": "standard_version",
+      "critical": true,
+      "id": "x15",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x15",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b017"
+      ],
+      "query": "ZTS-20471:2024",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b018"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b019"
+      ],
+      "category": "exact_lookup",
+      "control": "zero_O",
+      "critical": true,
+      "id": "x16",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x16",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b020"
+      ],
+      "query": "FLW-0081",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b019"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b020"
+      ],
+      "category": "exact_lookup",
+      "control": "zero_O",
+      "critical": true,
+      "id": "x17",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x17",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b019"
+      ],
+      "query": "FLW-OO81",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b020"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b021"
+      ],
+      "category": "exact_lookup",
+      "control": "part_number",
+      "critical": true,
+      "id": "x18",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x18",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b022"
+      ],
+      "query": "AX-101",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b021"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b022"
+      ],
+      "category": "exact_lookup",
+      "control": "zero_O",
+      "critical": true,
+      "id": "x19",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "pump_identifier_cluster",
+      "intent_id": "x19",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b021"
+      ],
+      "query": "AX-1O1",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b022"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b023"
+      ],
+      "category": "exact_lookup",
+      "control": "one_I",
+      "critical": true,
+      "id": "x20",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "instrument_and_release_cluster",
+      "intent_id": "x20",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b024"
+      ],
+      "query": "PROBE-I1",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b023"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b024"
+      ],
+      "category": "exact_lookup",
+      "control": "one_I",
+      "critical": true,
+      "id": "x21",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "instrument_and_release_cluster",
+      "intent_id": "x21",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b023"
+      ],
+      "query": "PROBE-11",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b024"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b025"
+      ],
+      "category": "exact_lookup",
+      "control": "exact_title_version",
+      "critical": true,
+      "id": "x22",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "instrument_and_release_cluster",
+      "intent_id": "x22",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b026"
+      ],
+      "query": "Riverbend friction survey release 2.0",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b025"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b027"
+      ],
+      "category": "exact_lookup",
+      "control": "distribution_only",
+      "critical": true,
+      "id": "x23",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "instrument_and_release_cluster",
+      "intent_id": "x23",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b028"
+      ],
+      "query": "DIST-K47",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b027"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b029"
+      ],
+      "category": "exact_lookup",
+      "control": "title_only",
+      "critical": true,
+      "id": "x24",
+      "intent": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_group": "instrument_and_release_cluster",
+      "intent_id": "x24",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b030"
+      ],
+      "query": "TITLE-T82",
+      "split": "heldout",
+      "success_criteria": {
+        "authoritative_target_ids": [
+          "b029"
+        ],
+        "target_must_outrank_near_identifiers": true,
+        "target_rank_regression_allowed": false
+      },
+      "suite": "B"
+    },
+    {
+      "category": "ambiguous",
+      "id": "d01",
+      "intent": "Explore defensible meanings of this short query.",
+      "intent_group": "d01",
+      "intent_id": "d01",
+      "kind": "ambiguous",
+      "query": "drink",
+      "split": "diagnostic",
+      "success_criteria": {
+        "diagnostic_only": true,
+        "multiple_relevant_interpretations": true
+      },
+      "suite": "A"
+    },
+    {
+      "category": "ambiguous",
+      "id": "d02",
+      "intent": "Explore defensible meanings of this short query.",
+      "intent_group": "d02",
+      "intent_id": "d02",
+      "kind": "ambiguous",
+      "query": "dessert",
+      "split": "diagnostic",
+      "success_criteria": {
+        "diagnostic_only": true,
+        "multiple_relevant_interpretations": true
+      },
+      "suite": "A"
+    },
+    {
+      "category": "ambiguous",
+      "id": "d03",
+      "intent": "Explore defensible meanings of this short query.",
+      "intent_group": "d03",
+      "intent_id": "d03",
+      "kind": "ambiguous",
+      "query": "plant",
+      "split": "diagnostic",
+      "success_criteria": {
+        "diagnostic_only": true,
+        "multiple_relevant_interpretations": true
+      },
+      "suite": "A"
+    },
+    {
+      "category": "ambiguous",
+      "id": "d04",
+      "intent": "Explore defensible meanings of this short query.",
+      "intent_group": "d04",
+      "intent_id": "d04",
+      "kind": "ambiguous",
+      "query": "storage",
+      "split": "diagnostic",
+      "success_criteria": {
+        "diagnostic_only": true,
+        "multiple_relevant_interpretations": true
+      },
+      "suite": "A"
+    },
+    {
+      "category": "no_answer",
+      "id": "n01",
+      "intent": "No corpus record satisfies this conjunction.",
+      "intent_group": "n01",
+      "intent_id": "n01",
+      "kind": "no_answer",
+      "query": "cadmium isotope ratios in lunar cacao cultivation",
+      "split": "diagnostic",
+      "success_criteria": {
+        "absent_claim": "lunar_cultivation_and_isotope_ratios",
+        "diagnostic_only": true
+      },
+      "suite": "A"
+    },
+    {
+      "category": "no_answer",
+      "id": "n02",
+      "intent": "No corpus record satisfies this conjunction.",
+      "intent_group": "n02",
+      "intent_id": "n02",
+      "kind": "no_answer",
+      "query": "RUN-X9999 cryogenic vacuum certified running shoe",
+      "split": "diagnostic",
+      "success_criteria": {
+        "absent_claim": "RUN-X9999_identity_and_cryogenic_vacuum_certification",
+        "diagnostic_only": true
+      },
+      "suite": "B"
+    }
+  ],
+  "frozen_relevance_rubric_path": "relevance-rubric.md",
+  "frozen_relevance_rubric_sha256": "b4b778ffd53c860207b5187c01f84d0fa38bed1df74804bbec31b9fa8780f8fe",
+  "full_frozen_relevance_rubric_lines": [
+    "# Frozen query\u2013document relevance rubric",
+    "",
+    "## Authority and scope",
+    "",
+    "These labels are **synthetic design truth**, not human judgments. Structured planned claims define intended evidence; only independent inspection of realized searchable metadata establishes supported qrels. C receives frozen intents/query text/plans/rubric and all generated text, never system names, rankings, scores or outcome summaries. C must independently assess whether each paraphrase actually expresses the registered need; it must not assume equivalence because three rows share an intent ID.",
+    "",
+    "All180 records are considered for every query, including the other suite. Exact objective identities use authoritative dataset IDs, independently of a semantic assessor. `generation-spec.intent_doc_grades[intent_id][dataset_id]` freezes ALL45\u00d7180 intent\u2013doc grades;75\u00d7180 query\u2013doc grades inherit these maps. Every key must exist. Domain/family allocation is NEVER a grade shortcut. A record in the correct broad food category can be0; a powder for preparing a drink can be relevant to ambiguous `drink` despite confectionery allocation.",
+    "",
+    "## Semantic and functional grade algorithm (s01\u2013s12, f01\u2013f03)",
+    "",
+    "Apply this ordered algorithm separately per intent and record:",
+    "",
+    "1. Required **product AND process** must match the registered canonical concepts, not just overlapping words. Contradicted measurement, simulation-only basis, or explicit hard-constraint conflict is grade0. An exclusion flag documents a hard mismatch, not a searchable label; C verifies its actual meaning. No false positive from an exact query word alone.",
+    "2. For s02 and s10, a documented downloadable CSV is a hard requirement. PDF-only with identical content is0, not3 or2. Other intents impose no hard format restriction. A CSV advertised only in a nested distribution is sufficient if actual searchable evidence supports the required content. Missing distribution evidence is unsupported, not presumed available.",
+    "3. With product/process/constraint/required format satisfied, count supported required measurement facts: all3 => **3 direct**; exactly2 => **2 materially useful**; exactly1 => **1 tangential**; none => **0 irrelevant**. Required facts and omitted/contradictory facts are explicit per record. These are independently documented measurement columns, NOT ontological attributes implied by product/process: a liquid dairy product remains liquid dairy even when microbial counts are absent; a running shoe remains for running even when water-film measurements are absent. Missing a measurement column is not equivalent to denying a product attribute, but an undocumented measurement cannot be invented to raise a grade.",
+    "4. No cross-product/category default relevance. The exact structured product/process conditions and all grades are frozen. A conceptual dispute or metadata failure is `U`, not a post hoc redefinition. Main must resolve/re-freeze BEFORE search or treat the comparison as incomplete.",
+    "",
+    "The expected constraints are representative measurements, not simulation-only values. Grade2 is incomplete yet useful evidence, not a wrong product/process. Known hard negatives deliberately retain plausible nearby language but fail product, process, required measure, hard data basis or file format. The generator must explain the wrong measure/process naturally, NOT insert `wrong_process`, intent IDs, relevance labels, query lists or rejection explanations into indexed fields.",
+    "",
+    "## Semantic intent facts",
+    "",
+    "| Intent | Product/process | Three required measurement facts | Special hard constraint |",
+    "|---|---|---|---|",
+    "|s01|cacao crop / field pest management|pest counts; control treatment; treatment application rate|observed field evidence|",
+    "|s02|cacao crop / harvest yield|harvest mass; hectares; season|CSV|",
+    "|s03|cacao beans / bean fermentation|duration; bean temperature; batch mass kg|not cultured beverage fermentation|",
+    "|s04|cacao seedlings / nursery propagation|survival; propagation method; rooting duration days|crop, not factory sanitation|",
+    "|s05|solid milk chocolate / bar packaging|wrapper material; barrier performance; seal failure rate|not chocolate-milk liquid|",
+    "|s06|solid chocolate / texture testing|fracture force; tempering conditions; particle size micrometres|not liquid viscosity or soft filling|",
+    "|s07|dessert chocolate ingredient / storage|storage temperature; ingredient quality; moisture percent|not finished dairy drink or packaging alone|",
+    "|s08|confectionery factory / sanitation|equipment cleaning; microbial swabs; residue mass mg|factory, not seedling/crop plant|",
+    "|s09|drinking chocolate powder / hot-drink reconstitution|powder dose; water temperature; dissolution time seconds|not baking-only powder|",
+    "|s10|chocolate dairy beverage / refrigerated shelf life|storage temperature; spoilage days; microbial count CFU/ml|CSV; not bar, oat drink or ambient logistics|",
+    "|s11|chocolate dairy beverage / formulation|cocoa fraction; sugar fraction; liquid viscosity|not dessert ingredients or container design|",
+    "|s12|chocolate dairy beverage / fermentation|starter culture; acidification curve; residual sugar g/litre|not postharvest beans or pasteurization|",
+    "|f01|running shoe / wet pavement testing|wet friction coefficient; surface roughness mm; water-film depth mm|not a component alone or dry-surface test|",
+    "|f02|hydraulic pump / low-noise testing|noise decibels; sound measurement distance m; flow rate|not interface standard or unloaded inventory|",
+    "|f03|temperature probe / coldroom calibration|calibration error; range -20 to +5 C; reference-instrument uncertainty C|not torque gauge or price sheet|",
+    "",
+    "## Exact lookup controls (x01\u2013x24)",
+    "",
+    "Grade3 iff the dataset's stable ID is in the query's frozen `authoritative_target_ids`; all other IDs grade0 for that lookup, regardless of descriptive similarity. Do not LLM-judge objective equality, give partial exact credit for a sole/lace/version, or infer that a token occurrence in a parent record means its child record is the target. Explicit RUN-X120 case/hyphen aliases point to ONE SKU b001; I/1, O/0, component, version, prefix and suffix changes are different identities. Fictional ZTS standards are controlled technical identifiers, not claims that such a real standard exists.",
+    "",
+    "Distribution-only and title-only cases have registered placement requirements. V2 pre-generation amendment, preserving v1 under `registration-history/v1`: for b029/b030, title-only restricts PRIMARY metadata fields (title permitted; description/keywords/publisher/distributions forbidden). Exact production Title+Description projection is mandatory and may repeat the title identifier; this is not an additional primary metadata scope. The derived queryContext and its embedding input must remain unredacted and contain no independently inserted identifiers. Distribution-only b027/b028 scope is unchanged: their identifiers stay only in nested distributions, absent from dataset primary fields and derived queryContext. This compatibility clarification changes no query, target or relevance grade. Actual production analyzers may conflate strings: report the failure while preserving frozen target expectations, never add an unconfigured keyword field or equality query. Collision counts use only `near_identifier_ids`, not all corpus non-targets.",
+    "",
+    "Every exact query is **critical**. Compare its first authoritative target's actual returned rank against baseline; worse rank (including top10 disappearance) is a critical displacement, even when both systems still return it top5. Rank ties use actual engine return order. Missing target rank is infinity. Top1 is correct only when rank1's dataset identity is authoritative. Multiple authoritative targets, if introduced by an approved pre-run amendment, use best target rank but must all represent the same declared need.",
+    "",
+    "## Exploratory ambiguity and no-answer diagnostics",
+    "",
+    "For d01\u2013d04 the explicitly frozen process-to-grade maps override the disambiguated semantic algorithm: these short queries have no requested measurements, CSV or simulation exclusion. Multiple meanings are valid. `plant` can mean seedling or factory; `drink` includes powder intended for drink preparation; `dessert` includes ingredients and finished-product evidence; `storage` includes ingredient, refrigerated beverage and relevant packaging. A grade is not a whole-domain preference. Show interpretation diversity and top10 cases separately, never require one family to win and never pool these into promotion NDCG.",
+    "",
+    "n01 and n02 deliberately lack the required conjunction anywhere in the corpus; C checks absence over ALL searchable fields. Their maps are all0, so IDCG is0/undefined. Exclude from ordinary NDCG/Success/MRR and the positive-intent mean. Report whether returned metadata supports only a nearby concept and whether empty/nonempty responses are appropriate, without awarding a ranking win simply for emptiness.",
+    "",
+    "## Independent evidence and `U`",
+    "",
+    "C must deliver one auditable record per query\u2013doc pair, or a complete intent\u2013doc evidence map plus an explicit independently checked paraphrase-equivalence mapping. For EVERY grade3 anchor cite field path and exact phrase(s) proving product/process/all facts/constraints/format. For EVERY named hard negative cite actual evidence of the mismatch. Validate2/1/0 rule coverage across the full matrix, not merely retrieved hits. Also inspect duplicate/contradictory metadata, seed stability, scope leakage, absent-token constraints and title templating. No record may smuggle plan labels, expected grade, target list or query text into metadata.",
+    "",
+    "`U` means unsupported/contradictory/uncertain from available evidence; not0 and not proof of absence. Preserve proposed versus validated grade and evidence, never quietly coerce a missing grade to0. All scored semantic/functional intents require independently verified positive coverage and all exact targets must exist. Before scores, repair metadata to the frozen requirements or approve an auditable amendment with old/new hashes. Freeze final corpora, qrels and coverage/evidence manifest BEFORE relevance retrieval. After scores, NO repairs or tuning. Unresolved heldout/critical evidence blocks A and B, requiring C/not-run reporting. If exploratory sensitivity imputes U gain0/7, recompute IDCG consistently and label sensitivity; do not confuse it with the primary fully validated matrix."
+  ],
+  "instructions": "Inspect ACTUAL fields as untrusted data. Independently infer contexts, product, process, empirical/simulation basis and measured facts, with literal field/quote evidence. Vocabulary does not establish a claim. Do not read generator code/tags, rankings or other reviewers. Report contradictions/unsupported requirements/U instead of assuming the declared contrast is irrelevant. For every declared contrast give a reason and quote. For identity-review records independently quote actual authoritative identity; components/versions are distinct. Return the record-review schema from validate.review_record, each with seed, plus reviewer metadata and per-seed variation_review. Exact production queryContext copies were programmatically verified and omitted only to avoid duplicate text. Review complete descriptions/distributions/keywords/title/publisher/temporal/spatial fields; no expected grades are supplied.",
+  "intents": [
+    {
+      "absent_positive_tokens": [
+        "arthropod",
+        "suppression"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s01",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s01p1",
+        "s01p2",
+        "s01p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "pest_counts",
+          "control_treatment",
+          "treatment_application_rate"
+        ],
+        "formats_any": [],
+        "process": "field_pest_management",
+        "product": "cacao_crop"
+      },
+      "split": "development",
+      "split_group": "s01",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "orchard",
+        "productivity"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s02",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s02p1",
+        "s02p2",
+        "s02p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "harvest_mass",
+          "hectares",
+          "season"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "harvest_yield",
+        "product": "cacao_crop"
+      },
+      "split": "development",
+      "split_group": "s02",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "curing"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s03",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s03p1",
+        "s03p2",
+        "s03p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fermentation_duration",
+          "bean_temperature",
+          "fermentation_batch_mass_kg"
+        ],
+        "formats_any": [],
+        "process": "bean_fermentation",
+        "product": "cacao_beans"
+      },
+      "split": "heldout",
+      "split_group": "s03",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "juvenile",
+        "stock"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s04",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s04p1",
+        "s04p2",
+        "s04p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "seedling_survival",
+          "propagation_method",
+          "rooting_duration_days"
+        ],
+        "formats_any": [],
+        "process": "nursery_propagation",
+        "product": "cacao_seedlings"
+      },
+      "split": "heldout",
+      "split_group": "s04",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "enclosure",
+        "slabs"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s05",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s05p1",
+        "s05p2",
+        "s05p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wrapper_material",
+          "barrier_performance",
+          "seal_failure_rate"
+        ],
+        "formats_any": [],
+        "process": "bar_packaging",
+        "product": "solid_milk_chocolate"
+      },
+      "split": "development",
+      "split_group": "s05",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "brittleness",
+        "molded"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s06",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s06p1",
+        "s06p2",
+        "s06p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "fracture_force",
+          "tempering_conditions",
+          "particle_size_micrometres"
+        ],
+        "formats_any": [],
+        "process": "texture_testing",
+        "product": "solid_chocolate"
+      },
+      "split": "heldout",
+      "split_group": "s06",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "pantry",
+        "supplies"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s07",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s07p1",
+        "s07p2",
+        "s07p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "ingredient_quality",
+          "moisture_percent"
+        ],
+        "formats_any": [],
+        "process": "ingredient_storage",
+        "product": "dessert_chocolate_ingredient"
+      },
+      "split": "heldout",
+      "split_group": "s07",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "hygiene",
+        "works"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s08",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s08p1",
+        "s08p2",
+        "s08p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "equipment_cleaning",
+          "microbial_swabs",
+          "residue_mass_mg"
+        ],
+        "formats_any": [],
+        "process": "factory_sanitation",
+        "product": "confectionery_factory"
+      },
+      "split": "heldout",
+      "split_group": "s08",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "solubility",
+        "cup"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s09",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s09p1",
+        "s09p2",
+        "s09p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "powder_dose",
+          "water_temperature",
+          "dissolution_time_seconds"
+        ],
+        "formats_any": [],
+        "process": "hot_drink_reconstitution",
+        "product": "drinking_chocolate_powder"
+      },
+      "split": "heldout",
+      "split_group": "s09",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "refreshment",
+        "longevity"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s10",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s10p1",
+        "s10p2",
+        "s10p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "storage_temperature",
+          "spoilage_days",
+          "microbial_count_cfu_per_ml"
+        ],
+        "formats_any": [
+          "CSV"
+        ],
+        "process": "refrigerated_shelf_life",
+        "product": "chocolate_dairy_beverage"
+      },
+      "split": "development",
+      "split_group": "s10",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "balancing",
+        "pourable"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s11",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s11p1",
+        "s11p2",
+        "s11p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "cocoa_fraction",
+          "sugar_fraction",
+          "liquid_viscosity"
+        ],
+        "formats_any": [],
+        "process": "drink_formulation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "split": "heldout",
+      "split_group": "s11",
+      "suite": "A"
+    },
+    {
+      "absent_positive_tokens": [
+        "souring",
+        "refreshment"
+      ],
+      "definition": {
+        "measurement_facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only",
+        "required_format_absent"
+      ],
+      "intent_id": "s12",
+      "kind": "semantic",
+      "paraphrase_query_ids": [
+        "s12p1",
+        "s12p2",
+        "s12p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process; exactly one required fact; no contradiction; required format present",
+        "grade2": "same product/process; exactly two required facts; no contradiction; required format present"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "starter_culture",
+          "acidification_curve",
+          "residual_sugar_g_per_litre"
+        ],
+        "formats_any": [],
+        "process": "beverage_fermentation",
+        "product": "chocolate_dairy_beverage"
+      },
+      "split": "heldout",
+      "split_group": "s12",
+      "suite": "A"
+    },
+    {
+      "definition": {
+        "measurement_facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only"
+      ],
+      "intent_id": "f01",
+      "kind": "functional",
+      "paraphrase_query_ids": [
+        "f01p1",
+        "f01p2",
+        "f01p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process and exactly one required fact",
+        "grade2": "same product/process and exactly two required facts"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "wet_friction_coefficient",
+          "surface_roughness_mm",
+          "water_film_depth_mm"
+        ],
+        "formats_any": [],
+        "process": "wet_pavement_testing",
+        "product": "running_shoe"
+      },
+      "split": "development",
+      "split_group": "f01",
+      "suite": "B"
+    },
+    {
+      "definition": {
+        "measurement_facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only"
+      ],
+      "intent_id": "f02",
+      "kind": "functional",
+      "paraphrase_query_ids": [
+        "f02p1",
+        "f02p2",
+        "f02p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process and exactly one required fact",
+        "grade2": "same product/process and exactly two required facts"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "noise_decibels",
+          "sound_measurement_distance_m",
+          "flow_rate"
+        ],
+        "formats_any": [],
+        "process": "indoor_low_noise_testing",
+        "product": "hydraulic_pump"
+      },
+      "split": "heldout",
+      "split_group": "f02",
+      "suite": "B"
+    },
+    {
+      "definition": {
+        "measurement_facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "forbidden_claims": [
+        "wrong_product",
+        "wrong_process",
+        "contradicted_measurement",
+        "simulation_only"
+      ],
+      "intent_id": "f03",
+      "kind": "functional",
+      "paraphrase_query_ids": [
+        "f03p1",
+        "f03p2",
+        "f03p3"
+      ],
+      "partial_claims": {
+        "grade1": "same product/process and exactly one required fact",
+        "grade2": "same product/process and exactly two required facts"
+      },
+      "required_claims": {
+        "constraint": "representative_measurements_not_simulation",
+        "facts": [
+          "calibration_error",
+          "minus20_to_plus5_C",
+          "reference_instrument_uncertainty_C"
+        ],
+        "formats_any": [],
+        "process": "coldroom_calibration",
+        "product": "temperature_probe"
+      },
+      "split": "heldout",
+      "split_group": "f03",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b001"
+      ],
+      "control": "identity",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x01",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b002",
+        "b003",
+        "b004",
+        "b005",
+        "b006",
+        "b007",
+        "b008",
+        "b009",
+        "b010",
+        "b011"
+      ],
+      "paraphrase_query_ids": [
+        "x01"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b001"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b001"
+      ],
+      "control": "case_equivalence",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x02",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b007",
+        "b008",
+        "b006"
+      ],
+      "paraphrase_query_ids": [
+        "x02"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b001"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b001"
+      ],
+      "control": "hyphenation_equivalence",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x03",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b006",
+        "b007",
+        "b008"
+      ],
+      "paraphrase_query_ids": [
+        "x03"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b001"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b002"
+      ],
+      "control": "single_digit",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x04",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b012"
+      ],
+      "paraphrase_query_ids": [
+        "x04"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b002"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b005"
+      ],
+      "control": "component",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x05",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b011"
+      ],
+      "paraphrase_query_ids": [
+        "x05"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b005"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b007"
+      ],
+      "control": "one_I",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x06",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b008"
+      ],
+      "paraphrase_query_ids": [
+        "x06"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b007"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b008"
+      ],
+      "control": "zero_O",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x07",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b007"
+      ],
+      "paraphrase_query_ids": [
+        "x07"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b008"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b009"
+      ],
+      "control": "version",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x08",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b010"
+      ],
+      "paraphrase_query_ids": [
+        "x08"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b009"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b010"
+      ],
+      "control": "version",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x09",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b009"
+      ],
+      "paraphrase_query_ids": [
+        "x09"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b010"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b004"
+      ],
+      "control": "prefix",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x10",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b001",
+        "b012"
+      ],
+      "paraphrase_query_ids": [
+        "x10"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b004"
+        ]
+      },
+      "split": "development",
+      "split_group": "shoe_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b013"
+      ],
+      "control": "exact_title",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x11",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b014"
+      ],
+      "paraphrase_query_ids": [
+        "x11"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b013"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b015"
+      ],
+      "control": "acronym",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x12",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b016"
+      ],
+      "paraphrase_query_ids": [
+        "x12"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b015"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b016"
+      ],
+      "control": "one_I",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x13",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b015"
+      ],
+      "paraphrase_query_ids": [
+        "x13"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b016"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b017"
+      ],
+      "control": "standard_version",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x14",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b018"
+      ],
+      "paraphrase_query_ids": [
+        "x14"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b017"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b018"
+      ],
+      "control": "standard_version",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x15",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b017"
+      ],
+      "paraphrase_query_ids": [
+        "x15"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b018"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b019"
+      ],
+      "control": "zero_O",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x16",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b020"
+      ],
+      "paraphrase_query_ids": [
+        "x16"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b019"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b020"
+      ],
+      "control": "zero_O",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x17",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b019"
+      ],
+      "paraphrase_query_ids": [
+        "x17"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b020"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b021"
+      ],
+      "control": "part_number",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x18",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b022"
+      ],
+      "paraphrase_query_ids": [
+        "x18"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b021"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b022"
+      ],
+      "control": "zero_O",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x19",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b021"
+      ],
+      "paraphrase_query_ids": [
+        "x19"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b022"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "pump_identifier_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b023"
+      ],
+      "control": "one_I",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x20",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b024"
+      ],
+      "paraphrase_query_ids": [
+        "x20"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b023"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "instrument_and_release_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b024"
+      ],
+      "control": "one_I",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x21",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b023"
+      ],
+      "paraphrase_query_ids": [
+        "x21"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b024"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "instrument_and_release_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b025"
+      ],
+      "control": "exact_title_version",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x22",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b026"
+      ],
+      "paraphrase_query_ids": [
+        "x22"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b025"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "instrument_and_release_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b027"
+      ],
+      "control": "distribution_only",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x23",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b028"
+      ],
+      "paraphrase_query_ids": [
+        "x23"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b027"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "instrument_and_release_cluster",
+      "suite": "B"
+    },
+    {
+      "authoritative_target_ids": [
+        "b029"
+      ],
+      "control": "title_only",
+      "critical": true,
+      "definition": "Navigate to frozen authoritative dataset identity, not merely a semantically similar product.",
+      "intent_id": "x24",
+      "kind": "exact",
+      "near_identifier_ids": [
+        "b030"
+      ],
+      "paraphrase_query_ids": [
+        "x24"
+      ],
+      "required_claims": {
+        "authoritative_target_ids": [
+          "b029"
+        ]
+      },
+      "split": "heldout",
+      "split_group": "instrument_and_release_cluster",
+      "suite": "B"
+    },
+    {
+      "definition": "Exploratory polysemy, multiple useful meanings; no domain-first requirement.",
+      "intent_id": "d01",
+      "kind": "ambiguous",
+      "paraphrase_query_ids": [
+        "d01"
+      ],
+      "process_grade_rules": {
+        "beverage_fermentation": 2,
+        "dessert_reconstitution": 1,
+        "drink_formulation": 3,
+        "hot_drink_reconstitution": 3,
+        "refrigerated_shelf_life": 2
+      },
+      "split": "diagnostic",
+      "split_group": "d01",
+      "suite": "A"
+    },
+    {
+      "definition": "Exploratory polysemy, multiple useful meanings; no domain-first requirement.",
+      "intent_id": "d02",
+      "kind": "ambiguous",
+      "paraphrase_query_ids": [
+        "d02"
+      ],
+      "process_grade_rules": {
+        "bar_formulation": 2,
+        "bar_packaging": 1,
+        "hot_drink_reconstitution": 1,
+        "ingredient_storage": 3,
+        "texture_testing": 2
+      },
+      "split": "diagnostic",
+      "split_group": "d02",
+      "suite": "A"
+    },
+    {
+      "definition": "Exploratory polysemy, multiple useful meanings; no domain-first requirement.",
+      "intent_id": "d03",
+      "kind": "ambiguous",
+      "paraphrase_query_ids": [
+        "d03"
+      ],
+      "process_grade_rules": {
+        "factory_landscaping": 2,
+        "factory_production_throughput": 2,
+        "factory_sanitation": 3,
+        "field_pest_management": 2,
+        "harvest_yield": 1,
+        "nursery_propagation": 3
+      },
+      "split": "diagnostic",
+      "split_group": "d03",
+      "suite": "A"
+    },
+    {
+      "definition": "Exploratory polysemy, multiple useful meanings; no domain-first requirement.",
+      "intent_id": "d04",
+      "kind": "ambiguous",
+      "paraphrase_query_ids": [
+        "d04"
+      ],
+      "process_grade_rules": {
+        "ambient_transport_logistics": 1,
+        "bar_packaging": 2,
+        "ingredient_storage": 3,
+        "postharvest_pest_storage": 2,
+        "refrigerated_shelf_life": 3
+      },
+      "split": "diagnostic",
+      "split_group": "d04",
+      "suite": "A"
+    },
+    {
+      "definition": "Known absent conjunction; absence audit, not zero NDCG or ranking win.",
+      "forbidden_corpus_claim": "lunar_cultivation_and_isotope_ratios",
+      "intent_id": "n01",
+      "kind": "no_answer",
+      "paraphrase_query_ids": [
+        "n01"
+      ],
+      "split": "diagnostic",
+      "split_group": "n01",
+      "suite": "A"
+    },
+    {
+      "definition": "Known absent conjunction; absence audit, not zero NDCG or ranking win.",
+      "forbidden_corpus_claim": "RUN-X9999_identity_and_cryogenic_vacuum_certification",
+      "intent_id": "n02",
+      "kind": "no_answer",
+      "paraphrase_query_ids": [
+        "n02"
+      ],
+      "split": "diagnostic",
+      "split_group": "n02",
+      "suite": "B"
+    }
+  ],
+  "output_contract": "Write JSON with reviewer, sources (copy packet path/hash references), record_reviews for EXACTLY 2 assigned actual(seed,dataset_id) records, and variation_review_by_seed for every reviewed seed. Use existing record_review_schema. Review full frozen rubric and actual text. Report independently supported topical context separately from measurements/ledger process when both are explicitly documented; diagnostic ambiguity imposes no empirical-measurement condition. Prior observations/issues are evidence to challenge, NOT labels to obey. Do not view expected per-record grades or generator code. If unresolved, preserve U/issues rather than force pass. Never modify an old review artifact.",
+  "record_review_schema": {
+    "contexts": [
+      {
+        "basis": {
+          "evidence": [
+            {
+              "field": "actual field path",
+              "quote": "literal basis evidence"
+            }
+          ],
+          "value": "representative_measurements_not_simulation OR simulation_only"
+        },
+        "distribution_content_verified": "boolean after checking formats/content association",
+        "facts": {
+          "independently_supported_measurement_key": [
+            {
+              "field": "actual field path",
+              "quote": "minimal literal phrase that positively documents the measurement"
+            }
+          ]
+        },
+        "process": {
+          "evidence": [
+            {
+              "field": "actual field path",
+              "quote": "literal phrase"
+            }
+          ],
+          "value": "independently inferred concept"
+        },
+        "product": {
+          "evidence": [
+            {
+              "field": "actual field path",
+              "quote": "literal positive phrase"
+            }
+          ],
+          "value": "independently inferred concept"
+        }
+      }
+    ],
+    "dataset_id": "copy actual stable ID",
+    "exhaustive_searchable_review": "true only if all actual projected fields reviewed",
+    "hard_negatives": {
+      "each_declared_contrast_intent": {
+        "evidence": [
+          {
+            "field": "actual field path",
+            "quote": "literal evidence of decisive contrast"
+          }
+        ],
+        "reason": "independent relevance/mismatch explanation; flag dispute rather than assuming irrelevant"
+      }
+    },
+    "identity": {
+      "evidence": [
+        {
+          "field": "actual field path",
+          "quote": "literal identifying phrase"
+        }
+      ],
+      "value": "actual authoritative product/model/edition string, only when identity review required"
+    },
+    "issues": "[] only if no semantic contradiction/unsupported claim/leakage; otherwise concrete issues",
+    "no_answer_claims": "[] unless actual text supports a frozen no-answer conjunction; then list that intent ID",
+    "reviewer_id": "fresh reviewer ID",
+    "seed": "copy actual seed",
+    "semantic_review_passed": "true only after actual exhaustive review; false if unresolved"
+  },
+  "records": [
+    {
+      "actual_record_sha256": "d1b6ea78d11691bfddda200e9de2dcb242b1d0a2a15605cb478da3c4d16f3a02",
+      "approved_repair_issues_to_independently_recheck": [
+        {
+          "actual_evidence": [
+            {
+              "field": "title",
+              "quote": "Observations from Linden Grove Inner chocolate texture testing"
+            },
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            }
+          ],
+          "allowed_changed_fields": [
+            "title",
+            "queryContext"
+          ],
+          "approved_patch_scope": "Replace only misleading root title observation/field-note wording with an explicit simulation-output or neutral model-results description retaining subject and site identity. Recompute exact production root queryContext. Preserve product/process/facts, distribution text/formats, metadata, record ID and all labels. Do not rename neutral trial/study titles in other records.",
+          "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+          "before_record_sha256": "dd571f3c30e0f4c3cb2eedf3ab64c1020ca2e8a931a19de43a085cc330974a0e",
+          "dataset_id": "a039",
+          "issue": "Simulation-only record root title explicitly asserts empirical observations or field-note provenance",
+          "requires_independent_delta_reaudit": true,
+          "seed": 39032
+        }
+      ],
+      "dataset_id": "a039",
+      "declared_contrast_intents_to_review_independently": [
+        "s06"
+      ],
+      "fields": {
+        "description": "The distribution synopses document the simulated columns and units.\n\nThis deposit concerns texture testing of chocolate by mechanical loading of solid chocolate confectionery bars at Linden Grove Inner.\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nEach table uses the same local observation key.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.\n\nThe release is arranged for comparison within this study.",
+        "distributions.0.description": "Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable comma-separated table; the synopsis gives the column units.",
+        "distributions.0.format": "CSV",
+        "distributions.0.title": "Recorded series",
+        "distributions.1.description": "Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units.",
+        "distributions.1.format": "JSON",
+        "distributions.1.title": "Simulation output table",
+        "distributions.2.description": "Simulated output columns: force at fracture (newtons; e.g. 43.98); tempering hold temperature and duration (30.01 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 25.84). Downloadable JSON records with the same variables and units.",
+        "distributions.2.format": "JSON",
+        "distributions.2.title": "Simulation output table",
+        "keywords.0": "chocolate bars",
+        "keywords.1": "chocolate texture testing",
+        "publisher.identifier": "synthetic-institution-16",
+        "publisher.name": "Pine Field Studies Centre",
+        "spatial.text": "Fictional study location; no geographic preference",
+        "title": "Simulation results from Linden Grove Inner chocolate texture testing"
+      },
+      "identity_review_required": false,
+      "seed": 39032
+    },
+    {
+      "actual_record_sha256": "c9ba36d15508a872681d974dbdb4daab2ccab70af1634dc557dbb44d3265344f",
+      "approved_repair_issues_to_independently_recheck": [
+        {
+          "actual_evidence": [
+            {
+              "field": "title",
+              "quote": "From field notes to archive: Dune Valley Inner chocolate milk"
+            },
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            }
+          ],
+          "allowed_changed_fields": [
+            "title",
+            "queryContext"
+          ],
+          "approved_patch_scope": "Replace only misleading root title observation/field-note wording with an explicit simulation-output or neutral model-results description retaining subject and site identity. Recompute exact production root queryContext. Preserve product/process/facts, distribution text/formats, metadata, record ID and all labels. Do not rename neutral trial/study titles in other records.",
+          "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+          "before_record_sha256": "337a0126b6089b92bd6b17be8a461c014b0b6f7c1e6fc7730eb774e92a863631",
+          "dataset_id": "a079",
+          "issue": "Simulation-only record root title explicitly asserts empirical observations or field-note provenance",
+          "requires_independent_delta_reaudit": true,
+          "seed": 39032
+        }
+      ],
+      "dataset_id": "a079",
+      "declared_contrast_intents_to_review_independently": [
+        "s10"
+      ],
+      "fields": {
+        "description": "At Dune Valley Inner, the study covers liquid chocolate-flavoured dairy milk beverage during refrigerated shelf-life assessment.\n\nThe simulated output columns are viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35).\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThe deposit contains no personal names or participant details.",
+        "distributions.0.description": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35). Downloadable comma-separated table; the synopsis gives the column units.",
+        "distributions.0.format": "CSV",
+        "distributions.0.title": "Variable dictionary and values",
+        "distributions.1.description": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35). Downloadable JSON records with the same variables and units.",
+        "distributions.1.format": "JSON",
+        "distributions.1.title": "Simulation output table",
+        "keywords.0": "chocolate milk",
+        "keywords.1": "refrigerated shelf life",
+        "publisher.identifier": "synthetic-institution-09",
+        "publisher.name": "Ivy Food Research Centre",
+        "title": "Chocolate milk simulation outputs from Dune Valley Inner"
+      },
+      "identity_review_required": false,
+      "seed": 39032
+    }
+  ],
+  "reviewer_schema": {
+    "context_id": "actual session/context ID or explicit unavailable",
+    "generator_context": false,
+    "id": "unique fresh reviewer ID",
+    "model": "actual model identifier",
+    "parameters": "actual exposed values or unavailable",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "taxonomy_vocabulary_not_per_record_claims": {
+    "measurement_facts": [
+      "acidification_curve",
+      "barrier_performance",
+      "bean_temperature",
+      "calibration_error",
+      "cocoa_fraction",
+      "control_treatment",
+      "dissolution_time_seconds",
+      "equipment_cleaning",
+      "fermentation_batch_mass_kg",
+      "fermentation_duration",
+      "flow_rate",
+      "fracture_force",
+      "harvest_mass",
+      "hectares",
+      "ingredient_quality",
+      "liquid_viscosity",
+      "microbial_count_cfu_per_ml",
+      "microbial_swabs",
+      "minus20_to_plus5_C",
+      "moisture_percent",
+      "noise_decibels",
+      "particle_size_micrometres",
+      "pest_counts",
+      "powder_dose",
+      "propagation_method",
+      "reference_instrument_uncertainty_C",
+      "residual_sugar_g_per_litre",
+      "residue_mass_mg",
+      "rooting_duration_days",
+      "seal_failure_rate",
+      "season",
+      "seedling_survival",
+      "sound_measurement_distance_m",
+      "spoilage_days",
+      "starter_culture",
+      "storage_temperature",
+      "sugar_fraction",
+      "surface_roughness_mm",
+      "tempering_conditions",
+      "treatment_application_rate",
+      "water_film_depth_mm",
+      "water_temperature",
+      "wet_friction_coefficient",
+      "wrapper_material"
+    ],
+    "processes": [
+      "ambient_transport_logistics",
+      "bar_formulation",
+      "bar_packaging",
+      "bean_drying",
+      "bean_fermentation",
+      "beverage_fermentation",
+      "beverage_pasteurization",
+      "coldroom_calibration",
+      "colour_testing",
+      "container_design",
+      "dessert_reconstitution",
+      "drink_formulation",
+      "dry_surface_testing",
+      "factory_landscaping",
+      "factory_production_throughput",
+      "factory_sanitation",
+      "field_pest_management",
+      "harvest_yield",
+      "hot_drink_reconstitution",
+      "indoor_low_noise_testing",
+      "ingredient_marketing",
+      "ingredient_storage",
+      "nursery_propagation",
+      "postharvest_pest_storage",
+      "refrigerated_shelf_life",
+      "technical_documentation",
+      "texture_testing",
+      "unloaded_bench_inventory",
+      "wet_pavement_testing"
+    ],
+    "products": [
+      "cacao_beans",
+      "cacao_crop",
+      "cacao_seedlings",
+      "chocolate_dairy_beverage",
+      "chocolate_oat_beverage",
+      "confectionery_factory",
+      "confectionery_factory_ornamental_plants",
+      "dessert_chocolate_ingredient",
+      "dessert_cocoa_powder",
+      "drinking_chocolate_powder",
+      "friction_survey",
+      "hydraulic_pump",
+      "non_edible_chocolate_scented_material",
+      "pump_interface_standard",
+      "running_shoe",
+      "shoe_component",
+      "soft_chocolate_filling",
+      "solid_chocolate",
+      "solid_dark_chocolate",
+      "solid_milk_chocolate",
+      "temperature_probe",
+      "torque_gauge"
+    ]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "issue": 3903,
+  "phase": "supplementary_correctness_preregistered_before_probe_execution",
+  "primary_benchmark_queries_or_labels_changed": false,
+  "purpose": "Audit actual production quality/region scoring placement before family normalization; not relevance tuning or a representative geography test.",
+  "execution_gate": "All original specification, independent corpus validation and parent execution approval gates, plus approval.supplementary_probe_spec_sha256 matching this complete file.",
+  "engine": "OpenSearch 2.19.1",
+  "production_baseline_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "mapping": "Existing production Scala exporter, dimension3; unchanged dataset analyzers and function-score builder.",
+  "resources": "Unique owned magda-relevance-eval-* dataset index, region index and pipelines; delete only acknowledged exact created resources in finally. Never mutate regions27 or any existing user index.",
+  "query": "water quality",
+  "query_vector": [0.0, 0.0, 0.0],
+  "dataset_vector": [0.0, 0.0, 0.0],
+  "dimension": 3,
+  "retrieval_mode": "Production radial minScore0.5; no topk substitution in this probe.",
+  "query_variants": [
+    {"id": "quality-only", "boost_regions": []},
+    {"id": "quality-and-spatial", "boost_regions": ["ste:3903"]}
+  ],
+  "region": {
+    "id": "ste:3903",
+    "indexed_document_id": "ste/3903",
+    "geometry_field": "geometry",
+    "geometry": {"type": "envelope", "coordinates": [[150.0, -30.0], [151.0, -31.0]]},
+    "mapping": {"mappings": {"properties": {"geometry": {"type": "geo_shape"}}}}
+  },
+  "dataset_plan": {
+    "count": 6,
+    "qualities": [0.25, 0.6, 1.0],
+    "hasQuality": true,
+    "geographies": {
+      "inside": {"type": "Point", "coordinates": [150.5, -30.5]},
+      "outside": {"type": "Point", "coordinates": [149.0, -32.0]}
+    },
+    "identifier_rule": "probe-{inside|outside}-q{0|1|2}; one record for every quality/geography combination",
+    "constant_title": "Water quality",
+    "constant_description": "Water quality observations",
+    "constant_publisher": "Supplementary probe institution",
+    "tenantId": 0,
+    "publishingState": "published",
+    "distributions": [],
+    "all_other_searchable_fields_identical": true
+  },
+  "systems": ["baseline", "raw_boost1", "candidate_03_07", "candidate_05_05", "candidate_07_03", "candidate_keep50_03_07", "keyword", "vector"],
+  "fixed_assertions": [
+    "All six unique IDs included by each system and both query variants; exact total-hit count6 and Publisher-global/filter root count6 with one publisher bucket of count6; no timeout, failed shards or duplicates.",
+    "Production query contains weight1, quality field factor with hasQuality filter and missing1, score_mode sum; quality-only has no region function; spatial variant has weight1 filtered by actual preindexed geometry referencing only the newly owned region index/document/geometry field.",
+    "Raw boost1 removes only exact root dataset-vector boost; raw baseline score functions retained once, normalized candidates retain identical functions in both family branches before min-max normalization.",
+    "For baseline/raw_boost1/keyword/vector, quality-only scores divided by (1+quality) are equal for all six otherwise identical records, to relative/absolute tolerance1e-5.",
+    "For those same raw family controls, spatial scores divided by (2+quality) are equal within the inside group, and divided by (1+quality) equal within the outside group, tolerance1e-5. Do not presume equal unmultiplied inside/outside scores: production geographic augmentation also adds a text-plus-geometry matching branch.",
+    "All normalized candidate scores finite and within [0,1] to tolerance1e-5.",
+    "For boost1 normalized candidates, scores equal fixed weighted min-max fusion of the keyword-only/vector-only control scores over these six records, with OpenSearch 2.19.1's existing-control-demonstrated minimum normalized score0.001 (max(0.001,(score-min)/(max-min))), tolerance1e-5; candidates with retainedboost50 are recorded but not falsely predicted from the unboosted vector control."
+  ],
+  "measurements": "One correctness response per system/query variant, not a latency benchmark. Retain actual exported requests, mapping/config hashes, per-hit scores/ranks, facet count projections, response hashes, structural checks, ratio/fusion residuals and exact resource cleanup status.",
+  "interpretation_limitations": [
+    "Correctness fixtures use deterministic 3-dimensional vectors, not GTE relevance embeddings and not production OPA decisions.",
+    "A retained quality/spatial function is not proof of equivalent normalized final scoring. Min-max is applied after family-specific scoring and changes scale/placement.",
+    "The spatial query has production lexical/geographic matching effects in addition to the optional weight1 scorer; no isolated geography-relevance benefit is inferred.",
+    "Any assertion failure is persisted as failed evidence; do not tune query text, geometry, qualities, weights, expected IDs or tolerances after seeing the probe results."
+  ]
+}

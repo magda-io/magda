@@ -1,0 +1,596 @@
+{
+  "global_validation_passed": false,
+  "files": [
+    {
+      "path": "auditoutputs/reviews-v2/packet-01.json",
+      "sha256": "a567f09b0ef5fcc6137bc90d16a7cf0942074cd2e31da8a1de452b5b74f998c7",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-02.json",
+      "sha256": "3dbca75fc460858eb20207399eb317aac319cf08b5eab6b1f5cffde5c81dab22",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-03.json",
+      "sha256": "bfa488e305f896cb4370b65277bfd0615961d5603fa6fec1b60e328b4c9a7400",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-04.json",
+      "sha256": "6ed6724b56bad33a3c827f77d1931d70fa7a78f9ab39b03172fd00eaa1318930",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-05.json",
+      "sha256": "f3656c68f610ed445cdb36be246e3fd9bc5bd4924e458776eb530786cff92cc2",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-06.json",
+      "sha256": "99140ce268b3afdf0cc195b335ba2dee847329595741ff74116be596fae701c8",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-07.json",
+      "sha256": "671db91de9a0d5b314a32bdb4e39e48ad7c17444050273a5c6ff7c78d3e442dd",
+      "count": 30
+    },
+    {
+      "path": "auditoutputs/reviews-v2/packet-08.json",
+      "sha256": "880c05824fc440ead6ca822f5addf24665499683bca91eb307cc0e196241e26b",
+      "count": 30
+    }
+  ],
+  "issues": [
+    {
+      "packet": 1,
+      "seed": 39031,
+      "id": "a005",
+      "issues": [
+        "U: description simultaneously frames the subject as cacao trees grown as a crop and the process as postharvest inspection of warehouse bags. It does not identify what those bags contain; an unambiguous physical product cannot be inferred. Operational columns are documented, but no pest-count measurement is supported."
+      ]
+    },
+    {
+      "packet": 1,
+      "seed": 39032,
+      "id": "a005",
+      "issues": [
+        "U: the investigation says cacao trees grown as a crop while describing postharvest inspection of warehouse bags. Bag contents are not identified, so the actual physical product is ambiguous. Only operational columns, not pest measurements, are documented."
+      ]
+    },
+    {
+      "packet": 1,
+      "seed": 39033,
+      "id": "a005",
+      "issues": [
+        "U: the description refers to cacao trees grown as a crop while describing postharvest warehouse-bag inspection, without identifying bag contents. The physical product remains ambiguous. Operational counts are supported, not pest counts."
+      ]
+    },
+    {
+      "packet": 4,
+      "seed": 39031,
+      "id": "a039",
+      "issues": [
+        "Misleading cross-field labelling: distributions.1.title says 'Deposited measurements' although description explicitly excludes physical trials and empirical observations, and every distribution description says 'Simulated output columns'. Simulation basis is unambiguous, but the measurement title should be clarified; no empirical variable is positively supported."
+      ]
+    },
+    {
+      "packet": 4,
+      "seed": 39032,
+      "id": "a039",
+      "issues": [
+        "Misleading cross-field labelling: distributions.2.title says 'Deposited measurements' while the complete description excludes physical or empirical observations and each file synopsis identifies simulated outputs. The simulation-only interpretation is decisive, but this title remains an unresolved wording issue; no empirical variable is supported."
+      ]
+    },
+    {
+      "packet": 5,
+      "seed": 39031,
+      "id": "a046",
+      "issues": [
+        {
+          "reason": "U: empirical administrative observations are documented, but the additional physical-sample provenance claim is unexplained by the marketing process and exclusively administrative columns. The basis value captures the stated non-simulation status, not independent confirmation of physical sampling or experimental performance.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "The described study uses empirical observations from physical samples."
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 17); facility location code (categorical site code; e.g. Hazel Ridge West)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 5,
+      "seed": 39031,
+      "id": "a049",
+      "issues": [
+        {
+          "reason": "U: the distribution title suggests observations despite explicit simulation-only descriptions. Format/content association is otherwise consistent: CSV and JSON carry the same simulated columns. Resolve the misleading title rather than treating these as measurements.",
+          "evidence": [
+            {
+              "field": "distributions.0.title",
+              "quote": "Observation table"
+            },
+            {
+              "field": "description",
+              "quote": "no physical trial or empirical observations were collected"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 5,
+      "seed": 39032,
+      "id": "a046",
+      "issues": [
+        {
+          "reason": "U: physical-sample provenance is asserted but unexplained for the entirely administrative marketing columns. The basis value records stated empirical/non-simulation status only; physical sampling and experimental performance are not independently established.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "The described study uses empirical observations from physical samples."
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: completed operations (count; e.g. 28); facility location code (categorical site code; e.g. Cedar Reach Coastal); reporting interval (calendar month; e.g. 2024-06)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 5,
+      "seed": 39032,
+      "id": "a049",
+      "issues": [
+        {
+          "reason": "U: an observation-table distribution title is ambiguous/misleading for a release explicitly containing no empirical observations. Distribution descriptions and CSV/JSON formats consistently identify the same simulated columns; that does not resolve the title wording.",
+          "evidence": [
+            {
+              "field": "distributions.2.title",
+              "quote": "Observation table"
+            },
+            {
+              "field": "description",
+              "quote": "no physical trial or empirical observations were collected"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 5,
+      "seed": 39033,
+      "id": "a046",
+      "issues": [
+        {
+          "reason": "U: exclusively administrative marketing columns do not explain the asserted physical-sample provenance. Empirical/non-simulation status is stated, but physical sampling and experimental performance are not independently established by those columns.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "The described study uses empirical observations from physical samples."
+            },
+            {
+              "field": "distributions.0.description",
+              "quote": "Deposited columns: completed operations (count; e.g. 88); facility location code (categorical site code; e.g. Fern Hollow East); reporting interval (calendar month; e.g. 2024-06)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 5,
+      "seed": 39033,
+      "id": "a049",
+      "issues": [
+        {
+          "reason": "The JSON distribution title asserts deposited measurements while its description and the dataset explicitly identify simulation-only outputs. CSV/JSON descriptions consistently associate the simulated variables, but the measurement title remains misleading and requires correction.",
+          "evidence": [
+            {
+              "field": "distributions.1.title",
+              "quote": "Deposited measurements"
+            },
+            {
+              "field": "description",
+              "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "packet": 6,
+      "seed": 39031,
+      "id": "a056",
+      "issues": [
+        "Title-format concern under the validation prompt's category-prefixed/template-only prohibition: title is 'Confectionery factory: the Alderbank West assessment'. It prefixes the broad product category and supplies only a fictional location/assessment wrapper, not the distinctive throughput subject. This concern is unresolved; the underlying process and variables are clear."
+      ]
+    },
+    {
+      "packet": 6,
+      "seed": 39031,
+      "id": "a057",
+      "issues": [
+        "Unresolved s08 scope ambiguity: ornamental-maintenance sanitation is distinguishable from production-equipment sanitation, but a production-equipment-only requirement is not explicit in the supplied intent definition. Do not presume this is irrelevant."
+      ]
+    },
+    {
+      "packet": 6,
+      "seed": 39032,
+      "id": "a057",
+      "issues": [
+        "Unresolved s08 scope ambiguity: the supplied intent does not explicitly exclude sanitation of ornamental-plant maintenance tools at a confectionery factory. All three measurement facts are genuinely documented; do not suppress them because a contrast was declared."
+      ]
+    },
+    {
+      "packet": 6,
+      "seed": 39032,
+      "id": "a060",
+      "issues": [
+        "Title-format concern under the validation prompt's category-prefixed/template-only prohibition: title is 'Confectionery factory: the Fern Hollow West assessment'. It prefixes the broad product category and supplies only a fictional location/assessment wrapper, not the distinctive sanitation subject. This concern is unresolved; empirical sanitation and all three variables are otherwise explicit."
+      ]
+    },
+    {
+      "packet": 6,
+      "seed": 39033,
+      "id": "a057",
+      "issues": [
+        "Unresolved s08 scope ambiguity: all required empirical sanitation variables are present for ornamental-maintenance tools at the factory. The supplied intent definition does not explicitly require production equipment, so the declared contrast alone does not establish exclusion."
+      ]
+    },
+    {
+      "packet": 8,
+      "seed": 39031,
+      "id": "a076",
+      "issues": [
+        "U on unqualified dairy-product attribution: description places 'of liquid chocolate-flavoured dairy milk beverage' after negated refrigerated shelf-life trials. Positive text establishes sealed-carton logistics, and keywords.0 associates chocolate milk, but the description does not unambiguously attach the dairy composition to the transported cartons. No shelf-life measurement is inferred from the negated clause."
+      ]
+    },
+    {
+      "packet": 8,
+      "seed": 39031,
+      "id": "a079",
+      "issues": [
+        "Cross-field ambiguity: title 'What the Ivy Brook East chocolate milk trials recorded' suggests trials, while description explicitly denies any physical trial or empirical observations. Simulation basis is explicit and both distributions label simulated output, but the title should not imply an empirical trial. No canonical empirical measurement fact is asserted here; listed facts are explicitly simulated outputs."
+      ]
+    },
+    {
+      "packet": 8,
+      "seed": 39032,
+      "id": "a076",
+      "issues": [
+        "U on unqualified dairy-product attribution: 'of liquid chocolate-flavoured dairy milk beverage' follows negated refrigerated shelf-life trials rather than unambiguously modifying the transported sealed cartons. Keyword chocolate milk and the title give a topical association, not an unambiguous positive dairy-composition statement. The negated shelf-life process and its absent variables are not counted as measured."
+      ]
+    },
+    {
+      "packet": 8,
+      "seed": 39032,
+      "id": "a079",
+      "issues": [
+        "Cross-field provenance ambiguity: title 'From field notes to archive: Dune Valley Inner chocolate milk' suggests physical field notes, but description denies physical trials and empirical observations. Both distribution descriptions explicitly label simulated outputs. The title cue should be reconciled; none of the listed outputs is counted as an empirical measurement."
+      ]
+    }
+  ],
+  "check_errors": [
+    {
+      "packet": 1,
+      "seed": 39031,
+      "id": "a005",
+      "error": "Fresh exhaustive semantic review incomplete: a005"
+    },
+    {
+      "packet": 1,
+      "seed": 39032,
+      "id": "a005",
+      "error": "Fresh exhaustive semantic review incomplete: a005"
+    },
+    {
+      "packet": 1,
+      "seed": 39033,
+      "id": "a005",
+      "error": "Fresh exhaustive semantic review incomplete: a005"
+    },
+    {
+      "packet": 4,
+      "seed": 39031,
+      "id": "a039",
+      "error": "Fresh exhaustive semantic review incomplete: a039"
+    },
+    {
+      "packet": 4,
+      "seed": 39032,
+      "id": "a039",
+      "error": "Fresh exhaustive semantic review incomplete: a039"
+    },
+    {
+      "packet": 5,
+      "seed": 39031,
+      "id": "a046",
+      "error": "Fresh exhaustive semantic review incomplete: a046"
+    },
+    {
+      "packet": 5,
+      "seed": 39031,
+      "id": "a049",
+      "error": "Fresh exhaustive semantic review incomplete: a049"
+    },
+    {
+      "packet": 5,
+      "seed": 39032,
+      "id": "a046",
+      "error": "Fresh exhaustive semantic review incomplete: a046"
+    },
+    {
+      "packet": 5,
+      "seed": 39032,
+      "id": "a049",
+      "error": "Fresh exhaustive semantic review incomplete: a049"
+    },
+    {
+      "packet": 5,
+      "seed": 39033,
+      "id": "a046",
+      "error": "Fresh exhaustive semantic review incomplete: a046"
+    },
+    {
+      "packet": 5,
+      "seed": 39033,
+      "id": "a049",
+      "error": "Fresh exhaustive semantic review incomplete: a049"
+    },
+    {
+      "packet": 6,
+      "seed": 39031,
+      "id": "a056",
+      "error": "Fresh exhaustive semantic review incomplete: a056"
+    },
+    {
+      "packet": 6,
+      "seed": 39031,
+      "id": "a057",
+      "error": "Fresh exhaustive semantic review incomplete: a057"
+    },
+    {
+      "packet": 6,
+      "seed": 39032,
+      "id": "a057",
+      "error": "Fresh exhaustive semantic review incomplete: a057"
+    },
+    {
+      "packet": 6,
+      "seed": 39032,
+      "id": "a060",
+      "error": "Fresh exhaustive semantic review incomplete: a060"
+    },
+    {
+      "packet": 6,
+      "seed": 39033,
+      "id": "a057",
+      "error": "Fresh exhaustive semantic review incomplete: a057"
+    },
+    {
+      "packet": 8,
+      "seed": 39031,
+      "id": "a076",
+      "error": "Fresh exhaustive semantic review incomplete: a076"
+    },
+    {
+      "packet": 8,
+      "seed": 39031,
+      "id": "a079",
+      "error": "Fresh exhaustive semantic review incomplete: a079"
+    },
+    {
+      "packet": 8,
+      "seed": 39032,
+      "id": "a076",
+      "error": "Fresh exhaustive semantic review incomplete: a076"
+    },
+    {
+      "packet": 8,
+      "seed": 39032,
+      "id": "a079",
+      "error": "Fresh exhaustive semantic review incomplete: a079"
+    }
+  ],
+  "grade_disagreements": [
+    {
+      "packet": 3,
+      "seed": 39031,
+      "id": "a028",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 1
+    },
+    {
+      "packet": 3,
+      "seed": 39031,
+      "id": "a028",
+      "intent": "d04",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 3,
+      "seed": 39032,
+      "id": "a028",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 1
+    },
+    {
+      "packet": 3,
+      "seed": 39032,
+      "id": "a028",
+      "intent": "d04",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 3,
+      "seed": 39033,
+      "id": "a028",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 1
+    },
+    {
+      "packet": 3,
+      "seed": 39033,
+      "id": "a028",
+      "intent": "d04",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 4,
+      "seed": 39031,
+      "id": "a038",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 4,
+      "seed": 39032,
+      "id": "a038",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 4,
+      "seed": 39033,
+      "id": "a038",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 2
+    },
+    {
+      "packet": 5,
+      "seed": 39031,
+      "id": "a048",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 5,
+      "seed": 39031,
+      "id": "a048",
+      "intent": "d04",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 5,
+      "seed": 39032,
+      "id": "a048",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 5,
+      "seed": 39032,
+      "id": "a048",
+      "intent": "d04",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 5,
+      "seed": 39033,
+      "id": "a048",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 5,
+      "seed": 39033,
+      "id": "a048",
+      "intent": "d04",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 6,
+      "seed": 39031,
+      "id": "a058",
+      "intent": "d03",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 6,
+      "seed": 39032,
+      "id": "a058",
+      "intent": "d03",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 6,
+      "seed": 39033,
+      "id": "a058",
+      "intent": "d03",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 7,
+      "seed": 39031,
+      "id": "a068",
+      "intent": "d01",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 7,
+      "seed": 39031,
+      "id": "a068",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 1
+    },
+    {
+      "packet": 7,
+      "seed": 39032,
+      "id": "a068",
+      "intent": "d01",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 7,
+      "seed": 39032,
+      "id": "a068",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 1
+    },
+    {
+      "packet": 7,
+      "seed": 39033,
+      "id": "a068",
+      "intent": "d01",
+      "actual": 0,
+      "expected": 3
+    },
+    {
+      "packet": 7,
+      "seed": 39033,
+      "id": "a068",
+      "intent": "d02",
+      "actual": 0,
+      "expected": 1
+    }
+  ],
+  "reviewed_records": 240
+}

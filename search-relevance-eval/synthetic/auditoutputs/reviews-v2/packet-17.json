@@ -1,0 +1,495 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-17",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-17"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "b061", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 26.06)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.99)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 35.35)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-061", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-061."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b062", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 43.38)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 8.64)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.76)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-062", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-062."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b063", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.7)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 38.59)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-063", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-063."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b064", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 35.71)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-064", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-064."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b065", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1016.59)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-065", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-065."}]},
+      "hard_negatives": {"f03": {
+        "reason": "The product is a cold-room probe, but this is an unloaded inventory, explicitly excluding an operating calibration trial. The only documented columns are month and unloaded mass; no calibration error, -20 to +5 C test range, or reference uncertainty is positively documented.",
+        "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1016.59)."}]
+      }},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b066", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 267 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 261.24)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-066", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-066."}]},
+      "hard_negatives": {"f03": {
+        "reason": "Cold-room calibration is the associated activity, not the measured performance. The explicit observed-ledger disclaimer and carton/cost columns prevent treating the calibration wording as evidence of calibration error, a temperature test range or reference uncertainty. The basis denotes observed commercial entries only, not an experimental calibration series.",
+        "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 267 x 90 x 65); advertised retail cost (AUD/unit; e.g. 261.24)."}]
+      }},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b067", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.22)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.04)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-067", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-067."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b068", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.16)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-068", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-068."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b069", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.27)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-069", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-069."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b070", "seed": 39031, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.06)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-070", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-070."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b061", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.22)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 53.28)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 29.93)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-061", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-061."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b062", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 19.57)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.5)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 42.65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-062", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-062."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b063", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.22)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 57.78)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-063", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-063."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b064", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 40.95)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-064", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-064."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b065", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 938.77)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-065", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-065."}]},
+      "hard_negatives": {"f03": {
+        "reason": "A cold-room probe inventory is not an operating calibration study. The text expressly excludes a calibration trial and lists only reporting month and unloaded mass; none of the calibration-error, temperature-range or reference-uncertainty requirements is positively evidenced.",
+        "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 938.77)."}]
+      }},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b066", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 319 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 199.39)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-066", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-066."}]},
+      "hard_negatives": {"f03": {
+        "reason": "The calibration subject wording is qualified by an explicit commercial-ledger, non-performance scope. Carton dimensions and advertised price are observed commercial entries, not calibration error, a calibration test-point range or reference uncertainty. The basis refers only to that observed ledger.",
+        "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 319 x 90 x 65); advertised retail cost (AUD/unit; e.g. 199.39)."}]
+      }},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b067", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.06)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-067", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-067."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b068", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.03)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.25)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-068", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-068."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b069", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.08)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-069", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-069."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b070", "seed": 39032, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.23)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-070", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-070."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b061", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.47)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 51.57)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 29.62)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-061", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-061."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b062", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 20.4)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.76)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 51.34)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-062", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-062."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b063", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 39.99)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.4)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-063", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-063."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b064", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 50.94)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "FLOW-064", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-064."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b065", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "unloaded_bench_inventory", "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1711.19)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-065", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-065."}]},
+      "hard_negatives": {"f03": {
+        "reason": "Probe identity and cold-room equipment do not turn an inventory into calibration performance. The explicit exclusion of an operating calibration trial and month/mass columns establish a different process; calibration error, -20 to +5 C range and reference uncertainty are not documented measurements.",
+        "evidence": [{"field": "description", "quote": "unloaded bench inventory with no operating calibration or circulation trial"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1711.19)."}]
+      }},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b066", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "commercial_ledger_associated_with_coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 123.26)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 332 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-066", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-066."}]},
+      "hard_negatives": {"f03": {
+        "reason": "The shared calibration subject is explicitly qualified as a commercial ledger rather than experimental performance. Its price and carton dimensions cannot evidence probe-reference error, a calibration temperature range or reference-instrument uncertainty. Observational basis here applies to commercial entries only.",
+        "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 123.26); shipping carton dimensions (length x width x height in mm; e.g. 332 x 90 x 65)."}]
+      }},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b067", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.07)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.16)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-067", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-067."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b068", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reference_instrument_uncertainty_C": [{"field": "distributions.0.description", "quote": "reference thermometer uncertainty (degrees C; e.g. 0.03)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}],
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.08)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-068", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-068."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b069", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. 0.14)"}],
+          "minus20_to_plus5_C": [{"field": "distributions.0.description", "quote": "calibration test-point range (-20 to +5 degrees C inclusive)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-069", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-069."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "dataset_id": "b070", "seed": 39033, "reviewer_id": "auditor-packet-17",
+      "contexts": [{
+        "product": {"value": "temperature_probe", "evidence": [{"field": "description", "quote": "temperature sensor probes for cold-room equipment"}]},
+        "process": {"value": "coldroom_calibration", "evidence": [{"field": "description", "quote": "cold-room temperature calibration"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"calibration_error": [{"field": "distributions.0.description", "quote": "probe reading minus reference temperature (degrees C; e.g. -0.09)"}]},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": "SENSE-070", "evidence": [{"field": "description", "quote": "The catalogue model or edition is SENSE-070."}]},
+      "hard_negatives": {}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true, "reviewer_id": "auditor-packet-17",
+      "rationale": "All ten IDs were compared with both other seeds after reading the complete packet. Semantic product, process, observational basis, exact catalogue identity and measured-variable coverage are preserved: b061/b062 have sound, distance and flow; b063 sound and distance only; b064 sound only; b065 inventory month and unloaded mass, explicitly no operating calibration; b066 commercial price/carton ledger, explicitly not experimental performance; b067/b068 error, inclusive -20 to +5 C range and reference uncertainty; b069 error and range only; b070 error only. Omitted variables were not inferred from process labels. Wording variation is substantive in sentence arrangement, paragraphing, description length, title phrasing and whether measurements are in the main description or distribution synopses: for example b061 is distribution-led here but lists columns in the other seeds. All 24 distribution entries in this seed were inspected: CSV synopses explicitly describe comma-separated tables, PDF synopses explicitly describe tables inside PDF, and each lists only the parent record's columns. No format/content contradiction was found. Numeric e.g. values, fictional locations, publishers, titles and optional spatial fields change across seeds; preservation here is of semantic measurement coverage, not identical numeric data or identical provenance. Recurring prose templates and generic distribution titles limit linguistic diversity, but the versions are not merely token substitutions. Review covers supplied projected metadata only, not file bytes; duplicate production queryContext text is omitted by the packet and was not independently re-read. No query paraphrase text is supplied, so paraphrase equivalence and corpus-wide identity coverage cannot be certified from this packet. No no-answer conjunction is positively documented in these records."
+    },
+    "39032": {
+      "passed": true, "reviewer_id": "auditor-packet-17",
+      "rationale": "All ten seed-39032 records were individually reviewed and compared with seeds 39031 and 39033. Exact FLOW-061 through FLOW-064 and SENSE-065 through SENSE-070 identities are unchanged. Products, actual processes and measured-variable sets are unchanged, including the b065 no-calibration exclusion and b066 commercial/non-performance qualification. b063 never gains flow, b064 never gains distance/flow, b069 never gains reference uncertainty, and b070 never gains test range or reference uncertainty. Meaningful variation includes b061's long column-bearing description versus the shorter distribution-led 39031 version; b063 shifts to a short description referring to distributions, whereas 39033 has a long column-bearing description; b069 carries explicit columns here but uses distribution-only columns in 39031. Title phrasing, sentence order, paragraphing and optional fields also differ. All 25 distributions were read: every CSV association is an explicit comma-separated table, every PDF association is an explicit table-containing PDF, and repeated distributions retain the same parent columns and units. Extra distribution counts/formats do not introduce extra measurements. Numerical examples and fictional provenance are not invariant; variable meanings, units and the documented temperature range are. Boilerplate remains conspicuous, so this is meaningful templated variation, not unrestricted natural-language diversity. The completeness assertion is limited to the supplied projected metadata; no downloaded content or omitted duplicate queryContext copy was inspected. Query paraphrase texts and the rest of the corpus are unavailable in this permitted input, preventing paraphrase-equivalence or whole-corpus coverage conclusions."
+    },
+    "39033": {
+      "passed": true, "reviewer_id": "auditor-packet-17",
+      "rationale": "All ten seed-39033 versions were reviewed, not inferred from stable IDs or vocabulary. Relative to both earlier seeds, b061/b062 retain pump sound/distance/flow, b063 sound/distance, b064 sound only; b065 retains probe inventory month/mass with no calibration trial; b066 retains observed commercial price/carton entries rather than performance; b067/b068 retain probe-reference difference, reference uncertainty and inclusive -20 to +5 C range; b069 retains difference/range; b070 difference only. Identities remain the exact catalogue strings, not local row keys, components or similar models. Description order/length/paragraphing and title language vary: b068 becomes a short distribution-led account instead of the earlier column-bearing descriptions; b070 is distribution-led in both 39032 and 39033 but not 39031; b063 has a long column-bearing version here versus the short distribution-led 39032 version. The variation therefore exceeds names alone, although stock subject phrases and padding recur. All 26 distribution entries were inspected, with CSV/comma-separated and PDF/table-containing associations consistent with their parent measurements. Numeric examples and fictional site/publisher metadata vary; this review does not assert preservation of literal numerical observations or provenance. Formats and additional repeated distributions vary without altering measurement coverage. Scope is supplied metadata, not file contents, omitted duplicate queryContext copies, unprovided paraphrase query text or other corpus records. No record supports a frozen no-answer conjunction, and no omitted measurement was promoted into a positive fact."
+    }
+  }
+}

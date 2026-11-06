@@ -1,0 +1,745 @@
+{
+  "mappings": {
+    "properties": {
+      "accessControl": {
+        "properties": {
+          "constraintExemption": {
+            "type": "boolean"
+          },
+          "orgUnitId": {
+            "type": "keyword"
+          },
+          "ownerId": {
+            "type": "keyword"
+          },
+          "preAuthorisedPermissionIds": {
+            "type": "keyword"
+          }
+        },
+        "type": "object"
+      },
+      "accessNotes": {
+        "properties": {
+          "location": {
+            "analyzer": "english",
+            "fields": {
+              "autoComplete": {
+                "analyzer": "magda_edge_ngram",
+                "search_analyzer": "standard",
+                "type": "text"
+              },
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "notes": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          }
+        },
+        "type": "object"
+      },
+      "accrualPeriodicity": {
+        "properties": {
+          "text": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          }
+        },
+        "type": "object"
+      },
+      "accrualPeriodicityRecurrenceRule": {
+        "type": "keyword"
+      },
+      "catalog": {
+        "type": "keyword"
+      },
+      "contactPoint": {
+        "properties": {
+          "identifier": {
+            "type": "keyword"
+          }
+        },
+        "type": "object"
+      },
+      "description": {
+        "analyzer": "english_with_synonym_strip_html",
+        "fields": {
+          "quote": {
+            "analyzer": "quote_partial_match",
+            "type": "text"
+          }
+        },
+        "search_analyzer": "english_without_synonym_for_search",
+        "type": "text"
+      },
+      "distributions": {
+        "properties": {
+          "accessControl": {
+            "properties": {
+              "constraintExemption": {
+                "type": "boolean"
+              },
+              "orgUnitId": {
+                "type": "keyword"
+              },
+              "ownerId": {
+                "type": "keyword"
+              },
+              "preAuthorisedPermissionIds": {
+                "type": "keyword"
+              }
+            },
+            "type": "object"
+          },
+          "accessNotes": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "accessURL": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "byteSize": {
+            "type": "unsigned_long"
+          },
+          "description": {
+            "analyzer": "english_with_synonym_strip_html",
+            "fields": {
+              "quote": {
+                "analyzer": "quote_partial_match",
+                "type": "text"
+              }
+            },
+            "search_analyzer": "english_without_synonym_for_search",
+            "type": "text"
+          },
+          "downloadURL": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "format": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "keyword_lowercase": {
+                "analyzer": "quote",
+                "fielddata": true,
+                "type": "text"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "identifier": {
+            "type": "keyword"
+          },
+          "license": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "mediaType": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "publishingState": {
+            "type": "keyword"
+          },
+          "queryContext": {
+            "doc_values": false,
+            "index": false,
+            "store": true,
+            "type": "keyword"
+          },
+          "queryContextVector": {
+            "dimension": 3,
+            "method": {
+              "engine": "faiss",
+              "name": "hnsw",
+              "parameters": {
+                "ef_construction": 100,
+                "ef_search": 100,
+                "encoder": {
+                  "name": "sq",
+                  "parameters": {
+                    "clip": false,
+                    "type": "fp16"
+                  }
+                },
+                "m": 16
+              },
+              "space_type": "l2"
+            },
+            "mode": "in_memory",
+            "type": "knn_vector"
+          },
+          "rights": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "source": {
+            "properties": {
+              "extras": {
+                "dynamic": "true",
+                "type": "object"
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "name": {
+                "analyzer": "english",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  },
+                  "quote": {
+                    "analyzer": "quote",
+                    "type": "text"
+                  }
+                },
+                "type": "text"
+              },
+              "originalName": {
+                "analyzer": "english",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  },
+                  "quote": {
+                    "analyzer": "quote",
+                    "type": "text"
+                  }
+                },
+                "type": "text"
+              },
+              "originalUrl": {
+                "type": "keyword"
+              },
+              "url": {
+                "type": "keyword"
+              }
+            },
+            "type": "object"
+          },
+          "tenantId": {
+            "type": "keyword"
+          },
+          "title": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "useStorageApi": {
+            "type": "boolean"
+          }
+        },
+        "type": "nested"
+      },
+      "hasQuality": {
+        "type": "boolean"
+      },
+      "identifier": {
+        "type": "keyword"
+      },
+      "indexed": {
+        "type": "date"
+      },
+      "keywords": {
+        "analyzer": "english",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          },
+          "quote": {
+            "analyzer": "quote",
+            "type": "text"
+          }
+        },
+        "type": "text"
+      },
+      "provenance": {
+        "properties": {
+          "affiliatedOrganisationIds": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "isOpenData": {
+            "type": "boolean"
+          },
+          "mechanism": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "sourceSystem": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          }
+        },
+        "type": "object"
+      },
+      "publisher": {
+        "properties": {
+          "acronym": {
+            "analyzer": "keyword",
+            "search_analyzer": "uppercase",
+            "type": "text"
+          },
+          "addrCountry": {
+            "type": "keyword"
+          },
+          "addrPostCode": {
+            "type": "keyword"
+          },
+          "addrState": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "addrStreet": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "addrSuburb": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "aggKeywords": {
+            "fields": {
+              "keyword": {
+                "ignore_above": 256,
+                "type": "keyword"
+              }
+            },
+            "type": "text"
+          },
+          "aggregation_keywords": {
+            "analyzer": "keyword",
+            "type": "text"
+          },
+          "description": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "email": {
+            "type": "keyword"
+          },
+          "identifier": {
+            "type": "keyword"
+          },
+          "imageUrl": {
+            "type": "keyword"
+          },
+          "jurisdiction": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "name": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "keyword_lowercase": {
+                "analyzer": "quote",
+                "fielddata": true,
+                "type": "text"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "phone": {
+            "type": "keyword"
+          },
+          "website": {
+            "type": "keyword"
+          }
+        },
+        "type": "object"
+      },
+      "publishingState": {
+        "type": "keyword"
+      },
+      "quality": {
+        "type": "double"
+      },
+      "queryContext": {
+        "doc_values": false,
+        "index": false,
+        "store": true,
+        "type": "keyword"
+      },
+      "queryContextVector": {
+        "dimension": 3,
+        "method": {
+          "engine": "faiss",
+          "name": "hnsw",
+          "parameters": {
+            "ef_construction": 100,
+            "ef_search": 100,
+            "encoder": {
+              "name": "sq",
+              "parameters": {
+                "clip": false,
+                "type": "fp16"
+              }
+            },
+            "m": 16
+          },
+          "space_type": "l2"
+        },
+        "mode": "in_memory",
+        "type": "knn_vector"
+      },
+      "source": {
+        "properties": {
+          "extras": {
+            "dynamic": "true",
+            "type": "object"
+          },
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "originalName": {
+            "analyzer": "english",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              },
+              "quote": {
+                "analyzer": "quote",
+                "type": "text"
+              }
+            },
+            "type": "text"
+          },
+          "originalUrl": {
+            "type": "keyword"
+          },
+          "url": {
+            "type": "keyword"
+          }
+        },
+        "type": "object"
+      },
+      "spatial": {
+        "properties": {
+          "geoJson": {
+            "type": "geo_shape"
+          }
+        },
+        "type": "object"
+      },
+      "temporal": {
+        "properties": {
+          "end": {
+            "properties": {
+              "date": {
+                "type": "date"
+              },
+              "text": {
+                "type": "text"
+              }
+            },
+            "type": "object"
+          },
+          "start": {
+            "properties": {
+              "date": {
+                "type": "date"
+              },
+              "text": {
+                "type": "text"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "tenantId": {
+        "type": "keyword"
+      },
+      "themes": {
+        "analyzer": "english_with_synonym",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          },
+          "quote": {
+            "analyzer": "quote_partial_match",
+            "type": "text"
+          }
+        },
+        "search_analyzer": "english_without_synonym_for_search",
+        "type": "text"
+      },
+      "title": {
+        "analyzer": "english",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          },
+          "quote": {
+            "analyzer": "quote",
+            "type": "text"
+          }
+        },
+        "type": "text"
+      },
+      "years": {
+        "type": "keyword"
+      }
+    }
+  },
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "english_with_synonym": {
+          "filter": ["lowercase", "english_possessive_stemmer", "light_english_stemmer", "synonym", "english_possessive_stemmer", "english_stop"],
+          "tokenizer": "standard",
+          "type": "custom"
+        },
+        "english_with_synonym_strip_html": {
+          "char_filter": ["html_strip"],
+          "filter": ["lowercase", "english_possessive_stemmer", "light_english_stemmer", "synonym", "english_possessive_stemmer", "english_stop"],
+          "tokenizer": "standard",
+          "type": "custom"
+        },
+        "english_without_synonym_for_search": {
+          "filter": ["lowercase", "english_possessive_stemmer", "light_english_stemmer", "english_stop"],
+          "tokenizer": "standard",
+          "type": "custom"
+        },
+        "magda_edge_ngram": {
+          "filter": ["lowercase", "magda_edge_ngram_filter"],
+          "tokenizer": "standard",
+          "type": "custom"
+        },
+        "quote": {
+          "filter": ["lowercase"],
+          "tokenizer": "keyword",
+          "type": "custom"
+        },
+        "quote_partial_match": {
+          "filter": ["lowercase"],
+          "tokenizer": "standard",
+          "type": "custom"
+        },
+        "uppercase": {
+          "filter": ["uppercase"],
+          "tokenizer": "keyword",
+          "type": "custom"
+        }
+      },
+      "filter": {
+        "english_possessive_stemmer": {
+          "name": "possessive_english",
+          "type": "stemmer"
+        },
+        "english_stop": {
+          "stopwords": "_english_",
+          "type": "stop"
+        },
+        "light_english_stemmer": {
+          "name": "light_english",
+          "type": "stemmer"
+        },
+        "magda_edge_ngram_filter": {
+          "max_gram": 20,
+          "min_gram": 1,
+          "type": "edge_ngram"
+        },
+        "synonym": {
+          "format": "wordnet",
+          "synonyms_path": "analysis/wn_s.pl",
+          "type": "synonym"
+        }
+      }
+    },
+    "index": {
+      "knn": true,
+      "number_of_replicas": 0,
+      "number_of_shards": 1,
+      "search.idle.after": "60s"
+    }
+  }
+}

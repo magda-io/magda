@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "issue": 3903,
+  "amendment": "Title-only primary metadata and mandatory production-derived queryContext compatibility",
+  "original_registration_commit": "c9139bd4b419a9c815d3135d57b8c42d4f54317f",
+  "original_archive": "registration-history/v1",
+  "independent_spec_review_passed": true,
+  "reviewer_context": "c8e8b5d6-4def-410a-9671-3f1a63ea9fcd",
+  "queries_and_grades_unchanged": true,
+  "corpus_generation_has_not_started": true,
+  "benchmark_embeddings_or_search_have_not_started": true,
+  "generator_confirmation": "B confirmed only generate.py/test code had been written; no imports, generator calls, test generation, corpus, qrels or sample bytes existed before this revision.",
+  "affected_record_ids": ["b029", "b030"],
+  "allowed_changes": [
+    "Remove queryContext from forbidden_scope_if_title_only for b029 and b030 only.",
+    "Require exact unredacted production Title+Description derivation; the title identifier may repeat in that derived embedding input, not independently authored description/keywords/publisher/distributions.",
+    "Clarify the same distinction in protocol, rubric and architecture notes."
+  ],
+  "unchanged": ["all 75 query texts", "all relevance criteria and 8100 intent-document grades", "authoritative targets and near-identifier IDs", "all 180 IDs and canonical claims", "all seeds", "all systems and weights", "all decision gates", "distribution-only scope"],
+  "rationale": "The initial title-only rule prohibited the identifier in queryContext while production constructs queryContext from the title. Redacting it would change vector inputs unlike production and create an unfair comparison. The revision repairs generation compatibility before any corpus generation without changing the frozen information need or expected relevance.",
+  "production_formatter": "ElasticSearchIndexer.scala:755-775 constructDatasetQueryContext / constructDistributionQueryContext",
+  "real_authorization_fixture_note": "The seven existing authorization-service tests ran after the original target-query freeze, before this revision; they are unrelated baseline correctness fixtures, not generated benchmark records or target-query scoring."
+}

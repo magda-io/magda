@@ -1,0 +1,207 @@
+{
+  "summary": {
+    "39031": {
+      "sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "dataset_count": 180,
+      "repeated_sentence_records": []
+    },
+    "39032": {
+      "sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "dataset_count": 180,
+      "repeated_sentence_records": []
+    },
+    "39033": {
+      "sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "dataset_count": 180,
+      "repeated_sentence_records": []
+    },
+    "variation": {
+      "length_variation_records": 173,
+      "distribution_variation_records": 139
+    }
+  },
+  "structural_failures": [],
+  "examples": {
+    "39031": [
+      {
+        "identifier": "a001",
+        "title": "The cacao trees investigation at Silver Creek Central",
+        "description": "This deposit concerns field pest management trials of cacao trees grown as a crop at Silver Creek Central.\n\nVariables documented in the files are treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14); applied pest-control treatment (category: neem oil / untreated).\n\nThe described study uses empirical observations from physical samples.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe notes distinguish blanks from entries recorded as zero.\n\nLocal row keys are not catalogue product identifiers.\n\nRows retain local observation keys for reuse.\n\nThe release is arranged for comparison within this study.",
+        "distribution_columns": [
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14); applied pest-control treatment (category: neem oil / untreated). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14); applied pest-control treatment (category: neem oil / untreated). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14); applied pest-control treatment (category: neem oil / untreated). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a021",
+        "title": "Milk chocolate assessed in the Elm Crossing Central series",
+        "description": "At Elm Crossing Central, the study covers solid milk chocolate bars during wrapping and package performance assessment. Variables documented in the files are wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29). Entries describe an observational study rather than model predictions. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. Each table uses the same local observation key. A field guide explains categorical entries and missing cells.",
+        "distribution_columns": [
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a073",
+        "title": "Chocolate milk at Elm Crossing North: technical account",
+        "description": "At Elm Crossing North, the study covers liquid chocolate-flavoured dairy milk beverage during refrigerated shelf-life assessment.\n\nThe distribution synopses document the measured columns and units.\n\nThe described study uses empirical observations from physical samples.\n\nColumn headings follow the notation used by the depositor.\n\nReaders should retain the supplied units when combining tables.\n\nLocal row keys are not catalogue product identifiers.",
+        "distribution_columns": [
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 5.47); elapsed time until observed spoilage (days; e.g. 14.49). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 5.47); elapsed time until observed spoilage (days; e.g. 14.49). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 5.47); elapsed time until observed spoilage (days; e.g. 14.49). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "b001",
+        "title": "Wet-road traction as recorded at Ivy Brook Central",
+        "description": "Entries describe an observational study rather than model predictions.\n\nAt Ivy Brook Central, the study covers complete running shoes for road use during wet pavement traction testing. The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120.\n\nThe distribution synopses document the measured columns and units.\n\nEach table uses the same local observation key.\n\nThe release is arranged for comparison within this study.",
+        "distribution_columns": [
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.68); wet sliding friction coefficient (dimensionless; e.g. 0.56); water-film depth on pavement (mm; e.g. 1.71). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.68); wet sliding friction coefficient (dimensionless; e.g. 0.56); water-film depth on pavement (mm; e.g. 1.71). Tables are supplied inside a PDF document.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.68); wet sliding friction coefficient (dimensionless; e.g. 0.56); water-film depth on pavement (mm; e.g. 1.71). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b013",
+        "title": "Hydraulic pump acceptance trials",
+        "description": "The released table lists operating sound pressure level (dB(A); e.g. 36.85); hydraulic fluid flow rate (litres/minute; e.g. 15.25); microphone distance from operating pump (m; e.g. 1.98).\n\nThe Quartz Field North series documents indoor low-noise testing during hydraulic circulation, focusing on hydraulic fluid circulation pumps. The catalogue model or edition is PUMP-H71.\n\nEntries describe an observational study rather than model predictions.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nThe institutional catalogue provides this synopsis for potential reuse.\n\nSupporting notes explain the conventions used in this edition.\n\nLocal row keys are not catalogue product identifiers.",
+        "distribution_columns": [
+          "Deposited columns: operating sound pressure level (dB(A); e.g. 36.85); hydraulic fluid flow rate (litres/minute; e.g. 15.25); microphone distance from operating pump (m; e.g. 1.98). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: operating sound pressure level (dB(A); e.g. 36.85); hydraulic fluid flow rate (litres/minute; e.g. 15.25); microphone distance from operating pump (m; e.g. 1.98). Tables are supplied inside a PDF document.",
+          "Deposited columns: operating sound pressure level (dB(A); e.g. 36.85); hydraulic fluid flow rate (litres/minute; e.g. 15.25); microphone distance from operating pump (m; e.g. 1.98). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "b067",
+        "title": "Exploring cold-room calibration through Kestrel Point Upper records",
+        "description": "Variables documented in the files are probe reading minus reference temperature (degrees C; e.g. 0.22); reference thermometer uncertainty (degrees C; e.g. 0.04); calibration test-point range (-20 to +5 degrees C inclusive).\n\nEntries describe an observational study rather than model predictions.\n\nThe Kestrel Point Upper series documents cold-room temperature calibration, focusing on temperature sensor probes for cold-room equipment. The catalogue model or edition is SENSE-067.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.",
+        "distribution_columns": [
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.22); reference thermometer uncertainty (degrees C; e.g. 0.04); calibration test-point range (-20 to +5 degrees C inclusive). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.22); reference thermometer uncertainty (degrees C; e.g. 0.04); calibration test-point range (-20 to +5 degrees C inclusive). Tables are supplied inside a PDF document.",
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.22); reference thermometer uncertainty (degrees C; e.g. 0.04); calibration test-point range (-20 to +5 degrees C inclusive). Tables are supplied inside a PDF document."
+        ]
+      }
+    ],
+    "39032": [
+      {
+        "identifier": "a001",
+        "title": "Looking back on Oak Terrace Upper field pest trials",
+        "description": "This deposit concerns field pest management trials of cacao trees grown as a crop at Oak Terrace Upper.\n\nThe described study uses empirical observations from physical samples.\n\nThe distribution synopses document the measured columns and units.\n\nA field guide explains categorical entries and missing cells.\n\nThe institutional catalogue provides this synopsis for potential reuse.",
+        "distribution_columns": [
+          "Deposited columns: insects counted per inspected tree (count; e.g. 10); applied pest-control treatment (category: neem oil / untreated); treatment application volume (litres/hectare; e.g. 10.03). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: insects counted per inspected tree (count; e.g. 10); applied pest-control treatment (category: neem oil / untreated); treatment application volume (litres/hectare; e.g. 10.03). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a021",
+        "title": "Milk chocolate records deposited by Alderbank Upper",
+        "description": "Entries describe an observational study rather than model predictions. At Alderbank Upper, the study covers solid milk chocolate bars during wrapping and package performance assessment. Variables documented in the files are failed wrapper seals (percent of seals tested; e.g. 5.24); wrapper oxygen transmission (cm3/m2/day; e.g. 17.85); wrapper material examined (category: foil / coated paper). Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The deposit contains no personal names or participant details. The notes distinguish blanks from entries recorded as zero.",
+        "distribution_columns": [
+          "Deposited columns: failed wrapper seals (percent of seals tested; e.g. 5.24); wrapper oxygen transmission (cm3/m2/day; e.g. 17.85); wrapper material examined (category: foil / coated paper). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: failed wrapper seals (percent of seals tested; e.g. 5.24); wrapper oxygen transmission (cm3/m2/day; e.g. 17.85); wrapper material examined (category: foil / coated paper). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a073",
+        "title": "Chocolate milk assessed in the Alderbank East series",
+        "description": "Variables documented in the files are elapsed time until observed spoilage (days; e.g. 6.41); storage chamber temperature (degrees C; e.g. 4.37).\n\nPhysical observations were recorded, not process simulations.\n\nThe Alderbank East series documents refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nThe release is arranged for comparison within this study.\n\nThe edition preserves the original row ordering.\n\nSupporting notes explain the conventions used in this edition.",
+        "distribution_columns": [
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 6.41); storage chamber temperature (degrees C; e.g. 4.37). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 6.41); storage chamber temperature (degrees C; e.g. 4.37). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "b001",
+        "title": "The running shoes investigation at Elm Crossing Upper",
+        "description": "Variables documented in the files are tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28).\n\nEntries describe an observational study rather than model predictions.\n\nA separate investigation at Elm Crossing Upper examines complete running shoes for road use through wet pavement traction testing. The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.",
+        "distribution_columns": [
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28). Tables are supplied inside a PDF document.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b013",
+        "title": "Hydraulic pump acceptance trials",
+        "description": "Entries describe an observational study rather than model predictions.\n\nA separate investigation at Maple Quay East examines hydraulic fluid circulation pumps through indoor low-noise testing during hydraulic circulation. The catalogue model or edition is PUMP-H71.\n\nThe released table lists microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4).\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe release is arranged for comparison within this study.\n\nThe notes distinguish blanks from entries recorded as zero.",
+        "distribution_columns": [
+          "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Tables are supplied inside a PDF document.",
+          "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b067",
+        "title": "Granite Bend North observation archive for temperature probes",
+        "description": "This deposit concerns cold-room temperature calibration of temperature sensor probes for cold-room equipment at Granite Bend North. The catalogue model or edition is SENSE-067.\n\nEntries describe an observational study rather than model predictions.\n\nRecorded columns comprise calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06).\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe release is arranged for comparison within this study.\n\nThe notes distinguish blanks from entries recorded as zero.\n\nColumn headings follow the notation used by the depositor.\n\nThe institutional catalogue provides this synopsis for potential reuse.",
+        "distribution_columns": [
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06). Tables are supplied inside a PDF document.",
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      }
+    ],
+    "39033": [
+      {
+        "identifier": "a001",
+        "title": "A practical examination of field pest trials at Quartz Field Lower",
+        "description": "The distribution synopses document the measured columns and units.\n\nPhysical observations were recorded, not process simulations.\n\nThis deposit concerns field pest management trials of cacao trees grown as a crop at Quartz Field Lower.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.",
+        "distribution_columns": [
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 6.48); insects counted per inspected tree (count; e.g. 26); applied pest-control treatment (category: neem oil / untreated). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 6.48); insects counted per inspected tree (count; e.g. 26); applied pest-control treatment (category: neem oil / untreated). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 6.48); insects counted per inspected tree (count; e.g. 26); applied pest-control treatment (category: neem oil / untreated). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a021",
+        "title": "Inside the Cedar Reach Lower wrapper assessment study",
+        "description": "The Cedar Reach Lower series documents wrapping and package performance assessment, focusing on solid milk chocolate bars.\n\nThe distribution synopses document the measured columns and units.\n\nThe described study uses empirical observations from physical samples.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.",
+        "distribution_columns": [
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 6.81); wrapper oxygen transmission (cm3/m2/day; e.g. 12.98). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 6.81); wrapper oxygen transmission (cm3/m2/day; e.g. 12.98). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a073",
+        "title": "Cedar Reach West: a refrigerated shelf life field report",
+        "description": "Physical observations were recorded, not process simulations.\n\nThe distribution synopses document the measured columns and units.\n\nThe Cedar Reach West series documents refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage.\n\nA field guide explains categorical entries and missing cells.\n\nThe release is arranged for comparison within this study.\n\nColumn headings follow the notation used by the depositor.\n\nEach table uses the same local observation key.",
+        "distribution_columns": [
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 6.11); storage chamber temperature (degrees C; e.g. 2.42). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 6.11); storage chamber temperature (degrees C; e.g. 2.42). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 6.11); storage chamber temperature (degrees C; e.g. 2.42). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "b001",
+        "title": "Wet-road traction: an account from Granite Bend Lower",
+        "description": "The Granite Bend Lower series documents wet pavement traction testing, focusing on complete running shoes for road use. The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120. The described study uses empirical observations from physical samples. The released table lists water-film depth on pavement (mm; e.g. 0.68); wet sliding friction coefficient (dimensionless; e.g. 0.57); tested pavement surface roughness (mm; e.g. 1.41). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. Local row keys are not catalogue product identifiers.",
+        "distribution_columns": [
+          "Deposited columns: water-film depth on pavement (mm; e.g. 0.68); wet sliding friction coefficient (dimensionless; e.g. 0.57); tested pavement surface roughness (mm; e.g. 1.41). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: water-film depth on pavement (mm; e.g. 0.68); wet sliding friction coefficient (dimensionless; e.g. 0.57); tested pavement surface roughness (mm; e.g. 1.41). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b013",
+        "title": "Hydraulic pump acceptance trials",
+        "description": "Entries describe an observational study rather than model predictions. The distribution synopses document the measured columns and units. The Oak Terrace West series documents indoor low-noise testing during hydraulic circulation, focusing on hydraulic fluid circulation pumps. The catalogue model or edition is PUMP-H71. Rows retain local observation keys for reuse. Column headings follow the notation used by the depositor.",
+        "distribution_columns": [
+          "Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 16.49); microphone distance from operating pump (m; e.g. 2.41); operating sound pressure level (dB(A); e.g. 48.66). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 16.49); microphone distance from operating pump (m; e.g. 2.41); operating sound pressure level (dB(A); e.g. 48.66). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b067",
+        "title": "The Ivy Brook South series on temperature probes",
+        "description": "At Ivy Brook South, the study covers temperature sensor probes for cold-room equipment during cold-room temperature calibration. The catalogue model or edition is SENSE-067.\n\nRecorded columns comprise reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16).\n\nThe described study uses empirical observations from physical samples.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe institutional catalogue provides this synopsis for potential reuse.\n\nA field guide explains categorical entries and missing cells.\n\nRows retain local observation keys for reuse.",
+        "distribution_columns": [
+          "Deposited columns: reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16). Tables are supplied inside a PDF document.",
+          "Deposited columns: reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16). Tables are supplied inside a PDF document."
+        ]
+      }
+    ]
+  },
+  "actual_text_label_validation_passed": false
+}

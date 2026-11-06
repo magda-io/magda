@@ -1,0 +1,255 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-07",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-07"
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v3/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v3/seed-39032.jsonl",
+      "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"
+    },
+    "39033": {
+      "path": ".local/corpora-v3/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "adjudication_notes": {
+    "scope": "Pre-score semantic adjudication of a068 only, independently reconsidered in all three seeds by its original reviewer. No grades, rankings, retrieval outputs or expected-label sidecars were used.",
+    "preserved_raw_review": "search-relevance-eval/synthetic/auditoutputs/reviews-v2/packet-07.json",
+    "actual_metadata_read": "search-relevance-eval/synthetic/auditoutputs/packets-v2/packet-07.json",
+    "rules_read_directly": [
+      "search-relevance-eval/synthetic/relevance-rubric.md",
+      "search-relevance-eval/synthetic/validation-prompt.md"
+    ],
+    "source_verification_limit": "The V3 paths and hashes are supplied source identifiers, not independently computed or verified here. The assertion that the a068 rows are unchanged between V2, V3 and V4 was supplied by C; this reviewer re-read the complete actual a068 primary fields in its own V2 packet, not the corpus files. Conclusions apply to those reviewed fields, conditional on the supplied row-identity assertion.",
+    "changed_observation": "The original review correctly recognized commercial-ledger observations and expressly noted the related reconstitution activity, but represented them in one combined process context. On independently re-reading the full rubric and updated observation-basis clarification, I separate two positively documented contexts. The administrative context retains the original commercial-ledger process and administrative facts, with its basis corrected from representative_measurements_not_simulation to observed_administrative_records. A distinct hot_drink_reconstitution context has contextual_topic_only basis and an empty facts object. Each actual description explicitly relates the drinking-chocolate powder to hot-drink reconstitution bench testing with water; this is a subject statement, not merely a matching word. The ledger qualification denies experimental performance reporting, not that documented subject association. This additional topic context is defensible in all three seeds without inventing experimental measurements.",
+    "unchanged_observation": "No seed documents powder-dose, water-temperature or dissolution-time measurements for a068. Reporting months, dispatched consignments and invoiced prices remain administrative variables, never experimental variables. The primary s09 measurement mismatch therefore remains. For a short ambiguous diagnostic, the frozen rubric does not require experimental measurements, CSV or a non-simulation basis; the documented subject context must not be discarded solely for lacking experimental columns. This observation does not assign any diagnostic grade.",
+    "limitations": "Metadata-level association and distribution consistency only; no downloadable bytes, independent corpus hashes or omitted duplicate queryContext text were inspected. The original raw review is retained unchanged; this file records the scoped clarification rather than replacing that historical review."
+  },
+  "record_reviews": [
+    {
+      "seed": 39031,
+      "dataset_id": "a068",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [
+        {
+          "product": {
+            "value": "drinking_chocolate_powder",
+            "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]
+          },
+          "process": {
+            "value": "commercial_ledger_associated_with_hot_drink_reconstitution",
+            "evidence": [
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+              {"field": "description", "quote": "At Hazel Ridge Outer, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water."}
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 37)"}],
+            "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 20.34)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "drinking_chocolate_powder",
+            "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]
+          },
+          "process": {
+            "value": "hot_drink_reconstitution",
+            "evidence": [
+              {"field": "description", "quote": "At Hazel Ridge Outer, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water."},
+              {"field": "keywords.1", "quote": "hot-water reconstitution"}
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {"field": "description", "quote": "At Hazel Ridge Outer, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water."},
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The description positively documents hot-drink reconstitution as the contextual subject and drinking-chocolate powder as the product. Nevertheless, the deposited observations are expressly a commercial ledger, not experimental performance, and its columns are month, consignment count and unit price. No powder dose, water temperature or dissolution time is documented as measured. The additional contextual_topic_only context does not satisfy the primary experimental-measurement requirement. Its lack of experiments is not a reason to deny its explicitly documented subject for a short ambiguous diagnostic with no measurement requirement.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 37); invoiced unit price (AUD/unit; e.g. 20.34)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a068",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [
+        {
+          "product": {
+            "value": "drinking_chocolate_powder",
+            "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]
+          },
+          "process": {
+            "value": "commercial_ledger_associated_with_hot_drink_reconstitution",
+            "evidence": [
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+              {"field": "description", "quote": "The Dune Valley Lower series documents hot-drink reconstitution bench testing with water, focusing on drinking chocolate powder intended for hot beverages."}
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 40)"}],
+            "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 5.77)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "drinking_chocolate_powder",
+            "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]
+          },
+          "process": {
+            "value": "hot_drink_reconstitution",
+            "evidence": [
+              {"field": "description", "quote": "The Dune Valley Lower series documents hot-drink reconstitution bench testing with water, focusing on drinking chocolate powder intended for hot beverages."},
+              {"field": "keywords.1", "quote": "hot-water reconstitution"}
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {"field": "description", "quote": "The Dune Valley Lower series documents hot-drink reconstitution bench testing with water, focusing on drinking chocolate powder intended for hot beverages."},
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The series explicitly documents the hot-drink reconstitution subject, so contextual subject association is positively supported even though experimental performance is excluded. Its actual files contain administrative reporting month, price and consignment counts, with none of the three experimental preparation measurements. The administrative and topic contexts must remain distinct. The primary experimental requirement is not met by either administrative variables or an empty-facts topic context; this does not impose an experimental requirement on a short ambiguous diagnostic.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 5.77); dispatched consignments (count; e.g. 40)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a068",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [
+        {
+          "product": {
+            "value": "drinking_chocolate_powder",
+            "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]
+          },
+          "process": {
+            "value": "commercial_ledger_associated_with_hot_drink_reconstitution",
+            "evidence": [
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+              {"field": "description", "quote": "At Fern Hollow Central, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water."}
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 62)"}],
+            "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 13.33)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "drinking_chocolate_powder",
+            "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]
+          },
+          "process": {
+            "value": "hot_drink_reconstitution",
+            "evidence": [
+              {"field": "description", "quote": "At Fern Hollow Central, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water."},
+              {"field": "keywords.1", "quote": "hot-water reconstitution"}
+            ]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {"field": "description", "quote": "At Fern Hollow Central, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water."},
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "An affirmative study-subject sentence independently supports the hot-drink reconstitution topic despite the prior ledger qualification. That qualification excludes experimental performance, not the topic association. Actual deposited columns remain consignments, prices and months, so no powder dose, water temperature or dissolution-time measurement is inferred. This preserves the primary measurement mismatch while allowing the separately supported topic-only context to be considered under the measurement-free ambiguous-diagnostic rule.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: dispatched consignments (count; e.g. 62); invoiced unit price (AUD/unit; e.g. 13.33); reporting interval (calendar month; e.g. 2024-06)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-07",
+      "rationale": "Scoped comparison of a068 with the other two seed versions preserves my original observation of commercial month/consignments/price data and no experimental measurements. This version explicitly places drinking-chocolate powder during hot-drink reconstitution bench testing with water at Hazel Ridge Outer; its next paragraph identifies the actual observations as a commercial ledger. Thus both the administrative process and the separate topic-only preparation context are supported. CSV plus two JSON distributions repeat the same three administrative columns, units and examples; no distribution introduces experimental variables. The title describes an account of hot-water reconstitution and the keyword also supports that subject. Unlike the compact 39032 description, this version includes the variable list in its main description and additional reuse prose. The context sentence, fictional location, publisher, example consignment count and price vary, without changing the two-context interpretation. Numerical examples are not claimed invariant across seeds. This scoped clarification adds a context and corrects the administrative basis; it does not retract the original measurement mismatch or rewrite the preserved raw review."
+    },
+    "39032": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-07",
+      "rationale": "For a068, the compact Dune Valley Lower series sentence affirmatively documents the hot-drink reconstitution subject and drinking-chocolate powder, while the later commercial-ledger sentence expressly excludes experimental performance. Both contexts are therefore present, independently of any required diagnostic label. The two distributions are CSV and JSON with the same reporting month, unit price and consignment columns and identical within-record examples. The metadata lacks the extra JSON distribution and the expanded reuse prose seen in 39031; it also omits the optional spatial text. These are genuine seeded format/length/optional-field changes, not a new experimental claim. The administrative facts and topic association remain consistent with both other seeds; prices, counts, location and publisher are seed-specific. The original ledger observation remains valid, with a truthful administrative basis and a separately documented empty-facts topical context now recorded."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-07",
+      "rationale": "The Fern Hollow Central version puts the commercial-ledger qualification before the positive sentence placing drinking-chocolate powder during hot-drink reconstitution bench testing with water. Clause order changes do not negate that explicit topical statement. As in the other seeds, administrative observations and the separately documented preparation subject coexist, with no evidence of experimental dose, temperature or dissolution time. CSV and JSON descriptions agree on consignment count, unit price and calendar month, including examples and units, and their formats match the advertised content. Variable order, title phrasing, fictional site and publisher, example values and optional spatial text differ from other versions without changing either context. The prior commercial-ledger rationale is retained in substance; this adjudication corrects the basis vocabulary and makes the already documented preparation topic independently explicit, with facts empty for that context."
+    }
+  }
+}

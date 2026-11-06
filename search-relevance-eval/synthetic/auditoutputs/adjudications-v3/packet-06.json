@@ -1,0 +1,232 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-06",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-06"
+  },
+  "sources": {
+    "39031": {"path": ".local/corpora-v3/seed-39031.jsonl", "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"},
+    "39032": {"path": ".local/corpora-v3/seed-39032.jsonl", "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"},
+    "39033": {"path": ".local/corpora-v3/seed-39033.jsonl", "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"}
+  },
+  "record_reviews": [
+    {
+      "seed": 39031,
+      "dataset_id": "a056",
+      "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_production_throughput", "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Alderbank West)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 34)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s08": {
+          "reason": "The actual body expressly distinguishes production throughput from sanitation verification. Site, month and completed-operation count document throughput, not completed cleaning cycles, microbial swabs or residue mass. The broad factory title does not erase that explicit process distinction.",
+          "evidence": [{"field": "description", "quote": "factory production throughput recording rather than sanitation verification"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 34)"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a058",
+      "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+          "process": {"value": "commercial_ledger", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 18.56)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 67)"}],
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+          "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "At Oak Terrace Outer, the study covers chocolate confectionery factory production equipment during sanitation and equipment cleaning verification."}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "At Oak Terrace Outer, the study covers chocolate confectionery factory production equipment during sanitation and equipment cleaning verification."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s01": {
+          "reason": "Neither the administrative ledger nor the explicit contextual factory-sanitation subject is cacao field pest management. Prices, consignments and month do not establish pest counts, treatment or application rate.",
+          "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment during sanitation and equipment cleaning verification"}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 18.56); dispatched consignments (count; e.g. 67); reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "s08": {
+          "reason": "Factory sanitation is positively documented as the associated topic, not as observed experimental performance. The actual released observations are commercial columns; none of the three required sanitation measurements is documented. This remains a decisive distinction for the measured-data intent, but is not a reason to discard the expressly stated factory-sanitation topic for a broad short diagnostic without a measurement requirement.",
+          "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "At Oak Terrace Outer, the study covers chocolate confectionery factory production equipment during sanitation and equipment cleaning verification."}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 18.56); dispatched consignments (count; e.g. 67); reporting interval (calendar month; e.g. 2024-06)"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a058",
+      "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+          "process": {"value": "commercial_ledger", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 10.94)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 63)"}],
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+          "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "This deposit concerns sanitation and equipment cleaning verification of chocolate confectionery factory production equipment at Kestrel Point Lower."}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "This deposit concerns sanitation and equipment cleaning verification of chocolate confectionery factory production equipment at Kestrel Point Lower."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s01": {
+          "reason": "The actual subject is a factory-sanitation-associated commercial ledger, not cacao crop field pest management. No crop pest counts, treatment or treatment application rate is documented in either context.",
+          "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification of chocolate confectionery factory production equipment"}, {"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 63); invoiced unit price (AUD/unit; e.g. 10.94); reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "s08": {
+          "reason": "The description explicitly supplies the factory-sanitation topic while distinguishing the observations as a commercial ledger, not experimental performance. The three released administrative columns do not establish cleaning, swab or residue measurements. The measured-data mismatch therefore coexists with defensible contextual topical support for a short diagnostic imposing no experimental requirement.",
+          "evidence": [{"field": "description", "quote": "This deposit concerns sanitation and equipment cleaning verification of chocolate confectionery factory production equipment at Kestrel Point Lower."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 63); invoiced unit price (AUD/unit; e.g. 10.94); reporting interval (calendar month; e.g. 2024-06)"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a060",
+      "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+        "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+          "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 63.25)"}],
+          "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 9.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a058",
+      "reviewer_id": "auditor-packet-06",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+          "process": {"value": "commercial_ledger", "evidence": [{"field": "description", "quote": "observed commercial ledger associated with the activity, not a report of experimental performance"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {
+            "invoiced_unit_price_aud_per_unit": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.2)"}],
+            "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 33)"}],
+            "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+          "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "At Maple Quay Central, the study covers chocolate confectionery factory production equipment during sanitation and equipment cleaning verification."}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "At Maple Quay Central, the study covers chocolate confectionery factory production equipment during sanitation and equipment cleaning verification."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s01": {
+          "reason": "Both the administrative observations and their explicitly stated context concern factory activity, not cacao crop field pest management. Unit prices, reporting month and consignment count are not pest counts, treatment or application rate.",
+          "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment during sanitation and equipment cleaning verification"}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.2); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 33)"}]
+        },
+        "s08": {
+          "reason": "Factory-sanitation context is explicit, but the observation basis is commercial ledger rather than experimental performance. None of the actual administrative columns measures the required sanitation variables. This distinction defeats an experimental-measurement claim without erasing the explicit topic for a broad diagnostic lacking that requirement.",
+          "evidence": [{"field": "description", "quote": "At Maple Quay Central, the study covers chocolate confectionery factory production equipment during sanitation and equipment cleaning verification."}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 21.2); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 33)"}]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    }
+  ],
+  "adjudication_notes": {
+    "scope": "Original reviewer's pre-search reconsideration of exactly five unchanged row assignments: a058 at all three seeds, a056 at 39031 and a060 at 39032. The original reviews-v2/packet-06.json is preserved. This is not a fresh independent reviewer context. No patched a057 row is adjudicated here. No expected per-record claims, qrels, retrieval code, rankings or results were inspected.",
+    "source_binding_limitation": "The v3 paths and hashes are supplied bindings, not hashes computed by this reviewer. Row identity across v2/v3/v4 was reported as independently checked by the requester; this reviewer inspected the actual v2 packet fields for the five unchanged assignments and did not open corpus files or independently verify whole-corpus hashes. The complete packet had already been read through line 2305 in the original audit; the five target field sets were reread for this adjudication. The frozen rubric was read directly through its end and the current validation prompt through its observation-schema clarification.",
+    "administrative_context_decision": "For each a058 row, the prior basis value representative_measurements_not_simulation was too broad and obscured the explicit administrative nature of the data. It is corrected to observed_administrative_records for the commercial_ledger process. A separate factory_sanitation context with basis contextual_topic_only and empty facts is independently justified: each actual description expressly says that the deposit concerns, or the study covers, production equipment during sanitation and equipment cleaning verification, and separately calls the data a commercial ledger associated with that activity. This is more than a product keyword or an inferred ontological attribute. It is a positive topic statement, qualified by the absence of experimental performance. The direct frozen rubric's exploratory-ambiguity section imposes no requested measurements, CSV or simulation exclusion on short diagnostics. Therefore the topic can be retained for the broad factory reading, including d03, without manufacturing sanitation measurements or satisfying the distinct scored s08 empirical requirement. No grade is assigned here. Administrative price, consignment and calendar-month facts are retained only in the administrative context; no cleaning, swab or residue facts are added. All three CSV/JSON distribution sets consistently describe the administrative columns. A true distribution_content_verified in the contextual context means their association with the ledger was checked and no experimental content is claimed, not that a separate sanitation-measurement distribution exists.",
+    "title_decisions": [
+      {
+        "seed": 39031,
+        "dataset_id": "a056",
+        "changed_judgment": "The original unresolved title-format concern is downgraded to a nonblocking metadata-specificity limitation, not semantic uncertainty. The title uses an ordinary product noun plus a named study location, not an intent ID, grade, expected-outcome marker or explicit relevance category. The body and production-throughput keyword independently identify the process; the broad factory wording is shared with different processes in this packet and is not a unique outcome shortcut. Formulaic wording is a real presentation weakness, but this individual title with its full body does not make the product/process/facts uncertain or establish a prohibited label shortcut. Accordingly semantic_review_passed changes from false to true. This does not assert that all title templates across the full corpus have been cleared.",
+        "evidence": [{"field": "title", "quote": "Confectionery factory: the Alderbank West assessment"}, {"field": "description", "quote": "A separate investigation at Alderbank West examines chocolate confectionery factory production equipment through factory production throughput recording rather than sanitation verification."}, {"field": "keywords.1", "quote": "production throughput"}],
+        "limitation": "Title alone is generic and does not distinguish throughput from sanitation; the independent subject distinction requires the actual description/keywords, which are supplied and consistent."
+      },
+      {
+        "seed": 39032,
+        "dataset_id": "a060",
+        "changed_judgment": "The original unresolved title-format concern is downgraded to a nonblocking metadata-specificity limitation, not semantic uncertainty. This title is an ordinary product-and-location catalogue title. Its generic assessment wrapper is formulaic, but it contains no intent/grade/outcome code and does not contradict the empirical sanitation body. The same broad factory wording occurs with throughput and commercial records, so it is not by itself a shortcut to this record's measurement coverage. Complete body and distribution evidence independently establish the sanitation subject and all three observed variables. The concern about an individual ordinary product prefix therefore does not justify retaining U here; semantic_review_passed changes from false to true. Corpus-wide repetitive-template leakage remains outside this five-row adjudication.",
+        "evidence": [{"field": "title", "quote": "Confectionery factory: the Fern Hollow West assessment"}, {"field": "description", "quote": "This deposit concerns sanitation and equipment cleaning verification of chocolate confectionery factory production equipment at Fern Hollow West."}, {"field": "description", "quote": "The described study uses empirical observations from physical samples."}],
+        "limitation": "The title alone does not name sanitation; semantic identification and measurement coverage depend on the actual description and distributions rather than a specific title."
+      }
+    ],
+    "variation_preservation": "variation_review_by_seed below is copied unchanged from the original manual observations as requested. Those false flags and historical rationales are archival, not new conclusions about these five adjudicated rows or patched a057 metadata. This task does not flip or re-evaluate seed-wide variation decisions. The original reviewer context and identifiers are retained.",
+    "completeness_limitations": [
+      "Exactly five full unchanged row assignments are adjudicated. There is no new audit of the other 25 assignments, patched a057 rows, all 180 corpus records or corpus-wide duplicate/template composition.",
+      "Distribution verification is confined to supplied metadata format/content association; no file bytes were downloaded or inspected.",
+      "Full paraphrase query texts and omitted production queryContext copies remain outside the inspected material. No paraphrase-equivalence, global coverage or global no-answer conclusion is made.",
+      "No unresolved record-level semantic issue remains within these five assignments after the stated adjudications. The two generic-title weaknesses remain explicit limitations, and all original seed-wide variation flags/rationales are preserved rather than silently cleared."
+    ]
+  },
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-06",
+      "rationale": "All ten actual records were read, including every supplied description, title, keyword, publisher, distribution and optional spatial field. No temporal field is supplied. Across all three seeds the independently observed variable sets are preserved by ID: a051/a052/a060 have cleaning cycles, microbial swabs and residue; a053 has cleaning and swabs only; a054 cleaning and residue only; a055 cleaning only; a056 site code/month/completed operations; a057 all three sanitation variables for ornamental-plant maintenance tools; a058 unit price/consignments/month; a059 simulation-only sanitation outputs, not empirical facts. a053 has no documented residue; a054 no documented swabs; a055 neither. Those omissions are not measurements or contradictions. Numeric examples, fictional locations and publishers change across seeds, so exact observation values are not preserved, only subject/process/basis/variable kinds and units. Wording varies meaningfully through title syntax, paragraph versus continuous prose, order of subject/basis/variables, description length and distribution-only versus description-plus-distribution documentation; much filler remains modular/template-like. Each record has CSV and JSON descriptions consistently associating its own variable set with comma-separated or JSON content; optional third distributions repeat the same variables and do not add measurements. Boolean distribution verification concerns those metadata associations only, not downloaded bytes. No identity-review-required records occur here, and no frozen no-answer conjunction is supported in this packet. No intent IDs, grade codes or answer keys were observed in actual fields. Literal s08 mismatch tokens hygiene/works were not observed in these sanitation records. Unresolved: a057's s08 exclusion requires an explicit production-equipment restriction absent from the supplied intent definition; a056's category-prefixed generic title is a concrete title-format concern. Hence variation is not certified without qualification. Actual paraphrase query texts, omitted production queryContext copies, other packets and underlying files were not inspected; query equivalence, corpus-wide coverage and corpus-wide absence cannot be certified."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-06",
+      "rationale": "All ten seed-39032 actual field sets were reviewed, including all nested distribution titles/descriptions/formats, optional spatial context and publisher/keywords. The cross-seed product/process/basis/variable-set preservation described for seed 39031 also holds here, but values, sites and publishers are not invariant. a055 puts its sole cleaning-cycle column in the distributions, not the description; it still documents no swab or residue measurements. a051/a052 have three distributions with the optional third JSON rather than seed-39031 CSV; the third only repeats existing variables. a056/a060 have two distributions rather than seed-39031 three. CSV descriptions say comma-separated table and JSON descriptions say JSON records; all use each record's actual variables, and simulation descriptions remain simulation-specific. Meaningful variation includes a052/a056/a057/a060 continuous prose versus other paragraph layouts, reordered basis and subject statements, changed title syntax, and different description lengths. The all-seed review confirms no variable-set drift, no transformation of omitted sanitation variables into positive facts, no simulated-to-empirical drift and no additional measurements in generic field-guide notes. Unresolved: a057 remains a disputed s08 exclusion despite all three empirical facts; a060's broad category-prefixed title raises the validation prompt's title-format prohibition. This is why passed is false, not a claim that the variable sets failed preservation. Full paraphrase queries and omitted duplicate queryContext text are unavailable, and no external distribution bytes or other packets were read."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-06",
+      "rationale": "All ten seed-39033 actual records and all their supplied fields were reviewed through the end of the packet. Same-ID semantic variable sets, units, empirical-versus-simulation distinctions, factory-production versus ornamental-tool subjects, throughput contrast and commercial-ledger distinction agree with both other seeds. Numerical examples, fictional site names and publisher identities differ, so only semantic measurement coverage is preserved, not literal measurement values. a051 and a057 document their measurements only in distribution synopses; a055 still has only a cleaning-cycle column; a058 includes its commercial columns in both description and distributions rather than relying on distributions alone. Optional distribution counts and third formats differ without changing content: a052/a059 have two distributions, a055/a058 three with third JSON, and a051/a054/a056/a060 three with third CSV. All CSV/JSON associations match their textual content declarations. There is meaningful sentence/paragraph order, length, title and distribution-placement variation, alongside substantial shared boilerplate. No actual field establishes either frozen no-answer conjunction, and no authoritative identity review is requested for any of these records. a059's named outputs remain explicitly non-empirical and are keyed as simulated outputs in this review, not counted as measured facts. Unresolved: a057 positively supports empirical factory-site equipment sanitation on ornamental-maintenance tools, while the supplied s08 intent does not explicitly require production equipment. Its exclusion is disputed in all seeds, so this seed is not certified unconditionally. Limitations remain metadata-only distribution verification, absence of full query paraphrases and omitted duplicate queryContext text, and no authority to infer corpus-wide coverage or absence from this packet."
+    }
+  }
+}

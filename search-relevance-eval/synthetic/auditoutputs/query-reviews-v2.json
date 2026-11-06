@@ -1,0 +1,617 @@
+{
+  "schema_version": 1,
+  "query_spec_sha256": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+  "reviewer": {
+    "id": "C-query-equivalence",
+    "context_id": "C-independent-spec-auditor; exact delegated session ID bound by parent registration amendment",
+    "model": "gpt-6.1-sol",
+    "parameters": "unavailable",
+    "role": "independent_semantic_auditor",
+    "rankings_seen": false,
+    "generator_context": false
+  },
+  "review_basis": "C independently read all final query text and criteria during pre-freeze correction review, reread the 45 semantic/functional query rows after actual-text packet preparation, and had previously read exact/diagnostic rows in full. These are controlled data-evidence needs, not guarantees of production utility or product certification. Subsequent scope amendment changed neither queries nor intent/rule bytes. Actual per-document evidence remains subject to fresh reviewers.",
+  "query_reviews": [
+    {
+      "query_id": "s01p1",
+      "intent_id": "s01",
+      "query": "observed cacao plantation pest counts and control treatment trials",
+      "equivalent": true,
+      "rationale": "The observed/measured/empirical variants all name cacao/cocoa/Theobroma and field crop pest suppression or treatment trials. Insect/arthropod readings are supported by the actual inspected insect-count metadata, not an invented geography. Counts, treatment category and application-rate observations are complementary completeness criteria, not mandatory hidden product attributes.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s01p2",
+      "intent_id": "s01",
+      "query": "measured field insect damage and treatment trials in cocoa trees",
+      "equivalent": true,
+      "rationale": "The observed/measured/empirical variants all name cacao/cocoa/Theobroma and field crop pest suppression or treatment trials. Insect/arthropod readings are supported by the actual inspected insect-count metadata, not an invented geography. Counts, treatment category and application-rate observations are complementary completeness criteria, not mandatory hidden product attributes.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s01p3",
+      "intent_id": "s01",
+      "query": "empirical arthropod suppression trials in Theobroma orchards",
+      "equivalent": true,
+      "rationale": "The observed/measured/empirical variants all name cacao/cocoa/Theobroma and field crop pest suppression or treatment trials. Insect/arthropod readings are supported by the actual inspected insect-count metadata, not an invented geography. Counts, treatment category and application-rate observations are complementary completeness criteria, not mandatory hidden product attributes.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s02p1",
+      "intent_id": "s02",
+      "query": "observed crop yields for cacao by season as CSV",
+      "equivalent": true,
+      "rationale": "All variants explicitly name cacao/cocoa crop productivity/harvest yield and CSV/comma-separated output. Harvest mass and area establish yield; season adds temporal completeness. The revised orchard variant now actually says cacao. PDF-only is a stated-format mismatch, not a category shortcut.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s02p2",
+      "intent_id": "s02",
+      "query": "measured cocoa harvest weight per hectare in CSV tables",
+      "equivalent": true,
+      "rationale": "All variants explicitly name cacao/cocoa crop productivity/harvest yield and CSV/comma-separated output. Harvest mass and area establish yield; season adds temporal completeness. The revised orchard variant now actually says cacao. PDF-only is a stated-format mismatch, not a category shortcut.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s02p3",
+      "intent_id": "s02",
+      "query": "empirical cacao orchard productivity figures in comma separated files",
+      "equivalent": true,
+      "rationale": "All variants explicitly name cacao/cocoa crop productivity/harvest yield and CSV/comma-separated output. Harvest mass and area establish yield; season adds temporal completeness. The revised orchard variant now actually says cacao. PDF-only is a stated-format mismatch, not a category shortcut.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s03p1",
+      "intent_id": "s03",
+      "query": "observed cocoa bean fermentation temperature over time",
+      "equivalent": true,
+      "rationale": "All variants ask for observed/measured/empirical postharvest cacao-bean fermentation, including time/temperature or curing before drying. They do not denote cultured dairy beverage fermentation. Batch mass is an independently documented experiment variable, not inferred from the word batch.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s03p2",
+      "intent_id": "s03",
+      "query": "measured postharvest cacao fermentation batch duration and temperature",
+      "equivalent": true,
+      "rationale": "All variants ask for observed/measured/empirical postharvest cacao-bean fermentation, including time/temperature or curing before drying. They do not denote cultured dairy beverage fermentation. Batch mass is an independently documented experiment variable, not inferred from the word batch.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s03p3",
+      "intent_id": "s03",
+      "query": "empirical cacao bean fermentation during postharvest curing before drying",
+      "equivalent": true,
+      "rationale": "All variants ask for observed/measured/empirical postharvest cacao-bean fermentation, including time/temperature or curing before drying. They do not denote cultured dairy beverage fermentation. Batch mass is an independently documented experiment variable, not inferred from the word batch.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s04p1",
+      "intent_id": "s04",
+      "query": "observed cocoa plant nursery propagation and survival",
+      "equivalent": true,
+      "rationale": "Cocoa/cacao/Theobroma nursery seedlings and empirical propagation/establishment are expressed in every variant. Survival, propagation method and rooting duration document the stated trial; factory sanitation is a different meaning of plant and not requested here.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s04p2",
+      "intent_id": "s04",
+      "query": "measured cacao seedling establishment trials",
+      "equivalent": true,
+      "rationale": "Cocoa/cacao/Theobroma nursery seedlings and empirical propagation/establishment are expressed in every variant. Survival, propagation method and rooting duration document the stated trial; factory sanitation is a different meaning of plant and not requested here.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s04p3",
+      "intent_id": "s04",
+      "query": "empirical trials raising juvenile Theobroma stock in a nursery",
+      "equivalent": true,
+      "rationale": "Cocoa/cacao/Theobroma nursery seedlings and empirical propagation/establishment are expressed in every variant. Survival, propagation method and rooting duration document the stated trial; factory sanitation is a different meaning of plant and not requested here.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s05p1",
+      "intent_id": "s05",
+      "query": "measured milk chocolate bar wrapper barrier tests",
+      "equivalent": true,
+      "rationale": "Every variant specifies empirical/measured protective packaging of solid milk/dairy-enriched chocolate bars or slabs. Wrapper material, barrier performance and seal failure measure packaging performance. A chocolate-milk drink container is not the requested product, and simulation-only is now excluded by the visible query wording.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s05p2",
+      "intent_id": "s05",
+      "query": "empirical packaging performance for solid milk chocolate bars",
+      "equivalent": true,
+      "rationale": "Every variant specifies empirical/measured protective packaging of solid milk/dairy-enriched chocolate bars or slabs. Wrapper material, barrier performance and seal failure measure packaging performance. A chocolate-milk drink container is not the requested product, and simulation-only is now excluded by the visible query wording.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s05p3",
+      "intent_id": "s05",
+      "query": "measured protective enclosure performance for solid dairy enriched cacao slabs",
+      "equivalent": true,
+      "rationale": "Every variant specifies empirical/measured protective packaging of solid milk/dairy-enriched chocolate bars or slabs. Wrapper material, barrier performance and seal failure measure packaging performance. A chocolate-milk drink container is not the requested product, and simulation-only is now excluded by the visible query wording.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s06p1",
+      "intent_id": "s06",
+      "query": "measured solid chocolate confectionery texture and fracture force",
+      "equivalent": true,
+      "rationale": "Solid chocolate is now explicit in the texture/fracture/brittleness variants, preventing the earlier confectionery-only hidden restriction. Mechanical fracture and tempering are directly related to snap/texture; particle-size measurements add complementary completeness without being inferred from product identity.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s06p2",
+      "intent_id": "s06",
+      "query": "observed chocolate bar snap after tempering",
+      "equivalent": true,
+      "rationale": "Solid chocolate is now explicit in the texture/fracture/brittleness variants, preventing the earlier confectionery-only hidden restriction. Mechanical fracture and tempering are directly related to snap/texture; particle-size measurements add complementary completeness without being inferred from product identity.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s06p3",
+      "intent_id": "s06",
+      "query": "empirical brittleness measurements for molded solid chocolate sweets",
+      "equivalent": true,
+      "rationale": "Solid chocolate is now explicit in the texture/fracture/brittleness variants, preventing the earlier confectionery-only hidden restriction. Mechanical fracture and tempering are directly related to snap/texture; particle-size measurements add complementary completeness without being inferred from product identity.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s07p1",
+      "intent_id": "s07",
+      "query": "measured dessert chocolate ingredient quality under storage conditions",
+      "equivalent": true,
+      "rationale": "The empirical variants concern stored edible chocolate/cacao ingredients before baking or dessert preparation, not finished dairy drinks or unrelated logistics. Temperature, ingredient quality and moisture are appropriate measured storage evidence; the queries do not impose a publisher, region or hidden required format.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s07p2",
+      "intent_id": "s07",
+      "query": "observed quality when storing chocolate ingredients before dessert preparation",
+      "equivalent": true,
+      "rationale": "The empirical variants concern stored edible chocolate/cacao ingredients before baking or dessert preparation, not finished dairy drinks or unrelated logistics. Temperature, ingredient quality and moisture are appropriate measured storage evidence; the queries do not impose a publisher, region or hidden required format.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s07p3",
+      "intent_id": "s07",
+      "query": "empirical pantry stability measurements for baking cacao supplies",
+      "equivalent": true,
+      "rationale": "The empirical variants concern stored edible chocolate/cacao ingredients before baking or dessert preparation, not finished dairy drinks or unrelated logistics. Temperature, ingredient quality and moisture are appropriate measured storage evidence; the queries do not impose a publisher, region or hidden required format.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s08p1",
+      "intent_id": "s08",
+      "query": "observed chocolate processing plant sanitation swab data",
+      "equivalent": true,
+      "rationale": "Chocolate/confectionery processing equipment or cacao-sweets works identifies factory sanitation, not growing plants. Observed swabs, cleaning validation and hygiene verification are equivalent controlled evidence needs; residue mass is an additional independent sanitation measurement.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s08p2",
+      "intent_id": "s08",
+      "query": "empirical factory cleaning validation for confectionery equipment",
+      "equivalent": true,
+      "rationale": "Chocolate/confectionery processing equipment or cacao-sweets works identifies factory sanitation, not growing plants. Observed swabs, cleaning validation and hygiene verification are equivalent controlled evidence needs; residue mass is an additional independent sanitation measurement.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s08p3",
+      "intent_id": "s08",
+      "query": "measured hygiene verification at a cacao sweets works",
+      "equivalent": true,
+      "rationale": "Chocolate/confectionery processing equipment or cacao-sweets works identifies factory sanitation, not growing plants. Observed swabs, cleaning validation and hygiene verification are equivalent controlled evidence needs; residue mass is an additional independent sanitation measurement.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s09p1",
+      "intent_id": "s09",
+      "query": "measured drinking chocolate powder reconstitution tests",
+      "equivalent": true,
+      "rationale": "All variants explicitly describe empirically preparing a cocoa/chocolate drink from powder with water, including hot-cup dissolution. Powder dose, water temperature and dissolution time answer the intended preparation tests. Baking-only dessert reconstitution is a distinct process.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s09p2",
+      "intent_id": "s09",
+      "query": "observed powder dose and water temperature effects for cocoa drinks",
+      "equivalent": true,
+      "rationale": "All variants explicitly describe empirically preparing a cocoa/chocolate drink from powder with water, including hot-cup dissolution. Powder dose, water temperature and dissolution time answer the intended preparation tests. Baking-only dessert reconstitution is a distinct process.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s09p3",
+      "intent_id": "s09",
+      "query": "empirical solubility tests when preparing a hot cacao cup from powder",
+      "equivalent": true,
+      "rationale": "All variants explicitly describe empirically preparing a cocoa/chocolate drink from powder with water, including hot-cup dissolution. Powder dose, water temperature and dissolution time answer the intended preparation tests. Baking-only dessert reconstitution is a distinct process.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s10p1",
+      "intent_id": "s10",
+      "query": "measured chilled chocolate dairy beverage shelf life in CSV tables",
+      "equivalent": true,
+      "rationale": "All revised variants express empirical refrigerated chocolate/cacao dairy-drink shelf life and CSV/comma-separated files. Oat drinks are no longer a defensible alternate product reading because dairy is visible. Storage temperature, spoilage interval and microbial counts are independent shelf-life observations.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s10p2",
+      "intent_id": "s10",
+      "query": "observed chocolate milk spoilage during cold storage as CSV",
+      "equivalent": true,
+      "rationale": "All revised variants express empirical refrigerated chocolate/cacao dairy-drink shelf life and CSV/comma-separated files. Oat drinks are no longer a defensible alternate product reading because dairy is visible. Storage temperature, spoilage interval and microbial counts are independent shelf-life observations.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s10p3",
+      "intent_id": "s10",
+      "query": "empirical refrigerated dairy cacao refreshment longevity in comma separated files",
+      "equivalent": true,
+      "rationale": "All revised variants express empirical refrigerated chocolate/cacao dairy-drink shelf life and CSV/comma-separated files. Oat drinks are no longer a defensible alternate product reading because dairy is visible. Storage temperature, spoilage interval and microbial counts are independent shelf-life observations.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s11p1",
+      "intent_id": "s11",
+      "query": "measured chocolate dairy drink formulation and liquid viscosity",
+      "equivalent": true,
+      "rationale": "All revised variants explicitly say chocolate/cacao dairy drink/refreshment and empirical formulation/recipe proportions. Cocoa and sweetener fractions and liquid viscosity document formulation, unlike oat-only drinks, solid dessert ingredients or container design. No hidden region or required format is introduced.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s11p2",
+      "intent_id": "s11",
+      "query": "observed recipe proportions for a chocolate dairy beverage",
+      "equivalent": true,
+      "rationale": "All revised variants explicitly say chocolate/cacao dairy drink/refreshment and empirical formulation/recipe proportions. Cocoa and sweetener fractions and liquid viscosity document formulation, unlike oat-only drinks, solid dessert ingredients or container design. No hidden region or required format is introduced.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s11p3",
+      "intent_id": "s11",
+      "query": "empirical balancing of cacao and sweetener in a pourable dairy refreshment",
+      "equivalent": true,
+      "rationale": "All revised variants explicitly say chocolate/cacao dairy drink/refreshment and empirical formulation/recipe proportions. Cocoa and sweetener fractions and liquid viscosity document formulation, unlike oat-only drinks, solid dessert ingredients or container design. No hidden region or required format is introduced.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s12p1",
+      "intent_id": "s12",
+      "query": "observed chocolate milk fermentation starter culture trials",
+      "equivalent": true,
+      "rationale": "The empirical variants consistently concern chocolate/cacao dairy-beverage fermentation or microbial souring, not postharvest beans, oat-only drinks or pasteurization. Culture identification, acidification and residual sugar support progressively complete fermentation evidence. A souring query is not interpreted as a demand for an unmentioned proprietary starter or certification.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s12p2",
+      "intent_id": "s12",
+      "query": "measured acidification of cultured chocolate dairy drinks",
+      "equivalent": true,
+      "rationale": "The empirical variants consistently concern chocolate/cacao dairy-beverage fermentation or microbial souring, not postharvest beans, oat-only drinks or pasteurization. Culture identification, acidification and residual sugar support progressively complete fermentation evidence. A souring query is not interpreted as a demand for an unmentioned proprietary starter or certification.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "s12p3",
+      "intent_id": "s12",
+      "query": "empirical microbial souring of a liquid dairy cacao refreshment",
+      "equivalent": true,
+      "rationale": "The empirical variants consistently concern chocolate/cacao dairy-beverage fermentation or microbial souring, not postharvest beans, oat-only drinks or pasteurization. Culture identification, acidification and residual sugar support progressively complete fermentation evidence. A souring query is not interpreted as a demand for an unmentioned proprietary starter or certification.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f01p1",
+      "intent_id": "f01",
+      "query": "empirically tested running shoes suitable for wet pavement",
+      "equivalent": true,
+      "rationale": "Observed/empirical running footwear traction on wet pavement, rain-soaked asphalt and wet sealed paths denotes one controlled test need. Friction, surface roughness and water-film depth are independent measurements; observed tests inform suitability rather than implying an unstated certification threshold. A sole-only inventory is not a complete running-shoe test.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f01p2",
+      "intent_id": "f01",
+      "query": "measured road running footwear grip on rain soaked asphalt",
+      "equivalent": true,
+      "rationale": "Observed/empirical running footwear traction on wet pavement, rain-soaked asphalt and wet sealed paths denotes one controlled test need. Friction, surface roughness and water-film depth are independent measurements; observed tests inform suitability rather than implying an unstated certification threshold. A sole-only inventory is not a complete running-shoe test.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f01p3",
+      "intent_id": "f01",
+      "query": "observed trainer traction tests on rain wet sealed footpaths",
+      "equivalent": true,
+      "rationale": "Observed/empirical running footwear traction on wet pavement, rain-soaked asphalt and wet sealed paths denotes one controlled test need. Friction, surface roughness and water-film depth are independent measurements; observed tests inform suitability rather than implying an unstated certification threshold. A sole-only inventory is not a complete running-shoe test.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f02p1",
+      "intent_id": "f02",
+      "query": "empirically tested quiet hydraulic pumps for indoor circulation",
+      "equivalent": true,
+      "rationale": "All variants specify empirical/observed or measured low-noise hydraulic circulation indoors. Noise level, microphone distance and flow document acoustic performance under operation; unloaded inventories and interface standards do not. Quiet is interpreted as the explicitly stated indoor low-noise test domain, not an invented universal compliance standard.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f02p2",
+      "intent_id": "f02",
+      "query": "low noise hydraulic fluid pumps with measured flow indoors",
+      "equivalent": true,
+      "rationale": "All variants specify empirical/observed or measured low-noise hydraulic circulation indoors. Noise level, microphone distance and flow document acoustic performance under operation; unloaded inventories and interface standards do not. Quiet is interpreted as the explicitly stated indoor low-noise test domain, not an invented universal compliance standard.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f02p3",
+      "intent_id": "f02",
+      "query": "observed noise tests of hydraulic circulation units for sound sensitive interiors",
+      "equivalent": true,
+      "rationale": "All variants specify empirical/observed or measured low-noise hydraulic circulation indoors. Noise level, microphone distance and flow document acoustic performance under operation; unloaded inventories and interface standards do not. Quiet is interpreted as the explicitly stated indoor low-noise test domain, not an invented universal compliance standard.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f03p1",
+      "intent_id": "f03",
+      "query": "empirically calibrated temperature probes for cold rooms from minus twenty to five Celsius",
+      "equivalent": true,
+      "rationale": "All final variants explicitly request measured/observed temperature-probe coldroom calibration from minus twenty to plus five Celsius. Error, test range and reference-instrument uncertainty are independent observations. The unsupported word traceable was removed; no traceability chain or unmentioned certification is required.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f03p2",
+      "intent_id": "f03",
+      "query": "measured cold storage sensor calibration errors from minus twenty to five Celsius",
+      "equivalent": true,
+      "rationale": "All final variants explicitly request measured/observed temperature-probe coldroom calibration from minus twenty to plus five Celsius. Error, test range and reference-instrument uncertainty are independent observations. The unsupported word traceable was removed; no traceability chain or unmentioned certification is required.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "f03p3",
+      "intent_id": "f03",
+      "query": "observed temperature probe calibration for freezers and chillers from minus twenty to five Celsius",
+      "equivalent": true,
+      "rationale": "All final variants explicitly request measured/observed temperature-probe coldroom calibration from minus twenty to plus five Celsius. Error, test range and reference-instrument uncertainty are independent observations. The unsupported word traceable was removed; no traceability chain or unmentioned certification is required.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x01",
+      "intent_id": "x01",
+      "query": "RUN-X120",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: identity.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x02",
+      "intent_id": "x02",
+      "query": "run-x120",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: case_equivalence.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x03",
+      "intent_id": "x03",
+      "query": "RUNX120",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: hyphenation_equivalence.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x04",
+      "intent_id": "x04",
+      "query": "RUN-X121",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: single_digit.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x05",
+      "intent_id": "x05",
+      "query": "RUN-X120-SOLE",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: component.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x06",
+      "intent_id": "x06",
+      "query": "RUN-XI20",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: one_I.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x07",
+      "intent_id": "x07",
+      "query": "RUN-X12O",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: zero_O.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x08",
+      "intent_id": "x08",
+      "query": "RUN-X120-V2",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: version.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x09",
+      "intent_id": "x09",
+      "query": "RUN-X120-V1",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: version.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x10",
+      "intent_id": "x10",
+      "query": "TRAIL-X120",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: prefix.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x11",
+      "intent_id": "x11",
+      "query": "Hydraulic pump acceptance trials",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: exact_title.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x12",
+      "intent_id": "x12",
+      "query": "HPT-71",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: acronym.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x13",
+      "intent_id": "x13",
+      "query": "HPT-7I",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: one_I.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x14",
+      "intent_id": "x14",
+      "query": "ZTS-20471:2013",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: standard_version.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x15",
+      "intent_id": "x15",
+      "query": "ZTS-20471:2024",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: standard_version.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x16",
+      "intent_id": "x16",
+      "query": "FLW-0081",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: zero_O.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x17",
+      "intent_id": "x17",
+      "query": "FLW-OO81",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: zero_O.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x18",
+      "intent_id": "x18",
+      "query": "AX-101",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: part_number.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x19",
+      "intent_id": "x19",
+      "query": "AX-1O1",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: zero_O.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x20",
+      "intent_id": "x20",
+      "query": "PROBE-I1",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: one_I.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x21",
+      "intent_id": "x21",
+      "query": "PROBE-11",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: one_I.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x22",
+      "intent_id": "x22",
+      "query": "Riverbend friction survey release 2.0",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: exact_title_version.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x23",
+      "intent_id": "x23",
+      "query": "DIST-K47",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: distribution_only.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "x24",
+      "intent_id": "x24",
+      "query": "TITLE-T82",
+      "equivalent": true,
+      "rationale": "This is an intentionally declared controlled navigation lookup, not an open-ended semantic request. Its exact string, declared alias or frozen exact title identifies the authoritative dataset; component, model, prefix, version, I/1 and O/0 contrasts are not equivalent. Case and hyphenation equivalences are restricted to the explicitly registered single SKU. Title/distribution placement controls constrain primary metadata as amended without changing identity or production-derived embedding text. No unconfigured keyword equality operator is presumed. Registered contrast: title_only.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "d01",
+      "intent_id": "d01",
+      "query": "drink",
+      "equivalent": true,
+      "rationale": "Drink is deliberately broad: ready liquid beverages and powders intended for drink preparation can both be useful. The frozen diagnostic map is exploratory and is not a requirement for a whole family to rank first.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "d02",
+      "intent_id": "d02",
+      "query": "dessert",
+      "equivalent": true,
+      "rationale": "Dessert is a broad exploratory category covering ingredient storage, solid confectionery and other defensible nearby preparation meanings. Its graded diagnostic map is not used for promotion or single-domain precision.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "d03",
+      "intent_id": "d03",
+      "query": "plant",
+      "equivalent": true,
+      "rationale": "Plant retains crop/nursery and manufacturing-factory interpretations. The explicit multi-process diagnostic map acknowledges both instead of inheriting a single product restriction.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "d04",
+      "intent_id": "d04",
+      "query": "storage",
+      "equivalent": true,
+      "rationale": "Storage remains an exploratory multi-process request including ingredient, refrigerated beverage and relevant packaging/storage processes, without adding a requested CSV or empirical-only requirement.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "n01",
+      "intent_id": "n01",
+      "query": "cadmium isotope ratios in lunar cacao cultivation",
+      "equivalent": true,
+      "rationale": "The no-answer need is the conjunction of lunar cacao cultivation and cadmium isotope ratios, not either token alone. Corpus-wide conjunction absence is still an actual-text audit responsibility; no ordinary NDCG zero or empty-result ranking win follows.",
+      "reviewer_id": "C-query-equivalence"
+    },
+    {
+      "query_id": "n02",
+      "intent_id": "n02",
+      "query": "RUN-X9999 cryogenic vacuum certified running shoe",
+      "equivalent": true,
+      "rationale": "The no-answer need is the absent RUN-X9999 identity together with cryogenic-vacuum running-shoe certification. Nearby shoe identities or generic certification words are not an answer; absence remains a full actual-text audit responsibility.",
+      "reviewer_id": "C-query-equivalence"
+    }
+  ],
+  "actual_record_labels_validated": false
+}

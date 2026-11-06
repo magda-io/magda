@@ -1,0 +1,472 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-09",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-09"
+  },
+  "record_reviews": [
+    {
+      "seed": 39031, "dataset_id": "a081", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 2.02)"}],
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 15.81)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 8.9)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s06": {"reason": "This is empirical liquid dairy drink recipe formulation, not solid-chocolate texture testing. Viscosity is not fracture force; neither tempering conditions nor particle size is documented. Both CSV and JSON distributions describe the same liquid recipe variables.", "evidence": [{"field": "description", "quote": "examines liquid chocolate-flavoured dairy milk beverage through liquid drink recipe formulation"}, {"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 15.81)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a082", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 8.43)"}],
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 25.44)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.36)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s06": {"reason": "The product is a liquid dairy beverage and the activity is recipe formulation, not solid-chocolate fracture/tempering/particle-size testing. The two CSV distributions and JSON distribution consistently list fractions and viscosity only.", "evidence": [{"field": "description", "quote": "examines liquid chocolate-flavoured dairy milk beverage through liquid drink recipe formulation"}, {"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 25.44)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a083", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 8.96)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 1.74)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a084", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 30.08)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 4.53)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a085", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 4.58)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a086", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "container_design", "evidence": [{"field": "description", "quote": "bottle and container design for a drink, rather than recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 54)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Tern Inlet West)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "Dairy drink product overlaps, but bottle/container design is explicitly distinguished from recipe formulation. Observed columns are operations, month and site code, not cocoa fraction, sugar fraction or viscosity. The CSV/JSON content descriptions agree.", "evidence": [{"field": "description", "quote": "bottle and container design for a drink, rather than recipe formulation"}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 54); reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Tern Inlet West)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a087", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 29.78)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 10.45)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 2.16)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "The measured fractions, viscosity and formulation process overlap, but the product is explicitly non-dairy oat drink, not a dairy milk beverage. No dairy measurement is inferred from the negated mention. CSV and JSON associate all three measurements with this oat product.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a088", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "This deposit concerns liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.48)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 48)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "The named product and associated formulation activity match, but the data are a commercial ledger rather than experimental formulation observations. Price, month and dispatch counts do not evidence any of the required fractions or viscosity. The CSV and two JSON descriptions consistently associate only ledger columns with the files. The empirical basis here means observed ledger entries, not representative physical formulation-performance measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.48); reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 48)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a089", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: liquid viscosity (mPa s; e.g. 6.42); sugar fraction in liquid recipe (percent by mass; e.g. 6.85); cocoa fraction in liquid recipe (percent by mass; e.g. 4.1)."}]},
+        "facts": {},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "Product and formulation process match, and the named variables appear as simulated outputs only. Explicit absence of physical trials means no empirical measurement is supported. CSV and JSON descriptions both identify simulated output columns; generic Observation table naming does not override that explicit basis.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.1.description", "quote": "Simulated output columns:"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "a090", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 4.4)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 5.56)"}],
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 29.39)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a081", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 27.37)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 2.9)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 10.26)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s06": {"reason": "Liquid dairy beverage formulation is distinct from solid-chocolate texture testing. Liquid viscosity does not document fracture force, tempering conditions or particle size. The CSV and both JSON descriptions consistently associate recipe fractions and viscosity with the files.", "evidence": [{"field": "description", "quote": "examines liquid chocolate-flavoured dairy milk beverage through liquid drink recipe formulation"}, {"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 27.37)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a082", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 7.53)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.6)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 7.05)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s06": {"reason": "Empirical recipe formulation of a liquid dairy drink is not solid-chocolate texture testing. No fracture force, tempering or particle-size observation is supplied. CSV and JSON both document liquid fractions and viscosity.", "evidence": [{"field": "description", "quote": "documents liquid drink recipe formulation, focusing on liquid chocolate-flavoured dairy milk beverage"}, {"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 7.53)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a083", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 4.07)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 11.2)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a084", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 8.53)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 2.05)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a085", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.16)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a086", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "container_design", "evidence": [{"field": "description", "quote": "bottle and container design for a drink, rather than recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Oak Terrace Coastal)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 83)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "Same dairy drink subject, but the activity explicitly excludes recipe formulation in favour of container design. The two CSV distributions and JSON distribution document site, operations and month, not recipe composition or viscosity.", "evidence": [{"field": "description", "quote": "bottle and container design for a drink, rather than recipe formulation"}, {"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Oak Terrace Coastal); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a087", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 7.29)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.97)"}],
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 9.56)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "All three formulation measurements are evidenced, but explicitly for oat beverage without dairy milk. It cannot establish measurements on the required dairy product. Both CSV distributions and the JSON distribution consistently carry the oat recipe measurements.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a088", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 69)"}],
+          "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 11.3)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "Formulation and dairy beverage are the associated topic, not evidence of formulation measurements. Actual CSV/JSON columns are commercial month, dispatch count and price. Observed ledger entries are empirical administrative facts, not representative physical formulation-performance measurements; none of the required composition/viscosity facts is documented.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 69); invoiced unit price (AUD/unit; e.g. 11.3)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "a089", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: sugar fraction in liquid recipe (percent by mass; e.g. 11.73); liquid viscosity (mPa s; e.g. 21.16); cocoa fraction in liquid recipe (percent by mass; e.g. 3.9)."}]},
+        "facts": {},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "The subject and recipe process match, but explicit simulation-only provenance excludes empirical formulation observations. Fractions and viscosity are documented simulated outputs, not measured facts. All three distribution descriptions identify simulated output content; the third distribution title misleadingly calls that content measurements.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.2.description", "quote": "Simulated output columns:"}, {"field": "distributions.2.title", "quote": "Deposited measurements"}]}}, 
+      "identity": {"value": null, "evidence": []},
+      "issues": ["distributions.2.title is 'Deposited measurements', while distributions.2.description explicitly says 'Simulated output columns:' and description denies any physical trial or empirical observations. This is misleading measurement naming; the explicit simulation-only basis is retained and no output variable is counted as empirically measured."],
+      "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": false
+    },
+    {
+      "seed": 39032, "dataset_id": "a090", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 7.94)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 2.4)"}],
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 28.98)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a081", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 31.22)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.91)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 7.09)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s06": {"reason": "Liquid dairy beverage recipe formulation is neither solid chocolate nor texture/fracture testing. The distribution-only measurements are viscosity and recipe fractions, not fracture force, tempering or particle size. CSV and JSON descriptions agree and positively document the variables despite their absence from the main description.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage during liquid drink recipe formulation"}, {"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 31.22)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a082", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 10.84)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.46)"}],
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 14.82)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s06": {"reason": "Liquid dairy drink formulation is a different product/process from solid-chocolate texture testing. The empirical fractions and viscosity do not establish fracture force, tempering conditions or particle size. CSV and both JSON descriptions agree on the three actual variables.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage during liquid drink recipe formulation"}, {"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 14.82)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a083", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 5.42)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 2.52)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a084", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 8.19)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.9)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a085", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 4.45)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a086", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "container_design", "evidence": [{"field": "description", "quote": "bottle and container design for a drink, rather than recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Reed Marsh East)"}],
+          "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 81)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "The same dairy drink is named, but bottle/container design is expressly not recipe formulation. The observed columns concern month, site and completed operations, not recipe fractions or viscosity. CSV and JSON content associations agree. Physical-sample provenance does not add any unlisted formulation measurement.", "evidence": [{"field": "description", "quote": "bottle and container design for a drink, rather than recipe formulation"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a087", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 4.73)"}],
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 34.6)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 10.95)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "The process and all three empirical variables match at a general formulation level, but their actual product is oat beverage expressly containing no dairy milk. That negation cannot support measurements on a dairy beverage. CSV, JSON and second CSV consistently describe the oat formulation columns.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a088", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "This deposit concerns liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 19)"}],
+          "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 14.35)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "The named dairy drink and recipe activity do not establish formulation experiment data. The deposit explicitly identifies an observed commercial ledger; both CSV and JSON describe dispatch counts, price and month only. Empirical ledger observations are not representative physical formulation-performance measurements and evidence none of the required fractions or viscosity.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 19); invoiced unit price (AUD/unit; e.g. 14.35); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "a089", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: cocoa fraction in liquid recipe (percent by mass; e.g. 3.44); liquid viscosity (mPa s; e.g. 24.82); sugar fraction in liquid recipe (percent by mass; e.g. 4.47)."}]},
+        "facts": {},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s11": {"reason": "The dairy product and recipe formulation process match, but all entries are explicitly simulations without physical trials or empirical observations. Composition and viscosity are simulated output variables, not measured facts. The CSV/JSON descriptions agree on simulated content; the CSV title misleadingly calls it measurements.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}, {"field": "distributions.0.title", "quote": "Deposited measurements"}]}}, 
+      "identity": {"value": null, "evidence": []},
+      "issues": ["distributions.0.title is 'Deposited measurements', but distributions.0.description says 'Simulated output columns:' and description explicitly denies physical trials or empirical observations. This misleading measurement title remains unresolved; no simulated output has been counted as empirically measured."],
+      "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": false
+    },
+    {
+      "seed": 39033, "dataset_id": "a090", "reviewer_id": "auditor-packet-09",
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "drink_formulation", "evidence": [{"field": "description", "quote": "liquid drink recipe formulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "liquid_viscosity": [{"field": "distributions.0.description", "quote": "liquid viscosity (mPa s; e.g. 27.07)"}],
+          "sugar_fraction": [{"field": "distributions.0.description", "quote": "sugar fraction in liquid recipe (percent by mass; e.g. 4.68)"}],
+          "cocoa_fraction": [{"field": "distributions.0.description", "quote": "cocoa fraction in liquid recipe (percent by mass; e.g. 3.88)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-09",
+      "rationale": "All ten IDs were compared with both other seeds after reading every projected field. The semantic product/process/basis and documented variable sets are preserved: a081/a082/a090 have empirical dairy formulation fractions plus viscosity; a083 has sugar and cocoa fractions only; a084 has viscosity and cocoa fraction only; a085 has cocoa fraction only; a086 is container design with operations/month/site; a087 is non-dairy oat formulation with all three variables; a088 is an observed commercial ledger with price/month/dispatches; a089 has simulated outputs only. Missing variables were not inferred. Every distribution format matches its own comma-separated/JSON content description, including optional third distributions. Main descriptions in this seed carry the variables directly, unlike some distribution-only descriptions in other seeds. Titles, clause order, paragraph layout, length and optional spatial fields vary meaningfully, although many titles and editorial passages remain visibly templated. Repeated distribution content is an explicitly described alternate-format/duplicate export, not a second independent experiment. Scope of passed is semantic-fact preservation and wording variation, NOT exact numerical or site preservation: for example a081 cocoa examples change 2.02 to 2.9 to 3.91 and its site changes Cedar Reach Central to Silver Creek Upper to Alderbank Lower; publishers also change. These are not identical observational releases. No authoritative-identity review was required for these IDs. No record supports either no-answer conjunction. Only packet-projected metadata was reviewed; file bytes and omitted duplicate queryContext text were not independently accessed, and actual query paraphrase texts were not supplied."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-09",
+      "rationale": "All ten IDs were compared with seeds 39031 and 39033. Semantic subjects, processes, empirical-versus-simulation distinctions and variable sets are preserved, including a083's absent viscosity, a084's absent sugar fraction, a085's single cocoa fraction, a086's container-design operations/month/site rather than recipe metrics, a087's explicit absence of dairy, and a088's commercial ledger rather than experimental formulation data. This seed provides variables only in distribution synopses for a084, a086 and a089; those fields were reviewed rather than treating main-description omission as data absence. CSV/JSON format labels and all optional third-distribution content descriptions agree with their advertised variables and units. Meaningful wording, clause order, title, length, paragraph and optional-field differences exist, with substantial recurring template language. Numerical examples and fictional site/publisher identities change across seeds, so only semantic variable/constraint preservation is supported, not preservation of exact observational facts. Unresolved naming issue: a089 distributions.2.title calls explicit simulation outputs 'Deposited measurements'; this seed therefore is not marked passed. Review was limited to all supplied projected metadata, not downloaded bytes, omitted duplicate queryContext text or unavailable actual query paraphrases. No identity-required records or no-answer conjunctions occur in this packet."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-09",
+      "rationale": "All ten IDs were compared with the other two seeds. Product/process/basis and positively documented variable sets remain semantically stable; no missing variable was treated as measured, no oat record was treated as dairy, and a089's output variables remain simulation-only. Variables move wholly into distributions for a081, a083, a084 and a090, while the metadata still supplies the physical empirical basis and product/process context. All distribution format labels match comma-separated or JSON content descriptions and the same record's variable units, including optional third distributions. Titles, sentence/paragraph ordering, length, editorial notes and optional spatial fields differ meaningfully, but recurring templates remain. Example values, fictional sites and publisher identities are not preserved verbatim across seeds; for example a086 completed operations are 54, 83 and 81 and site codes also differ, so this is semantic rather than exact observation preservation. Unresolved naming issue: a089 distributions.0.title says 'Deposited measurements' despite explicit simulated-only content; this seed is not marked passed. Scope is supplied projected metadata only; no file-byte verification, independent reading of omitted duplicate queryContext or paraphrase-query equivalence check was possible. No identity review was required and neither frozen no-answer conjunction is supported by any reviewed record."
+    }
+  }
+}

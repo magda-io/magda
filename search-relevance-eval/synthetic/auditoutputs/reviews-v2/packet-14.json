@@ -1,0 +1,507 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-14",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-14"
+  },
+  "record_reviews": [
+    {
+      "seed": 39031, "dataset_id": "b031", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "torque_gauge", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 63.59)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. TG-420)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f03": {"reason": "Mechanical torque-gauge documentation explicitly excludes temperature sensors. Dimensions, reporting month and edition are documented, not coldroom calibration error, temperature range or reference uncertainty; the negated sensors are not a measured product.", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners, not temperature sensors"}, {"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 63.59)"}]}},
+      "identity": {"value": "TG-420", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TG-420."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b032", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "torque_gauge", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 77.05)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. TG-042)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f03": {"reason": "This is mechanical torque-gauge release inspection, explicitly not temperature sensors. No calibration error, coldroom range or reference-instrument uncertainty is positively documented; dimensional inspection cannot substitute for them.", "evidence": [{"field": "description", "quote": "technical documentation and release inspection of torque gauges for mechanical fasteners, not temperature sensors"}, {"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 77.05)"}]}},
+      "identity": {"value": "TG-042", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TG-042."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b033", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.52)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.85)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-033", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-033."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b034", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.56)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-034", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-034."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b035", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1179.69)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The complete-shoe product overlaps, but the protocol explicitly applies no water and the deposited variables are unloaded mass and month, not wet friction, pavement roughness or water-film depth. No-water wording is not a positive water-depth measurement.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1179.69); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "identity": {"value": "PACE-035", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-035."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b036", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "U", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 128.51)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 133 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The ledger is explicitly associated with wet traction testing, so product/process lexical overlap is real, not an independent reason for irrelevance. The decisive limitation is commercial cost/carton columns and an express denial of experimental performance; no required wet-friction, surface-roughness or water-film measurement is documented.", "evidence": [{"field": "description", "quote": "not a report of experimental performance"}, {"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 128.51); shipping carton dimensions (length x width x height in mm; e.g. 133 x 90 x 65)"}]}},
+      "identity": {"value": "PACE-036", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-036."}]},
+      "issues": ["Basis U: explicitly observed commercial ledger, neither simulation-only nor positively supported representative experimental performance. Do not force the schema's two experimental-basis categories.", "Title calls this a wet-road traction field report, but description excludes experimental performance; wet pavement testing is contextual association, not established measured process. No performance facts inferred from title or keywords."],
+      "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": false
+    },
+    {
+      "seed": 39031, "dataset_id": "b037", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.43)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.14)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.62)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-037", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-037."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b038", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.74)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.41)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.62)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-038", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-038."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b039", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.56)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.75)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-039", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-039."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39031, "dataset_id": "b040", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.63)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-040", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-040."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b031", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "torque_gauge", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 59.29)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. TG-420)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f03": {"reason": "The subject is a mechanical torque gauge, explicitly not a temperature sensor, and the activity is release documentation rather than coldroom calibration. Only month, physical dimensions and edition are documented; excluded sensors do not establish any temperature measurement.", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners, not temperature sensors"}, {"field": "description", "quote": "technical documentation and release inspection"}, {"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 59.29)"}]}},
+      "identity": {"value": "TG-420", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TG-420."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b032", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "torque_gauge", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 79.23)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. TG-042)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f03": {"reason": "Torque-gauge release documentation explicitly excludes temperature sensors. Physical dimensions and edition/month columns cannot substantiate temperature-probe calibration error, the specified coldroom range or reference uncertainty.", "evidence": [{"field": "description", "quote": "technical documentation and release inspection of torque gauges for mechanical fasteners, not temperature sensors"}, {"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 79.23)"}]}},
+      "identity": {"value": "TG-042", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TG-042."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b033", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.56)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.36)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-033", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-033."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b034", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.47)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-034", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-034."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b035", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1690.55)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "Same complete-shoe subject but explicitly dry bench testing, with no water applied. The positive measurements are month and unloaded mass; neither this exclusion nor the generic footwear context supplies wet friction, roughness or water-film depth.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1690.55)"}]}},
+      "identity": {"value": "PACE-035", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-035."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b036", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "U", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 299 x 90 x 65)"}],
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 94.63)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "Wet traction is expressly the associated activity, so a wrong-product/process assertion would overstate the evidence. Actual deposited columns concern cartons and price, and the description excludes experimental performance. The three wet-pavement performance measurements are unsupported.", "evidence": [{"field": "description", "quote": "not a report of experimental performance"}, {"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 299 x 90 x 65); advertised retail cost (AUD/unit; e.g. 94.63)"}]}},
+      "identity": {"value": "PACE-036", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-036."}]},
+      "issues": ["Basis U: observed commercial ledger does not establish representative experimental measurements and is not simulation-only; the offered basis dichotomy is insufficient.", "Title and topic language frame a wet-road traction study, but the explicit ledger qualification precludes treating this as measured traction performance. Process association is retained without inventing performance variables."],
+      "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": false
+    },
+    {
+      "seed": 39032, "dataset_id": "b037", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.51)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.38)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.72)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-037", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-037."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b038", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.36)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.74)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.95)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-038", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-038."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b039", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.76)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.63)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-039", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-039."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39032, "dataset_id": "b040", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.38)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-040", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-040."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b031", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "torque_gauge", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. TG-420)"}],
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 96.59)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f03": {"reason": "This torque-gauge technical release explicitly excludes temperature sensors. Its month, edition and dimensional-inspection columns do not document temperature-probe coldroom calibration, calibration error, temperature range or reference uncertainty.", "evidence": [{"field": "description", "quote": "technical documentation and release inspection of torque gauges for mechanical fasteners, not temperature sensors"}, {"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 96.59)"}]}},
+      "identity": {"value": "TG-420", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TG-420."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b032", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "torque_gauge", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners"}]},
+        "process": {"value": "technical_documentation", "evidence": [{"field": "description", "quote": "technical documentation and release inspection"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "physical_specification_dimensions_mm": [{"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 118.05)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "documented_release_identity": [{"field": "distributions.0.description", "quote": "documented release identity (edition code; e.g. TG-042)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f03": {"reason": "Mechanical-fastener torque gauges are positively identified and temperature sensors expressly excluded. Release inspection and physical dimensions are not coldroom temperature calibration; no required calibration variables are measured in the listed columns.", "evidence": [{"field": "description", "quote": "torque gauges for mechanical fasteners, not temperature sensors during technical documentation and release inspection"}, {"field": "distributions.0.description", "quote": "physical specification inspection (dimensions in mm; e.g. 118.05)"}]}},
+      "identity": {"value": "TG-042", "evidence": [{"field": "description", "quote": "The catalogue model or edition is TG-042."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b033", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.83)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.52)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-033", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-033."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b034", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.37)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-034", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-034."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b035", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 665.05)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The shoe subject matches but the positive protocol is dry bench testing with no water, not wet-pavement traction. Deposited mass and reporting interval supply none of wet friction, pavement roughness or water-film depth; no-water wording is an exclusion, not a measurement.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 665.05)"}]}},
+      "identity": {"value": "PACE-035", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-035."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b036", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "U", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 55.92)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 315 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "This genuinely names a wet-pavement shoe investigation, but the actual deposit is explicitly a commercial ledger rather than experimental performance. Its retail-cost and carton-dimension columns support commercial observations only; all three required traction variables remain undocumented.", "evidence": [{"field": "description", "quote": "not a report of experimental performance"}, {"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 55.92); shipping carton dimensions (length x width x height in mm; e.g. 315 x 90 x 65)"}]}},
+      "identity": {"value": "PACE-036", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-036."}]},
+      "issues": ["Basis U: observed commercial records are neither simulation-only nor demonstrated representative experimental performance; do not coerce the basis dichotomy.", "Wet-road traction title/topic is broader than the explicitly commercial content. Retain association with the activity, not an unsupported assertion of measured wet-pavement performance."],
+      "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": false
+    },
+    {
+      "seed": 39033, "dataset_id": "b037", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.64)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.99)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.41)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-037", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-037."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b038", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.8)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.68)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.48)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-038", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-038."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b039", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.19)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.7)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-039", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-039."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "seed": 39033, "dataset_id": "b040", "reviewer_id": "auditor-packet-14",
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.44)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-040", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-040."}]},
+      "issues": [], "no_answer_claims": [], "exhaustive_searchable_review": true, "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-14",
+      "rationale": "All ten actual seed-39031 records and all their projected fields were read, including every distribution title/description/format, keyword, publisher and available spatial field; no temporal fields were present. Across the three seeds, each ID retains its exact catalogue model, product, documented process/ledger qualification, column concepts and units. b031/b032 have physical dimensions, reporting month and release identity; b033/b039 have friction and roughness only; b034/b040 have friction only; b035 has unloaded mass/month; b036 has price/carton dimensions only; b037/b038 have friction, roughness and water depth. Missing water depth or roughness was not inferred from the testing topic; excluded sensors and absent water were not counted as measured variables. Every record has CSV and PDF whose descriptions explicitly associate the same listed columns with comma-separated tables and PDF tables respectively. Extra distributions: b034 CSV, b035 PDF, b039 PDF, b040 CSV; these repeat the same local column facts, not new contexts. Verification is of supplied metadata association, not downloaded file bytes. No whole records are identical, no answer keys/grade codes/intent tags or no-answer conjunctions appear in the actual fields. Titles and prose are noticeably templated, but titles are not bare category labels and descriptions supply subject, protocol and catalogue identity. Meaningful wording variation exists in sentence ordering, paragraph structure, basis phrasing and whether columns are in description or only distributions; filler remains repetitive. Strict all-facts-preserved is unresolved: numerical examples and study/publisher attribution change, not just wording. Seed-39031 numerical examples (dimensions for b031/b032; friction/roughness/depth where present) are b031 63.59, b032 77.05, b033 0.85/0.52, b034 0.56, b035 mass 1179.69, b036 price 128.51/carton 133 x 90 x 65, b037 0.43/1.14/1.62, b038 0.41/1.74/1.62, b039 0.56/0.75, b040 0.63. These literal values are evidenced in the corresponding record facts and differ from other seeds. Since they are labelled e.g., they need not be contradictory measurements of identical samples, but exact factual invariance cannot be certified. Also unresolved in every seed: b036 is commercial observational content, so the experimental-basis dichotomy cannot faithfully encode it. No query texts or other corpus packets were supplied/read; paraphrase equivalence, full-corpus coverage and external authoritative identity cannot be independently certified from this packet. Identity observations refer only to explicit catalogue assertions in the actual descriptions, not row keys or semantically similar components."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-14",
+      "rationale": "All ten seed-39032 records and all actual projected fields were read. Relative to both other seeds, product/protocol, exact identities TG-420 versus TG-042 and PACE-033 through PACE-040, and per-ID variable concepts/units are preserved. b036 retains the commercial-ledger exclusion and does not acquire traction measurements. b033/b039 still lack documented water depth and b034/b040 still document only friction. CSV/PDF labels agree with the explicit comma-separated-table/PDF-table content synopses, and all distributions within each record list the same column facts. Extra distributions are b032 CSV, b034 CSV, b035 CSV, b037 CSV, b038 PDF and b040 CSV. Distribution verification concerns metadata, not file bytes. Text variation is more than location replacement: b033 changes from inline physical-observation wording and column order to a multi-paragraph empirical-sample account; b037 moves its columns out of the description to distribution synopses and changes basis phrasing; b040 changes from a long multi-paragraph column account to a short synopsis pointing to distributions. Shared generic filler and title frames remain, so this is not fully independent natural prose. No literal record duplicates or searchable answer keys/intent codes were observed. Strict fact preservation remains unverified because numerical examples and institutional/location assertions change. Seed-39032 examples are b031 dimensions 59.29, b032 dimensions 79.23, b033 friction/roughness 0.56/1.36, b034 friction 0.47, b035 mass 1690.55, b036 carton 299 x 90 x 65/price 94.63, b037 friction/roughness/depth 0.38/0.51/1.72, b038 0.36/1.74/0.95, b039 0.63/0.76, b040 friction 0.38. Each is literally evidenced in that record's facts; these are not unchanged copies of seed 39031 or 39033 values. Their e.g. status leaves whether factual equality was intended unresolved, despite stable measurement concepts. b036's commercial basis is U, not an invented experimental or simulation claim. Review scope is supplied searchable metadata only; no omitted queryContext copies, actual query paraphrases, downloaded distributions, source corpora or other reviews were inspected. Full-corpus coverage and paraphrase equivalence are outside this packet's observable evidence."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-14",
+      "rationale": "All ten seed-39033 records and every actual projected field were read through the packet end. The same per-ID column sets, units, exact catalogue strings and product/process distinctions are maintained across all three seeds. TG-420 and TG-042 remain distinct models; PACE identifiers are explicit catalogue identities of complete shoes, not components or row keys. b031/b032 do not become temperature probes through the negated sensor phrase; b035's no-water statement does not become a positive measured depth; b036 remains a commercial ledger rather than performance data. Every record's CSV/PDF format agrees with its explicit content synopsis, and optional distributions repeat identical per-record columns: b032 PDF, b038 PDF, b039 PDF, b040 PDF. Verification is metadata/content association only. No actual field supports either frozen no-answer conjunction. Titles use common location/topic frames and filler is repetitive; nevertheless real phrasing, order, length, paragraph and optional-field changes exist, not solely different titles. For example b031 changes a short distribution-directed account into a long inline-column account, b034 becomes a short distribution-directed account instead of the longer seed-39031 account, and b039 uses an observational-study opening instead of the seed-39032 physical-observation opening. No duplicate whole records or answer-key/grade/intent leakage was observed. Variable concepts are preserved, but literal numeric and attribution facts are not. Seed-39033 examples are b031 dimensions 96.59, b032 dimensions 118.05, b033 friction/roughness 0.83/0.52, b034 friction 0.37, b035 mass 665.05, b036 price 55.92/carton 315 x 90 x 65, b037 friction/roughness/depth 0.64/0.99/0.41, b038 0.68/0.8/0.48, b039 0.7/1.19, b040 friction 0.44. These exact examples are quoted in record facts and differ from the other seeds. The examples are marked e.g., so a scientific contradiction is not established, but strict all-facts-preserved cannot be asserted without deciding whether such numeric and attribution perturbation is permitted. This plus b036's unsupported experimental-basis encoding keeps this variation result unresolved. Actual query texts are absent, so paraphrase equivalence and designated exact-query lookup requirements cannot be independently assessed; catalogue identity here means only the explicit assertion in the provided actual description. No external identity authority, distribution bytes or full-corpus coverage was checked."
+    }
+  }
+}

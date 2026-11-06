@@ -1,0 +1,546 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-15",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-15"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "b041", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 500.53)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "Complete road shoes are shared, but the actual activity is explicitly dry testing, not wet pavement testing. The CSV and PDF document only reporting month and unloaded mass; wet friction, roughness and water-film depth are not documented measurements. The negated water application is not a water-depth measurement.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 500.53)."}]}},
+      "identity": {"value": "PACE-041", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-041."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b042", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 190 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 162.23)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The subject and wet-testing association match, but the actual observed records are commercial, expressly not experimental performance. All three distributions (CSV, PDF, CSV) describe carton dimensions and advertised cost, not wet friction, pavement roughness or water-film depth. Empirical commercial observations must not be promoted to traction measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 190 x 90 x 65); advertised retail cost (AUD/unit; e.g. 162.23)."}]}},
+      "identity": {"value": "PACE-042", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-042."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b043", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.5)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.85)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.39)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-043", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-043."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b044", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.4)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.31)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.55)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-044", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-044."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b045", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.78)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.2)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-045", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-045."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b046", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.67)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-046", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-046."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b047", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 472.22)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The actual footwear activity is dry-surface bench testing with no water, despite sharing complete running shoes with the wet-road need. CSV and both PDFs list mass and month only. Neither negated water application nor generic field-guide text documents water-film depth, pavement roughness or wet friction.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 472.22); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "identity": {"value": "PACE-047", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-047."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b048", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 136 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 161.11)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "Wet pavement testing is the associated subject, not the measured performance of this release. The description expressly identifies a commercial ledger, and CSV/PDF contents are carton size and advertised cost. None of the three wet-traction variables is documented; long reuse notes expressly add no observations.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 136 x 90 x 65); advertised retail cost (AUD/unit; e.g. 161.11)."}]}},
+      "identity": {"value": "PACE-048", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-048."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b049", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 10.03)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 50.85)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.6)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "FLOW-049", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-049."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b050", "seed": 39031, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.66)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 53.22)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 23.13)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "FLOW-050", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-050."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b041", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 606.08)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The shoes are complete road shoes, but dry bench testing explicitly excludes applied water. CSV/PDF/CSV list only mass and reporting month, not wet friction, surface roughness or water-film depth. No applied water is a process exclusion, not a positively measured zero depth.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 606.08); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "identity": {"value": "PACE-041", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-041."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b042", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 311 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 224.45)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The title and associated study mention wet-road traction, but the actual data are an observed commercial ledger rather than experimental performance. Both CSV and PDF contain carton dimensions and retail cost; wet friction, pavement roughness and water-film depth are absent as measurements. The field guide explicitly supplies no further observations.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 311 x 90 x 65); advertised retail cost (AUD/unit; e.g. 224.45)."}]}},
+      "identity": {"value": "PACE-042", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-042."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b043", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.05)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.61)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.08)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-043", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-043."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b044", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.44)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 0.56)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.47)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-044", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-044."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b045", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.35)"}],
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.17)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-045", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-045."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b046", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.82)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-046", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-046."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b047", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1279.41)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "Road shoes are the same broad product, but the process is explicitly dry bench testing, not wet-pavement traction. The two distributions consistently list month and unloaded mass. The exclusion of water application does not positively measure water-film depth; roughness and wet friction are also not documented.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1279.41)."}]}},
+      "identity": {"value": "PACE-047", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-047."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b048", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 283 x 90 x 65)"}],
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 75.08)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The wet-traction association is genuine subject context, but this release explicitly records commercial rather than experimental performance. CSV and PDF document carton dimensions and advertised price only. They do not document wet sliding friction, tested pavement roughness or water-film depth, so the association alone cannot support the requested measurements.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 283 x 90 x 65); advertised retail cost (AUD/unit; e.g. 75.08)."}]}},
+      "identity": {"value": "PACE-048", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-048."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b049", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 17.71)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 50.91)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.33)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "FLOW-049", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-049."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b050", "seed": 39032, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 50.66)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.53)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 36.53)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "FLOW-050", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-050."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b041", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 1517.17)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "Complete running shoes match the product, but the actual process explicitly uses dry surfaces without applied water. CSV and PDF list month and unloaded mass only. Wet friction, roughness and water-film depth are not documented measurements; no water applied is not evidence of measured zero water depth.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 1517.17)."}]}},
+      "identity": {"value": "PACE-041", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-041."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b042", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 86.74)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 143 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The shoes and wet-road subject are shared, but this release expressly concerns a commercial ledger, not experimental performance. Its CSV and two PDFs consistently document retail price and carton dimensions, not wet sliding friction, pavement roughness or water-film depth. Observed commercial data do not become traction data through the title.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 86.74); shipping carton dimensions (length x width x height in mm; e.g. 143 x 90 x 65)."}]}},
+      "identity": {"value": "PACE-042", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-042."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b043", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.09)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.6)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.08)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-043", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-043."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b044", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 0.2)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.8)"}],
+          "water_film_depth_mm": [{"field": "distributions.0.description", "quote": "water-film depth on pavement (mm; e.g. 1.29)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-044", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-044."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b045", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "surface_roughness_mm": [{"field": "distributions.0.description", "quote": "tested pavement surface roughness (mm; e.g. 1.04)"}],
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.45)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-045", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-045."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b046", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "wet_friction_coefficient": [{"field": "distributions.0.description", "quote": "wet sliding friction coefficient (dimensionless; e.g. 0.39)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "PACE-046", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-046."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b047", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "dry_surface_testing", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "unloaded_unit_mass_g": [{"field": "distributions.0.description", "quote": "unloaded unit mass (g; e.g. 518.76)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "The complete-shoe product overlaps, but the actual process is dry-surface bench testing with water explicitly not applied. CSV and PDF list only unloaded mass and month. No wet friction, pavement roughness or measured water-film depth is supplied, and negated application is not a positive depth observation.", "evidence": [{"field": "description", "quote": "dry-surface footwear bench testing with no water applied"}, {"field": "distributions.0.description", "quote": "Deposited columns: unloaded unit mass (g; e.g. 518.76); reporting interval (calendar month; e.g. 2024-06)."}]}},
+      "identity": {"value": "PACE-047", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-047."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b048", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "running_shoe", "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]},
+        "process": {"value": "commercial_ledger_associated_with_wet_pavement_testing", "evidence": [{"field": "description", "quote": "wet pavement traction testing"}, {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "advertised_retail_cost_aud_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 139.72)"}],
+          "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 321 x 90 x 65)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {"f01": {"reason": "Wet-pavement testing concerns these shoes, but the released observations are explicitly a commercial ledger rather than experimental performance. The CSV/PDF pair documents price and carton dimensions only. Wet friction, surface roughness and water-film depth cannot be inferred from the subject association or extensive reuse notes.", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}, {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 139.72); shipping carton dimensions (length x width x height in mm; e.g. 321 x 90 x 65)."}]}},
+      "identity": {"value": "PACE-048", "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-048."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b049", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 2.98)"}],
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 38.28)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 30.61)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "FLOW-049", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-049."}]},
+      "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "b050", "seed": 39033, "reviewer_id": "auditor-packet-15",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "hydraulic_pump", "evidence": [{"field": "description", "quote": "hydraulic fluid circulation pumps"}]},
+        "process": {"value": "indoor_low_noise_testing", "evidence": [{"field": "description", "quote": "indoor low-noise testing during hydraulic circulation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "noise_decibels": [{"field": "distributions.0.description", "quote": "operating sound pressure level (dB(A); e.g. 35.77)"}],
+          "sound_measurement_distance_m": [{"field": "distributions.0.description", "quote": "microphone distance from operating pump (m; e.g. 1.55)"}],
+          "flow_rate": [{"field": "distributions.0.description", "quote": "hydraulic fluid flow rate (litres/minute; e.g. 13.88)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {},
+      "identity": {"value": "FLOW-050", "evidence": [{"field": "description", "quote": "The catalogue model or edition is FLOW-050."}]},
+      "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true, "reviewer_id": "auditor-packet-15",
+      "rationale": "Reviewed every supplied field for all ten records and compared each identity with both other seeds. Semantic variable sets, units, empirical-versus-commercial distinctions, complete-product roles and literal PACE-041 through PACE-048 / FLOW-049 / FLOW-050 identities are preserved. b041/b047 retain dry/no-water testing with month and unloaded mass; b042/b048 retain the explicit commercial-only distinction with carton dimensions and advertised price; b043/b044 retain three wet-traction variables; b045 retains only friction and roughness (no measured water depth); b046 retains only friction; b049/b050 retain flow, operating dB(A) and microphone distance. Both or all three distribution synopses in each record have consistent variable/value content; every CSV describes a comma-separated table and every PDF describes tables inside PDF. Additional third distributions repeat a representation, not a new experiment or variable. Meaningful metadata variation exists across seeds in prose ordering, paragraphing, description length, title wording, column order, optional spatial fields, publisher/location context and third-distribution presence/format. For example b045 has extensive reuse prose here whereas b043 separates study, basis and distribution statements into paragraphs. This is preservation of semantic measurement coverage, NOT identical literal numerical facts: e.g. b041 mass examples are 500.53, 606.08 and 1517.17 g across the seeds, and study locations/publishers also change. Values are explicitly introduced as examples and have been recorded per seed rather than asserted equal. Generic field guides and missing-cell notes add no measurements. All titles, keywords, publisher and supplied spatial fields were reviewed; no temporal field is supplied. No instruction/answer-key/grade leakage or within-seed duplicate whole record was observed. Verification is of complete packet metadata and distribution format/content association, not downloaded file bytes; omitted duplicate production queryContext text was not independently inspected. No corpus-wide coverage or query-paraphrase claim is made because actual query strings and records outside this packet are not provided."
+    },
+    "39032": {
+      "passed": true, "reviewer_id": "auditor-packet-15",
+      "rationale": "All ten records were individually read through their complete supplied descriptions, titles, keywords, publisher fields, distribution fields and any spatial fields, then compared with seeds 39031 and 39033. Identity strings and semantic fact sets are unchanged: b041/b047 dry/no-water road-shoe observations have month and mass; b042/b048 are commercial ledgers with carton dimensions and advertised cost despite their wet-testing subject; b043/b044 measure friction, roughness and water depth; b045 measures friction and roughness only; b046 measures friction only; b049/b050 are empirical indoor hydraulic-pump acoustic/flow tests with microphone distance. There is no inference of missing variables from activity names or negations. Each distribution matches its record's column/value list and its CSV/comma-separated or PDF/table description. Here b041 has a third CSV, b043/b044/b046 have a third PDF, while b042/b045/b047/b048/b049/b050 have two representations; these changes do not alter variable coverage. Meaningful wording/length variation is visible: b047 is compact, b046 and both pump records have much longer interpretive prose, and subjects/basis/column descriptions move between sentence and paragraph positions. Titles, fictional sites/publishers, examples, column order and optional spatial presence also vary, not just a category prefix. Semantic coverage is preserved, not exact numeric equality: b045 friction examples are 0.78, 0.35 and 0.45 across the seeds, with roughness 0.2, 1.17 and 1.04 mm. These are expressly illustrative e.g. values, not a claim of value-identical observations across releases. No contradiction, searchable instruction, answer key or whole-record duplicate was observed within this packet. No temporal fields were supplied. Distribution verification is metadata association only; no files were downloaded. Duplicate queryContext copies were omitted by the packet and were not independently reviewed; actual query wording, exact-query equivalences and global corpus coverage cannot be audited from this packet."
+    },
+    "39033": {
+      "passed": true, "reviewer_id": "auditor-packet-15",
+      "rationale": "Exhaustively reviewed all ten supplied records and compared each with both other seeded versions. Complete-shoe versus pump product roles, authoritative PACE/FLOW strings, observed rather than simulated basis, and each documented variable set remain stable. The commercial records b042/b048 must remain commercial-ledger contexts, not be recast as experimental wet traction merely because of their study wording. b041/b047 still explicitly exclude water application; b043/b044 retain measured roughness, wet friction and water depth; b045 has roughness and friction without a measured water-depth column; b046 has friction alone; b049/b050 retain flow rate, operating sound pressure and microphone distance. Distribution variable/value lists are internally aligned for every record: two representations here except three for b042/b043/b046/b049/b050, with the third a PDF except b050's CSV. Each format is consistent with its own table synopsis. There is meaningful prose variation in statement ordering, one-paragraph versus multi-paragraph descriptions, title constructions and extensive versus compact reuse notes, as well as column ordering and optional spatial metadata. Sites, institutional publishers and illustrative numeric examples also change across seeds; exact numerical facts are not preserved and were not treated as equal. For example FLOW-050 sound examples are 53.22, 50.66 and 35.77 dB(A), distances 2.66, 2.53 and 1.55 m, and flows 23.13, 36.53 and 13.88 litres/minute. The stable semantic coverage judgment concerns types, units, roles and qualifiers, not a single unchanged experimental sample. All supplied title/keyword/publisher/spatial content was reviewed, with no temporal fields supplied and no observed answer-key/instruction leakage or within-seed duplicate whole records. Only packet metadata association was verified, not actual file bytes or omitted duplicate queryContext copies. Actual query strings and the rest of the corpus are unavailable under this audit scope, so no global coverage, exact-query equivalence or ranking assertion follows."
+    }
+  }
+}

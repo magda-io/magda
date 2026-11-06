@@ -1,0 +1,508 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-08",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-08"
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a071", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "CSV"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 10.89)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 292.49)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 3.41)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s05": {"reason": "The subject is liquid dairy beverage shelf-life, not solid milk-chocolate bars or wrapper/barrier/seal testing. CSV and JSON describe beverage spoilage, microbes and temperature, not packaging performance.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage"}]},
+        "s07": {"reason": "This is a finished liquid dairy beverage shelf-life study, not storage of a dessert chocolate ingredient. Shared storage temperature does not establish ingredient quality or moisture measurements.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a072", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 7.38)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 52.75)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 8.84)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s05": {"reason": "Liquid dairy beverage shelf-life is neither a solid milk-chocolate bar nor a packaging experiment; the documented variables do not describe wrappers, barriers or seal failures.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage"}]},
+        "s07": {"reason": "Storage temperature overlaps, but the positive subject is finished dairy beverage shelf-life rather than dessert-ingredient storage. Microbes and spoilage days do not evidence ingredient moisture or quality measurements.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a073", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "CSV"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.47)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 14.49)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a074", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 38.82)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.53)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a075", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {"storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 6.43)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a076", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "sealed_cartons_in_chocolate_milk_transport", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons"}, {"field": "keywords.0", "quote": "chocolate milk"}]},
+        "process": {"value": "ambient_transport_logistics", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons, not refrigerated shelf-life trials"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 41)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Granite Bend West)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s10": {"reason": "The process explicitly excludes refrigerated shelf-life trials. Its deposited fields concern logistics counts, month and site, not storage temperature, elapsed spoilage or microbial counts. The transport-product attribution has a scope ambiguity, but this does not erase the explicit process contrast.", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons, not refrigerated shelf-life trials"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West)"}]}
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": ["U on unqualified dairy-product attribution: description places 'of liquid chocolate-flavoured dairy milk beverage' after negated refrigerated shelf-life trials. Positive text establishes sealed-carton logistics, and keywords.0 associates chocolate milk, but the description does not unambiguously attach the dairy composition to the transported cartons. No shelf-life measurement is inferred from the negated clause."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a077", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 7.1)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 201.35)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 11.45)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Shelf-life process, empirical basis, CSV and all three measured variables are present, but the positive subject is oat beverage and dairy milk is explicitly excluded; it is not the dairy beverage specified by the intent.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a078", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.0.description", "quote": "Tables are supplied inside a PDF document."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.01)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 255.82)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 4.27)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "The dairy shelf-life subject and all three empirical variables match the stated concept. The decisive limitation is format only: deposited content is PDF, while s10 requires CSV. No CSV distribution is present.", "evidence": [{"field": "description", "quote": "Only PDF tables are deposited; no machine-readable table is available."}, {"field": "distributions.0.format", "quote": "PDF"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a079", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_spoilage_days_not_empirically_measured": [{"field": "distributions.0.description", "quote": "Simulated output columns: elapsed time until observed spoilage (days; e.g. 14.6)"}],
+          "simulated_microbial_count_cfu_per_ml_not_empirically_measured": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 221.27)"}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}],
+          "simulated_storage_temperature_not_empirically_measured": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 3.12)"}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Same nominal dairy shelf-life variables and CSV availability do not establish empirical measurements. The explicit basis is simulation only. The title misleadingly suggests trials; this conflict is flagged rather than using the title to invent physical observations.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "title", "quote": "What the Ivy Brook East chocolate milk trials recorded"}]}},
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Cross-field ambiguity: title 'What the Ivy Brook East chocolate milk trials recorded' suggests trials, while description explicitly denies any physical trial or empirical observations. Simulation basis is explicit and both distributions label simulated output, but the title should not imply an empirical trial. No canonical empirical measurement fact is asserted here; listed facts are explicitly simulated outputs."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a080", "seed": 39031, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 3.33)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 12.07)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 87.51)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a071", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 14.56)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 7.69)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 169.6)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s05": {"reason": "The positively documented product is liquid dairy beverage and the process is refrigerated shelf-life assessment, not solid-bar packaging. Deposited spoilage/microbe/temperature columns do not establish packaging material, barrier or seal testing.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage through refrigerated shelf-life assessment"}]},
+        "s07": {"reason": "Finished dairy beverage shelf-life, not dessert-ingredient storage. Temperature is shared terminology, but ingredient quality and moisture are not documented measurements.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage through refrigerated shelf-life assessment"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a072", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "CSV"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.73)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 286.24)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 12.15)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s05": {"reason": "The subject is a liquid dairy beverage, not a solid milk-chocolate bar, and the stated process is shelf-life assessment rather than packaging. No wrapper material/barrier/seal measurements are documented.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment of liquid chocolate-flavoured dairy milk beverage"}]},
+        "s07": {"reason": "Although temperature is measured, the positive subject and process are finished dairy beverage shelf-life rather than dessert chocolate ingredient storage. The other columns concern microbes and spoilage, not ingredient quality or moisture.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment of liquid chocolate-flavoured dairy milk beverage"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a073", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 6.41)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.37)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a074", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 33.56)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.76)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a075", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {"storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.55)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a076", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "sealed_cartons_in_chocolate_milk_transport", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons"}, {"field": "keywords.0", "quote": "chocolate milk"}]},
+        "process": {"value": "ambient_transport_logistics", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons, not refrigerated shelf-life trials"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Bramble Hill Coastal)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 78)"}],
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "The positively stated process is ambient carton logistics, with an explicit exclusion of refrigerated shelf-life trials. The columns are site, completed operations and reporting month, not the three shelf-life measurements. Product scope uncertainty is separately flagged and is not needed to establish this process mismatch.", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons, not refrigerated shelf-life trials"}, {"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06)"}]}},
+      "identity": {"value": null, "evidence": []},
+      "issues": ["U on unqualified dairy-product attribution: 'of liquid chocolate-flavoured dairy milk beverage' follows negated refrigerated shelf-life trials rather than unambiguously modifying the transported sealed cartons. Keyword chocolate milk and the title give a topical association, not an unambiguous positive dairy-composition statement. The negated shelf-life process and its absent variables are not counted as measured."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a077", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 254.64)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 13.04)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 7.89)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "The empirical shelf-life variables and CSV format are documented, but the subject is explicitly oat beverage with no dairy milk, not the required dairy beverage. Milk occurs only in the exclusion.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a078", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.1.format", "quote": "PDF"}, {"field": "distributions.1.description", "quote": "Tables are supplied inside a PDF document."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 105.11)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.91)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 11.89)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Dairy beverage shelf-life and all three empirical variables are supported; this is not a topical mismatch. The required CSV content is absent: both associated distributions are PDF and the description explicitly limits the release to PDF tables.", "evidence": [{"field": "description", "quote": "Only PDF tables are deposited; no machine-readable table is available."}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.1.format", "quote": "PDF"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a079", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": false,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_microbial_count_cfu_per_ml_not_empirically_measured": [{"field": "distributions.0.description", "quote": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 104.28)"}],
+          "simulated_storage_temperature_not_empirically_measured": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.57)"}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}],
+          "simulated_spoilage_days_not_empirically_measured": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 8.35)"}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "The CSV and JSON contain simulated dairy shelf-life outputs, not empirical observations. The explicit denial of physical trials is decisive for the empirical-basis requirement. The field-notes title is a conflicting provenance cue and is flagged, not treated as measurement evidence.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "title", "quote": "From field notes to archive: Dune Valley Inner chocolate milk"}]}},
+      "identity": {"value": null, "evidence": []},
+      "issues": ["Cross-field provenance ambiguity: title 'From field notes to archive: Dune Valley Inner chocolate milk' suggests physical field notes, but description denies physical trials and empirical observations. Both distribution descriptions explicitly label simulated outputs. The title cue should be reconciled; none of the listed outputs is counted as an empirical measurement."],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a080", "seed": 39032, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 3.32)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 10.17)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 188.85)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a071", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 3.9)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 227.3)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 5.52)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s05": {"reason": "The positive description identifies a liquid dairy beverage shelf-life study, not packaging of solid milk-chocolate bars. The distributions associate CSV/JSON with temperature, microbes and spoilage rather than wrapper/barrier/seal observations.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment of liquid chocolate-flavoured dairy milk beverage"}]},
+        "s07": {"reason": "This is finished dairy beverage shelf-life, not dessert chocolate ingredient storage. A measured storage temperature does not by itself establish ingredient quality or moisture measurements.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment of liquid chocolate-flavoured dairy milk beverage"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a072", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 8.93)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 6.39)"}],
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 161.47)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {
+        "s05": {"reason": "Liquid dairy beverage shelf-life differs in both product form and process from solid milk-chocolate bar packaging; no packaging-performance variables are positively documented.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage"}]},
+        "s07": {"reason": "Storage temperature is real but belongs to a finished dairy beverage shelf-life study, not storage of dessert chocolate ingredients. The documented remaining variables are microbes and spoilage rather than moisture and ingredient quality.", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage"}]}
+      },
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a073", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 6.11)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.42)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a074", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "CSV"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 178.87)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.37)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a075", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {"storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.38)"}]},
+        "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a076", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "examines liquid chocolate-flavoured dairy milk beverage through ambient transport logistics for sealed cartons"}]},
+        "process": {"value": "ambient_transport_logistics", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons, not refrigerated shelf-life trials"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "reporting_interval_calendar_month": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Elm Crossing East)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 74)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Unlike the other two versions, the dairy beverage is positively attached to transport here, but the process remains ambient carton logistics and explicitly not refrigerated shelf-life trials. The deposited variables are reporting month, site and operations count, not shelf-life measurements; CSV availability cannot substitute for those facts.", "evidence": [{"field": "description", "quote": "ambient transport logistics for sealed cartons, not refrigerated shelf-life trials"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74)"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a077", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_oat_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 86.76)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 12.14)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 4.45)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "The distributions genuinely contain the three empirical shelf-life variables in CSV/JSON, but their subject is a chocolate oat beverage with dairy milk expressly excluded. The dairy-product requirement is contradicted, not positively supported by the milk token.", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured oat beverage containing no dairy milk"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a078", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.1.format", "quote": "PDF"}, {"field": "distributions.0.description", "quote": "Tables are supplied inside a PDF document."}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 138.05)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.53)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 13.64)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "This is empirically documented dairy beverage shelf-life with all three variables. The contrast is specifically the missing required CSV: both deposited distributions contain PDF tables, and no machine-readable table is offered. It should not be described as topically irrelevant.", "evidence": [{"field": "description", "quote": "Only PDF tables are deposited; no machine-readable table is available."}, {"field": "distributions.0.format", "quote": "PDF"}, {"field": "distributions.1.format", "quote": "PDF"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a079", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]},
+        "facts": {
+          "simulated_microbial_count_cfu_per_ml_not_empirically_measured": [{"field": "distributions.0.description", "quote": "Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16)"}],
+          "simulated_spoilage_days_not_empirically_measured": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 8.28)"}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}],
+          "simulated_storage_temperature_not_empirically_measured": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 2.54)"}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {"s10": {"reason": "Nominal dairy shelf-life outputs and CSV format are present, but their basis is explicitly entirely simulated. Generic distribution titles do not override the repeated simulated-output qualification. No empirical spoilage, microbes or storage temperature is claimed as measured.", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns:"}]}},
+      "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a080", "seed": 39033, "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true, "semantic_review_passed": true,
+      "contexts": [{
+        "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]},
+        "process": {"value": "refrigerated_shelf_life", "evidence": [{"field": "description", "quote": "refrigerated shelf-life assessment"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.1.format", "quote": "JSON"}, {"field": "distributions.2.format", "quote": "JSON"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "microbial_count_cfu_per_ml": [{"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 200.25)"}],
+          "spoilage_days": [{"field": "distributions.0.description", "quote": "elapsed time until observed spoilage (days; e.g. 13.9)"}],
+          "storage_temperature": [{"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 5.02)"}]
+        }, "distribution_content_verified": true
+      }],
+      "hard_negatives": {}, "identity": {"value": null, "evidence": []}, "issues": [], "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false, "reviewer_id": "auditor-packet-08",
+      "rationale": "All ten actual records were compared with both other seeds. Meaningful wording variation exists: a071 places the variable list in its description, whereas 39032 and 39033 delegate it to distribution synopses; a073 is short here, long in 39032 and short with different wording in 39033. Titles, paragraph order, description length, optional spatial fields, distribution count and distribution titles vary, not merely prefixes. Variable concepts and units are preserved per ID: a071/a072/a080 temperature+spoilage+microbes; a073 temperature+spoilage without microbes; a074 temperature+microbes without spoilage; a075 temperature only; a076 logistics month/site/count; a077 oat beverage with all three shelf-life variables; a078 all three in PDF only; a079 simulated versions of all three, never physical measurements. Core process/basis and required-format availability persist, and all nested descriptions associate their own format with the same per-record columns. However numeric examples and fictional locality/publisher are not preserved as literal facts: a071 storage temperature is 3.41 here, 7.69 in 39032 and 3.9 in 39033; a076 operations are 41/78/74. Thus these are not unchanged observation values under paraphrase. Full fact-preserving variation is not certified. a076 dairy-product grammatical scope and a079 empirical-sounding trial title are unresolved in this seed. No exact-identity review is requested for these records, no complete searchable record duplicates or answer-key/intent/grade leakage were observed, and no frozen no-answer conjunction is supported. Complete actual fields were read; omitted production queryContext text was not independently inspected, and downloadable bytes were not accessed. Verification is metadata content/format association only. Literal query paraphrases are absent, so paraphrase equivalence cannot be independently tested from this packet."
+    },
+    "39032": {
+      "passed": false, "reviewer_id": "auditor-packet-08",
+      "rationale": "All ten seed versions and both counterparts were actually reviewed. Measurement concepts, units and explicit empirical/simulation distinctions survive: a073 still has only temperature/spoilage; a074 only temperature/microbes; a075 temperature alone; no omitted variable was supplied by topic. a076 remains month/site/operations logistics, a077 explicitly excludes dairy, a078 remains PDF-only and a079 simulation-only. CSV/JSON distributions repeat their per-record columns, and both PDFs of a078 carry the same three variables. Distribution count changes do not change format availability: for example a072 gains a third CSV, a073 has two distributions here rather than three, and a078 has two PDFs rather than one in 39031. Textual variation is substantive in organization and length: a071 is distribution-led and short, a073 is much longer, a074 becomes one paragraph, and titles/locality/publisher are different. Exact numerical examples are not invariant: a072 temperature 7.38/2.73/6.39 and spoilage 8.84/12.15/8.93 across seeds. Full literal-fact preservation is therefore not certified, despite stable measurement schemas. The product-scope ambiguity in a076 persists, and a079's field-notes title creates an empirical provenance cue despite explicit simulation text. No identity-required records, complete searchable duplicates, answer-key/intent/grade leakage or no-answer conjunctions were observed. Review completeness covers all packet fields, not omitted queryContext copies, file bytes, or unavailable actual query paraphrases."
+    },
+    "39033": {
+      "passed": false, "reviewer_id": "auditor-packet-08",
+      "rationale": "All ten records were compared across all three seeds. Core product/process/basis, variable concepts and units, and format constraints remain recognizable, with a076 now positively attaching dairy beverage to transport rather than putting it after a negated shelf-life clause. a079 has a neutral title here rather than the empirical-sounding titles in 39031/39032; its explicit simulation-only descriptions and all simulated-output distributions remain decisive, not empirical measurements. a071/a072/a080 retain three empirical shelf-life variables; a073 has no microbe measurement, a074 has no spoilage-time measurement, and a075 has neither. a077 retains positive oat subject and explicit no-dairy exclusion; a078 has only PDF tables containing all three measurements. Nested distribution descriptions consistently describe their associated CSV, JSON or PDF content. Wording variation goes beyond cosmetic prefixes: a080 changes from a long numerical description to a short distribution-led synopsis; a075 changes from short to long; a071 is short and distribution-led; titles, paragraph order, optional spatial fields and distribution counts differ. Nonetheless exact example values and fictional institutional/site attribution change: a080 microbes 87.51/188.85/200.25, spoilage 12.07/10.17/13.9 and temperature 3.33/3.32/5.02. The seeded texts cannot be certified as preserving all literal measured examples, and the cross-seed product-scope/title ambiguities are not consistently preserved or resolved across all versions. No complete searchable record duplicates, identity-required items, answer-key/intent/grade leakage or frozen no-answer conjunctions were observed. All actual packet fields were reviewed; omitted queryContext copies, downloadable file bytes and absent query paraphrase strings remain outside independent verification."
+    }
+  }
+}

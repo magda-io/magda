@@ -1,0 +1,87 @@
+{
+  "after": {
+    "corpora": [
+      {
+        "bytes": 814498,
+        "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/.local/corpora-v2/seed-39031.jsonl",
+        "records": 180,
+        "seed": 39031,
+        "sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4"
+      },
+      {
+        "bytes": 804304,
+        "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/.local/corpora-v2/seed-39032.jsonl",
+        "records": 180,
+        "seed": 39032,
+        "sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7"
+      },
+      {
+        "bytes": 811096,
+        "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/.local/corpora-v2/seed-39033.jsonl",
+        "records": 180,
+        "seed": 39033,
+        "sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94"
+      }
+    ],
+    "generated_at_utc": "2026-11-06T00:06:22.670290+00:00",
+    "generator_sha256": "58d2a5ef4640404109ac5fa78c2c1957585d52d5a61d0b5f3c9cfa2253fc9df4",
+    "manifest_path": "results/generation-manifest.json",
+    "manifest_sha256": "e7533d06ab8813648674c1701a6614483a3febdd89b14bf07369324787b9c916",
+    "sample_sha256": "559e333f976cd23ebbe180e3e66208b7a5b3041ad63003b54e40e6b2ea87df9f"
+  },
+  "before": {
+    "corpora": [
+      {
+        "bytes": 807528,
+        "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/.local/corpora/seed-39031.jsonl",
+        "records": 180,
+        "seed": 39031,
+        "sha256": "266c86c1675f2ad5e82afa2b8650e5f2b35998ac0c08ed273fb0f57b592768f7"
+      },
+      {
+        "bytes": 809432,
+        "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/.local/corpora/seed-39032.jsonl",
+        "records": 180,
+        "seed": 39032,
+        "sha256": "72e60390e64318e6a830a7d155bc2e23e57001b9b5a9fc1da4416f12043de55b"
+      },
+      {
+        "bytes": 812967,
+        "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/.local/corpora/seed-39033.jsonl",
+        "records": 180,
+        "seed": 39033,
+        "sha256": "e5f1995c490fd167bd8e775aab65050345e7e5f2d060b636b09a4bf017e1b03a"
+      }
+    ],
+    "generated_at_utc": "2026-11-06T00:02:44.726307+00:00",
+    "generator_sha256": "949135cad4e8bf5cc4e43787acce7e7bc06afe5599b5accce2d0ea61fb3a856e",
+    "manifest_path": ".local/corpora/generation-manifest-v1.json",
+    "manifest_sha256": "741fb12ce62677c588a9276b7d567b567e2e959cf4bf13decd9eed1a0e8e3f56",
+    "sample_sha256": "9467b74a602ebb1c193b1995d825035b784032b4f1513896d4a3d2f12c40186a"
+  },
+  "frozen_registration_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "generator_state": {
+    "candidate_outcomes_inspected": false,
+    "embedding_calls": 0,
+    "network_calls": 0,
+    "search_calls": 0
+  },
+  "independent_label_validation": "Required from C; generator checks are not an independent pass.",
+  "issue": 3903,
+  "kind": "pre-retrieval generated-text correction, not specification amendment",
+  "parent_approval": "Main explicitly approved before independent final label audit, embeddings and retrieval.",
+  "qrels_sha256_unchanged": "456b7e43721150ee49fe52c28f938843ca543a9b6365af85abf2685301d05445",
+  "queries_criteria_ids_seeds_claims_and_expected_grades_changed": false,
+  "reason": "Generator self-review and C identified repeated padding sentences within descriptions; sample count values were fractional. Use without-replacement neutral notes and integer count examples.",
+  "recorded_at_utc": "2026-11-06T04:48:53.543256+00:00",
+  "schema_version": 1,
+  "spec_sha256_unchanged": {
+    "architect-notes.md": "183ab676ac31b239b1a207b1461a04841fe8672cb0501ad45853c75bae6fa1b7",
+    "decision-gates.json": "c396debc6ad77bbb11ac403f7c195a4f13097aae30831395079e6659e87147d3",
+    "generation-spec.json": "11208fc8d07d3f6d6821ce3c403946950961411336834ae8b22dd95f05a47b2e",
+    "intents.jsonl": "61b5469fbbfdaa9cd1729bd14a412f12166d94be044ff8ad020691aa5c1dbefc",
+    "protocol.md": "8b92fdcc5500d7c4e120301364e71502bd3d250fb446c735e2facd8c95aaa730",
+    "query-spec.jsonl": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+    "relevance-rubric.md": "b4b778ffd53c860207b5187c01f84d0fa38bed1df74804bbec31b9fa8780f8fe"
+  }
+}

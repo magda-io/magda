@@ -1,0 +1,992 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [
+    {
+      "after_record_sha256": "e94a67ac7081e466ad874541f1b863ee238a7c3d91a2e492013ad96b626dce3e",
+      "before_record_sha256": "ab954fdb961750f2f5175f8807bf80469b6f4aac7e3e45618322eb78791d50b5",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "At Granite Bend West, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial. Entries describe an observational study rather than model predictions. The released table lists reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold u",
+            "nder a similar name. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation us",
+            "ed for unavailable cells without supplying additional observations. Each table uses the same local observation key. The release is arranged for comparison within this study."
+          ],
+          "before_chunks_concat_exact": [
+            "This deposit concerns ambient transport logistics for sealed cartons, not refrigerated shelf-life trials of liquid chocolate-flavoured dairy milk beverage at Granite Bend West. Entries describe an observational study rather than model predictions. The released table lists reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every produc",
+            "t sold under a similar name. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the not",
+            "ation used for unavailable cells without supplying additional observations. Each table uses the same local observation key. The release is arranged for comparison within this study."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Granite Bend West ambient carton transport records\nDescription: At Granite Bend West, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial. Entries describe an observational study rather than model predictions. The released table lists reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rath",
+            "er than making claims about other installations or every product sold under a similar name. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide sep",
+            "arates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. Each table uses the same local observation key. The release is arranged for comparison within this study.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Granite Bend West ambient carton transport records\nDescription: This deposit concerns ambient transport logistics for sealed cartons, not refrigerated shelf-life trials of liquid chocolate-flavoured dairy milk beverage at Granite Bend West. Entries describe an observational study rather than model predictions. The released table lists reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included h",
+            "ere rather than making claims about other installations or every product sold under a similar name. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. This edition includes a plain-language field guide for the variables listed in the synopsis. The g",
+            "uide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. Each table uses the same local observation key. The release is arranged for comparison within this study.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a076",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39031
+    },
+    {
+      "after_record_sha256": "73ee6f060d2d36e0beae0506446a02e8cc136b750f797ea7cddbf29335c11dfd",
+      "before_record_sha256": "6109af57a21474b41644ad677625734f77a4c62b58f27efe73046b41fa3380d7",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "These are observed administrative entries, not model predictions.\n\nRecorded columns comprise facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06).\n\nAt Bramble Hill Coastal, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product s",
+            "old under a similar name.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nSupporting notes explain the conventions used in this edition.\n\nReaders should retain the supplied units when combining tables.\n\nLocal row keys are not catalog",
+            "ue product identifiers.\n\nThe institutional catalogue provides this synopsis for potential reuse."
+          ],
+          "before_chunks_concat_exact": [
+            "The described study uses empirical observations from physical samples.\n\nRecorded columns comprise facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06).\n\nThis deposit concerns ambient transport logistics for sealed cartons, not refrigerated shelf-life trials of liquid chocolate-flavoured dairy milk beverage at Bramble Hill Coastal.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or ev",
+            "ery product sold under a similar name.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nSupporting notes explain the conventions used in this edition.\n\nReaders should retain the supplied units when combining tables.\n\nLocal row keys ar",
+            "e not catalogue product identifiers.\n\nThe institutional catalogue provides this synopsis for potential reuse."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Bramble Hill Coastal observations of chocolate milk\nDescription: These are observed administrative entries, not model predictions.\n\nRecorded columns comprise facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06).\n\nAt Bramble Hill Coastal, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included her",
+            "e rather than making claims about other installations or every product sold under a similar name.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nSupporting notes explain the conventions used in this edition.\n\nReaders should retain t",
+            "he supplied units when combining tables.\n\nLocal row keys are not catalogue product identifiers.\n\nThe institutional catalogue provides this synopsis for potential reuse.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Bramble Hill Coastal observations of chocolate milk\nDescription: The described study uses empirical observations from physical samples.\n\nRecorded columns comprise facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06).\n\nThis deposit concerns ambient transport logistics for sealed cartons, not refrigerated shelf-life trials of liquid chocolate-flavoured dairy milk beverage at Bramble Hill Coastal.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material",
+            " included here rather than making claims about other installations or every product sold under a similar name.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nSupporting notes explain the conventions used in this edition.\n\nReaders sh",
+            "ould retain the supplied units when combining tables.\n\nLocal row keys are not catalogue product identifiers.\n\nThe institutional catalogue provides this synopsis for potential reuse.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a076",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "c9ba36d15508a872681d974dbdb4daab2ccab70af1634dc557dbb44d3265344f",
+      "before_record_sha256": "701ec0db6b6b0fe4f439167ee99c93c460c5cf2a72ada9bbf084a135cb6da6cd",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: JSON\nDescription: Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.1.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Chocolate milk simulation outputs from Dune Valley Inner\nDescription: At Dune Valley Inner, the study covers liquid chocolate-flavoured dairy milk beverage during refrigerated shelf-life assessment.\n\nThe simulated output columns are viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35).\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quant",
+            "ities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThe deposit contains no personal names or participant details.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: From field notes to archive: Dune Valley Inner chocolate milk\nDescription: At Dune Valley Inner, the study covers liquid chocolate-flavoured dairy milk beverage during refrigerated shelf-life assessment.\n\nThe simulated output columns are viable microbes in beverage samples (CFU/ml; e.g. 104.28); storage chamber temperature (degrees C; e.g. 4.57); elapsed time until observed spoilage (days; e.g. 8.35).\n\nAll entries are computer simulations; no physical trial or empirical observations were collected.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from ",
+            "quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThe deposit contains no personal names or participant details.\n"
+          ],
+          "field": "queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Chocolate milk simulation outputs from Dune Valley Inner"
+          ],
+          "before_chunks_concat_exact": [
+            "From field notes to archive: Dune Valley Inner chocolate milk"
+          ],
+          "field": "title"
+        }
+      ],
+      "dataset_id": "a079",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "006792823d0839b5bfb488333c7d902784030fdd3a906a3ab09130942fbbe8e6",
+      "before_record_sha256": "4bb387b0d75f87d3992a72d6332c96f38e90a8c89366d086e07821b332c40e3d",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Physical observations were recorded, not process simulations.\n\nVariables documented in the files are reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74).\n\nAt Elm Crossing East, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consult",
+            "ing those notes.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.\n\nThe release is ",
+            "arranged for comparison within this study."
+          ],
+          "before_chunks_concat_exact": [
+            "Physical observations were recorded, not process simulations.\n\nVariables documented in the files are reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74).\n\nA separate investigation at Elm Crossing East examines liquid chocolate-flavoured dairy milk beverage through ambient transport logistics for sealed cartons, not refrigerated shelf-life trials.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be ",
+            "converted without consulting those notes.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row o",
+            "rdering.\n\nThe release is arranged for comparison within this study."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: The deposited Elm Crossing East ambient carton transport series\nDescription: Physical observations were recorded, not process simulations.\n\nVariables documented in the files are reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74).\n\nAt Elm Crossing East, ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cel",
+            "ls; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nRows retain local observatio",
+            "n keys for reuse.\n\nThe edition preserves the original row ordering.\n\nThe release is arranged for comparison within this study.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: The deposited Elm Crossing East ambient carton transport series\nDescription: Physical observations were recorded, not process simulations.\n\nVariables documented in the files are reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74).\n\nA separate investigation at Elm Crossing East examines liquid chocolate-flavoured dairy milk beverage through ambient transport logistics for sealed cartons, not refrigerated shelf-life trials.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and",
+            " the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nRow",
+            "s retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.\n\nThe release is arranged for comparison within this study.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a076",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    },
+    {
+      "after_record_sha256": "20ae3ba417448f20e612c2a7c96d6f944f6637a74afaa1a1bc6d699b0f04ecbe",
+      "before_record_sha256": "26920348e0fda7c997c18f3c1a37c9c821601143e52419163bcfcb2ba0d70c8a",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: CSV\nDescription: Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.0.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.0.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: JSON\nDescription: Simulated output columns: viable microbes in beverage samples (CFU/ml; e.g. 279.16); elapsed time until observed spoilage (days; e.g. 8.28); storage chamber temperature (degrees C; e.g. 2.54). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.2.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.2.title"
+        }
+      ],
+      "dataset_id": "a079",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    }
+  ],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "a071",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a072",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a073",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a074",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a075",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a076",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "ambient_transport_logistics",
+            "product": "sealed_cartons_in_chocolate_milk_transport"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "ambient_transport_logistics",
+            "product": "sealed_cartons_in_chocolate_milk_transport"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "ambient_transport_logistics",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": false,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a077",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_oat_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_oat_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_oat_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a078",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a079",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_microbial_count_cfu_per_ml_not_empirically_measured",
+              "simulated_spoilage_days_not_empirically_measured",
+              "simulated_storage_temperature_not_empirically_measured"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_microbial_count_cfu_per_ml_not_empirically_measured",
+              "simulated_spoilage_days_not_empirically_measured",
+              "simulated_storage_temperature_not_empirically_measured"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_microbial_count_cfu_per_ml_not_empirically_measured",
+              "simulated_spoilage_days_not_empirically_measured",
+              "simulated_storage_temperature_not_empirically_measured"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a080",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "microbial_count_cfu_per_ml",
+              "spoilage_days",
+              "storage_temperature"
+            ],
+            "process": "refrigerated_shelf_life",
+            "product": "chocolate_dairy_beverage"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-08.json",
+  "original_review_sha256": "880c05824fc440ead6ca822f5addf24665499683bca91eb307cc0e196241e26b",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-08",
+    "generator_context": false,
+    "id": "auditor-packet-08",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten actual records were compared with both other seeds. Meaningful wording variation exists: a071 places the variable list in its description, whereas 39032 and 39033 delegate it to distribution synopses; a073 is short here, long in 39032 and short with different wording in 39033. Titles, paragraph order, description length, optional spatial fields, distribution count and distribution titles vary, not merely prefixes. Variable concepts and units are preserved per ID: a071/a072/a080 temperature+spoilage+microbes; a073 temperature+spoilage without microbes; a074 temperature+microbes without spoilage; a075 temperature only; a076 logistics mo",
+        "nth/site/count; a077 oat beverage with all three shelf-life variables; a078 all three in PDF only; a079 simulated versions of all three, never physical measurements. Core process/basis and required-format availability persist, and all nested descriptions associate their own format with the same per-record columns. However numeric examples and fictional locality/publisher are not preserved as literal facts: a071 storage temperature is 3.41 here, 7.69 in 39032 and 3.9 in 39033; a076 operations are 41/78/74. Thus these are not unchanged observation values under paraphrase. Full fact-preserving variation is not certified. a076 dairy-product gramm",
+        "atical scope and a079 empirical-sounding trial title are unresolved in this seed. No exact-identity review is requested for these records, no complete searchable record duplicates or answer-key/intent/grade leakage were observed, and no frozen no-answer conjunction is supported. Complete actual fields were read; omitted production queryContext text was not independently inspected, and downloadable bytes were not accessed. Verification is metadata content/format association only. Literal query paraphrases are absent, so paraphrase equivalence cannot be independently tested from this packet."
+      ],
+      "reviewer_id": "auditor-packet-08"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten seed versions and both counterparts were actually reviewed. Measurement concepts, units and explicit empirical/simulation distinctions survive: a073 still has only temperature/spoilage; a074 only temperature/microbes; a075 temperature alone; no omitted variable was supplied by topic. a076 remains month/site/operations logistics, a077 explicitly excludes dairy, a078 remains PDF-only and a079 simulation-only. CSV/JSON distributions repeat their per-record columns, and both PDFs of a078 carry the same three variables. Distribution count changes do not change format availability: for example a072 gains a third CSV, a073 has two distributi",
+        "ons here rather than three, and a078 has two PDFs rather than one in 39031. Textual variation is substantive in organization and length: a071 is distribution-led and short, a073 is much longer, a074 becomes one paragraph, and titles/locality/publisher are different. Exact numerical examples are not invariant: a072 temperature 7.38/2.73/6.39 and spoilage 8.84/12.15/8.93 across seeds. Full literal-fact preservation is therefore not certified, despite stable measurement schemas. The product-scope ambiguity in a076 persists, and a079's field-notes title creates an empirical provenance cue despite explicit simulation text. No identity-required rec",
+        "ords, complete searchable duplicates, answer-key/intent/grade leakage or no-answer conjunctions were observed. Review completeness covers all packet fields, not omitted queryContext copies, file bytes, or unavailable actual query paraphrases."
+      ],
+      "reviewer_id": "auditor-packet-08"
+    },
+    "39033": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten records were compared across all three seeds. Core product/process/basis, variable concepts and units, and format constraints remain recognizable, with a076 now positively attaching dairy beverage to transport rather than putting it after a negated shelf-life clause. a079 has a neutral title here rather than the empirical-sounding titles in 39031/39032; its explicit simulation-only descriptions and all simulated-output distributions remain decisive, not empirical measurements. a071/a072/a080 retain three empirical shelf-life variables; a073 has no microbe measurement, a074 has no spoilage-time measurement, and a075 has neither. a077 r",
+        "etains positive oat subject and explicit no-dairy exclusion; a078 has only PDF tables containing all three measurements. Nested distribution descriptions consistently describe their associated CSV, JSON or PDF content. Wording variation goes beyond cosmetic prefixes: a080 changes from a long numerical description to a short distribution-led synopsis; a075 changes from short to long; a071 is short and distribution-led; titles, paragraph order, optional spatial fields and distribution counts differ. Nonetheless exact example values and fictional institutional/site attribution change: a080 microbes 87.51/188.85/200.25, spoilage 12.07/10.17/13.9 ",
+        "and temperature 3.33/3.32/5.02. The seeded texts cannot be certified as preserving all literal measured examples, and the cross-seed product-scope/title ambiguities are not consistently preserved or resolved across all versions. No complete searchable record duplicates, identity-required items, answer-key/intent/grade leakage or frozen no-answer conjunctions were observed. All actual packet fields were reviewed; omitted queryContext copies, downloadable file bytes and absent query paraphrase strings remain outside independent verification."
+      ],
+      "reviewer_id": "auditor-packet-08"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-08.json",
+      "sha256": "880c05824fc440ead6ca822f5addf24665499683bca91eb307cc0e196241e26b"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "a071"
+    ],
+    [
+      39031,
+      "a072"
+    ],
+    [
+      39031,
+      "a073"
+    ],
+    [
+      39031,
+      "a074"
+    ],
+    [
+      39031,
+      "a075"
+    ],
+    [
+      39031,
+      "a076"
+    ],
+    [
+      39031,
+      "a077"
+    ],
+    [
+      39031,
+      "a078"
+    ],
+    [
+      39031,
+      "a079"
+    ],
+    [
+      39031,
+      "a080"
+    ],
+    [
+      39032,
+      "a071"
+    ],
+    [
+      39032,
+      "a072"
+    ],
+    [
+      39032,
+      "a073"
+    ],
+    [
+      39032,
+      "a074"
+    ],
+    [
+      39032,
+      "a075"
+    ],
+    [
+      39032,
+      "a076"
+    ],
+    [
+      39032,
+      "a077"
+    ],
+    [
+      39032,
+      "a078"
+    ],
+    [
+      39032,
+      "a079"
+    ],
+    [
+      39032,
+      "a080"
+    ],
+    [
+      39033,
+      "a071"
+    ],
+    [
+      39033,
+      "a072"
+    ],
+    [
+      39033,
+      "a073"
+    ],
+    [
+      39033,
+      "a074"
+    ],
+    [
+      39033,
+      "a075"
+    ],
+    [
+      39033,
+      "a076"
+    ],
+    [
+      39033,
+      "a077"
+    ],
+    [
+      39033,
+      "a078"
+    ],
+    [
+      39033,
+      "a079"
+    ],
+    [
+      39033,
+      "a080"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "a071",
+      "full_raw_record_sha256": "3b78ad8cffaeba785667069918f7735e82b919cf0f10555e65901a47f23fd1fb",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3b78ad8cffaeba785667069918f7735e82b919cf0f10555e65901a47f23fd1fb",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a072",
+      "full_raw_record_sha256": "cefebeee2a38b7a6e288be47ec958717ab5223f5542e7001a254b9ab02d79e5b",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "cefebeee2a38b7a6e288be47ec958717ab5223f5542e7001a254b9ab02d79e5b",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a073",
+      "full_raw_record_sha256": "c4768fa816f86872bac337637be487d7c85f253d0d011f4ce2941c501662dee4",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c4768fa816f86872bac337637be487d7c85f253d0d011f4ce2941c501662dee4",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a074",
+      "full_raw_record_sha256": "e07e0a34f49a9d309f35edf08ce92e9cf1ee6e20628b1add22f1e5d58419318f",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "e07e0a34f49a9d309f35edf08ce92e9cf1ee6e20628b1add22f1e5d58419318f",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a075",
+      "full_raw_record_sha256": "7ee99c92d7073848ce2b4b5defd3e16033cdf651f2d2afa16bf9b52c23d91ac9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "7ee99c92d7073848ce2b4b5defd3e16033cdf651f2d2afa16bf9b52c23d91ac9",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a077",
+      "full_raw_record_sha256": "8790f2018f95669e05eac477902a63dacb32fb631c1f90e22290f9d78f7d10fd",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "8790f2018f95669e05eac477902a63dacb32fb631c1f90e22290f9d78f7d10fd",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a078",
+      "full_raw_record_sha256": "cf1c6d313c3a4f7870c3f39eb60fd56dbfde28475944eb67b143e6c4c3c6419e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "cf1c6d313c3a4f7870c3f39eb60fd56dbfde28475944eb67b143e6c4c3c6419e",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a079",
+      "full_raw_record_sha256": "ea469bebf607fdf8fce5edb27729ddbb4d6887f2db43a5f2fbe8294115f4b4a7",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "ea469bebf607fdf8fce5edb27729ddbb4d6887f2db43a5f2fbe8294115f4b4a7",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a080",
+      "full_raw_record_sha256": "238206a235575d1480e22d9a2396063469e7d6ca1a44fdab87c1409172ea10bd",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "238206a235575d1480e22d9a2396063469e7d6ca1a44fdab87c1409172ea10bd",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a071",
+      "full_raw_record_sha256": "47bc2fe1ee7669cea47da67d7d8a40a5b508b55b84eb1e7f4ec6bbd48a391cb9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "47bc2fe1ee7669cea47da67d7d8a40a5b508b55b84eb1e7f4ec6bbd48a391cb9",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a072",
+      "full_raw_record_sha256": "23e88ad2ba7f3839df517f7aac54d82f3231a376fca18d390eb0b110170f9cb2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "23e88ad2ba7f3839df517f7aac54d82f3231a376fca18d390eb0b110170f9cb2",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a073",
+      "full_raw_record_sha256": "c6eb5f4cbc331f467d6c1c6f32ea4ed868565f1c5bb2dc6eb8130baf253e991b",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c6eb5f4cbc331f467d6c1c6f32ea4ed868565f1c5bb2dc6eb8130baf253e991b",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a074",
+      "full_raw_record_sha256": "eb1d5a689b0a2744dc47bdb248e9dfed649026672c0579b70725fffdc49c5a2d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "eb1d5a689b0a2744dc47bdb248e9dfed649026672c0579b70725fffdc49c5a2d",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a075",
+      "full_raw_record_sha256": "7148fc6fac48e3c9687dfc80ff7cefae3ea2901d919af0a8a1aa5ba2ebede41e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "7148fc6fac48e3c9687dfc80ff7cefae3ea2901d919af0a8a1aa5ba2ebede41e",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a077",
+      "full_raw_record_sha256": "19e50d07f01a8c5f691b99de55593f095c7a92e62bff98375be50d50bf5207bb",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "19e50d07f01a8c5f691b99de55593f095c7a92e62bff98375be50d50bf5207bb",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a078",
+      "full_raw_record_sha256": "8623735a7666e3805776a09acdbd57c9fc450696b4f8995456891f06a261f81a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "8623735a7666e3805776a09acdbd57c9fc450696b4f8995456891f06a261f81a",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a080",
+      "full_raw_record_sha256": "85ea5736fd0b02ca5775a76aae6d0f442114c3080b99a40dc5cc15e71195fb4a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "85ea5736fd0b02ca5775a76aae6d0f442114c3080b99a40dc5cc15e71195fb4a",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a071",
+      "full_raw_record_sha256": "3adb179af1215b70b1a8ea3c75b7a2a30924e6392797ace5ca14afa43fce8ca9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3adb179af1215b70b1a8ea3c75b7a2a30924e6392797ace5ca14afa43fce8ca9",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a072",
+      "full_raw_record_sha256": "f4ba1cf01095329f81e7cd257822f84b10c288d42960d35667d81c3c51c420d2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "f4ba1cf01095329f81e7cd257822f84b10c288d42960d35667d81c3c51c420d2",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a073",
+      "full_raw_record_sha256": "05a99fc8d4d40172019b2f2ed93633eae3c75a71f7216de19e64bb7ce0fc8919",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "05a99fc8d4d40172019b2f2ed93633eae3c75a71f7216de19e64bb7ce0fc8919",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a074",
+      "full_raw_record_sha256": "c016d005e9e7970ce33f0f69176dcfc8006ebf7c36a576525c9ca58545245598",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c016d005e9e7970ce33f0f69176dcfc8006ebf7c36a576525c9ca58545245598",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a075",
+      "full_raw_record_sha256": "2e312fa047fe8568416856b4317d71c505bc2d77cbb52e642d13f27bac4e2a35",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2e312fa047fe8568416856b4317d71c505bc2d77cbb52e642d13f27bac4e2a35",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a077",
+      "full_raw_record_sha256": "042c7611106c8868107fe3c04f684e891f04d85da79264019fef0628a30fdc65",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "042c7611106c8868107fe3c04f684e891f04d85da79264019fef0628a30fdc65",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a078",
+      "full_raw_record_sha256": "6e52d10c056baf72915082ac1dd907c91b2942bd822727bac3dd53d8f3e9e25b",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6e52d10c056baf72915082ac1dd907c91b2942bd822727bac3dd53d8f3e9e25b",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a080",
+      "full_raw_record_sha256": "a1f0ace31409e81540ee5e33776c74055cde213edc15b2ce3b6ddabe1f7edb16",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "a1f0ace31409e81540ee5e33776c74055cde213edc15b2ce3b6ddabe1f7edb16",
+      "seed": 39033
+    }
+  ]
+}

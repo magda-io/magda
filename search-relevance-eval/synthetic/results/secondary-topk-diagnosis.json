@@ -1,0 +1,20 @@
+{
+  "phase": "secondary_correctness_probe_before_primary_grid",
+  "diagnostic_only": true,
+  "promotion_allowed": false,
+  "forced_recommendation": "C",
+  "report": "search-relevance-eval/synthetic/results/controls-topk.json",
+  "actual_export": "search-relevance-eval/synthetic/results/controls-topk-export/baseline.jsonl",
+  "mode": {"name": "topk", "k": 1, "dimension": 3},
+  "reported_status": "failed",
+  "failed_control": "eligibility/baseline",
+  "failure": "Reused radial exact-set assertion expected eight roots; actual top-k returned seven, omitting only vector-only.",
+  "returned_ids": ["lexical-only", "metadata-hidden-match-visible-sibling", "metadata-nochildren", "public-root", "root-only-hidden-child", "siblings", "visible-child"],
+  "omitted_radial_root": "vector-only",
+  "diagnosis": "The vector-only fixture has no lexical water-quality match and shares BEST=[0,0,0] with many authorized roots. k=1 cannot be required to include this particular tied root; the lexical union still returns the seven allowed lexical roots. The radial full-set oracle is not a valid exact-inclusion oracle for top-k1.",
+  "not_claimed": ["OpenSearch top-k unsupported", "all secondary top-k controls passed", "complete candidate top-k authorization coverage", "a production security failure"],
+  "cleanup": {"created_resources": 4, "all_deleted": true},
+  "remaining_controls": "Not run after the first assertion failure; preserve the original failed report without weakening or overwriting it.",
+  "independent_existing_mode_evidence": "Main reports the unchanged #3900 Scala top-k/radial access-filter suite passed separately. This diagnostic does not replace or extend its actual evidence.",
+  "primary_grid": "Not started pending main decision and CPU-clear window."
+}

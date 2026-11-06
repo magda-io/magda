@@ -1,0 +1,39 @@
+{
+  "observations_generated": false,
+  "packet_paths": [
+    "auditoutputs/packets-v2/packet-01.json",
+    "auditoutputs/packets-v2/packet-02.json",
+    "auditoutputs/packets-v2/packet-03.json",
+    "auditoutputs/packets-v2/packet-04.json",
+    "auditoutputs/packets-v2/packet-05.json",
+    "auditoutputs/packets-v2/packet-06.json",
+    "auditoutputs/packets-v2/packet-07.json",
+    "auditoutputs/packets-v2/packet-08.json",
+    "auditoutputs/packets-v2/packet-09.json",
+    "auditoutputs/packets-v2/packet-10.json",
+    "auditoutputs/packets-v2/packet-11.json",
+    "auditoutputs/packets-v2/packet-12.json",
+    "auditoutputs/packets-v2/packet-13.json",
+    "auditoutputs/packets-v2/packet-14.json",
+    "auditoutputs/packets-v2/packet-15.json",
+    "auditoutputs/packets-v2/packet-16.json",
+    "auditoutputs/packets-v2/packet-17.json",
+    "auditoutputs/packets-v2/packet-18.json"
+  ],
+  "records_per_seed": 180,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v2/seed-39031.jsonl",
+      "sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4"
+    },
+    "39032": {
+      "path": ".local/corpora-v2/seed-39032.jsonl",
+      "sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7"
+    },
+    "39033": {
+      "path": ".local/corpora-v2/seed-39033.jsonl",
+      "sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94"
+    }
+  },
+  "total_record_reviews": 540
+}

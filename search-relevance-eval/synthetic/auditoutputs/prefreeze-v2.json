@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "audit_kind": "independent_pre_generation_specification_amendment",
+  "status": "passed",
+  "auditor_role": "C",
+  "auditor_context_id": "C-independent-spec-auditor",
+  "auditor_model": "gpt-6.1-sol",
+  "auditor_parameters": "unavailable",
+  "parent_session_id": "session-02372ec0-4fa6-42fb-8fa5-8c67104be88d",
+  "generation_permission_issuer": "main only after active v2 immutable freeze",
+  "actual_text_validation_passed": false,
+  "rankings_seen": false,
+  "generator_code_read_or_imported": false,
+  "production_projection_source": "magda-indexer/src/main/scala/au/csiro/data61/magda/indexer/search/elasticsearch/ElasticSearchIndexer.scala:755-775",
+  "affected_record_ids": ["b029", "b030"],
+  "approved_scope": "Title-only applies to primary metadata fields. Identifier remains forbidden in description, keywords, publisher and distributions. Exact production Title+Description-derived queryContext must repeat title unchanged; no identifier redaction, independent insertion or custom embedding rewrite.",
+  "independent_comparison": {
+    "archived_generation_dictionary_delta_exactly_approved_two_records": true,
+    "query_spec_byte_identical_to_v1": true,
+    "intents_byte_identical_to_v1": true,
+    "decision_gates_byte_identical_to_v1": true,
+    "all_other_generation_fields_including_grades_unchanged": true,
+    "distribution_only_scope_unchanged": true
+  },
+  "spec_sha256": {
+    "protocol.md": "8b92fdcc5500d7c4e120301364e71502bd3d250fb446c735e2facd8c95aaa730",
+    "intents.jsonl": "61b5469fbbfdaa9cd1729bd14a412f12166d94be044ff8ad020691aa5c1dbefc",
+    "query-spec.jsonl": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+    "generation-spec.json": "11208fc8d07d3f6d6821ce3c403946950961411336834ae8b22dd95f05a47b2e",
+    "relevance-rubric.md": "b4b778ffd53c860207b5187c01f84d0fa38bed1df74804bbec31b9fa8780f8fe",
+    "decision-gates.json": "c396debc6ad77bbb11ac403f7c195a4f13097aae30831395079e6659e87147d3",
+    "architect-notes.md": "183ab676ac31b239b1a207b1461a04841fe8672cb0501ad45853c75bae6fa1b7"
+  },
+  "remaining_gate": "All three generated corpora require independent actual-searchable-text semantic evidence, full derived grade coverage, exact identity and answerability before retrieval. This artifact is not a validation manifest."
+}

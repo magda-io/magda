@@ -1,0 +1,3341 @@
+{
+  "39031": {
+    "examples": [
+      {
+        "identifier": "a001",
+        "title": "The cacao trees investigation at Silver Creek Central",
+        "description": "This deposit concerns field pest management trials of cacao trees grown as a crop at Silver Creek Central.\n\nVariables documented in the files are treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14.01); applied pest-control treatment (category: neem oil / untreated).\n\nThe described study uses empirical observations from physical samples.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "cacao trees",
+          "field pest trials"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14.01); applied pest-control treatment (category: neem oil / untreated). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14.01); applied pest-control treatment (category: neem oil / untreated). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 3.28); insects counted per inspected tree (count; e.g. 14.01); applied pest-control treatment (category: neem oil / untreated). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a021",
+        "title": "Milk chocolate assessed in the Elm Crossing Central series",
+        "description": "At Elm Crossing Central, the study covers solid milk chocolate bars during wrapping and package performance assessment.\n\nVariables documented in the files are wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29).\n\nEntries describe an observational study rather than model predictions.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nA field guide explains categorical entries and missing cells.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "milk chocolate",
+          "wrapper assessment"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 2.13); wrapper oxygen transmission (cm3/m2/day; e.g. 6.29). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a031",
+        "title": "What the Reed Marsh Central chocolate bars trials recorded",
+        "description": "Physical observations were recorded, not process simulations.\n\nAt Reed Marsh Central, the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading.\n\nThe distribution synopses document the measured columns and units.\n\nRows retain local observation keys for reuse.\n\nA field guide explains categorical entries and missing cells.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "chocolate bars",
+          "chocolate texture testing"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: tempering hold temperature and duration (27.48 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 27.23); force at fracture (newtons; e.g. 16.17). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: tempering hold temperature and duration (27.48 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 27.23); force at fracture (newtons; e.g. 16.17). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: tempering hold temperature and duration (27.48 degrees C for 25 minutes in an example row); particle diameter (micrometres; e.g. 27.23); force at fracture (newtons; e.g. 16.17). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a041",
+        "title": "Dessert ingredients under examination at Kestrel Point Central",
+        "description": "The released table lists storage chamber temperature (degrees C; e.g. 5.65); ingredient quality assessment score (points on a 0-100 scale; e.g. 91.85); material moisture by mass (percent; e.g. 2.47).\n\nThis deposit concerns storage assessment before use of the material of edible chocolate ingredients reserved for dessert preparation at Kestrel Point Central.\n\nEntries describe an observational study rather than model predictions.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.",
+        "keywords": [
+          "dessert ingredients",
+          "ingredient storage"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 5.65); ingredient quality assessment score (points on a 0-100 scale; e.g. 91.85); material moisture by mass (percent; e.g. 2.47). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 5.65); ingredient quality assessment score (points on a 0-100 scale; e.g. 91.85); material moisture by mass (percent; e.g. 2.47). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a051",
+        "title": "Examining equipment sanitation at Dune Valley Central",
+        "description": "The described study uses empirical observations from physical samples. This deposit concerns sanitation and equipment cleaning verification of chocolate confectionery factory production equipment at Dune Valley Central. The released table lists equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); microbial growth from surface swabs (CFU/swab; e.g. 64.26); residue remaining on cleaned surface (mg; e.g. 5.28). Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. Rows retain local observation keys for reuse.",
+        "keywords": [
+          "confectionery factory",
+          "equipment sanitation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); microbial growth from surface swabs (CFU/swab; e.g. 64.26); residue remaining on cleaned surface (mg; e.g. 5.28). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); microbial growth from surface swabs (CFU/swab; e.g. 64.26); residue remaining on cleaned surface (mg; e.g. 5.28). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a061",
+        "title": "Hot-water reconstitution and the Quartz Field Central observations",
+        "description": "Entries describe an observational study rather than model predictions.\n\nThe distribution synopses document the measured columns and units.\n\nThe Quartz Field Central series documents hot-drink reconstitution bench testing with water, focusing on drinking chocolate powder intended for hot beverages.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "drinking chocolate powder",
+          "hot-water reconstitution"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: powder mass added per preparation (g; e.g. 22.33); added water temperature (degrees C; e.g. 74.77); time to complete powder dissolution (seconds; e.g. 86.62). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: powder mass added per preparation (g; e.g. 22.33); added water temperature (degrees C; e.g. 74.77); time to complete powder dissolution (seconds; e.g. 86.62). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a071",
+        "title": "Exploring refrigerated shelf life through Juniper Vale Central records",
+        "description": "The released table lists elapsed time until observed spoilage (days; e.g. 10.89); viable microbes in beverage samples (CFU/ml; e.g. 292.49); storage chamber temperature (degrees C; e.g. 3.41). The Juniper Vale Central series documents refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured dairy milk beverage. Entries describe an observational study rather than model predictions. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The edition preserves the original row ordering. The edition preserves the original row ordering. Rows retain local observation keys for reuse. The edition preserves the original row ordering. Rows retain local observation keys for reuse.",
+        "keywords": [
+          "chocolate milk",
+          "refrigerated shelf life"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 10.89); viable microbes in beverage samples (CFU/ml; e.g. 292.49); storage chamber temperature (degrees C; e.g. 3.41). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 10.89); viable microbes in beverage samples (CFU/ml; e.g. 292.49); storage chamber temperature (degrees C; e.g. 3.41). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a077",
+        "title": "Refrigerated shelf life of chocolate oat drink at North Meadow Upper",
+        "description": "Entries describe an observational study rather than model predictions. The North Meadow Upper series documents refrigerated shelf-life assessment, focusing on liquid chocolate-flavoured oat beverage containing no dairy milk. Recorded columns comprise storage chamber temperature (degrees C; e.g. 7.1); viable microbes in beverage samples (CFU/ml; e.g. 201.35); elapsed time until observed spoilage (days; e.g. 11.45). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. Rows retain local observation keys for reuse. A field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "chocolate oat drink",
+          "refrigerated shelf life"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 7.1); viable microbes in beverage samples (CFU/ml; e.g. 201.35); elapsed time until observed spoilage (days; e.g. 11.45). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 7.1); viable microbes in beverage samples (CFU/ml; e.g. 201.35); elapsed time until observed spoilage (days; e.g. 11.45). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a081",
+        "title": "A closer look at drink formulation in Cedar Reach Central",
+        "description": "A separate investigation at Cedar Reach Central examines liquid chocolate-flavoured dairy milk beverage through liquid drink recipe formulation. Variables documented in the files are cocoa fraction in liquid recipe (percent by mass; e.g. 2.02); liquid viscosity (mPa s; e.g. 15.81); sugar fraction in liquid recipe (percent by mass; e.g. 8.9). The described study uses empirical observations from physical samples. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. The edition preserves the original row ordering. A field guide explains categorical entries and missing cells. The edition preserves the original row ordering.",
+        "keywords": [
+          "chocolate milk",
+          "drink formulation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: cocoa fraction in liquid recipe (percent by mass; e.g. 2.02); liquid viscosity (mPa s; e.g. 15.81); sugar fraction in liquid recipe (percent by mass; e.g. 8.9). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: cocoa fraction in liquid recipe (percent by mass; e.g. 2.02); liquid viscosity (mPa s; e.g. 15.81); sugar fraction in liquid recipe (percent by mass; e.g. 8.9). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a087",
+        "title": "Chocolate oat drink and drink formulation at Granite Bend Upper",
+        "description": "Variables documented in the files are liquid viscosity (mPa s; e.g. 29.78); sugar fraction in liquid recipe (percent by mass; e.g. 10.45); cocoa fraction in liquid recipe (percent by mass; e.g. 2.16).\n\nThe Granite Bend Upper series documents liquid drink recipe formulation, focusing on liquid chocolate-flavoured oat beverage containing no dairy milk.\n\nPhysical observations were recorded, not process simulations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "chocolate oat drink",
+          "drink formulation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: liquid viscosity (mPa s; e.g. 29.78); sugar fraction in liquid recipe (percent by mass; e.g. 10.45); cocoa fraction in liquid recipe (percent by mass; e.g. 2.16). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: liquid viscosity (mPa s; e.g. 29.78); sugar fraction in liquid recipe (percent by mass; e.g. 10.45); cocoa fraction in liquid recipe (percent by mass; e.g. 2.16). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: liquid viscosity (mPa s; e.g. 29.78); sugar fraction in liquid recipe (percent by mass; e.g. 10.45); cocoa fraction in liquid recipe (percent by mass; e.g. 2.16). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a091",
+        "title": "The deposited Pine Basin Central beverage fermentation series",
+        "description": "The distribution synopses document the measured columns and units. This deposit concerns fermentation of a chocolate-flavoured liquid beverage, not postharvest beans of liquid chocolate-flavoured dairy milk beverage at Pine Basin Central. The described study uses empirical observations from physical samples. The edition preserves the original row ordering. The edition preserves the original row ordering. A field guide explains categorical entries and missing cells. The edition preserves the original row ordering.",
+        "keywords": [
+          "chocolate milk",
+          "beverage fermentation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: residual sugar after fermentation (g/litre; e.g. 21.48); acidification time course (hours/pH; example pairs 0/6.6, 3.86/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: residual sugar after fermentation (g/litre; e.g. 21.48); acidification time course (hours/pH; example pairs 0/6.6, 3.86/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: residual sugar after fermentation (g/litre; e.g. 21.48); acidification time course (hours/pH; example pairs 0/6.6, 3.86/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a097",
+        "title": "The chocolate oat drink investigation at Tern Inlet Upper",
+        "description": "Physical observations were recorded, not process simulations.\n\nThis deposit concerns fermentation of a chocolate-flavoured liquid beverage, not postharvest beans of liquid chocolate-flavoured oat beverage containing no dairy milk at Tern Inlet Upper.\n\nRecorded columns comprise starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 25.62); acidification time course (hours/pH; example pairs 0/6.6, 3.11/4.7).\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "chocolate oat drink",
+          "beverage fermentation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 25.62); acidification time course (hours/pH; example pairs 0/6.6, 3.11/4.7). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 25.62); acidification time course (hours/pH; example pairs 0/6.6, 3.11/4.7). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "b001",
+        "title": "Wet-road traction as recorded at Ivy Brook Central",
+        "description": "Entries describe an observational study rather than model predictions.\n\nAt Ivy Brook Central, the study covers complete running shoes for road use during wet pavement traction testing. The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120.\n\nThe distribution synopses document the measured columns and units.\n\nA field guide explains categorical entries and missing cells.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "running shoes",
+          "wet-road traction"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.68); wet sliding friction coefficient (dimensionless; e.g. 0.56); water-film depth on pavement (mm; e.g. 1.71). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.68); wet sliding friction coefficient (dimensionless; e.g. 0.56); water-film depth on pavement (mm; e.g. 1.71). Tables are supplied inside a PDF document.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.68); wet sliding friction coefficient (dimensionless; e.g. 0.56); water-film depth on pavement (mm; e.g. 1.71). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b013",
+        "title": "Hydraulic pump acceptance trials",
+        "description": "The released table lists operating sound pressure level (dB(A); e.g. 36.85); hydraulic fluid flow rate (litres/minute; e.g. 15.25); microphone distance from operating pump (m; e.g. 1.98).\n\nThe Quartz Field North series documents indoor low-noise testing during hydraulic circulation, focusing on hydraulic fluid circulation pumps. The catalogue model or edition is PUMP-H71.\n\nEntries describe an observational study rather than model predictions.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "hydraulic pumps",
+          "indoor acoustic testing"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: operating sound pressure level (dB(A); e.g. 36.85); hydraulic fluid flow rate (litres/minute; e.g. 15.25); microphone distance from operating pump (m; e.g. 1.98). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: operating sound pressure level (dB(A); e.g. 36.85); hydraulic fluid flow rate (litres/minute; e.g. 15.25); microphone distance from operating pump (m; e.g. 1.98). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b027",
+        "title": "What the Silver Creek Upper temperature probes trials recorded",
+        "description": "A separate investigation at Silver Creek Upper examines temperature sensor probes for cold-room equipment through cold-room temperature calibration.\n\nThe described study uses empirical observations from physical samples.\n\nThe distribution synopses document the measured columns and units.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "temperature probes",
+          "cold-room calibration"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. 0.24). The instrument model documented here is DIST-K47. Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. 0.24). The instrument model documented here is DIST-K47. Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b029",
+        "title": "TITLE-T82 A closer look at bench inventory in North Meadow East",
+        "description": "Physical observations were recorded, not process simulations. Variables documented in the files are unloaded unit mass (g; e.g. 575.06); reporting interval (calendar month; e.g. 2024-06). This deposit concerns unloaded bench inventory with no operating calibration or circulation trial of temperature sensor probes for cold-room equipment at North Meadow East. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. A field guide explains categorical entries and missing cells. The edition preserves the original row ordering.",
+        "keywords": [
+          "temperature probes",
+          "bench inventory"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: unloaded unit mass (g; e.g. 575.06); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: unloaded unit mass (g; e.g. 575.06); reporting interval (calendar month; e.g. 2024-06). Tables are supplied inside a PDF document.",
+          "Deposited columns: unloaded unit mass (g; e.g. 575.06); reporting interval (calendar month; e.g. 2024-06). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b067",
+        "title": "Exploring cold-room calibration through Kestrel Point Upper records",
+        "description": "Variables documented in the files are probe reading minus reference temperature (degrees C; e.g. 0.22); reference thermometer uncertainty (degrees C; e.g. 0.04); calibration test-point range (-20 to +5 degrees C inclusive). Entries describe an observational study rather than model predictions. The Kestrel Point Upper series documents cold-room temperature calibration, focusing on temperature sensor probes for cold-room equipment. The catalogue model or edition is SENSE-067. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.",
+        "keywords": [
+          "temperature probes",
+          "cold-room calibration"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.22); reference thermometer uncertainty (degrees C; e.g. 0.04); calibration test-point range (-20 to +5 degrees C inclusive). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.22); reference thermometer uncertainty (degrees C; e.g. 0.04); calibration test-point range (-20 to +5 degrees C inclusive). Tables are supplied inside a PDF document."
+        ]
+      }
+    ],
+    "repetition_findings": [
+      {
+        "id": "a001",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a003",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a005",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a006",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a007",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a008",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          },
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a011",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a014",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a017",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a019",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a020",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a022",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a025",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a028",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a029",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a030",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a034",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a038",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a039",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          },
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a044",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "a049",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a050",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          },
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a052",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a054",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a055",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a056",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a059",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a060",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a061",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a064",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a065",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a066",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a067",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a068",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a069",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a070",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a071",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          },
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a072",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a073",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a075",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a081",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a091",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a093",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a094",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b001",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b003",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b004",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b007",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b008",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b009",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "b013",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b014",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b015",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b016",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b018",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b019",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b021",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b026",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b027",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "b028",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b033",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b037",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b040",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b041",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b043",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b044",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b046",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b047",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b050",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b053",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b054",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b058",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b062",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b068",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b069",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b071",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b072",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b073",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b075",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b076",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b079",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b080",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      }
+    ]
+  },
+  "39032": {
+    "examples": [
+      {
+        "identifier": "a001",
+        "title": "Looking back on Oak Terrace Upper field pest trials",
+        "description": "This deposit concerns field pest management trials of cacao trees grown as a crop at Oak Terrace Upper. The described study uses empirical observations from physical samples. The distribution synopses document the measured columns and units. Rows retain local observation keys for reuse. Rows retain local observation keys for reuse. Rows retain local observation keys for reuse.",
+        "keywords": [
+          "cacao trees",
+          "field pest trials"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: insects counted per inspected tree (count; e.g. 10.3); applied pest-control treatment (category: neem oil / untreated); treatment application volume (litres/hectare; e.g. 10.03). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: insects counted per inspected tree (count; e.g. 10.3); applied pest-control treatment (category: neem oil / untreated); treatment application volume (litres/hectare; e.g. 10.03). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: insects counted per inspected tree (count; e.g. 10.3); applied pest-control treatment (category: neem oil / untreated); treatment application volume (litres/hectare; e.g. 10.03). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a021",
+        "title": "Milk chocolate records deposited by Alderbank Upper",
+        "description": "Entries describe an observational study rather than model predictions. At Alderbank Upper, the study covers solid milk chocolate bars during wrapping and package performance assessment. Variables documented in the files are failed wrapper seals (percent of seals tested; e.g. 5.24); wrapper oxygen transmission (cm3/m2/day; e.g. 17.85); wrapper material examined (category: foil / coated paper). Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. A field guide explains categorical entries and missing cells. The edition preserves the original row ordering.",
+        "keywords": [
+          "milk chocolate",
+          "wrapper assessment"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: failed wrapper seals (percent of seals tested; e.g. 5.24); wrapper oxygen transmission (cm3/m2/day; e.g. 17.85); wrapper material examined (category: foil / coated paper). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: failed wrapper seals (percent of seals tested; e.g. 5.24); wrapper oxygen transmission (cm3/m2/day; e.g. 17.85); wrapper material examined (category: foil / coated paper). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: failed wrapper seals (percent of seals tested; e.g. 5.24); wrapper oxygen transmission (cm3/m2/day; e.g. 17.85); wrapper material examined (category: foil / coated paper). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a031",
+        "title": "From field notes to archive: North Meadow Upper chocolate bars",
+        "description": "The North Meadow Upper series documents texture testing of chocolate by mechanical loading, focusing on solid chocolate confectionery bars.\n\nVariables documented in the files are tempering hold temperature and duration (28.77 degrees C for 13 minutes in an example row); particle diameter (micrometres; e.g. 12.36); force at fracture (newtons; e.g. 36.47).\n\nPhysical observations were recorded, not process simulations.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.\n\nA field guide explains categorical entries and missing cells.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "chocolate bars",
+          "chocolate texture testing"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: tempering hold temperature and duration (28.77 degrees C for 13 minutes in an example row); particle diameter (micrometres; e.g. 12.36); force at fracture (newtons; e.g. 36.47). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: tempering hold temperature and duration (28.77 degrees C for 13 minutes in an example row); particle diameter (micrometres; e.g. 12.36); force at fracture (newtons; e.g. 36.47). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: tempering hold temperature and duration (28.77 degrees C for 13 minutes in an example row); particle diameter (micrometres; e.g. 12.36); force at fracture (newtons; e.g. 36.47). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a041",
+        "title": "Ingredient storage revisited at Granite Bend Upper",
+        "description": "The distribution synopses document the measured columns and units.\n\nEntries describe an observational study rather than model predictions.\n\nAt Granite Bend Upper, the study covers edible chocolate ingredients reserved for dessert preparation during storage assessment before use of the material.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "dessert ingredients",
+          "ingredient storage"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: material moisture by mass (percent; e.g. 3.93); storage chamber temperature (degrees C; e.g. 2.29); ingredient quality assessment score (points on a 0-100 scale; e.g. 68.66). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: material moisture by mass (percent; e.g. 3.93); storage chamber temperature (degrees C; e.g. 2.29); ingredient quality assessment score (points on a 0-100 scale; e.g. 68.66). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a051",
+        "title": "Confectionery factory in the Tern Inlet Upper record",
+        "description": "Entries describe an observational study rather than model predictions.\n\nVariables documented in the files are microbial growth from surface swabs (CFU/swab; e.g. 36.23); residue remaining on cleaned surface (mg; e.g. 3.69); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash).\n\nA separate investigation at Tern Inlet Upper examines chocolate confectionery factory production equipment through sanitation and equipment cleaning verification.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "confectionery factory",
+          "equipment sanitation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: microbial growth from surface swabs (CFU/swab; e.g. 36.23); residue remaining on cleaned surface (mg; e.g. 3.69); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: microbial growth from surface swabs (CFU/swab; e.g. 36.23); residue remaining on cleaned surface (mg; e.g. 3.69); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a061",
+        "title": "An investigation of hot-water reconstitution at Maple Quay Upper",
+        "description": "Variables documented in the files are added water temperature (degrees C; e.g. 82.9); powder mass added per preparation (g; e.g. 24.7); time to complete powder dissolution (seconds; e.g. 43.14).\n\nThe described study uses empirical observations from physical samples.\n\nAt Maple Quay Upper, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nRows retain local observation keys for reuse.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "drinking chocolate powder",
+          "hot-water reconstitution"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: added water temperature (degrees C; e.g. 82.9); powder mass added per preparation (g; e.g. 24.7); time to complete powder dissolution (seconds; e.g. 43.14). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: added water temperature (degrees C; e.g. 82.9); powder mass added per preparation (g; e.g. 24.7); time to complete powder dissolution (seconds; e.g. 43.14). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: added water temperature (degrees C; e.g. 82.9); powder mass added per preparation (g; e.g. 24.7); time to complete powder dissolution (seconds; e.g. 43.14). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a071",
+        "title": "Fern Hollow Upper observation archive for chocolate milk",
+        "description": "The distribution synopses document the measured columns and units. Entries describe an observational study rather than model predictions. A separate investigation at Fern Hollow Upper examines liquid chocolate-flavoured dairy milk beverage through refrigerated shelf-life assessment. The edition preserves the original row ordering. The edition preserves the original row ordering. The edition preserves the original row ordering. A field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "chocolate milk",
+          "refrigerated shelf life"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 14.56); storage chamber temperature (degrees C; e.g. 7.69); viable microbes in beverage samples (CFU/ml; e.g. 169.6). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 14.56); storage chamber temperature (degrees C; e.g. 7.69); viable microbes in beverage samples (CFU/ml; e.g. 169.6). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: elapsed time until observed spoilage (days; e.g. 14.56); storage chamber temperature (degrees C; e.g. 7.69); viable microbes in beverage samples (CFU/ml; e.g. 169.6). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a077",
+        "title": "Chocolate oat drink at Juniper Vale North: technical account",
+        "description": "The described study uses empirical observations from physical samples.\n\nAt Juniper Vale North, the study covers liquid chocolate-flavoured oat beverage containing no dairy milk during refrigerated shelf-life assessment.\n\nThe released table lists viable microbes in beverage samples (CFU/ml; e.g. 254.64); elapsed time until observed spoilage (days; e.g. 13.04); storage chamber temperature (degrees C; e.g. 7.89).\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.",
+        "keywords": [
+          "chocolate oat drink",
+          "refrigerated shelf life"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: viable microbes in beverage samples (CFU/ml; e.g. 254.64); elapsed time until observed spoilage (days; e.g. 13.04); storage chamber temperature (degrees C; e.g. 7.89). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: viable microbes in beverage samples (CFU/ml; e.g. 254.64); elapsed time until observed spoilage (days; e.g. 13.04); storage chamber temperature (degrees C; e.g. 7.89). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: viable microbes in beverage samples (CFU/ml; e.g. 254.64); elapsed time until observed spoilage (days; e.g. 13.04); storage chamber temperature (degrees C; e.g. 7.89). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a081",
+        "title": "Drink formulation of chocolate milk at Silver Creek Upper",
+        "description": "A separate investigation at Silver Creek Upper examines liquid chocolate-flavoured dairy milk beverage through liquid drink recipe formulation. Entries describe an observational study rather than model predictions. The released table lists liquid viscosity (mPa s; e.g. 27.37); cocoa fraction in liquid recipe (percent by mass; e.g. 2.9); sugar fraction in liquid recipe (percent by mass; e.g. 10.26). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.",
+        "keywords": [
+          "chocolate milk",
+          "drink formulation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: liquid viscosity (mPa s; e.g. 27.37); cocoa fraction in liquid recipe (percent by mass; e.g. 2.9); sugar fraction in liquid recipe (percent by mass; e.g. 10.26). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: liquid viscosity (mPa s; e.g. 27.37); cocoa fraction in liquid recipe (percent by mass; e.g. 2.9); sugar fraction in liquid recipe (percent by mass; e.g. 10.26). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: liquid viscosity (mPa s; e.g. 27.37); cocoa fraction in liquid recipe (percent by mass; e.g. 2.9); sugar fraction in liquid recipe (percent by mass; e.g. 10.26). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a087",
+        "title": "Assessment from Cedar Reach North drink formulation",
+        "description": "Entries describe an observational study rather than model predictions.\n\nThis deposit concerns liquid drink recipe formulation of liquid chocolate-flavoured oat beverage containing no dairy milk at Cedar Reach North.\n\nRecorded columns comprise sugar fraction in liquid recipe (percent by mass; e.g. 7.29); cocoa fraction in liquid recipe (percent by mass; e.g. 3.97); liquid viscosity (mPa s; e.g. 9.56).\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nA field guide explains categorical entries and missing cells.\n\nRows retain local observation keys for reuse.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "chocolate oat drink",
+          "drink formulation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: sugar fraction in liquid recipe (percent by mass; e.g. 7.29); cocoa fraction in liquid recipe (percent by mass; e.g. 3.97); liquid viscosity (mPa s; e.g. 9.56). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: sugar fraction in liquid recipe (percent by mass; e.g. 7.29); cocoa fraction in liquid recipe (percent by mass; e.g. 3.97); liquid viscosity (mPa s; e.g. 9.56). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a091",
+        "title": "Chocolate milk and beverage fermentation at Linden Grove Upper",
+        "description": "A separate investigation at Linden Grove Upper examines liquid chocolate-flavoured dairy milk beverage through fermentation of a chocolate-flavoured liquid beverage, not postharvest beans.\n\nThe described study uses empirical observations from physical samples.\n\nThe released table lists residual sugar after fermentation (g/litre; e.g. 26.14); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); acidification time course (hours/pH; example pairs 0/6.6, 6.36/4.7).\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nRows retain local observation keys for reuse.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "chocolate milk",
+          "beverage fermentation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: residual sugar after fermentation (g/litre; e.g. 26.14); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); acidification time course (hours/pH; example pairs 0/6.6, 6.36/4.7). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: residual sugar after fermentation (g/litre; e.g. 26.14); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); acidification time course (hours/pH; example pairs 0/6.6, 6.36/4.7). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: residual sugar after fermentation (g/litre; e.g. 26.14); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); acidification time course (hours/pH; example pairs 0/6.6, 6.36/4.7). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a097",
+        "title": "Looking back on Pine Basin North beverage fermentation",
+        "description": "The distribution synopses document the measured columns and units. Physical observations were recorded, not process simulations. A separate investigation at Pine Basin North examines liquid chocolate-flavoured oat beverage containing no dairy milk through fermentation of a chocolate-flavoured liquid beverage, not postharvest beans. The edition preserves the original row ordering. The edition preserves the original row ordering. A field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "chocolate oat drink",
+          "beverage fermentation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: acidification time course (hours/pH; example pairs 0/6.6, 6.07/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 17.14). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: acidification time course (hours/pH; example pairs 0/6.6, 6.07/4.7); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 17.14). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "b001",
+        "title": "The running shoes investigation at Elm Crossing Upper",
+        "description": "Variables documented in the files are tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28).\n\nEntries describe an observational study rather than model predictions.\n\nA separate investigation at Elm Crossing Upper examines complete running shoes for road use through wet pavement traction testing. The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.",
+        "keywords": [
+          "running shoes",
+          "wet-road traction"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28). Tables are supplied inside a PDF document.",
+          "Deposited columns: tested pavement surface roughness (mm; e.g. 1.65); wet sliding friction coefficient (dimensionless; e.g. 0.53); water-film depth on pavement (mm; e.g. 1.28). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b013",
+        "title": "Hydraulic pump acceptance trials",
+        "description": "Entries describe an observational study rather than model predictions.\n\nA separate investigation at Maple Quay East examines hydraulic fluid circulation pumps through indoor low-noise testing during hydraulic circulation. The catalogue model or edition is PUMP-H71.\n\nThe released table lists microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4).\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "hydraulic pumps",
+          "indoor acoustic testing"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Tables are supplied inside a PDF document.",
+          "Deposited columns: microphone distance from operating pump (m; e.g. 2.88); hydraulic fluid flow rate (litres/minute; e.g. 23.3); operating sound pressure level (dB(A); e.g. 49.4). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "b027",
+        "title": "From field notes to archive: Oak Terrace North temperature probes",
+        "description": "The Oak Terrace North series documents cold-room temperature calibration, focusing on temperature sensor probes for cold-room equipment.\n\nEntries describe an observational study rather than model predictions.\n\nRecorded columns comprise probe reading minus reference temperature (degrees C; e.g. 0.23); calibration test-point range (-20 to +5 degrees C inclusive).\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nRows retain local observation keys for reuse.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "temperature probes",
+          "cold-room calibration"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.23); calibration test-point range (-20 to +5 degrees C inclusive). The instrument model documented here is DIST-K47. Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.23); calibration test-point range (-20 to +5 degrees C inclusive). The instrument model documented here is DIST-K47. Tables are supplied inside a PDF document.",
+          "Deposited columns: probe reading minus reference temperature (degrees C; e.g. 0.23); calibration test-point range (-20 to +5 degrees C inclusive). The instrument model documented here is DIST-K47. Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b029",
+        "title": "TITLE-T82 Bench inventory of temperature probes at Ivy Brook Inner",
+        "description": "Entries describe an observational study rather than model predictions.\n\nThe Ivy Brook Inner series documents unloaded bench inventory with no operating calibration or circulation trial, focusing on temperature sensor probes for cold-room equipment.\n\nRecorded columns comprise unloaded unit mass (g; e.g. 1523.23); reporting interval (calendar month; e.g. 2024-06).\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.",
+        "keywords": [
+          "temperature probes",
+          "bench inventory"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: unloaded unit mass (g; e.g. 1523.23); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: unloaded unit mass (g; e.g. 1523.23); reporting interval (calendar month; e.g. 2024-06). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b067",
+        "title": "Granite Bend North observation archive for temperature probes",
+        "description": "This deposit concerns cold-room temperature calibration of temperature sensor probes for cold-room equipment at Granite Bend North. The catalogue model or edition is SENSE-067.\n\nEntries describe an observational study rather than model predictions.\n\nRecorded columns comprise calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06).\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "temperature probes",
+          "cold-room calibration"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06). Tables are supplied inside a PDF document.",
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); reference thermometer uncertainty (degrees C; e.g. 0.06); probe reading minus reference temperature (degrees C; e.g. -0.06). Tables are supplied inside a PDF document."
+        ]
+      }
+    ],
+    "repetition_findings": [
+      {
+        "id": "a001",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a002",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a003",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          },
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a005",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a006",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a009",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a011",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a013",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a015",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a026",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a028",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a029",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a031",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a032",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a036",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a037",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a038",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a039",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a041",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a042",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a044",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a046",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a053",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a054",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a055",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a058",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a059",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a061",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a062",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a063",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a066",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a067",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a070",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a071",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a072",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a074",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a075",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a076",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a078",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a082",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a086",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a087",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a088",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a089",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a090",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a091",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a097",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b002",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b003",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b007",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b008",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b009",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b011",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b013",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b014",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b016",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b018",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b019",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b020",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b021",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b024",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b026",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b027",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b028",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b030",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b034",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b035",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b040",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b041",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b043",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b044",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b045",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b046",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b050",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b052",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b053",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b056",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b057",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b061",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b062",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b063",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b064",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b065",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b067",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b069",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b071",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b074",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b075",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b078",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b079",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      }
+    ]
+  },
+  "39033": {
+    "examples": [
+      {
+        "identifier": "a001",
+        "title": "A practical examination of field pest trials at Quartz Field Lower",
+        "description": "The distribution synopses document the measured columns and units.\n\nPhysical observations were recorded, not process simulations.\n\nThis deposit concerns field pest management trials of cacao trees grown as a crop at Quartz Field Lower.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.",
+        "keywords": [
+          "cacao trees",
+          "field pest trials"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 6.48); insects counted per inspected tree (count; e.g. 25.78); applied pest-control treatment (category: neem oil / untreated). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: treatment application volume (litres/hectare; e.g. 6.48); insects counted per inspected tree (count; e.g. 25.78); applied pest-control treatment (category: neem oil / untreated). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a021",
+        "title": "Inside the Cedar Reach Lower wrapper assessment study",
+        "description": "The Cedar Reach Lower series documents wrapping and package performance assessment, focusing on solid milk chocolate bars. The distribution synopses document the measured columns and units. The described study uses empirical observations from physical samples. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.",
+        "keywords": [
+          "milk chocolate",
+          "wrapper assessment"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 6.81); wrapper oxygen transmission (cm3/m2/day; e.g. 12.98). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 6.81); wrapper oxygen transmission (cm3/m2/day; e.g. 12.98). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: wrapper material examined (category: foil / coated paper); failed wrapper seals (percent of seals tested; e.g. 6.81); wrapper oxygen transmission (cm3/m2/day; e.g. 12.98). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a031",
+        "title": "Notes on chocolate bars from Pine Basin Lower",
+        "description": "At Pine Basin Lower, the study covers solid chocolate confectionery bars during texture testing of chocolate by mechanical loading.\n\nThe described study uses empirical observations from physical samples.\n\nThe distribution synopses document the measured columns and units.\n\nA field guide explains categorical entries and missing cells.\n\nThe edition preserves the original row ordering.\n\nA field guide explains categorical entries and missing cells.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "chocolate bars",
+          "chocolate texture testing"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: tempering hold temperature and duration (31.31 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 39.79); force at fracture (newtons; e.g. 20.4). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: tempering hold temperature and duration (31.31 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 39.79); force at fracture (newtons; e.g. 20.4). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: tempering hold temperature and duration (31.31 degrees C for 19 minutes in an example row); particle diameter (micrometres; e.g. 39.79); force at fracture (newtons; e.g. 20.4). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "a041",
+        "title": "Dessert ingredients: the Ivy Brook Lower assessment",
+        "description": "Physical observations were recorded, not process simulations. Recorded columns comprise ingredient quality assessment score (points on a 0-100 scale; e.g. 75.02); material moisture by mass (percent; e.g. 3.06); storage chamber temperature (degrees C; e.g. 2.45). The Ivy Brook Lower series documents storage assessment before use of the material, focusing on edible chocolate ingredients reserved for dessert preparation. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. The edition preserves the original row ordering. A field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "dessert ingredients",
+          "ingredient storage"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: ingredient quality assessment score (points on a 0-100 scale; e.g. 75.02); material moisture by mass (percent; e.g. 3.06); storage chamber temperature (degrees C; e.g. 2.45). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: ingredient quality assessment score (points on a 0-100 scale; e.g. 75.02); material moisture by mass (percent; e.g. 3.06); storage chamber temperature (degrees C; e.g. 2.45). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a051",
+        "title": "Study notes from Bramble Hill Lower on equipment sanitation",
+        "description": "The distribution synopses document the measured columns and units. Entries describe an observational study rather than model predictions. This deposit concerns sanitation and equipment cleaning verification of chocolate confectionery factory production equipment at Bramble Hill Lower. A field guide explains categorical entries and missing cells. A field guide explains categorical entries and missing cells. A field guide explains categorical entries and missing cells. A field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "confectionery factory",
+          "equipment sanitation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: residue remaining on cleaned surface (mg; e.g. 9.96); microbial growth from surface swabs (CFU/swab; e.g. 74); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: residue remaining on cleaned surface (mg; e.g. 9.96); microbial growth from surface swabs (CFU/swab; e.g. 74); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a061",
+        "title": "Oak Terrace Lower hot-water reconstitution assessment",
+        "description": "The released table lists added water temperature (degrees C; e.g. 84.45); time to complete powder dissolution (seconds; e.g. 37.09); powder mass added per preparation (g; e.g. 20.04).\n\nAt Oak Terrace Lower, the study covers drinking chocolate powder intended for hot beverages during hot-drink reconstitution bench testing with water.\n\nThe described study uses empirical observations from physical samples.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nA field guide explains categorical entries and missing cells.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "drinking chocolate powder",
+          "hot-water reconstitution"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: added water temperature (degrees C; e.g. 84.45); time to complete powder dissolution (seconds; e.g. 37.09); powder mass added per preparation (g; e.g. 20.04). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: added water temperature (degrees C; e.g. 84.45); time to complete powder dissolution (seconds; e.g. 37.09); powder mass added per preparation (g; e.g. 20.04). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a071",
+        "title": "The Hazel Ridge Lower series on chocolate milk",
+        "description": "This deposit concerns refrigerated shelf-life assessment of liquid chocolate-flavoured dairy milk beverage at Hazel Ridge Lower. The distribution synopses document the measured columns and units. Physical observations were recorded, not process simulations. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.",
+        "keywords": [
+          "chocolate milk",
+          "refrigerated shelf life"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 3.9); viable microbes in beverage samples (CFU/ml; e.g. 227.3); elapsed time until observed spoilage (days; e.g. 5.52). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 3.9); viable microbes in beverage samples (CFU/ml; e.g. 227.3); elapsed time until observed spoilage (days; e.g. 5.52). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: storage chamber temperature (degrees C; e.g. 3.9); viable microbes in beverage samples (CFU/ml; e.g. 227.3); elapsed time until observed spoilage (days; e.g. 5.52). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a077",
+        "title": "Linden Grove South results concerning chocolate oat drink",
+        "description": "The described study uses empirical observations from physical samples.\n\nAt Linden Grove South, the study covers liquid chocolate-flavoured oat beverage containing no dairy milk during refrigerated shelf-life assessment.\n\nThe distribution synopses document the measured columns and units.\n\nA field guide explains categorical entries and missing cells.\n\nThe edition preserves the original row ordering.\n\nA field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "chocolate oat drink",
+          "refrigerated shelf life"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: viable microbes in beverage samples (CFU/ml; e.g. 86.76); elapsed time until observed spoilage (days; e.g. 12.14); storage chamber temperature (degrees C; e.g. 4.45). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: viable microbes in beverage samples (CFU/ml; e.g. 86.76); elapsed time until observed spoilage (days; e.g. 12.14); storage chamber temperature (degrees C; e.g. 4.45). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a081",
+        "title": "Drink formulation across the Alderbank Lower series",
+        "description": "Physical observations were recorded, not process simulations.\n\nAt Alderbank Lower, the study covers liquid chocolate-flavoured dairy milk beverage during liquid drink recipe formulation.\n\nThe distribution synopses document the measured columns and units.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.\n\nA field guide explains categorical entries and missing cells.",
+        "keywords": [
+          "chocolate milk",
+          "drink formulation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: liquid viscosity (mPa s; e.g. 31.22); cocoa fraction in liquid recipe (percent by mass; e.g. 3.91); sugar fraction in liquid recipe (percent by mass; e.g. 7.09). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: liquid viscosity (mPa s; e.g. 31.22); cocoa fraction in liquid recipe (percent by mass; e.g. 3.91); sugar fraction in liquid recipe (percent by mass; e.g. 7.09). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a087",
+        "title": "Elm Crossing South technical notes on chocolate oat drink",
+        "description": "Recorded columns comprise cocoa fraction in liquid recipe (percent by mass; e.g. 4.73); liquid viscosity (mPa s; e.g. 34.6); sugar fraction in liquid recipe (percent by mass; e.g. 10.95). The Elm Crossing South series documents liquid drink recipe formulation, focusing on liquid chocolate-flavoured oat beverage containing no dairy milk. Physical observations were recorded, not process simulations. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements. Rows retain local observation keys for reuse. Rows retain local observation keys for reuse.",
+        "keywords": [
+          "chocolate oat drink",
+          "drink formulation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: cocoa fraction in liquid recipe (percent by mass; e.g. 4.73); liquid viscosity (mPa s; e.g. 34.6); sugar fraction in liquid recipe (percent by mass; e.g. 10.95). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: cocoa fraction in liquid recipe (percent by mass; e.g. 4.73); liquid viscosity (mPa s; e.g. 34.6); sugar fraction in liquid recipe (percent by mass; e.g. 10.95). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: cocoa fraction in liquid recipe (percent by mass; e.g. 4.73); liquid viscosity (mPa s; e.g. 34.6); sugar fraction in liquid recipe (percent by mass; e.g. 10.95). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a091",
+        "title": "Understanding chocolate milk through the North Meadow Lower study",
+        "description": "Recorded columns comprise acidification time course (hours/pH; example pairs 0/6.6, 4.31/4.7); residual sugar after fermentation (g/litre; e.g. 24.86); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus).\n\nEntries describe an observational study rather than model predictions.\n\nA separate investigation at North Meadow Lower examines liquid chocolate-flavoured dairy milk beverage through fermentation of a chocolate-flavoured liquid beverage, not postharvest beans.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nRows retain local observation keys for reuse.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "chocolate milk",
+          "beverage fermentation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: acidification time course (hours/pH; example pairs 0/6.6, 4.31/4.7); residual sugar after fermentation (g/litre; e.g. 24.86); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: acidification time course (hours/pH; example pairs 0/6.6, 4.31/4.7); residual sugar after fermentation (g/litre; e.g. 24.86); starter culture inoculated (recorded culture: Lactobacillus / Streptococcus). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "a097",
+        "title": "A practical examination of beverage fermentation at Reed Marsh South",
+        "description": "Physical observations were recorded, not process simulations. The distribution synopses document the measured columns and units. This deposit concerns fermentation of a chocolate-flavoured liquid beverage, not postharvest beans of liquid chocolate-flavoured oat beverage containing no dairy milk at Reed Marsh South. A field guide explains categorical entries and missing cells. Rows retain local observation keys for reuse.",
+        "keywords": [
+          "chocolate oat drink",
+          "beverage fermentation"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 12.47); acidification time course (hours/pH; example pairs 0/6.6, 6.91/4.7). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 12.47); acidification time course (hours/pH; example pairs 0/6.6, 6.91/4.7). Downloadable JSON records with the same variables and units.",
+          "Deposited columns: starter culture inoculated (recorded culture: Lactobacillus / Streptococcus); residual sugar after fermentation (g/litre; e.g. 12.47); acidification time course (hours/pH; example pairs 0/6.6, 6.91/4.7). Downloadable JSON records with the same variables and units."
+        ]
+      },
+      {
+        "identifier": "b001",
+        "title": "Wet-road traction: an account from Granite Bend Lower",
+        "description": "The Granite Bend Lower series documents wet pavement traction testing, focusing on complete running shoes for road use. The catalogue model or edition is RUN-X120. Its declared catalogue aliases are run-x120 and RUNX120.\n\nThe described study uses empirical observations from physical samples.\n\nThe released table lists water-film depth on pavement (mm; e.g. 0.68); wet sliding friction coefficient (dimensionless; e.g. 0.57); tested pavement surface roughness (mm; e.g. 1.41).\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "running shoes",
+          "wet-road traction"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: water-film depth on pavement (mm; e.g. 0.68); wet sliding friction coefficient (dimensionless; e.g. 0.57); tested pavement surface roughness (mm; e.g. 1.41). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: water-film depth on pavement (mm; e.g. 0.68); wet sliding friction coefficient (dimensionless; e.g. 0.57); tested pavement surface roughness (mm; e.g. 1.41). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b013",
+        "title": "Hydraulic pump acceptance trials",
+        "description": "Entries describe an observational study rather than model predictions.\n\nThe distribution synopses document the measured columns and units.\n\nThe Oak Terrace West series documents indoor low-noise testing during hydraulic circulation, focusing on hydraulic fluid circulation pumps. The catalogue model or edition is PUMP-H71.\n\nRows retain local observation keys for reuse.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "hydraulic pumps",
+          "indoor acoustic testing"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 16.49); microphone distance from operating pump (m; e.g. 2.41); operating sound pressure level (dB(A); e.g. 48.66). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 16.49); microphone distance from operating pump (m; e.g. 2.41); operating sound pressure level (dB(A); e.g. 48.66). Tables are supplied inside a PDF document.",
+          "Deposited columns: hydraulic fluid flow rate (litres/minute; e.g. 16.49); microphone distance from operating pump (m; e.g. 2.41); operating sound pressure level (dB(A); e.g. 48.66). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b027",
+        "title": "Notes on temperature probes from Quartz Field South",
+        "description": "A separate investigation at Quartz Field South examines temperature sensor probes for cold-room equipment through cold-room temperature calibration.\n\nPhysical observations were recorded, not process simulations.\n\nThe released table lists calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.13).\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThis edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations.\n\nThe edition preserves the original row ordering.\n\nRows retain local observation keys for reuse.",
+        "keywords": [
+          "temperature probes",
+          "cold-room calibration"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.13). The instrument model documented here is DIST-K47. Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.13). The instrument model documented here is DIST-K47. Tables are supplied inside a PDF document.",
+          "Deposited columns: calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.13). The instrument model documented here is DIST-K47. Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      },
+      {
+        "identifier": "b029",
+        "title": "TITLE-T82 Bench inventory across the Kestrel Point Coastal series",
+        "description": "Entries describe an observational study rather than model predictions.\n\nRecorded columns comprise reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 934.32).\n\nThe Kestrel Point Coastal series documents unloaded bench inventory with no operating calibration or circulation trial, focusing on temperature sensor probes for cold-room equipment.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nThe edition preserves the original row ordering.\n\nThe edition preserves the original row ordering.",
+        "keywords": [
+          "temperature probes",
+          "bench inventory"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 934.32). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 934.32). Tables are supplied inside a PDF document.",
+          "Deposited columns: reporting interval (calendar month; e.g. 2024-06); unloaded unit mass (g; e.g. 934.32). Tables are supplied inside a PDF document."
+        ]
+      },
+      {
+        "identifier": "b067",
+        "title": "The Ivy Brook South series on temperature probes",
+        "description": "At Ivy Brook South, the study covers temperature sensor probes for cold-room equipment during cold-room temperature calibration. The catalogue model or edition is SENSE-067. Recorded columns comprise reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16). The described study uses empirical observations from physical samples. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. A field guide explains categorical entries and missing cells. Rows retain local observation keys for reuse. Rows retain local observation keys for reuse.",
+        "keywords": [
+          "temperature probes",
+          "cold-room calibration"
+        ],
+        "quality": 1,
+        "hasQuality": true,
+        "distribution_columns": [
+          "Deposited columns: reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16). Downloadable comma-separated table; the synopsis gives the column units.",
+          "Deposited columns: reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16). Tables are supplied inside a PDF document.",
+          "Deposited columns: reference thermometer uncertainty (degrees C; e.g. 0.07); calibration test-point range (-20 to +5 degrees C inclusive); probe reading minus reference temperature (degrees C; e.g. -0.16). Downloadable comma-separated table; the synopsis gives the column units."
+        ]
+      }
+    ],
+    "repetition_findings": [
+      {
+        "id": "a003",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a004",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "a005",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a006",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a007",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a008",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a009",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a013",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a015",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a019",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a022",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a024",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a025",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a026",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a029",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a030",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a031",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a033",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a034",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a037",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a038",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a039",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a042",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a046",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a050",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a051",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "a057",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a059",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a060",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a061",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a062",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a065",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a067",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a068",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a069",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a070",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a073",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a076",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a077",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a079",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a080",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a081",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a082",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a083",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "a085",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a087",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a088",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a091",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a092",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "a093",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a095",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a096",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "a099",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b003",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b004",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b007",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          },
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b008",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "id": "b013",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b015",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          },
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b017",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b018",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b019",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b021",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          },
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b022",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          },
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b023",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b024",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b025",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b026",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b029",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b032",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b034",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b035",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b037",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b038",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b039",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b040",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b041",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b045",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b046",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b047",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b048",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b049",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b050",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b055",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b058",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b063",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b065",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "b067",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b070",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b073",
+        "repeats": [
+          {
+            "sentence": "The edition preserves the original row ordering.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b074",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b075",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b076",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b077",
+        "repeats": [
+          {
+            "sentence": "Rows retain local observation keys for reuse.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b078",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "id": "b079",
+        "repeats": [
+          {
+            "sentence": "A field guide explains categorical entries and missing cells.",
+            "count": 2
+          }
+        ]
+      }
+    ]
+  }
+}

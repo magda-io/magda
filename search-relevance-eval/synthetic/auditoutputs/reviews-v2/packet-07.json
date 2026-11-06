@@ -1,0 +1,762 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-07",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-07"
+  },
+  "record_reviews": [
+    {
+      "seed": 39031,
+      "dataset_id": "a061",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 22.33)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 74.77)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 86.62)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a062",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 23.2)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 72.42)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 42.91)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a063",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 13.46)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 76.34)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a064",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 18.99)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 84.62)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a065",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 23.58)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a066",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "dessert_reconstitution", "evidence": [{"field": "description", "quote": "dessert paste preparation using a drink powder, rather than hot beverage preparation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. North Meadow West)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 81)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The powder is a beverage ingredient, but the observed activity is dessert paste preparation, explicitly not hot beverage preparation. The files document site, operations count and month, not powder dose, water temperature or dissolution time. Ingredient overlap does not establish the requested bench measurements.",
+          "evidence": [
+            {"field": "description", "quote": "dessert paste preparation using a drink powder, rather than hot beverage preparation"},
+            {"field": "distributions.0.description", "quote": "Deposited columns: facility location code (categorical site code; e.g. North Meadow West); completed operations (count; e.g. 81); reporting interval (calendar month; e.g. 2024-06)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a067",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "dessert_cocoa_powder", "evidence": [{"field": "description", "quote": "baking-only dessert cocoa powder not formulated as a beverage mix"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 19.35)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 83.69)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 55.06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The water-bench process and all three measured variables overlap, but the tested material is explicitly baking-only cocoa, not a drinking-chocolate beverage mix. This is a supported product distinction, not an absence of dissolution measurements.",
+          "evidence": [{"field": "description", "quote": "baking-only dessert cocoa powder not formulated as a beverage mix"}]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a068",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "commercial_ledger_associated_with_hot_drink_reconstitution", "evidence": [
+          {"field": "description", "quote": "hot-drink reconstitution bench testing with water"},
+          {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+        ]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 37)"}],
+          "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 20.34)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The narrative associates the ledger with the correct powder and reconstitution activity, but expressly denies that it reports experimental performance. Its observed facts are commercial month, consignments and price; none documents preparation dose, water temperature or dissolution time. Non-simulated ledger observations are not physical reconstitution measurements.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); dispatched consignments (count; e.g. 37); invoiced unit price (AUD/unit; e.g. 20.34)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a069",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "simulation_only", "evidence": [
+          {"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."},
+          {"field": "distributions.0.description", "quote": "Simulated output columns: time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08)."}
+        ]},
+        "facts": {},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The correct powder and process are modeled, and dose, temperature and dissolution time are documented simulated outputs. None is positively documented as physically measured; facts is therefore empty. The explicit simulation-only basis conflicts with the empirical-measurement requirement. Generic distribution titles do not override the specific simulation descriptions.",
+          "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a070",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 27.21)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 66.61)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 85.87)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a061",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 24.7)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 82.9)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 43.14)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a062",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 26.03)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 83.37)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 61.24)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a063",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 22.78)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 90.37)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a064",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 16.76)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 47.14)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a065",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 23.61)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a066",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "dessert_reconstitution", "evidence": [{"field": "description", "quote": "dessert paste preparation using a drink powder, rather than hot beverage preparation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Ivy Brook Coastal)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 27)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "This is observed dessert paste preparation with a beverage powder, explicitly distinguished from preparing a hot beverage. Site, completed-operation counts and month are documented instead of the requested reconstitution measurements; neither the common ingredient nor the extended field-guide prose supplies those missing facts.",
+          "evidence": [
+            {"field": "description", "quote": "dessert paste preparation using a drink powder, rather than hot beverage preparation"},
+            {"field": "distributions.0.description", "quote": "Deposited columns: facility location code (categorical site code; e.g. Ivy Brook Coastal); completed operations (count; e.g. 27); reporting interval (calendar month; e.g. 2024-06)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a067",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "dessert_cocoa_powder", "evidence": [{"field": "description", "quote": "baking-only dessert cocoa powder not formulated as a beverage mix"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 28.69)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 88.51)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 36.16)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "All three variables are physical observations in a water reconstitution test, but the material is explicitly baking-only cocoa rather than a formulated beverage mix. The difference is the product, not an unsupported claim that the measurements or process are absent.",
+          "evidence": [{"field": "description", "quote": "baking-only dessert cocoa powder not formulated as a beverage mix"}]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a068",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "commercial_ledger_associated_with_hot_drink_reconstitution", "evidence": [
+          {"field": "description", "quote": "hot-drink reconstitution bench testing with water"},
+          {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+        ]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 40)"}],
+          "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 5.77)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The product and associated activity overlap, but the explicit commercial-ledger qualification and the column list identify commercial observations, not performance data. No dose, water temperature or dissolution-time measurement is documented. The empirical basis refers to ledger observations only.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 5.77); dispatched consignments (count; e.g. 40)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a069",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "simulation_only", "evidence": [
+          {"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."},
+          {"field": "distributions.0.description", "quote": "Simulated output columns: time to complete powder dissolution (seconds; e.g. 61.7); powder mass added per preparation (g; e.g. 22.69); added water temperature (degrees C; e.g. 77.27)."}
+        ]},
+        "facts": {},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The powder and modeled operation match the subject, and all three relevant quantities are listed as simulated outputs. The text expressly excludes physical trials and empirical observations, so none is counted as a measured fact. CSV and JSON availability do not change that basis.",
+          "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a070",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 18.98)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 90.76)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 93.28)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a061",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 20.04)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 84.45)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 37.09)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a062",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 14.81)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 87.32)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 43.93)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a063",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 15.94)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 86.73)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a064",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 27.07)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 38.68)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a065",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 24.85)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a066",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "dessert_reconstitution", "evidence": [{"field": "description", "quote": "dessert paste preparation using a drink powder, rather than hot beverage preparation"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Linden Grove East)"}],
+          "completed_operations_count": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 81)"}],
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "Using drinking-chocolate powder in dessert paste is not the requested hot-drink reconstitution operation; the description makes that distinction explicit. The observation columns are reporting month, operations count and site code, and do not positively document any of the three requested preparation measurements.",
+          "evidence": [
+            {"field": "description", "quote": "dessert paste preparation using a drink powder, rather than hot beverage preparation"},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 81); facility location code (categorical site code; e.g. Linden Grove East)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a067",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "dessert_cocoa_powder", "evidence": [{"field": "description", "quote": "baking-only dessert cocoa powder not formulated as a beverage mix"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 17.51)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 80.19)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 40.27)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The physical water-bench test genuinely documents dose, temperature and dissolution time. Nevertheless, the actual product is explicitly baking-only cocoa not formulated as a beverage mix, which is a supported distinction from the required drinking-chocolate powder.",
+          "evidence": [{"field": "description", "quote": "baking-only dessert cocoa powder not formulated as a beverage mix"}]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a068",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "commercial_ledger_associated_with_hot_drink_reconstitution", "evidence": [
+          {"field": "description", "quote": "hot-drink reconstitution bench testing with water"},
+          {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+        ]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]},
+        "facts": {
+          "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+          "dispatched_consignments_count": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 62)"}],
+          "invoiced_unit_price_aud": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 13.33)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "Although the powder and activity are named, the actual observations are commercial transactions associated with that activity, explicitly not experimental performance. Consignment counts, unit prices and calendar months do not document dose, water temperature or dissolution time. Calling the files measurements does not turn these into reconstitution-test observations.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: dispatched consignments (count; e.g. 62); invoiced unit price (AUD/unit; e.g. 13.33); reporting interval (calendar month; e.g. 2024-06)."}
+          ]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a069",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "simulation_only", "evidence": [
+          {"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."},
+          {"field": "distributions.0.description", "quote": "Simulated output columns: added water temperature (degrees C; e.g. 74.85); powder mass added per preparation (g; e.g. 18.18); time to complete powder dissolution (seconds; e.g. 74.54)."}
+        ]},
+        "facts": {},
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {
+        "s09": {
+          "reason": "The modeled subject and operation overlap and all three relevant output quantities are documented, but the explicit simulation-only declaration rules out treating them as empirical measurements. No measured facts are positively supported. Generic observation-table wording does not cancel the specific statement that there were no physical observations.",
+          "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]
+        }
+      },
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a070",
+      "reviewer_id": "auditor-packet-07",
+      "contexts": [{
+        "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+        "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+        "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "The described study uses empirical observations from physical samples."}]},
+        "facts": {
+          "powder_dose": [{"field": "distributions.0.description", "quote": "powder mass added per preparation (g; e.g. 27.93)"}],
+          "water_temperature": [{"field": "distributions.0.description", "quote": "added water temperature (degrees C; e.g. 70.21)"}],
+          "dissolution_time_seconds": [{"field": "distributions.0.description", "quote": "time to complete powder dissolution (seconds; e.g. 22.47)"}]
+        },
+        "distribution_content_verified": true
+      }],
+      "identity": {"value": null, "evidence": []},
+      "hard_negatives": {},
+      "no_answer_claims": [],
+      "issues": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-07",
+      "rationale": "Compared all ten IDs against both other seed versions after reviewing every supplied field. Semantic measurement coverage is preserved: a061/a062/a070 have dose, water temperature and dissolution time; a063 has dose and temperature only; a064 has dose and dissolution time only; a065 has dose only. Omitted measurements are not inferred from the process name or field-guide prose. a066 consistently concerns dessert paste and documents site/operations/month; a067 consistently tests baking-only cocoa and measures all three quantities; a068 consistently contains commercial month/consignments/price rather than experimental performance; a069 consistently contains simulation outputs, not measured facts. All supplied distributions were checked: a061/a065/a066/a069 have CSV plus JSON; a062/a067/a068 add another JSON; a063/a064/a070 add another CSV. Every description repeats the same within-record variable set, units and example values, and the comma-separated/JSON content statements match their format fields. Titles are generic file labels, not evidence of additional variables. Meaningful wording variation includes reordered subject/basis/variable clauses, paragraph versus continuous prose, different title constructions and substantial length changes: a063/a064 are long here but shorter in 39032, whereas a065/a066 become long in 39032. No prohibited literal solubility or cup token occurs in the relevant positive records. Numeric examples, fictional site names and publishers change across seeds; preservation means product/process/basis and supported variable sets, not identical observations or provenance. No temporal field is supplied; calendar-month columns are not harvest seasons. No record requires identity review. No frozen no-answer conjunction is supported. Limitations: metadata-level distribution association only, not downloaded file contents; duplicated production queryContext text was omitted from the supplied packet and is not independently re-read. No query wording is supplied beyond intent specifications, so actual paraphrase wording equivalence cannot be audited here; no corpus-wide coverage or absence inference is made from this packet."
+    },
+    "39032": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-07",
+      "rationale": "All ten actual records were compared with 39031 and 39033. The same product, process, empirical-versus-simulated distinctions and positive variable sets persist for every ID. a061/a062/a070 document all three preparation measurements; a063 omits dissolution time, a064 omits water temperature, and a065 documents dose alone. a066 remains dessert preparation with site code, operations count and reporting month; a067 remains baking-only cocoa with real dose/temperature/time measurements; a068 remains an observed commercial ledger with month/price/consignments, not performance; a069 explicitly remains simulation-only, with all three output quantities retained as simulated rather than counted as measurements. Checked every distribution's description, title and format: a061/a063/a068/a070 have CSV and JSON; a062/a065/a066/a067 add a JSON; a064/a069 add a CSV. Within-record distribution columns, units and examples agree, and format declarations match comma-separated or JSON descriptions. The variants change much more than a site token: a063/a064 become compact distribution-led descriptions, a065/a066/a067 have expanded reuse/blank-cell notes, titles change construction, clauses move and variable order changes. That variation does not add observations through explanatory prose. All numeric examples and fictional study contexts must be treated as seed-specific, not invariant data values. No positive record introduces the prohibited literal solubility/cup tokens, no authoritative identity review is required, and no no-answer conjunction is supported. Review scope is the complete supplied primary fields; no temporal coverage field exists here. Distribution verification means documented format/content association, not downloaded bytes. Duplicated queryContext copies and actual paraphrase query strings are not present for independent re-reading; the comparison establishes metadata semantic preservation, not query-string equivalence or corpus-wide coverage."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-07",
+      "rationale": "Reviewed all ten records and compared each with both other seed versions. a061/a062/a070 preserve the three real preparation measurements; a063 preserves only dose and water temperature, a064 only dose and dissolution time, and a065 only dose. a066 preserves the explicit dessert-not-beverage process and site/operations/month observations. a067 preserves the baking-only cocoa product exclusion while positively documenting three physical measurements. a068 preserves commercial ledger observations, not reconstitution performance, despite naming the related bench activity. a069 preserves the explicit absence of physical observations; its temperature/dose/time columns are simulations and are not counted as measured facts. Checked all listed nested distributions: a061/a063/a064/a066/a068/a069 have CSV and JSON; a062/a065/a067/a070 add a JSON. Their content descriptions match the format declarations and repeat the same within-record units, examples and variable sets. Titles and expanded notes add no hidden variables. Meaningful cross-seed variation includes a061/a062/a064/a066/a070 becoming long descriptions, a065/a069 becoming compact, different title phrasing, paragraph layout, clause order and variable order. Product/process/basis and measurement-presence facts are preserved, but numerical examples, fictional locations and publisher identities are deliberately different across the three versions; literal data/provenance invariance is not claimed. Relevant positives do not contain the prohibited literal solubility/cup tokens. Identity review is not required for any record; no frozen no-answer conjunction is supported. All supplied searchable fields were reviewed, but omitted duplicate queryContext text was not independently re-read and downloadable contents were not inspected. Actual paraphrase strings are absent, so only the stated intent concepts and metadata preservation can be assessed, not full paraphrase equivalence or whole-corpus coverage/absence."
+    }
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "delta-auditor-01",
+    "context_id": "explicitunavailable; freshdelta01",
+    "model": "gpt-6.1-sol(runtime label)",
+    "parameters": "notexposed",
+    "rankings_seen": false,
+    "generator_context": false
+  },
+  "sources": {
+    "39031": {"path": ".local/corpora-v3/seed-39031.jsonl", "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"},
+    "39032": {"path": ".local/corpora-v3/seed-39032.jsonl", "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"},
+    "39033": {"path": ".local/corpora-v3/seed-39033.jsonl", "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"}
+  },
+  "record_reviews": [
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a005",
+      "contexts": [
+        {
+          "product": {"value": "harvested_cacao_material", "evidence": [{"field": "description", "quote": "warehouse bags of harvested cacao material from the crop"}]},
+          "process": {"value": "administrative_operations_reporting", "evidence": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 60); facility location code (categorical site code; e.g. Hazel Ridge Inner)"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 60)"}],
+            "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Hazel Ridge Inner)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "harvested_cacao_material", "evidence": [{"field": "description", "quote": "warehouse bags of harvested cacao material from the crop"}]},
+          "process": {"value": "postharvest_pest_storage", "evidence": [{"field": "description", "quote": "postharvest pest inspection covers warehouse bags of harvested cacao material from the crop"}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "postharvest pest inspection covers warehouse bags of harvested cacao material from the crop"}]},
+          "facts": {}, "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s01": {"evidence": [{"field": "description", "quote": "postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field"}], "reason": "Stored harvested material and postharvest inspection are positively documented, not living-crop field pest management. Administrative operation counts do not document pest counts, treatment identity or application rate. The cacao-tree keyword does not override the explicit warehouse subject. The topical storage/pest context remains valid without those measurements."},
+        "s02": {"evidence": [{"field": "description", "quote": "postharvest pest inspection covers warehouse bags of harvested cacao material from the crop"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 60); facility location code (categorical site code; e.g. Hazel Ridge Inner)"}, {"field": "distributions.0.format", "quote": "CSV"}], "reason": "Downloadable CSV is associated with administrative columns, not harvest-yield observations. Already harvested crop material does not establish a harvest-yield process; operation counts and reporting month are not harvest mass, hectares or a documented harvest season."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a020",
+      "contexts": [
+        {
+          "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "factory grounds landscaping with young cacao plants"}]},
+          "process": {"value": "administrative_operations_reporting", "evidence": [{"field": "description", "quote": "These are observed administrative entries, not model predictions."}, {"field": "distributions.0.description", "quote": "completed operations (count; e.g. 86); reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh South)"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "These are observed administrative entries, not model predictions."}]},
+          "facts": {
+            "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 86)"}],
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Reed Marsh South)"}]
+          }, "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "cacao_seedlings", "evidence": [{"field": "description", "quote": "young cacao plants"}]},
+          "process": {"value": "factory_landscaping", "evidence": [{"field": "description", "quote": "This deposit concerns factory grounds landscaping with young cacao plants"}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "This deposit concerns factory grounds landscaping with young cacao plants"}]},
+          "facts": {}, "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s04": {"evidence": [{"field": "description", "quote": "factory grounds landscaping with young cacao plants, rather than nursery propagation of cacao seedlings raised for planting"}], "reason": "The positive subject is young cacao plants used in factory landscaping; the propagation phrase is explicitly contrasted, not an assertion that propagation was studied. Survival, propagation method and rooting duration are not documented columns. The administrative provenance repair is consistent with operation/month/site entries and no longer claims physical samples. Factory landscaping is independently supported as a topical context for ambiguous diagnostics, despite having no propagation measurements."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a029",
+      "contexts": [
+        {
+          "product": {"value": "solid_milk_chocolate", "evidence": [{"field": "description", "quote": "solid milk chocolate bars"}]},
+          "process": {"value": "bar_packaging", "evidence": [{"field": "description", "quote": "wrapping and package performance assessment"}]},
+          "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: failed wrapper seals (percent of seals tested; e.g. 5.28); wrapper material examined (category: foil / coated paper); wrapper oxygen transmission (cm3/m2/day; e.g. 6.55)."}, {"field": "distributions.2.title", "quote": "Simulation output table"}]},
+          "facts": {}, "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s05": {"evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}], "reason": "Product and packaging process match. Wrapper material, oxygen transmission (barrier performance) and failed-seal percentage are explicitly simulated outputs, not positively documented empirical measurements; facts is therefore empty. Simulation-only basis conflicts with the semantic need. All CSV/JSON synopses consistently identify simulated content. The corrected title is truthful; Recorded series and Study records do not themselves assert empirical sampling. Packaging remains an explicitly documented diagnostic topic."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a039",
+      "contexts": [
+        {
+          "product": {"value": "solid_chocolate", "evidence": [{"field": "description", "quote": "solid chocolate confectionery bars"}]},
+          "process": {"value": "texture_testing", "evidence": [{"field": "description", "quote": "texture testing of chocolate by mechanical loading"}]},
+          "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: tempering hold temperature and duration (31.18 degrees C for 24 minutes in an example row); force at fracture (newtons; e.g. 33.27); particle diameter (micrometres; e.g. 16.18)."}, {"field": "distributions.0.title", "quote": "Simulation output table"}, {"field": "distributions.1.title", "quote": "Simulation output table"}, {"field": "distributions.2.title", "quote": "Simulation output table"}]},
+          "facts": {}, "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s06": {"evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}], "reason": "Solid-chocolate texture testing is supported, but fracture force, tempering temperature/duration and particle size are modeled outputs only. No empirical required measurement is positively documented. All three corrected distribution titles explicitly say simulation, consistently with their CSV/JSON content descriptions. Local observation keys are row identifiers, not an assertion that physical trials occurred. Simulation does not erase the documented texture-testing topic for ambiguous diagnostics."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a046",
+      "contexts": [
+        {
+          "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+          "process": {"value": "administrative_operations_reporting", "evidence": [{"field": "description", "quote": "These are observed administrative entries, not model predictions."}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 17); facility location code (categorical site code; e.g. Hazel Ridge West)"}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "These are observed administrative entries, not model predictions."}]},
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 17)"}],
+            "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Hazel Ridge West)"}]
+          }, "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+          "process": {"value": "ingredient_marketing", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients"}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients"}]},
+          "facts": {}, "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s07": {"evidence": [{"field": "description", "quote": "marketing and promotional dispatch for dessert ingredients, rather than storage experiments"}], "reason": "The edible dessert-chocolate ingredient is positively documented, but the actual topical process is marketing/dispatch, not storage experimentation. Administrative month/count/site columns do not document storage temperature, quality assessment or moisture. These variables are undocumented, not explicitly declared missing fields. Administrative provenance now agrees with the released columns; no physical-sample claim remains. Dessert-ingredient context is real but does not establish a storage process."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a049",
+      "contexts": [
+        {
+          "product": {"value": "dessert_chocolate_ingredient", "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]},
+          "process": {"value": "ingredient_storage", "evidence": [{"field": "description", "quote": "storage assessment before use of the material"}]},
+          "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: material moisture by mass (percent; e.g. 3.91); storage chamber temperature (degrees C; e.g. 7.49); ingredient quality assessment score (points on a 0-100 scale; e.g. 61.75)."}, {"field": "distributions.0.title", "quote": "Simulation output table"}]},
+          "facts": {}, "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s07": {"evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}], "reason": "Ingredient product and storage process match, but moisture percentage, chamber temperature and quality score are simulated rather than measured. No required empirical measurement is supported. CSV/JSON consistently advertise those same simulated outputs. The changed title explicitly identifies simulation, while Variable dictionary and values and Recorded series are neutral, not contradictory empirical claims. Storage and dessert context remain independently supported for short diagnostics without an empirical condition."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a057",
+      "contexts": [
+        {
+          "product": {"value": "ornamental_plants_and_grounds_maintenance_tools", "evidence": [{"field": "description", "quote": "ornamental plants and their grounds-maintenance tools outside confectionery production areas"}]},
+          "process": {"value": "grounds_maintenance_tool_sanitation", "evidence": [{"field": "description", "quote": "grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification"}]},
+          "basis": {"value": "representative_measurements_not_simulation", "evidence": [{"field": "description", "quote": "Physical observations were recorded, not process simulations."}]},
+          "facts": {
+            "equipment_cleaning": [{"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)"}],
+            "residue_mass_mg": [{"field": "distributions.0.description", "quote": "residue remaining on cleaned surface (mg; e.g. 11.02)"}],
+            "microbial_swabs": [{"field": "distributions.0.description", "quote": "microbial growth from surface swabs (CFU/swab; e.g. 80.17)"}]
+          }, "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s08": {"evidence": [{"field": "description", "quote": "ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification"}, {"field": "distributions.0.description", "quote": "equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17)"}], "reason": "All three sanitation measurements are positively documented, but apply to external grounds-maintenance tools, not positively identified food-production machinery. Do not force the broad factory_sanitation process code from equipment-cleaning words. A grounds-tool sanitation process is concrete. U on the declared categorical contrast: the frozen s08 rubric specifies confectionery factory/sanitation and factory rather than seedling/crop plant, but does not expressly limit factory sanitation to production equipment. Being outside production areas is not alone proof that tools are unrelated to factory sanitation. No relevance grade is assigned; clarify the frozen product/process boundary before treating this contrast as conclusively resolved."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [],
+      "issues": [{"evidence": [{"field": "description", "quote": "grounds-maintenance tools outside confectionery production areas"}], "reason": "U: actual subject and measurements are clear, but the s08 hard-negative boundary remains underdetermined by the supplied factory/sanitation definition, which lacks an explicit production-equipment-only restriction. Do not equate grounds tools with production machinery, or infer categorical exclusion from their outside location alone."}],
+      "exhaustive_searchable_review": true, "semantic_review_passed": false
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a059",
+      "contexts": [
+        {
+          "product": {"value": "confectionery_factory", "evidence": [{"field": "description", "quote": "chocolate confectionery factory production equipment"}]},
+          "process": {"value": "factory_sanitation", "evidence": [{"field": "description", "quote": "sanitation and equipment cleaning verification"}]},
+          "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: residue remaining on cleaned surface (mg; e.g. 9.52); microbial growth from surface swabs (CFU/swab; e.g. 81.64); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash)."}, {"field": "distributions.0.title", "quote": "Simulation output table"}, {"field": "distributions.1.title", "quote": "Simulation output table"}]},
+          "facts": {}, "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s08": {"evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}], "reason": "Factory production-equipment sanitation is explicit. However, cleaning cycle, residue mass and swab growth are solely modeled output columns; there are no empirical required measurements. This is an unambiguous basis conflict, independent of product scope. The two repaired titles and all CSV/JSON descriptions consistently identify simulation; the remaining Variable dictionary and values title is neutral. Factory-sanitation topical context is still documented for diagnostics."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a069",
+      "contexts": [
+        {
+          "product": {"value": "drinking_chocolate_powder", "evidence": [{"field": "description", "quote": "drinking chocolate powder intended for hot beverages"}]},
+          "process": {"value": "hot_drink_reconstitution", "evidence": [{"field": "description", "quote": "hot-drink reconstitution bench testing with water"}]},
+          "basis": {"value": "simulation_only", "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}, {"field": "distributions.0.description", "quote": "Simulated output columns: time to complete powder dissolution (seconds; e.g. 23.57); added water temperature (degrees C; e.g. 74.19); powder mass added per preparation (g; e.g. 27.08)."}, {"field": "distributions.0.title", "quote": "Simulation output table"}, {"field": "distributions.1.title", "quote": "Simulation output table"}]},
+          "facts": {}, "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s09": {"evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}], "reason": "Hot-beverage powder and reconstitution with water match the requested product/process. Dissolution time, water temperature and powder dose are explicitly simulated, not empirical measurements, so facts is empty. Bench-testing subject language does not negate the express absence of a physical trial. Both corrected titles and their CSV/JSON synopses consistently describe simulation. Drink-preparation context remains supported for ambiguous diagnostics."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    },
+    {
+      "reviewer_id": "delta-auditor-01", "seed": 39031, "dataset_id": "a076",
+      "contexts": [
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "sealed cartons of liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "administrative_operations_reporting", "evidence": [{"field": "description", "quote": "The released table lists reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West)."}]},
+          "basis": {"value": "observed_administrative_records", "evidence": [{"field": "description", "quote": "Entries describe an observational study rather than model predictions."}]},
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "completed_operations": [{"field": "distributions.0.description", "quote": "completed operations (count; e.g. 41)"}],
+            "facility_location_code": [{"field": "distributions.0.description", "quote": "facility location code (categorical site code; e.g. Granite Bend West)"}]
+          }, "distribution_content_verified": true
+        },
+        {
+          "product": {"value": "chocolate_dairy_beverage", "evidence": [{"field": "description", "quote": "sealed cartons of liquid chocolate-flavoured dairy milk beverage"}]},
+          "process": {"value": "ambient_transport_logistics", "evidence": [{"field": "description", "quote": "ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage"}]},
+          "basis": {"value": "contextual_topic_only", "evidence": [{"field": "description", "quote": "ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage"}]},
+          "facts": {}, "distribution_content_verified": false
+        }
+      ],
+      "hard_negatives": {
+        "s10": {"evidence": [{"field": "description", "quote": "ambient transport logistics concern sealed cartons of liquid chocolate-flavoured dairy milk beverage; this is not a refrigerated shelf-life trial"}, {"field": "distributions.0.format", "quote": "CSV"}, {"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West)"}], "reason": "The repaired sentence positively attaches the dairy beverage to transported cartons; its identity is not inside the negated trial clause. Downloadable CSV exists as described metadata and carries operational columns. The process is expressly ambient transport rather than refrigerated shelf-life testing; reporting month is not spoilage duration, and no storage temperature or microbial concentration is documented. Observational provenance agrees with an operations ledger; Deposited measurements does not by itself claim physical sample measurements. Ambient-logistics topical context is preserved separately."}
+      },
+      "identity": {"value": null, "evidence": []}, "no_answer_claims": [], "issues": [],
+      "exhaustive_searchable_review": true, "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "reviewed_dataset_ids": ["a005", "a020", "a029", "a039", "a046", "a049", "a057", "a059", "a069", "a076"],
+      "scope": "Exactly the ten assigned actual projected records in delta packet01. Read the full packet in consecutive read-tool chunks of at most 100 lines. The long escaped rubric string was also read in full through a lossless wrapped view of that same packet value, then the explicitly authorized relevance-rubric.md was read completely (58 lines). Re-read validation-prompt.md including the appended basis clarification (28 lines). No generator, external review artifact, retrieval result or network source was inspected.",
+      "searchable_field_review": "Reviewed every supplied title, description, keyword, publisher, spatial field and every distribution title/description/format. No temporal fields were supplied. No identity review is required for any of these ten records; identity.value is null rather than invented. No grade, query token list, target ID list or imperative instruction was found in the actual searchable fields. No exact duplicate projected records were found among these ten. Formulaic title wording remains, but the titles contain study subject/place information rather than category prefixes or answer labels.",
+      "distribution_association": "All advertised CSV/JSON synopses consistently associate their format with the listed administrative, physical or simulated columns. distribution_content_verified means metadata association only, never binary download verification. In dual-context administrative records it is true for the ledger context and false for the topical context because distributions do not document topical measurement columns. False there does not deny the positive prose context. Administrative facts are not scored experimental facts. Simulation contexts have facts={} because their detailed outputs, quoted under basis, are not empirical measurements.",
+      "repairs_checked": "a005 now positively identifies harvested cacao material in bags, without attaching the warehouse activity to living trees. a020 and a046 now claim observed administrative entries, consistent with ledger columns and without physical-sample provenance. All repaired simulation titles explicitly identify simulation and remaining neutral titles do not assert empirical trials. a076 positively identifies dairy beverage inside transported cartons. a057 now identifies external grounds tools; the exact s08 exclusion still requires scope clarification rather than presuming food-production machinery.",
+      "diagnostic_contexts": "Preserved independently documented postharvest pest/storage, factory landscaping, ingredient marketing, bar packaging, texture testing, ingredient storage, grounds-tool sanitation, factory production-equipment sanitation, hot-drink reconstitution and ambient logistics. Diagnostic context does not require empirical measurement columns or a non-simulation basis. No unmentioned harvest, propagation, storage-experiment or formulation process was inferred merely from product vocabulary.",
+      "cross_seed_preservation": "Not established: no matching records from seeds 39032 or 39033 were assigned or inspected. Their source references are copied exactly as packet provenance only. Other records, query paraphrase wording, complete corpus coverage, binary files and independent source-hash recomputation are outside this packet review. The packet says production queryContext copies were programmatically checked; those omitted fields were not independently inspected here.",
+      "no_answer_scope": "Neither frozen no-answer conjunction is supported in any actual field of these ten records; this is not a corpus-wide absence conclusion.",
+      "issues": ["U: a057/s08 contrast remains scope-dependent; the frozen factory-sanitation definition does not explicitly exclude external grounds-tool sanitation, although those tools must not be identified as food-production machinery."]
+    }
+  }
+}

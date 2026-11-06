@@ -1,0 +1,888 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [
+    {
+      "after_record_sha256": "d0926be2a52d55b76f99ad052a1b889c7bb912ca80ca28e98a053af386579c84",
+      "before_record_sha256": "ff4c88fd6cfbdb922157d597e1eef6c342b35998184a0deea438bdd6fa685b17",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "The distribution synopses document the measured columns and units. At Hazel Ridge Inner, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field. Entries describe an observational study rather than model predictions. Local row keys are not catalogue product identifiers. The institutional catalogue provides this synopsis for potential reuse. Supporting notes explain the conventions used in this edition."
+          ],
+          "before_chunks_concat_exact": [
+            "The distribution synopses document the measured columns and units. The Hazel Ridge Inner series documents postharvest pest inspection of warehouse bags, rather than crop treatment in the field, focusing on cacao trees grown as a crop. Entries describe an observational study rather than model predictions. Local row keys are not catalogue product identifiers. The institutional catalogue provides this synopsis for potential reuse. Supporting notes explain the conventions used in this edition."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Warehouse pest inspection as recorded at Hazel Ridge Inner\nDescription: The distribution synopses document the measured columns and units. At Hazel Ridge Inner, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field. Entries describe an observational study rather than model predictions. Local row keys are not catalogue product identifiers. The institutional catalogue provides this synopsis for potential reuse. Supporting notes explain the conventions used in this edition.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Warehouse pest inspection as recorded at Hazel Ridge Inner\nDescription: The distribution synopses document the measured columns and units. The Hazel Ridge Inner series documents postharvest pest inspection of warehouse bags, rather than crop treatment in the field, focusing on cacao trees grown as a crop. Entries describe an observational study rather than model predictions. Local row keys are not catalogue product identifiers. The institutional catalogue provides this synopsis for potential reuse. Supporting notes explain the conventions used in this edition.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a005",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39031
+    },
+    {
+      "after_record_sha256": "ea9b178099d84ff5ab8e93c63b528e0d3523b77904e7b0291754263c2f4a5ba5",
+      "before_record_sha256": "90689ce8b8aefd3eaa62e0f0e8a5f362753679c4722b09074483476b31d457f0",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "The distribution synopses document the measured columns and units.\n\nAt Dune Valley Central, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field.\n\nThese are observed administrative entries, not model predictions.\n\nThe deposit contains no personal names or participant details.\n\nA field guide explains categorical entries and missing cells.\n\nSupporting notes explain the conventions used in this edition."
+          ],
+          "before_chunks_concat_exact": [
+            "The distribution synopses document the measured columns and units.\n\nA separate investigation at Dune Valley Central examines cacao trees grown as a crop through postharvest pest inspection of warehouse bags, rather than crop treatment in the field.\n\nThe described study uses empirical observations from physical samples.\n\nThe deposit contains no personal names or participant details.\n\nA field guide explains categorical entries and missing cells.\n\nSupporting notes explain the conventions used in this edition."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: The cacao trees investigation at Dune Valley Central\nDescription: The distribution synopses document the measured columns and units.\n\nAt Dune Valley Central, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field.\n\nThese are observed administrative entries, not model predictions.\n\nThe deposit contains no personal names or participant details.\n\nA field guide explains categorical entries and missing cells.\n\nSupporting notes explain the conventions used in this edition.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: The cacao trees investigation at Dune Valley Central\nDescription: The distribution synopses document the measured columns and units.\n\nA separate investigation at Dune Valley Central examines cacao trees grown as a crop through postharvest pest inspection of warehouse bags, rather than crop treatment in the field.\n\nThe described study uses empirical observations from physical samples.\n\nThe deposit contains no personal names or participant details.\n\nA field guide explains categorical entries and missing cells.\n\nSupporting notes explain the conventions used in this edition.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a005",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "ec20e045b7a520a720dfec1da1f15a9914841d91fee024e85f846ec308e9fc9b",
+      "before_record_sha256": "92e92039b4cfd7d165326f96bcfbbc1b66d8613d1f0f1340b7d3d9ae946e093a",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Entries describe an observational study rather than model predictions. At Fern Hollow Outer, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field. The distribution synopses document the measured columns and units. Supporting notes explain the conventions used in this edition. The institutional catalogue provides this synopsis for potential reuse. Local row keys are not catalogue product identifiers."
+          ],
+          "before_chunks_concat_exact": [
+            "Entries describe an observational study rather than model predictions. This deposit concerns postharvest pest inspection of warehouse bags, rather than crop treatment in the field of cacao trees grown as a crop at Fern Hollow Outer. The distribution synopses document the measured columns and units. Supporting notes explain the conventions used in this edition. The institutional catalogue provides this synopsis for potential reuse. Local row keys are not catalogue product identifiers."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Warehouse pest inspection: an account from Fern Hollow Outer\nDescription: Entries describe an observational study rather than model predictions. At Fern Hollow Outer, postharvest pest inspection covers warehouse bags of harvested cacao material from the crop, rather than treatment of living cacao trees in the field. The distribution synopses document the measured columns and units. Supporting notes explain the conventions used in this edition. The institutional catalogue provides this synopsis for potential reuse. Local row keys are not catalogue product identifiers.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Warehouse pest inspection: an account from Fern Hollow Outer\nDescription: Entries describe an observational study rather than model predictions. This deposit concerns postharvest pest inspection of warehouse bags, rather than crop treatment in the field of cacao trees grown as a crop at Fern Hollow Outer. The distribution synopses document the measured columns and units. Supporting notes explain the conventions used in this edition. The institutional catalogue provides this synopsis for potential reuse. Local row keys are not catalogue product identifiers.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a005",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    }
+  ],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "a001",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts",
+              "treatment_application_rate"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts",
+              "treatment_application_rate"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts",
+              "treatment_application_rate"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a002",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts",
+              "treatment_application_rate"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts",
+              "treatment_application_rate"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts",
+              "treatment_application_rate"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a003",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "control_treatment",
+              "pest_counts"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a004",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "pest_counts"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "pest_counts"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "pest_counts"
+            ],
+            "process": "field_pest_management",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a005",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations",
+              "facility_location_code",
+              "reporting_interval"
+            ],
+            "process": "postharvest_pest_storage",
+            "product": "U: cacao crop is stated, but material in the inspected warehouse bags is unspecified"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations",
+              "facility_location_code",
+              "reporting_interval"
+            ],
+            "process": "postharvest_pest_storage",
+            "product": "U: cacao crop is stated, but material in the inspected warehouse bags is unspecified"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations",
+              "facility_location_code",
+              "reporting_interval"
+            ],
+            "process": "postharvest_pest_storage",
+            "product": "U: cacao crop is stated, but material in the inspected warehouse bags is unspecified"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a006",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a007",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a008",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a009",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a010",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "harvest_mass",
+              "hectares",
+              "season"
+            ],
+            "process": "harvest_yield",
+            "product": "cacao_crop"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-01.json",
+  "original_review_sha256": "a567f09b0ef5fcc6137bc90d16a7cf0942074cd2e31da8a1de452b5b74f998c7",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-01",
+    "generator_context": false,
+    "id": "auditor-packet-01",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "Reviewed all ten IDs against both other seed versions, including every supplied title, complete description, keyword, distribution title/description/format, publisher and optional spatial field; no temporal fields were supplied. Measurement concepts and units are preserved per ID: a001/a002 insect count, treatment and rate; a003 count/treatment only; a004 count only; a005 operational month/site/count only; a006/a007 mass/area/season; a008 mass/area only; a009 mass only; a010 mass/area/season in PDF only. Unlisted treatment rates, seasons and areas are not inferred. All CSV descriptions identify comma-separated tables, JSON descriptions identi",
+        "fy JSON records with the same columns, and both PDF distributions of a010 identify PDF tables; no metadata format/content conflict was found. Verification is of supplied metadata association, not fetched file bytes. The forbidden positive tokens arthropod/suppression and orchard/productivity are absent from the corresponding supplied records. No frozen no-answer conjunction or explicit answer-key/intent/grade leakage appears. All identity_review_required flags are false; identity values are null because no authoritative identity audit is assigned here. Same-intent pairs a001/a002 and a006/a007 have distinct titles, locations and numeric examp",
+        "les rather than identical complete records. Wording varies beyond title substitution: a001's description directly lists measurements here, whereas 39032/39033 place them only in distributions; a002 and a004 are much longer here, while a003 and a006 expand in other seeds. Nevertheless strict factual preservation is not established: a001 distributions.0.description says insects counted per inspected tree (count; e.g. 14) and treatment application volume (litres/hectare; e.g. 3.28), versus count 10/rate 10.03 in 39032 and count 26/rate 6.48 in 39033. Its description location changes from Silver Creek Central to Oak Terrace Upper to Quartz Field ",
+        "Lower. Numeric examples change in every ID across seeds, and publisher/location context changes too. These are substantive text facts, not mere paraphrases, even though measurement concepts remain stable. a005's unresolved crop-tree versus warehouse-bag material ambiguity also persists across all three versions. No query text is supplied, so actual paraphrase equivalence and exact-lookup query semantics cannot be independently assessed from intent identifiers alone; corpus-wide coverage outside these ten IDs is not claimed. Formulaic catalogue-style titles recur; none supplies an authoritative SKU, hidden label or different measured fact. If ",
+        "strict policy treats these recurrent prose shells as template-only titles, that style boundary needs adjudication rather than an inferred acceptance."
+      ],
+      "reviewer_id": "auditor-packet-01"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten complete primary-field projections reviewed and compared with 39031 and 39033. The same per-ID measurement concepts, units, process distinctions, empirical basis and CSV/JSON versus PDF-only availability persist; absent variables are not promoted to measurements. Distribution titles are generic, but each description supplies the appropriate same-record columns and serialization. Metadata format/content association is verified, not actual file bytes. All records have meaningful changes in description ordering, verbosity, paragraph structure, title wording and optional spatial presence; examples include a003 moving its count/treatment l",
+        "ist into a longer description here, a006 expanding with units and reuse notes, and a007 becoming a short distribution-directed synopsis. However changing reported examples and study context prevents an unconditional facts-preserved finding: a006 distributions.0.description documents harvested bean mass (kg; e.g. 565.11) and harvested plot area (hectares; e.g. 2.7), versus mass 873.5/area 7.02 in 39031 and mass 181/area 3.27 in 39033. a005 completed operations changes from 60 to 22 to 89, with facility location codes Hazel Ridge Inner, Dune Valley Central and Fern Hollow Outer. a002 pest count stays 21, but its application-rate examples change",
+        " from 10.81 to 7.28 to 7.53 litres/hectare. Every ID changes at least one numeric example, and locations/publishers are not invariant. The examples are marked e.g.; this limits their interpretation as actual rows, but does not make their literal numeric content preserved. a005 also continues to leave warehouse-bag contents unspecified while saying cacao trees grown as a crop. That ambiguity is not resolved by lexical similarity. No prohibited positive synonym tokens, explicit answer-key/intent/grade codes, or frozen no-answer conjunction are evidenced in the supplied searchable fields. All assigned identities are not required. The three suppl",
+        "ied s01p/s02p IDs contain no actual query strings, so paraphrase semantic equivalence cannot be verified; this packet also cannot establish global positive/exact coverage. Repeated catalogue-title prose shells are observable, not a factual variation guarantee; a strict template-only-title interpretation remains a style-policy uncertainty."
+      ],
+      "reviewer_id": "auditor-packet-01"
+    },
+    "39033": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "Reviewed all ten records through every supplied searchable field and compared each stable ID with 39031/39032. Product/process wording, empirical rather than simulation basis, measurement concept sets and units remain stable except the same unresolved physical-product ambiguity in a005. CSV/JSON content descriptions are internally aligned with their format fields and record-specific measurements; a010 has two PDF descriptions and two PDF format fields, consistently excluding machine-readable tables. No downloaded bytes were inspected. Meaningful textual variation exists: a003 becomes a long prose description, a004 becomes short, a008 moves it",
+        "s measured values out of its description into distributions, and a010 uses a longer paragraph-separated description. It is not solely reordered titles, though recurring catalogue prose shells remain obvious. Strict factual preservation is disputed because numeric examples and study attribution change: a008 distributions.0.description now says harvested plot area (hectares; e.g. 1.39) and harvested bean mass (kg; e.g. 813.69), compared with 3.52/616.85 in 39031 and 7.54/358.34 in 39032. a009 mass changes 341.99 to 762.56 to 870.81 kg; a010 area changes 5.06 to 3.56 to 3.28 hectares and mass changes 467.21 to 795.55 to 369.53 kg. a003 counts ar",
+        "e 8/19/18 and a004 counts are 8/14/26. Together with the a001/a002/a005/a006/a007 comparisons documented in the other seed rationales, all ten IDs have changed numeric examples. Fictional location and publisher changes likewise exceed pure rewording. Thus concepts are preserved but literal reported example facts are not; whether such changes were intended cannot be resolved from this packet alone. a005 still does not identify bag contents. No excluded positive synonym tokens, explicit answer-key/grade/intent leakage or no-answer conjunction were found in these records. No identity review is required for any supplied record. Actual query strin",
+        "gs are absent, so paraphrase equivalence and identity-query wording cannot be independently audited, and no global corpus coverage claim is made. Recurrent generic title shells raise a policy-boundary question if template-only titles are categorically prohibited; no hidden identity or answer key is inferred from them."
+      ],
+      "reviewer_id": "auditor-packet-01"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-01.json",
+      "sha256": "a567f09b0ef5fcc6137bc90d16a7cf0942074cd2e31da8a1de452b5b74f998c7"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "a001"
+    ],
+    [
+      39031,
+      "a002"
+    ],
+    [
+      39031,
+      "a003"
+    ],
+    [
+      39031,
+      "a004"
+    ],
+    [
+      39031,
+      "a005"
+    ],
+    [
+      39031,
+      "a006"
+    ],
+    [
+      39031,
+      "a007"
+    ],
+    [
+      39031,
+      "a008"
+    ],
+    [
+      39031,
+      "a009"
+    ],
+    [
+      39031,
+      "a010"
+    ],
+    [
+      39032,
+      "a001"
+    ],
+    [
+      39032,
+      "a002"
+    ],
+    [
+      39032,
+      "a003"
+    ],
+    [
+      39032,
+      "a004"
+    ],
+    [
+      39032,
+      "a005"
+    ],
+    [
+      39032,
+      "a006"
+    ],
+    [
+      39032,
+      "a007"
+    ],
+    [
+      39032,
+      "a008"
+    ],
+    [
+      39032,
+      "a009"
+    ],
+    [
+      39032,
+      "a010"
+    ],
+    [
+      39033,
+      "a001"
+    ],
+    [
+      39033,
+      "a002"
+    ],
+    [
+      39033,
+      "a003"
+    ],
+    [
+      39033,
+      "a004"
+    ],
+    [
+      39033,
+      "a005"
+    ],
+    [
+      39033,
+      "a006"
+    ],
+    [
+      39033,
+      "a007"
+    ],
+    [
+      39033,
+      "a008"
+    ],
+    [
+      39033,
+      "a009"
+    ],
+    [
+      39033,
+      "a010"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "a001",
+      "full_raw_record_sha256": "662f7776f519ec626427c00dc59de44f55b24c8b3b8541185dfd9e252e8a7453",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "662f7776f519ec626427c00dc59de44f55b24c8b3b8541185dfd9e252e8a7453",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a002",
+      "full_raw_record_sha256": "43d02b57fb57dd059d3bb9574c7dd651aad6ae3ffa22ed2a5bef3cdd2d651d7f",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "43d02b57fb57dd059d3bb9574c7dd651aad6ae3ffa22ed2a5bef3cdd2d651d7f",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a003",
+      "full_raw_record_sha256": "b837fa3bb0864182d76db8e590468a2e37872ca3e80c5570e71b400f356c1ff1",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b837fa3bb0864182d76db8e590468a2e37872ca3e80c5570e71b400f356c1ff1",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a004",
+      "full_raw_record_sha256": "aa9d9b0e592f519163e67c6e357de0d9f1548959e14cebbdbb3476c76d9e1eab",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "aa9d9b0e592f519163e67c6e357de0d9f1548959e14cebbdbb3476c76d9e1eab",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a006",
+      "full_raw_record_sha256": "f0d27517650f9fc82987b749f424cdf4cd510955bb769b48c077d2b5f3a5442c",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "f0d27517650f9fc82987b749f424cdf4cd510955bb769b48c077d2b5f3a5442c",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a007",
+      "full_raw_record_sha256": "3283f20f135e466ce753b76202ba452f13dac2085830a76574493c672a86e9c6",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3283f20f135e466ce753b76202ba452f13dac2085830a76574493c672a86e9c6",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a008",
+      "full_raw_record_sha256": "d37f0744d4b32cb229cd62a5bea34c180c04ed46f1e17537627d4447b1eb01cc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d37f0744d4b32cb229cd62a5bea34c180c04ed46f1e17537627d4447b1eb01cc",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a009",
+      "full_raw_record_sha256": "c168ba3934d3f31e1aa33b44af66eb8b2f88f2bab2467aeb7de146fe040e33d9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c168ba3934d3f31e1aa33b44af66eb8b2f88f2bab2467aeb7de146fe040e33d9",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a010",
+      "full_raw_record_sha256": "50bbe100b77fbc41df79c3c1e78f89df21822ee9e5c11104f39a0cea5abb8e49",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "50bbe100b77fbc41df79c3c1e78f89df21822ee9e5c11104f39a0cea5abb8e49",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a001",
+      "full_raw_record_sha256": "f9d48528317f2677d13ce76cab67e62428aa9a870986cd8601d8035727c4f9c4",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "f9d48528317f2677d13ce76cab67e62428aa9a870986cd8601d8035727c4f9c4",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a002",
+      "full_raw_record_sha256": "5f57a778f8819967be004770dfed49b66e6fa265abdf08c8370fce7096c9a13e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "5f57a778f8819967be004770dfed49b66e6fa265abdf08c8370fce7096c9a13e",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a003",
+      "full_raw_record_sha256": "649062a02d958a62314b4e321da09e608fb6ae1178fa793c04e52395fad1224e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "649062a02d958a62314b4e321da09e608fb6ae1178fa793c04e52395fad1224e",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a004",
+      "full_raw_record_sha256": "7c6b7a79af9985c954e532afb23618ba35666f3c91aa7e25af3091f90979293d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "7c6b7a79af9985c954e532afb23618ba35666f3c91aa7e25af3091f90979293d",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a006",
+      "full_raw_record_sha256": "2cfd37cfadca58cdd479daa3a73751c451d8c975f510e936e0d02d9014bcebc2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2cfd37cfadca58cdd479daa3a73751c451d8c975f510e936e0d02d9014bcebc2",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a007",
+      "full_raw_record_sha256": "b7708be7171dce0190eb8b2a7ca0dbccf0f3b4a4c1c1459562e0c35eccce27a2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b7708be7171dce0190eb8b2a7ca0dbccf0f3b4a4c1c1459562e0c35eccce27a2",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a008",
+      "full_raw_record_sha256": "abada95e1db5616354f5551e4d4ee46082d36389f5a431561ecb3b5d709921a5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "abada95e1db5616354f5551e4d4ee46082d36389f5a431561ecb3b5d709921a5",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a009",
+      "full_raw_record_sha256": "fe53021ab17dff5a063271f81e9822cdc8684dbc3012640aee0264a223fa1145",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "fe53021ab17dff5a063271f81e9822cdc8684dbc3012640aee0264a223fa1145",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a010",
+      "full_raw_record_sha256": "b82efade71e5be889de86961623f96c0db400a8c87856ccf1036053c81471df7",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b82efade71e5be889de86961623f96c0db400a8c87856ccf1036053c81471df7",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a001",
+      "full_raw_record_sha256": "ade371f9f40c66a7fcd4ff4df7c88e0665b94d779c564c62cf092f52bf9f9355",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "ade371f9f40c66a7fcd4ff4df7c88e0665b94d779c564c62cf092f52bf9f9355",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a002",
+      "full_raw_record_sha256": "8650fb0e43b0cf83b60a2220ba924728ded96b701f2d14f6513cc1ff83b04362",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "8650fb0e43b0cf83b60a2220ba924728ded96b701f2d14f6513cc1ff83b04362",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a003",
+      "full_raw_record_sha256": "3adae0f2b4a1007186c4d6086db1978962426d4d4a7b46ab111d51e8e6eda70c",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3adae0f2b4a1007186c4d6086db1978962426d4d4a7b46ab111d51e8e6eda70c",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a004",
+      "full_raw_record_sha256": "ee1dbc840062bd29c324fba06fba6dccd3f4766cd85eee1ca4eadec0bd874038",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "ee1dbc840062bd29c324fba06fba6dccd3f4766cd85eee1ca4eadec0bd874038",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a006",
+      "full_raw_record_sha256": "703ed898858c67bac8666d7e91bd82ee99c6f3b0c77fbebbe4aec6f04009c754",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "703ed898858c67bac8666d7e91bd82ee99c6f3b0c77fbebbe4aec6f04009c754",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a007",
+      "full_raw_record_sha256": "17e375c531ce608d3255401fbcd3cd22a1b4dd1a8fdc3879bfb92e31d5d0b177",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "17e375c531ce608d3255401fbcd3cd22a1b4dd1a8fdc3879bfb92e31d5d0b177",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a008",
+      "full_raw_record_sha256": "3cb178255efe2cf636daf7a24943662266c2cc1d084e1a323344e6c7f7cc93e2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3cb178255efe2cf636daf7a24943662266c2cc1d084e1a323344e6c7f7cc93e2",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a009",
+      "full_raw_record_sha256": "fed148e0076c6a46109d7f0fe319c94ab2c74267c94c6b2b1cb8f3b8754e9172",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "fed148e0076c6a46109d7f0fe319c94ab2c74267c94c6b2b1cb8f3b8754e9172",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a010",
+      "full_raw_record_sha256": "6ed521c093d8e66b1f7bfb3be51d1f895b0b75cf3620e3adf3a8b6ca5f5f2fe9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6ed521c093d8e66b1f7bfb3be51d1f895b0b75cf3620e3adf3a8b6ca5f5f2fe9",
+      "seed": 39033
+    }
+  ]
+}

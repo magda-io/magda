@@ -1,0 +1,43 @@
+{
+  "contract_path": "diagnostic-contract.json",
+  "contract_sha256": "de5a2709ddb43d7087b5c5335f0b9c24b6f0134db22201232f05f918ddccd4b5",
+  "created_utc": "2026-11-06T15:24:04.079830+00:00",
+  "immutable_after_first_target_embedding": true,
+  "known_pair_count": 40488,
+  "mode": "supplementary_nonpromotional",
+  "no_outcomes_seen": true,
+  "point_metric_policy": "Undefined when U affects full-corpus IDCG or precision; known-family means descriptive, not frozen eight-family primary.",
+  "pre_retrieval": true,
+  "promotion_allowed": false,
+  "protocol_path": "diagnostic-protocol.md",
+  "protocol_sha256": "b5a1416c8ba83f98ce5ebcc8ec694656e50932edcec4feb1d37abd5e6252ff58",
+  "reason": "Original confirmatory full-label validation is incomplete: factory grounds-sanitation/plant interpretation a057 remains U. Frozen targets/criteria/proposed labels are unchanged; only separately registered nonpromotional engineering replay is permitted.",
+  "recommendation": "C",
+  "schema_version": 1,
+  "seeds": [
+    39031,
+    39032,
+    39033
+  ],
+  "sensitivity_grades": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "sensitivity_max_scenarios_per_seed_cohort": 4096,
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "systems": [
+    "baseline",
+    "raw_boost1",
+    "candidate_03_07",
+    "candidate_05_05",
+    "candidate_07_03",
+    "candidate_keep50_03_07",
+    "keyword",
+    "vector"
+  ],
+  "uncertainty_mask_sha256": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+  "unknown_pair_count": 12,
+  "validation_manifest_sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f"
+}

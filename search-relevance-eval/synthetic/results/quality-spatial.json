@@ -1,0 +1,2008 @@
+{
+  "artifacts": {
+    "config_sha256": "38bba4ea257b733e5487d2315fdc2c70681d7be561c7706228da9ab5caaa70e6",
+    "corpus_sha256": "1082d2720b680948a3174a58122c456595cb5c3caea0024350c5fce90ce56638",
+    "executed_requests_sha256": "251b54d52df96e8036a2edfe520d471d2f9be8b64bdd81ce08b3e04d266478c7",
+    "mapping_sha256": "5bf8264a234d5bc0269dc336a48611291b27aee4d23b2df390f98ec715e8b617",
+    "queries_sha256": "21ca70dfb024cbf862ee868962e6ad23dd433e56a049df2b4986acf728f7b3f7",
+    "requests_sha256": "c98e4f03130812ed602f4fd30048f6ecb608bee05c3c576215672425600db1cf"
+  },
+  "diagnostic_only": true,
+  "diagnostic_policy_sha256": "221ecc284a9970b49507095ad6f741355d0b53351f166b61648e8dcd8022ba3b",
+  "diagnostic_validation_sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f",
+  "forced_recommendation": "C",
+  "full_validation_passed": false,
+  "known_query_document_pairs": 40488,
+  "policy_created_utc": "2026-11-06T15:24:04.079830+00:00",
+  "probe_spec_sha256": "61401482d79c099e4aaa4872afcb69f6b2680ca68904838360eeecde8b2d64d5",
+  "promotion_allowed": false,
+  "resources": [
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-regions",
+      "path": "/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-regions"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-datasets",
+      "path": "/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-datasets"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-baseline",
+      "path": "/_search/pipeline/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-baseline"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-raw-boost1",
+      "path": "/_search/pipeline/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-raw-boost1"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-03-07"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-05-05",
+      "path": "/_search/pipeline/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-05-05"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-07-03",
+      "path": "/_search/pipeline/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-07-03"
+    },
+    {
+      "cleanup": "deleted",
+      "created": true,
+      "name": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-keep50-03-07",
+      "path": "/_search/pipeline/magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-candidate-keep50-03-07"
+    }
+  ],
+  "responses": [
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 115.89943
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 115.89943
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 92.71954
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 92.71954
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 72.43714
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 72.43714
+        }
+      ],
+      "parsed_json_sha256": "256e20685b2de71e5aec6e0cbb95487c294cfa4bb425f06e2437740c1c8c16eb",
+      "query_id": "quality-only",
+      "request_sha256": "2b350c951889c5551490d3c1ec8b1587b1750bb95e3291b227110b0221650831",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "baseline",
+      "timed_out": false,
+      "took": 15,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 17.899427
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 17.899427
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 14.319542
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 14.319542
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 11.187142
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 11.187142
+        }
+      ],
+      "parsed_json_sha256": "3e60b41fae464991fe5e75cbf7fa33d5f11fb8ef26eb12f51d2617a544fe4f98",
+      "query_id": "quality-only",
+      "request_sha256": "335f66e5c8e9b7acf4b7b54d6ae13aea061f66d7c7be32564907a0006db60caf",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "raw_boost1",
+      "timed_out": false,
+      "took": 9,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 0.46666667
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 0.46666667
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 0.001
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "4ba4dbcaff875f0fc76912ccfeec8c0e15d41e2051271107b061018ed02adfe3",
+      "query_id": "quality-only",
+      "request_sha256": "c114ea37aa2d57be820021ab78d897487a7230c33511ff12f3a581822a3ee7e5",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_03_07",
+      "timed_out": false,
+      "took": 8,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 0.46666664
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 0.46666664
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 0.001
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "492cee40a83ae5e4c1a41d17dc12f0303109412de3668db6a7a98a71e6d60799",
+      "query_id": "quality-only",
+      "request_sha256": "c114ea37aa2d57be820021ab78d897487a7230c33511ff12f3a581822a3ee7e5",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_05_05",
+      "timed_out": false,
+      "took": 6,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 0.4666666
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 0.4666666
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 0.001
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "ceead71fe44c87a6c1a30b3fec6eec98a6efa62e684af7d091a2ba53f25c5662",
+      "query_id": "quality-only",
+      "request_sha256": "c114ea37aa2d57be820021ab78d897487a7230c33511ff12f3a581822a3ee7e5",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_07_03",
+      "timed_out": false,
+      "took": 6,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 0.46666664
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 0.46666664
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 0.001
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "f6aea8c540f5aa73d20e0fe5b8178cbb4b2d9db5e1e5b8b08fde8e80da64ad28",
+      "query_id": "quality-only",
+      "request_sha256": "0958ee7f6ba42da1687483f778c6d39ccab1c65f7a6978fe247fc02c7b8bc8dd",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_keep50_03_07",
+      "timed_out": false,
+      "took": 8,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 15.899427
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 15.899427
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 12.719542
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 12.719542
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 9.937142
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 9.937142
+        }
+      ],
+      "parsed_json_sha256": "483879322d34a60e2425020ebbf5b21059db7e97f0ec89218ce4c7f478d357fd",
+      "query_id": "quality-only",
+      "request_sha256": "ec4ee12cc5ae444a6e2cd7156222f896af293d367d1274b49af031d92281aac3",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "keyword",
+      "timed_out": false,
+      "took": 3,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          }
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          }
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 2.0
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 2,
+          "score": 2.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 3,
+          "score": 1.6
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 4,
+          "score": 1.6
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 5,
+          "score": 1.25
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 1.25
+        }
+      ],
+      "parsed_json_sha256": "1cc8d9486f140413566e1a3c6ac3d4bbcfe633c04bc128126a598b7dacd6ba97",
+      "query_id": "quality-only",
+      "request_sha256": "0d9a319282077ab51c3c029b37303f66397a909ca9eceb30925fa52551215430",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "vector",
+      "timed_out": false,
+      "took": 3,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 347.6983
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 301.3385
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 260.7737
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 115.89943
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 92.71954
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 72.43714
+        }
+      ],
+      "parsed_json_sha256": "3f1b7aeaf7811c618dee801f3214ee94e61094e5d2e7aa45631972fbb387458c",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "9574e51425ae7519699f3cc5c6e2cd28e75dc9c1937824325b50d140cc19084f",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "baseline",
+      "timed_out": false,
+      "took": 16,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 53.69828
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 46.538513
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 40.273712
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 17.899427
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 14.319542
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 11.187142
+        }
+      ],
+      "parsed_json_sha256": "f16235bf4c6bf99efe3d2e4b47646d1c265f67d5a621a177f2063bbe3d250aa1",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "bf6dbf05cd29bfaf5774f8c9695217f5567be128f018d0c46e2523821c2dacad",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "raw_boost1",
+      "timed_out": false,
+      "took": 9,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 0.83157897
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 0.68421054
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 0.15789473
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 0.07368421
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "0af9788e0d5d4946b79162ee2bdeb1660c12f37be479942e63962689c9ed510d",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "b098f481eb6d098f2087d2971129394311b2bc7cc922af3d9697f9c694b8ca0f",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_03_07",
+      "timed_out": false,
+      "took": 13,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 0.83157897
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 0.68421054
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 0.15789473
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 0.0736842
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "3b19fc18065db5483b1d6f0fcf7031330ea289dd482ab69927c456912db3f353",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "b098f481eb6d098f2087d2971129394311b2bc7cc922af3d9697f9c694b8ca0f",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_05_05",
+      "timed_out": false,
+      "took": 20,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 0.831579
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 0.68421054
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 0.15789473
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 0.0736842
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "55eed7f3e3766cb3136c853e024959c92346d8bc010d063ff3fabd5c7ef31221",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "b098f481eb6d098f2087d2971129394311b2bc7cc922af3d9697f9c694b8ca0f",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_07_03",
+      "timed_out": false,
+      "took": 10,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 1.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 0.83157897
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 0.68421054
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 0.15789473
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 0.0736842
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 0.001
+        }
+      ],
+      "parsed_json_sha256": "79c9c1f2f3397993cbb54b21f8fd7fab60aad240bd36aedead1e4a5eabce680c",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "be3941719e86172e1dc016ca62e31eeba6f663bf5129297b11f8a857c58f2a85",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "candidate_keep50_03_07",
+      "timed_out": false,
+      "took": 9,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 47.69828
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 41.338512
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 35.773712
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 15.899427
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 12.719542
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 9.937142
+        }
+      ],
+      "parsed_json_sha256": "f4e637270cb779f9824bd85ff68a6def205e319c4b3049d80ad72b23accffeb8",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "40e5c5ea803375fddea02c4a637b3fdcd02c2b8f8cf9955add482447853a510d",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "keyword",
+      "timed_out": false,
+      "took": 3,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    },
+    {
+      "aggregations": {
+        "Format-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "nested-distributions": {
+              "doc_count": 0,
+              "terms-other-options": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              }
+            }
+          },
+          "meta": {}
+        },
+        "Publisher-global": {
+          "doc_count": 6,
+          "filter": {
+            "doc_count": 6,
+            "meta": {},
+            "terms-other-options": {
+              "buckets": [
+                {
+                  "doc_count": 6,
+                  "doc_count_error_upper_bound": 0,
+                  "key": "Supplementary probe institution",
+                  "topHits": {}
+                }
+              ],
+              "doc_count_error_upper_bound": 0,
+              "sum_other_doc_count": 0
+            }
+          },
+          "meta": {}
+        },
+        "maxDate": {
+          "value": null
+        },
+        "minDate": {
+          "value": null
+        }
+      },
+      "hits": [
+        {
+          "id": "probe-inside-q2",
+          "rank": 1,
+          "score": 6.0
+        },
+        {
+          "id": "probe-inside-q1",
+          "rank": 2,
+          "score": 5.2
+        },
+        {
+          "id": "probe-inside-q0",
+          "rank": 3,
+          "score": 4.5
+        },
+        {
+          "id": "probe-outside-q2",
+          "rank": 4,
+          "score": 2.0
+        },
+        {
+          "id": "probe-outside-q1",
+          "rank": 5,
+          "score": 1.6
+        },
+        {
+          "id": "probe-outside-q0",
+          "rank": 6,
+          "score": 1.25
+        }
+      ],
+      "parsed_json_sha256": "04f499037e8498fda842b2d6575242cf9b3d1ee1f804bb078e43940d125f98f6",
+      "query_id": "quality-and-spatial",
+      "request_sha256": "0d057b15342a1aaf103c8cc92b21f5d2761663ed5e4ff78d40d0090c795059bf",
+      "shards": {
+        "failed": 0,
+        "skipped": 0,
+        "successful": 1,
+        "total": 1
+      },
+      "system": "vector",
+      "timed_out": false,
+      "took": 7,
+      "total_hits": {
+        "relation": "eq",
+        "value": 6
+      }
+    }
+  ],
+  "scope": "supplementary fixed correctness, NOT relevance or latency",
+  "score_checks": {
+    "quality-and-spatial": {
+      "normalized_fusion": {
+        "candidate_03_07": {
+          "probe-inside-q0": {
+            "actual": 0.68421054,
+            "expected": 0.6842105413688595,
+            "residual": -1.3688594702188084e-09
+          },
+          "probe-inside-q1": {
+            "actual": 0.83157897,
+            "expected": 0.8315789681082063,
+            "residual": 1.891793721675583e-09
+          },
+          "probe-inside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          },
+          "probe-outside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-outside-q1": {
+            "actual": 0.07368421,
+            "expected": 0.07368421336967347,
+            "residual": -3.369673470809964e-09
+          },
+          "probe-outside-q2": {
+            "actual": 0.15789473,
+            "expected": 0.15789473726024608,
+            "residual": -7.260246071005838e-09
+          }
+        },
+        "candidate_05_05": {
+          "probe-inside-q0": {
+            "actual": 0.68421054,
+            "expected": 0.6842105514042396,
+            "residual": -1.1404239552703643e-08
+          },
+          "probe-inside-q1": {
+            "actual": 0.83157897,
+            "expected": 0.8315789819347299,
+            "residual": -1.1934729871043714e-08
+          },
+          "probe-inside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          },
+          "probe-outside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-outside-q1": {
+            "actual": 0.0736842,
+            "expected": 0.07368421526524525,
+            "residual": -1.5265245248419212e-08
+          },
+          "probe-outside-q2": {
+            "actual": 0.15789473,
+            "expected": 0.15789473753900665,
+            "residual": -7.53900664118845e-09
+          }
+        },
+        "candidate_07_03": {
+          "probe-inside-q0": {
+            "actual": 0.68421054,
+            "expected": 0.6842105614396196,
+            "residual": -2.1439619524166176e-08
+          },
+          "probe-inside-q1": {
+            "actual": 0.831579,
+            "expected": 0.8315789957612534,
+            "residual": 4.238746575957464e-09
+          },
+          "probe-inside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          },
+          "probe-outside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-outside-q1": {
+            "actual": 0.0736842,
+            "expected": 0.07368421716081702,
+            "residual": -1.716081701741423e-08
+          },
+          "probe-outside-q2": {
+            "actual": 0.15789473,
+            "expected": 0.1578947378177672,
+            "residual": -7.817767183615487e-09
+          }
+        }
+      },
+      "raw_multiplier_base_scores": {
+        "baseline": {
+          "inside": [
+            115.89942222222223,
+            115.89942307692307,
+            115.89943333333333
+          ],
+          "outside": [
+            57.949712,
+            57.9497125,
+            57.949715
+          ]
+        },
+        "keyword": {
+          "inside": [
+            15.899427555555556,
+            15.899427692307693,
+            15.899426666666665
+          ],
+          "outside": [
+            7.9497136,
+            7.94971375,
+            7.9497135
+          ]
+        },
+        "raw_boost1": {
+          "inside": [
+            17.899427555555558,
+            17.899428076923076,
+            17.899426666666667
+          ],
+          "outside": [
+            8.949713599999999,
+            8.949713749999999,
+            8.9497135
+          ]
+        },
+        "vector": {
+          "inside": [
+            2.0,
+            2.0,
+            2.0
+          ],
+          "outside": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "status": "passed"
+    },
+    "quality-only": {
+      "normalized_fusion": {
+        "candidate_03_07": {
+          "probe-inside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-inside-q1": {
+            "actual": 0.46666667,
+            "expected": 0.46666668343876,
+            "residual": -1.3438759993711358e-08
+          },
+          "probe-inside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          },
+          "probe-outside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-outside-q1": {
+            "actual": 0.46666667,
+            "expected": 0.46666668343876,
+            "residual": -1.3438759993711358e-08
+          },
+          "probe-outside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          }
+        },
+        "candidate_05_05": {
+          "probe-inside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-inside-q1": {
+            "actual": 0.46666664,
+            "expected": 0.46666669462015553,
+            "residual": -5.462015550961041e-08
+          },
+          "probe-inside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          },
+          "probe-outside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-outside-q1": {
+            "actual": 0.46666664,
+            "expected": 0.46666669462015553,
+            "residual": -5.462015550961041e-08
+          },
+          "probe-outside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          }
+        },
+        "candidate_07_03": {
+          "probe-inside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-inside-q1": {
+            "actual": 0.4666666,
+            "expected": 0.466666705801551,
+            "residual": -1.0580155102024591e-07
+          },
+          "probe-inside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          },
+          "probe-outside-q0": {
+            "actual": 0.001,
+            "expected": 0.001,
+            "residual": 0.0
+          },
+          "probe-outside-q1": {
+            "actual": 0.4666666,
+            "expected": 0.466666705801551,
+            "residual": -1.0580155102024591e-07
+          },
+          "probe-outside-q2": {
+            "actual": 1.0,
+            "expected": 1.0,
+            "residual": 0.0
+          }
+        }
+      },
+      "raw_multiplier_base_scores": {
+        "baseline": {
+          "all": [
+            57.949712,
+            57.9497125,
+            57.949715,
+            57.949712,
+            57.9497125,
+            57.949715
+          ]
+        },
+        "keyword": {
+          "all": [
+            7.9497136,
+            7.94971375,
+            7.9497135,
+            7.9497136,
+            7.94971375,
+            7.9497135
+          ]
+        },
+        "raw_boost1": {
+          "all": [
+            8.949713599999999,
+            8.949713749999999,
+            8.9497135,
+            8.949713599999999,
+            8.949713749999999,
+            8.9497135
+          ]
+        },
+        "vector": {
+          "all": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "status": "passed"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "status": "passed",
+  "structural_checks": {
+    "quality-and-spatial": {
+      "functions": [
+        {
+          "weight": 1.0
+        },
+        {
+          "field_value_factor": {
+            "field": "quality",
+            "missing": 1.0
+          },
+          "filter": {
+            "term": {
+              "hasQuality": {
+                "value": true
+              }
+            }
+          }
+        },
+        {
+          "filter": {
+            "bool": {
+              "should": [
+                {
+                  "geo_shape": {
+                    "spatial.geoJson": {
+                      "indexed_shape": {
+                        "id": "ste/3903",
+                        "index": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-regions",
+                        "path": "geometry"
+                      },
+                      "relation": "intersects"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "weight": 1.0
+        }
+      ],
+      "indexed_shape_references": [
+        {
+          "id": "ste/3903",
+          "index": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-regions",
+          "path": "geometry"
+        },
+        {
+          "id": "ste/3903",
+          "index": "magda-relevance-eval-quality-spatial-761ea404-ccfd-4963-bd1b-c3b0e8e1d3b4-regions",
+          "path": "geometry"
+        }
+      ],
+      "systems": {
+        "baseline": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_03_07": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_05_05": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_07_03": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_keep50_03_07": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "keyword": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "raw_boost1": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "vector": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        }
+      }
+    },
+    "quality-only": {
+      "functions": [
+        {
+          "weight": 1.0
+        },
+        {
+          "field_value_factor": {
+            "field": "quality",
+            "missing": 1.0
+          },
+          "filter": {
+            "term": {
+              "hasQuality": {
+                "value": true
+              }
+            }
+          }
+        }
+      ],
+      "indexed_shape_references": [],
+      "systems": {
+        "baseline": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_03_07": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_05_05": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_07_03": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "candidate_keep50_03_07": {
+          "function_score_count": 2,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "keyword": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "raw_boost1": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        },
+        "vector": {
+          "function_score_count": 1,
+          "functions_unchanged": true,
+          "publisher_facet_root_count": 6
+        }
+      }
+    }
+  },
+  "uncertainty_mask_sha256": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+  "uncertainty_units": 6,
+  "unknown_query_document_pairs": 12,
+  "validated_qrels_sha256": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38",
+  "validated_query_document_pairs": 40500,
+  "validation_manifest_sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f"
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "status": "approved_for_pre_retrieval_fixture_correction_only",
+  "approved_by": "parent-agent",
+  "request": "auditoutputs/fixture-patch-request-v4.json",
+  "request_sha256": "d40054c8ebc5d594ae21da199dd8711b9203d06458857bcc3d2d90a9d8c7e24a",
+  "affected_pairs": [[39032, "a039"], [39032, "a079"]],
+  "allowed_changed_fields": ["title", "queryContext"],
+  "required_unchanged_full_jsonl_rows": 538,
+  "approved_replacements": {
+    "a039": "Simulation results from Linden Grove Inner chocolate texture testing",
+    "a079": "Chocolate milk simulation outputs from Dune Valley Inner"
+  },
+  "benchmark_embeddings_or_scores_seen": false,
+  "query_criteria_expected_grades_ids_seeds_weights_changes_permitted": false,
+  "historical_versions_must_remain_immutable": true,
+  "independent_delta_reaudit_required": true,
+  "rationale": "Independently identified explicit observational/field-notes titles contradict simulation-only metadata. The other22 simulation titles were inspected and are not changed. This is metadata truth repair, not new relevance criteria."
+}

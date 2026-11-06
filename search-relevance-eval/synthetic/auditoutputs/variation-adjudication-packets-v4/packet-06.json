@@ -1,0 +1,985 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [
+    {
+      "after_record_sha256": "2597249077aec9ec7ae9c9de9326c709d87e798b447e98dd0fe7c168d701b119",
+      "before_record_sha256": "979395e0d097c5439740dbd047ccbc6f83857b9546f31d80a22cffd8412b6569",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "At Hazel Ridge Upper, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification.\n\nVariables documented in the files are equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17).\n\nPhysical observations were recorded, not process simulations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers ",
+            "remain local to that edition.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the mater",
+            "ial included here rather than making claims about other installations or every product sold under a similar name.\n\nRows retain local observation keys for reuse."
+          ],
+          "before_chunks_concat_exact": [
+            "At Hazel Ridge Upper, the study covers ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification.\n\nVariables documented in the files are equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17).\n\nPhysical observations were recorded, not process simulations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that",
+            " edition.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here ra",
+            "ther than making claims about other installations or every product sold under a similar name.\n\nRows retain local observation keys for reuse."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: An investigation of equipment sanitation at Hazel Ridge Upper\nDescription: At Hazel Ridge Upper, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification.\n\nVariables documented in the files are equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17).\n\nPhysical observations were recorded, not process simulations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation ho",
+            "lding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe depositor prepared a compact overview for re",
+            "aders assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nRows retain local observation keys for reuse.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: An investigation of equipment sanitation at Hazel Ridge Upper\nDescription: At Hazel Ridge Upper, the study covers ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification.\n\nVariables documented in the files are equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17).\n\nPhysical observations were recorded, not process simulations.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. F",
+            "ile names refer to the deposited edition, and row identifiers remain local to that edition.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nThe depositor prepared a compact overview for readers assessing whet",
+            "her the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nRows retain local observation keys for reuse.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a057",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39031
+    },
+    {
+      "after_record_sha256": "7599e100f4209d3a1e1f61b92a96c2afb6cb05ff7d9c2750f30c00c8eb109114",
+      "before_record_sha256": "2a4126c58ad34f03f7e911106063659bfc55e292426ef25f2b694b646bca25b4",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: residue remaining on cleaned surface (mg; e.g. 9.52); microbial growth from surface swabs (CFU/swab; e.g. 81.64); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: CSV\nDescription: Simulated output columns: residue remaining on cleaned surface (mg; e.g. 9.52); microbial growth from surface swabs (CFU/swab; e.g. 81.64); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.0.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.0.title"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: residue remaining on cleaned surface (mg; e.g. 9.52); microbial growth from surface swabs (CFU/swab; e.g. 81.64); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: JSON\nDescription: Simulated output columns: residue remaining on cleaned surface (mg; e.g. 9.52); microbial growth from surface swabs (CFU/swab; e.g. 81.64); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.1.title"
+        }
+      ],
+      "dataset_id": "a059",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39031
+    },
+    {
+      "after_record_sha256": "f3f2e06ec190d0a9747483bbce1619b5b0bc438aba21b4e2941e89d24c4520d3",
+      "before_record_sha256": "2121a180f5794c2fae44a503ce296a297ab0dcbd334f525bd6d8efc5f7f24f55",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "The released table lists microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1). Physical observations were recorded, not process simulations. At Dune Valley North, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for un",
+            "available cells without supplying additional observations. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File name",
+            "s refer to the deposited edition, and row identifiers remain local to that edition."
+          ],
+          "before_chunks_concat_exact": [
+            "The released table lists microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1). Physical observations were recorded, not process simulations. At Dune Valley North, the study covers ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells with",
+            "out supplying additional observations. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the depos",
+            "ited edition, and row identifiers remain local to that edition."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Equipment sanitation as recorded at Dune Valley North\nDescription: The released table lists microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1). Physical observations were recorded, not process simulations. At Dune Valley North, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates",
+            " categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The catalogue synopsis distinguishes the",
+            " subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Equipment sanitation as recorded at Dune Valley North\nDescription: The released table lists microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1). Physical observations were recorded, not process simulations. At Dune Valley North, the study covers ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries",
+            " from quantities and explains the notation used for unavailable cells without supplying additional observations. The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Repeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes. The catalogue synopsis distinguishes the subject of the stud",
+            "y from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a057",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "e04f73d03ecee9fca3c6c69bccd8418d8cee39b1a1ef7012091ad20257dea039",
+      "before_record_sha256": "a7b34d81e07d46eca1d26eb90cc829067c86628e3a1f94edb17ffb2a5056f833",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: CSV\nDescription: Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 7.81); microbial growth from surface swabs (CFU/swab; e.g. 41.51). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Observation table\nFormat: CSV\nDescription: Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 7.81); microbial growth from surface swabs (CFU/swab; e.g. 41.51). Downloadable comma-separated table; the synopsis gives the column units.\n"
+          ],
+          "field": "distributions.0.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Observation table"
+          ],
+          "field": "distributions.0.title"
+        }
+      ],
+      "dataset_id": "a059",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39032
+    },
+    {
+      "after_record_sha256": "04266149040657c6654002e0784b13e0b7665ab98313e9505ce55317fe4b5868",
+      "before_record_sha256": "bece7da97fc368dd792889b64c6041a0666e120213a6a93f729c961d987981c5",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Entries describe an observational study rather than model predictions. At Fern Hollow South, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification. The distribution synopses document the measured columns and units. Local row keys are not catalogue product identifiers. Readers should retain the supplied units when combining tables."
+          ],
+          "before_chunks_concat_exact": [
+            "Entries describe an observational study rather than model predictions. At Fern Hollow South, the study covers ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification. The distribution synopses document the measured columns and units. Local row keys are not catalogue product identifiers. Readers should retain the supplied units when combining tables."
+          ],
+          "field": "description"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Title: Fern Hollow South observations of ornamental plants\nDescription: Entries describe an observational study rather than model predictions. At Fern Hollow South, the study covers ornamental plants and their grounds-maintenance tools outside confectionery production areas during sanitation and equipment cleaning verification. The distribution synopses document the measured columns and units. Local row keys are not catalogue product identifiers. Readers should retain the supplied units when combining tables.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Fern Hollow South observations of ornamental plants\nDescription: Entries describe an observational study rather than model predictions. At Fern Hollow South, the study covers ornamental plants and their maintenance tools at a confectionery factory during sanitation and equipment cleaning verification. The distribution synopses document the measured columns and units. Local row keys are not catalogue product identifiers. Readers should retain the supplied units when combining tables.\n"
+          ],
+          "field": "queryContext"
+        }
+      ],
+      "dataset_id": "a057",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    },
+    {
+      "after_record_sha256": "42b371c63a831a7f120111321d9ad217213f7daaf863adce34304df507265b82",
+      "before_record_sha256": "86a3a0225d320e911208f31ece79ff9910f8fd0774d69a902b0a0d8008b39b5f",
+      "changed_fields": [
+        {
+          "after_chunks_concat_exact": [
+            "Title: Simulation output table\nFormat: JSON\nDescription: Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 2.91); microbial growth from surface swabs (CFU/swab; e.g. 95.17). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "before_chunks_concat_exact": [
+            "Title: Deposited measurements\nFormat: JSON\nDescription: Simulated output columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 2.91); microbial growth from surface swabs (CFU/swab; e.g. 95.17). Downloadable JSON records with the same variables and units.\n"
+          ],
+          "field": "distributions.1.queryContext"
+        },
+        {
+          "after_chunks_concat_exact": [
+            "Simulation output table"
+          ],
+          "before_chunks_concat_exact": [
+            "Deposited measurements"
+          ],
+          "field": "distributions.1.title"
+        }
+      ],
+      "dataset_id": "a059",
+      "scope_verified_by_C": "Only parent-approved V3 fixture repairs and V4 title repair; no query/intent/grade change.",
+      "seed": 39033
+    }
+  ],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "a051",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a052",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a053",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a054",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a055",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a056",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "factory_production_throughput",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "factory_production_throughput",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "completed_operations_count",
+              "facility_location_code",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "factory_production_throughput",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a057",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory_ornamental_plants"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory_ornamental_plants"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory_ornamental_plants"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a058",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_aud_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_aud_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "dispatched_consignments_count",
+              "invoiced_unit_price_aud_per_unit",
+              "reporting_interval_calendar_month"
+            ],
+            "process": "commercial_ledger_associated_with_factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a059",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_output_equipment_cleaning_not_empirically_measured",
+              "simulated_output_microbial_swabs_not_empirically_measured",
+              "simulated_output_residue_mass_mg_not_empirically_measured"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_output_equipment_cleaning_not_empirically_measured",
+              "simulated_output_microbial_swabs_not_empirically_measured",
+              "simulated_output_residue_mass_mg_not_empirically_measured"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "simulation_only",
+            "observed_fact_keys": [
+              "simulated_output_equipment_cleaning_not_empirically_measured",
+              "simulated_output_microbial_swabs_not_empirically_measured",
+              "simulated_output_residue_mass_mg_not_empirically_measured"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "a060",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "equipment_cleaning",
+              "microbial_swabs",
+              "residue_mass_mg"
+            ],
+            "process": "factory_sanitation",
+            "product": "confectionery_factory"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-06.json",
+  "original_review_sha256": "99140ce268b3afdf0cc195b335ba2dee847329595741ff74116be596fae701c8",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-06",
+    "generator_context": false,
+    "id": "auditor-packet-06",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten actual records were read, including every supplied description, title, keyword, publisher, distribution and optional spatial field. No temporal field is supplied. Across all three seeds the independently observed variable sets are preserved by ID: a051/a052/a060 have cleaning cycles, microbial swabs and residue; a053 has cleaning and swabs only; a054 cleaning and residue only; a055 cleaning only; a056 site code/month/completed operations; a057 all three sanitation variables for ornamental-plant maintenance tools; a058 unit price/consignments/month; a059 simulation-only sanitation outputs, not empirical facts. a053 has no documented re",
+        "sidue; a054 no documented swabs; a055 neither. Those omissions are not measurements or contradictions. Numeric examples, fictional locations and publishers change across seeds, so exact observation values are not preserved, only subject/process/basis/variable kinds and units. Wording varies meaningfully through title syntax, paragraph versus continuous prose, order of subject/basis/variables, description length and distribution-only versus description-plus-distribution documentation; much filler remains modular/template-like. Each record has CSV and JSON descriptions consistently associating its own variable set with comma-separated or JSON c",
+        "ontent; optional third distributions repeat the same variables and do not add measurements. Boolean distribution verification concerns those metadata associations only, not downloaded bytes. No identity-review-required records occur here, and no frozen no-answer conjunction is supported in this packet. No intent IDs, grade codes or answer keys were observed in actual fields. Literal s08 mismatch tokens hygiene/works were not observed in these sanitation records. Unresolved: a057's s08 exclusion requires an explicit production-equipment restriction absent from the supplied intent definition; a056's category-prefixed generic title is a concrete",
+        " title-format concern. Hence variation is not certified without qualification. Actual paraphrase query texts, omitted production queryContext copies, other packets and underlying files were not inspected; query equivalence, corpus-wide coverage and corpus-wide absence cannot be certified."
+      ],
+      "reviewer_id": "auditor-packet-06"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten seed-39032 actual field sets were reviewed, including all nested distribution titles/descriptions/formats, optional spatial context and publisher/keywords. The cross-seed product/process/basis/variable-set preservation described for seed 39031 also holds here, but values, sites and publishers are not invariant. a055 puts its sole cleaning-cycle column in the distributions, not the description; it still documents no swab or residue measurements. a051/a052 have three distributions with the optional third JSON rather than seed-39031 CSV; the third only repeats existing variables. a056/a060 have two distributions rather than seed-39031 th",
+        "ree. CSV descriptions say comma-separated table and JSON descriptions say JSON records; all use each record's actual variables, and simulation descriptions remain simulation-specific. Meaningful variation includes a052/a056/a057/a060 continuous prose versus other paragraph layouts, reordered basis and subject statements, changed title syntax, and different description lengths. The all-seed review confirms no variable-set drift, no transformation of omitted sanitation variables into positive facts, no simulated-to-empirical drift and no additional measurements in generic field-guide notes. Unresolved: a057 remains a disputed s08 exclusion desp",
+        "ite all three empirical facts; a060's broad category-prefixed title raises the validation prompt's title-format prohibition. This is why passed is false, not a claim that the variable sets failed preservation. Full paraphrase queries and omitted duplicate queryContext text are unavailable, and no external distribution bytes or other packets were read."
+      ],
+      "reviewer_id": "auditor-packet-06"
+    },
+    "39033": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten seed-39033 actual records and all their supplied fields were reviewed through the end of the packet. Same-ID semantic variable sets, units, empirical-versus-simulation distinctions, factory-production versus ornamental-tool subjects, throughput contrast and commercial-ledger distinction agree with both other seeds. Numerical examples, fictional site names and publisher identities differ, so only semantic measurement coverage is preserved, not literal measurement values. a051 and a057 document their measurements only in distribution synopses; a055 still has only a cleaning-cycle column; a058 includes its commercial columns in both desc",
+        "ription and distributions rather than relying on distributions alone. Optional distribution counts and third formats differ without changing content: a052/a059 have two distributions, a055/a058 three with third JSON, and a051/a054/a056/a060 three with third CSV. All CSV/JSON associations match their textual content declarations. There is meaningful sentence/paragraph order, length, title and distribution-placement variation, alongside substantial shared boilerplate. No actual field establishes either frozen no-answer conjunction, and no authoritative identity review is requested for any of these records. a059's named outputs remain explicitly",
+        " non-empirical and are keyed as simulated outputs in this review, not counted as measured facts. Unresolved: a057 positively supports empirical factory-site equipment sanitation on ornamental-maintenance tools, while the supplied s08 intent does not explicitly require production equipment. Its exclusion is disputed in all seeds, so this seed is not certified unconditionally. Limitations remain metadata-only distribution verification, absence of full query paraphrases and omitted duplicate queryContext text, and no authority to infer corpus-wide coverage or absence from this packet."
+      ],
+      "reviewer_id": "auditor-packet-06"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-06.json",
+      "sha256": "99140ce268b3afdf0cc195b335ba2dee847329595741ff74116be596fae701c8"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "a051"
+    ],
+    [
+      39031,
+      "a052"
+    ],
+    [
+      39031,
+      "a053"
+    ],
+    [
+      39031,
+      "a054"
+    ],
+    [
+      39031,
+      "a055"
+    ],
+    [
+      39031,
+      "a056"
+    ],
+    [
+      39031,
+      "a057"
+    ],
+    [
+      39031,
+      "a058"
+    ],
+    [
+      39031,
+      "a059"
+    ],
+    [
+      39031,
+      "a060"
+    ],
+    [
+      39032,
+      "a051"
+    ],
+    [
+      39032,
+      "a052"
+    ],
+    [
+      39032,
+      "a053"
+    ],
+    [
+      39032,
+      "a054"
+    ],
+    [
+      39032,
+      "a055"
+    ],
+    [
+      39032,
+      "a056"
+    ],
+    [
+      39032,
+      "a057"
+    ],
+    [
+      39032,
+      "a058"
+    ],
+    [
+      39032,
+      "a059"
+    ],
+    [
+      39032,
+      "a060"
+    ],
+    [
+      39033,
+      "a051"
+    ],
+    [
+      39033,
+      "a052"
+    ],
+    [
+      39033,
+      "a053"
+    ],
+    [
+      39033,
+      "a054"
+    ],
+    [
+      39033,
+      "a055"
+    ],
+    [
+      39033,
+      "a056"
+    ],
+    [
+      39033,
+      "a057"
+    ],
+    [
+      39033,
+      "a058"
+    ],
+    [
+      39033,
+      "a059"
+    ],
+    [
+      39033,
+      "a060"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "a051",
+      "full_raw_record_sha256": "3431f4342a64e75aa5172faee14e48aa675c2462570f5ef7f2b10cb8963e0758",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "3431f4342a64e75aa5172faee14e48aa675c2462570f5ef7f2b10cb8963e0758",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a052",
+      "full_raw_record_sha256": "559647cda48ee85a013176759e194ad3724d9c08b036a7048e8e2a591a6989fc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "559647cda48ee85a013176759e194ad3724d9c08b036a7048e8e2a591a6989fc",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a053",
+      "full_raw_record_sha256": "daf4d02fff05fc044e7f8a234cb6294378b0f1a7624026c2ab141a6f90694339",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "daf4d02fff05fc044e7f8a234cb6294378b0f1a7624026c2ab141a6f90694339",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a054",
+      "full_raw_record_sha256": "997c7b6cf12e0248316f7611595b003ab54e068ea3412399d3e4414b23e28446",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "997c7b6cf12e0248316f7611595b003ab54e068ea3412399d3e4414b23e28446",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a055",
+      "full_raw_record_sha256": "4022adc4a13e0519858af9de463ccee40ceb57073132f30847eef8b89d559e8f",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4022adc4a13e0519858af9de463ccee40ceb57073132f30847eef8b89d559e8f",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a056",
+      "full_raw_record_sha256": "721516a617a2f9fb0ecec69fb6f4974f65ccc3ac075536cc9eb6102aceb214b5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "721516a617a2f9fb0ecec69fb6f4974f65ccc3ac075536cc9eb6102aceb214b5",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a058",
+      "full_raw_record_sha256": "34b7555593364e80ef136b64e722e7a1920bd105069ce4299112dfbe47e75aaa",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "34b7555593364e80ef136b64e722e7a1920bd105069ce4299112dfbe47e75aaa",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a060",
+      "full_raw_record_sha256": "9389512cf3ee85e5c1f97cfdbbeaad6bcefecc324155d3f4d324efe189eca5bc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "9389512cf3ee85e5c1f97cfdbbeaad6bcefecc324155d3f4d324efe189eca5bc",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "a051",
+      "full_raw_record_sha256": "2c694dc8daac89d318e2a2abf2eab8914c63752174916949784f47b71025a677",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2c694dc8daac89d318e2a2abf2eab8914c63752174916949784f47b71025a677",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a052",
+      "full_raw_record_sha256": "89bdb714dfe16a13582d796226ed683feaca828a8e62666e97e90536e6b968e1",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "89bdb714dfe16a13582d796226ed683feaca828a8e62666e97e90536e6b968e1",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a053",
+      "full_raw_record_sha256": "6c196083f6086867bb96c2f37c4091ad1c1cc53dc34957f56f394ac3c6b569f5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6c196083f6086867bb96c2f37c4091ad1c1cc53dc34957f56f394ac3c6b569f5",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a054",
+      "full_raw_record_sha256": "a0622de48b9da27fe66b9f92683ccc539bdae93d3ca74296859e7f2384dd28fb",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "a0622de48b9da27fe66b9f92683ccc539bdae93d3ca74296859e7f2384dd28fb",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a055",
+      "full_raw_record_sha256": "afceb08af4ca62b2fdf3f227ce701676b902f91ca416083327e7d9803b505520",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "afceb08af4ca62b2fdf3f227ce701676b902f91ca416083327e7d9803b505520",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a056",
+      "full_raw_record_sha256": "b687e5031767d9d5e26acceffa381dfae47e78da6a2a553c7df897b98652b9b3",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b687e5031767d9d5e26acceffa381dfae47e78da6a2a553c7df897b98652b9b3",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a058",
+      "full_raw_record_sha256": "0525d9d6af4e6a61c3989f4b39c53bd32b44c666d986ab676a1e06c8c016149a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "0525d9d6af4e6a61c3989f4b39c53bd32b44c666d986ab676a1e06c8c016149a",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a060",
+      "full_raw_record_sha256": "01ed256279f39e21bb9c09a2068477a11f10d7b1c1db372d9d04acbdec56e2f4",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "01ed256279f39e21bb9c09a2068477a11f10d7b1c1db372d9d04acbdec56e2f4",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "a051",
+      "full_raw_record_sha256": "e0fc6107a8c363a6f563f41cd426668313ada2eca6038b29417f3d2742bef3f4",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "e0fc6107a8c363a6f563f41cd426668313ada2eca6038b29417f3d2742bef3f4",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a052",
+      "full_raw_record_sha256": "1c2f903567712d4a009fad1f3d7757464050b6390331bcf17e5684ed0eacf20c",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "1c2f903567712d4a009fad1f3d7757464050b6390331bcf17e5684ed0eacf20c",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a053",
+      "full_raw_record_sha256": "74b5bcbc9d597cb42d7fd7f3abf48284d3ae81638807b84e45e637b40991fe00",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "74b5bcbc9d597cb42d7fd7f3abf48284d3ae81638807b84e45e637b40991fe00",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a054",
+      "full_raw_record_sha256": "da8899131bdb38fdf5259d8b9aa83e157baaac643c1b92c36feb1ef4a8953e6d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "da8899131bdb38fdf5259d8b9aa83e157baaac643c1b92c36feb1ef4a8953e6d",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a055",
+      "full_raw_record_sha256": "d667158a110132975838714b09df6a1ec0481e6f55ea4a352bace63d2e22ad1b",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "d667158a110132975838714b09df6a1ec0481e6f55ea4a352bace63d2e22ad1b",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a056",
+      "full_raw_record_sha256": "369aff16e14f0b3be3f07994e877029c45c185aa0fe1e9d7759dd7504de584b9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "369aff16e14f0b3be3f07994e877029c45c185aa0fe1e9d7759dd7504de584b9",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a058",
+      "full_raw_record_sha256": "88e1fc277b53616550c0e4d2978977d015c33c0dcd2c681cd26fb9c44e3b056a",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "88e1fc277b53616550c0e4d2978977d015c33c0dcd2c681cd26fb9c44e3b056a",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "a060",
+      "full_raw_record_sha256": "889d336c2a630bb7eb87127fccbe5168cc039e1017c4b9d51d9c8e70f9e32abe",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "889d336c2a630bb7eb87127fccbe5168cc039e1017c4b9d51d9c8e70f9e32abe",
+      "seed": 39033
+    }
+  ]
+}

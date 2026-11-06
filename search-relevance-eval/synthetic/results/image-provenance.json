@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-11-06T15:29:27Z",
+  "phase": "during_embedding_preparation_before_any_benchmark_retrieval_or_latency",
+  "embedding_pods": [
+    {"name": "magda-magda-embedding-api-64c5cbcf59-jgwhl", "image_id": "docker-pullable://ghcr.io/magda-io/magda-embedding-api@sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec", "restart_count": 4, "container_started_at_utc": "2026-11-05T08:14:13Z"},
+    {"name": "magda-magda-embedding-api-64c5cbcf59-zq7jz", "image_id": "docker-pullable://ghcr.io/magda-io/magda-embedding-api@sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec", "restart_count": 4, "container_started_at_utc": "2026-11-05T08:14:13Z"}
+  ],
+  "opensearch_pod": {"name": "magda-opensearch-data-0", "image_id": "docker-pullable://ghcr.io/magda-io/magda-opensearch@sha256:8ea486614775cb52264d449ebd5a580b77cc22afe6db5e29b42cf36d846f7511", "restart_count": 4, "container_started_at_utc": "2026-11-05T08:14:15Z"},
+  "ordering_caveat": "Fresh pod metadata was captured after the first embedding cache completion, not retroactively claimed to precede inference. Both embedding containers have the same pinned image and unchanged restart count/start time as the earlier metadata-only inspection; no intervening container restart is observed.",
+  "model_response_binding": "Every actual new embedding batch explicitly requested the frozen GTE model and required response.model equality before cache writes.",
+  "secrets": "Only allowlisted pod image/version/start metadata and synonym-file SHA were inspected. No secret values or broad environment dump."
+}

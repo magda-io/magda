@@ -10,7 +10,7 @@ import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.{HttpHeader, HttpResponse}
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.api.Query
+import au.csiro.data61.magda.api.{Query, Specified}
 import au.csiro.data61.magda.api.model.SearchAuthDecision
 import au.csiro.data61.magda.client.{EmbeddingApiClient, HttpFetcher}
 import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
@@ -41,6 +41,7 @@ object ExportBaselineRequests {
     |  [--facet-size 10] [--mapping-output mapping.json]
     |  [--config-output config.json]
     |  [--regions-endpoint http://127.0.0.1:19200] [--baseline-commit ba181562]
+    |  [--regions-index magda-relevance-eval-owned-regions] (correctness fixtures only)
     |
     |Input: {"id":"q1","query":"water quality","vector":[...],
     |        "filters":{"publisher":"Example","format":["CSV"],"dateFrom":"2020","regions":["ste:1"]}}
@@ -59,7 +60,7 @@ object ExportBaselineRequests {
     }.toVector
     require(pairs.map(_._1).distinct.size == pairs.size, "Duplicate CLI options")
     val known = Set("input", "output", "index", "config", "dimension", "k", "limit",
-      "facet-size", "mapping-output", "config-output", "regions-endpoint", "baseline-commit")
+      "facet-size", "mapping-output", "config-output", "regions-endpoint", "regions-index", "baseline-commit")
     require(pairs.forall(p => known(p._1)), "Unknown CLI option; use --help")
     val result = pairs.toMap
     Seq("input", "output", "index").foreach(k => require(result.contains(k), s"Missing --$k\n$usage"))
@@ -142,7 +143,21 @@ object ExportBaselineRequests {
     require(date("dateTo").isEmpty || parsed.dateTo.nonEmpty, s"$id: invalid dateTo")
     val inputRegions = strings("region") ++ strings("regions")
     require(inputRegions.isEmpty || parsed.regions.size == inputRegions.distinct.size, s"$id: invalid region filter")
-    id -> parsed.copy(freeTextVector = Some(vector), hybridSearch = true)
+    // Optional supplementary correctness fixture. Reuse the production region
+    // parser, then supply the ordinary Query.boostRegions input to the builder.
+    // Never synthesize a geo/function-score DSL fragment here.
+    val boostIds = fields.get("boost_regions") match {
+      case None => Vector.empty[String]
+      case Some(JsArray(values)) => values.map {
+        case JsString(value) if value.trim.nonEmpty => value
+        case _ => throw new IllegalArgumentException(s"$id: boost_regions must contain nonempty region strings")
+      }
+      case _ => throw new IllegalArgumentException(s"$id: boost_regions must be an array")
+    }
+    val parsedBoosts = Query.fromQueryParams(None, Nil, None, None, boostIds, Nil, Nil,
+      None, SpecifiedTenantId(BigInt(0))).regions.collect { case Specified(region) => region }
+    require(parsedBoosts.size == boostIds.map(_.toLowerCase).distinct.size, s"$id: invalid explicit boost_regions")
+    id -> parsed.copy(freeTextVector = Some(vector), hybridSearch = true, boostRegions = parsedBoosts)
   }
 
   def main(args: Array[String]): Unit = {
@@ -150,6 +165,11 @@ object ExportBaselineRequests {
     if (opts.isEmpty) return
     val indexName = opts("index")
     require(indexName.matches("[a-z0-9][a-z0-9_.-]*"), "--index must be a single lower-case index name")
+    opts.get("regions-index").foreach { name =>
+      require(name.matches("magda-relevance-eval-[a-z0-9_-]+"),
+        "--regions-index requires an owned magda-relevance-eval-* fixture name")
+      require(!opts.contains("regions-endpoint"), "Explicit owned region fixtures cannot use HTTP augmentation")
+    }
     val limit = opts.getOrElse("limit", "50").toInt
     val facetSize = opts.getOrElse("facet-size", "10").toInt
     require(limit >= 10, "--limit must be >= 10")
@@ -194,7 +214,9 @@ object ExportBaselineRequests {
     implicit val embeddingClient: EmbeddingApiClient = new EmbeddingApiClient(noHttp)
     val indices = new Indices {
       override def getIndex(conf: Config, index: Indices.Index): String =
-        if (index == Indices.DataSetsIndex) indexName else super.getIndex(conf, index)
+        if (index == Indices.DataSetsIndex) indexName
+        else if (index == Indices.RegionsIndex && opts.contains("regions-index")) opts("regions-index")
+        else super.getIndex(conf, index)
     }
     val renderOptions = ConfigRenderOptions.concise().setJson(true).setComments(false).setOriginComments(false)
     // Hash full effective config, but never export secrets from its non-search sections.
@@ -217,7 +239,11 @@ object ExportBaselineRequests {
       val seen = scala.collection.mutable.Set.empty[String]
       input.getLines().zipWithIndex.filter(_._1.trim.nonEmpty).foreach { case (line, number) =>
         try {
-          val (id, initial) = inputQuery(line.parseJson.asJsObject)
+          val row = line.parseJson.asJsObject
+          val explicitBoosts = row.fields.contains("boost_regions")
+          require(!explicitBoosts || (opts.contains("regions-index") && !opts.contains("regions-endpoint")),
+            "Explicit boost_regions are correctness fixtures requiring --regions-index and no HTTP augmentation")
+          val (id, initial) = inputQuery(row)
           require(!seen(id), s"Duplicate query id: $id")
           seen += id
           val query = if (opts.contains("regions-endpoint")) {
@@ -235,7 +261,8 @@ object ExportBaselineRequests {
               "method" -> JsString(lowLevel.method), "path" -> JsString(lowLevel.endpoint)),
             "config_sha" -> JsString(configSha),
             "baseline_commit" -> JsString(opts.getOrElse("baseline-commit", "ba181562")),
-            "boost_regions_augmentation" -> JsString(if (opts.contains("regions-endpoint")) "production" else "disabled"),
+            "boost_regions_augmentation" -> JsString(if (explicitBoosts) "explicit-owned-correctness-fixture"
+              else if (opts.contains("regions-endpoint")) "production" else "disabled"),
             "boost_regions_index" -> JsString(indices.getIndex(config, Indices.RegionsIndex)),
             "boost_regions" -> boosts,
             "public_corpus_assumptions" -> JsObject("tenant_id" -> JsNumber(0),

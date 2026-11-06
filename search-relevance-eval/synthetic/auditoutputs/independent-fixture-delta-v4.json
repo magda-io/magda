@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "status": "v4_scope_passed_semantic_reaudit_pending",
+  "actual_text_label_validation_passed": false,
+  "changes": [
+    {
+      "seed": 39032,
+      "dataset_id": "a039",
+      "changed_fields": [
+        "queryContext",
+        "title"
+      ],
+      "before_record_sha256": "dd571f3c30e0f4c3cb2eedf3ab64c1020ca2e8a931a19de43a085cc330974a0e",
+      "after_record_sha256": "d1b6ea78d11691bfddda200e9de2dcb242b1d0a2a15605cb478da3c4d16f3a02"
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a079",
+      "changed_fields": [
+        "queryContext",
+        "title"
+      ],
+      "before_record_sha256": "337a0126b6089b92bd6b17be8a461c014b0b6f7c1e6fc7730eb774e92a863631",
+      "after_record_sha256": "c9ba36d15508a872681d974dbdb4daab2ccab70af1634dc557dbb44d3265344f"
+    }
+  ],
+  "unchanged_full_rows_byte_identical": 538,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  }
+}

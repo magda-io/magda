@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "audit_kind": "independent_first_realization_text_precheck",
+  "status": "fixture_repair_required",
+  "actual_text_label_validation_passed": false,
+  "pre_retrieval": true,
+  "generator_code_read_or_imported": false,
+  "specification_or_qrel_change_requested": false,
+  "reason": "Repeated-sentence padding undermines realistic metadata and substantive independently seeded prose/length variation. Halt expensive full semantic evidence extraction until all three fixture realizations are repaired under unchanged frozen criteria.",
+  "corpora": [
+    {"seed": 39031, "sha256": "266c86c1675f2ad5e82afa2b8650e5f2b35998ac0c08ed273fb0f57b592768f7", "dataset_count": 180, "records_with_repeated_description_sentences": 82},
+    {"seed": 39032, "sha256": "72e60390e64318e6a830a7d155bc2e23e57001b9b5a9fc1da4416f12043de55b", "dataset_count": 180, "records_with_repeated_description_sentences": 90},
+    {"seed": 39033, "sha256": "e5f1995c490fd167bd8e775aab65050345e7e5f2d060b636b09a4bf017e1b03a", "dataset_count": 180, "records_with_repeated_description_sentences": 96}
+  ],
+  "examples": [
+    {"seed": 39031, "dataset_id": "a001", "field": "description", "quote": "The edition preserves the original row ordering.", "occurrences": 3},
+    {"seed": 39031, "dataset_id": "a073", "field": "description", "quote": "The edition preserves the original row ordering.", "occurrences": 3},
+    {"seed": 39032, "dataset_id": "a001", "field": "description", "quote": "Rows retain local observation keys for reuse.", "occurrences": 3},
+    {"seed": 39032, "dataset_id": "a002", "field": "description", "quote": "Rows retain local observation keys for reuse.", "occurrences": 3}
+  ],
+  "count_method": "Split description on sentence punctuation followed by whitespace; count identical stripped sentences of at least five whitespace-delimited words within each record. A record counts once if any sentence occurs more than once.",
+  "evidence_projection_path": "auditoutputs/corpus-first-review.json",
+  "evidence_projection_sha256": "aac3c15b1a1496676da289905670f21f12b464c1bb46523a9907d29d13e8935b",
+  "additional_precheck": "Raw independent production-context, identifier-scope, declared-format, quality and obvious label-leak checks found zero failures across all 540 records. This does not certify semantic labels or sufficient seed variation.",
+  "next_action": "B/main preserve first bytes and before/after hashes, repair repeated padding and implausible fractional integer counts, regenerate all three corpora without changing queries/intents/IDs/rules, then C rechecks and begins coordinated fresh-context full semantic evidence audit. No retrieval before that gate."
+}

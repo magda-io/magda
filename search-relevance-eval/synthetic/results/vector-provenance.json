@@ -1,0 +1,40 @@
+{
+  "captured_at_utc": "2026-11-06T15:30:24.199556+00:00",
+  "distinct_cached_texts": 1916,
+  "first_cache_file_completed_utc": "2026-11-06T15:28:09.620775+00:00",
+  "last_cache_file_completed_utc": "2026-11-06T15:29:42.333227+00:00",
+  "phase": "all_three_seed_embeddings_complete_before_controls_or_latency",
+  "preparation_receipt_completed_utc": "2026-11-06T15:29:42.666908+00:00",
+  "seed_vector_summary": [
+    {
+      "datasets": 180,
+      "distributions": 455,
+      "l2_norm_max": 1.00000049339774,
+      "l2_norm_median": 1.000000009614261,
+      "l2_norm_min": 0.9999995529547006,
+      "queries": 75,
+      "seed": 39031,
+      "vector_count": 710
+    },
+    {
+      "datasets": 180,
+      "distributions": 453,
+      "l2_norm_max": 1.0000006338891423,
+      "l2_norm_median": 1.0000000082125098,
+      "l2_norm_min": 0.9999995466740613,
+      "queries": 75,
+      "seed": 39032,
+      "vector_count": 708
+    },
+    {
+      "datasets": 180,
+      "distributions": 451,
+      "l2_norm_max": 1.000000530442603,
+      "l2_norm_median": 1.0000000053785918,
+      "l2_norm_min": 0.9999993948606541,
+      "queries": 75,
+      "seed": 39033,
+      "vector_count": 706
+    }
+  ]
+}

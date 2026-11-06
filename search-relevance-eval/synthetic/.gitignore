@@ -1,0 +1,11 @@
+# Rebuild blind actual-text packets from the frozen corpus/specification.
+# Commit the independent observations/evidence, not repeated full metadata.
+auditoutputs/packets-v2/
+auditoutputs/delta-packets-v3/
+auditoutputs/delta-packets-v3-final/
+# Verbatim intermediate audit snapshots are sealed in review-source-archive.tar.gz.
+auditoutputs/base-evidence-v2.json
+auditoutputs/rebased-evidence-v3-pending.json
+auditoutputs/rebased-evidence-v4-pending.json
+auditoutputs/rebased-evidence-v4-known-adjudications.json
+auditoutputs/rebased-evidence-v4-final-semantic.json

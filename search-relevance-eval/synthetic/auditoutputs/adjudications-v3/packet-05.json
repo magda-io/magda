@@ -1,0 +1,234 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-05",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-05"
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v3/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v3/seed-39032.jsonl",
+      "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"
+    },
+    "39033": {
+      "path": ".local/corpora-v3/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a048",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]
+          },
+          "process": {
+            "value": "commercial_ledger",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 2.3)"}],
+            "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 10)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]
+          },
+          "process": {
+            "value": "ingredient_storage",
+            "evidence": [{"field": "description", "quote": "This deposit concerns storage assessment before use of the material of edible chocolate ingredients reserved for dessert preparation at Bramble Hill Outer."}]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {"field": "description", "quote": "This deposit concerns storage assessment before use of the material of edible chocolate ingredients reserved for dessert preparation at Bramble Hill Outer."},
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s07": {
+          "reason": "After directly reading the frozen rubric and its observation-schema clarification, I distinguish the actual commercial-ledger process from the explicitly documented contextual storage-assessment subject. The added ingredient_storage context is supported by the full description sentence about storage assessment of edible dessert chocolate, not selected from a keyword or expected label. This is a semantic representation change from the original combined process, which already acknowledged topical overlap: the former representative_measurements_not_simulation basis is corrected to observed_administrative_records, and the separate topic has contextual_topic_only basis and no facts. Month, price and consignments remain administrative observations only. No storage temperature, ingredient quality or moisture measurement is documented; the scored experimental-measurement need remains unsupported. Conversely, the absence of those measurements is not a reason to erase the explicit storage topic for a short ambiguous query that requests no experimental measurements. No relevance grade is assigned. All three distribution descriptions associate the same ledger columns with CSV/JSON formats, not with experimental storage measurements; distribution_content_verified denotes that checked metadata association, including its limitation. The original raw review is preserved. The supplied v3 source references are provenance references only; the unchanged a048 metadata was reviewed in the actual packet, not by inspecting whole v3 corpora.",
+          "evidence": [
+            {"field": "description", "quote": "This deposit concerns storage assessment before use of the material of edible chocolate ingredients reserved for dessert preparation at Bramble Hill Outer."},
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 2.3); dispatched consignments (count; e.g. 10)."},
+            {"field": "distributions.0.format", "quote": "CSV"},
+            {"field": "distributions.1.format", "quote": "JSON"},
+            {"field": "distributions.2.format", "quote": "JSON"}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a048",
+      "seed": 39032,
+      "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]
+          },
+          "process": {
+            "value": "commercial_ledger",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 12.36)"}],
+            "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 67)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]
+          },
+          "process": {
+            "value": "ingredient_storage",
+            "evidence": [{"field": "description", "quote": "At Reed Marsh Lower, the study covers edible chocolate ingredients reserved for dessert preparation during storage assessment before use of the material."}]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {"field": "description", "quote": "At Reed Marsh Lower, the study covers edible chocolate ingredients reserved for dessert preparation during storage assessment before use of the material."},
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s07": {
+          "reason": "The complete description explicitly covers storage assessment before use of edible dessert-chocolate ingredients, while separately identifying the released records as a commercial ledger rather than experimental performance. The original observation acknowledged that topical association but collapsed it into the ledger process. Adjudication separates a defensible ingredient_storage contextual topic from the actual commercial_ledger process and corrects the latter's basis to observed_administrative_records. The topic has contextual_topic_only basis and facts={}; month, AUD/unit price and consignment counts are ledger facts, not storage experimental measurements. Neither the contextual description nor the distribution title Deposited measurements supplies absent storage temperature, ingredient quality or moisture. Thus the scored experimental-measurement requirement is still not established, while a short ambiguous storage-related query must not acquire an extra experimental-measurements requirement. No grade is assigned. CSV, JSON and the second CSV distribution consistently describe the same administrative columns; content association is verified at metadata level only, with no file download. Full title, keywords, publisher and spatial entries introduce no additional experimental data. Original raw observations and historical variation rationales remain preserved; supplied v3 references are not claims of independently hashing or inspecting whole corpora.",
+          "evidence": [
+            {"field": "description", "quote": "At Reed Marsh Lower, the study covers edible chocolate ingredients reserved for dessert preparation during storage assessment before use of the material."},
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 12.36); dispatched consignments (count; e.g. 67)."},
+            {"field": "distributions.0.format", "quote": "CSV"},
+            {"field": "distributions.1.format", "quote": "JSON"},
+            {"field": "distributions.2.format", "quote": "CSV"},
+            {"field": "distributions.2.title", "quote": "Deposited measurements"}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    },
+    {
+      "dataset_id": "a048",
+      "seed": 39033,
+      "reviewer_id": "auditor-packet-05",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]
+          },
+          "process": {
+            "value": "commercial_ledger",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "reporting_interval": [{"field": "distributions.0.description", "quote": "reporting interval (calendar month; e.g. 2024-06)"}],
+            "invoiced_unit_price": [{"field": "distributions.0.description", "quote": "invoiced unit price (AUD/unit; e.g. 13.86)"}],
+            "dispatched_consignments": [{"field": "distributions.0.description", "quote": "dispatched consignments (count; e.g. 68)"}]
+          },
+          "distribution_content_verified": true
+        },
+        {
+          "product": {
+            "value": "dessert_chocolate_ingredient",
+            "evidence": [{"field": "description", "quote": "edible chocolate ingredients reserved for dessert preparation"}]
+          },
+          "process": {
+            "value": "ingredient_storage",
+            "evidence": [{"field": "description", "quote": "A separate investigation at Tern Inlet Central examines edible chocolate ingredients reserved for dessert preparation through storage assessment before use of the material."}]
+          },
+          "basis": {
+            "value": "contextual_topic_only",
+            "evidence": [
+              {"field": "description", "quote": "A separate investigation at Tern Inlet Central examines edible chocolate ingredients reserved for dessert preparation through storage assessment before use of the material."},
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}
+            ]
+          },
+          "facts": {},
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s07": {
+          "reason": "Independent rereading supports two different scopes: the records are a commercial ledger, but a separate explicit sentence describes the contextual subject as storage assessment of edible chocolate ingredients before dessert preparation. This sentence supports ingredient_storage as contextual_topic_only, without asserting that the downloaded ledger itself reports storage experiments. The original combined process is therefore split, and its overly broad representative-measurements basis is corrected to observed_administrative_records. Administrative month, price and consignments remain the only documented data facts; the added topic context has none. The disclaimer of experimental performance and the complete distribution column lists still supply no scored storage temperature, ingredient quality or moisture measurement. A short ambiguous query without such requirements can nevertheless use the explicitly documented topic; no grade is assigned here. All three CSV/JSON distribution descriptions consistently associate the same ledger variables and units. Verification is metadata-only, not downloaded bytes or experimental data. Full publisher, keyword, title and spatial fields supply no additional measured facts. The original raw review and old manual variation rationales are preserved; v3 source hashes are supplied references for the stated unchanged a048 content, not independently verified whole-corpus hashes.",
+          "evidence": [
+            {"field": "description", "quote": "A separate investigation at Tern Inlet Central examines edible chocolate ingredients reserved for dessert preparation through storage assessment before use of the material."},
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); invoiced unit price (AUD/unit; e.g. 13.86); dispatched consignments (count; e.g. 68)."},
+            {"field": "distributions.0.format", "quote": "CSV"},
+            {"field": "distributions.1.format", "quote": "JSON"},
+            {"field": "distributions.2.format", "quote": "JSON"}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true, "reviewer_id": "auditor-packet-05",
+      "rationale": "Compared every a041-a050 version with both other seeds. Conceptual facts and units are preserved: a041/a042/a050 document chamber temperature, quality score and moisture; a043 temperature plus quality only; a044 moisture plus temperature only; a045 temperature only. a046 retains marketing, month/site/operations columns and the unresolved physical-sample provenance wording. a047 retains explicitly non-edible display material with all three storage variables. a048 retains a storage-associated commercial ledger with month, unit price and consignments, expressly not experimental performance. a049 retains only simulated moisture/temperature/quality outputs, not measured facts; observation/measurement distribution-title issues persist across seeds. Meaningful descriptive variation is present, not merely shuffled titles: a041 gives a long measurement-first synopsis here versus a short distribution-referencing synopsis in 39032 and a differently ordered multi-paragraph synopsis in 39033; a043 and a045 likewise change length, sentence order and whether measured variables appear in the main description. Site names, publishers and numerical examples change; exact numerical/site/publisher facts are therefore NOT invariant, only the semantic measurement schema and subject/process/basis distinctions. All present title, description, keyword, publisher and optional spatial fields were read; no separate temporal field occurs. Within each record all distribution formats were checked against their descriptions: CSV means a comma-separated table, JSON means records carrying the same variables/units; optional third distributions repeat that record's columns rather than adding measurements. This verifies metadata association only, not downloaded file bytes. None requires identity review; no SKU or authoritative version is inferred. No prohibited pantry/supplies wording was observed in edible ingredient-storage records, no answer-key/grade/intent tags in searchable fields, and neither frozen no-answer conjunction is supported. Same-schema records have different site/examples and are not exact duplicate metadata; whether their underlying datasets duplicate cannot be established without prohibited access. Review is limited to this packet, not corpus-wide coverage or omitted query paraphrases/queryContext copies. Variation preservation does not clear the separately recorded unresolved issues."
+    },
+    "39032": {
+      "passed": true, "reviewer_id": "auditor-packet-05",
+      "rationale": "All ten stable IDs were compared across all three seeds. The full versus two-variable versus one-variable storage distinctions remain: a041/a042/a050 have temperature/quality/moisture, a043 temperature/quality, a044 moisture/temperature, a045 temperature. Omitted variables are not counted. Marketing administrative columns (a046), non-edible display product (a047), storage-associated ledger columns (a048), and simulation-only output status (a049) also persist. Meaningful text variation includes a041's compact inline description versus long multi-paragraph descriptions in the other seeds, a042's explicit measured-column sentence here versus distribution-only column documentation in 39031/39033, and a043's long field-guide synopsis here versus shorter versions elsewhere. Titles, sentence ordering, examples, locations, publishers and optional spatial/third-distribution presence vary; examples and catalogue circumstances are not literally preserved. Every projected field was reviewed, including all distribution titles/descriptions/formats and all keyword/publisher/spatial entries; no separate temporal field is supplied. CSV/comma-separated and JSON/record descriptions agree and repeat the same per-record columns and units, including optional third distributions. Format/content verification is metadata-only, not download inspection. a046's unexplained physical-sample claim and a049's observation/measurement titles remain unresolved, not cured by variation. a047's generic ingredient labels do not override its explicit non-edible product. None of these records requires authoritative identity review; none supports either no-answer conjunction. No searchable answer-key/grade/intent leakage or prohibited pantry/supplies token was observed in the relevant edible storage records. Distinct sites/examples distinguish same-schema records at the metadata level; underlying-data duplication is not testable here. This is packet-limited semantic comparison, not verification of omitted query wording, corpus-wide coverage or retrieval."
+    },
+    "39033": {
+      "passed": true, "reviewer_id": "auditor-packet-05",
+      "rationale": "Compared all a041-a050 records against both earlier seeds, preserving product/process/basis and the documented measurement schema: complete temperature/quality/moisture for a041/a042/a050, temperature/quality for a043, moisture/temperature for a044, temperature alone for a045. a046 remains marketing with month/site/operations, a047 non-edible display material with storage variables, a048 an observed commercial ledger (month/price/consignments) rather than storage experimental performance, and a049 simulations with no empirical measured facts. Locations, numerical examples and publishers differ and must not be represented as unchanged measured values. Descriptions genuinely vary in length, ordering and explicit column placement: a045 expands substantially here from the short distribution-referencing earlier versions; a043 is compact here after a long 39032 version; a041 changes ordering and wording. All present primary fields, including publisher, keyword and optional spatial entries, were reviewed; there is no separate temporal field. Checked each distribution's CSV or JSON format against its comma-separated or JSON-record description and same-record variables/units; optional extra distributions add no new measured variables. This is metadata-content association, not verification of actual downloaded files. Physical-sample provenance ambiguity in a046 persists. a049 now has the more explicit misleading title Deposited measurements despite simulation-only descriptions; the issue is recorded rather than cleared. No identity-required records occur; no authoritative SKU/version is invented. No answer-key/grade/intent leakage or prohibited pantry/supplies token was observed in the edible storage records, and neither no-answer conjunction has positive evidence. Same-schema records are not identical metadata, but underlying duplication is outside allowed inspection. Variation preservation is not a global semantic pass: it does not resolve these issues or establish corpus-wide coverage, omitted paraphrase equivalence or retrieval behaviour."
+    }
+  }
+}

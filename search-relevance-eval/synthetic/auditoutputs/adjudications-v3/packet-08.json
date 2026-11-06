@@ -1,0 +1,92 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-08",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-08"
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v3/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    }
+  },
+  "record_reviews": [
+    {
+      "dataset_id": "a079",
+      "seed": 39031,
+      "reviewer_id": "auditor-packet-08",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "chocolate_dairy_beverage",
+            "evidence": [{"field": "description", "quote": "liquid chocolate-flavoured dairy milk beverage"}]
+          },
+          "process": {
+            "value": "refrigerated_shelf_life",
+            "evidence": [
+              {"field": "description", "quote": "refrigerated shelf-life assessment"},
+              {"field": "distributions.0.format", "quote": "CSV"},
+              {"field": "distributions.1.format", "quote": "JSON"}
+            ]
+          },
+          "basis": {
+            "value": "simulation_only",
+            "evidence": [{"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."}]
+          },
+          "facts": {
+            "simulated_spoilage_days_not_empirically_measured": [
+              {"field": "distributions.0.description", "quote": "Simulated output columns: elapsed time until observed spoilage (days; e.g. 14.6)"}
+            ],
+            "simulated_microbial_count_cfu_per_ml_not_empirically_measured": [
+              {"field": "distributions.0.description", "quote": "viable microbes in beverage samples (CFU/ml; e.g. 221.27)"},
+              {"field": "distributions.0.description", "quote": "Simulated output columns:"}
+            ],
+            "simulated_storage_temperature_not_empirically_measured": [
+              {"field": "distributions.0.description", "quote": "storage chamber temperature (degrees C; e.g. 3.12)"},
+              {"field": "distributions.0.description", "quote": "Simulated output columns:"}
+            ]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "s10": {
+          "reason": "Product and nominal refrigerated shelf-life process match, and CSV/JSON explicitly contain the three named simulated output columns. The decisive contrast is the data basis: every entry is a computer simulation and physical trials/empirical observations are explicitly denied. The generic title term trials does not necessarily mean physical trials; in this complete record it can denote simulated runs. Neither that title nor a simulated column named observed spoilage establishes a real empirical measurement. The title and both generic distribution titles are read with the explicit simulation qualifications, not as independent evidence of a physical experiment.",
+          "evidence": [
+            {"field": "description", "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."},
+            {"field": "title", "quote": "What the Ivy Brook East chocolate milk trials recorded"},
+            {"field": "distributions.0.description", "quote": "Simulated output columns:"},
+            {"field": "distributions.1.description", "quote": "Simulated output columns:"}
+          ]
+        }
+      },
+      "identity": {"value": null, "evidence": []},
+      "issues": [],
+      "no_answer_claims": []
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-08",
+      "rationale": "All ten actual records were compared with both other seeds. Meaningful wording variation exists: a071 places the variable list in its description, whereas 39032 and 39033 delegate it to distribution synopses; a073 is short here, long in 39032 and short with different wording in 39033. Titles, paragraph order, description length, optional spatial fields, distribution count and distribution titles vary, not merely prefixes. Variable concepts and units are preserved per ID: a071/a072/a080 temperature+spoilage+microbes; a073 temperature+spoilage without microbes; a074 temperature+microbes without spoilage; a075 temperature only; a076 logistics month/site/count; a077 oat beverage with all three shelf-life variables; a078 all three in PDF only; a079 simulated versions of all three, never physical measurements. Core process/basis and required-format availability persist, and all nested descriptions associate their own format with the same per-record columns. However numeric examples and fictional locality/publisher are not preserved as literal facts: a071 storage temperature is 3.41 here, 7.69 in 39032 and 3.9 in 39033; a076 operations are 41/78/74. Thus these are not unchanged observation values under paraphrase. Full fact-preserving variation is not certified. a076 dairy-product grammatical scope and a079 empirical-sounding trial title are unresolved in this seed. No exact-identity review is requested for these records, no complete searchable record duplicates or answer-key/intent/grade leakage were observed, and no frozen no-answer conjunction is supported. Complete actual fields were read; omitted production queryContext text was not independently inspected, and downloadable bytes were not accessed. Verification is metadata content/format association only. Literal query paraphrases are absent, so paraphrase equivalence cannot be independently tested from this packet."
+    }
+  },
+  "adjudication": {
+    "scope": "Only unchanged a079 seed 39031 semantic observation is reconsidered; no other record, original U entry, grade or original variation judgment is edited. The required original variation object above is archival carry-through, not the new variation-only decision, which is saved separately under variation-adjudications-v4.",
+    "supersedes_record_observation": {
+      "path": "auditoutputs/reviews-v2/packet-08.json",
+      "sha256": "880c05824fc440ead6ca822f5addf24665499683bca91eb307cc0e196241e26b",
+      "seed": 39031,
+      "dataset_id": "a079"
+    },
+    "rationale": "After directly reading the entire actual relevance-rubric.md and protocol.md and rereading every actual original a079/39031 projected field, I revise my earlier title-based uncertainty. Trials is not inherently physical: computer simulations can comprise trials and have recorded outputs. The title contains no explicit physical/field/sample/empirical qualification, unlike the stronger field-notes cue formerly present in a different seed. Here the first description sentence explicitly establishes that all entries are computer simulations and no physical trial or empirical observations were collected. A later sentence labels the three columns simulated, and both CSV and JSON descriptions independently begin Simulated output columns. The generic Recorded series and Study records distribution titles also do not claim physical collection. The nominal observed-spoilage column name is within that simulation qualification and is not evidence that spoilage was empirically observed. The frozen rubric requires representative measurements for the semantic intent and treats simulation-only basis as a decisive mismatch; it does not define the bare word trials as necessarily empirical. Reading the complete metadata therefore supports one coherent simulation-only interpretation without an unresolved factual contradiction. This is a reasoned reconsideration of the same text, not a claim that the title was repaired, and not a forced empirical positive. All simulated output facts remain explicitly distinguished from empirical measurements; no measurement or relevance grade is manufactured.",
+    "continuity_and_limits": "The V4 variation packet supplies a full raw-row equality proof for a079/39031 with row SHA-256 ea469bebf607fdf8fce5edb27729ddbb4d6887f2db43a5f2fbe8294115f4b4a7; the parent supplies V3/V4 source continuity and the source hash above. I did not independently recompute that raw-corpus hash or reopen the full V3 corpus. My review used the complete actual original projected fields and supplied unchanged-row continuity. Downloaded bytes and the original omitted queryContext copy are not newly inspected. This is an original-author reconsideration, not a fresh independent reviewer, global semantic certification, ranking claim or variation adjudication. No rankings, embeddings or outcomes were inspected. The original raw review is preserved unchanged."
+  }
+}

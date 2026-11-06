@@ -1,0 +1,2 @@
+{"boost_regions": [], "id": "quality-only", "query": "water quality", "vector": [0.0, 0.0, 0.0]}
+{"boost_regions": ["ste:3903"], "id": "quality-and-spatial", "query": "water quality", "vector": [0.0, 0.0, 0.0]}

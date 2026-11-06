@@ -1,0 +1,17 @@
+{
+  "archived_at_utc": "2026-11-05T23:57:09.226913+00:00",
+  "original_git_commit": "c9139bd4b419a9c815d3135d57b8c42d4f54317f",
+  "reason": "Preserve complete original registration before correcting title-only primary metadata vs mandatory production-derived queryContext contradiction. No target query, label, ID, seed or scoring weight changes permitted.",
+  "sha256": {
+    "architect-notes.md": "8812732e089e643503c08bd36e9aa20d9e5b76f2e068a37b03da7d499b3bee67",
+    "decision-gates.json": "c396debc6ad77bbb11ac403f7c195a4f13097aae30831395079e6659e87147d3",
+    "freeze.py": "0b9d68f195eb84664110e264125332a494f33c23fafe715d211fd10a1345ab9e",
+    "generation-spec.json": "7518298bab9b54beb874ef39d52535142d1be10a3a72d8b84930cb273af6073d",
+    "intents.jsonl": "61b5469fbbfdaa9cd1729bd14a412f12166d94be044ff8ad020691aa5c1dbefc",
+    "protocol.md": "e7b2baab7a0b2304ce29771901aba701e45901b6bbda026f8d43e5ba5349f8fb",
+    "query-spec.jsonl": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+    "relevance-rubric.md": "a01685610ad2b6a01b24fd7d4c7c70ffabb14f8315e1ff283c9c2398a52d6a15",
+    "spec-freeze.json": "bbc7660723f5c74baa156a55ee5eb7cfccf0ad4108e693cf1cda8976419681cf",
+    "validation-plan.md": "71280069c0e4a79f80b1fa7b0793589e6261f282f5bc557223683934f5c59479"
+  }
+}

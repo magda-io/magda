@@ -1,0 +1,188 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-14",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-14"
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v3/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v3/seed-39032.jsonl",
+      "sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47"
+    },
+    "39033": {
+      "path": ".local/corpora-v3/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "record_reviews": [
+    {
+      "seed": 39031,
+      "dataset_id": "b036",
+      "reviewer_id": "auditor-packet-14",
+      "contexts": [
+        {
+          "product": {
+            "value": "running_shoe",
+            "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]
+          },
+          "process": {
+            "value": "commercial_ledger_associated_with_wet_pavement_testing",
+            "evidence": [
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+              {"field": "description", "quote": "This deposit concerns wet pavement traction testing of complete running shoes for road use at Elm Crossing West."}
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 128.51)"}],
+            "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 133 x 90 x 65)"}]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "f01": {
+          "reason": "Independent rereading of the complete actual record and frozen rubric establishes a running-shoe commercial ledger associated with wet-pavement testing, not measured experimental performance. Only advertised retail cost and shipping-carton dimensions are positively documented. Neither column measures wet sliding friction, pavement roughness or water-film depth, and none of these required facts is supplied elsewhere. The empirical-performance requirement cannot be satisfied by an observed administrative ledger, even though it is not computer simulation. The title and keywords name the genuine contextual activity; the explicit ledger qualification and matching CSV/PDF columns explain their narrower evidential scope. Thus I resolve my earlier apparent title/content tension as broad topic versus explicit content, not an unresolved contradictory measurement assertion. The basis U arose from the former observation-schema dichotomy and is now replaced by the directly evidenced administrative basis, without altering query criteria or assigning any relevance grade.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 128.51); shipping carton dimensions (length x width x height in mm; e.g. 133 x 90 x 65). Downloadable comma-separated table; the synopsis gives the column units."},
+            {"field": "distributions.1.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 128.51); shipping carton dimensions (length x width x height in mm; e.g. 133 x 90 x 65). Tables are supplied inside a PDF document."},
+            {"field": "title", "quote": "Elm Crossing West: a wet-road traction field report"}
+          ]
+        }
+      },
+      "identity": {
+        "value": "PACE-036",
+        "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-036."}]
+      },
+      "issues": [],
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "b036",
+      "reviewer_id": "auditor-packet-14",
+      "contexts": [
+        {
+          "product": {
+            "value": "running_shoe",
+            "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]
+          },
+          "process": {
+            "value": "commercial_ledger_associated_with_wet_pavement_testing",
+            "evidence": [
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+              {"field": "description", "quote": "At Tern Inlet Coastal, the study covers complete running shoes for road use during wet pavement traction testing."}
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 299 x 90 x 65)"}],
+            "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 94.63)"}]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "f01": {
+          "reason": "The actual description expressly identifies observed commercial records and denies experimental performance. Its inline list and both distribution synopses agree on carton dimensions and advertised cost. I find no positive wet-friction coefficient, pavement surface roughness or water-film depth measurement in any field. Shipping-carton dimensions are not pavement geometry. The shoe product and wet-testing topic overlap genuinely, but the administrative basis and missing required empirical facts cannot satisfy the frozen performance requirement. Broad study wording in the title is resolved by the explicit administrative qualification; it does not affirm that these files contain experimental measurements. My prior basis U is therefore resolved by truthful administrative observation encoding, not by assuming experimental or simulated data and not by changing any frozen relevance criterion.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 299 x 90 x 65); advertised retail cost (AUD/unit; e.g. 94.63). Downloadable comma-separated table; the synopsis gives the column units."},
+            {"field": "distributions.1.description", "quote": "Deposited columns: shipping carton dimensions (length x width x height in mm; e.g. 299 x 90 x 65); advertised retail cost (AUD/unit; e.g. 94.63). Tables are supplied inside a PDF document."},
+            {"field": "title", "quote": "Inside the Tern Inlet Coastal wet-road traction study"}
+          ]
+        }
+      },
+      "identity": {
+        "value": "PACE-036",
+        "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-036."}]
+      },
+      "issues": [],
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "b036",
+      "reviewer_id": "auditor-packet-14",
+      "contexts": [
+        {
+          "product": {
+            "value": "running_shoe",
+            "evidence": [{"field": "description", "quote": "complete running shoes for road use"}]
+          },
+          "process": {
+            "value": "commercial_ledger_associated_with_wet_pavement_testing",
+            "evidence": [
+              {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+              {"field": "description", "quote": "A separate investigation at Cedar Reach East examines complete running shoes for road use through wet pavement traction testing."}
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [{"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."}]
+          },
+          "facts": {
+            "advertised_retail_cost_AUD_per_unit": [{"field": "distributions.0.description", "quote": "advertised retail cost (AUD/unit; e.g. 55.92)"}],
+            "shipping_carton_dimensions_mm": [{"field": "distributions.0.description", "quote": "shipping carton dimensions (length x width x height in mm; e.g. 315 x 90 x 65)"}]
+          },
+          "distribution_content_verified": true
+        }
+      ],
+      "hard_negatives": {
+        "f01": {
+          "reason": "The opening explicitly characterizes this as an observed commercial ledger rather than experimental performance. The longer description, field-guide material, title and keywords do not add any performance variable: only advertised cost and shipping-carton dimensions are positively listed, consistently in CSV and PDF. The separate wet-pavement investigation supplies topical context, not measurements of wet friction, pavement roughness or water-film depth. Administrative observations cannot satisfy the frozen empirical-performance criterion and need not be misrepresented as simulations. Independently reconsidering the title/content issue, a contextual record of an activity is compatible with its explicit ledger qualification, so no contradictory positive experimental claim remains. The previously constrained basis U is resolved as observed administrative records; no query, criteria, labels or corpus metadata were modified in this adjudication.",
+          "evidence": [
+            {"field": "description", "quote": "This is an observed commercial ledger associated with the activity, not a report of experimental performance."},
+            {"field": "distributions.0.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 55.92); shipping carton dimensions (length x width x height in mm; e.g. 315 x 90 x 65). Downloadable comma-separated table; the synopsis gives the column units."},
+            {"field": "distributions.1.description", "quote": "Deposited columns: advertised retail cost (AUD/unit; e.g. 55.92); shipping carton dimensions (length x width x height in mm; e.g. 315 x 90 x 65). Tables are supplied inside a PDF document."},
+            {"field": "title", "quote": "The Cedar Reach East record of wet-road traction"}
+          ]
+        }
+      },
+      "identity": {
+        "value": "PACE-036",
+        "evidence": [{"field": "description", "quote": "The catalogue model or edition is PACE-036."}]
+      },
+      "issues": [],
+      "no_answer_claims": [],
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true
+    }
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-14",
+      "rationale": "Scoped to b036 across the three supplied packet versions. Product running shoes, catalogue PACE-036, explicit observed-commercial-ledger basis, exclusion of experimental performance, advertised-cost/carton-dimension column concepts and units, and CSV/PDF content association are preserved. Wording varies meaningfully: this seed has a short multiparagraph account pointing to distributions, seed 39032 has inline variables and blank-cell notes, and seed 39033 has a longer ledger-first inline-variable account. No required traction measurement appears through any variation. The earlier basis-schema U is resolved by independent rereading, not by treating commercial data as experimental. Strict factual invariance remains unresolved: this seed's quoted cost example 128.51 and carton example 133 x 90 x 65 differ from 94.63/299 x 90 x 65 and 55.92/315 x 90 x 65 in the other seeds; location, publisher and title also change. Examples marked e.g. need not contradict one another, but unchanged literal example/attribution facts cannot be certified. This is separate from the now-resolved per-record basis question. The original v2 review is unchanged. V3 source paths/hashes above and v2-to-v3 record-byte identity were supplied by the requester, not independently recomputed here; actual evidence is the reread packet's full b036 primary fields. No external distribution bytes or query paraphrases were inspected, and no whole-corpus conclusion is made."
+    },
+    "39032": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-14",
+      "rationale": "Scoped to b036 only. The seed retains complete-running-shoe product, exact PACE-036 identity and administrative ledger associated with wet testing, not experimental performance. Both CSV and PDF positively describe the same carton-dimension and cost columns; neither supports the three frozen f01 performance variables. Compared with seed 39031 the description changes paragraph structure, includes the columns inline and adds blank-versus-zero context; compared with seed 39033 it uses a study-first rather than ledger-first account and substantially less filler. This is real wording/length variation but shares a repeated ledger qualification. Record basis is unambiguous under the clarified observation schema. Strict all-facts-preserved remains unresolved because the literal cost/carton examples 94.63 and 299 x 90 x 65 differ from both other seeds, and location and publisher attribution change. Their e.g. status permits illustrative variation but does not establish exact factual invariance. The variation result is not automatically cleared by allowing administrative basis. Prior v2 observations remain immutable; only these three adjudication rows reconsider basis and the broad-topic versus actual-content distinction. V3 source paths/hashes and unchanged record bytes are requester-supplied provenance, not independently rehashed or compared. Review covers actual packet metadata, not distribution downloads, omitted queryContext copies or full-corpus coverage."
+    },
+    "39033": {
+      "passed": false,
+      "reviewer_id": "auditor-packet-14",
+      "rationale": "Scoped to b036 across all three seeds. Catalogue PACE-036, complete-shoe subject, commercial observational basis, explicit nonexperimental qualification and the two administrative column concepts/units are stable. CSV and PDF in this seed repeat exactly the local cost/carton columns and agree with their advertised formats. Longer ledger-first prose, inline columns and additional editorial/missing-cell context meaningfully differ from the short distribution-directed seed-39031 account and seed-39032 study-first account; none introduces wet-friction, roughness or depth measurements. Administrative basis is now directly encoded without implying experimental or simulation data. Strict factual invariance still cannot be affirmed: cost 55.92 and carton 315 x 90 x 65 are explicitly different examples from the other two seeds, alongside changed location/publisher/title assertions. Marking examples e.g. avoids a necessary scientific contradiction but does not make them identical facts. That independent variation limitation remains rather than being cleared by schema clarification. V2 review content is preserved. Final v3 source identifiers/hashes and byte-identity assertion are recorded as supplied, not independently verified against corpora. All actual b036 packet fields were reread; no downloaded files, query paraphrases, expected labels or retrieval outputs were used."
+    }
+  }
+}

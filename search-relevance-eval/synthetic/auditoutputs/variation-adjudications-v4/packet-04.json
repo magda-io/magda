@@ -1,0 +1,78 @@
+{
+  "reviewer": {
+    "role": "independent_semantic_auditor",
+    "id": "auditor-packet-04",
+    "rankings_seen": false,
+    "generator_context": false,
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "context_id": "explicit unavailable; fresh packet-04"
+  },
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "supersedes_review_artifact": {
+    "path": "auditoutputs/reviews-v2/packet-04.json",
+    "sha256": "6ed6724b56bad33a3c827f77d1931d70fa7a78f9ab39b03172fd00eaa1318930"
+  },
+  "reviewed_pairs": [
+    [39031, "a031"],
+    [39031, "a032"],
+    [39031, "a033"],
+    [39031, "a034"],
+    [39031, "a035"],
+    [39031, "a036"],
+    [39031, "a037"],
+    [39031, "a038"],
+    [39031, "a039"],
+    [39031, "a040"],
+    [39032, "a031"],
+    [39032, "a032"],
+    [39032, "a033"],
+    [39032, "a034"],
+    [39032, "a035"],
+    [39032, "a036"],
+    [39032, "a037"],
+    [39032, "a038"],
+    [39032, "a039"],
+    [39032, "a040"],
+    [39033, "a031"],
+    [39033, "a032"],
+    [39033, "a033"],
+    [39033, "a034"],
+    [39033, "a035"],
+    [39033, "a036"],
+    [39033, "a037"],
+    [39033, "a038"],
+    [39033, "a039"],
+    [39033, "a040"]
+  ],
+  "variation_review_by_seed": {
+    "39031": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "Independent variation-only supersession for the ten assigned IDs, not a global fixture-correctness decision. My original false judgment is preserved as a valid historical finding about the old a039 wording: distributions.1.title was 'Deposited measurements' despite an explicit simulation-only description. The complete current differences now show distributions.0.title, distributions.1.title and distributions.2.title as 'Simulation output table'; their respective queryContext fields also now begin 'Title: Simulation output table'. Each retains its original CSV/JSON/CSV format and the same explicitly 'Simulated output columns:' synopsis. For example, distributions.1.queryContext retains 'force at fracture (newtons; e.g. 33.27)' and 'particle diameter (micrometres; e.g. 16.18)'. The truthful title repair addresses the reason for the old false variation decision without turning simulated values into physical measurements, adding facts, or changing product/process. The packet supplies only two changed full-record pairs, a039 in 39031 and 39032, and full-row byte-equivalence attestations with hashes for the remaining 28 pairs. Those sets are disjoint and exhaust my 30 original assignments; I rely on that supplied byte-equivalence evidence rather than claiming to have rehashed the raw corpora. I checked the old review's file hash and the frozen-context file hash against the packet. I read the full lossless changes and all old rationale chunks, combined with my prior complete primary-field review. Across the three seeds, a031/a032/a040 retain physical force, tempering conditions and particle diameter; a033 force and tempering only; a034 force and diameter only; a035 force only. a036 remains visual inspection with operational count/month/site, a037 remains soft filling rather than solid bars, a038 remains administrative business columns with a separately documented texture-testing topic, and a039 remains simulation-only. The separately completed a038 adjudication and old record observations are not modified. The actual frozen protocol requires identical canonical relevance facts and exact identities, while describing independent prose/length/completeness/distribution/publisher realizations. The frozen s06 condition requires these variable concepts and the solid material/physical basis, not a particular fracture threshold, tempering setpoint or particle diameter. All numerical changes here are explicitly illustrative rows ('e.g.' or 'in an example row'), retain their units and do not cross any stated eligibility bound in this assigned scope. No instrument calibration-range or exact-SKU requirement occurs in these ten IDs. Site changes are fictitious context with no geographical preference; publishers are expressly reassigned per seed. Thus literal example-value and institutional changes do not establish forbidden canonical-claim drift. Meaningful prose variation remains independently apparent from clause reordering, different physical-basis expressions, paragraph/length changes and measurement evidence moving between descriptions and file synopses. As a complementary local count, 9/10 IDs have description word-count spread at least ten across seeds, and 7/10 vary distribution count; all assigned versions have multiple distributions, and extra files repeat the same supported columns and units. a039's small description-length spread is not individually disqualifying under the aggregate variation requirement. Dataset title patterns do not repeat more than five times within this assigned ten-ID seed scope; this is not a certification of the full 180-record quota. The packet-level preservation and meaningful-variation assessment is now true because the concrete title defect is repaired, not because the historical failure was ignored. Limits: full-corpus publisher counts, title-template frequencies, completeness and length-band quotas cannot be established from this packet alone; actual downloads, source-corpus bytes and unsupplied paraphrase wording are not independently verified. Format/content checking concerns searchable metadata association, not downloaded file contents."
+    },
+    "39032": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "Independent superseding variation assessment confined to the assigned ten IDs and their three realizations. The old false result and original raw observations remain unchanged. The earlier a039 measurement-title objection was real: distributions.2.title said 'Deposited measurements' even though the study explicitly excluded physical observations. The current complete change set replaces distributions.1.title and distributions.2.title with 'Simulation output table', with exactly corresponding title changes in their JSON queryContext fields. The parent title is also truthfully changed from 'Observations from Linden Grove Inner chocolate texture testing' to 'Simulation results from Linden Grove Inner chocolate texture testing'; parent queryContext carries that exact current title. Its description is otherwise unchanged, including 'All entries are computer simulations; no physical trial or empirical observations were collected.' The distribution queryContext values still label 'Simulated output columns:' and retain force 43.98 newtons, tempering 30.01 degrees C for 25 minutes and particle diameter 25.84 micrometres as illustrative values. No empirical measurement is thereby introduced. The unchanged first distribution remains a generic recorded series with an explicit simulated-output synopsis; that is not an assertion of physical experiments. The 39031 a039 fixes were also fully read, so the cross-seed historical title concern is addressed by actual current wording. For continuity I combine my original exhaustive 30-version review with the supplied 28 full-row identity attestations and both complete changed-record field sets; their union exactly covers all 30 assignments. The old-review and global-context artifact hashes were checked locally. Raw-corpus equality and the V4 source hashes themselves are supplied evidence, not independently recomputed here. Independently checked semantic preservation is unchanged: the physical three-variable solid-bar studies and their two-variable/one-variable subsets retain the same coverage and units; colour-inspection operations remain distinct from mechanical tests; soft filling does not become solid chocolate; financial records do not become texture measurements; and simulated output stays nonempirical. My separate a038 contextual-topic adjudication is not rewritten by this variation-only output. The frozen rubric's s06 conditions contain no threshold on force, tempering value, duration or particle diameter. Examples marked 'e.g.' and 'in an example row' vary without altering any stated hard range, component role, measured-column presence or unit. The population rule fixes canonical facts and IDs, not literal example rows. Site names are fictitious non-preference context; publisher reassignment is expressly allowed. I therefore do not impose the unstated condition that every numeric example, site or institution be byte-identical across seeds. Prose is more than renamed sites: a032 changes from subject-first observational prose to variable-first physical-sample prose here and a shorter synopsis-dependent version in 39033; a034 moves force/diameter evidence into its description while still omitting tempering; a035 changes substantially in length without gaining variables. Across these ten IDs, the independently computed description word-count spread reaches ten for nine IDs, and seven IDs change distribution count, meeting the corresponding proportion thresholds locally. Optional extra distributions retain supported facts and required formats; multiple-distribution coverage is 10/10 here. Dataset title patterns show no greater-than-five recurrence in this assigned ten-ID seed; no full-corpus template or publisher/completeness/length-band claim follows. The current title repairs remove the concrete reason for the historical false variation judgment, so the scoped current judgment is true. This does not erase the original uncertainty or globally approve record semantics. Limits: no raw corpus reread or independent V4 corpus hash computation, no download-content verification and no absent paraphrase-equivalence assessment. Aggregate requirements spanning all 180 records still require corpus-wide evidence outside this packet."
+    },
+    "39033": {
+      "passed": true,
+      "reviewer_id": "auditor-packet-04",
+      "rationale": "The original true scoped variation judgment is reaffirmed, not retroactively substituted for the historical failures in the other two seeds. Every one of this seed's ten raw rows is covered by the supplied full-row byte-equivalence proof; the only changed pairs anywhere in my 30-version assignment are a039 in 39031 and 39032. I read those entire lossless changes and the complete prior rationales. The new titles truthfully describe simulation outputs and the 39032 parent title now explicitly says 'Simulation results from Linden Grove Inner chocolate texture testing'; corresponding queryContext text is updated without changing descriptions, output columns, units, example values or formats. The old 39031/39032 'Deposited measurements' findings remain in the original review as history; their current variation consequence is superseded based on the actual repaired wording. This seed's a039 remains simulation-only and its existing neutral dictionary/study-record distribution titles do not assert physical measurements. The observed coverage is preserved for all ten IDs across seeds: three physical texture variables for a031/a032/a040, force plus tempering for a033, force plus particle diameter for a034, force alone for a035; operational inspection columns for a036; three physical texture variables on soft filling for a037; administrative business facts plus a documented topic for a038; and three simulated rather than empirical texture outputs for a039. No omitted variable is promoted into a positive measured fact. The completed a038 adjudication and all original per-record observations remain untouched. Frozen population identity means stable dataset IDs, product/process distinctions, canonical measurement coverage, exact identity where required, and hard conditions. None of these assigned records has an exact product identifier or numeric eligibility range that the illustrative examples could change; the s06 rubric requires force, tempering and particle-size measurements, not particular scalar readings. Values marked 'e.g.' or 'in an example row' retain their units, and independent locations are explicitly fictitious with no geographic preference. Publisher reassignment is prescribed by the frozen variation context. Accordingly the differing example numbers and institutional/site names are not evidence of drift in a frozen eligibility claim here. I do not generalize that numeric changes are always harmless: a required numeric range or version would have to remain fixed, but none is implicated in this packet. Meaningful variation is supported by the prior complete fields: a040 changes to variable-first observational prose here; a033 and a034 alter ordering, evidence placement and length; a038 changes to a compact continuous description containing its business columns, while other seeds use paragraph-separated synopsis-dependent wording. Nine of ten IDs have cross-seed description word-count spread at least ten, and seven vary distribution count. The one low-spread a039 does not defeat the aggregate threshold. Extra distribution allocation repeats supported facts, with CSV and JSON labels consistently tied to matching synopsis content; all ten versions in this seed have multiple files. Within this ten-ID seed scope no dataset title template recurs more than five times. Current repairs therefore support meaningful presentation variation with preserved registered scope across all assigned pairs. Scope/provenance limits: the 28 byte-equivalence attestations and raw-row hashes are supplied proof, not independently recomputed from raw corpora. I locally verified only the superseded-review and frozen-context file hashes and the exhaustive/disjoint assignment accounting. Full-corpus title-template, institution-count, completeness and length-band requirements cannot be certified from this subset, and actual download contents and unsupplied query paraphrases remain unverified. This is a superseding variation-only observation, not a global semantic, coverage or retrieval-performance claim."
+    }
+  }
+}

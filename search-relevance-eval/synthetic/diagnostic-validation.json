@@ -1,0 +1,55 @@
+{
+  "corpora": [
+    {
+      "answerability_passed": true,
+      "dataset_count": 180,
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "record_ids_sha256": "c6a34dddbc4b60627bdf43cf7e1631c0ea63172e14f30f3916be8800c2fb304a",
+      "seed": 39031,
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    {
+      "answerability_passed": true,
+      "dataset_count": 180,
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "record_ids_sha256": "c6a34dddbc4b60627bdf43cf7e1631c0ea63172e14f30f3916be8800c2fb304a",
+      "seed": 39032,
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    {
+      "answerability_passed": true,
+      "dataset_count": 180,
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "record_ids_sha256": "c6a34dddbc4b60627bdf43cf7e1631c0ea63172e14f30f3916be8800c2fb304a",
+      "seed": 39033,
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  ],
+  "exact_targets_missing": [],
+  "forced_recommendation": "C",
+  "full_validation_passed": false,
+  "independent_validation": true,
+  "known_pair_count": 40488,
+  "known_qrels_match_frozen": true,
+  "known_unsupported_grade3_count": 0,
+  "manual_record_reviews": 540,
+  "missing_positive_queries": [],
+  "pre_retrieval": true,
+  "promotion_allowed": false,
+  "qrels_path": "qrels.jsonl",
+  "qrels_sha256": "456b7e43721150ee49fe52c28f938843ca543a9b6365af85abf2685301d05445",
+  "query_equivalence_reviews": 75,
+  "query_spec_sha256": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+  "schema_version": 1,
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "status": "incomplete_diagnostic_only",
+  "total_query_doc_pairs": 40500,
+  "uncertain_intent_document_units": 6,
+  "uncertainty_mask_path": "auditoutputs/diagnostic-uncertainty-mask-v1.jsonl",
+  "uncertainty_mask_sha256": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+  "unknown_pair_count": 12,
+  "validated_qrels_path": "diagnostic-qrels.jsonl",
+  "validated_qrels_sha256": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38",
+  "validation_evidence_path": "auditoutputs/diagnostic-validation-evidence.json",
+  "validation_evidence_sha256": "295d6bcf538e3e592a0e138f83f012d190c7c4d3b8884d9a42761be77b80684c"
+}

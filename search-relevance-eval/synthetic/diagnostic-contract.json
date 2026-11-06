@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "purpose": "Pre-search contract for a separately labelled supplementary nonpromotional replay; strict confirmatory validation remains failed.",
+  "diagnostic_document": {
+    "status": "incomplete_diagnostic_only",
+    "independent_validation": true,
+    "pre_retrieval": true,
+    "full_validation_passed": false,
+    "promotion_allowed": false,
+    "forced_recommendation": "C",
+    "manual_record_reviews": 540,
+    "query_equivalence_reviews": 75,
+    "required_hash_bound_paths": ["qrels_path", "validated_qrels_path", "uncertainty_mask_path", "validation_evidence_path"],
+    "hash_keys": ["spec_freeze_sha256", "query_spec_sha256", "qrels_sha256", "validated_qrels_sha256", "uncertainty_mask_sha256", "validation_evidence_sha256"],
+    "required_known_pair_assertion": "known_qrels_match_frozen must be true only after independent derivation and explicit uncertainty adjudication, never by converting every mismatch automatically to U",
+    "corpora": "Same three seed/path/SHA/count180/record-ID-hash fields as the strict contract; answerability is reported truthfully and is not the same as full validation.",
+    "coverage": "Each seed has all13500 query/document pairs: known integer grades plus explicit U pairs. All540 manual record reviews and75 query-equivalence reviews remain preserved."
+  },
+  "validated_qrels_row": {
+    "seed": "registered integer seed",
+    "query_id": "registered query ID",
+    "dataset_id": "registered stable record ID",
+    "grade": "integer0..3 equal to frozen expected grade when independently validated; literal U for uncertainty-mask pairs"
+  },
+  "uncertainty_mask_row": {
+    "seed": "registered integer seed",
+    "intent_id": "registered intent ID; applies to all its paraphrase queries",
+    "dataset_id": "registered stable record ID",
+    "reason": "independent concrete unresolved interpretation/unsupported evidence",
+    "evidence": "preserved actual-text/reviewer artifact reference, where available"
+  },
+  "execution_policy": {
+    "schema_version": 1,
+    "mode": "supplementary_nonpromotional",
+    "pre_retrieval": true,
+    "recommendation": "C",
+    "promotion_allowed": false,
+    "required_hashes": ["spec_freeze_sha256", "validation_manifest_sha256", "uncertainty_mask_sha256"],
+    "no_outcomes_seen": true,
+    "reason": "The frozen confirmatory validation failed; unknown labels cannot be repaired by moving records outside their frozen claims or narrowing queries after generation."
+  },
+  "approval": {
+    "execution_allowed": true,
+    "diagnostic_only": true,
+    "promotion_allowed": false,
+    "required_hashes": ["spec_freeze_sha256", "diagnostic_policy_sha256", "diagnostic_validation_sha256", "production_source_manifest_sha256", "supplementary_probe_spec_sha256"]
+  },
+  "hard_rules": [
+    "Default strict gate rejects the incomplete document; no passed strict manifest is fabricated.",
+    "Supplementary execution requires an explicit diagnostic mode flag, independently produced document, mask, policy and parent approval before any benchmark embedding or retrieval.",
+    "Keep all75 target queries, criteria, proposed qrels, three seeds, eight systems and parameters unchanged.",
+    "Never coerce U to zero. A point graded metric is undefined if any U can affect its full-corpus IDCG or exact precision.",
+    "Known-only family means are descriptive and use their actual count, not the frozen eight-family primary label.",
+    "If sensitivity is shown, enumerate allowed grades0/1/2/3 for uncertainty units, recompute full IDCG consistently, and disclose bounds/assumptions. Never select an assignment to promote a system.",
+    "All outcomes force recommendation C. No A/B or production adoption claim is available, even if every descriptive comparison improves.",
+    "Finalize and hash the mask/policy/approval before the first target-query embedding; no subsequent query/label/metadata repairs or weight selection."
+  ]
+}

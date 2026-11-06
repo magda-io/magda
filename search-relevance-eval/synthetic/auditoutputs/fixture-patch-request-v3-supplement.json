@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "status": "supplement_requires_parent_approval",
+  "pre_retrieval": true,
+  "supersedes_prior_request": false,
+  "query_intent_grade_spec_changes_requested": false,
+  "original_approved_request": "auditoutputs/fixture-patch-request-v3.json",
+  "patches": [
+    {
+      "seed": 39031,
+      "dataset_id": "a020",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "807ce7403758c814fbafbef1e8383d0df0c1b0cb2f7bc28ea3f12ea1e178207f",
+      "issue": "Physical-sample provenance unsupported by exclusively operational administrative columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: completed operations (count; e.g. 86); reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh South). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Only replace the physical-sample provenance assertion with observed operational/administrative record basis, preserving empirical non-simulation status and all existing product/process/columns. Recompute exact production root queryContext; no additional experimental evidence.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a005",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "90689ce8b8aefd3eaa62e0f0e8a5f362753679c4722b09074483476b31d457f0",
+      "issue": "Physical-sample provenance unsupported by exclusively operational administrative columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: facility location code (categorical site code; e.g. Dune Valley Central); reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 22). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Only replace the physical-sample provenance assertion with observed operational/administrative record basis, preserving empirical non-simulation status and all existing product/process/columns. Recompute exact production root queryContext; no additional experimental evidence.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a076",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "6109af57a21474b41644ad677625734f77a4c62b58f27efe73046b41fa3380d7",
+      "issue": "Physical-sample provenance unsupported by exclusively operational administrative columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Only replace the physical-sample provenance assertion with observed operational/administrative record basis, preserving empirical non-simulation status and all existing product/process/columns. Recompute exact production root queryContext; no additional experimental evidence.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a096",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "f19690d35d395dae3ba411f95d43d3bd05485e1b23b40d70eea9a776c29310d5",
+      "issue": "Physical-sample provenance unsupported by exclusively operational administrative columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: facility location code (categorical site code; e.g. Hazel Ridge Coastal); completed operations (count; e.g. 14); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Only replace the physical-sample provenance assertion with observed operational/administrative record basis, preserving empirical non-simulation status and all existing product/process/columns. Recompute exact production root queryContext; no additional experimental evidence.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a020",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "b2fe9acf2a1227b9d06d32f047a92113836bbdd21297dd609d33107e458ffba6",
+      "issue": "Physical-sample provenance unsupported by exclusively operational administrative columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Pine Basin North); completed operations (count; e.g. 19). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Only replace the physical-sample provenance assertion with observed operational/administrative record basis, preserving empirical non-simulation status and all existing product/process/columns. Recompute exact production root queryContext; no additional experimental evidence.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a086",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "e72d96ce600b395159fb03a6f471a3be12ee7b71f2ed6dc496b84e6d96d4be00",
+      "issue": "Physical-sample provenance unsupported by exclusively operational administrative columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Reed Marsh East); completed operations (count; e.g. 81). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Only replace the physical-sample provenance assertion with observed operational/administrative record basis, preserving empirical non-simulation status and all existing product/process/columns. Recompute exact production root queryContext; no additional experimental evidence.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a096",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "9b9aa55eb06aabd5acdc6eb446a41a51d0f1ab18a29d8b490abd79cb6a6c01f8",
+      "issue": "Physical-sample provenance unsupported by exclusively operational administrative columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: facility location code (categorical site code; e.g. Kestrel Point East); completed operations (count; e.g. 83); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Only replace the physical-sample provenance assertion with observed operational/administrative record basis, preserving empirical non-simulation status and all existing product/process/columns. Recompute exact production root queryContext; no additional experimental evidence.",
+      "requires_independent_delta_reaudit": true
+    }
+  ],
+  "excluded_physical_mass_candidates": [
+    {
+      "seed": 39031,
+      "dataset_id": "b035",
+      "rationale": "Mass in grams is an actual physical observation; do not classify as purely administrative or require basis rewrite."
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "b059",
+      "rationale": "Mass in grams is an actual physical observation; do not classify as purely administrative or require basis rewrite."
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "b023",
+      "rationale": "Mass in grams is an actual physical observation; do not classify as purely administrative or require basis rewrite."
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "b035",
+      "rationale": "Mass in grams is an actual physical observation; do not classify as purely administrative or require basis rewrite."
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "b077",
+      "rationale": "Mass in grams is an actual physical observation; do not classify as purely administrative or require basis rewrite."
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "b035",
+      "rationale": "Mass in grams is an actual physical observation; do not classify as purely administrative or require basis rewrite."
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "b071",
+      "rationale": "Mass in grams is an actual physical observation; do not classify as purely administrative or require basis rewrite."
+    }
+  ],
+  "scan_method": "All540 actual descriptions/distribution text inspected with empirical-physical-samples phrase and independently parsed column headings; only ops/month/site or analogous purely commercial headings qualify, physical unit mass explicitly excluded. No generator code or per-record expected facts/grades read.",
+  "simulation_title_scan": "All29 matching titles already listed in original41entry request; no additions."
+}

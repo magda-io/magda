@@ -1,0 +1,823 @@
+{
+  "actual_protocol_path": "protocol.md",
+  "actual_rubric_path": "relevance-rubric.md",
+  "complete_actual_changes_since_original_full_review": [],
+  "global_frozen_context_path": "auditoutputs/seed-variation-frozen-context.json",
+  "global_frozen_context_sha256": "16c35baa8e71a21a3cc2cf273b47c1caf8c8f7750b37d5ba51394377f32f64bf",
+  "instructions": "Read actual frozen global context and own prior full review. Original full30 review already examined every field. C proves every unchanged full raw record row byte-identical; all post-review changed field values are supplied losslessly in exact contiguous chunks. Concatenate chunks when needed; inspect actual current corpus if any uncertainty remains. Reassess preservation under the ACTUAL frozen canonical measurement concepts/identity/process/basis/format constraints and independent seeded realizations, not an invented fixed illustrative-number/site/publisher criterion. Numeric e.g. changes are not automatically safe: check whether they affect a frozen hard condition, unit, required range, product role or supported measurement fact; report concrete drift if so. Known local U/fixture semantics are separately re-audited; variation is not a substitute global correctness pass. Never change old observations or silently clear issues. Independently return true only if defensible under actual frozen requirements; otherwise retain false/U with concrete reason. No generator code, target qrels, rankings or other reviewer decisions.",
+  "original_independently_observed_fact_set_comparison": [
+    {
+      "dataset_id": "b071",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval_calendar_month",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "unloaded_bench_inventory",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval_calendar_month",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "unloaded_bench_inventory",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval_calendar_month",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "unloaded_bench_inventory",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b072",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b073",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b074",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b075",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b076",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b077",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval_calendar_month",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "unloaded_bench_inventory",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval_calendar_month",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "unloaded_bench_inventory",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "reporting_interval_calendar_month",
+              "unloaded_unit_mass_g"
+            ],
+            "process": "unloaded_bench_inventory",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b078",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "advertised_retail_cost_AUD_per_unit",
+              "shipping_carton_dimensions_mm"
+            ],
+            "process": "commercial_ledger_associated_with_coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b079",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    },
+    {
+      "dataset_id": "b080",
+      "independent_original_observation_signatures": {
+        "39031": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39032": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ],
+        "39033": [
+          {
+            "basis": "representative_measurements_not_simulation",
+            "observed_fact_keys": [
+              "calibration_error",
+              "minus20_to_plus5_C",
+              "reference_instrument_uncertainty_C"
+            ],
+            "process": "coldroom_calibration",
+            "product": "temperature_probe"
+          }
+        ]
+      },
+      "literal_signatures_equal_across_three_seeds": true,
+      "not_a_semantic_judgment": "A signature mismatch may reflect interpretation wording rather than actual metadata drift; inspect own observations/changed fields independently."
+    }
+  ],
+  "original_review_path": "auditoutputs/reviews-v2/packet-18.json",
+  "original_review_sha256": "18f821b0337a9a39294edd5d1cc0c7c6722ff6fcd0c78be25ee6f773cda18eab",
+  "original_reviewer": {
+    "context_id": "explicit unavailable; fresh packet-18",
+    "generator_context": false,
+    "id": "auditor-packet-18",
+    "model": "gpt-6.1-sol (runtime label)",
+    "parameters": "not exposed",
+    "rankings_seen": false,
+    "role": "independent_semantic_auditor"
+  },
+  "original_variation_judgments": {
+    "39031": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten records were compared with both other seeds, including every supplied title, description, keyword, distribution title/format/content synopsis, publisher and optional spatial field. Product class and literal SENSE-071 through SENSE-080 identities are preserved. The semantic measurement sets are preserved: b071/b077 inventory month and mass; b072/b078 carton dimensions and advertised cost in an observed commercial ledger; b073/b074/b079/b080 probe-minus-reference error, inclusive -20 to +5 C test range and reference uncertainty; b075 error and range only; b076 error only. No missing quantity was inferred from generic notes. All distribu",
+        "tions associate CSV with a comma-separated table and PDF with tables inside a PDF, consistently with the actual documented columns; extra distributions repeat the same columns rather than adding facts. Wording varies meaningfully in sentence order, description length, paragraphing, title construction, column order and whether facts occur in the main description or only distribution synopses. This is not merely a title prefix change. However, unqualified preservation of all literal facts cannot be certified: b071 mass examples are 328.21, 273.39 and 154.76 g, b073 error examples are 0.24, -0.26 and 0.09 C, and other numerical examples also cha",
+        "nge. These are explicitly examples, not proof of different underlying observations, but they are not unchanged numeric content. Study sites change for every stable ID; publishers also change for most IDs. For example b072 is Granite Bend Coastal / North Technical College here, Cedar Reach Outer / Maple Research Cooperative in 39032, and Elm Crossing Inner / Elm Process Research Group in 39033. Thus the core semantic design is stable, but a stronger wording-only or immutable-provenance preservation claim is unsupported; this is the unresolved cross-seed qualification underlying passed=false, not an internal contradiction of these individual re",
+        "cords. No answer-key tags, required no-answer conjunctions, or duplicate complete records were observed. Similar stock prose does not make the separately identified models the same record. Query paraphrase texts and actual downloadable file bytes are not supplied: review covers all projected packet metadata, not paraphrase equivalence, file-byte contents, or whole-corpus coverage. The distribution boolean means metadata format/content association verified, not a file download."
+      ],
+      "reviewer_id": "auditor-packet-18"
+    },
+    "39032": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "All ten complete projections were independently read and compared across 39031/39032/39033. Identities, probe product class, observed rather than simulation basis and measurement-category membership remain stable for every ID. Inventory records b071/b077 explicitly exclude operating calibration; commercial ledgers b072/b078 remain commercial rather than calibration-performance records. b073/b074/b079/b080 retain all three calibration facts, b075 retains error and inclusive -20 to +5 C range without reference uncertainty, and b076 retains error alone without a stated range or reference uncertainty. CSV/PDF metadata consistently describes those",
+        " same actual columns, including every optional third distribution. Titles, clauses, paragraph structure, length, column order, contextual names and distribution titles vary, and several descriptions defer the complete measured facts to distribution synopses, so the text variation is substantial rather than category-prefix-only. Unqualified all-facts-preserved certification is withheld: numerical examples and provenance are not fixed across seeds. For example b074 probe-minus-reference error examples are 0.25 / 0.12 / -0.1 C and reference-uncertainty examples are 0.06 / 0.06 / 0.04 C; b072 carton examples are 242 x 90 x 65 / 355 x 90 x 65 / 31",
+        "4 x 90 x 65 mm. These e.g. values are illustrative, not evidence that the underlying observations changed, but the literal numerical content did change. Every stable ID has a different stated site across seeds; b074 publishers are Juniper Engineering Laboratory / Dune Agricultural Centre / Cedar Materials Laboratory. Core measurement concepts are preserved, but treating this as solely a factual-invariant paraphrase would require qualification. This cross-seed numeric/provenance qualification, not a within-record unsupported measurement, is why passed=false. No observed leakage, no-answer conjunction or duplicate complete record. The metadata ",
+        "is complete for this packet; no query paraphrase equivalence, downloadable byte-level content or coverage outside these ten IDs is asserted. Distribution verification refers to the complete metadata associations, not fetched files."
+      ],
+      "reviewer_id": "auditor-packet-18"
+    },
+    "39033": {
+      "passed": false,
+      "rationale_chunks_concat_exact": [
+        "Reviewed all ten actual seed-39033 records and compared each with both earlier seed versions. All ten SENSE identities and the temperature-probe product concept are unchanged. Inventory versus commercial-ledger versus physical-calibration distinctions and positively documented variable types are preserved, including b075 having only error/range and b076 having only error; the generic field-guide and missing-cell notes supply no extra measurements. Each CSV/PDF distribution's content description agrees with its format and with every sibling distribution; optional additions repeat existing variable sets. Meaningful variation includes reordered ",
+        "clauses/columns, empirical-basis paraphrases, changing paragraph structure and length, varied titles and descriptive facts sometimes moving to distribution-only evidence. Literal numerical/provenance preservation is not established: b075 error examples are 0.11 / 0.13 / -0.17 C and b076 error examples are 0.14 / 0.1 / -0.01 C; b079 uncertainty examples are 0.06 / 0.04 / 0.05 C and b080 error examples are 0.23 / -0.22 / 0.2 C. These are explicitly illustrative values, so do not prove changed observations; nevertheless the numeric text is not invariant. Every ID changes its named study site, and publisher names/identifiers also vary for most. F",
+        "or example b080 is Fern Hollow South / Granite Product Studies Unit, Bramble Hill West / Fern Measurement Institute and Dune Valley North / Granite Product Studies Unit across the three seeds. Semantic variable coverage is stable, but a stronger all-literal-facts or provenance-preserved wording-only claim remains unsupported; passed=false records that qualification only. Individual-record semantic review found no contradiction or unsupported positive measurement. No answer-key leakage, duplicate complete record or supported frozen no-answer conjunction was observed. All supplied fields were reviewed; query paraphrase texts, actual downloadabl",
+        "e bytes and remaining corpus records are outside this packet, so no conclusions on those are asserted. Distribution verification is metadata association verification, not a download."
+      ],
+      "reviewer_id": "auditor-packet-18"
+    }
+  },
+  "output_contract": {
+    "reviewed_pairs": "copy exact30scope after combining prior full review + actual new differences + C full-byte proof",
+    "reviewer": "preserve original reviewer metadata or explicitly explain provenance additions",
+    "sources": "copy current V4 source path/hash references",
+    "supersedes_review_artifact": {
+      "path": "auditoutputs/reviews-v2/packet-18.json",
+      "sha256": "18f821b0337a9a39294edd5d1cc0c7c6722ff6fcd0c78be25ee6f773cda18eab"
+    },
+    "variation_review_by_seed": "all3seedstring keys, each {passed:boolean,reviewer_id,rationale}; explicit independent superseding judgment"
+  },
+  "reviewed_pairs": [
+    [
+      39031,
+      "b071"
+    ],
+    [
+      39031,
+      "b072"
+    ],
+    [
+      39031,
+      "b073"
+    ],
+    [
+      39031,
+      "b074"
+    ],
+    [
+      39031,
+      "b075"
+    ],
+    [
+      39031,
+      "b076"
+    ],
+    [
+      39031,
+      "b077"
+    ],
+    [
+      39031,
+      "b078"
+    ],
+    [
+      39031,
+      "b079"
+    ],
+    [
+      39031,
+      "b080"
+    ],
+    [
+      39032,
+      "b071"
+    ],
+    [
+      39032,
+      "b072"
+    ],
+    [
+      39032,
+      "b073"
+    ],
+    [
+      39032,
+      "b074"
+    ],
+    [
+      39032,
+      "b075"
+    ],
+    [
+      39032,
+      "b076"
+    ],
+    [
+      39032,
+      "b077"
+    ],
+    [
+      39032,
+      "b078"
+    ],
+    [
+      39032,
+      "b079"
+    ],
+    [
+      39032,
+      "b080"
+    ],
+    [
+      39033,
+      "b071"
+    ],
+    [
+      39033,
+      "b072"
+    ],
+    [
+      39033,
+      "b073"
+    ],
+    [
+      39033,
+      "b074"
+    ],
+    [
+      39033,
+      "b075"
+    ],
+    [
+      39033,
+      "b076"
+    ],
+    [
+      39033,
+      "b077"
+    ],
+    [
+      39033,
+      "b078"
+    ],
+    [
+      39033,
+      "b079"
+    ],
+    [
+      39033,
+      "b080"
+    ]
+  ],
+  "schema_version": 1,
+  "sources": {
+    "39031": {
+      "path": ".local/corpora-v4/seed-39031.jsonl",
+      "sha256": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60"
+    },
+    "39032": {
+      "path": ".local/corpora-v4/seed-39032.jsonl",
+      "sha256": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805"
+    },
+    "39033": {
+      "path": ".local/corpora-v4/seed-39033.jsonl",
+      "sha256": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a"
+    }
+  },
+  "spec_freeze_sha256": "c44b584a54c9303b0d26307cea3c57a41b44022b8e649138774341de2fff0ddb",
+  "task": "Original-author independent variation-only adjudication; no expected grades supplied",
+  "unchanged_full_raw_record_proofs": [
+    {
+      "dataset_id": "b071",
+      "full_raw_record_sha256": "6102c10a50d4070cea5471443d52ccff31744cb02733eecd8a4d4794303029d9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6102c10a50d4070cea5471443d52ccff31744cb02733eecd8a4d4794303029d9",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b072",
+      "full_raw_record_sha256": "c3998d128488cb17bbc77dcc7eeec304fc1745f0498d611194ed3ced5d7f658d",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "c3998d128488cb17bbc77dcc7eeec304fc1745f0498d611194ed3ced5d7f658d",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b073",
+      "full_raw_record_sha256": "70af88e4d91585bf11d4cb780781a9b7a0333df8a6fcc9bd869ee6b8be69a182",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "70af88e4d91585bf11d4cb780781a9b7a0333df8a6fcc9bd869ee6b8be69a182",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b074",
+      "full_raw_record_sha256": "9d3ac240f2dc9577f85e99eedcf2e4d8820fb183d41787c582c3ebff7cb69751",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "9d3ac240f2dc9577f85e99eedcf2e4d8820fb183d41787c582c3ebff7cb69751",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b075",
+      "full_raw_record_sha256": "23cd78861662ac7bd6b5081b5276cb4d6c45c885647e3b4fde7bbecea1d7f323",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "23cd78861662ac7bd6b5081b5276cb4d6c45c885647e3b4fde7bbecea1d7f323",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b076",
+      "full_raw_record_sha256": "31aa89c3a302e6a1393281c4cb61503475469ca8998fbf28a3e4c89782b2cacb",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "31aa89c3a302e6a1393281c4cb61503475469ca8998fbf28a3e4c89782b2cacb",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b077",
+      "full_raw_record_sha256": "da4b5811570d09332eef0d8a6fa9ec9616e9e914430f4c8166dda8cd481861ec",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "da4b5811570d09332eef0d8a6fa9ec9616e9e914430f4c8166dda8cd481861ec",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b078",
+      "full_raw_record_sha256": "deedc45e02211aba2eeec06d27665b2054961bc4fe147468d671cbdaaa968278",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "deedc45e02211aba2eeec06d27665b2054961bc4fe147468d671cbdaaa968278",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b079",
+      "full_raw_record_sha256": "615439e3c70e9699d7358b5e5ac606f52f813e9ac2e70752a6656a609d153195",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "615439e3c70e9699d7358b5e5ac606f52f813e9ac2e70752a6656a609d153195",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b080",
+      "full_raw_record_sha256": "ca8e796178d2bb4a93f5a2d9fa5186c6e69ab68cd49c8521e2287161b8b09078",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "ca8e796178d2bb4a93f5a2d9fa5186c6e69ab68cd49c8521e2287161b8b09078",
+      "seed": 39031
+    },
+    {
+      "dataset_id": "b071",
+      "full_raw_record_sha256": "06f590ddce619cc8e265eaecce4428a63309ec151e2019704d98a466028b38fe",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "06f590ddce619cc8e265eaecce4428a63309ec151e2019704d98a466028b38fe",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b072",
+      "full_raw_record_sha256": "9b2ca6630e1513fa9a6d58c6a4574e41bfffea3ef5c95d27326f98bcb903c784",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "9b2ca6630e1513fa9a6d58c6a4574e41bfffea3ef5c95d27326f98bcb903c784",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b073",
+      "full_raw_record_sha256": "6532d8e7ab2b2c2a90229941d67ed97d8d7361a448c8c00a1f782b517ef38741",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6532d8e7ab2b2c2a90229941d67ed97d8d7361a448c8c00a1f782b517ef38741",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b074",
+      "full_raw_record_sha256": "b3e30ef08f99c711f5ddb1ee15830b9eab5b8978e91e43911d03e1b3324f4fdc",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "b3e30ef08f99c711f5ddb1ee15830b9eab5b8978e91e43911d03e1b3324f4fdc",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b075",
+      "full_raw_record_sha256": "26805b813ef4247cd97d13c55423463867ee175f6a073ca51f4a1238414abe4e",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "26805b813ef4247cd97d13c55423463867ee175f6a073ca51f4a1238414abe4e",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b076",
+      "full_raw_record_sha256": "6908d7e48a874d700bf1cf00214060e8fd7ac5b85f044ff3f429c9fe4cf08cb2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "6908d7e48a874d700bf1cf00214060e8fd7ac5b85f044ff3f429c9fe4cf08cb2",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b077",
+      "full_raw_record_sha256": "38b5ce21ad49e8185001784677593fce2c84489bf7dd5cfe2a2a59a85b6b9611",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "38b5ce21ad49e8185001784677593fce2c84489bf7dd5cfe2a2a59a85b6b9611",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b078",
+      "full_raw_record_sha256": "900a62fe2c718439f74d525d97cc9a68675c1669217e7112ee69a46a74a30dfa",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "900a62fe2c718439f74d525d97cc9a68675c1669217e7112ee69a46a74a30dfa",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b079",
+      "full_raw_record_sha256": "5927cddebc39ebe1fc2d97fc684396a7ce56ba7aca5ef87d63be0ff48c31b0f2",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "5927cddebc39ebe1fc2d97fc684396a7ce56ba7aca5ef87d63be0ff48c31b0f2",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b080",
+      "full_raw_record_sha256": "fc690744ac6f833180c7261a41e8432321d98cb7df93c6261a02e65575b76068",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "fc690744ac6f833180c7261a41e8432321d98cb7df93c6261a02e65575b76068",
+      "seed": 39032
+    },
+    {
+      "dataset_id": "b071",
+      "full_raw_record_sha256": "478d4eff36eaad82dae9d926ccb980f238f1de12d11a9a4911a2551923136db8",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "478d4eff36eaad82dae9d926ccb980f238f1de12d11a9a4911a2551923136db8",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b072",
+      "full_raw_record_sha256": "a27b7d648c5e6dc46313f68f1a23575637d3c96cda676d69e4e197918483a1b9",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "a27b7d648c5e6dc46313f68f1a23575637d3c96cda676d69e4e197918483a1b9",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b073",
+      "full_raw_record_sha256": "4e31ba0655ccdf1bac5099b643c9b4c1227e903668e50602e5d3262ed59968b5",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4e31ba0655ccdf1bac5099b643c9b4c1227e903668e50602e5d3262ed59968b5",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b074",
+      "full_raw_record_sha256": "ea1621b90328dba0426be075e0b8f8a1939a7c34bd88e32d62e49049973a6d87",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "ea1621b90328dba0426be075e0b8f8a1939a7c34bd88e32d62e49049973a6d87",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b075",
+      "full_raw_record_sha256": "1b271fa46c449ffff9fdf948fade1e0dfe1c63fb0f256cc7cbefc8b6459ba3af",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "1b271fa46c449ffff9fdf948fade1e0dfe1c63fb0f256cc7cbefc8b6459ba3af",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b076",
+      "full_raw_record_sha256": "065cc443215d144548dc7b743d099ae688d7cf96e4b28941bfe690076f16e929",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "065cc443215d144548dc7b743d099ae688d7cf96e4b28941bfe690076f16e929",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b077",
+      "full_raw_record_sha256": "cdda787c15150808790275065d6f87dfad0e9ba19a45af05fdce1c752dbf9aee",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "cdda787c15150808790275065d6f87dfad0e9ba19a45af05fdce1c752dbf9aee",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b078",
+      "full_raw_record_sha256": "8401ce8a226d787738a4f3419e03cad9d58b42e93bf3ed4af76bbecb8a8990aa",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "8401ce8a226d787738a4f3419e03cad9d58b42e93bf3ed4af76bbecb8a8990aa",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b079",
+      "full_raw_record_sha256": "4e63cee871a284cfa1a59297d54955f5de67b2cbd99a485d8120d5f9ba5b7387",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "4e63cee871a284cfa1a59297d54955f5de67b2cbd99a485d8120d5f9ba5b7387",
+      "seed": 39033
+    },
+    {
+      "dataset_id": "b080",
+      "full_raw_record_sha256": "2a50d6fd53722d0d50f9b06298263b17c08a898914c2fd60609e63ddebc3c551",
+      "full_raw_row_byte_identical_to_original_reviewed_v2": true,
+      "jsonl_row_sha256": "2a50d6fd53722d0d50f9b06298263b17c08a898914c2fd60609e63ddebc3c551",
+      "seed": 39033
+    }
+  ]
+}
