@@ -1,0 +1,898 @@
+{
+  "schema_version": 1,
+  "status": "proposed_fixture_patch_scope_requires_parent_approval",
+  "pre_retrieval": true,
+  "query_intent_grade_spec_changes_requested": false,
+  "patches": [
+    {
+      "seed": 39031,
+      "dataset_id": "a029",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "fcde9aaf8aede41f12388463ebccd9e74b3197908473231f49aca3752eeb3f17",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.2.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "41cf03c5ccb17420445b52b6cce59d9911ced0a7b4c8449c36cbe69bc91b59e3",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "41cf03c5ccb17420445b52b6cce59d9911ced0a7b4c8449c36cbe69bc91b59e3",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "41cf03c5ccb17420445b52b6cce59d9911ced0a7b4c8449c36cbe69bc91b59e3",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.2.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a049",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "092d0487692e550f96ce6d1ee661cb6083a6bdeb8f4a175bdd3c879cb04c7016",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a059",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "2a4126c58ad34f03f7e911106063659bfc55e292426ef25f2b694b646bca25b4",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a059",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "2a4126c58ad34f03f7e911106063659bfc55e292426ef25f2b694b646bca25b4",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a069",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "b2782904f90a4c3ed4261e01ebc9f131512b09c05755881eb27539ab97f9331c",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a069",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "b2782904f90a4c3ed4261e01ebc9f131512b09c05755881eb27539ab97f9331c",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a089",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "af36600aeffc311c6ed5d5d32162541fc5453b9145a2283fcdad090f29e1aa12",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a099",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "d84ee6c76f43a8642c6e1814a810adac35530e2257a0ac58c18859886377dc15",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a099",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "d84ee6c76f43a8642c6e1814a810adac35530e2257a0ac58c18859886377dc15",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a005",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "ff4c88fd6cfbdb922157d597e1eef6c342b35998184a0deea438bdd6fa685b17",
+      "issue": "Postharvest warehouse bags attached to living-tree product wording",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The distribution synopses document the measured columns and units. The Hazel Ridge Inner series documents postharvest pest inspection of warehouse bags, rather than crop treatment in the field, focusing on cacao trees grown as a crop. Entries describe an observational study rather than model predictions. Local row keys are not catalogue product identifiers. The institutional catalogue provides this synopsis for potential reuse. Supporting notes explain the conventions used in this edition."
+        }
+      ],
+      "approved_patch_scope": "Clarify warehouse-bag contents are harvested cacao material associated with the crop; living trees are not being bag-inspected. Preserve frozen cacao-crop topic, postharvest_pest_storage process, operational columns and non-field-pest-control distinction. No new experimental measurements. Recompute root production queryContext.",
+      "condition": "Actual product/process wording must become physically coherent without changing frozen labels or intent.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a046",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "a4cdd361024ef92715abaa58652574d254e6257f003ae3c097df46259882a15c",
+      "issue": "Physical-sample provenance unsupported by administrative marketing-only columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 17); facility location code (categorical site code; e.g. Hazel Ridge West). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Remove/replace physical-sample provenance assertion with truthful observed administrative record basis, preserving non-simulation status, marketing/promotional-dispatch process and existing columns. Recompute root production queryContext.",
+      "condition": "Only claimed physical-sample provenance is corrected; do not invent storage experiments or new measurement facts.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a057",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "979395e0d097c5439740dbd047ccbc6f83857b9546f31d80a22cffd8412b6569",
+      "issue": "Ornamental-maintenance tools at factory can be defensibly read as factory equipment sanitation",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "ornamental plants and their maintenance tools at a confectionery factory"
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 11.02); microbial growth from surface swabs (CFU/swab; e.g. 80.17). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Clarify existing ornamental-plants/grounds-maintenance product domain and tool scope outside confectionery production-equipment sanitation. Existing cleaning/swab/residue observations remain grounded in grounds-maintenance tools; do not suppress facts or add hidden query criteria. Preserve frozen wrong-product concept and all columns. Recompute production queryContext.",
+      "condition": "Main approval required before edits; original independent reviewer must decide whether corrected actual text resolves the factory sanitation scope dispute. If not, leave U; no forced grade.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39031,
+      "dataset_id": "a076",
+      "before_corpus_sha256": "02a8c7f7e6d2b3a3d07d8460d1fd03f5738d130f56f3329db0e7c86c546c98e4",
+      "before_record_sha256": "ab954fdb961750f2f5175f8807bf80469b6f4aac7e3e45618322eb78791d50b5",
+      "issue": "Dairy-beverage product falls under a negated shelf-life clause rather than positive carton subject",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "This deposit concerns ambient transport logistics for sealed cartons, not refrigerated shelf-life trials of liquid chocolate-flavoured dairy milk beverage at Granite Bend West. Entries describe an observational study rather than model predictions. The released table lists reporting interval (calendar month; e.g. 2024-06); completed operations (count; e.g. 41); facility location code (categorical site code; e.g. Granite Bend West). The depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name. Readers can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities. The catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition. This edition includes a plain-language field guide for the variables listed in the synopsis. The guide separates categorical entries from quantities and explains the notation used for unavailable cells without supplying additional observations. Each table uses the same local observation key. The release is arranged for comparison within this study."
+        }
+      ],
+      "approved_patch_scope": "Reattach known chocolate-dairy product explicitly to transported sealed cartons. Preserve ambient logistics, non-refrigerated-shelf-life process, operational columns and no new shelf-life measurements. Recompute root production queryContext.",
+      "condition": "Only resolve grammatical product attribution; do not add refrigerated trials or experimental values.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "7679ddbf61cbd396085be103c25e9fe8e6edccce86a058fd57c7b6764f9a2832",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "7679ddbf61cbd396085be103c25e9fe8e6edccce86a058fd57c7b6764f9a2832",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.2.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a049",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "21505df12eb8e6721e19cfad3ed6b84a8b848c9605518f0d1bbd7556b5075cdb",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.2.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a059",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "a7b34d81e07d46eca1d26eb90cc829067c86628e3a1f94edb17ffb2a5056f833",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a069",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "3e02934b7bfeaa3af599ead4e16d89faf862bb8bbe0688d0428850e4a0567895",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a079",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "701ec0db6b6b0fe4f439167ee99c93c460c5cf2a72ada9bbf084a135cb6da6cd",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a089",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "722e0485b7eee63b94812cc8e6c81c38ae6eaf8d832d6d1ccc49e3f18fd3be31",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.2.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a099",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "89293ace59f97e841dc1c09e9a222e9e4004f773e315ecf509e1c00dc922ce68",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a099",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "89293ace59f97e841dc1c09e9a222e9e4004f773e315ecf509e1c00dc922ce68",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a005",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "90689ce8b8aefd3eaa62e0f0e8a5f362753679c4722b09074483476b31d457f0",
+      "issue": "Postharvest warehouse bags attached to living-tree product wording",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The distribution synopses document the measured columns and units.\n\nA separate investigation at Dune Valley Central examines cacao trees grown as a crop through postharvest pest inspection of warehouse bags, rather than crop treatment in the field.\n\nThe described study uses empirical observations from physical samples.\n\nThe deposit contains no personal names or participant details.\n\nA field guide explains categorical entries and missing cells.\n\nSupporting notes explain the conventions used in this edition."
+        }
+      ],
+      "approved_patch_scope": "Clarify warehouse-bag contents are harvested cacao material associated with the crop; living trees are not being bag-inspected. Preserve frozen cacao-crop topic, postharvest_pest_storage process, operational columns and non-field-pest-control distinction. No new experimental measurements. Recompute root production queryContext.",
+      "condition": "Actual product/process wording must become physically coherent without changing frozen labels or intent.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a046",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "44ec3054d04a1270798c69306951a770f226b2f0addd34aec4044f442a8081d4",
+      "issue": "Physical-sample provenance unsupported by administrative marketing-only columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: completed operations (count; e.g. 28); facility location code (categorical site code; e.g. Cedar Reach Coastal); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Remove/replace physical-sample provenance assertion with truthful observed administrative record basis, preserving non-simulation status, marketing/promotional-dispatch process and existing columns. Recompute root production queryContext.",
+      "condition": "Only claimed physical-sample provenance is corrected; do not invent storage experiments or new measurement facts.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a057",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "2121a180f5794c2fae44a503ce296a297ab0dcbd334f525bd6d8efc5f7f24f55",
+      "issue": "Ornamental-maintenance tools at factory can be defensibly read as factory equipment sanitation",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "ornamental plants and their maintenance tools at a confectionery factory"
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: microbial growth from surface swabs (CFU/swab; e.g. 79.49); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 8.1). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Clarify existing ornamental-plants/grounds-maintenance product domain and tool scope outside confectionery production-equipment sanitation. Existing cleaning/swab/residue observations remain grounded in grounds-maintenance tools; do not suppress facts or add hidden query criteria. Preserve frozen wrong-product concept and all columns. Recompute production queryContext.",
+      "condition": "Main approval required before edits; original independent reviewer must decide whether corrected actual text resolves the factory sanitation scope dispute. If not, leave U; no forced grade.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a076",
+      "before_corpus_sha256": "b0eecfcf8579403b23457f5bd091a251149f929d1216c4b3c294116b9e3c7da7",
+      "before_record_sha256": "6109af57a21474b41644ad677625734f77a4c62b58f27efe73046b41fa3380d7",
+      "issue": "Dairy-beverage product falls under a negated shelf-life clause rather than positive carton subject",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples.\n\nRecorded columns comprise facility location code (categorical site code; e.g. Bramble Hill Coastal); completed operations (count; e.g. 78); reporting interval (calendar month; e.g. 2024-06).\n\nThis deposit concerns ambient transport logistics for sealed cartons, not refrigerated shelf-life trials of liquid chocolate-flavoured dairy milk beverage at Bramble Hill Coastal.\n\nThe depositor prepared a compact overview for readers assessing whether the files fit their intended reuse. It describes the material included here rather than making claims about other installations or every product sold under a similar name.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nThe catalogue synopsis distinguishes the subject of the study from the organisation holding the records. File names refer to the deposited edition, and row identifiers remain local to that edition.\n\nSupporting notes explain the conventions used in this edition.\n\nReaders should retain the supplied units when combining tables.\n\nLocal row keys are not catalogue product identifiers.\n\nThe institutional catalogue provides this synopsis for potential reuse."
+        }
+      ],
+      "approved_patch_scope": "Reattach known chocolate-dairy product explicitly to transported sealed cartons. Preserve ambient logistics, non-refrigerated-shelf-life process, operational columns and no new shelf-life measurements. Recompute root production queryContext.",
+      "condition": "Only resolve grammatical product attribution; do not add refrigerated trials or experimental values.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a029",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "2a33af620073286f8fbb5aa53f8ca9b193b31b53edd333cd4d3813cdc493beff",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a029",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "2a33af620073286f8fbb5aa53f8ca9b193b31b53edd333cd4d3813cdc493beff",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.2.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a049",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "04949a61695d0482969e556341610364b001882dcfed34c91831101800bdf093",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a059",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "86a3a0225d320e911208f31ece79ff9910f8fd0774d69a902b0a0d8008b39b5f",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a069",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "9ab5e1c4b71ac911fa32276bfc730253605c01f008735b596910492e02c2e0b4",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.1.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a079",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "26920348e0fda7c997c18f3c1a37c9c821601143e52419163bcfcb2ba0d70c8a",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a079",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "26920348e0fda7c997c18f3c1a37c9c821601143e52419163bcfcb2ba0d70c8a",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.2.title",
+          "quote": "Observation table"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a089",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "247208a3d47afab54e90763f8a4d14e01725032140905a0b0d725688adf890e7",
+      "issue": "Simulation-only output mislabeled as empirical observations/measurements",
+      "actual_evidence": [
+        {
+          "field": "distributions.0.title",
+          "quote": "Deposited measurements"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "approved_patch_scope": "Clarify only misleading distribution title as simulation output; regenerate this child production queryContext exactly. Preserve product/process/simulated columns/formats, dataset ID, intended grade and every unaffected field.",
+      "condition": "Apply only to exact listed misleading title and explicit simulation-only basis.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a005",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "92e92039b4cfd7d165326f96bcfbbc1b66d8613d1f0f1340b7d3d9ae946e093a",
+      "issue": "Postharvest warehouse bags attached to living-tree product wording",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "Entries describe an observational study rather than model predictions. This deposit concerns postharvest pest inspection of warehouse bags, rather than crop treatment in the field of cacao trees grown as a crop at Fern Hollow Outer. The distribution synopses document the measured columns and units. Supporting notes explain the conventions used in this edition. The institutional catalogue provides this synopsis for potential reuse. Local row keys are not catalogue product identifiers."
+        }
+      ],
+      "approved_patch_scope": "Clarify warehouse-bag contents are harvested cacao material associated with the crop; living trees are not being bag-inspected. Preserve frozen cacao-crop topic, postharvest_pest_storage process, operational columns and non-field-pest-control distinction. No new experimental measurements. Recompute root production queryContext.",
+      "condition": "Actual product/process wording must become physically coherent without changing frozen labels or intent.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a046",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "0802ee2b3219b9bc86fc7f5fcede8246e679f3da7ec044ad14eec7a943fe8de8",
+      "issue": "Physical-sample provenance unsupported by administrative marketing-only columns",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "The described study uses empirical observations from physical samples."
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: completed operations (count; e.g. 88); facility location code (categorical site code; e.g. Fern Hollow East); reporting interval (calendar month; e.g. 2024-06). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Remove/replace physical-sample provenance assertion with truthful observed administrative record basis, preserving non-simulation status, marketing/promotional-dispatch process and existing columns. Recompute root production queryContext.",
+      "condition": "Only claimed physical-sample provenance is corrected; do not invent storage experiments or new measurement facts.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a057",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "bece7da97fc368dd792889b64c6041a0666e120213a6a93f729c961d987981c5",
+      "issue": "Ornamental-maintenance tools at factory can be defensibly read as factory equipment sanitation",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "ornamental plants and their maintenance tools at a confectionery factory"
+        },
+        {
+          "field": "distributions.0.description",
+          "quote": "Deposited columns: microbial growth from surface swabs (CFU/swab; e.g. 106); equipment cleaning cycle completed (recorded cycle: rinse / detergent wash); residue remaining on cleaned surface (mg; e.g. 1.35). Downloadable comma-separated table; the synopsis gives the column units."
+        }
+      ],
+      "approved_patch_scope": "Clarify existing ornamental-plants/grounds-maintenance product domain and tool scope outside confectionery production-equipment sanitation. Existing cleaning/swab/residue observations remain grounded in grounds-maintenance tools; do not suppress facts or add hidden query criteria. Preserve frozen wrong-product concept and all columns. Recompute production queryContext.",
+      "condition": "Main approval required before edits; original independent reviewer must decide whether corrected actual text resolves the factory sanitation scope dispute. If not, leave U; no forced grade.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39033,
+      "dataset_id": "a076",
+      "before_corpus_sha256": "d9bd95e394451cd20b27d0f9ba7e21693a8a4b949085bac9460ca1af54e5bc94",
+      "before_record_sha256": "4bb387b0d75f87d3992a72d6332c96f38e90a8c89366d086e07821b332c40e3d",
+      "issue": "Dairy-beverage product falls under a negated shelf-life clause rather than positive carton subject",
+      "actual_evidence": [
+        {
+          "field": "description",
+          "quote": "Physical observations were recorded, not process simulations.\n\nVariables documented in the files are reporting interval (calendar month; e.g. 2024-06); facility location code (categorical site code; e.g. Elm Crossing East); completed operations (count; e.g. 74).\n\nA separate investigation at Elm Crossing East examines liquid chocolate-flavoured dairy milk beverage through ambient transport logistics for sealed cartons, not refrigerated shelf-life trials.\n\nRepeated entries are retained in their original sequence. The accompanying notes explain the row layout and the meaning of blank cells; a blank entry is not a recorded zero and should not be converted without consulting those notes.\n\nThe archive preserves the submitted ordering and spelling. Editorial notes concern interpretation and reuse only; they do not add further experimental variables. Comparisons with another release should account for its separate sampling and reporting arrangements.\n\nReaders can join the files using the local observation key. The release contains no personal contacts, commercial addresses or individual participants. Institutional and location names are fictional catalogue context and do not identify real facilities.\n\nRows retain local observation keys for reuse.\n\nThe edition preserves the original row ordering.\n\nThe release is arranged for comparison within this study."
+        }
+      ],
+      "approved_patch_scope": "Reattach known chocolate-dairy product explicitly to transported sealed cartons. Preserve ambient logistics, non-refrigerated-shelf-life process, operational columns and no new shelf-life measurements. Recompute root production queryContext.",
+      "condition": "Only resolve grammatical product attribution; do not add refrigerated trials or experimental values.",
+      "requires_independent_delta_reaudit": true
+    }
+  ],
+  "reviewer_adjudication_cases": [
+    {
+      "original_packet": 3,
+      "dataset_id": "a028",
+      "seeds": [
+        39031,
+        39032,
+        39033
+      ],
+      "reason": "Broad diagnostic topic versus administrative ledger process",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    },
+    {
+      "original_packet": 4,
+      "dataset_id": "a038",
+      "seeds": [
+        39031,
+        39032,
+        39033
+      ],
+      "reason": "Broad diagnostic topic versus administrative ledger process",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    },
+    {
+      "original_packet": 5,
+      "dataset_id": "a048",
+      "seeds": [
+        39031,
+        39032,
+        39033
+      ],
+      "reason": "Broad diagnostic topic versus administrative ledger process",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    },
+    {
+      "original_packet": 6,
+      "dataset_id": "a058",
+      "seeds": [
+        39031,
+        39032,
+        39033
+      ],
+      "reason": "Broad diagnostic topic versus administrative ledger process",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    },
+    {
+      "original_packet": 7,
+      "dataset_id": "a068",
+      "seeds": [
+        39031,
+        39032,
+        39033
+      ],
+      "reason": "Broad diagnostic topic versus administrative ledger process",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    },
+    {
+      "original_packet": 6,
+      "dataset_id": "a056",
+      "seeds": [
+        39031
+      ],
+      "reason": "Single category-leading title versus repeated-prefix/template prohibition",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    },
+    {
+      "original_packet": 6,
+      "dataset_id": "a060",
+      "seeds": [
+        39032
+      ],
+      "reason": "Single category-leading title versus repeated-prefix/template prohibition",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    },
+    {
+      "original_packet": 8,
+      "dataset_id": "a079",
+      "seeds": [
+        39031,
+        39032
+      ],
+      "reason": "Generic trial title with unambiguous simulation-only actual description",
+      "rewrite_fixture_requested": false,
+      "instructions": "Original fresh reviewer re-read frozen full relevance-rubric.md and actual packet fields. Independently represent every supported topical context separately from the process measured by commercial ledger facts. Diagnostic ambiguity has no measurement/empirical requirement. Do not invent experimental facts or copy a proposed grade. Single varied product-leading title is not automatically repeated family-prefix leakage; trial need not mean physical if simulation is explicit. Preserve v1review and return independent amended observations or unresolved U."
+    }
+  ],
+  "provenance": "C independently integrated first8 fresh reviews240rows and checked all1656literal citations; no retrieval/rankings or generator code read. Simulation-title condition scanned all540actual records consistently."
+}

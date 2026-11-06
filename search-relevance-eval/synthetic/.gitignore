@@ -1,0 +1,5 @@
+# Rebuild blind actual-text packets from the frozen corpus/specification.
+# Commit the independent observations/evidence, not repeated full metadata.
+auditoutputs/packets-v2/
+auditoutputs/delta-packets-v3/
+auditoutputs/delta-packets-v3-final/

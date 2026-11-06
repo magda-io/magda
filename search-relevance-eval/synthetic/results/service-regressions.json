@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "issue": 3903,
+  "evaluation_only": true,
+  "status": "passed",
+  "scope": "Existing seven actual Registry/Indexer/Auth API/OPA/Search API authorization regressions on unchanged production baseline; not a normalized-candidate service test",
+  "freeze": {
+    "commit": "c9139bd4b419a9c815d3135d57b8c42d4f54317f",
+    "spec_frozen_utc": "2026-11-05T23:53:16Z",
+    "explicit_parent_authorization_received_before_test": true,
+    "pre_freeze_actions": ["inspect existing test/setup source", "verify free local ports", "start isolated Docker daemon", "pull service images"],
+    "search_tests_or_fixture_metadata_before_freeze": false
+  },
+  "execution": {
+    "cwd": "/Users/t1000/development/magda",
+    "head_at_execution": "c9139bd4b419a9c815d3135d57b8c42d4f54317f",
+    "command": "DOCKER_HOST=tcp://127.0.0.1:12375 TMPDIR=/tmp/magda-3886-tools/harness-tmp POSTGRES_PASSWORD=password PATH=/tmp/magda-3886-tools/bin:$PATH yarn --cwd magda-int-test-ts test --grep 'search api auth integration tests'",
+    "package_test_script": "PGUSER=postgres mocha --timeout 100000",
+    "started_utc": "2026-11-05T23:55:01Z",
+    "finished_utc": "2026-11-05T23:57:58Z",
+    "exit_code": 0,
+    "attempts": 1,
+    "retries": 0,
+    "passed": 7,
+    "failed": 0,
+    "pending": 0,
+    "mocha_summary": "7 passing (3m)",
+    "yarn_duration_seconds": 175.47,
+    "test_job_id": "bash-74ca5629c5844cde",
+    "cpu_sbt_window_coordinated_with_parent": true,
+    "production_test_or_ServiceRunner_edits": false,
+    "public_magda_access": false,
+    "credentials": "Only ephemeral test JWT and local fixture database password; no public credentials"
+  },
+  "tests": [
+    {
+      "name": "should not match an accessible dataset through a hidden distribution's keyword content (#3886)",
+      "status": "passed",
+      "duration_ms": 19393,
+      "log_line": 604
+    },
+    {
+      "name": "should not match an accessible dataset through a hidden distribution's vector content (#3886)",
+      "status": "passed",
+      "duration_ms": 6744,
+      "log_line": 609
+    },
+    {
+      "name": "should index accessControl aspect for both datasets & distributions",
+      "status": "passed",
+      "duration_ms": 3237,
+      "log_line": 612
+    },
+    {
+      "name": "should allow anonymous users & users with only authenticated users role to access published public datasets that are not assigned to any orgUnits",
+      "status": "passed",
+      "duration_ms": 3099,
+      "log_line": 615
+    },
+    {
+      "name": "should not allow anonymous users & users with only authenticated users role to access published datasets that are assigned to an orgUnit",
+      "status": "passed",
+      "duration_ms": 1306,
+      "log_line": 617
+    },
+    {
+      "name": "should allow anonymous users & users with only authenticated users role to access published datasets that are assigned to an orgUnit with constraintExemption",
+      "status": "passed",
+      "duration_ms": 2468,
+      "log_line": 619
+    },
+    {
+      "name": "should only allow a user that is grant pre-authorised permission to datasets that are explicitly associated with the permission",
+      "status": "passed",
+      "duration_ms": 1278,
+      "log_line": 622
+    }
+  ],
+  "branch_isolation_coverage": {
+    "branches": ["keyword", "vector"],
+    "per_branch_parent_datasets": 4,
+    "per_branch_child_distributions": 8,
+    "matching_child_visibility": ["public published", "draft", "published org-unit restricted", "legacy with publishing aspect absent"],
+    "readers": ["anonymous", "authenticated ordinary user", "administrator positive control"],
+    "real_access_metadata": "Created through Registry and indexed through Indexer; owner/org-unit/tenant/publishing fields asserted from indexed documents and not replaced by synthetic visibility predicates",
+    "deterministic_isolation": "Keyword case removes vectors only. Vector case retains real metadata but sets matching-child vector to the real query embedding and parent/sibling vectors to query vector plus 10 in every dimension.",
+    "vector_dimensions": 768,
+    "controls": [
+      "Published parent remains retrievable by identifier",
+      "Unrelated accessible sibling remains projected",
+      "Draft/restricted matching child is not projected for ordinary readers",
+      "Only public/legacy matching parents count for ordinary readers",
+      "Administrator publishingState=* matches all four fixtures",
+      "Administrator explicit published filter still excludes draft matching child"
+    ],
+    "search_configuration": {
+      "hybrid_enabled": true,
+      "knn_mode": "in_memory",
+      "k": null,
+      "maxDistance": null,
+      "minScore": 0.5
+    }
+  },
+  "versions": {
+    "node": "22.23.1",
+    "yarn": "1.22.22",
+    "sbt": "1.4.9",
+    "java": "Temurin OpenJDK 11.0.32.1+1",
+    "flyway_observed": "12.11.0",
+    "dataset_index_observed": "datasets54",
+    "docker_daemon": "28.5.0",
+    "architecture": "arm64"
+  },
+  "image_pins_observed": [
+    {"tag": "docker:28.5.0-dind", "repo_digest": "docker@sha256:c090c93b63bc690570a0cab398904c855a46f08e0b6804e51bb5ad26e3407f9a"},
+    {"tag": "opensearchproject/opensearch:2.19.1", "repo_digest": "opensearchproject/opensearch@sha256:72fe2fc84be8295906b8efca020b46c58ed45c8da60cd9b8b49e1991e38e89a4"},
+    {"tag": "ghcr.io/magda-io/magda-embedding-api:1.1.0", "repo_digest": "ghcr.io/magda-io/magda-embedding-api@sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec"},
+    {"tag": "postgres:17.5", "repo_digest": "postgres@sha256:aadf2c0696f5ef357aa7a68da995137f0cf17bad0bf6e1f17de06ae5c769b302"},
+    {"tag": "ghcr.io/magda-io/magda-db-migrator:next", "repo_digest": "ghcr.io/magda-io/magda-db-migrator@sha256:2c56ed3a46495ba29a73198e9afcece8cb0c6e0843b28c7ac5e952cbc2087139"},
+    {"tag": "openpolicyagent/opa:0.37.2-static", "repo_digest": "openpolicyagent/opa@sha256:60b6b0cc860b0442ea94269cbe13e3a6e9443d665b65be9aad7f2bafeca87fb0"}
+  ],
+  "isolation": {
+    "reason": "ServiceRunner.destroy globally prunes Docker networks, containers and volumes; never point it at ordinary user Docker",
+    "docker_host_inherited_by_test_and_children": "tcp://127.0.0.1:12375",
+    "daemon_id": "19317470-43ef-4edf-be3c-3d43b10ef3ed",
+    "outer_container_name": "magda-3903-regression-dind",
+    "outer_container_id": "08dd2777a7e828a2319e795f2908d6799ec5a582888b693dfc4f10702ef63573",
+    "daemon_job_id": "bash-f4da5c5bf0514d55",
+    "pull_job_id": "bash-d68ce200e25f4a15",
+    "cleanup_job_id": "bash-a3d5016abcc04f7b",
+    "loopback_only_forwarded_ports": [12375, 5432, 8181, 9200, 3000],
+    "workspace_mount_readonly": true,
+    "tools_mount": "/tmp/magda-3886-tools",
+    "ordinary_docker_user_minikube_id_before_and_after": "6268563a4a13",
+    "ordinary_docker_prune_invoked": false,
+    "other_agent_endpoints_untouched": [19200, 13000],
+    "cleanup": {
+      "harness_teardown_completed": true,
+      "inner_containers_remaining": 0,
+      "inner_volumes_remaining": 0,
+      "inner_networks_remaining": ["bridge", "host", "none"],
+      "host_service_ports_6101_6104_no_listeners": true,
+      "owned_outer_container_stopped_after_exact_id_check": true,
+      "outer_daemon_job_exit_code": 0,
+      "cleanup_job_exit_code": 0,
+      "forwarded_ports_released": true,
+      "ordinary_minikube_remained_running": true,
+      "daemon_shutdown_utc": "2026-11-05T23:58:22Z"
+    }
+  },
+  "evidence": {
+    "raw_log_path": "/tmp/magda-3886-tools/issue3903-service-regressions-attempt1.log",
+    "raw_log_sha256": "94c8dacf0e83c7f96ec6c567e83a96d782ae2cef22eb026bae150233ff65cb23",
+    "raw_log_lines": 640,
+    "raw_log_bytes": 61306,
+    "raw_log_retention": "Local ephemeral tools artifact, not committed; per-test outcomes retained above",
+    "timing_source": "Managed shell job output; start/end markers surround tee and are not inside the hashed raw test log",
+    "source_hashes_before_and_after_match": {
+      "magda-int-test-ts/src/tests/searchApiAuth.spec.ts": "a5ac6b6cc752d2812edd45197482edb594aac8acb3a4e733f0faebc94eb4d1d9",
+      "magda-int-test-ts/src/ServiceRunner.ts": "68692d50415e86f30164eb810d53aa1c0a7284fcada1525d7fee97b58b92dd78"
+    },
+    "production_diff_check_exit_code": 0,
+    "production_diff_check_paths": ["magda-int-test-ts/src/tests/searchApiAuth.spec.ts", "magda-int-test-ts/src/ServiceRunner.ts", "magda-search-api", "magda-registry-api", "magda-indexer"]
+  },
+  "warnings_and_limitations": [
+    "This actual OPA service run exercises unchanged baseline production code only. It does not run the experimental normalized candidate through the full OPA service stack.",
+    "Candidate literal-filter-preservation and synthetic engine controls must be reported separately; they are not substitutes for this actual service regression run or proof of arbitrary candidate authorization equivalence.",
+    "Existing harness uses mutable image tags and re-pulls them. Captured RepoDigests record the images observed before execution; no production harness pinning changes were made.",
+    "Startup readiness retries, existing-postgres-database creation message, missing fresh-index messages and duplicate-logback configuration warnings were followed by successful readiness/migrations/tests; no test failure or pull stream race occurred.",
+    "lsof emitted unrelated inaccessible Time Machine SMB-mount stat warnings; port queries showed no listeners after teardown.",
+    "No benchmark relevance data or benchmark query generation was performed by this role. These controlled authorization fixtures are not the benchmark corpus."
+  ]
+}

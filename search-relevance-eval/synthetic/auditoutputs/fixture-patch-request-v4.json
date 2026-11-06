@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "status": "proposed_requires_parent_approval",
+  "pre_retrieval": true,
+  "query_intent_grade_spec_changes_requested": false,
+  "baseline_realization": "final_v3",
+  "patches": [
+    {
+      "seed": 39032,
+      "dataset_id": "a039",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "dd571f3c30e0f4c3cb2eedf3ab64c1020ca2e8a931a19de43a085cc330974a0e",
+      "issue": "Simulation-only record root title explicitly asserts empirical observations or field-note provenance",
+      "actual_evidence": [
+        {
+          "field": "title",
+          "quote": "Observations from Linden Grove Inner chocolate texture testing"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "allowed_changed_fields": [
+        "title",
+        "queryContext"
+      ],
+      "approved_patch_scope": "Replace only misleading root title observation/field-note wording with an explicit simulation-output or neutral model-results description retaining subject and site identity. Recompute exact production root queryContext. Preserve product/process/facts, distribution text/formats, metadata, record ID and all labels. Do not rename neutral trial/study titles in other records.",
+      "requires_independent_delta_reaudit": true
+    },
+    {
+      "seed": 39032,
+      "dataset_id": "a079",
+      "before_corpus_sha256": "c0aa258a0d80dab278cec473d4e48176616083cf32a473fad00198415b56bc47",
+      "before_record_sha256": "337a0126b6089b92bd6b17be8a461c014b0b6f7c1e6fc7730eb774e92a863631",
+      "issue": "Simulation-only record root title explicitly asserts empirical observations or field-note provenance",
+      "actual_evidence": [
+        {
+          "field": "title",
+          "quote": "From field notes to archive: Dune Valley Inner chocolate milk"
+        },
+        {
+          "field": "description",
+          "quote": "All entries are computer simulations; no physical trial or empirical observations were collected."
+        }
+      ],
+      "allowed_changed_fields": [
+        "title",
+        "queryContext"
+      ],
+      "approved_patch_scope": "Replace only misleading root title observation/field-note wording with an explicit simulation-output or neutral model-results description retaining subject and site identity. Recompute exact production root queryContext. Preserve product/process/facts, distribution text/formats, metadata, record ID and all labels. Do not rename neutral trial/study titles in other records.",
+      "requires_independent_delta_reaudit": true
+    }
+  ],
+  "unchanged_record_rows_required": 538,
+  "full_actual_text_scan_path": "auditoutputs/simulation-root-title-scan-v3.json",
+  "full_actual_text_scan_sha256": "0fbe6030962900fd178fa0b985253875b6905815f391f709148d2640c643b95d",
+  "scope_reason": "All24simulation-onlyroot titles reviewed across540actualrecords; exactly2claim observations/fieldnotes contrary to explicit model-only basis. Neutral trial/study/assessment/record wording is not inherently physical."
+}

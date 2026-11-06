@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "status": "approved_for_pre_retrieval_fixture_correction_only",
+  "approved_by": "parent-agent",
+  "requests": ["auditoutputs/fixture-patch-request-v3.json", "auditoutputs/fixture-patch-request-v3-supplement.json"],
+  "scope": "Exactly the independent C requests: 48 field-level repair entries affecting 37 seed/record pairs. All other 503 full records must be byte-identical to corrected realization v2.",
+  "benchmark_embeddings_or_scores_seen": false,
+  "query_criteria_expected_grades_ids_seeds_weights_changes_permitted": false,
+  "historical_versions_must_remain_immutable": true,
+  "independent_delta_reaudit_required": true,
+  "reviewer_disagreements_are_not_fixture_edit_permission": "Administrative topical-context and minor title concerns require separate rubric-based independent review; do not change expected labels or silently clear original issues."
+}
