@@ -180,6 +180,11 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 	hasRecordPreAuthorisedPermission(operationType, inputObjectRefName)
 }
 
+# A wildcard request (e.g. `object/dataset/*/read`, which search asks when no
+# publishing state is given) accepts the grant for a record in any publishing state,
+# including drafts and legacy records without one, as `object/record/read` already
+# does. So a default search returns granted drafts to the group's members; a request
+# for a specific state (the clause above) still requires the record to be in it.
 verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName) {
 	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 	resourceType == "*"

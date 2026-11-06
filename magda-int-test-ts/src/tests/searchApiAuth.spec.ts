@@ -784,4 +784,144 @@ describe("search api auth integration tests", function (this) {
         expect(r.value.hitCount).to.equal(1);
         expect(r.value?.dataSets?.[0]?.identifier).to.equal(datasetId);
     });
+
+    it("should let an access group member find records granted by a record-level pre-authorised permission (#3907)", async () => {
+        // An access group grants a pre-authorised `object/record/read`
+        // permission. Records join the group by listing its permission id in
+        // `access-control.preAuthorisedPermissionIds`, so a dataset can be
+        // granted without some of its distributions.
+        const role = await authApiClient.createRole(
+            "a test role as the container of an access group permission"
+        );
+        const permission = await authApiClient.createRolePermission(role.id, {
+            name: uuidV4(),
+            description: "an access group permission",
+            resource_id: (await authApiClient.getResourceByUri("object/record"))
+                .id,
+            user_ownership_constraint: false,
+            org_unit_ownership_constraint: false,
+            pre_authorised_constraint: true,
+            operationIds: [
+                (await authApiClient.getOperationByUri("object/record/read")).id
+            ]
+        });
+
+        const token = uuidV4().replace(/-/g, "");
+        const datasetQuery = `issue3907dataset${token}`;
+        const draftQuery = `issue3907draft${token}`;
+        const sectionBId = await getOrgUnitIdByName("Section B");
+        const granted = {
+            orgUnitId: sectionBId,
+            preAuthorisedPermissionIds: [permission.id]
+        };
+
+        const grantedDistributionId = await createTestDistributionByUser(
+            DEFAULT_ADMIN_USER_ID,
+            granted,
+            {
+                aspects: {
+                    "dcat-distribution-strings": {
+                        title: "A granted distribution",
+                        description: "Distribution metadata"
+                    },
+                    publishing: { state: "published" }
+                }
+            }
+        );
+        // restricted to Section B and not in the group
+        const hiddenDistributionId = await createTestDistributionByUser(
+            DEFAULT_ADMIN_USER_ID,
+            { orgUnitId: sectionBId },
+            {
+                aspects: {
+                    "dcat-distribution-strings": {
+                        title: "A distribution outside the group",
+                        description: "Distribution metadata"
+                    },
+                    publishing: { state: "published" }
+                }
+            }
+        );
+        const datasetId = await createTestDatasetByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                aspects: {
+                    "dcat-dataset-strings": { title: datasetQuery },
+                    "dataset-distributions": {
+                        distributions: [
+                            grantedDistributionId,
+                            hiddenDistributionId
+                        ]
+                    },
+                    publishing: { state: "published" }
+                }
+            } as any,
+            granted
+        );
+        // object/dataset/*/read (no publishingState) covers any state, as
+        // object/record/read does; a published-only search doesn't
+        const draftDatasetId = await createTestDatasetByUser(
+            DEFAULT_ADMIN_USER_ID,
+            {
+                aspects: {
+                    "dcat-dataset-strings": { title: draftQuery },
+                    publishing: { state: "draft" }
+                }
+            } as any,
+            granted
+        );
+        for (const id of [datasetId, draftDatasetId]) {
+            const indexResult = await Try(indexerApiClient.indexDataset(id));
+            expect(indexResult.error).to.not.be.an.instanceof(Error);
+            expect(indexResult.value?.successes).to.equal(1);
+        }
+
+        // Branch A and Section B are on different branches
+        // (test orgUnit tree structure can be found in testUtils.ts)
+        const branchAId = await getOrgUnitIdByName("Branch A");
+        const testUser = await authApiClient.createUser({
+            displayName: "Access group member",
+            email: "access-group-member@test.com",
+            source: "internal",
+            sourceId: uuidV4(),
+            orgUnitId: branchAId
+        });
+
+        // compare identifiers, not hit counts: this suite runs hybrid search,
+        // so unrelated fixtures may also match by vector similarity
+        const findIds = async (query: string, publishingState?: string) => {
+            const r = await Try(
+                getDataset(query, testUser.id, publishingState)
+            );
+            expect(r.error).to.not.be.an.instanceof(Error);
+            return {
+                ids: (r.value?.dataSets || []).map((ds: any) => ds.identifier),
+                dataSets: r.value?.dataSets || []
+            };
+        };
+
+        for (const query of [datasetQuery, draftQuery]) {
+            const { ids } = await findIds(query);
+            expect(ids).to.not.include(datasetId);
+            expect(ids).to.not.include(draftDatasetId);
+        }
+
+        // join the access group
+        await authApiClient.addUserRoles(testUser.id, [role.id]);
+
+        const published = await findIds(datasetQuery);
+        expect(published.ids).to.include(datasetId);
+        const dataset = published.dataSets.find(
+            (ds: any) => ds.identifier === datasetId
+        );
+        // the distribution outside the group is not returned with its dataset
+        expect(
+            (dataset?.distributions || []).map((dist: any) => dist.identifier)
+        ).to.have.members([grantedDistributionId]);
+
+        expect((await findIds(draftQuery)).ids).to.include(draftDatasetId);
+        expect((await findIds(draftQuery, "published")).ids).to.not.include(
+            draftDatasetId
+        );
+    });
 });

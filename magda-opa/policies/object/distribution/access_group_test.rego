@@ -20,13 +20,17 @@ access_group_user = user {
 }
 
 access_group_distribution(permissionIds) = distribution {
+    distribution := access_group_distribution_in_state("published", permissionIds)
+}
+
+access_group_distribution_in_state(state, permissionIds) = distribution {
     distribution := {
         "access-control": {
             "ownerId": "3535fdad-1804-4614-a9ce-ce196e880238",
             "orgUnitId": "b66f4fd6-a046-4d30-9ae2-2232351b0a45",
             "preAuthorisedPermissionIds": permissionIds
         },
-        "publishing": {"state": "published"}
+        "publishing": {"state": state}
     }
 }
 
@@ -50,6 +54,36 @@ test_access_group_grant_excludes_distribution_outside_group {
     not allow with input as {
         "operationUri": "object/distribution/published/read",
         "object": {"distribution": access_group_distribution([])},
+        "user": access_group_user
+    }
+}
+
+test_access_group_grant_allows_any_state_read_of_draft_distribution {
+    allow with input as {
+        "operationUri": "object/distribution/*/read",
+        "object": {"distribution": access_group_distribution_in_state("draft", ["6ab510c2-206c-4d6b-b694-35c4edac2b6d"])},
+        "user": access_group_user
+    }
+}
+
+test_access_group_grant_requires_requested_distribution_publishing_state {
+    not allow with input as {
+        "operationUri": "object/distribution/published/read",
+        "object": {"distribution": access_group_distribution_in_state("draft", ["6ab510c2-206c-4d6b-b694-35c4edac2b6d"])},
+        "user": access_group_user
+    }
+}
+
+test_access_group_grant_allows_any_state_read_of_distribution_without_publishing_state {
+    allow with input as {
+        "operationUri": "object/distribution/*/read",
+        "object": {"distribution": {
+            "access-control": {
+                "ownerId": "3535fdad-1804-4614-a9ce-ce196e880238",
+                "orgUnitId": "b66f4fd6-a046-4d30-9ae2-2232351b0a45",
+                "preAuthorisedPermissionIds": ["6ab510c2-206c-4d6b-b694-35c4edac2b6d"]
+            }
+        }},
         "user": access_group_user
     }
 }
