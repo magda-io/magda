@@ -168,6 +168,7 @@ verifyRecordWithPublishingStatusPermission(inputOperationUri, inputObjectRefName
 	verifyPublishingStatus(inputObjectRefName, permissionResourceType)
 	input.object[inputObjectRefName]["access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }
+
 # if find an access group grant: access groups grant pre-authorised permissions on
 # registry records (`object/record`), and datasets and distributions are registry
 # records, so the grant also covers the same operation on them (#3907).
