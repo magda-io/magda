@@ -1,0 +1,138 @@
+{
+  "artifacts": {
+    "failed_attempt": {
+      "path": "search-relevance-eval/threshold/results/correctness.json",
+      "sha256": "55b29cca684040a8c68336a749422a50071687881a2457bc86bc9b0f8f813345"
+    },
+    "passed_attempt": {
+      "path": "search-relevance-eval/threshold/results/correctness-attempt2.json",
+      "sha256": "f03be94931011aa43aad5e58c892f440a2f6be585671c713318beb5b3ac78188"
+    },
+    "runtime_provenance": {
+      "path": "search-relevance-eval/threshold/.local/correctness-runtime-provenance.json",
+      "sha256": "e37d6c263706547730180282ef528bfcc4ce35a0019046f4a3bef9def1068b4c"
+    },
+    "scala_export_command": {
+      "path": "search-relevance-eval/threshold/.local/correctness-exports/export-command.json",
+      "sha256": "54bf5113e1773e38ca2869e056c380e15e9d8bb3ff20d24982e0c8d5710ec499"
+    },
+    "scala_test_log": {
+      "path": "search-relevance-eval/threshold/results/scala-search-tests.log",
+      "sha256": "b39a8a5a933a68c92d0025bf656ada7eeabb9b355d4e05787be47741431aa365"
+    },
+    "scala_test_receipt": {
+      "path": "search-relevance-eval/threshold/results/scala-search-tests.json",
+      "sha256": "3a547465afeef52a0f093b1d7e01fdc968af7ec29b563d5b716ca4663a278b64"
+    },
+    "test_source_hashes": {
+      "path": "search-relevance-eval/threshold/.local/scala-test-source-hashes.json",
+      "sha256": "93a4f6f0246338254530a533b780cef59a6cb6377db89a5b64522b6ff5a28632"
+    }
+  },
+  "baseline_scala": {
+    "attempts": 1,
+    "canceled": 0,
+    "failed": 0,
+    "passed": 26,
+    "real_opensearch_access": 11,
+    "structural": 15,
+    "unchanged_test_sources": true
+  },
+  "benchmark_queries_or_embeddings_by_this_control_role": 0,
+  "cleanup": {
+    "failed_attempt_exact_uuid_indexes_deleted_acknowledged": 4,
+    "passed_attempt_exact_uuid_indexes_deleted_acknowledged": 4
+  },
+  "existing_production_pipeline_parity": {
+    "all_eight_mode_ids_scores_exact_totals_and_full_aggregations_equal": true,
+    "definition_sha256": "3477e80111667b6eeb6205df929cf7e7adabcef1aee04b234252aa2fcb849450",
+    "definition_unchanged": true,
+    "no_pipeline_created_or_modified": true,
+    "pipeline_id": "magda-datasets-hybrid-search",
+    "primary_raw_pipeline_override": "_none",
+    "status": "passed"
+  },
+  "first_attempt": {
+    "cause": "Optional child-k1 fixture retained FAR root vectors; legitimate root-k1 branch added mixed. Fixture branch-isolation bug, not authorization leak.",
+    "error": "AssertionError: Exact total hit count mismatch",
+    "mandatory_controls_passed": 32,
+    "repair": "Parent applied uniform omit_far_vectors helper at prefilter fixture installation only; new exclusive attempt2 report; original failed report untouched.",
+    "status": "failed_preserved"
+  },
+  "issue": 3887,
+  "limitations": [
+    "Translated synthetic ownerId marker is not actual OPA evaluation.",
+    "Historical seven full Registry/Indexer/Auth/OPA/Search baseline tests remain separate, not current all-threshold service coverage.",
+    "Only old closed smoke fixtures were searched; no benchmark relevance, ranking, latency, or model-inference result follows.",
+    "Format facets retain production raw-child/any-sibling semantics; receipts preserve actual distribution IDs and nested offsets.",
+    "All-mode and all-threshold-full-OPA claims remain false."
+  ],
+  "mandatory_raw_controls": {
+    "actual_scala_export_queries_per_mode": 2,
+    "diagnostic_k": 10,
+    "dimension": 3,
+    "mode_labels": [
+      "ms_050",
+      "ms_048",
+      "ms_046",
+      "ms_045",
+      "ms_044",
+      "ms_042",
+      "ms_040",
+      "topk10diag"
+    ],
+    "passed": 32,
+    "radial_cutoffs": [
+      0.5,
+      0.48,
+      0.46,
+      0.45,
+      0.44,
+      0.42,
+      0.4
+    ]
+  },
+  "prefilter_topk1": {
+    "child_fixture_far_vector_fields_omitted": [
+      {
+        "dataset_id": "mixed",
+        "field": "queryContextVector",
+        "identifier": "mixed",
+        "scope": "root"
+      },
+      {
+        "dataset_id": "mixed",
+        "field": "queryContextVector",
+        "identifier": "unrelated",
+        "scope": "child"
+      },
+      {
+        "dataset_id": "eligible",
+        "field": "queryContextVector",
+        "identifier": "eligible",
+        "scope": "root"
+      }
+    ],
+    "child_positive_and_negative": {
+      "eligible_ids": [
+        "eligible"
+      ],
+      "negative_ids": [
+        "mixed"
+      ]
+    },
+    "root_positive_and_negative": {
+      "eligible_ids": [
+        "eligible"
+      ],
+      "negative_ids": []
+    },
+    "status": "passed"
+  },
+  "production_source_files_reverified": 8,
+  "responses_retained": 44,
+  "review_method": "Offline inspection/revalidation of retained actual receipts only; no second inference or engine call",
+  "reviewed_utc": "2026-11-07T14:27:57.932060+00:00",
+  "schema_version": 1,
+  "status": "passed_scoped_closed_controls"
+}

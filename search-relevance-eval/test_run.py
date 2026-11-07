@@ -3,6 +3,11 @@ import importlib.util
 import pathlib
 import unittest
 import hashlib
+import json
+import tempfile
+from types import SimpleNamespace
+from unittest import mock
+from datetime import datetime, timezone
 
 spec = importlib.util.spec_from_file_location("eval_run", pathlib.Path(__file__).with_name("run.py"))
 eval_run = importlib.util.module_from_spec(spec)
@@ -54,6 +59,36 @@ class ReplayTests(unittest.TestCase):
             for repetition in range(10):
                 offset = repetition % len(expected)
                 self.assertEqual(eval_run.measurement_order(expected, repetition), expected[offset:] + expected[:offset])
+
+    def test_executor_utc_brackets_success_and_error_without_changing_timer(self):
+        args = SimpleNamespace(engine_url="http://localhost:19200", index="magda-relevance-eval-unit", seed=4)
+        started = datetime(2026, 11, 7, 1, 0, tzinfo=timezone.utc)
+        completed = datetime(2026, 11, 7, 1, 0, 1, tzinfo=timezone.utc)
+        response = {"hits": {"hits": []}, "timed_out": False, "_shards": {"failed": 0}}
+        for phase, error in (("warmup", None), ("measured", None), ("measured", TimeoutError("unit"))):
+            with self.subTest(phase=phase, error=error), tempfile.TemporaryDirectory() as directory:
+                ledger = pathlib.Path(directory) / "receipts.jsonl"
+                with mock.patch.object(eval_run, "datetime") as clock, \
+                        mock.patch.object(eval_run.time, "perf_counter", side_effect=[10, 10.125]) as timer, \
+                        mock.patch.object(eval_run, "request", side_effect=error, return_value=response):
+                    clock.now.side_effect = [started, completed]
+                    execute = eval_run.response_executor(args, ledger)
+                    if error:
+                        with self.assertRaises(TimeoutError):
+                            execute("/unit/_search", {}, "q", "baseline", phase, 1)
+                    else:
+                        self.assertEqual(execute("/unit/_search", {}, "q", "baseline", phase, 1), (response, 125))
+                    self.assertEqual(clock.now.call_args_list, [mock.call(timezone.utc), mock.call(timezone.utc)])
+                    self.assertEqual(timer.call_count, 1 if error else 2)
+                receipt = json.loads(ledger.read_text())
+                self.assertEqual(receipt["request_started_utc"], started.isoformat())
+                self.assertEqual(receipt["request_completed_utc"], completed.isoformat())
+                self.assertEqual(receipt["phase"], phase)
+                self.assertEqual(receipt["warmup"], phase == "warmup")
+                if error:
+                    self.assertEqual(receipt["error_type"], "TimeoutError")
+                else:
+                    self.assertEqual(receipt["elapsed_ms"], 125)
 
     def test_candidate_two_top_level_families(self):
         body = fixture()

@@ -231,6 +231,38 @@ class ThresholdReplayTests(unittest.TestCase):
             self.assertEqual(row["latency_ms"], replay.statistics.median(expected))
         self.assertEqual(len([item for item in ledger if item["phase"] == "warmup"]), 4)
 
+    def test_nested_child_identity_keeps_offsets_and_only_actual_source_identifiers(self):
+        raw = response()
+        parent = raw["hits"]["hits"][0]
+        parent.update(_id="parent-id", _source={"identifier": "dataset-id", "queryContextVector": [99]})
+        parent["inner_hits"] = {"distributions": {"hits": {"total": {"value": 3, "relation": "eq"}, "hits": [
+            {"_id": "parent-id", "_score": 3, "_nested": {"field": "distributions", "offset": 0},
+             "_source": {"identifier": "child-a", "distribution_id": "dist-a", "queryContextVector": [88]}},
+            {"_id": "parent-id", "_score": 2,
+             "_nested": {"field": "distributions", "offset": 1, "_nested": {"field": "items", "offset": 2}},
+             "_source": {"identifier": "child-b", "title": "not retained", "distributions": [{"vector": [77]}]}},
+            {"_id": "parent-id", "_score": 1, "_nested": {"field": "distributions", "offset": 2},
+             "_source": {"title": "no fabricated identifier"}}
+        ]}}}
+        original = copy.deepcopy(raw)
+        receipt = replay.export_response_receipt(raw)
+        self.assertEqual(raw, original)
+        self.assertEqual(receipt["parsed_json_sha256"], hashlib.sha256(json.dumps(raw, sort_keys=True).encode()).hexdigest())
+        signatures = receipt["all_hit_signatures"]
+        top = next(item for item in signatures if item["path"] == ["hits", "hits"])
+        self.assertEqual(top["hits"][0]["source_identity"], {"identifier": "dataset-id"})
+        nested = next(item for item in signatures if "inner_hits" in item["path"])
+        children = nested["hits"]
+        self.assertEqual([child["id"] for child in children], ["parent-id"] * 3)
+        self.assertEqual([child["_nested"]["offset"] for child in children], [0, 1, 2])
+        self.assertEqual(children[0]["source_identity"], {"identifier": "child-a", "distribution_id": "dist-a"})
+        self.assertEqual(children[1]["source_identity"], {"identifier": "child-b"})
+        self.assertEqual(children[1]["_nested"]["_nested"], {"field": "items", "offset": 2})
+        self.assertNotIn("source_identity", children[2])
+        serialized = json.dumps(receipt)
+        for forbidden in ("queryContextVector", "vector", "title", "_source"):
+            self.assertNotIn(forbidden, serialized)
+
     def test_cli_defaults_and_fixed_labels(self):
         args = replay.parser().parse_args(["run-exports", "--engine-url", "http://localhost:19200",
             "--index", self.args.index, "--output", self.args.output, "--request-set", "ms_050=a",

@@ -1,0 +1,48 @@
+[info] welcome to sbt 1.4.9 (Eclipse Adoptium Java 11.0.32.1)
+[info] loading settings for project magda-build from build.sbt,plugins.sbt ...
+[info] loading project definition from /Users/t1000/development/magda/project
+[info] loading settings for project root from build.sbt ...
+[info] loading settings for project common from build.sbt ...
+[info] loading settings for project searchApi from build.sbt ...
+[info] loading settings for project indexer from build.sbt ...
+[info] loading settings for project registryApi from build.sbt ...
+[info] loading settings for project intTest from build.sbt ...
+[info] set current project to magda-metadata (in build file:/Users/t1000/development/magda/)
+[info] ElasticSearchAccessFilterSpec:
+[info] real OpenSearch keyword access filtering
+[info] - ignores inaccessible matching children even with a visible unrelated sibling
+[info] - allows privileged all-state and all-tenant distribution matches
+[info] - keeps parent publisher/date facets and any-sibling format semantics
+[info] real OpenSearch hybrid access filtering
+[info] - ignores inaccessible matching children even with a visible unrelated sibling
+[info] - allows privileged all-state and all-tenant distribution matches
+[info] - keeps parent publisher/date facets and any-sibling format semantics
+[info] real OpenSearch vector prefiltering
+[info] - includes legacy distributions without a state in published radial and top-k searches
+[info] - does not rank an accessible parent using its restricted perfect-vector sibling
+[info] - filters maxDistance matches in child scope while applying parent date facets
+[info] - prefilters child k=1 before a restricted perfect vector can occupy the candidate slot
+[info] - prefilters dataset k=1 by tenant, authorization, state and publisher
+[info] ElasticSearchQueryerSpec:
+[info] issue #3886: dataset and distribution search filter contexts
+[info] - filters dataset kNN by dataset access and parent facets, but distribution kNN by child access only
+[info] - keeps radial minScore access filters outside kNN but inside the correct document context
+[info] - keeps radial maxDistance access filters outside kNN but inside the correct document context
+[info] - keeps keyword child access filters when hybrid enabled=false and vector present=true
+[info] - keeps keyword child access filters when hybrid enabled=true and vector present=false
+[info] - does not generate kNN for wildcard or blank text '*', even with a vector
+[info] - does not generate kNN for wildcard or blank text '   ', even with a vector
+[info] - keeps parent constraints without any text scoring when free text is absent
+[info] - treats publishing '*' as no state restriction without discarding tenant or residual auth filters
+[info] - treats missing distribution states as published, but not as draft
+[info] - does not replace a deny auth decision with match_all (dataset denied=true)
+[info] - does not replace a deny auth decision with match_all (dataset denied=false)
+[info] - preserves the requested tenant scope None independently in root and child candidates
+[info] - preserves the requested tenant scope Some(AllTenantsId) independently in root and child candidates
+[info] - preserves the requested tenant scope Some(29) independently in root and child candidates
+[info] Run completed in 2 seconds, 97 milliseconds.
+[info] Total number of tests run: 26
+[info] Suites: completed 2, aborted 0
+[info] Tests: succeeded 26, failed 0, canceled 0, ignored 0, pending 0
+[info] All tests passed.
+[success] Total time: 3 s, completed 7 Nov. 2026, 1:22:27 pm

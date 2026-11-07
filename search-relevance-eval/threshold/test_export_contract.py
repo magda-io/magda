@@ -178,6 +178,86 @@ class ExportContractTests(unittest.TestCase):
         self.assertEqual(contract.validate_request(request, k=1)["mode"], "top-k")
 
 
+class KeywordAttributionTests(unittest.TestCase):
+    def rows(self):
+        # Adversarial structural unit fixture ONLY. Actual lexical exports come
+        # from Scala Query.freeTextVector=None, never from this test projection.
+        def lexical(node):
+            if isinstance(node, list):
+                return [lexical(child) for child in node]
+            if not isinstance(node, dict):
+                return node
+            if "hybrid" in node:
+                return lexical(node["hybrid"]["queries"][0])
+            return {key: lexical(child) for key, child in node.items()}
+        rows = exports()
+        for row in rows:
+            row["baseline_commit"] = contract.BASELINE
+            row["diagnostic_mode"] = "keyword_only_attribution"
+            row["request"]["body"] = lexical(row["request"]["body"])
+        return rows
+
+    def test_or_control_preserves_raw_scopes_and_primary_rejects_it(self):
+        rows = self.rows()
+        report = contract.validate_keyword_exports(rows)
+        self.assertEqual(report["queries"], 2)
+        self.assertEqual(report["knn_copies"], 0)
+        self.assertTrue(report["diagnostic_only"])
+        with self.assertRaises(ValueError):
+            contract.validate_exports(rows, min_score=.5)
+        with self.assertRaises(ValueError):
+            contract.validate_request(rows[0]["request"], min_score=.5)
+        regular = exports()
+        for row in regular:
+            row["baseline_commit"] = contract.BASELINE
+            row["diagnostic_mode"] = "keyword_only_attribution"
+        with self.assertRaisesRegex(ValueError, "attribution controls"):
+            contract.validate_exports(regular, min_score=.5)
+
+    def test_every_or_copy_is_required(self):
+        original = self.rows()
+        for row_index, row in enumerate(original):
+            paths = [path for path, node in contract.walk(row["request"]["body"])
+                     if isinstance(node, dict) and "simple_query_string" in node]
+            self.assertEqual(len(paths), 9)
+            for path in paths:
+                candidate = copy.deepcopy(original)
+                contract.at(candidate[row_index]["request"]["body"], path)["simple_query_string"]["default_operator"] = "and"
+                with self.assertRaisesRegex(ValueError, "OR"):
+                    contract.validate_keyword_exports(candidate)
+
+    def test_postfilter_vector_functionscore_metadata_and_filters_fail_closed(self):
+        for change in ("postfilter", "knn", "hybrid", "quality", "metadata", "pipeline", "parent-filter", "child-filter", "innerhits"):
+            with self.subTest(change=change):
+                rows = self.rows()
+                row = rows[0]
+                body = row["request"]["body"]
+                if change == "postfilter":
+                    body["post_filter"] = {"match_all": {}}
+                elif change in ("knn", "hybrid"):
+                    body[change] = {}
+                elif change == "quality":
+                    body["query"]["function_score"]["score_mode"] = "max"
+                elif change == "metadata":
+                    row.pop("diagnostic_mode")
+                elif change == "pipeline":
+                    row["request"]["query_params"].pop("search_pipeline")
+                elif change == "parent-filter":
+                    for _, node in contract.walk(body["query"]):
+                        if isinstance(node, dict) and node.get("term", {}).get("publishingState") == {"value": "published"}:
+                            node["term"]["publishingState"] = {"value": "draft"}
+                elif change == "child-filter":
+                    for _, node in contract.walk(body["query"]):
+                        if isinstance(node, dict) and node.get("term", {}).get("distributions.publishingState") == {"value": "published"}:
+                            node["term"]["distributions.publishingState"] = {"value": "draft"}
+                elif change == "innerhits":
+                    for _, node in contract.walk(body["query"]):
+                        if isinstance(node, dict) and "nested" in node:
+                            node["nested"].pop("inner_hits", None)
+                with self.assertRaises(ValueError):
+                    contract.validate_keyword_exports(rows)
+
+
 class RoleDiagnosticTests(unittest.TestCase):
     def mixed(self, request, dataset, distribution):
         candidate = copy.deepcopy(request)

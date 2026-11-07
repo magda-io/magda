@@ -1,0 +1,4483 @@
+{
+  "schema_version": 1,
+  "reviewer": {
+    "id": "audit-38871-2",
+    "context_id": "unavailable",
+    "model": "gpt-6.1-sol",
+    "parameters": "unavailable",
+    "role": "independent_semantic_auditor",
+    "rankings_seen": false,
+    "generator_context": false
+  },
+  "sources": [
+    {
+      "path": ".local/stage-one-v2/core-38871.jsonl",
+      "sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a"
+    },
+    {
+      "path": ".local/stage-one-v2/growth-38871.jsonl",
+      "sha256": "3914037b1582ab6a724197d5dc79b937d8b9683c2382413cf0a11c91c6a0f97b"
+    }
+  ],
+  "packet": {
+    "path": ".local/audit-packets-v2-final/packet-38871-2.json",
+    "sha256": "ae847abd3008a8f46cd5088678bd74be7b20d4910dbddb2a1c3a73568075620a"
+  },
+  "record_reviews": [
+    {
+      "seed": 38871,
+      "dataset_id": "t031",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "0d3cdac287ad719eaa8aba26886e5d588802f8a1541648b11c47c036861cff99",
+      "canonical_record_sha256": "71fd7488fbf177f6fb89208ff7cd9544fbe0039ea0dfc46b39140798d7864316",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "fresh_fish_for_human_consumption",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fresh fish intended for people to eat"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_refrigerated_spoilage_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "facts": {
+            "storage_temperature": [
+              {
+                "field": "description",
+                "quote": "storage temperature"
+              }
+            ],
+            "elapsed_storage_time": [
+              {
+                "field": "description",
+                "quote": "elapsed time since storage began"
+              }
+            ],
+            "bacterial_count": [
+              {
+                "field": "description",
+                "quote": "viable bacterial count"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals. Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals."
+          },
+          {
+            "field": "description",
+            "quote": "storage temperature"
+          },
+          {
+            "field": "description",
+            "quote": "elapsed time since storage began"
+          },
+          {
+            "field": "description",
+            "quote": "viable bacterial count"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t032",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "a7f5c3d13775c5cc62315f5e405c6ccf0bfd992d88ced6cba378b444b4a5b00f",
+      "canonical_record_sha256": "0aea86aee3fedd412e3a0f8cc5e3e61ed3de923bbc7bb9ad499daafabde42d2c",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "fresh_fish_for_human_consumption",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fresh fish intended for people to eat"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_refrigerated_spoilage_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "facts": {
+            "storage_temperature": [
+              {
+                "field": "distributions.0.description",
+                "quote": "storage temperature"
+              }
+            ],
+            "elapsed_storage_time": [
+              {
+                "field": "distributions.0.description",
+                "quote": "elapsed time since storage began"
+              }
+            ],
+            "bacterial_count": [
+              {
+                "field": "distributions.0.description",
+                "quote": "viable bacterial count"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "The entries record storage temperature, elapsed time since storage began and viable bacterial count. This downloadable table documents the fictional physical observations described by the collection; its structured companion carries the same entries, without further measurement variables."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals. Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals."
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "storage temperature"
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "elapsed time since storage began"
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "viable bacterial count"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t033",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "6d9899cd45774061942b65fd50845212a714a411bc215eef0df9fe37a0bca962",
+      "canonical_record_sha256": "61262328c7f589000832ebc14a9b58479e80f7a59a406315414d59da61928b4d",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "fresh_fish_for_human_consumption",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fresh fish intended for people to eat"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_refrigerated_spoilage_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "facts": {
+            "storage_temperature": [
+              {
+                "field": "description",
+                "quote": "storage temperature"
+              }
+            ],
+            "elapsed_storage_time": [
+              {
+                "field": "description",
+                "quote": "elapsed time since storage began"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals. Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals."
+          },
+          {
+            "field": "description",
+            "quote": "storage temperature"
+          },
+          {
+            "field": "description",
+            "quote": "elapsed time since storage began"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t034",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "02369c7796044ece1eb1883e3f142862546201208302038c2ae2e46855f0b68f",
+      "canonical_record_sha256": "96f873edd1a7e9b0a286ece707ecbc4211d4ac441f04a3a501f2dd3f7530a559",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "fresh_fish_for_human_consumption",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fresh fish intended for people to eat"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_refrigerated_spoilage_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "facts": {
+            "storage_temperature": [
+              {
+                "field": "description",
+                "quote": "storage temperature"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals. Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals."
+          },
+          {
+            "field": "description",
+            "quote": "storage temperature"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t035",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "cc9520f8bda5f653dd2532b8a45feecedcd164d803874963e27b09357e3e43fd",
+      "canonical_record_sha256": "32fab0db1c8d50f11d007537c5ded259e98c603e12a030d4f7a26372b9bf6e51",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "fresh_fish_for_human_consumption",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fresh fish for human consumption"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_ambient_shipping_invoices",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed shipping invoices"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed shipping invoices"
+              }
+            ]
+          },
+          "facts": {
+            "consignment_price": [
+              {
+                "field": "description",
+                "quote": "consignment prices"
+              }
+            ],
+            "invoice_date": [
+              {
+                "field": "description",
+                "quote": "invoice dates"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Observed shipping invoices concern fresh fish for human consumption transported at ambient conditions, not refrigerated spoilage experiments. Commercial invoice fields do not document storage trials, temperatures, elapsed spoilage times or bacterial counts; ambient shipping is a process mismatch for t06p1/t06p2/t06p3. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Observed shipping invoices concern fresh fish for human consumption transported at ambient conditions, not refrigerated spoilage experiments."
+          },
+          {
+            "field": "description",
+            "quote": "consignment prices"
+          },
+          {
+            "field": "description",
+            "quote": "invoice dates"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Commercial invoice fields do not document storage trials, temperatures, elapsed spoilage times or bacterial counts; ambient shipping is a process mismatch for t06p1/t06p2/t06p3."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t036",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "af03a1c3df09908f6baafe1c14715f73264c18478e1c639d24062b19cbd6f955",
+      "canonical_record_sha256": "1ad83af2842c5e5379de0848ada7a96d420f84ca1b788d661fe81f21d3146288",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "ornamental_live_fish",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "live ornamental fish"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_aquarium_taxonomy",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical aquarium observations catalogue the taxonomy"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical aquarium observations"
+              }
+            ]
+          },
+          "facts": {
+            "species_name": [
+              {
+                "field": "description",
+                "quote": "species names"
+              }
+            ],
+            "tank_count": [
+              {
+                "field": "description",
+                "quote": "tank counts"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical aquarium observations catalogue the taxonomy of live ornamental fish, not fresh fish intended for human consumption. Physical aquarium observations support taxonomy and tank counts, not refrigerated edible-fish spoilage; the explicit food-fish clause is negative, not positive evidence for t06. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical aquarium observations catalogue the taxonomy of live ornamental fish, not fresh fish intended for human consumption."
+          },
+          {
+            "field": "description",
+            "quote": "species names"
+          },
+          {
+            "field": "description",
+            "quote": "tank counts"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Physical aquarium observations support taxonomy and tank counts, not refrigerated edible-fish spoilage; the explicit food-fish clause is negative, not positive evidence for t06."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t037",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "42744bd05eb07e43d5176eb1bb859ba2b6f06a5c507c41edf8a5c593b915e199",
+      "canonical_record_sha256": "ad4779b857576891f82a9a76bc1be6df5638be4feb395c12b646048acda33799",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "textile_dye_wastewater",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "textile wastewater"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_decolorization_treatment",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations document removal of dye color"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations"
+              }
+            ]
+          },
+          "facts": {
+            "inlet_color_measurement": [
+              {
+                "field": "description",
+                "quote": "incoming wastewater color readings"
+              }
+            ],
+            "outlet_color_measurement": [
+              {
+                "field": "description",
+                "quote": "outgoing wastewater color readings"
+              }
+            ],
+            "electricity_consumption": [
+              {
+                "field": "description",
+                "quote": "electrical energy consumed over treatment"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions. Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions."
+          },
+          {
+            "field": "description",
+            "quote": "incoming wastewater color readings"
+          },
+          {
+            "field": "description",
+            "quote": "outgoing wastewater color readings"
+          },
+          {
+            "field": "description",
+            "quote": "electrical energy consumed over treatment"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t038",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "3239be39bc44d987d9c6aec0103ee10670a9e2cff02f2ce1486b0efe5f9509ac",
+      "canonical_record_sha256": "0a206618b5168bdd04dc22c5cc91704f9de0c6cfcce8160f6b6d06e7794b959b",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "textile_dye_wastewater",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "textile wastewater"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_decolorization_treatment",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations document removal of dye color"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations"
+              }
+            ]
+          },
+          "facts": {
+            "inlet_color_measurement": [
+              {
+                "field": "distributions.0.description",
+                "quote": "incoming wastewater color readings"
+              }
+            ],
+            "outlet_color_measurement": [
+              {
+                "field": "distributions.0.description",
+                "quote": "outgoing wastewater color readings"
+              }
+            ],
+            "electricity_consumption": [
+              {
+                "field": "distributions.0.description",
+                "quote": "electrical energy consumed over treatment"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "The entries record incoming wastewater color readings, outgoing wastewater color readings and electrical energy consumed over treatment. This downloadable table documents the fictional physical observations described by the collection; its structured companion carries the same entries, without further measurement variables."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions. Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions."
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "incoming wastewater color readings"
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "outgoing wastewater color readings"
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "electrical energy consumed over treatment"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t039",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "468fb536e86acbc951c332319750b6a4b2cb87ea4d4af2eb5a8b0a33bdc8321a",
+      "canonical_record_sha256": "0dda4bb8f99be1cc77ee5d6df7de594405b2a456cab35480ef4af1f727ec7f2e",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "textile_dye_wastewater",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "textile wastewater"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_decolorization_treatment",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations document removal of dye color"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations"
+              }
+            ]
+          },
+          "facts": {
+            "inlet_color_measurement": [
+              {
+                "field": "description",
+                "quote": "incoming wastewater color readings"
+              }
+            ],
+            "outlet_color_measurement": [
+              {
+                "field": "description",
+                "quote": "outgoing wastewater color readings"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions. Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions."
+          },
+          {
+            "field": "description",
+            "quote": "incoming wastewater color readings"
+          },
+          {
+            "field": "description",
+            "quote": "outgoing wastewater color readings"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t040",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "f8e3c5f9d23327b1ea9e18f8d9239b5f56a6cb52cc0be805aff46c9bfffbe830",
+      "canonical_record_sha256": "8e413adacd18f189f8bfe84766836de4d34b2717397a7160fcb58e93c47d373b",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "textile_dye_wastewater",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "textile wastewater"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_decolorization_treatment",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations document removal of dye color"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations"
+              }
+            ]
+          },
+          "facts": {
+            "inlet_color_measurement": [
+              {
+                "field": "description",
+                "quote": "incoming wastewater color readings"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions. Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions."
+          },
+          {
+            "field": "description",
+            "quote": "incoming wastewater color readings"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t041",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "a6dd7b5ca483105bd4faa604c535f092eceb17a52230d662923cb297ff7b9055",
+      "canonical_record_sha256": "03071a0c8f07c4e848849665705a64ee3606e4106b89d1cdc95802d5eaae7798",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "textile_dye_wastewater",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "textile dye wastewater"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_discharge_permit_accounting",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed discharge-permit accounts"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "They document administrative transactions"
+              }
+            ]
+          },
+          "facts": {
+            "permit_fee": [
+              {
+                "field": "description",
+                "quote": "permit fees"
+              }
+            ],
+            "billing_period": [
+              {
+                "field": "description",
+                "quote": "billing periods"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Observed discharge-permit accounts concern textile dye wastewater. Permit fees and billing periods are administrative fields. The explicit denial of color-removal treatment measurements excludes t07p1/t07p2/t07p3; negative treatment words are not positive observations. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Observed discharge-permit accounts concern textile dye wastewater."
+          },
+          {
+            "field": "description",
+            "quote": "permit fees"
+          },
+          {
+            "field": "description",
+            "quote": "billing periods"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Permit fees and billing periods are administrative fields. The explicit denial of color-removal treatment measurements excludes t07p1/t07p2/t07p3; negative treatment words are not positive observations."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t042",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "4568bcad19e851cc384a1ac9e8f8e34bc1b0f4128412e41044c7df15b0714a94",
+      "canonical_record_sha256": "01cf0208cdb1dc90016587647c89fc6680dee61482dd45e991d96e482a696c81",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "retail_textile_pattern",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "retail textile patterns"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_fabric_cataloging",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "cataloguing observations describe retail textile patterns"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Entries document pattern colors and retail prices."
+              }
+            ]
+          },
+          "facts": {
+            "pattern_color": [
+              {
+                "field": "description",
+                "quote": "pattern colors"
+              }
+            ],
+            "retail_price": [
+              {
+                "field": "description",
+                "quote": "retail prices"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical cataloguing observations describe retail textile patterns, rather than treatment of wastewater from fabric dyeing. A shop catalogue documents pattern colors and retail prices: its adjective Physical does not convert catalogue entries into wastewater-treatment observations. Product and process both differ from t07. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical cataloguing observations describe retail textile patterns, rather than treatment of wastewater from fabric dyeing."
+          },
+          {
+            "field": "description",
+            "quote": "pattern colors"
+          },
+          {
+            "field": "description",
+            "quote": "retail prices"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "A shop catalogue documents pattern colors and retail prices: its adjective Physical does not convert catalogue entries into wastewater-treatment observations. Product and process both differ from t07."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t043",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "35003ccc035a351f7e2f8a268422c10e4115729477fd47566918ab7940b9ca94",
+      "canonical_record_sha256": "9d763cfe0fb8ded51d5a25b1f96b37e755657d3d78c8cef0f66002d7e996bc94",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "residential_heat_pump_units",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "residential heat pump units"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_loaded_acoustic_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "facts": {
+            "sound_pressure_level_db": [
+              {
+                "field": "description",
+                "quote": "sound pressure level in decibels"
+              }
+            ],
+            "measurement_distance": [
+              {
+                "field": "description",
+                "quote": "distance from the unit to the microphone"
+              }
+            ],
+            "operating_load": [
+              {
+                "field": "description",
+                "quote": "operating load"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register. Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register."
+          },
+          {
+            "field": "description",
+            "quote": "sound pressure level in decibels"
+          },
+          {
+            "field": "description",
+            "quote": "distance from the unit to the microphone"
+          },
+          {
+            "field": "description",
+            "quote": "operating load"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t044",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "66f70701f4df360a8bdd73ea4ba7b7a0c67c7d41c5eaf8f1d595c6ccf2bd849e",
+      "canonical_record_sha256": "6f09810d5214558cde66a2697c893a34888cc41a9ce605925cfe04555b2b82f4",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "residential_heat_pump_units",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "residential heat pump units"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_loaded_acoustic_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "facts": {
+            "sound_pressure_level_db": [
+              {
+                "field": "distributions.0.description",
+                "quote": "sound pressure level in decibels"
+              }
+            ],
+            "measurement_distance": [
+              {
+                "field": "distributions.0.description",
+                "quote": "distance from the unit to the microphone"
+              }
+            ],
+            "operating_load": [
+              {
+                "field": "distributions.0.description",
+                "quote": "operating load"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "The entries record sound pressure level in decibels, distance from the unit to the microphone and operating load. This downloadable table documents the fictional physical observations described by the collection; its structured companion carries the same entries, without further measurement variables."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register. Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register."
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "sound pressure level in decibels"
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "distance from the unit to the microphone"
+          },
+          {
+            "field": "distributions.0.description",
+            "quote": "operating load"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t045",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "81bc21e4ee293f0009b9cffb230d3fbe32094024213006ab26a1b76dd7e925b2",
+      "canonical_record_sha256": "9685e263435d0dfea1e06d0be0abf2d029373a739a8d1ae04e58e1cc82bb7b4a",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "residential_heat_pump_units",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "residential heat pump units"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_loaded_acoustic_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "facts": {
+            "sound_pressure_level_db": [
+              {
+                "field": "description",
+                "quote": "sound pressure level in decibels"
+              }
+            ],
+            "measurement_distance": [
+              {
+                "field": "description",
+                "quote": "distance from the unit to the microphone"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register. Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register."
+          },
+          {
+            "field": "description",
+            "quote": "sound pressure level in decibels"
+          },
+          {
+            "field": "description",
+            "quote": "distance from the unit to the microphone"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t046",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "d5225ddd3799013d95dc5d0dc199f39472e09377cf57f504e082aa795ae90b74",
+      "canonical_record_sha256": "de2d3cebbcece735bc376178bcbc5987aeefefa07454267bca5235d967f1889e",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "residential_heat_pump_units",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "residential heat pump units"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_loaded_acoustic_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "facts": {
+            "sound_pressure_level_db": [
+              {
+                "field": "description",
+                "quote": "sound pressure level in decibels"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register. Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register."
+          },
+          {
+            "field": "description",
+            "quote": "sound pressure level in decibels"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t047",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "66e1085c8c1f83f7a655586f7fd9a65c016e81d2b742075b6622a63ed93a7f6b",
+      "canonical_record_sha256": "2dc7855744653032b16818b65b1a5b7b9ecdeef3a6c6e0139af85d50104f03d8",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "residential_heat_pump_units",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "residential heat pump units"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_purchase_cost_inventory",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "inventoried as procurement records"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "inventoried as procurement records"
+              }
+            ]
+          },
+          "facts": {
+            "purchase_price": [
+              {
+                "field": "description",
+                "quote": "purchase prices"
+              }
+            ],
+            "order_date": [
+              {
+                "field": "description",
+                "quote": "order dates"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Observed purchases of residential heat pump units are inventoried as procurement records, not acoustic tests of appliances under load. Purchase prices and order dates are not sound levels, microphone distances or loaded acoustic measurements (t08). A heat-pump product mention supplies no refrigerant chemistry (tz12). Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Observed purchases of residential heat pump units are inventoried as procurement records, not acoustic tests of appliances under load."
+          },
+          {
+            "field": "description",
+            "quote": "purchase prices"
+          },
+          {
+            "field": "description",
+            "quote": "order dates"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Purchase prices and order dates are not sound levels, microphone distances or loaded acoustic measurements (t08). A heat-pump product mention supplies no refrigerant chemistry (tz12)."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t048",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "0a0dedbf669f34cae07bfe1e90d980ffa7583cf22fd02008159f1424529832c9",
+      "canonical_record_sha256": "a3263229f293a57cd2cd7e9d11af8c2de3225c5b349f6a5274ae4bf3aa017b07",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "recorded_music",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "recorded music in a sound archive"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_sound_archive_cataloging",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed cataloguing"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed cataloguing"
+              }
+            ]
+          },
+          "facts": {
+            "recording_duration": [
+              {
+                "field": "description",
+                "quote": "recording durations"
+              }
+            ],
+            "performer_name": [
+              {
+                "field": "description",
+                "quote": "performer names"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Observed cataloguing describes recorded music in a sound archive, rather than acoustic testing of residential heat pumps. Archive entries, not acoustic appliance experiments; durations and performers are catalogue fields, not any t08 requested measurement. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Observed cataloguing describes recorded music in a sound archive, rather than acoustic testing of residential heat pumps."
+          },
+          {
+            "field": "description",
+            "quote": "recording durations"
+          },
+          {
+            "field": "description",
+            "quote": "performer names"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Archive entries, not acoustic appliance experiments; durations and performers are catalogue fields, not any t08 requested measurement."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t049",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "dbaf5cb5b94417de5bec023f2661320f15e16f4d302cf1d78f2e81f1534088b4",
+      "canonical_record_sha256": "1524dce9f55df618448a07e53ba35be36886b2451c0b96fb6519b51e858e33cc",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "acoustic_logger",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "an acoustic logger"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents an acoustic logger. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents an acoustic logger."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "QLR-260",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "QLR-260 Acoustic Logger"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t050",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "4b27e833646664d297a386b1953695f926c3e9091bbeabf071c124286edd3bc1",
+      "canonical_record_sha256": "ae2a1d312f7d932434640461fd30f0e24d60cadd8e23fabfd6891442666b96ab",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "acoustic_logger",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "an acoustic logger"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents an acoustic logger. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents an acoustic logger."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "QLR-26O",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "QLR-26O Acoustic Logger"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t051",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "bd8f55215d988b68a7651f94c6c09a3e3ad15dc4e86bf9a6da93232786e0f5c2",
+      "canonical_record_sha256": "0e62102ee20953b853fa2c284d69c43c3baf12708aa4797e2545c63597e112e4",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "acoustic_logger_microphone_component",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a microphone component for an acoustic logger"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a microphone component for an acoustic logger, not the parent unit. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a microphone component for an acoustic logger, not the parent unit."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "QLR-260 Microphone Module",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "QLR-260 Microphone Module"
+          }
+        ],
+        "interpretation": "Title names the QLR-260 Microphone Module; description explicitly says microphone component, not parent unit. QLR-260 is retained as part of the complete component designation, not treated as whole-logger identity for tx01a/tx01t."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t052",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "90347b2743be205d2e3d9a2c52ecb6188b936faf9b5dda4b9ffb36653b616555",
+      "canonical_record_sha256": "4753d2089f6541e6f61192a2e27b0b34fd2bb9cd5bfa2478eb9ca73a2608cce2",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "harbour_bathymetry_release",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a harbour bathymetry survey release"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a harbour bathymetry survey release. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a harbour bathymetry survey release."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "Harbour Survey Release 2025.1",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "Harbour Survey Release 2025.1"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t053",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "ef6b0006833064937f15aeb58ded77a6d2ec9a7c28ba83d1a7a14dd1f45bd331",
+      "canonical_record_sha256": "dfa14149c04a1248c1d7ab8f4e3be987b9941d88f55e3a3e252804a69afc3f39",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "harbour_bathymetry_release",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a harbour bathymetry survey release"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a harbour bathymetry survey release. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a harbour bathymetry survey release."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "Harbour Survey Release 2025.I",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "Harbour Survey Release 2025.I"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t054",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "7a6f04da29bf420dd2e0b550d8a89f5b450358f3efadee55d46ed799a8e611a8",
+      "canonical_record_sha256": "2c20f34ac398d890b6c83cb000deb7847bc75abf5935b5cb59d36050b82068dc",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "harbour_bathymetry_release",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a harbour bathymetry survey release"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a harbour bathymetry survey release. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a harbour bathymetry survey release."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "Harbour Survey Release 2025.2",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "Harbour Survey Release 2025.2"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t055",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "fc0378ee5fda559eb5d03a099209d43e04cfe7707c4a978a588aeadf5eaf2078",
+      "canonical_record_sha256": "b8176b1cbb44d18ec22fabd3774f255148162cc65e986c817acae0c180462578",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "ventilation_fan_component",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a ventilation fan component"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "This downloadable identity table identifies a ventilation fan component by the code VNT-410. It represents the fictional observed register described by the dataset, not a performance test or an assertion about real holdings."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a ventilation fan component. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a ventilation fan component."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "VNT-410",
+        "evidence": [
+          {
+            "field": "distributions.0.description",
+            "quote": "by the code VNT-410."
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t056",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "317c2787f970ad2ca3cc146c6943d2e9c7e87e7f137061ea5e8bca0e02a66ff2",
+      "canonical_record_sha256": "4d088279a9e202a00fe48cbb50c415c3fa01879d54631dd7ca9224c4efb45f34",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "ventilation_fan_component",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a ventilation fan component"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "This downloadable identity table identifies a ventilation fan component by the code VNT-41O. It represents the fictional observed register described by the dataset, not a performance test or an assertion about real holdings."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a ventilation fan component. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a ventilation fan component."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "VNT-41O",
+        "evidence": [
+          {
+            "field": "distributions.0.description",
+            "quote": "by the code VNT-41O."
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t057",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "c5725c865776aacbc39ee5ff0d9b74216ef5e21aae5a0d8327fafdfb451124cf",
+      "canonical_record_sha256": "917e2d1a56e0ef5bfd99ce7dd9904b4e472b88a4c66b2445f823f43317c9bebd",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "ventilation_seal_kit",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a ventilation seal kit"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "This downloadable identity table identifies a ventilation seal kit, not a fan component by the code VNT-410-SEAL. It represents the fictional observed register described by the dataset, not a performance test or an assertion about real holdings."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a ventilation seal kit, not a fan component. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a ventilation seal kit, not a fan component."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "VNT-410-SEAL",
+        "evidence": [
+          {
+            "field": "distributions.0.title",
+            "quote": "VNT-410-SEAL component register"
+          }
+        ],
+        "interpretation": "Nested title explicitly supplies VNT-410-SEAL; root description identifies a seal kit, not fan component. Root exact-title navigation Ventilation Seal Kit Register is distinct from this nested code. VNT-410 prefix does not identify this kit as the VNT-410 fan."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t058",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "d7e9a0610e9dd25f28605e555a53120bf927eca0011caec2df27078e7852ca5f",
+      "canonical_record_sha256": "edaa8bddfd5d18ec027cc813e4d42ca6b6c2f1e5bc6ab8721d06095999b558af",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "thermal_meter",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a thermal meter"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a thermal meter. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a thermal meter."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "TRM-720",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "TRM-720"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t059",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "5dc2c4be13ecfdd2ca5a127f83a2836623a0ed2c951d417f0ee5fdab985c015b",
+      "canonical_record_sha256": "d43bcec2688217265287c7450254843ae8fa975fb255ff7949f48d995166c5e7",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "thermal_meter",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a thermal meter"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a thermal meter. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a thermal meter."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "TRM-72O",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "TRM-72O"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t060",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "raw_record_sha256": "1344d04de9351b258e5416ad1a9958154817c183cf588c1ce53c771b6fc4d10f",
+      "canonical_record_sha256": "a559e790cea2fa366ea2325c2af39f396a23a948eaad5dd069120866d63ecd53",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "thermal_meter",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a thermal meter"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_identity_register",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ]
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "This identity register documents a thermal meter. The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "This identity register documents a thermal meter."
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "The table is an item/release identity register, explicitly not operating measurements. A product/topic name does not establish physical trials, hydrographic measurements, isotope ratios or earthquake hypocenters.",
+      "identity": {
+        "value": "TRM-7200",
+        "evidence": [
+          {
+            "field": "title",
+            "quote": "TRM-7200 Thermal Meter"
+          }
+        ],
+        "interpretation": "Registered item/release identity, not the structural dataset identifier. Exact glyphs, complete item name, version and component scope are retained; no prefix alias is inferred."
+      }
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g11-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "bfa5053acfb6e858b995e645418204e4129c909be6dcbe43467340af5e8f428c",
+      "canonical_record_sha256": "d5397fed595b567be0fc912ff3f5c3f2ffa62d0a1407161139e1e3654947da4f",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "electric_vehicle_battery_cells",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "individual rechargeable battery cells intended for electric vehicles"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_repeated_cycle_aging",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "aging during repeated charge and discharge"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Bench observations"
+              }
+            ]
+          },
+          "facts": {
+            "remaining_capacity": [
+              {
+                "field": "description",
+                "quote": "retained usable electrical capacity of each cell"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Bench observations follow individual rechargeable battery cells intended for electric vehicles through aging during repeated charge and discharge. Only usable cell capacity is listed. Repeated charge/discharge establishes the process, not a cycle-count measurement; no temperature column is documented. Release year/month is metadata, not a measurement timestamp. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Bench observations follow individual rechargeable battery cells intended for electric vehicles through aging during repeated charge and discharge."
+          },
+          {
+            "field": "description",
+            "quote": "retained usable electrical capacity of each cell"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Only usable cell capacity is listed. Repeated charge/discharge establishes the process, not a cycle-count measurement; no temperature column is documented. Release year/month is metadata, not a measurement timestamp."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g12-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "39d17140d4cd4ec0dfbb55d12fcefff2f15331dfc86c7b425797a26e1e5ff09d",
+      "canonical_record_sha256": "c63ea0ba9bf6a0bf9db335a03ef096f4f2cbf8454916dbefe8756e9a838b8dd5",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "migratory_birds",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "migratory birds"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_nighttime_radar_tracking",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Radar radio echoes are used to observe migratory birds passing after dark"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "the entries describe actual passages"
+              }
+            ]
+          },
+          "facts": {
+            "flight_height_above_local_ground": [
+              {
+                "field": "description",
+                "quote": "flight height above local ground"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Radar radio echoes are used to observe migratory birds passing after dark; the entries describe actual passages rather than simulated flights. Height is explicitly above local ground; passage count and individual passage clock time are not documented. Metadata release: 2010, month 1 is a release marker, not per-passage time, so it cannot supply the missing t04 clock fact. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Radar radio echoes are used to observe migratory birds passing after dark; the entries describe actual passages rather than simulated flights."
+          },
+          {
+            "field": "description",
+            "quote": "flight height above local ground"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Height is explicitly above local ground; passage count and individual passage clock time are not documented. Metadata release: 2010, month 1 is a release marker, not per-passage time, so it cannot supply the missing t04 clock fact."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g13-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "94620f1e5123c91385e58ca4b4f33d3fbc645b4b52daa048dcbed6e66cc73429",
+      "canonical_record_sha256": "c0a46f478de1e8019525dca931bcdb42bea032fca1f2f20a116b0c7de264e0f6",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "public_bus_stop_boarding_points",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "boarding points of public road bus stops"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_wheelchair_access_audit",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Field inspections audit wheelchair access"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Field inspections"
+              }
+            ]
+          },
+          "facts": {
+            "boarding_gap": [
+              {
+                "field": "description",
+                "quote": "gap between bus and boarding platform"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Field inspections audit wheelchair access at boarding points of public road bus stops, rather than stops for other transport modes. Only boarding gap is documented, not approach slope or clear width. Public-bus boarding access observations do not document driver payroll/pension contributions (tz10). Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Field inspections audit wheelchair access at boarding points of public road bus stops, rather than stops for other transport modes."
+          },
+          {
+            "field": "description",
+            "quote": "gap between bus and boarding platform"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Only boarding gap is documented, not approach slope or clear width. Public-bus boarding access observations do not document driver payroll/pension contributions (tz10)."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g14-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "196ee1970f0a1dc5da34e6a620d85ba7a97ba07afac8596ed5619f96cf29c60f",
+      "canonical_record_sha256": "86a30349d3b9f380f6fc555550f59d50528155c66cd757689beef9c65e127adf",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "fresh_fish_for_human_consumption",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fresh fish intended for people to eat"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_refrigerated_spoilage_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical refrigerated-storage tests follow spoilage"
+              }
+            ]
+          },
+          "facts": {
+            "storage_temperature": [
+              {
+                "field": "description",
+                "quote": "storage temperature"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals. Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical refrigerated-storage tests follow spoilage of fresh fish intended for people to eat, rather than live ornamental animals."
+          },
+          {
+            "field": "description",
+            "quote": "storage temperature"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Only the explicitly listed storage variables are supported; food-fish spoilage is not fossil dating. No bacterial count is inferred when absent."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g15-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "5e3be9de1386f8cdba16ed77bed74e82f6e0105c07d5883b72aebd569d71e5f3",
+      "canonical_record_sha256": "e68435a7b6d1778e7be7d77f7ccafeecc0b2216c4a60d0e2854dd9ffbdfdd5ff",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "textile_dye_wastewater",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "textile wastewater"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_decolorization_treatment",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations document removal of dye color"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical treatment observations"
+              }
+            ]
+          },
+          "facts": {
+            "inlet_color_measurement": [
+              {
+                "field": "description",
+                "quote": "incoming wastewater color readings"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions. Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical treatment observations document removal of dye color from textile wastewater, rather than accounting for discharge permissions."
+          },
+          {
+            "field": "description",
+            "quote": "incoming wastewater color readings"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Color-removal observations only; integrated electrical energy is supported only where expressly listed, not inferred from treatment or from a title."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g16-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "7618847385cb321150bfb7a4c0ea14acfdbb9781444e113475441fba2c3989dc",
+      "canonical_record_sha256": "e5bc7626a21ed85055db9f87f273f91d503956c075ad414430dc623fbdd716bc",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "residential_heat_pump_units",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "residential heat pump units"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_loaded_acoustic_testing",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical acoustic tests"
+              }
+            ]
+          },
+          "facts": {
+            "sound_pressure_level_db": [
+              {
+                "field": "description",
+                "quote": "sound pressure level in decibels"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register. Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical acoustic tests examine residential heat pump units while they operate under load, rather than a purchase register."
+          },
+          {
+            "field": "description",
+            "quote": "sound pressure level in decibels"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Loaded operation establishes the test setting, not a documented operating-load variable unless that variable is expressly recorded. Acoustic tests do not document refrigerant ozone chemistry."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g17-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "3d669a575c228bec83f8f3a2d6034c37b141605a8805551c451441663f7a4a67",
+      "canonical_record_sha256": "f664f6c3559631cbe400fe887cc701ffb8c280aa8196701bf0b904b211c0e358",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "musical_pipe_organ",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a musical pipe organ"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_instrument_tuning",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical tuning observations"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical tuning observations"
+              }
+            ]
+          },
+          "facts": {
+            "musical_pitch": [
+              {
+                "field": "description",
+                "quote": "musical pitch"
+              }
+            ],
+            "pipe_length": [
+              {
+                "field": "description",
+                "quote": "pipe lengths"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical tuning observations concern a musical pipe organ, not a municipal water network or leakage investigation. Organ tuning pitch and pipe lengths have neither potable-network leak measurements (t01) nor pipe-tobacco taxation (tz07); the noun pipe does not establish either need. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical tuning observations concern a musical pipe organ, not a municipal water network or leakage investigation."
+          },
+          {
+            "field": "description",
+            "quote": "musical pitch"
+          },
+          {
+            "field": "description",
+            "quote": "pipe lengths"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Organ tuning pitch and pipe lengths have neither potable-network leak measurements (t01) nor pipe-tobacco taxation (tz07); the noun pipe does not establish either need."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g18-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "c03329f289a73f1275c3e20c7c7bf08b618e7d66d3a5f06fa557f741cf0d1a63",
+      "canonical_record_sha256": "e1b09f8a7a817b53f3c839a609a1924162dedc4f086f5e55bf0c705fdb1b151c",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": false,
+      "contexts": [
+        {
+          "product": {
+            "value": "software_syntax_tree",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "software syntax trees"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_parser_performance",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed parser runs"
+              }
+            ]
+          },
+          "basis": {
+            "value": "U",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed parser runs"
+              }
+            ]
+          },
+          "facts": {
+            "parse_duration": [
+              {
+                "field": "description",
+                "quote": "parse duration"
+              }
+            ],
+            "node_count": [
+              {
+                "field": "description",
+                "quote": "node counts"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Observed parser runs process software syntax trees, not living street trees or measurements of shaded air. These are actual computational execution observations, not a physical shade experiment or an administrative catalogue. Parse duration and node count do not answer street-tree microclimate (t02), apple pesticide residues (tz08), or any other negative need. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Observed parser runs process software syntax trees, not living street trees or measurements of shaded air."
+          },
+          {
+            "field": "description",
+            "quote": "parse duration"
+          },
+          {
+            "field": "description",
+            "quote": "node counts"
+          }
+        ]
+      },
+      "issues": [
+        {
+          "code": "computational_measurement_basis_not_represented",
+          "affected_query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ],
+          "detail": "Observed parser runs genuinely document computational performance. The allowed basis enum has no exact observed-computational category; observed_not_simulated is defined as physical/experimental observation and must not silently imply physical field trials here. Basis retained U pending explicit classification, with parse_duration/node_count supported. Product/process mismatch with living street trees is independently clear; U is not automatic numeric zero.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "Observed parser runs process software syntax trees"
+            },
+            {
+              "field": "description",
+              "quote": "Entries document parse duration and node counts."
+            }
+          ]
+        }
+      ],
+      "documented_scope_limitations": "These are actual computational execution observations, not a physical shade experiment or an administrative catalogue. Parse duration and node count do not answer street-tree microclimate (t02), apple pesticide residues (tz08), or any other negative need."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g19-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "c0e4e181b6e324839c4a56eb183ea11fbb7ba2ad6b602f42085f3de6caf56498",
+      "canonical_record_sha256": "cbf8b985d9d8b3924a36ba088c234b24776968166301a68c24245265d653637b",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "computer_bus",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a computer bus"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_digital_signal_tests",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical digital-signal tests"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_not_simulated",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Physical digital-signal tests"
+              }
+            ]
+          },
+          "facts": {
+            "signal_voltage": [
+              {
+                "field": "description",
+                "quote": "signal voltage"
+              }
+            ],
+            "transfer_frequency": [
+              {
+                "field": "description",
+                "quote": "transfer frequency"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Physical digital-signal tests examine a computer bus, not passenger boarding points for public road transport. Signal voltage and transfer frequency describe electronic bus testing, not road-bus boarding accessibility (t05) or bus-driver payroll/pensions (tz10). Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Physical digital-signal tests examine a computer bus, not passenger boarding points for public road transport."
+          },
+          {
+            "field": "description",
+            "quote": "signal voltage"
+          },
+          {
+            "field": "description",
+            "quote": "transfer frequency"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Signal voltage and transfer frequency describe electronic bus testing, not road-bus boarding accessibility (t05) or bus-driver payroll/pensions (tz10)."
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g20-r001",
+      "reviewer_id": "audit-38871-2",
+      "source_path": ".local/stage-one-v2/growth-38871.jsonl",
+      "raw_record_sha256": "7882d69dfe304c008979f43e7adcc1c32766bcaa9ab19b1676bbe7db183c3f48",
+      "canonical_record_sha256": "9bbbe8496dec6560f55db0ac475e630d4ec8dd3765946287ebedc7b8e12fe494",
+      "exhaustive_searchable_review": true,
+      "semantic_review_passed": true,
+      "contexts": [
+        {
+          "product": {
+            "value": "recorded_music",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "recorded music in a sound archive"
+              }
+            ]
+          },
+          "process": {
+            "value": "observed_sound_archive_cataloging",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed cataloguing"
+              }
+            ]
+          },
+          "basis": {
+            "value": "observed_administrative_records",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed cataloguing"
+              }
+            ]
+          },
+          "facts": {
+            "recording_duration": [
+              {
+                "field": "description",
+                "quote": "recording durations"
+              }
+            ],
+            "performer_name": [
+              {
+                "field": "description",
+                "quote": "performer names"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "value": "CSV",
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            },
+            {
+              "value": "JSON",
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "negative_absence": {
+        "checked_intents": [
+          "tz01",
+          "tz02",
+          "tz03",
+          "tz04",
+          "tz05",
+          "tz06",
+          "tz07",
+          "tz08",
+          "tz09",
+          "tz10",
+          "tz11",
+          "tz12"
+        ],
+        "absent_all": true,
+        "rationale": "Observed cataloguing describes recorded music in a sound archive, rather than acoustic testing of residential heat pumps. Archive entries, not acoustic appliance experiments; durations and performers are catalogue fields, not any t08 requested measurement. Both primary metadata and every distribution were checked; file formats are representations, not extra observations. No glacier/ash isotope observations (tz01), parliamentary votes (tz02), galaxy spectra (tz03), pottery firing dates (tz04), protein atomic coordinates (tz05), earthquake hypocenters (tz06), tobacco excise receipts (tz07), apple pesticide residues (tz08), criminal sentencing (tz09), driver payroll/pensions (tz10), fossil radiocarbon dates (tz11), or refrigerant ozone chemistry (tz12) are documented, including useful partial content for those requested needs.",
+        "evidence": [
+          {
+            "field": "description",
+            "quote": "Observed cataloguing describes recorded music in a sound archive, rather than acoustic testing of residential heat pumps."
+          },
+          {
+            "field": "description",
+            "quote": "recording durations"
+          },
+          {
+            "field": "description",
+            "quote": "performer names"
+          }
+        ]
+      },
+      "issues": [],
+      "documented_scope_limitations": "Archive entries, not acoustic appliance experiments; durations and performers are catalogue fields, not any t08 requested measurement."
+    }
+  ],
+  "review_scope": {
+    "manual_actual_text_records": 40,
+    "core_records": 30,
+    "growth_representatives": 10,
+    "reused_reviews": 0,
+    "all_indexed_fields_read": true,
+    "lossless_chunk_reconstruction": "Exact concatenation with no separator. Every line/chunk was read; only mechanically verified duplicated production queryContext omitted in supplied packet.",
+    "limits": "Assigned seed 38871 only: t031 through t060 and g11-r001 through g20-r001. No other seeds, full growth population, cross-seed prose independence, retrieval, ranking, expected labels, or grammar closure certified. Formats verified as actual metadata content associations, not external download bytes. No engine/model/backend calls. Existing legacy U and incomplete diagnostic status untouched."
+  },
+  "scoped_findings": [
+    {
+      "code": "repeated_boilerplate_and_correlated_prose",
+      "detail": "Assigned records repeatedly use identical Tabular collection/Structured collection distribution names, representation-only distribution prose, fictional-provenance disclaimer, and empty keyword arrays. Related fish/treatment/acoustic records repeat scope clauses; root/nested alternatives change measurement placement rather than establish independent studies. Growth representatives share Station 001 and release metadata. These are scoped naturalness/correlation findings, not evidence of independent phenomena or a semantic failure by themselves. No cross-seed judgment made."
+    }
+  ],
+  "query_review_scope": {
+    "queries_read": 50,
+    "explicit_intent_criteria_read": 34,
+    "semantic_constraints": "Product, process, observed basis and only expressly documented variable facts govern t01-t08. No unstated spatial, date, instrument, file-format, causal-shade, vehicle-subtype or acoustic-weighting restrictions applied. Per-reading/per-passage clock variables are not release year/month. A loaded test setting is not itself a recorded load variable.",
+    "exact_constraints": "Stable complete item/component/release identities retain O/0 and I/1 distinctions. Root navigation title and nested item identity are distinct evidence types; structural dataset IDs and URL paths are not item identity.",
+    "negative_constraints": "All twelve named negative predicates checked against every assigned full field bundle, including useful partial answers and nested content; domain nouns alone do not establish them.",
+    "ambiguity_policy": "td01 plant and td02 charge remain ungraded U; no numeric grades emitted and no legacy U cleared."
+  },
+  "mechanical_validation": {
+    "assigned_unique_pairs": 40,
+    "source_file_sha256_verified": true,
+    "all_assigned_raw_row_lf_hashes_verified": true,
+    "all_assigned_canonical_hashes_verified": true,
+    "all_assigned_packet_fields_match_actual_source_except_verified_duplicated_queryContext": true,
+    "literal_citations_verified": 416,
+    "all_citation_paths_and_substrings_verified": true,
+    "method": "Independent Python standard-library checker; no generator code/imports, expected maps/grades, other reviews or retrieval data."
+  }
+}

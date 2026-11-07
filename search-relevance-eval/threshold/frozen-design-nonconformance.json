@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status": "strict_fixture_conformance_failed",
+  "pre_retrieval": true,
+  "actual_text_validation_passed": false,
+  "original_structural_review_preserved": true,
+  "finding": "C missed an unsatisfiable frozen exact-identity placement requirement during structural preflight. The original hash-bound structural-pass record remains unchanged; this later finding is not a silent amendment or metadata repair.",
+  "spec_freeze_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e",
+  "spec_sha256": {
+    "protocol.md": "150cab6c05b4e9a88730491f4132a6e33d494e2b22e573ee0128f62534e8d2f2",
+    "query-spec.jsonl": "803bb51de8ca57fc4a5d95915f52f060a6d8eaacd99d97aee9593afc20cf18eb",
+    "intents.jsonl": "7c2ed0e8a17d5502f5dc5c2b25bb43921efa64a95785154b78581e1482e19d61",
+    "generation-spec.json": "c3db25ab0cccf20ba1cb15829175e73316568fdb3174a5a920a30bedfbaf517d",
+    "relevance-rubric.md": "dd04a84bccdfb89b1b3c22ae90e6185e9b9e22a3957dc038687df4fc4a32bed0",
+    "decision-gates.json": "720b93e4461b46c38e2bff26f1fe60de6b4b76c88d26c39af89924a19c8b093f",
+    "design-notes.md": "1b2e159ef1bd881a7e0041136bd385fea512d9f1b256db4d338ab86cddfdac8b"
+  },
+  "affected_record_id": "t051",
+  "affected_seeds": [38871, 38872, 38873],
+  "frozen_contradiction": {
+    "source": "generation-spec.json",
+    "claim_set_reference_for_audit_not_new_truth": "c051",
+    "identity": "QLR-260-MIC",
+    "required_exact_title": "QLR-260 Microphone Module",
+    "identity_scope": "primary_identity",
+    "primary_identity_rule_quote": "Identity in title; description may naturally restate at most once; no other record asserts this item as its identity.",
+    "reason": "The required literal title omits the required full item code, while primary_identity separately demands that code in the title. No actual title can equal the frozen required title and contain the full registered item identity. The component-reference rule does not state an override and must not be silently reinterpreted to waive this contradiction."
+  },
+  "actual_sources": [
+    {"seed": 38871, "path": ".local/stage-one-v2/core-38871.jsonl", "sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a"},
+    {"seed": 38872, "path": ".local/stage-one-v2/core-38872.jsonl", "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"},
+    {"seed": 38873, "path": ".local/stage-one-v2/core-38873.jsonl", "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"}
+  ],
+  "actual_evidence": [
+    {"seed": 38871, "field": "title", "quote": "QLR-260 Microphone Module"},
+    {"seed": 38872, "field": "title", "quote": "QLR-260 Microphone Module"},
+    {"seed": 38873, "field": "title", "quote": "QLR-260 Microphone Module"},
+    {"seed": 38871, "field": "description", "quote": "Its title and file documentation identify the registered item; similar-looking codes do not establish interchangeability."},
+    {"seed": 38872, "field": "description", "quote": "Consult the title together with the attached file documentation for the item represented."},
+    {"seed": 38873, "field": "description", "quote": "The release identifies the item through its title and attached documentation, rather than supplying a performance study."}
+  ],
+  "actual_code_absence": {
+    "full_item_code": "QLR-260-MIC",
+    "absent_from_all_searchable_fields_all_three_seeds": true,
+    "checked_fields": "Full title, description, keywords, publisher.name, production root queryContext, every nested title/description/format/queryContext. Distribution URLs/structural IDs are not identity evidence.",
+    "finding": "Actual descriptions defer identity evidence to the title and attached documentation, but both the primary and generic nested metadata omit the full registered component code. Do not invent or supply that code as a manual observation."
+  },
+  "label_scope": {
+    "do_not_change_query_or_qrels": true,
+    "do_not_infer_all_semantic_labels_unknown": true,
+    "explanation": "t051 is a registered near-identity control, not an authoritative target of any current exact query. Its objective non-target labels may independently remain certain, but that possibility does not make frozen fixture conformance pass or certify the absent item code. Fresh240 actual reviews must independently report only supported observations."
+  },
+  "disposition": {
+    "strict_stage_one_must_reject": true,
+    "metadata_or_frozen_spec_repair_authorized": false,
+    "silent_component_exception_allowed": false,
+    "promotion_allowed": false,
+    "embeddings_or_retrieval_authorized": false,
+    "possible_future_diagnostic_scope": "Only after complete independent actual-label evidence, main may separately consider a clearly nonpromotional, forced-D engineering replay with this nonconformance disclosed. This finding alone grants no bypass or execution permission.",
+    "legacy_U_unchanged": true
+  }
+}

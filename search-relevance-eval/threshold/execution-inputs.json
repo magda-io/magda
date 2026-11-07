@@ -1,0 +1,315 @@
+{
+  "additional_closed_boundary_control": {
+    "completed_report": "search-relevance-eval/threshold/results/cutoff-boundary-attempt2.json",
+    "completed_status": "failed",
+    "interior_admission_status": "passed",
+    "native_script_half_equals_half_both_roles": true,
+    "observation": "Exact native0.50 boundary was excluded at cutoff0.50; inclusive expectation remains failed. Full fixed-cell characterization must finish and interior controls must be inspected before any timed target sweep. No semantic/model outcome used.",
+    "observed_behavior": "Both exact-score0.50 controls were excluded by radial0.50; every fixed interior admission matched at all7 thresholds/2roles. No cause, mathematical inclusivity or exact HNSW guarantee inferred. Failed expectations remain explicit; this study cannot promote.",
+    "original_report": "search-relevance-eval/threshold/results/cutoff-boundary.json",
+    "original_status": "failed"
+  },
+  "cases": [
+    {
+      "catalog_size": 60,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n60.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38871-n60",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38871
+    },
+    {
+      "catalog_size": 1000,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n1000.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38871-n1000",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38871
+    },
+    {
+      "catalog_size": 2000,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n2000.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38871-n2000",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38871
+    },
+    {
+      "catalog_size": 60,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n60.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38872-n60",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38872
+    },
+    {
+      "catalog_size": 1000,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n1000.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38872-n1000",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38872
+    },
+    {
+      "catalog_size": 2000,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n2000.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38872-n2000",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38872
+    },
+    {
+      "catalog_size": 60,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n60.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38873-n60",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38873
+    },
+    {
+      "catalog_size": 1000,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n1000.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38873-n1000",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38873
+    },
+    {
+      "catalog_size": 2000,
+      "cohort": "NEW",
+      "corpus": "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n2000.jsonl",
+      "index": "magda-relevance-eval-threshold3887-new-38873-n2000",
+      "queries": "search-relevance-eval/threshold/query-spec.jsonl",
+      "seed": 38873
+    },
+    {
+      "catalog_size": 180,
+      "cohort": "LEGACY",
+      "corpus": "search-relevance-eval/synthetic/.local/corpora-v4/seed-39031.jsonl",
+      "index": "magda-relevance-eval-threshold3887-legacy-39031",
+      "queries": "search-relevance-eval/synthetic/query-spec.jsonl",
+      "reuse_embedded_corpus": "search-relevance-eval/synthetic/.local/execution/39031/embedded-corpus.jsonl",
+      "reuse_embedded_queries": "search-relevance-eval/synthetic/.local/execution/39031/embedded-queries.jsonl",
+      "reuse_embedding": {
+        "corpus_sha256": "27a9a379e371d66448d7ece818e469b7c76507b96313e18bca794f79327e79bb",
+        "dimension": 768,
+        "image_digest": "sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec",
+        "model": "Alibaba-NLP/gte-base-en-v1.5",
+        "provenance": [
+          "search-relevance-eval/synthetic/results/vector-provenance.json",
+          "search-relevance-eval/synthetic/results/preparation.json",
+          "search-relevance-eval/synthetic/results/execution-audit.json",
+          "search-relevance-eval/synthetic/results/image-provenance.json"
+        ],
+        "queries_sha256": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c"
+      },
+      "seed": 39031
+    },
+    {
+      "catalog_size": 180,
+      "cohort": "LEGACY",
+      "corpus": "search-relevance-eval/synthetic/.local/corpora-v4/seed-39032.jsonl",
+      "index": "magda-relevance-eval-threshold3887-legacy-39032",
+      "queries": "search-relevance-eval/synthetic/query-spec.jsonl",
+      "reuse_embedded_corpus": "search-relevance-eval/synthetic/.local/execution/39032/embedded-corpus.jsonl",
+      "reuse_embedded_queries": "search-relevance-eval/synthetic/.local/execution/39032/embedded-queries.jsonl",
+      "reuse_embedding": {
+        "corpus_sha256": "6aa76b15390ffe9e7fb86f8d99e41521cf5dabe6f3bd50c334e3dc1b9e67f955",
+        "dimension": 768,
+        "image_digest": "sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec",
+        "model": "Alibaba-NLP/gte-base-en-v1.5",
+        "provenance": [
+          "search-relevance-eval/synthetic/results/vector-provenance.json",
+          "search-relevance-eval/synthetic/results/preparation.json",
+          "search-relevance-eval/synthetic/results/execution-audit.json",
+          "search-relevance-eval/synthetic/results/image-provenance.json"
+        ],
+        "queries_sha256": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c"
+      },
+      "seed": 39032
+    },
+    {
+      "catalog_size": 180,
+      "cohort": "LEGACY",
+      "corpus": "search-relevance-eval/synthetic/.local/corpora-v4/seed-39033.jsonl",
+      "index": "magda-relevance-eval-threshold3887-legacy-39033",
+      "queries": "search-relevance-eval/synthetic/query-spec.jsonl",
+      "reuse_embedded_corpus": "search-relevance-eval/synthetic/.local/execution/39033/embedded-corpus.jsonl",
+      "reuse_embedded_queries": "search-relevance-eval/synthetic/.local/execution/39033/embedded-queries.jsonl",
+      "reuse_embedding": {
+        "corpus_sha256": "81d96f6406cffc6f6c8be84f3f7ace60c5d09336f3384f02f47700a0fe33d269",
+        "dimension": 768,
+        "image_digest": "sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec",
+        "model": "Alibaba-NLP/gte-base-en-v1.5",
+        "provenance": [
+          "search-relevance-eval/synthetic/results/vector-provenance.json",
+          "search-relevance-eval/synthetic/results/preparation.json",
+          "search-relevance-eval/synthetic/results/execution-audit.json",
+          "search-relevance-eval/synthetic/results/image-provenance.json"
+        ],
+        "queries_sha256": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c"
+      },
+      "seed": 39033
+    },
+    {
+      "catalog_size": 494,
+      "cohort": "REAL",
+      "corpus": "search-relevance-eval/threshold/.local/reused-real/corpus.jsonl",
+      "index": "magda-relevance-eval-threshold3887-real-3901",
+      "queries": "search-relevance-eval/queries.jsonl",
+      "relevance_scope": "Additional observations only; unjudged is not irrelevant and exhaustive primary recall is unavailable.",
+      "reuse_embedded_corpus": "search-relevance-eval/.local/embedded-corpus.jsonl",
+      "reuse_embedded_queries": "search-relevance-eval/.local/embedded-queries.jsonl",
+      "reuse_embedding": {
+        "corpus_sha256": "80862a1ef9b1d4eadc039ca8f6410b3b32b4d7b428581fcbf8baa6dac88cff65",
+        "dimension": 768,
+        "image_digest": "sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec",
+        "model": "Alibaba-NLP/gte-base-en-v1.5",
+        "provenance": [
+          "search-relevance-eval/results/pilot/reproduction-bundle.json",
+          "search-relevance-eval/results/pilot/environment.json"
+        ],
+        "queries_sha256": "84c8c613bcf4e494ef42ba06aacaf8c998203485fa69e90b85adc1f30bfddaca"
+      },
+      "seed": 3901
+    }
+  ],
+  "correctness_report": "search-relevance-eval/threshold/results/correctness-attempt2.json",
+  "created_utc": "2026-11-07T23:51:51.542015+00:00",
+  "diagnostic_policy": "search-relevance-eval/threshold/diagnostic-execution-policy.json",
+  "diagnostic_policy_sha256": "9e8ef53a8414ffc1d1271c25c23a0890dcf25621a65c3d76e97bd45b6c44a771",
+  "embedding_runtime_provenance": [
+    "search-relevance-eval/threshold/results/pre-embedding-runtime.json"
+  ],
+  "fixture_conformance_passed": false,
+  "independent_actual_label_evidence_complete": true,
+  "label_evidence_scope": "NEW all known/U pairs plus unchanged LEGACY known/U; REAL is a separate limited-coverage unjudged snapshot, not exhaustively relevance-validated.",
+  "legacy_validation_manifest": "search-relevance-eval/synthetic/diagnostic-validation.json",
+  "mixed_role_pairs": [
+    [
+      0.5,
+      0.5
+    ],
+    [
+      0.45,
+      0.45
+    ],
+    [
+      0.45,
+      0.5
+    ],
+    [
+      0.5,
+      0.45
+    ]
+  ],
+  "new_validation_manifest": "search-relevance-eval/threshold/diagnostic-validation-manifest.json",
+  "original_strict_conformance_failed": true,
+  "pre_retrieval": true,
+  "real_bundle_manifest": "search-relevance-eval/results/pilot/reproduction-bundle.json",
+  "schema_version": 1,
+  "sealed_utc": "2026-11-07T23:55:40.457804+00:00",
+  "source_sha256": {
+    "search-relevance-eval/.local/embedded-corpus.jsonl": "80862a1ef9b1d4eadc039ca8f6410b3b32b4d7b428581fcbf8baa6dac88cff65",
+    "search-relevance-eval/.local/embedded-queries.jsonl": "84c8c613bcf4e494ef42ba06aacaf8c998203485fa69e90b85adc1f30bfddaca",
+    "search-relevance-eval/evaluate.py": "3fbe5baf362696ff0f310f1ac0a6468ee857ce0ccbb47f0d569c3b6907ed5cc6",
+    "search-relevance-eval/queries.jsonl": "63894b9559ead64e408e01df41e3f515ccf3e8b82add5b93b6601f963b5450b3",
+    "search-relevance-eval/results/pilot/environment.json": "2359d9625e00e35ccc7e997b1a19c4d8251e744a8beaf7d90a91c0613cc69274",
+    "search-relevance-eval/results/pilot/reproduction-bundle.json": "854a6584d22a5ee62dc74a7db099521c07879e8dbba8add21ed068384470ed00",
+    "search-relevance-eval/run.py": "04b3732b36f8de1d0a0c2ee490b4d8932187a412c9ee436ee9ff25a999aa7d8f",
+    "search-relevance-eval/scala/ExportBaselineRequests.scala": "33ec8e051055176fb6fd2bb81fd85bcc62e2d655d7af47c6251e1520e16f3e68",
+    "search-relevance-eval/synthetic/.local/corpora-v4/seed-39031.jsonl": "695b0555461190137fec1f94ba7bd55bdfb648a097139314a75fd0b0188bcb60",
+    "search-relevance-eval/synthetic/.local/corpora-v4/seed-39032.jsonl": "cd93fd6d0d9f63f229dddb05288520f43c9e6aad15a5d2d5220a6e1bc7149805",
+    "search-relevance-eval/synthetic/.local/corpora-v4/seed-39033.jsonl": "70b729839cdce4c84bde293a70885c881e017106a8f9ae932fa28aa3c55db88a",
+    "search-relevance-eval/synthetic/.local/execution/39031/embedded-corpus.jsonl": "27a9a379e371d66448d7ece818e469b7c76507b96313e18bca794f79327e79bb",
+    "search-relevance-eval/synthetic/.local/execution/39031/embedded-queries.jsonl": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c",
+    "search-relevance-eval/synthetic/.local/execution/39032/embedded-corpus.jsonl": "6aa76b15390ffe9e7fb86f8d99e41521cf5dabe6f3bd50c334e3dc1b9e67f955",
+    "search-relevance-eval/synthetic/.local/execution/39032/embedded-queries.jsonl": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c",
+    "search-relevance-eval/synthetic/.local/execution/39033/embedded-corpus.jsonl": "81d96f6406cffc6f6c8be84f3f7ace60c5d09336f3384f02f47700a0fe33d269",
+    "search-relevance-eval/synthetic/.local/execution/39033/embedded-queries.jsonl": "8a792e79fff51bd5d068b81923a0f170da60c994c18207630bf503c933d4a37c",
+    "search-relevance-eval/synthetic/auditoutputs/diagnostic-uncertainty-mask-v1.jsonl": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+    "search-relevance-eval/synthetic/diagnostic-qrels.jsonl": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38",
+    "search-relevance-eval/synthetic/diagnostic-validation.json": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f",
+    "search-relevance-eval/synthetic/generation-spec.json": "11208fc8d07d3f6d6821ce3c403946950961411336834ae8b22dd95f05a47b2e",
+    "search-relevance-eval/synthetic/production-baseline-source.json": "97ba128bb2421515d9c5e8aa9a425f8f82648e00cfd2c3e21b37bfa5c09c99e4",
+    "search-relevance-eval/synthetic/query-spec.jsonl": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+    "search-relevance-eval/synthetic/results/execution-audit.json": "a83517249087c015be451526901d7f6377895484ccf0535c36075237a0074231",
+    "search-relevance-eval/synthetic/results/image-provenance.json": "0f061c4e2c09d686ed4b2ddfb16d4788bc185961c8c653c71321269ae428f453",
+    "search-relevance-eval/synthetic/results/preparation.json": "01e1bde39cf9ebd2d9ea31dc724c3660fa786f5ccca1c3b88f82175a6d365767",
+    "search-relevance-eval/synthetic/results/vector-provenance.json": "8daa75d846049cbce9c882e5bc8b697966ee45e5309acad4e240325cc66fb636",
+    "search-relevance-eval/threshold/.local/diagnostic-validation/expanded-evidence.jsonl": "b8831cbad72b5821fda2c36adecf611b57eec7a7f8a2366678cf44a3728f040a",
+    "search-relevance-eval/threshold/.local/diagnostic-validation/expanded-qrels.jsonl": "28a0ad070ca46b03366098e1f53745492404637441fc4e727bdef962485eb968",
+    "search-relevance-eval/threshold/.local/expanded-v2/manifest.json": "17f59f0cf0730f092a0dfd4b71d76356937db62aec2c41322b133fbf701f0e5e",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n1000-receipt.json": "a7f96007a126903997a0a8d506b07fc94d6980eca64003b0e10b554619235117",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n1000.jsonl": "cd93508f38cdbbb882e2254b18701717a8e04d9218bcb80a709d9ca425f1d481",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n2000-receipt.json": "9fef397de39bafcadf503485dbc4bec5a15c556d16ce4096f161495b9938ff04",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n2000.jsonl": "bec00b619e74bda411dcfcbfaa6bda631277530acd3d889ab48cc00fb032dc39",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n60-receipt.json": "0ff9043c93109f60a4b619dd74d41ff0246ddc1c9fce86b1f11e47369627ff3d",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38871-n60.jsonl": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n1000-receipt.json": "da7cc11c3e12dd2d6a1b433bdbf3d010bf6709c4b90a05fdee6d9799b3636268",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n1000.jsonl": "688b24b5763d0035885eed67a920baf37bd4229bf6115465bf1e1f2795470209",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n2000-receipt.json": "7590233247e1eced6b852bf0073f3c484c5d1a5b1332dd6b423d8563d0f3169f",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n2000.jsonl": "ea40ea160908116133446e458880568104207fc8484d26e8a3b22f722a30299b",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n60-receipt.json": "8039d5472d4de058bbd6b2bd840a260e5e04a0b22adfce606bb1557270080801",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38872-n60.jsonl": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n1000-receipt.json": "de30fe112951116d994efec5d629278ec156f7ba6e16184f8ab4224641953dbf",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n1000.jsonl": "d3e29c2bdbd5992235e02f9264296086e8dc75e84a31be7b5cea1559d4a82db3",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n2000-receipt.json": "9227bda84e91168aae31cc6ce83092a298df89e25fb515d0ea5a677f0404179c",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n2000.jsonl": "f084f79d7d6ae44910617562540534b4135822fe33dc4bc4f852f75356faa861",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n60-receipt.json": "f9d74fd953ef505a3ccc1fe22a31165700846b51b8a592cedef4407692382c2e",
+    "search-relevance-eval/threshold/.local/expanded-v2/seed-38873-n60.jsonl": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3",
+    "search-relevance-eval/threshold/.local/reused-real/corpus.jsonl": "7e115a663c3d7c8a8794903b2940e0d3fda058f4bb6e7b76520c730e5d655e43",
+    "search-relevance-eval/threshold/.local/stage-one-v2/manifest.json": "9ca143e95b3908ea19d3fca009764fd3692db84b0917a087299d691c6fee610e",
+    "search-relevance-eval/threshold/analysis-bindings.json": "8a105328c7756c9da08e38c442d8e333f261466217afd9f47e1f1ea41e7a39bc",
+    "search-relevance-eval/threshold/analyze.py": "80114c2df05fbc8363a329e91c4d2a22471090ef0aebe792fe8e08973615ed5e",
+    "search-relevance-eval/threshold/auditoutputs/pair-certainty-adjudication-v1.json": "d7849e2a473734fb26c4ad14982eb7d783ed2d73141e5f52f971dddf46e5585f",
+    "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38871-1.json": "86c91ffce46b0cce9e837e065248865ac12fc459e993b85736cb5a68653c1b03",
+    "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38871-2.json": "bbd8cfb846b33882425662f622607d45550ac81d28ba6d224e4d70aad9bceef7",
+    "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38872-1.json": "c94f14d617cce6e3fa8568d87788fa65318ccca2696404a838d930c3cecb22d9",
+    "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38872-2.json": "95d06c51f061fdd15867fe6a88f7522da4f8b318a64623f9dbe6256b03272e7e",
+    "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38873-1.json": "4f5694a73cb8b86b034661d9692bc98f2749cdcc8b82860ddeb52213337b9d47",
+    "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38873-2.json": "163bac984adeec9c783a31ba5a3d634ba15fb153ed436882167a38e749d558f7",
+    "search-relevance-eval/threshold/collect.py": "073634b139c4b3d5aaf63a8cde252166e418b5db4cbdc2b08af92d18c1436996",
+    "search-relevance-eval/threshold/cutoff_boundary.py": "61152b8f1a22454d3963ed5952ecd0907a801e6e56228c242fc201c33f90f1ee",
+    "search-relevance-eval/threshold/decision-gates.json": "720b93e4461b46c38e2bff26f1fe60de6b4b76c88d26c39af89924a19c8b093f",
+    "search-relevance-eval/threshold/descriptive-populations.json": "b273a6c84ceb90ddfcb289154db7d2081a76f9e2f974af5ead5cdb3f6c6056e9",
+    "search-relevance-eval/threshold/design-notes.md": "1b2e159ef1bd881a7e0041136bd385fea512d9f1b256db4d338ab86cddfdac8b",
+    "search-relevance-eval/threshold/diagnostic-execution-policy.json": "9e8ef53a8414ffc1d1271c25c23a0890dcf25621a65c3d76e97bd45b6c44a771",
+    "search-relevance-eval/threshold/diagnostic-protocol.md": "73f45083f4f18008c6fbc2b040b2584cc7914953175f7cbab93fd01e7a27ad85",
+    "search-relevance-eval/threshold/diagnostic-stage-one-validation.json": "5a42a5e31eeec82489801e30ca8ed11201de7a727d033f58f622eedaad66f735",
+    "search-relevance-eval/threshold/diagnostic-validation-manifest.json": "8c7ac3766bead6be33493fcaf49480cc66e2dd74333fe772fff6a44811384b29",
+    "search-relevance-eval/threshold/diagnostic_expansion.py": "14ce0dcbe0a39e7f17dda284076f6701e0fdf08f65db5e4979e52f608c5bdef0",
+    "search-relevance-eval/threshold/diagnostics.py": "df8a6b40e69d2bd93eace670098263e2a29f21c7360f096d69e200b5ec789dcb",
+    "search-relevance-eval/threshold/execute.py": "7a73d3b5ee171c42db1bbdeb91f6525b0d27da20b825f27c70b83d7a84d389c6",
+    "search-relevance-eval/threshold/expand.py": "92b72be30f3be8d6c3fc5bb1f5276967a5d94011a09033ca4430b3a8b96c578e",
+    "search-relevance-eval/threshold/export_contract.py": "f15ee1f0dedcc673e455333dba664e4b8608591f627ff70d1163ab5b717b3cc4",
+    "search-relevance-eval/threshold/freeze.py": "aafe07b2d7238509c2e782b76e8d7dcb721d9ea9b2f4421795661b0e2b9dcf86",
+    "search-relevance-eval/threshold/generate.py": "79ca3f1c1586d835e2571e06e5dc83d7c5da7347b75d03d6b4da9bdd8eebf28d",
+    "search-relevance-eval/threshold/generation-source-closure.json": "94dc74c98dbd35586f0418d27ce18df098ac071ecf2cfae65dd55bb5b2fa840a",
+    "search-relevance-eval/threshold/generation-spec.json": "c3db25ab0cccf20ba1cb15829175e73316568fdb3174a5a920a30bedfbaf517d",
+    "search-relevance-eval/threshold/intents.jsonl": "7c2ed0e8a17d5502f5dc5c2b25bb43921efa64a95785154b78581e1482e19d61",
+    "search-relevance-eval/threshold/parent-expansion-approval.json": "05219a1ba1c9ba159c2c2fb2650683e0ec965c7acbf74d4d8479866e137029f0",
+    "search-relevance-eval/threshold/protocol.md": "150cab6c05b4e9a88730491f4132a6e33d494e2b22e573ee0128f62534e8d2f2",
+    "search-relevance-eval/threshold/query-spec.jsonl": "803bb51de8ca57fc4a5d95915f52f060a6d8eaacd99d97aee9593afc20cf18eb",
+    "search-relevance-eval/threshold/relevance-rubric.md": "dd04a84bccdfb89b1b3c22ae90e6185e9b9e22a3957dc038687df4fc4a32bed0",
+    "search-relevance-eval/threshold/results/correctness-attempt2.json": "f03be94931011aa43aad5e58c892f440a2f6be585671c713318beb5b3ac78188",
+    "search-relevance-eval/threshold/results/correctness-summary.json": "5b09e36fff5cbbad26fa706331514444b623105f2a274d65af893689f9a43363",
+    "search-relevance-eval/threshold/results/cutoff-boundary-attempt2.json": "a12e3d9500134ee467926348ca2ad29126029c741b41d816bb491bae0af6f7e2",
+    "search-relevance-eval/threshold/results/cutoff-boundary.json": "f8f6912eaf02c09e085a673a3da279cdf3bdf0f748076dd04625e141d106afc1",
+    "search-relevance-eval/threshold/results/pre-embedding-runtime.json": "c11ce0eb33d94dcf65dc49fc2d80975e8ca5b3611efe1e4ce5650cc63e32bb13",
+    "search-relevance-eval/threshold/review-source-archive.json": "6f29f9aa300f779d2f181b3333583ef4c5232af2d629d46dc8abebda7dd9320c",
+    "search-relevance-eval/threshold/review-source-archive.tar.gz": "ebc7da24576106a7bbe514877413259a03106b0e92d9d2de16e6e1af69a21e93",
+    "search-relevance-eval/threshold/spec-freeze.json": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e",
+    "search-relevance-eval/threshold/uncertainty-mask.json": "1825875fd6c9a66f5b69c965dbfd0a5b67f3dac851cfbf66fd9230675bdeffdb",
+    "search-relevance-eval/threshold/validate.py": "abfc7d5a3264e5c02f4f30ee82a673bbe940a6d999aae5456983d82c68a225ae"
+  },
+  "thresholds": [
+    0.5,
+    0.48,
+    0.46,
+    0.45,
+    0.44,
+    0.42,
+    0.4
+  ]
+}

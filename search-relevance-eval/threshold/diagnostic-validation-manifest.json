@@ -1,0 +1,626 @@
+{
+  "actual_rows_programmatically_closed_all_sizes": 9180,
+  "actual_text_validation_passed": false,
+  "all_expanded_rows_independently_reconstructed": true,
+  "all_known_pairs_inspected": true,
+  "complete_actual_label_evidence": true,
+  "corpora": [
+    {
+      "catalog_size": 60,
+      "dataset_count": 60,
+      "intentional_ambiguity": 120,
+      "known": 2878,
+      "path": ".local/expanded-v2/seed-38871-n60.jsonl",
+      "record_ids_sha256": "16683c209af593f0caaad6c22b3a76c0be7cccf152c418433b510ae40e61ac25",
+      "row_receipt": {
+        "catalog_size": 60,
+        "path": ".local/expanded-v2/seed-38871-n60-receipt.json",
+        "record_count": 60,
+        "seed": 38871,
+        "sha256": "0ff9043c93109f60a4b619dd74d41ff0246ddc1c9fce86b1f11e47369627ff3d"
+      },
+      "scored_uncertainty": 2,
+      "seed": 38871,
+      "sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a"
+    },
+    {
+      "catalog_size": 1000,
+      "dataset_count": 1000,
+      "intentional_ambiguity": 2000,
+      "known": 47998,
+      "path": ".local/expanded-v2/seed-38871-n1000.jsonl",
+      "record_ids_sha256": "769c507fdae259833b4bc8877ceb08bc3d48e97ef6f18b586367e94c0e20af66",
+      "row_receipt": {
+        "catalog_size": 1000,
+        "path": ".local/expanded-v2/seed-38871-n1000-receipt.json",
+        "record_count": 1000,
+        "seed": 38871,
+        "sha256": "a7f96007a126903997a0a8d506b07fc94d6980eca64003b0e10b554619235117"
+      },
+      "scored_uncertainty": 2,
+      "seed": 38871,
+      "sha256": "cd93508f38cdbbb882e2254b18701717a8e04d9218bcb80a709d9ca425f1d481"
+    },
+    {
+      "catalog_size": 2000,
+      "dataset_count": 2000,
+      "intentional_ambiguity": 4000,
+      "known": 95998,
+      "path": ".local/expanded-v2/seed-38871-n2000.jsonl",
+      "record_ids_sha256": "533df5bc53e293b25b19d76546f5413e25f6f4e7cb06065ece2f98496cd251ad",
+      "row_receipt": {
+        "catalog_size": 2000,
+        "path": ".local/expanded-v2/seed-38871-n2000-receipt.json",
+        "record_count": 2000,
+        "seed": 38871,
+        "sha256": "9fef397de39bafcadf503485dbc4bec5a15c556d16ce4096f161495b9938ff04"
+      },
+      "scored_uncertainty": 2,
+      "seed": 38871,
+      "sha256": "bec00b619e74bda411dcfcbfaa6bda631277530acd3d889ab48cc00fb032dc39"
+    },
+    {
+      "catalog_size": 60,
+      "dataset_count": 60,
+      "intentional_ambiguity": 120,
+      "known": 2878,
+      "path": ".local/expanded-v2/seed-38872-n60.jsonl",
+      "record_ids_sha256": "16683c209af593f0caaad6c22b3a76c0be7cccf152c418433b510ae40e61ac25",
+      "row_receipt": {
+        "catalog_size": 60,
+        "path": ".local/expanded-v2/seed-38872-n60-receipt.json",
+        "record_count": 60,
+        "seed": 38872,
+        "sha256": "8039d5472d4de058bbd6b2bd840a260e5e04a0b22adfce606bb1557270080801"
+      },
+      "scored_uncertainty": 2,
+      "seed": 38872,
+      "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+    },
+    {
+      "catalog_size": 1000,
+      "dataset_count": 1000,
+      "intentional_ambiguity": 2000,
+      "known": 47998,
+      "path": ".local/expanded-v2/seed-38872-n1000.jsonl",
+      "record_ids_sha256": "769c507fdae259833b4bc8877ceb08bc3d48e97ef6f18b586367e94c0e20af66",
+      "row_receipt": {
+        "catalog_size": 1000,
+        "path": ".local/expanded-v2/seed-38872-n1000-receipt.json",
+        "record_count": 1000,
+        "seed": 38872,
+        "sha256": "da7cc11c3e12dd2d6a1b433bdbf3d010bf6709c4b90a05fdee6d9799b3636268"
+      },
+      "scored_uncertainty": 2,
+      "seed": 38872,
+      "sha256": "688b24b5763d0035885eed67a920baf37bd4229bf6115465bf1e1f2795470209"
+    },
+    {
+      "catalog_size": 2000,
+      "dataset_count": 2000,
+      "intentional_ambiguity": 4000,
+      "known": 95998,
+      "path": ".local/expanded-v2/seed-38872-n2000.jsonl",
+      "record_ids_sha256": "533df5bc53e293b25b19d76546f5413e25f6f4e7cb06065ece2f98496cd251ad",
+      "row_receipt": {
+        "catalog_size": 2000,
+        "path": ".local/expanded-v2/seed-38872-n2000-receipt.json",
+        "record_count": 2000,
+        "seed": 38872,
+        "sha256": "7590233247e1eced6b852bf0073f3c484c5d1a5b1332dd6b423d8563d0f3169f"
+      },
+      "scored_uncertainty": 2,
+      "seed": 38872,
+      "sha256": "ea40ea160908116133446e458880568104207fc8484d26e8a3b22f722a30299b"
+    },
+    {
+      "catalog_size": 60,
+      "dataset_count": 60,
+      "intentional_ambiguity": 120,
+      "known": 2877,
+      "path": ".local/expanded-v2/seed-38873-n60.jsonl",
+      "record_ids_sha256": "16683c209af593f0caaad6c22b3a76c0be7cccf152c418433b510ae40e61ac25",
+      "row_receipt": {
+        "catalog_size": 60,
+        "path": ".local/expanded-v2/seed-38873-n60-receipt.json",
+        "record_count": 60,
+        "seed": 38873,
+        "sha256": "f9d74fd953ef505a3ccc1fe22a31165700846b51b8a592cedef4407692382c2e"
+      },
+      "scored_uncertainty": 3,
+      "seed": 38873,
+      "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"
+    },
+    {
+      "catalog_size": 1000,
+      "dataset_count": 1000,
+      "intentional_ambiguity": 2000,
+      "known": 47997,
+      "path": ".local/expanded-v2/seed-38873-n1000.jsonl",
+      "record_ids_sha256": "769c507fdae259833b4bc8877ceb08bc3d48e97ef6f18b586367e94c0e20af66",
+      "row_receipt": {
+        "catalog_size": 1000,
+        "path": ".local/expanded-v2/seed-38873-n1000-receipt.json",
+        "record_count": 1000,
+        "seed": 38873,
+        "sha256": "de30fe112951116d994efec5d629278ec156f7ba6e16184f8ab4224641953dbf"
+      },
+      "scored_uncertainty": 3,
+      "seed": 38873,
+      "sha256": "d3e29c2bdbd5992235e02f9264296086e8dc75e84a31be7b5cea1559d4a82db3"
+    },
+    {
+      "catalog_size": 2000,
+      "dataset_count": 2000,
+      "intentional_ambiguity": 4000,
+      "known": 95997,
+      "path": ".local/expanded-v2/seed-38873-n2000.jsonl",
+      "record_ids_sha256": "533df5bc53e293b25b19d76546f5413e25f6f4e7cb06065ece2f98496cd251ad",
+      "row_receipt": {
+        "catalog_size": 2000,
+        "path": ".local/expanded-v2/seed-38873-n2000-receipt.json",
+        "record_count": 2000,
+        "seed": 38873,
+        "sha256": "9227bda84e91168aae31cc6ce83092a298df89e25fb515d0ea5a677f0404179c"
+      },
+      "scored_uncertainty": 3,
+      "seed": 38873,
+      "sha256": "f084f79d7d6ae44910617562540534b4135822fe33dc4bc4f852f75356faa861"
+    }
+  ],
+  "diagnostic_only": true,
+  "embeddings_allowed": false,
+  "expanded_evidence": {
+    "path": ".local/diagnostic-validation/expanded-evidence.jsonl",
+    "row_count": 9180,
+    "sha256": "b8831cbad72b5821fda2c36adecf611b57eec7a7f8a2366678cf44a3728f040a"
+  },
+  "expansion_validator_sha256": "14ce0dcbe0a39e7f17dda284076f6701e0fdf08f65db5e4979e52f608c5bdef0",
+  "forced_recommendation": "D",
+  "growth_rows_programmatically_closed_all_sizes": 8640,
+  "historical_projection_source_closure": {
+    "archive": {
+      "path": ".local/source-archive/run-at-first-realization.py",
+      "sha256": "c25b310024eb2d03110c444e559a0cb7437bfd3cf7f2b2c5380145459934f457"
+    },
+    "code_imported_or_executed": false,
+    "context_ast_sha256": "080fafd4f4287cea14edbf4d5185288d9dd718dd157d8088ac06c27968437d34",
+    "current_runtime": {
+      "path": "../run.py",
+      "sha256": "04b3732b36f8de1d0a0c2ee490b4d8932187a412c9ee436ee9ff25a999aa7d8f"
+    },
+    "proof": {
+      "path": "generation-source-closure.json",
+      "sha256": "94dc74c98dbd35586f0418d27ce18df098ac071ecf2cfae65dd55bb5b2fa840a"
+    },
+    "scope": "Historical generation projection receipt only; current execution source must separately be pinned."
+  },
+  "intentional_ambiguity_pair_count": 18360,
+  "known_pair_count": 440619,
+  "legacy_unknown_pairs_unchanged": 12,
+  "limitations": "180 manual core reviews plus60 complete growth-class reviews, followed by exhaustive row reconstruction, not9180 manual judgments or independent topics. Correlated prose/default metadata and all prior strict failures remain disclosed. No vectors, search or default change is authorized.",
+  "literal_citation_occurrences_checked_all_sizes": 104640,
+  "locked_stage_validator_sha256": "abfc7d5a3264e5c02f4f30ee82a673bbe940a6d999aae5456983d82c68a225ae",
+  "manual_actual_record_count": 240,
+  "non_scoring_metadata_discrepancies_preserved": [
+    {
+      "actual_observed_facts": [
+        "observer_position"
+      ],
+      "dataset_id": "g04-r001",
+      "planned_facts": [
+        "daytime_call_count",
+        "observer_position"
+      ],
+      "preserved_not_masked": true,
+      "seed": 38872
+    },
+    {
+      "actual_observed_facts": [
+        "observer_position"
+      ],
+      "dataset_id": "t023",
+      "planned_facts": [
+        "daytime_call_count",
+        "observer_position"
+      ],
+      "preserved_not_masked": true,
+      "seed": 38872
+    },
+    {
+      "actual_observed_facts": [
+        "retail_price",
+        "stock_count"
+      ],
+      "dataset_id": "t024",
+      "planned_facts": [
+        "item_price",
+        "stock_count"
+      ],
+      "preserved_not_masked": true,
+      "seed": 38872
+    },
+    {
+      "actual_observed_facts": [
+        "retail_price",
+        "stock_count"
+      ],
+      "dataset_id": "t024",
+      "planned_facts": [
+        "item_price",
+        "stock_count"
+      ],
+      "preserved_not_masked": true,
+      "seed": 38873
+    }
+  ],
+  "original_manual_false_flags_repeated_in_row_evidence": 597,
+  "original_stage_reproduced_exactly": true,
+  "original_strict_conformance_failed": true,
+  "pair_scope_adjudication": {
+    "path": "auditoutputs/pair-certainty-adjudication-v1.json",
+    "sha256": "d7849e2a473734fb26c4ad14982eb7d783ed2d73141e5f52f971dddf46e5585f"
+  },
+  "parent_expansion_approval": {
+    "path": "parent-expansion-approval.json",
+    "sha256": "05219a1ba1c9ba159c2c2fb2650683e0ec965c7acbf74d4d8479866e137029f0"
+  },
+  "pre_retrieval": true,
+  "promotion_allowed": false,
+  "qrel_key_fields": [
+    "cohort",
+    "seed",
+    "size",
+    "query_id",
+    "dataset_id"
+  ],
+  "qrels": {
+    "path": ".local/diagnostic-validation/expanded-qrels.jsonl",
+    "row_count": 459000,
+    "sha256": "28a0ad070ca46b03366098e1f53745492404637441fc4e727bdef962485eb968"
+  },
+  "reviewed_terminal_bundle_count": 60,
+  "schema_version": 1,
+  "scored_uncertainty_mask": [
+    {
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38871,
+      "size": 60,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38871:t013:internal_cell_temperature_location",
+      "uncertainty_reason": "The submitted query requests internal cell warmth. Actual root evidence documents generic cell temperature without establishing internal rather than surface/unspecified sensing. Preserve the independent query-specific uncertainty; do not silently equate the extra qualifier with the frozen generic variable."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38871,
+      "size": 60,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38871:t014:internal_cell_temperature_location",
+      "uncertainty_reason": "The same query-specific internal-sensor ambiguity occurs in actual first-distribution generic cell-temperature evidence; the root establishes study scope but supplies no internal sensor location."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38871,
+      "size": 1000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38871:t013:internal_cell_temperature_location",
+      "uncertainty_reason": "The submitted query requests internal cell warmth. Actual root evidence documents generic cell temperature without establishing internal rather than surface/unspecified sensing. Preserve the independent query-specific uncertainty; do not silently equate the extra qualifier with the frozen generic variable."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38871,
+      "size": 1000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38871:t014:internal_cell_temperature_location",
+      "uncertainty_reason": "The same query-specific internal-sensor ambiguity occurs in actual first-distribution generic cell-temperature evidence; the root establishes study scope but supplies no internal sensor location."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38871,
+      "size": 2000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38871:t013:internal_cell_temperature_location",
+      "uncertainty_reason": "The submitted query requests internal cell warmth. Actual root evidence documents generic cell temperature without establishing internal rather than surface/unspecified sensing. Preserve the independent query-specific uncertainty; do not silently equate the extra qualifier with the frozen generic variable."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38871,
+      "size": 2000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38871:t014:internal_cell_temperature_location",
+      "uncertainty_reason": "The same query-specific internal-sensor ambiguity occurs in actual first-distribution generic cell-temperature evidence; the root establishes study scope but supplies no internal sensor location."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 60,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38872:t013:internal_cell_temperature_location",
+      "uncertainty_reason": "C independently checked the actual second-seed realization after the first-seed wording objection: thermal readings of each cell still does not establish internal rather than surface/unspecified sensor location. The first reviewer did not flag this row; that omission is preserved, not treated as proof of equivalence."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 60,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38872:t014:internal_cell_temperature_location",
+      "uncertainty_reason": "The actual first-distribution phrase thermal readings of each cell has the same unresolved internal-location qualifier. C reviewed this actual seed-specific text rather than inheriting a first-seed label."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38872:t013:internal_cell_temperature_location",
+      "uncertainty_reason": "C independently checked the actual second-seed realization after the first-seed wording objection: thermal readings of each cell still does not establish internal rather than surface/unspecified sensor location. The first reviewer did not flag this row; that omission is preserved, not treated as proof of equivalence."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38872:t014:internal_cell_temperature_location",
+      "uncertainty_reason": "The actual first-distribution phrase thermal readings of each cell has the same unresolved internal-location qualifier. C reviewed this actual seed-specific text rather than inheriting a first-seed label."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38872:t013:internal_cell_temperature_location",
+      "uncertainty_reason": "C independently checked the actual second-seed realization after the first-seed wording objection: thermal readings of each cell still does not establish internal rather than surface/unspecified sensor location. The first reviewer did not flag this row; that omission is preserved, not treated as proof of equivalence."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "grade": "U",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "supported_grade_interval": [
+        2,
+        3
+      ],
+      "uncertainty_case_key": "NEW:38872:t014:internal_cell_temperature_location",
+      "uncertainty_reason": "The actual first-distribution phrase thermal readings of each cell has the same unresolved internal-location qualifier. C reviewed this actual seed-specific text rather than inheriting a first-seed label."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p1",
+      "seed": 38873,
+      "size": 60,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "The unpunctuated negation may apply to measurement distance as well as acoustic intensity. SPL is supported; distance is unresolved; operating load is a test condition, not a documented measured load column. Grade cannot be silently set to planned2 or supported-only1 because the literal scope is genuinely uncertain."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p2",
+      "seed": 38873,
+      "size": 60,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "Same unresolved measurement-distance negation scope for the second acoustic paraphrase; actual child metadata adds no resolving measurement evidence."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p3",
+      "seed": 38873,
+      "size": 60,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "Same unresolved measurement-distance negation scope for the third acoustic paraphrase; no forced numeric grade or expected-grade rescue."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p1",
+      "seed": 38873,
+      "size": 1000,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "The unpunctuated negation may apply to measurement distance as well as acoustic intensity. SPL is supported; distance is unresolved; operating load is a test condition, not a documented measured load column. Grade cannot be silently set to planned2 or supported-only1 because the literal scope is genuinely uncertain."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p2",
+      "seed": 38873,
+      "size": 1000,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "Same unresolved measurement-distance negation scope for the second acoustic paraphrase; actual child metadata adds no resolving measurement evidence."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p3",
+      "seed": 38873,
+      "size": 1000,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "Same unresolved measurement-distance negation scope for the third acoustic paraphrase; no forced numeric grade or expected-grade rescue."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p1",
+      "seed": 38873,
+      "size": 2000,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "The unpunctuated negation may apply to measurement distance as well as acoustic intensity. SPL is supported; distance is unresolved; operating load is a test condition, not a documented measured load column. Grade cannot be silently set to planned2 or supported-only1 because the literal scope is genuinely uncertain."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p2",
+      "seed": 38873,
+      "size": 2000,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "Same unresolved measurement-distance negation scope for the second acoustic paraphrase; actual child metadata adds no resolving measurement evidence."
+    },
+    {
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "grade": "U",
+      "query_id": "t08p3",
+      "seed": 38873,
+      "size": 2000,
+      "supported_grade_interval": [
+        1,
+        2
+      ],
+      "uncertainty_case_key": "NEW:38873:t045:measurement_distance_negation_scope",
+      "uncertainty_reason": "Same unresolved measurement-distance negation scope for the third acoustic paraphrase; no forced numeric grade or expected-grade rescue."
+    }
+  ],
+  "scored_unknown_pair_count": 21,
+  "search_allowed": false,
+  "seedless_qrels_allowed": false,
+  "separate_parent_execution_approval_required": true,
+  "source_diagnostic_stage_validation": {
+    "path": "diagnostic-stage-one-validation.json",
+    "sha256": "5a42a5e31eeec82489801e30ca8ed11201de7a727d033f58f622eedaad66f735"
+  },
+  "source_expansion_manifest": {
+    "path": ".local/expanded-v2/manifest.json",
+    "sha256": "17f59f0cf0730f092a0dfd4b71d76356937db62aec2c41322b133fbf701f0e5e"
+  },
+  "spec_freeze_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e",
+  "status": "audited_expanded_nonconformant_diagnostic_only",
+  "strict_conformance_failures_preserved": [
+    {
+      "dataset_id": "t051",
+      "failure": "Authoritative identity absent in frozen scope",
+      "full_code_absent": true,
+      "seed": 38871,
+      "strict_failure_preserved": true
+    },
+    {
+      "dataset_id": "t051",
+      "failure": "Authoritative identity absent in frozen scope",
+      "full_code_absent": true,
+      "seed": 38872,
+      "strict_failure_preserved": true
+    },
+    {
+      "dataset_id": "t051",
+      "failure": "Authoritative identity absent in frozen scope",
+      "full_code_absent": true,
+      "seed": 38873,
+      "strict_failure_preserved": true
+    }
+  ],
+  "terminal_templates": {
+    "path": ".local/stage-one-v2/terminal-templates.json",
+    "sha256": "db9128f2b63ba79a15090f98426a0fa7d868bf4540be06a88b434cd1672d5fe1"
+  },
+  "total_query_record_seed_size_pairs": 459000,
+  "unique_seed_record_realizations": 6000,
+  "unknown_pair_count": 18381,
+  "unresolved_basis_rows_repeated_in_row_evidence": 588,
+  "unresolved_pairs_explicitly_U": true
+}

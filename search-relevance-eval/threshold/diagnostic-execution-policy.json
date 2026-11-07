@@ -1,0 +1,137 @@
+{
+  "adjudication_sha256": "d7849e2a473734fb26c4ad14982eb7d783ed2d73141e5f52f971dddf46e5585f",
+  "analysis_bindings_sha256": "8a105328c7756c9da08e38c442d8e333f261466217afd9f47e1f1ea41e7a39bc",
+  "architecture_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e",
+  "before_first_target_embedding": true,
+  "created_utc": "2026-11-07T19:35:14.997838+00:00",
+  "descriptive_populations_sha256": "b273a6c84ceb90ddfcb289154db7d2081a76f9e2f974af5ead5cdb3f6c6056e9",
+  "development_rule": "Execute registered DEV13 first; seal a policy-bound immutable nonpromotional NONE record before any heldout/legacy threshold retrieval or heldout score/eligibility inspection. Do not pretend DEV selected a promotable alternative.",
+  "diagnostic_only": true,
+  "diagnostic_protocol_sha256": "73f45083f4f18008c6fbc2b040b2584cc7914953175f7cbab93fd01e7a27ad85",
+  "diagnostic_top_k": 10,
+  "forced_recommendation": "D",
+  "issues_to_keep_open": [
+    3887,
+    3885
+  ],
+  "legacy_unknown_pairs_preserved": 12,
+  "literal_expansion_only": true,
+  "mixed_role_pairs": [
+    [
+      0.5,
+      0.5
+    ],
+    [
+      0.45,
+      0.45
+    ],
+    [
+      0.45,
+      0.5
+    ],
+    [
+      0.5,
+      0.45
+    ]
+  ],
+  "new_intentional_ambiguity_pairs": 18360,
+  "new_query_corpus_or_weight_changes_after_policy": false,
+  "new_scored_unknown_core_pairs": 7,
+  "new_scored_unknown_expanded_pairs": 21,
+  "no_new_target_threshold_sweep_outcomes_seen": true,
+  "original_conformance_passed": false,
+  "prior_evidence_scope": "Inherited 0.50/raw-fusion evidence and old-vector correctness controls are known; no new comparative threshold relevance sweep or supplementary target inference has run. Reused historical embeddings are not claimed to have been created after this policy.",
+  "production_default_change_authorized": false,
+  "promotion_allowed": false,
+  "radial_min_scores": [
+    0.5,
+    0.48,
+    0.46,
+    0.45,
+    0.44,
+    0.42,
+    0.4
+  ],
+  "recommendation_rule": "D unconditionally. No A/B/C, default adoption, post-outcome repairs, threshold tuning or held-out alternative selection. Quantitative results remain descriptive engineering evidence.",
+  "schema_version": 1,
+  "sealed_utc": "2026-11-07T19:36:09.679817+00:00",
+  "stage_validation_sha256": "5a42a5e31eeec82489801e30ca8ed11201de7a727d033f58f622eedaad66f735",
+  "status": "original_failed",
+  "uncertainty_mask_file_path": "uncertainty-mask.json",
+  "uncertainty_mask_file_sha256": "1825875fd6c9a66f5b69c965dbfd0a5b67f3dac851cfbf66fd9230675bdeffdb",
+  "uncertainty_mask_sha256": "149266378a71561e4499268a8d2faabebf814c6ea252b93218431df06e352fcc",
+  "uncertainty_pairs": [
+    {
+      "allowed_grades": [
+        2,
+        3
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "query_id": "t03p3",
+      "seed": 38871
+    },
+    {
+      "allowed_grades": [
+        2,
+        3
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "query_id": "t03p3",
+      "seed": 38871
+    },
+    {
+      "allowed_grades": [
+        2,
+        3
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t013",
+      "query_id": "t03p3",
+      "seed": 38872
+    },
+    {
+      "allowed_grades": [
+        2,
+        3
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t014",
+      "query_id": "t03p3",
+      "seed": 38872
+    },
+    {
+      "allowed_grades": [
+        1,
+        2
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "query_id": "t08p1",
+      "seed": 38873
+    },
+    {
+      "allowed_grades": [
+        1,
+        2
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "query_id": "t08p2",
+      "seed": 38873
+    },
+    {
+      "allowed_grades": [
+        1,
+        2
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t045",
+      "query_id": "t08p3",
+      "seed": 38873
+    }
+  ],
+  "unknown_point_metric_rule": "Undefined if U affects graded point truth; no U-to-zero. Full-corpus same-assignment interval sensitivities; grade intervals independently fixed before scores.",
+  "validation_manifest_sha256": "8c7ac3766bead6be33493fcaf49480cc66e2dd74333fe772fff6a44811384b29"
+}

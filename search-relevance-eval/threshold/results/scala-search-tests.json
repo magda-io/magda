@@ -1,0 +1,17 @@
+{
+  "attempts": 1,
+  "command": [
+    "/tmp/magda-3886-tools/bin/sbt",
+    "-DelasticSearch.serverUrl=http://127.0.0.1:19200",
+    "searchApi/testOnly au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryerSpec au.csiro.data61.magda.search.elasticsearch.ElasticSearchAccessFilterSpec"
+  ],
+  "exit_code": 0,
+  "finished_utc": "2026-11-07T02:22:27.247505+00:00",
+  "full_opa_service_tests": false,
+  "log_path": "search-relevance-eval/threshold/results/scala-search-tests.log",
+  "log_sha256": "b39a8a5a933a68c92d0025bf656ada7eeabb9b355d4e05787be47741431aa365",
+  "production_test_edits": false,
+  "real_engine_access_tests": 11,
+  "started_utc": "2026-11-07T02:22:21.686150+00:00",
+  "structural_tests": 15
+}

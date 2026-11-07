@@ -1,0 +1,55 @@
+{
+  "records": [
+    {
+      "seed": 38871,
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "source_sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a",
+      "distributions": [
+        {
+          "description": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements.",
+          "downloadURL": "https://reserved.invalid/collections/t051/file-1.csv",
+          "format": "CSV",
+          "identifier": "t051-d1",
+          "publishingState": "published",
+          "queryContext": "Title: Tabular collection\nFormat: CSV\nDescription: Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements.\n",
+          "tenantId": 0,
+          "title": "Tabular collection"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "source_path": ".local/stage-one-v2/core-38872.jsonl",
+      "source_sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796",
+      "distributions": [
+        {
+          "description": "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements.",
+          "downloadURL": "https://reserved.invalid/collections/t051/file-1.csv",
+          "format": "CSV",
+          "identifier": "t051-d1",
+          "publishingState": "published",
+          "queryContext": "Title: Tabular collection\nFormat: CSV\nDescription: This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements.\n",
+          "tenantId": 0,
+          "title": "Tabular collection"
+        }
+      ]
+    },
+    {
+      "seed": 38873,
+      "source_path": ".local/stage-one-v2/core-38873.jsonl",
+      "source_sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3",
+      "distributions": [
+        {
+          "description": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations.",
+          "downloadURL": "https://reserved.invalid/collections/t051/file-1.csv",
+          "format": "CSV",
+          "identifier": "t051-d1",
+          "publishingState": "published",
+          "queryContext": "Title: Tabular collection\nFormat: CSV\nDescription: A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations.\n",
+          "tenantId": 0,
+          "title": "Tabular collection"
+        }
+      ]
+    }
+  ]
+}

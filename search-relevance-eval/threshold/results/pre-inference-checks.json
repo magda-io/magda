@@ -1,0 +1,14 @@
+{
+  "actual_legacy_diagnostic_source_validation": "passed_no_retrieval",
+  "additional_boundary_control_first_equality_failure_preserved": true,
+  "conformance_or_promotion_pass": false,
+  "created_utc": "2026-11-07T23:52:27.995175+00:00",
+  "legacy_and_real_all_non_vector_metadata_reuse_exact": true,
+  "legacy_log_sha256": "b2894c40ef8c1948aaab994e0f6ba1be0f9c7c5ecd96d05892ff073a45d23796",
+  "new_benchmark_retrievals": 0,
+  "new_target_embedding_calls": 0,
+  "offline_unittest_status": "passed",
+  "offline_unittests": 452,
+  "schema_version": 1,
+  "test_log_sha256": "f3e4a65b1a2468ea3451b9670ccfd8f4b5a21c48116c74dc89531b553f036cc1"
+}

@@ -1,0 +1,36 @@
+{
+  "benchmark_searches": 0,
+  "captured_utc": "2026-11-07T19:30:59.221085+00:00",
+  "embedding_readiness": {
+    "http_status": 200
+  },
+  "embedding_spec_sha256": "11208fc8d07d3f6d6821ce3c403946950961411336834ae8b22dd95f05a47b2e",
+  "engine_version": {
+    "build_date": "2025-02-27T01:22:24.665339607Z",
+    "build_hash": "2e4741fb45d1b150aaeeadf66d41445b23ff5982",
+    "build_snapshot": false,
+    "build_type": "tar",
+    "distribution": "opensearch",
+    "lucene_version": "9.12.1",
+    "minimum_index_compatibility_version": "7.0.0",
+    "minimum_wire_compatibility_version": "7.10.0",
+    "number": "2.19.1"
+  },
+  "frozen_embedding": {
+    "dimension": 768,
+    "image": "ghcr.io/magda-io/magda-embedding-api:1.1.0",
+    "image_digest": "sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec",
+    "inference": "q8 normalized CLS;max1024tokens",
+    "model": "Alibaba-NLP/gte-base-en-v1.5",
+    "repository_revision": "not independently verified; disclose limitation; pin image and cached-vector hashes"
+  },
+  "inference_calls": 0,
+  "no_environment_or_credentials_collected": true,
+  "phase": "before_first_target_embedding_or_threshold_retrieval",
+  "pods_projected_metadata": [
+    "magda-magda-embedding-api-64c5cbcf59-jgwhl|2026-09-18T00:00:41Z|magda-embedding-api|ghcr.io/magda-io/magda-embedding-api:1.1.0|docker-pullable://ghcr.io/magda-io/magda-embedding-api@sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec|4;",
+    "magda-magda-embedding-api-64c5cbcf59-zq7jz|2026-09-18T00:00:41Z|magda-embedding-api|ghcr.io/magda-io/magda-embedding-api:1.1.0|docker-pullable://ghcr.io/magda-io/magda-embedding-api@sha256:7faca54ae24ce1c03d4213d3a3c2109ff57b23c644e4d22523e1c861201fb6ec|4;",
+    "magda-opensearch-data-0|2026-09-18T00:00:41Z|magda-opensearch-data|ghcr.io/magda-io/magda-opensearch:7.0.0-alpha.3|docker-pullable://ghcr.io/magda-io/magda-opensearch@sha256:8ea486614775cb52264d449ebd5a580b77cc22afe6db5e29b42cf36d846f7511|4;opensearch-master-graceful-termination-handler|ghcr.io/magda-io/magda-opensearch:7.0.0-alpha.3|docker-pullable://ghcr.io/magda-io/magda-opensearch@sha256:8ea486614775cb52264d449ebd5a580b77cc22afe6db5e29b42cf36d846f7511|4;"
+  ],
+  "schema_version": 1
+}

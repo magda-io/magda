@@ -1,0 +1,40 @@
+{
+  "adjudication_sha256": "d7849e2a473734fb26c4ad14982eb7d783ed2d73141e5f52f971dddf46e5585f",
+  "before_target_embeddings_and_scores": true,
+  "common_fully_known_heldout_semantic_intents_all_three_seeds": [
+    "t04",
+    "t05",
+    "t06",
+    "t07"
+  ],
+  "created_utc": "2026-11-07T19:29:54.830266+00:00",
+  "diagnostic_stage_validation_sha256": "5a42a5e31eeec82489801e30ca8ed11201de7a727d033f58f622eedaad66f735",
+  "interpretation": "Per-seed known-only five-family means do NOT compare the same population across all seeds. Use this prespecified common four-family descriptive cohort for matched summaries, retain every query/regression and full six-family interval sensitivity. No silent U omission or alternative threshold selection.",
+  "original_full_six_family_heldout_primary_available": false,
+  "per_seed_fully_known_heldout_semantic_intents": {
+    "38871": [
+      "t04",
+      "t05",
+      "t06",
+      "t07",
+      "t08"
+    ],
+    "38872": [
+      "t04",
+      "t05",
+      "t06",
+      "t07",
+      "t08"
+    ],
+    "38873": [
+      "t03",
+      "t04",
+      "t05",
+      "t06",
+      "t07"
+    ]
+  },
+  "query_spec_sha256": "803bb51de8ca57fc4a5d95915f52f060a6d8eaacd99d97aee9593afc20cf18eb",
+  "schema_version": 1,
+  "status": "descriptive_only_not_new_primary_or_promotion_gate"
+}

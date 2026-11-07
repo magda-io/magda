@@ -326,7 +326,9 @@ def verify_raw(args):
             def prefilter():
                 details = {}
                 for kind in ("root", "child"):
-                    create("prefilter-" + kind, mapping, prefilter_fixtures(kind))
+                    isolated, removed = omit_far_vectors(prefilter_fixtures(kind))
+                    report.setdefault("prefilter_fixture_far_vector_omissions", {})[kind] = removed
+                    create("prefilter-" + kind, mapping, isolated)
                     response = search("prefilter-" + kind, k1body, "topk1-counterexample", kind)
                     total(response, 1)
                     require(verify.hit_ids(response) == {"eligible"}, "Nearest unauthorized candidate occupied k1 slot")

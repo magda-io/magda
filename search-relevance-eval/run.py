@@ -6,6 +6,7 @@ Experimental transformations below are deliberately confined to this directory.
 """
 import argparse
 import copy
+from datetime import datetime, timezone
 import hashlib
 import importlib.util
 import json
@@ -328,15 +329,18 @@ def response_executor(args, ledger, receipt=response_receipt):
                     "seed": getattr(args, "seed", None), "repetition": repetition, "index": args.index,
                     "request_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()}
         identity.update(extra_identity)
+        identity["request_started_utc"] = datetime.now(timezone.utc).isoformat()
         start = time.perf_counter()
         try:
             response = request(args.engine_url, "POST", path, body)
         except Exception as error:
+            identity["request_completed_utc"] = datetime.now(timezone.utc).isoformat()
             if ledger:
                 with ledger.open("a", encoding="utf8") as stream:
                     stream.write(json.dumps(dict(identity, error_type=type(error).__name__, error=str(error)), sort_keys=True) + "\n")
             raise
         elapsed = (time.perf_counter() - start) * 1000
+        identity["request_completed_utc"] = datetime.now(timezone.utc).isoformat()
         if ledger:
             with ledger.open("a", encoding="utf8") as stream:
                 stream.write(json.dumps(receipt(response, elapsed_ms=elapsed, **identity), sort_keys=True) + "\n")
@@ -435,9 +439,30 @@ def labelled_paths(values):
 
 
 def export_response_receipt(response, **identity):
-    """Hash parsed full JSON before compacting; retain every hit's ID/score only."""
+    """Hash full parsed JSON; retain hit scores and minimal actual child identity."""
     result = response_receipt(response, **identity)
     signatures = []
+
+    def nested_identity(value):
+        # Actual OpenSearch nested field/offset chains, not inferred child IDs.
+        if not isinstance(value, dict):
+            return None
+        out = {key: value[key] for key in ("field", "offset") if key in value}
+        if isinstance(value.get("_nested"), dict):
+            out["_nested"] = nested_identity(value["_nested"])
+        return out
+
+    def hit_identity(hit, rank):
+        out = {"id": hit.get("_id"), "rank": rank, "score": hit.get("_score")}
+        if isinstance(hit.get("_nested"), dict):
+            out["_nested"] = nested_identity(hit["_nested"])
+        source = hit.get("_source")
+        if isinstance(source, dict):
+            fields = {key: source[key] for key in ("identifier", "distribution_id")
+                      if key in source and isinstance(source[key], (str, int, float, bool, type(None)))}
+            if fields:
+                out["source_identity"] = fields
+        return out
 
     def visit(value, path=()):
         if isinstance(value, dict):
@@ -445,8 +470,7 @@ def export_response_receipt(response, **identity):
                 if key == "hits" and isinstance(item, list):
                     signatures.append({"path": list(path + (key,)), "total_hits": value.get("total"),
                                        "max_score": value.get("max_score"), "hits": [
-                        {"id": hit.get("_id"), "rank": rank, "score": hit.get("_score")}
-                        for rank, hit in enumerate(item, 1)]})
+                        hit_identity(hit, rank) for rank, hit in enumerate(item, 1)]})
                 if key != "_source":
                     visit(item, path + (key,))
         elif isinstance(value, list):

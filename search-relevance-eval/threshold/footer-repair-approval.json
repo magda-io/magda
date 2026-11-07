@@ -1,0 +1,31 @@
+{
+  "allowed_changes": [
+    "Exact seed-specific old generic footer to exact approved neutral fiction footer in existing root descriptions",
+    "Exactly production-derived root queryContext and corresponding terminal strings/projections",
+    "New versioned manifest/source code hash and exact before/after proof"
+  ],
+  "approved_by": "parent-agent",
+  "created_utc": "2026-11-07T01:47:03.519399+00:00",
+  "embedding_allowed": false,
+  "expansion_allowed": false,
+  "finding_path": "first-stage-factual-rejection.json",
+  "finding_sha256": "ce6302eb3faec13e6ed482e9a2af116d4c10cb857e71c845653896409d8273d9",
+  "fresh_240_actual_record_audit_still_required": true,
+  "frozen_queries_labels_claims_and_all_other_record_fields_must_not_change": true,
+  "new_footers": {
+    "38871": "Names, identifiers and catalogue entries are fictional examples, with no assertion of real-world collection provenance.",
+    "38872": "Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance.",
+    "38873": "Names, identifiers and all these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+  },
+  "no_embeddings_or_scores_seen": true,
+  "pre_retrieval": true,
+  "preserve_originals": true,
+  "require_all_frozen_word_budgets_pass": true,
+  "require_independent_exact_delta_check": true,
+  "schema_version": 1,
+  "search_allowed": false,
+  "source_manifest_path": ".local/stage-one/manifest.json",
+  "source_manifest_sha256": "d73f3470b38f16bcb9879e22b3a32562c7a4962b00cc1d0ef159901ad2804979",
+  "source_terminals_sha256": "fd55250df5cad0dddb29530c8c85edaa249f7366296bbe01a00327d62ac7aca9",
+  "spec_freeze_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e"
+}

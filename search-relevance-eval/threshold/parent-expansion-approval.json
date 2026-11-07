@@ -1,0 +1,20 @@
+{
+  "approved_by": "parent-agent",
+  "approved_code_sha256": "92b72be30f3be8d6c3fc5bb1f5276967a5d94011a09033ca4430b3a8b96c578e",
+  "created_utc": "2026-11-07T19:24:42.746691+00:00",
+  "diagnostic_only": true,
+  "diagnostic_protocol_sha256": "73f45083f4f18008c6fbc2b040b2584cc7914953175f7cbab93fd01e7a27ad85",
+  "embeddings_allowed": false,
+  "expansion_allowed": true,
+  "forced_recommendation": "D",
+  "generation_source_closure_sha256": "94dc74c98dbd35586f0418d27ce18df098ac071ecf2cfae65dd55bb5b2fa840a",
+  "independent_diagnostic_validation_path": "diagnostic-stage-one-validation.json",
+  "independent_diagnostic_validation_sha256": "5a42a5e31eeec82489801e30ca8ed11201de7a727d033f58f622eedaad66f735",
+  "promotion_allowed": false,
+  "reason": "Independent240-record actual evidence closes known/U truth while strict conformance remains failed. Permit only literal fixed terminal substitutions at registered sizes; no new prose/criteria/labels, no promotion or backend execution. Expansion needs separate independent all-row verification before any vectors/search.",
+  "schema_version": 1,
+  "search_allowed": false,
+  "spec_freeze_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e",
+  "stage_manifest_sha256": "9ca143e95b3908ea19d3fca009764fd3692db84b0917a087299d691c6fee610e",
+  "terminal_templates_sha256": "db9128f2b63ba79a15090f98426a0fa7d868bf4540be06a88b434cd1672d5fe1"
+}

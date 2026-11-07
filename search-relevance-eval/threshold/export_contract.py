@@ -243,6 +243,83 @@ def validate_exports(rows, *, min_score=None, k=None, baseline_commit=BASELINE):
     return {"queries": len(rows), "mode": "top-k" if k is not None else "min-score"}
 
 
+def validate_keyword_exports(rows, *, baseline_commit=BASELINE):
+    """Separate actual-builder OR attribution control, never a primary arm.
+
+    Requires keyword_only_attribution metadata, production lexical main/facet
+    copies with in-query inner hits and public-scope eligibility. This structural
+    assertion is not source/execution provenance and does not construct DSL.
+    """
+    require(isinstance(rows, list) and bool(rows), "Empty keyword export")
+    ids = [row.get("query_id") for row in rows]
+    require(all(isinstance(qid, str) and bool(qid.strip()) for qid in ids) and len(set(ids)) == len(ids),
+            "Keyword query IDs must be unique nonempty strings")
+    for row in rows:
+        require(row.get("baseline_commit") == baseline_commit, "Unexpected production baseline label")
+        require(row.get("diagnostic_mode") == "keyword_only_attribution", "Missing keyword attribution metadata")
+        request = row["request"]
+        require(isinstance(request, dict) and set(request) == {"body", "query_params", "method", "path"},
+                "Expected complete production request envelope")
+        require(request["method"] == "POST" and request["path"].endswith("/_search"), "Unexpected keyword endpoint")
+        require(isinstance(request["query_params"], dict)
+                and isinstance(request["query_params"].get("search_pipeline"), str),
+                "Keyword export must keep enabled hybrid configuration/pipeline parameter")
+        body = request["body"]
+        require(isinstance(body, dict) and "post_filter" not in body and "search_pipeline" not in body,
+                "Keyword control cannot use normalized replay/post-filter DSL")
+        require(not any(isinstance(node, dict) and any(key in node for key in
+                        ("knn", "hybrid", "normalization-processor", "phase_results_processors"))
+                        for _, node in walk(body)), "Keyword control contains vector/hybrid/normalization DSL")
+        scorer = body.get("query", {}).get("function_score", {})
+        require(scorer.get("score_mode") == "sum" and scorer.get("functions", [])[:2] == [
+            {"weight": 1.0}, {"field_value_factor": {"field": "quality", "missing": 1.0},
+                              "filter": {"term": {"hasQuality": {"value": True}}}}],
+                "Keyword control lost production quality/function-score placement")
+        scopes = [body["query"]]
+        for name in ("Format-global", "Publisher-global"):
+            require(name in body.get("aggs", {}), "Missing keyword facet copy")
+            scopes.append(body["aggs"][name]["aggs"]["filter"]["filter"])
+        for scope in scopes:
+            dismax = [(path, node["dis_max"]) for path, node in walk(scope)
+                      if isinstance(node, dict) and "dis_max" in node]
+            require(len(dismax) == 1, "Expected production lexical dis_max per scope")
+            path, family = dismax[0]
+            require(family.get("tie_breaker") == .2 and len(family.get("queries", [])) == 2,
+                    "Changed keyword root/distribution dis_max")
+            root, distribution = family["queries"]
+            require(set(root) == {"bool"} and len(root["bool"].get("should", [])) == 2,
+                    "Missing production dataset lexical fields")
+            nested = distribution.get("nested", {})
+            require(nested.get("path") == "distributions" and nested.get("score_mode") == "max",
+                    "Keyword lexical distribution branch escaped nested scope")
+            child_bool = nested.get("query", {}).get("bool", {})
+            require(len(child_bool.get("must", [])) == 1
+                    and "simple_query_string" in child_bool["must"][0], "Missing distribution lexical query")
+            _eligibility(child_bool.get("filter"), NESTED_FIELD)
+            parent_eligible = False
+            for length in range(len(path), -1, -1):
+                parent = at(scope, path[:length])
+                if isinstance(parent, dict) and "filter" in parent.get("bool", {}):
+                    try:
+                        _eligibility(parent["bool"]["filter"], ROOT_FIELD)
+                        parent_eligible = True
+                        break
+                    except ValueError:
+                        pass
+            require(parent_eligible, "Missing parent-scope dataset eligibility")
+            strings = [node["simple_query_string"] for _, node in walk(scope)
+                       if isinstance(node, dict) and "simple_query_string" in node]
+            require(len(strings) == 3 and all(query.get("default_operator") == "or" for query in strings),
+                    "Keyword attribution must preserve all production OR lexical queries")
+            require(any(isinstance(node, dict) and "nested" in node
+                        and node["nested"].get("path") == "distributions"
+                        and node["nested"].get("score_mode") == "none"
+                        and "inner_hits" in node["nested"] for _, node in walk(scope)),
+                    "Keyword inner-hit projection moved/lost from query scope")
+    return {"queries": len(rows), "diagnostic_only": True, "mode": "keyword_only_attribution",
+            "lexical_queries_per_request": 9, "knn_copies": 0}
+
+
 def validate_request_sets(request_sets, config_paths=None):
     """Runner hook: validate loaded label -> Scala-export rows before execution.
 

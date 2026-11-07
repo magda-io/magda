@@ -1,0 +1,56 @@
+{
+  "mechanical_actual_source_projection_not_semantic_review": true,
+  "records": [
+    {
+      "seed": 38871,
+      "source_path": ".local/stage-one-v2/core-38871.jsonl",
+      "fields": {
+        "title": "QLR-260 Microphone Module",
+        "description": {
+          "text_chunks": [
+            "This identity register documents a microphone component for an acoustic logger, not the parent unit. Its title and file documentation identify the registered item; similar-looking codes do not establish interchangeability. The downloadable table provides this register, not operating measurements. This is a fictional observed inventory, not simulated test results or a real-data claim."
+          ]
+        },
+        "queryContext": {
+          "text_chunks": [
+            "Title: QLR-260 Microphone Module\nDescription: This identity register documents a microphone component for an acoustic logger, not the parent unit. Its title and file documentation identify the registered item; similar-looking codes do not establish interchangeability. The downloadable table provides this register, not operating measurements. This is a fictional observed inventory, not simulated test results or a real-data claim.\n"
+          ]
+        }
+      }
+    },
+    {
+      "seed": 38872,
+      "source_path": ".local/stage-one-v2/core-38872.jsonl",
+      "fields": {
+        "title": "QLR-260 Microphone Module",
+        "description": {
+          "text_chunks": [
+            "The collection is an observed identity register for a separate microphone module, not the acoustic logger itself. Consult the title together with the attached file documentation for the item represented. The table concerns that identity alone and does not describe performance testing. All inventory observations are fictional; no real dataset or simulated experiment is asserted."
+          ]
+        },
+        "queryContext": {
+          "text_chunks": [
+            "Title: QLR-260 Microphone Module\nDescription: The collection is an observed identity register for a separate microphone module, not the acoustic logger itself. Consult the title together with the attached file documentation for the item represented. The table concerns that identity alone and does not describe performance testing. All inventory observations are fictional; no real dataset or simulated experiment is asserted.\n"
+          ]
+        }
+      }
+    },
+    {
+      "seed": 38873,
+      "source_path": ".local/stage-one-v2/core-38873.jsonl",
+      "fields": {
+        "title": "QLR-260 Microphone Module",
+        "description": {
+          "text_chunks": [
+            "This register concerns the observed identity of an acoustic logger's microphone component rather than the complete instrument. The release identifies the item through its title and attached documentation, rather than supplying a performance study. The downloadable table carries the register in one format. Its inventory observations are fictional, not simulations or claims about actual holdings."
+          ]
+        },
+        "queryContext": {
+          "text_chunks": [
+            "Title: QLR-260 Microphone Module\nDescription: This register concerns the observed identity of an acoustic logger's microphone component rather than the complete instrument. The release identifies the item through its title and attached documentation, rather than supplying a performance study. The downloadable table carries the register in one format. Its inventory observations are fictional, not simulations or claims about actual holdings.\n"
+          ]
+        }
+      }
+    }
+  ]
+}

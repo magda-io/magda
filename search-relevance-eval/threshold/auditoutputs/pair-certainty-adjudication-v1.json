@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "status": "independent_pair_scope_adjudication_NOT_validation_passed",
+  "pre_retrieval": true,
+  "independent_of_generator": true,
+  "actual_text_validation_passed": false,
+  "promotion_allowed": false,
+  "expansion_allowed": false,
+  "embeddings_allowed": false,
+  "strict_fixture_conformance_passed": false,
+  "forced_recommendation": "D",
+  "reviewer": {
+    "id": "C-pair-certainty-adjudicator",
+    "context_id": "unavailable",
+    "model": "gpt-6.1-sol",
+    "parameters": "unavailable",
+    "rankings_seen": false,
+    "generator_code_seen": false
+  },
+  "spec_freeze_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e",
+  "stage_manifest": {
+    "path": ".local/stage-one-v2/manifest.json",
+    "sha256": "9ca143e95b3908ea19d3fca009764fd3692db84b0917a087299d691c6fee610e"
+  },
+  "source_inspection": {
+    "path": "auditoutputs/stage-one-inspection-v1.json",
+    "sha256": "d04bfbbb1836e8d65cad20393c0c194b6b580ee62101ca3e73f90d6c55d228eb"
+  },
+  "targeted_actual_projection": {
+    "path": "auditoutputs/disputed-actual-evidence-v1.json",
+    "reading_scope": "C read every line of this lossless2293-line projection: all18 strict-failure records plus EV full anchors in all three seeds. Source-bound fresh reviewers independently read the complete240 actual records/classes; C does not claim a second manual reread of all240."
+  },
+  "manual_review_sources": [
+    {"path": "auditoutputs/reviews-v2/packet-38871-1.json", "sha256": "86c91ffce46b0cce9e837e065248865ac12fc459e993b85736cb5a68653c1b03"},
+    {"path": "auditoutputs/reviews-v2/packet-38871-2.json", "sha256": "bbd8cfb846b33882425662f622607d45550ac81d28ba6d224e4d70aad9bceef7"},
+    {"path": "auditoutputs/reviews-v2/packet-38872-1.json", "sha256": "c94f14d617cce6e3fa8568d87788fa65318ccca2696404a838d930c3cecb22d9"},
+    {"path": "auditoutputs/reviews-v2/packet-38872-2.json", "sha256": "95d06c51f061fdd15867fe6a88f7522da4f8b318a64623f9dbe6256b03272e7e"},
+    {"path": "auditoutputs/reviews-v2/packet-38873-1.json", "sha256": "4f5694a73cb8b86b034661d9692bc98f2749cdcc8b82860ddeb52213337b9d47"},
+    {"path": "auditoutputs/reviews-v2/packet-38873-2.json", "sha256": "163bac984adeec9c783a31ba5a3d634ba15fb153ed436882167a38e749d558f7"}
+  ],
+  "unknown_pairs": [
+    {
+      "seed": 38871,
+      "query_id": "t03p3",
+      "dataset_id": "t013",
+      "reason": "The submitted query requests internal cell warmth. Actual root evidence documents generic cell temperature without establishing internal rather than surface/unspecified sensing. Preserve the independent query-specific uncertainty; do not silently equate the extra qualifier with the frozen generic variable.",
+      "evidence": [{"field": "description", "quote": "Entries document retained usable electrical capacity of each cell, completed charge-discharge cycle count and cell temperature."}],
+      "supported_grade_interval": [2, 3],
+      "origin": "fresh reviewer query_wording_entailment_U, retained by C"
+    },
+    {
+      "seed": 38871,
+      "query_id": "t03p3",
+      "dataset_id": "t014",
+      "reason": "The same query-specific internal-sensor ambiguity occurs in actual first-distribution generic cell-temperature evidence; the root establishes study scope but supplies no internal sensor location.",
+      "evidence": [{"field": "distributions.0.description", "quote": "The entries record retained usable electrical capacity of each cell, completed charge-discharge cycle count and cell temperature."}],
+      "supported_grade_interval": [2, 3],
+      "origin": "fresh reviewer query_wording_entailment_U, retained by C"
+    },
+    {
+      "seed": 38872,
+      "query_id": "t03p3",
+      "dataset_id": "t013",
+      "reason": "C independently checked the actual second-seed realization after the first-seed wording objection: thermal readings of each cell still does not establish internal rather than surface/unspecified sensor location. The first reviewer did not flag this row; that omission is preserved, not treated as proof of equivalence.",
+      "evidence": [{"field": "description", "quote": "Entries document measured remaining usable electrical capacity, number of completed charging and discharging repetitions and thermal readings of each cell."}],
+      "supported_grade_interval": [2, 3],
+      "origin": "C independent actual-text/query entailment adjudication; original fresh pass unchanged"
+    },
+    {
+      "seed": 38872,
+      "query_id": "t03p3",
+      "dataset_id": "t014",
+      "reason": "The actual first-distribution phrase thermal readings of each cell has the same unresolved internal-location qualifier. C reviewed this actual seed-specific text rather than inheriting a first-seed label.",
+      "evidence": [{"field": "distributions.0.description", "quote": "The entries record measured remaining usable electrical capacity, number of completed charging and discharging repetitions and thermal readings of each cell."}],
+      "supported_grade_interval": [2, 3],
+      "origin": "C independent actual-text/query entailment adjudication; original fresh pass unchanged"
+    },
+    {
+      "seed": 38873,
+      "query_id": "t08p1",
+      "dataset_id": "t045",
+      "reason": "The unpunctuated negation may apply to measurement distance as well as acoustic intensity. SPL is supported; distance is unresolved; operating load is a test condition, not a documented measured load column. Grade cannot be silently set to planned2 or supported-only1 because the literal scope is genuinely uncertain.",
+      "evidence": [{"field": "description", "quote": "Entries document decibel readings of sound pressure level, not acoustic intensity and measurement distance between source and microphone."}],
+      "supported_grade_interval": [1, 2],
+      "origin": "fresh reviewer measurement_negation_scope_U, retained by C"
+    },
+    {
+      "seed": 38873,
+      "query_id": "t08p2",
+      "dataset_id": "t045",
+      "reason": "Same unresolved measurement-distance negation scope for the second acoustic paraphrase; actual child metadata adds no resolving measurement evidence.",
+      "evidence": [{"field": "description", "quote": "Entries document decibel readings of sound pressure level, not acoustic intensity and measurement distance between source and microphone."}],
+      "supported_grade_interval": [1, 2],
+      "origin": "fresh reviewer measurement_negation_scope_U, retained by C"
+    },
+    {
+      "seed": 38873,
+      "query_id": "t08p3",
+      "dataset_id": "t045",
+      "reason": "Same unresolved measurement-distance negation scope for the third acoustic paraphrase; no forced numeric grade or expected-grade rescue.",
+      "evidence": [{"field": "description", "quote": "Entries document decibel readings of sound pressure level, not acoustic intensity and measurement distance between source and microphone."}],
+      "supported_grade_interval": [1, 2],
+      "origin": "fresh reviewer measurement_negation_scope_U, retained by C"
+    }
+  ],
+  "record_issue_dispositions": [
+    {
+      "records": [{"seed": 38871, "dataset_id": "t012"}, {"seed": 38872, "dataset_id": "t012"}, {"seed": 38873, "dataset_id": "t012"}, {"seed": 38871, "dataset_id": "g18-r001"}, {"seed": 38872, "dataset_id": "g18-r001"}, {"seed": 38873, "dataset_id": "g18-r001"}],
+      "original_issue": "Computational-observation basis has no unambiguous taxonomy value; basis U and original false manual flags remain unchanged.",
+      "pair_scope": "All48 numeric query-record pairs remain independently derivable: software syntax trees/parser execution is a decisive wrong product/process for all semantic needs; all12 absent negative conjunctions were exhaustively checked; all exact IDs are non-targets. Do not infer absence from U itself. Both ambiguity fragments remain intentionally U.",
+      "evidence_examples": [{"field": "description", "quote": "Observed parser runs process software syntax trees, not living street trees or measurements of shaded air."}, {"field": "description", "quote": "The records concern measured performance of parsing software syntax trees."}],
+      "record_conformance_passed": false
+    },
+    {
+      "records": [{"seed": 38872, "dataset_id": "t011"}, {"seed": 38872, "dataset_id": "g02-r001"}],
+      "original_issue": "Physical-versus-administrative basis of pruning work register unresolved; preserve basis U and original false manual flags.",
+      "pair_scope": "Pruning operations explicitly are not a tree-shade microclimate study; all other semantic products/processes also mismatch. This decisive process exclusion plus complete negative-absence evidence supports known numeric zero without converting basis U to physical. Intentional ambiguity remains U.",
+      "evidence_examples": [{"field": "description", "quote": "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade."}],
+      "record_conformance_passed": false
+    },
+    {
+      "records": [{"seed": 38871, "dataset_id": "t051"}, {"seed": 38872, "dataset_id": "t051"}, {"seed": 38873, "dataset_id": "t051"}],
+      "original_issue": "Unsatisfiable frozen full-code-in-exact-title requirement and full component code absent from actual fields; preserve strict design failure and do not fabricate identity observations.",
+      "pair_scope": "The actual microphone-component record is not an authoritative target of any current exact query, which uses objective stable-ID equality. Its semantic products/processes do not match scored needs, and all12 negative conjunctions were independently absent. Thus known non-target labels do not cure or hide strict fixture failure.",
+      "evidence_examples": [{"field": "title", "quote": "QLR-260 Microphone Module"}],
+      "record_conformance_passed": false
+    },
+    {
+      "records": [{"seed": 38873, "dataset_id": "t013"}, {"seed": 38873, "dataset_id": "t014"}],
+      "original_issue": "Cross-seed check of internal cell-temperature qualifier, not inherited uncertainty.",
+      "pair_scope": "These actual third-seed realizations explicitly document measured temperature within the cells, resolving internal-location support. Their t03p3 labels remain known3; do not automatically propagate first/second-seed U.",
+      "evidence_examples": [{"field": "description", "quote": "measured temperature within the cells"}, {"field": "distributions.0.description", "quote": "measured temperature within the cells"}],
+      "record_conformance_passed": true
+    }
+  ],
+  "non_grade_metadata_discrepancies": [
+    {
+      "records": [{"seed": 38872, "dataset_id": "t023"}, {"seed": 38872, "dataset_id": "g04-r001"}],
+      "planned_fact": "daytime_call_count",
+      "observed_supported_facts": ["observer_position"],
+      "actual_quote": "Entries document calls heard during daylight and locations of the listeners.",
+      "finding": "Calls heard does not explicitly document a tally/count variable. The fresh reviewer correctly did not assert daytime_call_count. Keep the strict closed-claim mismatch; no numeric query-grade difference follows because actual daytime listening is explicitly not nighttime radar tracking.",
+      "automatic_mask_added": false
+    },
+    {
+      "records": [{"seed": 38872, "dataset_id": "t024"}, {"seed": 38873, "dataset_id": "t024"}],
+      "planned_fact": "item_price",
+      "observed_supported_facts": ["retail_price", "stock_count"],
+      "actual_quotes": ["selling prices of figures", "listed prices"],
+      "finding": "Fresh observers used the legitimate global retail_price key for actual shop selling/listed prices while the canonical plan used item_price. Preserve both observed and planned keys and the strict fact-set discrepancy, rather than mechanically rewriting the review to match tags. The retail bird-figurine product/process is a decisive mismatch for all semantic needs; scored labels do not change.",
+      "automatic_mask_added": false
+    }
+  ],
+  "coverage": {
+    "actual_manual_record_class_reviews": 240,
+    "original_manual_false_record_flags": 11,
+    "strict_failed_record_count_before_pair_scope_adjudication": 18,
+    "source_or_literal_context_extraction_failures": 0,
+    "new_scored_unknown_query_record_seed_pairs": 7,
+    "intentional_ambiguity_pairs": 480,
+    "total_query_record_seed_pairs_at_stage_one": 12000,
+    "planned_numeric_pair_population": 11520,
+    "expected_known_numeric_pairs_after_explicit_scope_mask": 11513,
+    "legacy_unknown_pairs_preserved_separately": 12
+  },
+  "rules": {
+    "original_reviews_rewritten": false,
+    "false_flags_flipped": false,
+    "frozen_queries_or_labels_changed": false,
+    "unknown_coerced_to_zero": false,
+    "known_disagreements_automatically_masked": false,
+    "seedless_qrels_allowed": false,
+    "future_diagnostic_contract_requires_parent_approval": true,
+    "note": "Seven explicit pair-specific uncertainties are independent semantic judgments tied to actual text, not score-selected masks. Any diagnostic qrels must be seed-specific and must retain every known disagreement, original issue and strict nonconformance. This artifact itself authorizes neither expansion nor execution."
+  }
+}

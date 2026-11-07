@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "status": "rejected_before_fresh_semantic_audit",
+  "pre_retrieval": true,
+  "actual_text_validation_passed": false,
+  "review_scope": "Targeted independent basis/boilerplate preflight, not completed manual review of240 realizations. Complete machine scan of actual root descriptions and production context equality; manually inspected explicit permit-accounting examples across seeds. No generator code, models, embeddings, rankings or scores used.",
+  "stage_one_manifest": {
+    "path": ".local/stage-one/manifest.json",
+    "sha256": "d73f3470b38f16bcb9879e22b3a32562c7a4962b00cc1d0ef159901ad2804979"
+  },
+  "terminal_templates": {
+    "path": ".local/stage-one/terminal-templates.json",
+    "sha256": "fd55250df5cad0dddb29530c8c85edaa249f7366296bbe01a00327d62ac7aca9"
+  },
+  "source_sha256": {
+    ".local/stage-one/core-38871.jsonl": "2dc61c18e53ceb8453c6364eee5552f9da6434de75657ea99a4d5be73d788e9e",
+    ".local/stage-one/core-38872.jsonl": "1fbbe0206e045ec0a00115640521d77a0a778ade26e113df624427a48199117d",
+    ".local/stage-one/core-38873.jsonl": "d535d7604f47670ff686cd6647565e369d80fc9e88c5c511a024cca585255155",
+    ".local/stage-one/growth-38871.jsonl": "3e7ef9116787891fd95e2ce88d4971e383646c574cd27fd97577fe367cec1827",
+    ".local/stage-one/growth-38872.jsonl": "1d8a7a74c884582306679fa4353ea47d3d8cb018bdab82c43e0cc4c0bed0e019",
+    ".local/stage-one/growth-38873.jsonl": "647e9ea98713ca5c29fb931e860e5d2ab969558bfeb1450803b14710ac16e6d7"
+  },
+  "finding": {
+    "id": "C-actual-basis-footer",
+    "type": "misleading universal physical-basis assertion",
+    "reason": "Seed-specific universal footers characterize collections as physical observations/events even when their actual body explicitly documents administrative permit transactions, invoicing, schedules, sales or procurement rather than a physical measurement study. The fiction disclaimer must not supply physical-study evidence or override the truthful administrative basis. A field inventory can legitimately observe physical objects, so this is not an automatic rejection of every inventory process or a change to semantic labels.",
+    "simulation_caveat": "No simulation-only contradiction is established by this preflight. The frozen supplementary architecture contains observed-not-simulated claims, and a footer saying not simulated alone is not evidence that a simulated record exists. Do not invent a simulation failure or label.",
+    "counts": {
+      "core_root_descriptions_with_footer_per_seed": 48,
+      "core_footer_realizations_total": 144,
+      "growth_root_descriptions_with_footer_per_seed": 20,
+      "growth_footer_realizations_total": 60,
+      "total_footer_realizations": 204,
+      "all240_root_contexts_exactly_derived": true,
+      "all60_growth_terminal_bundles_contain_footer": true
+    }
+  },
+  "literal_evidence": [
+    {
+      "seed": 38871,
+      "dataset_id": "t041",
+      "source_path": ".local/stage-one/core-38871.jsonl",
+      "field": "description",
+      "body_quote": "Observed discharge-permit accounts concern textile dye wastewater. They document administrative transactions, not treatment measurements for removing color.",
+      "footer_quote": "This is a fictional physical-observation collection, not simulated measurements or a claim about real data.",
+      "footer_character_span_zero_based_end_exclusive": [539, 646]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t041",
+      "source_path": ".local/stage-one/core-38872.jsonl",
+      "field": "description",
+      "body_quote": "The register records actual permit accounting for wastewater from textile dyeing, rather than observations of a decolorization process. Entries document fees charged for permits and periods covered by bills.",
+      "footer_quote": "All described observations are fictional physical events within this fixture, not simulations or real-world data claims.",
+      "footer_character_span_zero_based_end_exclusive": [531, 651]
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "t041",
+      "source_path": ".local/stage-one/core-38873.jsonl",
+      "field": "description",
+      "body_quote": "This collection concerns observed permit transactions for textile-dye wastewater discharge. It is an accounting register, not a color-removal experiment.",
+      "footer_quote": "The collection depicts fictional physical observations; it makes no claim to hold real data or simulated results.",
+      "footer_character_span_zero_based_end_exclusive": [549, 662]
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g07-r001",
+      "source_path": ".local/stage-one/growth-38871.jsonl",
+      "field": "description",
+      "body_quote": "Observed discharge-permit accounts concern textile dye wastewater. They document administrative transactions, not treatment measurements for removing color.",
+      "footer_quote": "This is a fictional physical-observation collection, not simulated measurements or a claim about real data.",
+      "footer_character_span_zero_based_end_exclusive": [262, 369]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "g07-r001",
+      "source_path": ".local/stage-one/growth-38872.jsonl",
+      "field": "description",
+      "body_quote": "The register records actual permit accounting for wastewater from textile dyeing, rather than observations of a decolorization process. Entries document fees charged for permits and periods covered by bills.",
+      "footer_quote": "All described observations are fictional physical events within this fixture, not simulations or real-world data claims.",
+      "footer_character_span_zero_based_end_exclusive": [263, 383]
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "g07-r001",
+      "source_path": ".local/stage-one/growth-38873.jsonl",
+      "field": "description",
+      "body_quote": "This collection concerns observed permit transactions for textile-dye wastewater discharge. It is an accounting register, not a color-removal experiment.",
+      "footer_quote": "The collection depicts fictional physical observations; it makes no claim to hold real data or simulated results.",
+      "footer_character_span_zero_based_end_exclusive": [292, 405]
+    }
+  ],
+  "requested_narrow_repair": {
+    "requires_parent_authorization": true,
+    "preserve_original_sources": true,
+    "scope": "Replace only the seed-specific generic footer with a truthful fiction-only disclaimer making no physical/measurement/simulation-basis assertion, plus exactly derived root queryContext and corresponding terminal metadata context strings. Preserve all actual product/process/variable clauses, scope, formats, identities, sources and slot rules; recheck frozen word budgets without new substantive claims. Parent may authorize this factual-quality repair against unchanged frozen truth.",
+    "truth_changes_allowed": false,
+    "query_label_or_architecture_changes_allowed": false,
+    "legacy_U_changes_allowed": false,
+    "new_hash_manifest_and_exact_delta_proof_required": true,
+    "full_fresh240_record_class_audit_still_required": true,
+    "growth_expansion_or_embeddings_allowed": false
+  }
+}

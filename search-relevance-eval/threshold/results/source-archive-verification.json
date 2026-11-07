@@ -1,0 +1,11 @@
+{
+  "archive_sha256": "ebc7da24576106a7bbe514877413259a03106b0e92d9d2de16e6e1af69a21e93",
+  "benchmark_queries_or_inference": 0,
+  "created_utc": "2026-11-07T19:43:56.709422+00:00",
+  "extractor_sha256": "d4dee404cfde185ccf3f16250bd14f99cd8bc563a3f19fa2743aee3cd2c60525",
+  "extractor_source": "search-relevance-eval/synthetic/reproduce.py",
+  "fresh_root_restore": true,
+  "idempotent_second_restore": true,
+  "members_verified": 49,
+  "schema_version": 1
+}

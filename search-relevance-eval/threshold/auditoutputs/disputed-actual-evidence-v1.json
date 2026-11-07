@@ -1,0 +1,2293 @@
+{
+  "scope": "Lossless targeted actual source projection, not new semantic observations",
+  "records": [
+    {
+      "seed": 38871,
+      "dataset_id": "t012",
+      "source": {
+        "path": ".local/stage-one-v2/core-38871.jsonl",
+        "sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a"
+      },
+      "raw_record_sha256": "ce0a16261b7c6e3caf70ba22b2c965f96e0b2c55019d7f73efb7759b7a591576",
+      "title": "Parser performance fieldbook",
+      "description": {
+        "text_chunks": [
+          "Observed parser runs process software syntax trees, not living street trees or measurements of shaded air. Entries document parse duration and node counts. Names, identifiers and catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed parser runs"
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "node_count": [
+              {
+                "field": "description",
+                "quote": "node counts"
+              }
+            ],
+            "parse_duration": [
+              {
+                "field": "description",
+                "quote": "parse duration"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed parser runs process software syntax trees"
+              }
+            ],
+            "value": "observed_parser_performance"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "software syntax trees"
+              },
+              {
+                "field": "title",
+                "quote": "Parser performance fieldbook"
+              }
+            ],
+            "value": "software_syntax_tree"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "affected_query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ],
+          "detail": "Observed parser runs document real computational execution/performance measurements (parse duration and node counts). The allowed observed_not_simulated definition specifies physical/experimental measurements; this is not a physical field trial, simulation-only record, or administrative ledger. Preserve U for basis taxonomy rather than invent a physical observation. Product/process mismatch to urban street-tree shade is independently explicit.",
+          "type": "basis_taxonomy_U"
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: t012"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: t012"
+        }
+      ]
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t013",
+      "source": {
+        "path": ".local/stage-one-v2/core-38871.jsonl",
+        "sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a"
+      },
+      "raw_record_sha256": "596fe7485a276a66ba2b1df7cc4a05cf17493b5bb0ca8dafec846b98322f334f",
+      "title": "Rechargeable cell wear register",
+      "description": {
+        "text_chunks": [
+          "Bench observations follow individual rechargeable battery cells intended for electric vehicles through aging during repeated charge and discharge. Entries document retained usable electrical capacity of each cell, completed charge-discharge cycle count and cell temperature. Names, identifiers and catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Bench observations follow individual rechargeable battery cells"
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "cell_temperature": [
+              {
+                "field": "description",
+                "quote": "cell temperature"
+              }
+            ],
+            "cycle_count": [
+              {
+                "field": "description",
+                "quote": "completed charge-discharge cycle count"
+              }
+            ],
+            "remaining_capacity": [
+              {
+                "field": "description",
+                "quote": "retained usable electrical capacity of each cell"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "aging during repeated charge and discharge"
+              }
+            ],
+            "value": "observed_repeated_cycle_aging"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "individual rechargeable battery cells intended for electric vehicles"
+              },
+              {
+                "field": "title",
+                "quote": "Rechargeable cell wear register"
+              }
+            ],
+            "value": "electric_vehicle_battery_cells"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "affected_query_ids": [
+            "t03p3"
+          ],
+          "detail": "Exact query wording requests internal cell warmth, but actual positive evidence only says cell temperature. No root or child field establishes internal sensor location rather than surface/unspecified cell temperature. Canonical cell_temperature is supported; the extra literal internal-location implication is unresolved. Other cell paraphrases do not express that location qualifier.",
+          "type": "query_wording_entailment_U"
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: t013"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: t013"
+        }
+      ]
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t014",
+      "source": {
+        "path": ".local/stage-one-v2/core-38871.jsonl",
+        "sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a"
+      },
+      "raw_record_sha256": "959d641636a0ab87f8bb12b33c042a9c1f7f849a0526c24696f889f0250e4e9a",
+      "title": "Electric-vehicle cell cycling observations",
+      "description": {
+        "text_chunks": [
+          "Bench observations follow individual rechargeable battery cells intended for electric vehicles through aging during repeated charge and discharge. The unit represented is an individual cell, not an assembled pack. Electric vehicles are the intended application without limiting the records to a particular vehicle class. The collection describes repeated use of those cells rather than manufacturing sales or shipment accounting. The primary description establishes what collection the files belong to, while the first downloadable file describes its recorded contents. That separation is intentional",
+          ": the collection heading alone is not a list of variables. The structured companion represents the same entries and does not add a further experiment. Interpret the file description together with this scope statement when deciding what the release contains. Names, identifiers and catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "The entries record retained usable electrical capacity of each cell, completed charge-discharge cycle count and cell temperature. This downloadable table documents the fictional physical observations described by the collection; its structured companion carries the same entries, without further measurement variables."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Bench observations follow individual rechargeable battery cells"
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "cell_temperature": [
+              {
+                "field": "distributions.0.description",
+                "quote": "cell temperature"
+              }
+            ],
+            "cycle_count": [
+              {
+                "field": "distributions.0.description",
+                "quote": "completed charge-discharge cycle count"
+              }
+            ],
+            "remaining_capacity": [
+              {
+                "field": "distributions.0.description",
+                "quote": "retained usable electrical capacity of each cell"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "aging during repeated charge and discharge"
+              }
+            ],
+            "value": "observed_repeated_cycle_aging"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "individual rechargeable battery cells intended for electric vehicles"
+              },
+              {
+                "field": "title",
+                "quote": "Electric-vehicle cell cycling observations"
+              }
+            ],
+            "value": "electric_vehicle_battery_cells"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "affected_query_ids": [
+            "t03p3"
+          ],
+          "detail": "Exact query wording requests internal cell warmth, but actual positive evidence only says cell temperature. No root or child field establishes internal sensor location rather than surface/unspecified cell temperature. Canonical cell_temperature is supported; the extra literal internal-location implication is unresolved. Other cell paraphrases do not express that location qualifier.",
+          "type": "query_wording_entailment_U"
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: t014"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: t014"
+        }
+      ]
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "t051",
+      "source": {
+        "path": ".local/stage-one-v2/core-38871.jsonl",
+        "sha256": "81bea9d9a116b63239f7b9ae19bdf20fe063994e2130d0981494ab2a2455da5a"
+      },
+      "raw_record_sha256": "bd8f55215d988b68a7651f94c6c09a3e3ad15dc4e86bf9a6da93232786e0f5c2",
+      "title": "QLR-260 Microphone Module",
+      "description": {
+        "text_chunks": [
+          "This identity register documents a microphone component for an acoustic logger, not the parent unit. Its title and file documentation identify the registered item; similar-looking codes do not establish interchangeability. The downloadable table provides this register, not operating measurements. This is a fictional observed inventory, not simulated test results or a real-data claim."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "fictional observed inventory"
+              }
+            ],
+            "value": "observed_administrative_records"
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "formats": [
+            {
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ],
+              "value": "CSV"
+            }
+          ],
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This identity register documents"
+              }
+            ],
+            "value": "observed_identity_register"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "a microphone component for an acoustic logger"
+              }
+            ],
+            "value": "acoustic_logger_microphone_component"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": [
+        {
+          "check": "fixture_conformance",
+          "message": "Authoritative identity absent in frozen scope"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Authoritative identity absent in frozen scope"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t011",
+      "source": {
+        "path": ".local/stage-one-v2/core-38872.jsonl",
+        "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+      },
+      "raw_record_sha256": "864b682adcdc30a646d03c4997329bf60ac3d246e67e64ae4effdeaaa3fed8c9",
+      "title": "City tree pruning register",
+      "description": {
+        "text_chunks": [
+          "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade. Entries document number of branches removed and hours of crew work. Use this description to interpret the published entries. The downloadable table and structured file represent the same collection rather than independent evidence. The release is limited to the contents stated here; its name does not imply that other measurements or related operational records are available in the files. Names, identifiers and these catalogue entries are fictional examples, with no a",
+          "ssertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Entries document number of branches removed and hours of crew work."
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "branch_removal_count": [
+              {
+                "field": "description",
+                "quote": "number of branches removed"
+              }
+            ],
+            "crew_hours": [
+              {
+                "field": "description",
+                "quote": "hours of crew work"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade."
+              }
+            ],
+            "value": "observed_pruning_operations"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade."
+              }
+            ],
+            "value": "urban_street_trees"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "code": "basis_unresolved",
+          "detail": "Pruning operations are explicit, but a work register of branch totals and crew hours does not establish whether these are direct physical observations or administrative work-log entries. No shade measurements are documented.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "Entries document number of branches removed and hours of crew work."
+            },
+            {
+              "field": "description",
+              "quote": "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade."
+            }
+          ],
+          "query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ]
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: t011"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: t011"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t012",
+      "source": {
+        "path": ".local/stage-one-v2/core-38872.jsonl",
+        "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+      },
+      "raw_record_sha256": "8fa9788f0a9188d6071f1a5433da9b61bc6c943f894d460ab3101dcfe6f45a3c",
+      "title": "Parser performance fieldbook",
+      "description": {
+        "text_chunks": [
+          "This collection records actual software parser performance on syntax tree structures; it is not a study of urban vegetation. Entries document time required to parse and number of syntax nodes. Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records actual software parser performance on syntax tree structures"
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "node_count": [
+              {
+                "field": "description",
+                "quote": "number of syntax nodes"
+              }
+            ],
+            "parse_duration": [
+              {
+                "field": "description",
+                "quote": "time required to parse"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records actual software parser performance on syntax tree structures; it is not a study of urban vegetation."
+              }
+            ],
+            "value": "observed_parser_performance"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records actual software parser performance on syntax tree structures; it is not a study of urban vegetation."
+              }
+            ],
+            "value": "software_syntax_tree"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "code": "computational_basis_vocabulary_ambiguity",
+          "detail": "Actual computational parser performance is documented, not a simulation of street trees or a physical field trial. The permitted basis vocabulary lacks an unambiguous observed-computational value; preserve U rather than misdescribe its observations.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "This collection records actual software parser performance on syntax tree structures"
+            }
+          ],
+          "query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ]
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: t012"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: t012"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t013",
+      "source": {
+        "path": ".local/stage-one-v2/core-38872.jsonl",
+        "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+      },
+      "raw_record_sha256": "8edcee2ef39dd0dec04e1171a89f4e50d88f359ebe38e3569c2a0e7020a2374a",
+      "title": "Rechargeable cell wear register",
+      "description": {
+        "text_chunks": [
+          "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs. Entries document measured remaining usable electrical capacity, number of completed charging and discharging repetitions and thermal readings of each cell. Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs."
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "cell_temperature": [
+              {
+                "field": "description",
+                "quote": "thermal readings of each cell"
+              }
+            ],
+            "cycle_count": [
+              {
+                "field": "description",
+                "quote": "number of completed charging and discharging repetitions"
+              }
+            ],
+            "remaining_capacity": [
+              {
+                "field": "description",
+                "quote": "measured remaining usable electrical capacity"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs."
+              }
+            ],
+            "value": "observed_repeated_cycle_aging"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs."
+              }
+            ],
+            "value": "electric_vehicle_battery_cells"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": []
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t014",
+      "source": {
+        "path": ".local/stage-one-v2/core-38872.jsonl",
+        "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+      },
+      "raw_record_sha256": "d68b35fe54705ddc704d875f986a9572d07f3fe9c6d28464743f19f3b0ccd552",
+      "title": "Rechargeable cell wear register",
+      "description": {
+        "text_chunks": [
+          "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs. The unit represented is an individual cell, not an assembled pack. Electric vehicles are the intended application without limiting the records to a particular vehicle class. The collection describes repeated use of those cells rather than manufacturing sales or shipment accounting. Collection-level documentation and file-level documentation serve different purposes in this release. This description establishes the subject and observational set",
+          "ting; the first file's description specifies the recorded contents. The second format is a representation of the same collection rather than independent supporting evidence. Reading the collection heading as though it enumerated the available variables would therefore extend the release beyond what its documentation states. Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "The entries record measured remaining usable electrical capacity, number of completed charging and discharging repetitions and thermal readings of each cell. This downloadable table documents the fictional physical observations described by the collection; its structured companion carries the same entries, without further measurement variables."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs."
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "cell_temperature": [
+              {
+                "field": "distributions.0.description",
+                "quote": "thermal readings of each cell"
+              }
+            ],
+            "cycle_count": [
+              {
+                "field": "distributions.0.description",
+                "quote": "number of completed charging and discharging repetitions"
+              }
+            ],
+            "remaining_capacity": [
+              {
+                "field": "distributions.0.description",
+                "quote": "measured remaining usable electrical capacity"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs."
+              }
+            ],
+            "value": "observed_repeated_cycle_aging"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records physical tests of aging in individual electric-vehicle battery cells repeatedly charged and discharged, rather than whole packs."
+              }
+            ],
+            "value": "electric_vehicle_battery_cells"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": []
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t023",
+      "source": {
+        "path": ".local/stage-one-v2/core-38872.jsonl",
+        "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+      },
+      "raw_record_sha256": "2fa1e759e000e730a315cb49a8ad1326b3ceb94198660c6df24889565b86a591",
+      "title": "Daylight bird acoustic sightings",
+      "description": {
+        "text_chunks": [
+          "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes. Entries document calls heard during daylight and locations of the listeners. Use this description to interpret the published entries. The downloadable table and structured file represent the same collection rather than independent evidence. The release is limited to the contents stated here; its name does not imply that other measurements or related operational records are available in the files. Names, identifiers and these catalogue entries are fictiona",
+          "l examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes."
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "observer_position": [
+              {
+                "field": "description",
+                "quote": "locations of the listeners"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes."
+              }
+            ],
+            "value": "observed_daytime_acoustic_sightings"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes."
+              }
+            ],
+            "value": "migratory_birds"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": [
+        {
+          "check": "strict_full_record_gate",
+          "message": "Actual documented/omitted variables contradict closed frozen claims"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t024",
+      "source": {
+        "path": ".local/stage-one-v2/core-38872.jsonl",
+        "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+      },
+      "raw_record_sha256": "9094e568e3495028f20659bdcf3ae5880391fc71512ece0a871169c29daa261d",
+      "title": "Decorative bird shop inventory",
+      "description": {
+        "text_chunks": [
+          "The register documents observed shop inventory of ornamental bird figurines, rather than radar observations of migration. Entries document selling prices of figures and numbers held in stock. Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The register documents observed shop inventory of ornamental bird figurines, rather than radar observations of migration."
+              }
+            ],
+            "value": "observed_administrative_records"
+          },
+          "facts": {
+            "retail_price": [
+              {
+                "field": "description",
+                "quote": "selling prices of figures"
+              }
+            ],
+            "stock_count": [
+              {
+                "field": "description",
+                "quote": "numbers held in stock"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The register documents observed shop inventory of ornamental bird figurines, rather than radar observations of migration."
+              }
+            ],
+            "value": "observed_retail_inventory"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The register documents observed shop inventory of ornamental bird figurines, rather than radar observations of migration."
+              }
+            ],
+            "value": "decorative_bird_figurine"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": [
+        {
+          "check": "strict_full_record_gate",
+          "message": "Actual documented/omitted variables contradict closed frozen claims"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "t051",
+      "source": {
+        "path": ".local/stage-one-v2/core-38872.jsonl",
+        "sha256": "20043f2a9ab1059e838a4da8ccf5e0ad582ff3bbb7dc6d0341e5ad7ffcb46796"
+      },
+      "raw_record_sha256": "8e4d8fc1e11d3ffb4764cd153681e7b1604ccba9f261b228af8cca4ac65af3bb",
+      "title": "QLR-260 Microphone Module",
+      "description": {
+        "text_chunks": [
+          "The collection is an observed identity register for a separate microphone module, not the acoustic logger itself. Consult the title together with the attached file documentation for the item represented. The table concerns that identity alone and does not describe performance testing. All inventory observations are fictional; no real dataset or simulated experiment is asserted."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The collection is an observed identity register for a separate microphone module"
+              }
+            ],
+            "value": "observed_administrative_records"
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "observed identity register"
+              }
+            ],
+            "value": "observed_identity_register"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "separate microphone module"
+              }
+            ],
+            "value": "acoustic_logger_microphone_component"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": [
+        {
+          "check": "fixture_conformance",
+          "message": "Authoritative identity absent in frozen scope"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Authoritative identity absent in frozen scope"
+        }
+      ]
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "t012",
+      "source": {
+        "path": ".local/stage-one-v2/core-38873.jsonl",
+        "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"
+      },
+      "raw_record_sha256": "f18d3db77f3ddb282e62234bc0c664e6458b549cd3dc04a6de0dd0377f78873a",
+      "title": "Software tree parsing register",
+      "description": {
+        "text_chunks": [
+          "The records concern measured performance of parsing software syntax trees. These computational trees are unrelated to street planting. Entries document elapsed parsing duration and counts of tree nodes. Names, identifiers and all these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The records concern measured performance of parsing software syntax trees. These computational trees are unrelated to street planting."
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "node_count": [
+              {
+                "field": "description",
+                "quote": "counts of tree nodes"
+              }
+            ],
+            "parse_duration": [
+              {
+                "field": "description",
+                "quote": "elapsed parsing duration"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+                }
+              ],
+              "value": "CSV"
+            },
+            {
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+                }
+              ],
+              "value": "JSON"
+            }
+          ],
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The records concern measured performance of parsing software syntax trees. These computational trees are unrelated to street planting."
+              }
+            ],
+            "value": "observed_parser_performance"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The records concern measured performance of parsing software syntax trees. These computational trees are unrelated to street planting."
+              },
+              {
+                "field": "title",
+                "quote": "Software tree parsing register"
+              }
+            ],
+            "value": "software_syntax_tree"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "affected_queries": [
+            "t02p1",
+            "t02p2",
+            "t02p3",
+            "td01",
+            "td02"
+          ],
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "The records concern measured performance of parsing software syntax trees. These computational trees are unrelated to street planting."
+            },
+            {
+              "field": "description",
+              "quote": "Entries document elapsed parsing duration and counts of tree nodes."
+            }
+          ],
+          "message": "Genuine computational execution measurements are documented, not a physical street-tree trial and not simulation-only. The supplied basis taxonomy has no unambiguous computational-observation category; retain U rather than invent a physical or administrative classification.",
+          "resolution_needed": "Resolve taxonomy for genuinely observed computational execution without recasting it as physical field observation, simulation or administrative inventory. Product mismatch with street trees itself is resolved.",
+          "type": "basis_taxonomy_ambiguity"
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: t012"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: t012"
+        }
+      ]
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "t013",
+      "source": {
+        "path": ".local/stage-one-v2/core-38873.jsonl",
+        "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"
+      },
+      "raw_record_sha256": "501dc2bd13b94844f771f88fda317ec95c818d8082d0d2c69a82fbf57f679623",
+      "title": "Vehicle battery cell aging trials",
+      "description": {
+        "text_chunks": [
+          "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed. Entries document the usable electrical capacity still retained by individual cells, a tally of completed recharge-discharge cycles and measured temperature within the cells. Names, identifiers and all these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed."
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "cell_temperature": [
+              {
+                "field": "description",
+                "quote": "measured temperature within the cells"
+              }
+            ],
+            "cycle_count": [
+              {
+                "field": "description",
+                "quote": "a tally of completed recharge-discharge cycles"
+              }
+            ],
+            "remaining_capacity": [
+              {
+                "field": "description",
+                "quote": "the usable electrical capacity still retained by individual cells"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+                }
+              ],
+              "value": "CSV"
+            },
+            {
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+                }
+              ],
+              "value": "JSON"
+            }
+          ],
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed."
+              }
+            ],
+            "value": "observed_repeated_cycle_aging"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed."
+              },
+              {
+                "field": "title",
+                "quote": "Vehicle battery cell aging trials"
+              }
+            ],
+            "value": "electric_vehicle_battery_cells"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": []
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "t014",
+      "source": {
+        "path": ".local/stage-one-v2/core-38873.jsonl",
+        "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"
+      },
+      "raw_record_sha256": "cf8fde5fc992af91af171cb8de91d6ac34d1b24ea2f874f72fc8e6640f0db7e9",
+      "title": "Electric-vehicle cell cycling observations",
+      "description": {
+        "text_chunks": [
+          "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed. The unit represented is an individual cell, not an assembled pack. Electric vehicles are the intended application without limiting the records to a particular vehicle class. The collection describes repeated use of those cells rather than manufacturing sales or shipment accounting. The release keeps its collection scope here and its contents statement with the first downloadable file. Consult those two descriptions together: neither the sho",
+          "rt title nor the publisher's name is intended as a substitute for the file documentation. The companion format carries the same collection, not an additional study. This organization separates the account of what was observed from the account of what the published entries contain. Names, identifiers and all these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "The entries record the usable electrical capacity still retained by individual cells, a tally of completed recharge-discharge cycles and measured temperature within the cells. This downloadable table documents the fictional physical observations described by the collection; its structured companion carries the same entries, without further measurement variables."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed."
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "cell_temperature": [
+              {
+                "field": "distributions.0.description",
+                "quote": "measured temperature within the cells"
+              }
+            ],
+            "cycle_count": [
+              {
+                "field": "distributions.0.description",
+                "quote": "a tally of completed recharge-discharge cycles"
+              }
+            ],
+            "remaining_capacity": [
+              {
+                "field": "distributions.0.description",
+                "quote": "the usable electrical capacity still retained by individual cells"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "The entries record the usable electrical capacity still retained by individual cells, a tally of completed recharge-discharge cycles and measured temperature within the cells. This downloadable table documents the fictional physical observations described by the collection; its structured companion carries the same entries, without further measurement variables."
+                }
+              ],
+              "value": "CSV"
+            },
+            {
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "its structured companion carries the same entries, without further measurement variables."
+                }
+              ],
+              "value": "JSON"
+            }
+          ],
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed."
+              }
+            ],
+            "value": "observed_repeated_cycle_aging"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Individual electrochemical cells for electric vehicles are observed as repeated recharging and discharging produces wear; no vehicle subtype is prescribed."
+              },
+              {
+                "field": "title",
+                "quote": "Electric-vehicle cell cycling observations"
+              }
+            ],
+            "value": "electric_vehicle_battery_cells"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": []
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "t024",
+      "source": {
+        "path": ".local/stage-one-v2/core-38873.jsonl",
+        "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"
+      },
+      "raw_record_sha256": "bd7fe4259840a22dfc39a4a1d6db113cc0b288d7da6fdeb9ecea740f859cb4bb",
+      "title": "Ornamental bird figure stockbook",
+      "description": {
+        "text_chunks": [
+          "This collection records actual retail holdings of decorative bird figures. They are objects for sale, not migrating animals. Entries document listed prices and totals of stocked items. Names, identifiers and all these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records actual retail holdings of decorative bird figures. They are objects for sale, not migrating animals."
+              }
+            ],
+            "value": "observed_administrative_records"
+          },
+          "facts": {
+            "retail_price": [
+              {
+                "field": "description",
+                "quote": "listed prices"
+              }
+            ],
+            "stock_count": [
+              {
+                "field": "description",
+                "quote": "totals of stocked items"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+                }
+              ],
+              "value": "CSV"
+            },
+            {
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+                }
+              ],
+              "value": "JSON"
+            }
+          ],
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records actual retail holdings of decorative bird figures. They are objects for sale, not migrating animals."
+              }
+            ],
+            "value": "observed_retail_inventory"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records actual retail holdings of decorative bird figures. They are objects for sale, not migrating animals."
+              },
+              {
+                "field": "title",
+                "quote": "Ornamental bird figure stockbook"
+              }
+            ],
+            "value": "decorative_bird_figurine"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": [
+        {
+          "check": "strict_full_record_gate",
+          "message": "Actual documented/omitted variables contradict closed frozen claims"
+        }
+      ]
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "t045",
+      "source": {
+        "path": ".local/stage-one-v2/core-38873.jsonl",
+        "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"
+      },
+      "raw_record_sha256": "acbce72280663afbb4f66a1882a35f2a62d17522b1b399f9885d8cb6a9425f33",
+      "title": "Residential appliance noise observations",
+      "description": {
+        "text_chunks": [
+          "The records follow acoustic testing of home heat pumping units in loaded operation; these are observations, not predicted noise maps. Entries document decibel readings of sound pressure level, not acoustic intensity and measurement distance between source and microphone. The published files carry the collection described here in tabular and structured form. They do not add a second study or extend the documented scope. Read the stated contents as the limits of this release, rather than inferring additional observations from a broad subject heading or from the publisher's name. Names, identifie",
+          "rs and all these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "these are observations, not predicted noise maps"
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "sound_pressure_level_db": [
+              {
+                "field": "description",
+                "quote": "decibel readings of sound pressure level"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "acoustic testing of home heat pumping units in loaded operation"
+              }
+            ],
+            "value": "observed_loaded_acoustic_testing"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "home heat pumping units"
+              }
+            ],
+            "value": "residential_heat_pump_units"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "affected_query_ids": [
+            "t08p1",
+            "t08p2",
+            "t08p3"
+          ],
+          "description": "SPL in decibels is explicit. In the unpunctuated contrast \"not acoustic intensity and measurement distance\", the conjunction can put measurement distance inside the negation rather than the documented-variable list. No child field resolves that reading. Distance is therefore unresolved and omitted from supported facts; operating load is a test setting, not a separately documented variable.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "Entries document decibel readings of sound pressure level, not acoustic intensity and measurement distance between source and microphone."
+            }
+          ],
+          "type": "measurement_negation_scope_U"
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: t045"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: t045"
+        }
+      ]
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "t051",
+      "source": {
+        "path": ".local/stage-one-v2/core-38873.jsonl",
+        "sha256": "8a94ae06b545e5218a3b49fae0b616e34360e18d9877c7be3f8bf5a902382ec3"
+      },
+      "raw_record_sha256": "97f79b1589d88b323a81ecf069b989a6d4d40d121fa3d7914b257f91685aa427",
+      "title": "QLR-260 Microphone Module",
+      "description": {
+        "text_chunks": [
+          "This register concerns the observed identity of an acoustic logger's microphone component rather than the complete instrument. The release identifies the item through its title and attached documentation, rather than supplying a performance study. The downloadable table carries the register in one format. Its inventory observations are fictional, not simulations or claims about actual holdings."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This register concerns the observed identity of an acoustic logger's microphone component rather than the complete instrument."
+              }
+            ],
+            "value": "observed_administrative_records"
+          },
+          "facts": {},
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This register concerns the observed identity"
+              }
+            ],
+            "value": "observed_identity_register"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "an acoustic logger's microphone component rather than the complete instrument"
+              }
+            ],
+            "value": "acoustic_logger_microphone_component"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": [
+        {
+          "check": "fixture_conformance",
+          "message": "Authoritative identity absent in frozen scope"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Authoritative identity absent in frozen scope"
+        }
+      ]
+    },
+    {
+      "seed": 38871,
+      "dataset_id": "g18-r001",
+      "source": {
+        "path": ".local/stage-one-v2/growth-38871.jsonl",
+        "sha256": "3914037b1582ab6a724197d5dc79b937d8b9683c2382413cf0a11c91c6a0f97b"
+      },
+      "raw_record_sha256": "c03329f289a73f1275c3e20c7c7bf08b618e7d66d3a5f06fa557f741cf0d1a63",
+      "title": "Syntax tree parser observations",
+      "description": {
+        "text_chunks": [
+          "Observed parser runs process software syntax trees, not living street trees or measurements of shaded air. Entries document parse duration and node counts. Filed by Station 001. Metadata release: 2010, month 1. Names, identifiers and catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed parser runs"
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "node_count": [
+              {
+                "field": "description",
+                "quote": "node counts"
+              }
+            ],
+            "parse_duration": [
+              {
+                "field": "description",
+                "quote": "parse duration"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "formats": [
+            {
+              "evidence": [
+                {
+                  "field": "distributions.0.format",
+                  "quote": "CSV"
+                },
+                {
+                  "field": "distributions.0.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ],
+              "value": "CSV"
+            },
+            {
+              "evidence": [
+                {
+                  "field": "distributions.1.format",
+                  "quote": "JSON"
+                },
+                {
+                  "field": "distributions.1.description",
+                  "quote": "Downloadable representation of the collection documented by the dataset. The file provides the stated contents in this format; its alternate representation adds no independent observations or additional measurements."
+                }
+              ],
+              "value": "JSON"
+            }
+          ],
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Observed parser runs"
+              }
+            ],
+            "value": "observed_parser_performance"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "software syntax trees"
+              }
+            ],
+            "value": "software_syntax_tree"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "affected_query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ],
+          "code": "computational_measurement_basis_not_represented",
+          "detail": "Observed parser runs genuinely document computational performance. The allowed basis enum has no exact observed-computational category; observed_not_simulated is defined as physical/experimental observation and must not silently imply physical field trials here. Basis retained U pending explicit classification, with parse_duration/node_count supported. Product/process mismatch with living street trees is independently clear; U is not automatic numeric zero.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "Observed parser runs process software syntax trees"
+            },
+            {
+              "field": "description",
+              "quote": "Entries document parse duration and node counts."
+            }
+          ]
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: g18-r001"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: g18-r001"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "g02-r001",
+      "source": {
+        "path": ".local/stage-one-v2/growth-38872.jsonl",
+        "sha256": "a9d27c71002ab4b825a780fa09d27677ed2835430ef1ed2e67284ce9886ba074"
+      },
+      "raw_record_sha256": "daa8ecda3ceee337deed2f18a8a80283728786978c4448f842b8e3b47657ae37",
+      "title": "City tree pruning register",
+      "description": {
+        "text_chunks": [
+          "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade. Entries document number of branches removed and hours of crew work. Filed by Station 001. Metadata release: 2010, month 1. Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Entries document number of branches removed and hours of crew work."
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "branch_removal_count": [
+              {
+                "field": "description",
+                "quote": "number of branches removed"
+              }
+            ],
+            "crew_hours": [
+              {
+                "field": "description",
+                "quote": "hours of crew work"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade."
+              }
+            ],
+            "value": "observed_pruning_operations"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade."
+              }
+            ],
+            "value": "urban_street_trees"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "code": "basis_unresolved",
+          "detail": "Pruning operations are explicit, but a work register of branch totals and crew hours does not establish whether these are direct physical observations or administrative work-log entries. No shade measurements are documented.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "Entries document number of branches removed and hours of crew work."
+            },
+            {
+              "field": "description",
+              "quote": "This register documents physical pruning operations on city street trees; it does not describe observations beneath their shade."
+            }
+          ],
+          "query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ]
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: g02-r001"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: g02-r001"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "g04-r001",
+      "source": {
+        "path": ".local/stage-one-v2/growth-38872.jsonl",
+        "sha256": "a9d27c71002ab4b825a780fa09d27677ed2835430ef1ed2e67284ce9886ba074"
+      },
+      "raw_record_sha256": "94ba1515bc1e24b70af504ecf889dac11b49f66ca60a32ccb10ccac7bac7efea",
+      "title": "Daytime migration listening observations",
+      "description": {
+        "text_chunks": [
+          "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes. Entries document calls heard during daylight and locations of the listeners. Filed by Station 001. Metadata release: 2010, month 1. Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes."
+              }
+            ],
+            "value": "observed_not_simulated"
+          },
+          "facts": {
+            "observer_position": [
+              {
+                "field": "description",
+                "quote": "locations of the listeners"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes."
+              }
+            ],
+            "value": "observed_daytime_acoustic_sightings"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection documents daytime listening observations of migrating birds, rather than after-dark movement observations from radar echoes."
+              }
+            ],
+            "value": "migratory_birds"
+          }
+        }
+      ],
+      "original_issues": [],
+      "strict_errors": [
+        {
+          "check": "strict_full_record_gate",
+          "message": "Actual documented/omitted variables contradict closed frozen claims"
+        }
+      ]
+    },
+    {
+      "seed": 38872,
+      "dataset_id": "g18-r001",
+      "source": {
+        "path": ".local/stage-one-v2/growth-38872.jsonl",
+        "sha256": "a9d27c71002ab4b825a780fa09d27677ed2835430ef1ed2e67284ce9886ba074"
+      },
+      "raw_record_sha256": "821142cf5c03db784ec16756848486da184a6e29264a11a3305c57df4824248a",
+      "title": "Software tree parsing register",
+      "description": {
+        "text_chunks": [
+          "This collection records actual software parser performance on syntax tree structures; it is not a study of urban vegetation. Entries document time required to parse and number of syntax nodes. Filed by Station 001. Metadata release: 2010, month 1. Names, identifiers and these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "This downloadable file represents the collection described at dataset level. Read that description for the contents and their limits; the companion format is not a separate study or source of further measurements."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "This collection records actual software parser performance on syntax tree structures"
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "node_count": [
+              {
+                "field": "description",
+                "quote": "number of syntax nodes"
+              }
+            ],
+            "parse_duration": [
+              {
+                "field": "description",
+                "quote": "time required to parse"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "actual software parser performance on syntax tree structures"
+              }
+            ],
+            "value": "observed_parser_performance"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "syntax tree structures"
+              }
+            ],
+            "value": "software_syntax_tree"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "detail": "Actual parser execution/performance is genuine computational measurement. It is neither a physical field/experimental measurement as narrowly defined by observed_not_simulated, nor administrative inventory, simulation, or contextual topic only. Basis retained as U; scope and parse-duration/node-count observations remain supported. This does not make syntax trees urban street trees or support any tz need. Resolve computational-basis representation without inventing physical observations.",
+          "query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ],
+          "type": "basis_vocabulary_ambiguity"
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: g18-r001"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: g18-r001"
+        }
+      ]
+    },
+    {
+      "seed": 38873,
+      "dataset_id": "g18-r001",
+      "source": {
+        "path": ".local/stage-one-v2/growth-38873.jsonl",
+        "sha256": "20430c95fb3b8962f9c3fe09cad57d2206e0ef24d17921423f11f506d144c277"
+      },
+      "raw_record_sha256": "8adbb14f21098b859d0854dbae0411c2789e6badbb722f4c8df02836e9674c36",
+      "title": "Syntax tree parser observations",
+      "description": {
+        "text_chunks": [
+          "The records concern measured performance of parsing software syntax trees. These computational trees are unrelated to street planting. Entries document elapsed parsing duration and counts of tree nodes. Filed by Station 001. Metadata release: 2010, month 1. Names, identifiers and all these catalogue entries are fictional examples, with no assertion of real-world collection provenance."
+        ]
+      },
+      "distributions": [
+        {
+          "title": "Tabular collection",
+          "format": "CSV",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        },
+        {
+          "title": "Structured collection",
+          "format": "JSON",
+          "description": {
+            "text_chunks": [
+              "A downloadable encoding of the documented collection. Its contents have the scope stated in the dataset description, and the alternate file format should not be interpreted as an additional set of observations."
+            ]
+          }
+        }
+      ],
+      "observed_contexts": [
+        {
+          "basis": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "The records concern measured performance of parsing software syntax trees."
+              }
+            ],
+            "value": "U"
+          },
+          "facts": {
+            "node_count": [
+              {
+                "field": "description",
+                "quote": "counts of tree nodes"
+              }
+            ],
+            "parse_duration": [
+              {
+                "field": "description",
+                "quote": "elapsed parsing duration"
+              }
+            ]
+          },
+          "format_content_verified": true,
+          "process": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "measured performance of parsing software syntax trees"
+              }
+            ],
+            "value": "observed_parser_performance"
+          },
+          "product": {
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "software syntax trees"
+              }
+            ],
+            "value": "software_syntax_tree"
+          }
+        }
+      ],
+      "original_issues": [
+        {
+          "affected_query_ids": [
+            "t02p1",
+            "t02p2",
+            "t02p3"
+          ],
+          "description": "Actual computational parser performance (elapsed duration and node counts) is documented. It is neither administrative inventory nor simulation-only, but the supplied observed_not_simulated definition is physical/experimental and does not clearly encode computational execution measurements. Preserve basis U, not a fictional physical street-tree trial. Product/process mismatch to street-tree shade is independently clear; this basis uncertainty does not create a partial tree-temperature answer.",
+          "evidence": [
+            {
+              "field": "description",
+              "quote": "The records concern measured performance of parsing software syntax trees."
+            },
+            {
+              "field": "description",
+              "quote": "Entries document elapsed parsing duration and counts of tree nodes."
+            }
+          ],
+          "type": "basis_vocabulary_U"
+        }
+      ],
+      "strict_errors": [
+        {
+          "check": "manual_semantic_gate",
+          "message": "Unresolved/incomplete manual semantic review: g18-r001"
+        },
+        {
+          "check": "strict_full_record_gate",
+          "message": "Unresolved/incomplete manual semantic review: g18-r001"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "approved_by": "parent-agent",
+  "authorization_scope": "Fixed local13case engineering replay only, after publicly pushing this release. No promotion/default change, label/query/corpus repair, new threshold selection or hidden retries. Preserve all raw errors.",
+  "boundary_characterization_reviewed_before_target_inference": true,
+  "boundary_equality_control_status": "failed_preserved",
+  "boundary_interior_control_status": "passed",
+  "closed_correctness_status": "Original44authorization/filter/facet/k1/pipeline parity receipts passed. Separate exact-boundary inclusive failure is NOT relabelled passed.",
+  "created_utc": "2026-11-07T23:55:16.667695+00:00",
+  "diagnostic_only": true,
+  "diagnostic_policy_path": "search-relevance-eval/threshold/diagnostic-execution-policy.json",
+  "diagnostic_policy_sha256": "9e8ef53a8414ffc1d1271c25c23a0890dcf25621a65c3d76e97bd45b6c44a771",
+  "execution_allowed": true,
+  "first_target_embedding_not_started": true,
+  "forced_recommendation": "D",
+  "geometry_diagnostics_allowed": true,
+  "inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "issues_remain_open": [
+    3887,
+    3885
+  ],
+  "mixed_role_diagnostics_allowed": true,
+  "ordering": [
+    "Publicly push source/policy/input release",
+    "Prepare all frozen vectors and reuse exact old vectors",
+    "Export all production requests",
+    "Complete and inspect fixed boundary matrix retaining equality failure; no unexplained interior defect permitted before sweep",
+    "Install all13cases",
+    "Run registered NEW DEV13",
+    "Seal immutable policy-bound nonpromotional NONE decision",
+    "Run heldout NEW37 and all legacy/real queries",
+    "Run fixed mixed roles NEW50",
+    "Run all-ID geometry/keyword eligibility diagnostics",
+    "Analyze all fixed outcomes with D unconditional"
+  ],
+  "production_changes_allowed": false,
+  "promotion_allowed": false,
+  "schema_version": 1,
+  "sealed_utc": "2026-11-07T23:55:40.458429+00:00",
+  "spec_freeze_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e"
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "allowed_grades": [
+      2,
+      3
+    ],
+    "cohort": "NEW",
+    "dataset_id": "t013",
+    "query_id": "t03p3",
+    "seed": 38871
+  },
+  {
+    "allowed_grades": [
+      2,
+      3
+    ],
+    "cohort": "NEW",
+    "dataset_id": "t014",
+    "query_id": "t03p3",
+    "seed": 38871
+  },
+  {
+    "allowed_grades": [
+      2,
+      3
+    ],
+    "cohort": "NEW",
+    "dataset_id": "t013",
+    "query_id": "t03p3",
+    "seed": 38872
+  },
+  {
+    "allowed_grades": [
+      2,
+      3
+    ],
+    "cohort": "NEW",
+    "dataset_id": "t014",
+    "query_id": "t03p3",
+    "seed": 38872
+  },
+  {
+    "allowed_grades": [
+      1,
+      2
+    ],
+    "cohort": "NEW",
+    "dataset_id": "t045",
+    "query_id": "t08p1",
+    "seed": 38873
+  },
+  {
+    "allowed_grades": [
+      1,
+      2
+    ],
+    "cohort": "NEW",
+    "dataset_id": "t045",
+    "query_id": "t08p2",
+    "seed": 38873
+  },
+  {
+    "allowed_grades": [
+      1,
+      2
+    ],
+    "cohort": "NEW",
+    "dataset_id": "t045",
+    "query_id": "t08p3",
+    "seed": 38873
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "archive_git_commit": "56aa147db",
+  "archive_sha256": "c25b310024eb2d03110c444e559a0cb7437bfd3cf7f2b2c5380145459934f457",
+  "archived_source_path": ".local/source-archive/run-at-first-realization.py",
+  "context_function_ast_byte_representation_identical": true,
+  "corpus_bytes_unchanged": true,
+  "created_utc": "2026-11-07T14:34:45.847568+00:00",
+  "current_runtime_sha256": "04b3732b36f8de1d0a0c2ee490b4d8932187a412c9ee436ee9ff25a999aa7d8f",
+  "original_source": "search-relevance-eval/run.py",
+  "original_source_sha256": "c25b310024eb2d03110c444e559a0cb7437bfd3cf7f2b2c5380145459934f457",
+  "purpose": "Exact archived source closure for immutable generation receipt; runtime receipt logging evolved afterward. No metadata/regeneration/spec change.",
+  "queries_labels_unchanged": true,
+  "schema_version": 1,
+  "stage_manifest_unchanged": true
+}

@@ -1,0 +1,130 @@
+{
+  "before_any_target_embeddings_or_threshold_results": true,
+  "created_utc": "2026-11-07T14:32:19.705754+00:00",
+  "legacy": {
+    "cohort": "LEGACY",
+    "dataset_count": 180,
+    "frozen_eight_family_primary_available": false,
+    "original_confirmatory_validation_passed": false,
+    "population_rule": "All semantic and functional intents across both splits whose full-corpus qrels are numeric for every paraphrase in every seed. Fixed before threshold outcomes; descriptive known-family legacy guard only, never original eight-family validation.",
+    "query_count": 75,
+    "resolved_positive_intent_ids": [
+      "f01",
+      "f02",
+      "f03",
+      "s01",
+      "s02",
+      "s03",
+      "s04",
+      "s05",
+      "s06",
+      "s07",
+      "s09",
+      "s10",
+      "s11",
+      "s12"
+    ],
+    "seeds": [
+      39031,
+      39032,
+      39033
+    ],
+    "source_sha256": {
+      "search-relevance-eval/synthetic/auditoutputs/diagnostic-uncertainty-mask-v1.jsonl": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+      "search-relevance-eval/synthetic/diagnostic-qrels.jsonl": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38",
+      "search-relevance-eval/synthetic/diagnostic-validation.json": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f",
+      "search-relevance-eval/synthetic/intents.jsonl": "61b5469fbbfdaa9cd1729bd14a412f12166d94be044ff8ad020691aa5c1dbefc",
+      "search-relevance-eval/synthetic/query-spec.jsonl": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d"
+    },
+    "uncertainty_pairs": [
+      {
+        "dataset_id": "a057",
+        "query_id": "d03",
+        "seed": 39031
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p1",
+        "seed": 39031
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p2",
+        "seed": 39031
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p3",
+        "seed": 39031
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "d03",
+        "seed": 39032
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p1",
+        "seed": 39032
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p2",
+        "seed": 39032
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p3",
+        "seed": 39032
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "d03",
+        "seed": 39033
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p1",
+        "seed": 39033
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p2",
+        "seed": 39033
+      },
+      {
+        "dataset_id": "a057",
+        "query_id": "s08p3",
+        "seed": 39033
+      }
+    ]
+  },
+  "mapping_scope": "Only separately named top-k diagnostic; all seven radial primary names remain unchanged. Reject alias collisions and bind raw/projected hashes.",
+  "new": {
+    "ambiguity_query_count": 2,
+    "catalog_sizes": [
+      60,
+      1000,
+      2000
+    ],
+    "cohort": "NEW",
+    "ordered_subset_not_literal_prefix": true,
+    "scored_query_count": 48,
+    "seeds": [
+      38871,
+      38872,
+      38873
+    ]
+  },
+  "raw_to_analysis_system_mapping": {
+    "topk10diag": "topk10"
+  },
+  "real": {
+    "cohort": "REAL",
+    "dataset_count": 494,
+    "scope": "Additional engineering observations; unjudged pairs never zero, incomplete positive coverage cannot support exhaustive recall or primary threshold recommendation.",
+    "source_bundle_manifest_sha256": "854a6584d22a5ee62dc74a7db099521c07879e8dbba8add21ed068384470ed00"
+  },
+  "schema_version": 1,
+  "study_spec_freeze_sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e"
+}
