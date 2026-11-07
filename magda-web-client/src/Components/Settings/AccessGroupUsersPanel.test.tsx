@@ -65,7 +65,7 @@ jest.mock("rsuite/Table", () => {
     );
     Table.Column = ({ children }: any) => <div>{children}</div>;
     Table.HeaderCell = () => null;
-    Table.Cell = ({ children, dataKey }: any) => {
+    const MockCell = ({ children, dataKey }: any) => {
         const row = React.useContext(RowContext);
         return (
             <span>
@@ -73,26 +73,22 @@ jest.mock("rsuite/Table", () => {
             </span>
         );
     };
+    Table.Cell = MockCell;
     return Table;
 });
 jest.mock(
     "rsuite/Pagination",
-    () =>
-        ({ total, activePage, onChangePage, onChangeLimit }: any) =>
-            (
-                <div>
-                    <span data-testid="total">{total}</span>
-                    <button
-                        type="button"
-                        onClick={() => onChangePage(activePage + 1)}
-                    >
-                        Next page
-                    </button>
-                    <button type="button" onClick={() => onChangeLimit(20)}>
-                        Show 20
-                    </button>
-                </div>
-            )
+    () => ({ total, activePage, onChangePage, onChangeLimit }: any) => (
+        <div>
+            <span data-testid="total">{total}</span>
+            <button type="button" onClick={() => onChangePage(activePage + 1)}>
+                Next page
+            </button>
+            <button type="button" onClick={() => onChangeLimit(20)}>
+                Show 20
+            </button>
+        </div>
+    )
 );
 
 // eslint-disable-next-line import/first
