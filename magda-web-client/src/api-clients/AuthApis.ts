@@ -957,6 +957,44 @@ export async function removeUserToAccessGroup(userId: string, groupId: string) {
     return result.result;
 }
 
+/** Query members using access to the group record, not general user-read access. */
+export async function queryAccessGroupUsers(
+    groupId: string,
+    params?: QueryUsersParams
+): Promise<UserRecord[]> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryUsersParams);
+
+    return await getRequest<UserRecord[]>(
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(groupId)}/users`,
+            config.authApiBaseUrl,
+            queryParams
+        ),
+        noCache
+    );
+}
+
+export async function queryAccessGroupUsersCount(
+    groupId: string,
+    params?: QueryUsersCountParams
+): Promise<number> {
+    const { noCache, ...queryParams } = params
+        ? params
+        : ({} as QueryUsersCountParams);
+
+    const res = await getRequest<{ count: number }>(
+        getAbsoluteUrl(
+            `accessGroups/${encodeURIComponent(groupId)}/users/count`,
+            config.authApiBaseUrl,
+            queryParams
+        ),
+        noCache
+    );
+    return res?.count ? res.count : 0;
+}
+
 export async function queryRoleUsers(
     roleId: string,
     params?: QueryUsersParams

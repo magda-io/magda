@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from "react";
 import {
-    queryRoleUsers,
-    queryRoleUsersCount,
+    queryAccessGroupUsers,
+    queryAccessGroupUsersCount,
     addUserToAccessGroup,
     removeUserToAccessGroup
 } from "api-clients/AuthApis";
@@ -27,13 +27,12 @@ const Cell = Table.Cell;
 
 type PropsType = {
     groupId: string;
-    groupRoleId: string;
 };
 
 const DEFAULT_MAX_PAGE_RECORD_NUMBER = 10;
 
 const AccessGroupUsersPanel: FunctionComponent<PropsType> = (props) => {
-    const { groupId, groupRoleId } = props;
+    const { groupId } = props;
     const [keyword, setKeyword] = useState<string>("");
     const [userId, setUserId] = useState<string>("");
     const [page, setPage] = useState<number>(1);
@@ -47,20 +46,20 @@ const AccessGroupUsersPanel: FunctionComponent<PropsType> = (props) => {
 
     const { result, loading: isLoading } = useAsync(
         async (
-            groupRoleId: string,
+            groupId: string,
             keyword: string,
             offset: number,
             limit: number,
             dataReloadToken: string
         ) => {
             try {
-                const users = await queryRoleUsers(groupRoleId, {
+                const users = await queryAccessGroupUsers(groupId, {
                     keyword: keyword.trim() ? keyword : undefined,
                     noCache: true,
                     offset,
                     limit
                 });
-                const count = await queryRoleUsersCount(groupRoleId, {
+                const count = await queryAccessGroupUsersCount(groupId, {
                     keyword: keyword.trim() ? keyword : undefined,
                     noCache: true
                 });
@@ -70,7 +69,7 @@ const AccessGroupUsersPanel: FunctionComponent<PropsType> = (props) => {
                 throw e;
             }
         },
-        [groupRoleId, keyword, offset, limit, dataReloadToken]
+        [groupId, keyword, offset, limit, dataReloadToken]
     );
 
     const [users, totalCount] = result ? result : [[], 0];
