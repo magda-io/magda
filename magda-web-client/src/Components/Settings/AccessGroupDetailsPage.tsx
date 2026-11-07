@@ -310,7 +310,6 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
                             <Panel bordered>
                                 <AccessGroupUsersPanel
                                     groupId={accessGroupId}
-                                    groupRoleId={accessGroup.roleId}
                                 />
                             </Panel>
                         ) : (
