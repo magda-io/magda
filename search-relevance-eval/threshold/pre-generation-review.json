@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "experiment_id": "magda-3887-threshold-supplement-v1",
+  "created_utc": "2026-11-07T01:27:29.142457+00:00",
+  "status": "structural_pre_generation_passed",
+  "actual_text_validation_passed": false,
+  "independent_pre_retrieval": true,
+  "independent_of_generator": true,
+  "scope": "Specification consistency, query entailment and feasible independent audit design only. No generated metadata, actual absence labels, corpus validation, engine correctness or threshold outcomes are certified. Main alone may freeze and release B; embeddings/retrieval still require subsequent actual-text validation and approval.",
+  "reviewer": {
+    "id": "C-threshold-independent-preregistration-challenger",
+    "role": "independent_semantic_validator_and_preregistration_challenger",
+    "model": "gpt-6.1-sol",
+    "context_id": "unavailable",
+    "parameters": "unavailable",
+    "generator_code_seen": false,
+    "generated_threshold_metadata_seen": false,
+    "rankings_seen": false,
+    "scores_seen": false,
+    "embedding_values_seen": false,
+    "normalization_results_seen": false,
+    "existing_local_analysis_seen": false,
+    "limitation": "Model-context assessment, not independent human judgments. Context identifier and model parameters were not exposed to this reviewer."
+  },
+  "spec_sha256": {
+    "protocol.md": "150cab6c05b4e9a88730491f4132a6e33d494e2b22e573ee0128f62534e8d2f2",
+    "query-spec.jsonl": "803bb51de8ca57fc4a5d95915f52f060a6d8eaacd99d97aee9593afc20cf18eb",
+    "intents.jsonl": "7c2ed0e8a17d5502f5dc5c2b25bb43921efa64a95785154b78581e1482e19d61",
+    "generation-spec.json": "c3db25ab0cccf20ba1cb15829175e73316568fdb3174a5a920a30bedfbaf517d",
+    "relevance-rubric.md": "dd04a84bccdfb89b1b3c22ae90e6185e9b9e22a3957dc038687df4fc4a32bed0",
+    "decision-gates.json": "720b93e4461b46c38e2bff26f1fe60de6b4b76c88d26c39af89924a19c8b093f",
+    "design-notes.md": "1b2e159ef1bd881a7e0041136bd385fea512d9f1b256db4d338ab86cddfdac8b"
+  },
+  "source_read_paths": [
+    "search-relevance-eval/threshold/protocol.md",
+    "search-relevance-eval/threshold/query-spec.jsonl",
+    "search-relevance-eval/threshold/intents.jsonl",
+    "search-relevance-eval/threshold/generation-spec.json",
+    "search-relevance-eval/threshold/relevance-rubric.md",
+    "search-relevance-eval/threshold/decision-gates.json",
+    "search-relevance-eval/threshold/design-notes.md",
+    "search-relevance-eval/threshold/freeze.py",
+    "search-relevance-eval/synthetic/relevance-rubric.md",
+    "search-relevance-eval/synthetic/validation-plan.md",
+    "search-relevance-eval/synthetic/validate.py",
+    "search-relevance-eval/synthetic/diagnostic-validation.json",
+    "search-relevance-eval/synthetic/auditoutputs/diagnostic-uncertainty-mask-v1.jsonl",
+    "search-relevance-eval/synthetic/validation-prompt.md"
+  ],
+  "additional_reviewed_source_sha256": {
+    "search-relevance-eval/threshold/freeze.py": "aafe07b2d7238509c2e782b76e8d7dcb721d9ea9b2f4421795661b0e2b9dcf86",
+    "search-relevance-eval/synthetic/relevance-rubric.md": "b4b778ffd53c860207b5187c01f84d0fa38bed1df74804bbec31b9fa8780f8fe",
+    "search-relevance-eval/synthetic/validation-plan.md": "16737000e76a402df4b2b587e52541af28262c52fc7dcaf9b5dde0e094416e78",
+    "search-relevance-eval/synthetic/validate.py": "b4e9906a169d65d74d989230741cd2bf11e429e0e819d8ecdc855192f99b38ae",
+    "search-relevance-eval/synthetic/diagnostic-validation.json": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f",
+    "search-relevance-eval/synthetic/auditoutputs/diagnostic-uncertainty-mask-v1.jsonl": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+    "search-relevance-eval/synthetic/validation-prompt.md": "4e4225ec97c270f678ed89e392ea6538e40a5842bac8cd9b5c49a70b5da8d52e"
+  },
+  "reading_scope": "All seven architecture documents were reviewed. The first complete 5498-line generation specification was read in full; the final revised generation specification's changed semantics, slots, policy and diagnostic sections were reread, with the entire final JSON parsed independently for duplicate keys, exhaustive maps, references and invariants. Other final architecture documents were reread completely. No generator implementation or ranking/analysis artifact was read.",
+  "independent_structural_recomputation": {
+    "passed": true,
+    "method": "Standalone offline standard-library computation, without importing architect/generator grading or renderer code: derive semantic grades from product/process/basis and fact intersection; derive exact grades from stable target IDs; check explicit forbidden-predicate membership for planned negative maps; preserve ambiguity as U. This proves planned consistency only, not actual-text meaning or absence.",
+    "intents": 34,
+    "queries": 50,
+    "semantic_queries": 24,
+    "critical_exact_queries": 12,
+    "negative_queries": 12,
+    "intentional_ungraded_ambiguity_queries": 2,
+    "core_ids": 60,
+    "canonical_claim_sets": 60,
+    "growth_archetypes": 20,
+    "core_grade_entries_checked": 2040,
+    "growth_grade_entries_checked": 680,
+    "formal_grade_discrepancies": 0,
+    "asserted_omitted_fact_overlaps": 0,
+    "unknown_or_duplicate_keys": 0,
+    "fixed_score_pairs": 72,
+    "fixed_score_pairs_development": 18,
+    "fixed_score_pairs_heldout": 54,
+    "seeds": [38871, 38872, 38873],
+    "catalog_sizes": [60, 1000, 2000],
+    "heldout_positive_queries": 27,
+    "development_positive_queries": 9,
+    "heldout_negative_queries": 8,
+    "development_negative_queries": 4,
+    "latency_guard_sample_counts": {"heldout_semantic": 180, "combined_heldout_positive": 270, "all_validated_negative_queries": 120},
+    "heldout_exact_descriptive_samples_not_guard_eligible": 90
+  },
+  "issues": [],
+  "resolved_challenges": [
+    {
+      "id": "C-query-product-process-precision",
+      "resolution": "Final queries and registered semantics explicitly align potable water; street trees without a causal cooling requirement; individual EV battery cells without car-only restriction; nighttime radar and local-ground height; public bus access; integrated electrical energy; sound-pressure level dB. No new hidden site/format/unit/brand restriction is required.",
+      "evidence": ["query-spec.jsonl:t01p1-t08p3", "intents.jsonl:t01-t08", "generation-spec.json:fact_semantics", "relevance-rubric.md:semantic algorithm"]
+    },
+    {
+      "id": "C-neutral-date-versus-measurement-clock",
+      "resolution": "All temperature/radar paraphrases now request individual row-associated clock time. Canonical facts and omitted-fact sets use per_reading_clock_time/per_passage_clock_time. Typed year/month slots explicitly mean publication/release only and cannot add a missing observation fact, particularly g10/g12.",
+      "evidence": ["query-spec.jsonl:t02p1-t02p3,t04p1-t04p3", "generation-spec.json:fact_semantics,growth_declarative_grammar.slot_rules,neutral_date_not_measurement_evidence"]
+    },
+    {
+      "id": "C-neutral-quality-and-access-profile",
+      "resolution": "Exact all-row dataset quality1.0/hasQualitytrue, tenant0/published/public accessControlabsent, spatial/temporal absence and schema-correct nested policy are frozen; every actual row must later be checked. Distribution quality fields must not be invented.",
+      "evidence": ["generation-spec.json:neutral_metadata_policy", "protocol.md:population and non-interference", "decision-gates.json:freeze_gates.actual_neutral_metadata_policy_all_rows_verified"]
+    },
+    {
+      "id": "C-growth-audit-feasibility",
+      "resolution": "Freeze closed semantic atoms and safe typed slots now. After B release, independently read180 actual core texts and60 complete growth field bundles; freeze accepted immutable terminal strings before replica expansion or embeddings. Independently reconstruct every expanded row, all fields/contexts/relationships and safe slots without importing B code or treating archetype ID as observed truth. Disclose20 correlated growth phenomena rather than6000 manual votes.",
+      "evidence": ["generation-spec.json:growth_declarative_grammar", "relevance-rubric.md:independent actual-text audit and finite growth grammar", "design-notes.md:exhaustive yet auditable ontology"]
+    },
+    {
+      "id": "C-keyword-OR-versus-vector-attribution",
+      "resolution": "Full matched-ID production keyword-only eligibility and all48 scored queries crossed with every ID/authorized branch are fixed diagnostics after immutable data and DEV selection. Distinguish new vector-only native eligibility, keyword overlap, and actual new topK exposure. Safety counts added grade0 IDs versus matched baseline topK, including keyword-eligible IDs newly promoted; unchanged baseline OR noise is descriptive, not threshold cost. No score-derived labels or query/record selection.",
+      "evidence": ["generation-spec.json:all_corpus_native_eligibility_diagnostic", "protocol.md:metrics guards and latency", "decision-gates.json:false_positive_limits"]
+    },
+    {
+      "id": "C-growth-paired-effect-and-core-ceiling",
+      "resolution": "Utility gain/recovered-family quotas apply at1000 and2000 in each seed; core60 requires registered noninferiority, not gain. Growth Recall/NDCG stability compares changes in candidate-minus-baseline deltas; growth FP compares changes in new-ID exposure counts, not raw candidate crowding. DEV selection mirrors these scopes and remains pre-heldout only.",
+      "evidence": ["decision-gates.json:shared_safe_useful_gate,safer_C_development_selection,false_positive_limits", "protocol.md:metrics guards and latency", "design-notes.md:why the registered gates are conservative"]
+    },
+    {
+      "id": "C-ambiguity-and-legacy-U",
+      "resolution": "Intentional plant/charge U is ungraded and not itself a D trigger; coercion into numeric primary/FP labels is invalid. All original twelve legacy a057 query-record-seed U labels and the old failed strict validation remain unchanged in a separate diagnostic cohort. New fully validated supplementary labels may support threshold claims without pretending the old primary study passed.",
+      "evidence": ["decision-gates.json:freeze_gates,D.conditions", "relevance-rubric.md:ambiguity and U", "protocol.md:population and non-interference", "../synthetic/auditoutputs/diagnostic-uncertainty-mask-v1.jsonl"]
+    }
+  ],
+  "decision_gate_review": {
+    "objective_precedence_clear": true,
+    "fixed_primary": "ms_045",
+    "baseline": "ms_050",
+    "alternative_selection": "Development-only first passing .48 then .46; signed/hash-bound record before any heldout execution, diagnostics or opportunity computation; unselected success sensitivity-only.",
+    "exact_and_security": "Every individual authoritative target rank is guarded, not merely best-target summaries. Newly introduced registered wrong IDs and any unauthorized exposure cannot be offset by semantic gains. Missing correctness evidence is not a pass.",
+    "opportunity": "Fixed72 useful pairs per seed, native unboosted branch scores and fixed bands; score opportunity never creates labels or permits rerolls. Any insufficient seed means D for general A/B/C claims.",
+    "latency": "One warmup plus10 measured repetitions; only groups with at least100 samples are guard-eligible. Smaller subgroups may report descriptive interpolation with guard_eligible:false; no pooled rescue or repetition inflation.",
+    "legacy": "Resolved legacy comparisons are explicitly diagnostic guard evidence with unknown coverage disclosed; they do not replace complete supplementary truth."
+  },
+  "actual_text_requirements_still_pending": [
+    "Independent blinded actual-text review of every one of180 core realizations and60 complete growth field-bundle classes, with complete quotes, scope/basis/measurement/content-format evidence and negative-absence review.",
+    "Truthful observed-administrative versus physical-measurement semantics in all actual fields; no invented physical trials or observation labels for simulation-only content.",
+    "Immutable accepted terminal strings and evidence before growth expansion, then independent exact reconstruction/type/domain/identity/projection/neutral-policy checks for every expanded row in every seed/size.",
+    "Complete actual qrels and U coverage, answerability and identity checks, frozen corpus/input/evidence bytes before embeddings; no positive or zero label is certified by this structural record alone.",
+    "Independent production DSL/runtime/control/authorization verification, DEV decision timing, all required heldout executions and objective gate evaluation."
+  ],
+  "generation_release_authorized_by_this_record": false,
+  "embeddings_or_retrieval_authorized_by_this_record": false
+}

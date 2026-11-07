@@ -1,0 +1,393 @@
+{
+  "schema_version": 1,
+  "experiment_id": "magda-3887-threshold-supplement-v1",
+  "scope": "controlled supplementary engineering evidence; no deployment authorization",
+  "baseline": "ms_050",
+  "fixed_primary": "ms_045",
+  "thresholds": [
+    0.5,
+    0.48,
+    0.46,
+    0.45,
+    0.44,
+    0.42,
+    0.4
+  ],
+  "seeds": [
+    38871,
+    38872,
+    38873
+  ],
+  "catalog_sizes": [
+    60,
+    1000,
+    2000
+  ],
+  "primary_change": "Both root and nested native vector minScore only; production raw fusion/root boost50/nested boost unchanged",
+  "normalization_permitted": false,
+  "topk_diagnostic": {
+    "k": 10,
+    "radial_min_score": null,
+    "promotion_eligible": false
+  },
+  "branch_diagnostics": {
+    "axis_order": [
+      "dataset",
+      "nested_distribution"
+    ],
+    "fixed_pairs": [
+      [
+        0.5,
+        0.5
+      ],
+      [
+        0.45,
+        0.45
+      ],
+      [
+        0.45,
+        0.5
+      ],
+      [
+        0.5,
+        0.45
+      ]
+    ],
+    "promotion_eligible": false,
+    "additional_pairs_after_outcomes": false
+  },
+  "inventory": {
+    "core_records": 60,
+    "growth_archetypes": 20,
+    "intents": 34,
+    "queries": 50,
+    "positive_queries": 36,
+    "semantic_queries": 24,
+    "critical_exact_queries": 12,
+    "validated_zero_relevant_negative_queries": 12,
+    "ungraded_ambiguity_queries": 2,
+    "development_semantic_families": [
+      "t01",
+      "t02"
+    ],
+    "heldout_semantic_families": [
+      "t03",
+      "t04",
+      "t05",
+      "t06",
+      "t07",
+      "t08"
+    ],
+    "development_exact_cluster": "tx01",
+    "heldout_exact_clusters": [
+      "tx02",
+      "tx03",
+      "tx04"
+    ],
+    "development_negative_intents": [
+      "tz01",
+      "tz02",
+      "tz07",
+      "tz08"
+    ],
+    "heldout_negative_intents": [
+      "tz03",
+      "tz04",
+      "tz05",
+      "tz06",
+      "tz09",
+      "tz10",
+      "tz11",
+      "tz12"
+    ]
+  },
+  "freeze_gates": {
+    "all_queries_labels_claims_and_seven_spec_hashes_before_B_spawn": true,
+    "main_only_release_permission": true,
+    "all_realized_core_and_growth_terminal_classes_independent_actual_text_audit": true,
+    "growth_terminal_bundles_frozen_before_replica_expansion": true,
+    "every_growth_row_independent_exact_full_metadata_and_projection_reconstruction": true,
+    "all_corpora_full_expanded_qrels_and_evidence_immutable_before_embeddings": true,
+    "vectors_inputs_runtime_DSL_and_schedule_hashed_before_retrieval": true,
+    "safer_C_selection_record_before_any_heldout_execution_or_pair_scoring": true,
+    "scores_may_trigger_regeneration_or_new_queries": false,
+    "missing_key_default_grade": "ERROR",
+    "primary_U_allowed": 0,
+    "ambiguous_U_is_not_primary_failure": true,
+    "existing_180x3_75_queries_U_unchanged": true,
+    "real_494_cohort_primary_eligible": false,
+    "actual_neutral_metadata_policy_all_rows_verified": true
+  },
+  "metric_definitions": {
+    "useful_relevant_grade": ">=2",
+    "recall_at_10": "Number of distinct returned grade>=2 IDs in first10 divided by all independently validated grade>=2 records at the same level (three per NEW semantic query)",
+    "success_at_5": "1 iff at least one grade>=2 ID in first5; else0",
+    "ndcg_at_10_gain": "2**grade - 1",
+    "ndcg_discount": "log2(rank+1)",
+    "idcg_population": "all validated records at same seed/level; growth grade1 records included; never retrieved pool",
+    "aggregation": "mean3 paraphrases within family then equal mean of six heldout families, independently for EACH seed and catalog size",
+    "zero_idcg": "undefined; negatives/ambiguities excluded from positive metrics",
+    "U": "unknown, never irrelevant0; unresolved NEW scored pairs =>D",
+    "rank_ties": "actual returned engine order",
+    "missing_exact_rank": "infinity",
+    "duplicate_result_IDs": "correctness failure, D",
+    "numeric_tolerance": 1e-12,
+    "exact_target_rank_reporting": "Per authoritative target ID, plus separately labeled best-target summaries; safety compares EVERY authoritative target independently."
+  },
+  "absolute_candidate_blockers": {
+    "critical_exact_displacement_allowed": 0,
+    "definition": "For EVERY authoritative target ID of ANY of12 NEW exact queries or inherited24 exact controls, if that target is present in .50 top10, its candidate rank must not worsen at SAME seed/size. Missing candidate target is infinity. Never use best-target rank or improved MRR to mask displacement of another authoritative target. Independently block any newly returned registered wrong near-ID ahead of ANY authoritative target, treating each missing target as infinity. Compare all critical queries including DEV, independently at each seed/size.",
+    "new_registered_wrong_ID_ahead_of_authoritative_target_allowed": 0,
+    "unauthorized_exposures_allowed": 0,
+    "authorization_surfaces": [
+      "dataset hits",
+      "nested inner hits",
+      "facets",
+      "counts",
+      "explanations",
+      "cross-tenant",
+      "unpublished"
+    ],
+    "any_authorization_failure": "D correctness-failed; no A/B/C claim, report absolute security blocker",
+    "missing_security_or_correctness_evidence": "D; never assumed safe"
+  },
+  "shared_safe_useful_gate": {
+    "evaluated_at": "Usefulness gain at BOTH growth1000 and growth2000 in EACH seed; core60 requires noninferiority only. All other safety/noninferiority/per-family/exact/FP/correctness/latency/growth guards remain mandatory at ALL3 sizes. Inherited180 cohort guards separately in all3 inherited seeds.",
+    "utility_gain_catalog_sizes": [
+      1000,
+      2000
+    ],
+    "minimum_useful_recall_delta_vs_050": 0.05,
+    "minimum_recovered_heldout_semantic_families_each_seed_and_utility_size": 2,
+    "core60_minimum_useful_recall_delta_vs_050": 0.0,
+    "core60_minimum_recovered_families": 0,
+    "core60_no_gain_is_not_failure": true,
+    "recovered_family_definition": "At least one frozen grade>=2 target returned top10 at candidate and absent from .50 top10 for at least one paraphrase; a target counts by objective ID, no posthoc judgment.",
+    "minimum_aggregate_ndcg_delta": -0.02,
+    "minimum_each_family_ndcg_delta": -0.1,
+    "minimum_aggregate_success5_delta": 0.0,
+    "minimum_each_family_success5_delta": -0.1,
+    "minimum_each_family_recall10_delta": -0.1,
+    "maximum_paired_recall10_delta_drop_growth_vs_core60": 0.02,
+    "maximum_paired_ndcg10_delta_drop_growth_vs_core60": 0.03,
+    "growth_utility_relative_guard_definition": "For metric M, define delta_M(size)=M(candidate,size)-M(.50,size), on the same fixed query population/seed. Require delta_Recall(growth)-delta_Recall(core60)>=-.02 and delta_NDCG(growth)-delta_NDCG(core60)>=-.03 at BOTH1000 and2000 in EACH seed. This is a difference of paired treatment changes, NOT candidate absolute performance drop. Report absolute baseline/candidate values and each system's catalog-size change diagnostically. All separate gain/noninferiority/recovered-family/safety guards remain mandatory.",
+    "growth_limits_apply_to_both_1000_and_2000": true,
+    "all_absolute_candidate_blockers_must_be_zero": true,
+    "all_false_positive_and_latency_gates_required": true,
+    "legacy_guard": "No inherited exact displacement/wrong-ID/security violation; inherited resolved positive-family NDCG delta>=-.02 and useful Success@5 delta>=0 in EACH inherited seed. Existing U unchanged, complete-case existing resolved comparisons only; unknown legacy coverage disclosed and cannot substitute for NEW full qrels.",
+    "no_cross_seed_or_size_averaging_to_hide_failure": true
+  },
+  "false_positive_limits": {
+    "population": "Independently validated grade0 only; grade1 is tangential, U is unknown. All rates are numbers of distinct dataset IDs per query, not percentage of corpus.",
+    "semantic_new_grade0_top10_mean_max": 0.25,
+    "semantic_new_grade0_top10_each_query_max": 1,
+    "semantic_new_grade0_top5_mean_max": 0.1,
+    "semantic_new_grade0_top5_each_query_max": 1,
+    "new_grade0_definition": "candidate topK grade0 ID absent from .50 topK, same K/query/seed/size; count additions, not net changes hiding substitutions",
+    "new_named_hard_negative_top5_each_query_max": 0,
+    "new_unrelated_OR_control_top5_each_query_max": 0,
+    "heldout_negative_new_grade0_top10_mean_max": 0.25,
+    "heldout_negative_new_grade0_top10_each_query_max": 1,
+    "heldout_unrelated_negative_new_grade0_top5_mean_max": 0.5,
+    "heldout_unrelated_negative_new_grade0_top5_each_query_max": 1,
+    "heldout_OR_lookalike_negative_new_grade0_top5_mean_max": 1,
+    "heldout_OR_lookalike_negative_new_grade0_top5_each_query_max": 2,
+    "unchanged_baseline_keyword_FP_policy": "Report ABSOLUTE grade0 top5/top10 totals for baseline AND candidate, but unchanged preexisting keyword-OR false positives are not newly attributed threshold costs. Safety uses new-ID rank exposures, not absolute old lexical noise.",
+    "keyword_eligible_promoted_FP_policy": "A grade0 ID already keyword-eligible but newly entering candidate topK absent baseline topK COUNTS as a new exposure, including weak-vector score promotion. Existing keyword eligibility is no exemption.",
+    "growth_incremental_new_grade0_top10_mean_increase_vs_core60_max": 0.25,
+    "growth_incremental_new_grade0_top10_each_query_increase_vs_core60_max": 1,
+    "growth_FP_relative_guard_definition": "For query q and size s, E(q,s)=number of grade0 IDs in candidate top10 absent from baseline.50 top10 at SAME seed/size. Growth change is E(q,growth)-E(q,core60), never candidate absolute FP-count growth. At BOTH1000 and2000 in EACH seed require mean growth change<=.25 and EACH query growth change<=1, separately on heldout-semantic and heldout-validated-negative populations. Apply corresponding DEV populations during DEV selection. Every existing matched-level incremental topK bound still applies. Report absolute baseline/candidate grade0 counts and each system's catalog-size change separately; unchanged baseline lexical noise is not treatment cost.",
+    "growth_query_populations": [
+      "heldout semantic18",
+      "heldout validated-negative8"
+    ],
+    "at_each_seed_and_level": true,
+    "growth_stratification": "Separately report growth grade0 IDs and grade1 IDs; grade1 never falsely counted as FP. Threshold-cost growth guard uses the explicit change in NEW-ID exposure counts vs matched baseline, not raw candidate catalog-size noise. Report both systems' absolute level/growth counts separately. No false-positive arithmetic on ambiguous plant/charge fragments.",
+    "negative_coverage_failure": "Any unproven absence/unknown claim =>U and D, not numeric FP truth"
+  },
+  "coverage_opportunity": {
+    "assessed_only_after_immutable_data_and_DEV_choice_record": true,
+    "pair_population": "Each semantic query crossed with its3 planned grade>=2 core IDs:72 pairs/seed, DEV18, heldout54; all fixed in generation-spec before execution",
+    "branch_score": "Native unboosted OpenSearch vector score calibrated against engine, independently for root and each authorized nested projection; not final fusion score",
+    "inclusive_band": [
+      0.4,
+      0.52
+    ],
+    "minimum_heldout_pairs_in_band_per_seed": 12,
+    "opportunity_interval_lower_inclusive_upper_exclusive": [
+      0.45,
+      0.5
+    ],
+    "minimum_heldout_pairs_in_opportunity_per_seed": 6,
+    "minimum_heldout_families_with_opportunity_per_seed": 3,
+    "minimum_opportunity_pairs_root_measurement_evidence_per_seed": 2,
+    "minimum_opportunity_pairs_nested_measurement_evidence_per_seed": 2,
+    "count_pair_once": true,
+    "insufficient_any_seed": "D insufficient threshold opportunity; never heldout generation/selection",
+    "coverage_is_not_usefulness": "Still require actual retrieved Recall/Success/NDCG and all safety guards",
+    "evidence_scope_minimum_rule": "Root/nested minima count only when THAT measurement-evidence-bearing scope has score in[.45,.50), not when an unrelated other branch qualifies."
+  },
+  "safer_C_development_selection": {
+    "eligible_candidates": [
+      0.48,
+      0.46
+    ],
+    "strict_preference_order": [
+      0.48,
+      0.46
+    ],
+    "DEV_only": true,
+    "selection_rule": "For each candidate in strict order, require in EACH of3 NEW seeds at BOTH growth1000 and growth2000: DEV family-equal useful Recall@10 delta>=.03 and at least one recovered DEV family. At core60 require Recall@10 delta>=0 with no gain or recovery requirement. At ALL3 sizes require NDCG delta>=-.02, Success@5 delta>=0, zero DEV exact displacement/wrong-ID, all DEV-applicable per-family/FP/correctness/growth guards. Choose FIRST passing candidate, otherwise none. No p95 selection decision on DEV90 samples; latency verified only on heldout sufficient groups later. No ranking/threshold-opportunity inspection of heldout before persisting selection.",
+    "utility_gain_catalog_sizes": [
+      1000,
+      2000
+    ],
+    "minimum_DEV_useful_recall_delta_growth": 0.03,
+    "minimum_DEV_recovered_families_each_growth_size": 1,
+    "core60_minimum_DEV_useful_recall_delta": 0.0,
+    "core60_minimum_DEV_recovered_families": 0,
+    "selection_record_required_fields": [
+      "chosen_threshold_or_none",
+      "architecture_hashes",
+      "corpus_vector_DSL_hashes",
+      "all_DEV_gate_values",
+      "failure_reasons_for_rejected_thresholds",
+      "timestamp_before_first_heldout_request",
+      "parent_acknowledgment"
+    ],
+    "heldout_confirmation": "Chosen candidate must satisfy SAME shared_safe_useful_gate: .05 Recall gain and two recovered families at BOTH1000 and2000 in EACH seed, core60 Recall noninferiority (delta>=0) without gain/recovery requirement, and all-size NDCG/Success/per-family/false-positive/latency/exact/security/correctness/legacy/growth guards; no relaxing its bar after DEV selection.",
+    "unselected_alt_success": "Sensitivity only; never C or alternative primary",
+    "missing_or_late_record": "D for selection-dependent conclusions; cannot retrospectively choose",
+    "DEV_FP_population_rule": "Apply corresponding semantic/negative-class mean and per-query limits to DEV6 semantic and DEV4 negative queries, never heldout. Compare same seed/size; no alternate thresholds beyond.48/.46."
+  },
+  "latency": {
+    "scope": "local warmed retrieval, concurrency1, same fixed index state, excludes embeddings/generation",
+    "warmup_repetitions_per_query_system_seed_size": 1,
+    "measured_repetitions_per_query_system_seed_size": 10,
+    "schedule": "Frozen query order; system cyclic rotation by SHA256(query_id) first32bits big-endian modulo7, plus repetition offset; diagnostic systems use independent fixed ordered list and same rule. Preserve full schedule before requests.",
+    "p95_estimator": "linear interpolation sorted index(n-1)*.95",
+    "minimum_samples_per_p95_group_system_seed_size": 100,
+    "gate_groups": {
+      "heldout_semantic": 180,
+      "combined_heldout_positive": 270,
+      "all_validated_negative_queries": 120
+    },
+    "descriptive_groups": {
+      "heldout_exact": 90,
+      "development_positive": 90,
+      "heldout_negative": 80,
+      "development_semantic": 60
+    },
+    "below100": "Report n, median and descriptive interpolated p95 with guard_eligible:false; not a confirmatory p95 guard. Do not invalidate relevance/exact precision metric or inflate repetitions just for p95.",
+    "maximum_candidate_p95_formula": "max(1.5*baseline_p95_ms,baseline_p95_ms+25)",
+    "all_gate_groups_all_three_seeds_all_sizes_must_pass": true,
+    "report_client_elapsed_and_engine_took_separately": true,
+    "missing_samples": "D incomplete latency evidence; not implicit pass",
+    "topk_and_mixed_axis_latency": "Same10 repetitions; only report p95 for the same groups with>=100 observations, diagnostic not candidate gate"
+  },
+  "decision_precedence": [
+    "D validity/correctness/opportunity prerequisite failure",
+    "A fixed .45 passes every shared gate",
+    "C preselected safer threshold passes every shared gate while .45 does not",
+    "B complete adequate evidence, neither eligible candidate passes, with decisive failure defined below",
+    "D otherwise mixed/inconclusive"
+  ],
+  "A": {
+    "label": "fixed .45 promising in controlled benchmark",
+    "all_seeds_sizes_and_legacy_guards": true,
+    "heldout_threshold_choice": false
+  },
+  "C": {
+    "label": "preselected safer .48 or .46 promising; .45 not supported",
+    "preheldout_DEV_record_and_full_heldout_confirmation_required": true
+  },
+  "B": {
+    "label": "retain .50",
+    "requires_complete_valid_adequate_opportunity": true,
+    "neither_primary_nor_preselected_alternative_passes": true,
+    "decisive_failure": "For each eligible candidate, either at least one absolute exact/wrong-ID blocker, OR same registered usefulness/noninferiority/FP/growth/latency gate fails consistently in all3 seeds at >=1 size where THAT gate applies. Usefulness gain/recovered-family failure may support B ONLY at1000 or2000, never because core60 has no gain. Core60 may fail only its registered noninferiority/safety guards. Mere mixed seeds, missing evidence, no qualifying DEV alternative, or sensitivity-only winner is not by itself B. Candidate-specific exact failure supports retention, but authorization/DSL correctness failure is D.",
+    "does_not_prove_050_optimal_globally": true
+  },
+  "D": {
+    "label": "inconclusive or experiment limitation",
+    "conditions": [
+      "insufficient preregistered score-band opportunity in any seed",
+      "missing/inconsistent implementation or source evidence",
+      "unauthorized exposure or incorrect filter/DSL semantics",
+      "unresolved primary/negative/critical claims",
+      "late/missing DEV selection record when selection matters",
+      "incomplete seed/size/latency group",
+      "conflicting or seed-sensitive non-decisive outcomes",
+      "only posthoc or unselected threshold wins",
+      "attempt to coerce intentional ambiguous U to numeric grades or pool ambiguity fragments into primary/false-positive metrics"
+    ],
+    "report_observed_absolute_blockers_even_when_D": true
+  },
+  "reporting": {
+    "all_seven_heldout_thresholds_all_seeds_all_sizes": true,
+    "fixed_pair_diagnostics_not_new_grid": true,
+    "topk10_diagnostic_only": true,
+    "per_query_family_seed_size_results": true,
+    "full_negative_counts_zero_and_nonzero": true,
+    "all_fixed_pair_branch_score_distributions": true,
+    "actual_analyzer_keyword_eligibility_and_OR_controls": true,
+    "all_corpus_native_eligibility_diagnostic": "generation-spec.all_corpus_native_eligibility_diagnostic: fixed ALL48 scored queries × ALL record IDs per seed/size; report new native-vector eligibility grade0 with KWfalse vector-only/KWtrue overlap and observed topK membership, distinct from new rank-exposure safety and the unchanged72-pair opportunity population.",
+    "absolute_baseline_and_candidate_grade0_topK_totals": "Report both diagnostically; unchanged preexisting KW hits are not a threshold-cost failure.",
+    "native_cutoff_vs_boosted_fusion_score_separate": true,
+    "existing_U_preserved": true,
+    "real494_limited_positive_coverage_diagnostic_only": true,
+    "population_or_production_representativeness_claim": false,
+    "explicit_keyword_only_all_ID_eligibility_diagnostic": "Permitted only as labeled diagnostic after immutable data and, for heldout, DEV choice record; actual production builder with vectors absent, full matched-ID eligibility not top10 inference. Not an eighth primary system."
+  },
+  "registered_systems": [
+    {
+      "id": "ms_050",
+      "dataset_min_score": 0.5,
+      "nested_min_score": 0.5,
+      "primary_eligible": true
+    },
+    {
+      "id": "ms_048",
+      "dataset_min_score": 0.48,
+      "nested_min_score": 0.48,
+      "primary_eligible": true
+    },
+    {
+      "id": "ms_046",
+      "dataset_min_score": 0.46,
+      "nested_min_score": 0.46,
+      "primary_eligible": true
+    },
+    {
+      "id": "ms_045",
+      "dataset_min_score": 0.45,
+      "nested_min_score": 0.45,
+      "primary_eligible": true
+    },
+    {
+      "id": "ms_044",
+      "dataset_min_score": 0.44,
+      "nested_min_score": 0.44,
+      "primary_eligible": true
+    },
+    {
+      "id": "ms_042",
+      "dataset_min_score": 0.42,
+      "nested_min_score": 0.42,
+      "primary_eligible": true
+    },
+    {
+      "id": "ms_040",
+      "dataset_min_score": 0.4,
+      "nested_min_score": 0.4,
+      "primary_eligible": true
+    }
+  ],
+  "diagnostic_ids": {
+    "topk": "topk10",
+    "dataset045_nested050": "diag_dataset045_nested050",
+    "dataset050_nested045": "diag_dataset050_nested045",
+    "keyword_only": "diag_keyword_only"
+  },
+  "correctness_neutral_profile": "generation-spec.neutral_metadata_policy: DataSetquality1.0/hasQualitytrue, parent+childtenant0/published/public accessControlabsent, spatialabsent/query no preference; Distribution has no invented quality fields."
+}

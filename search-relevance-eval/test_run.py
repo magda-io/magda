@@ -2,6 +2,7 @@ import copy
 import importlib.util
 import pathlib
 import unittest
+import hashlib
 
 spec = importlib.util.spec_from_file_location("eval_run", pathlib.Path(__file__).with_name("run.py"))
 eval_run = importlib.util.module_from_spec(spec)
@@ -32,6 +33,27 @@ class ReplayTests(unittest.TestCase):
         self.assertEqual(result, body)
         result["size"] = 99
         self.assertEqual(body["size"], 10)
+
+    def test_legacy_default_systems_and_parser_remain_seven(self):
+        self.assertEqual(eval_run.selected_systems(), eval_run.SYSTEMS)
+        self.assertEqual(len(eval_run.SYSTEMS), 7)
+        args = eval_run.parser().parse_args([
+            "run", "--engine-url", "http://localhost:9200", "--index", "magda-relevance-eval-test",
+            "--requests", "requests", "--corpus", "corpus", "--output", "out"])
+        self.assertIs(args.func, eval_run.run)
+        self.assertIsNone(args.systems)
+        self.assertEqual(args.repetitions, 3)
+        self.assertEqual(args.depth, 10)
+
+    def test_shared_schedule_matches_original_hash_and_interleave(self):
+        for qid in ("a", "smoke-filtered", "water quality"):
+            systems = eval_run.SYSTEMS
+            rotation = int(hashlib.sha256(qid.encode()).hexdigest()[:8], 16) % len(systems)
+            expected = systems[rotation:] + systems[:rotation]
+            self.assertEqual(eval_run.rotation_order(qid, systems), expected)
+            for repetition in range(10):
+                offset = repetition % len(expected)
+                self.assertEqual(eval_run.measurement_order(expected, repetition), expected[offset:] + expected[:offset])
 
     def test_candidate_two_top_level_families(self):
         body = fixture()

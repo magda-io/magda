@@ -1,0 +1,31 @@
+{
+  "actual_text_validation_passed": false,
+  "created_utc": "2026-11-07T01:30:01.793737+00:00",
+  "diagnostic_top_k": 10,
+  "freeze_tool_sha256": "aafe07b2d7238509c2e782b76e8d7dcb721d9ea9b2f4421795661b0e2b9dcf86",
+  "independent_preflight_path": "pre-generation-review.json",
+  "independent_preflight_sha256": "01584f4b4f929748a0d3393109bd5513c46c146bb4c48da04fb84f8a49026ce5",
+  "note": "Structural design only; separate independent actual-text validation and parent approval required before embeddings or retrieval.",
+  "phase": "before_new_generation_and_threshold_execution",
+  "production_baseline": "ba18156201c50565c85c62f76469245925994ece",
+  "radial_min_scores": [
+    0.5,
+    0.48,
+    0.46,
+    0.45,
+    0.44,
+    0.42,
+    0.4
+  ],
+  "raw_score_fusion_unchanged": true,
+  "schema_version": 1,
+  "spec_sha256": {
+    "decision-gates.json": "720b93e4461b46c38e2bff26f1fe60de6b4b76c88d26c39af89924a19c8b093f",
+    "design-notes.md": "1b2e159ef1bd881a7e0041136bd385fea512d9f1b256db4d338ab86cddfdac8b",
+    "generation-spec.json": "c3db25ab0cccf20ba1cb15829175e73316568fdb3174a5a920a30bedfbaf517d",
+    "intents.jsonl": "7c2ed0e8a17d5502f5dc5c2b25bb43921efa64a95785154b78581e1482e19d61",
+    "protocol.md": "150cab6c05b4e9a88730491f4132a6e33d494e2b22e573ee0128f62534e8d2f2",
+    "query-spec.jsonl": "803bb51de8ca57fc4a5d95915f52f060a6d8eaacd99d97aee9593afc20cf18eb",
+    "relevance-rubric.md": "dd04a84bccdfb89b1b3c22ae90e6185e9b9e22a3957dc038687df4fc4a32bed0"
+  }
+}

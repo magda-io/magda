@@ -7,6 +7,7 @@ Experimental transformations below are deliberately confined to this directory.
 import argparse
 import copy
 import hashlib
+import importlib.util
 import json
 import math
 import pathlib
@@ -308,6 +309,43 @@ def response_receipt(response, **identity):
         timed_out=response.get("timed_out"), shards=response.get("_shards"), took=response.get("took"))
 
 
+def rotation_order(query_id, systems):
+    """Original per-query hash rotation, shared by legacy and exported sweeps."""
+    rotation = int(hashlib.sha256(query_id.encode()).hexdigest()[:8], 16) % len(systems)
+    return systems[rotation:] + systems[:rotation]
+
+
+def measurement_order(order, repetition):
+    offset = repetition % len(order)
+    return order[offset:] + order[:offset]
+
+
+def response_executor(args, ledger, receipt=response_receipt):
+    """One timed request, one receipt; errors abort without retrying."""
+    def execute(path, body, qid, system, phase, repetition, **extra_identity):
+        identity = {"query_id": qid, "system": system, "phase": phase,
+                    "warmup": phase == "warmup", "latency_scope": "local_warmed",
+                    "seed": getattr(args, "seed", None), "repetition": repetition, "index": args.index,
+                    "request_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()}
+        identity.update(extra_identity)
+        start = time.perf_counter()
+        try:
+            response = request(args.engine_url, "POST", path, body)
+        except Exception as error:
+            if ledger:
+                with ledger.open("a", encoding="utf8") as stream:
+                    stream.write(json.dumps(dict(identity, error_type=type(error).__name__, error=str(error)), sort_keys=True) + "\n")
+            raise
+        elapsed = (time.perf_counter() - start) * 1000
+        if ledger:
+            with ledger.open("a", encoding="utf8") as stream:
+                stream.write(json.dumps(receipt(response, elapsed_ms=elapsed, **identity), sort_keys=True) + "\n")
+        if response.get("timed_out") or response.get("_shards", {}).get("failed"):
+            raise ValueError("Incomplete search response")
+        return response, elapsed
+    return execute
+
+
 def run(args):
     if not args.allow_local_writes:
         raise ValueError("Pass --allow-local-writes for owned evaluation pipelines")
@@ -322,26 +360,7 @@ def run(args):
         with ledger.open("x", encoding="utf8"):
             pass  # Never silently overwrite an earlier raw repetition ledger.
 
-    def execute(path, body, qid, system, phase, repetition):
-        identity = {"query_id": qid, "system": system, "phase": phase,
-                    "warmup": phase == "warmup", "latency_scope": "local_warmed",
-                    "seed": getattr(args, "seed", None), "repetition": repetition, "index": args.index,
-                    "request_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()}
-        start = time.perf_counter()
-        try:
-            response = request(args.engine_url, "POST", path, body)
-        except Exception as error:
-            if ledger:
-                with ledger.open("a", encoding="utf8") as stream:
-                    stream.write(json.dumps(dict(identity, error_type=type(error).__name__, error=str(error)), sort_keys=True) + "\n")
-            raise
-        elapsed = (time.perf_counter() - start) * 1000
-        if ledger:
-            with ledger.open("a", encoding="utf8") as stream:
-                stream.write(json.dumps(response_receipt(response, elapsed_ms=elapsed, **identity), sort_keys=True) + "\n")
-        if response.get("timed_out") or response.get("_shards", {}).get("failed"):
-            raise ValueError("Incomplete search response")
-        return response, elapsed
+    execute = response_executor(args, ledger)
 
     pipeline_prefix = owned(args.index + "-pipeline")
     exports = load_jsonl(args.requests)
@@ -362,8 +381,7 @@ def run(args):
         if "hybrid" not in json.dumps(body["query"]):
             raise ValueError("Baseline request is not active hybrid")
         # Rotate order deterministically per task to reduce cold-cache/system order bias.
-        rotation = int(hashlib.sha256(qid.encode()).hexdigest()[:8], 16) % len(systems)
-        order = systems[rotation:] + systems[:rotation]
+        order = rotation_order(qid, systems)
         entries = {}
         for system in order:
             current = experimental(body, system)
@@ -374,8 +392,7 @@ def run(args):
             entries[system] = {"body": current, "path": path, "pipeline": pipeline, "samples": [], "variants": set()}
         # Interleave configurations rather than measuring one system's full block first.
         for repetition in range(args.repetitions):
-            offset = repetition % len(order)
-            for system in order[offset:] + order[:offset]:
+            for system in measurement_order(order, repetition):
                 entry = entries[system]
                 response, elapsed = execute(entry["path"], entry["body"], qid, system, "measured", repetition + 1)
                 entry["samples"].append(elapsed)
@@ -398,6 +415,185 @@ def run(args):
             print(qid, system, len(row["hits"]), round(row["latency_ms"], 2), flush=True)
     write_jsonl(args.output, rows)
     write_jsonl(args.output + ".requests.jsonl", requests_out)
+
+
+# Labels describe actual Scala exports, never Python-generated ranking variants.
+EXPORTED_VARIANTS = {"ms_050": .50, "ms_048": .48, "ms_046": .46, "ms_045": .45,
+                     "ms_044": .44, "ms_042": .42, "ms_040": .40, "topk10diag": None}
+
+
+def labelled_paths(values):
+    result = {}
+    for value in values or ():
+        label, separator, path = value.partition("=")
+        if not separator or label not in EXPORTED_VARIANTS or not path or label in result:
+            raise ValueError("Expected unique allowlisted LABEL=path")
+        result[label] = pathlib.Path(path)
+    if not result:
+        raise ValueError("At least one exported request set is required")
+    return result
+
+
+def export_response_receipt(response, **identity):
+    """Hash parsed full JSON before compacting; retain every hit's ID/score only."""
+    result = response_receipt(response, **identity)
+    signatures = []
+
+    def visit(value, path=()):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key == "hits" and isinstance(item, list):
+                    signatures.append({"path": list(path + (key,)), "total_hits": value.get("total"),
+                                       "max_score": value.get("max_score"), "hits": [
+                        {"id": hit.get("_id"), "rank": rank, "score": hit.get("_score")}
+                        for rank, hit in enumerate(item, 1)]})
+                if key != "_source":
+                    visit(item, path + (key,))
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                visit(item, path + (index,))
+    visit(response)
+    result["all_hit_signatures"] = signatures
+    result["full_response_body_stored"] = False
+    return result
+
+
+def run_export_sets(args, request_sets, *, config_paths=None, validate_request_sets=None):
+    """Replay label->Scala JSONL path mappings without constructing production DSL.
+
+    The higher-level threshold adapter owns family/split gating. Its external
+    validator receives loaded rows and declared config paths, before any writes.
+    Validation must check effective config hashes and complete DSL pair guards.
+    """
+    if not getattr(args, "raw_production_only", False):
+        raise ValueError("Pass --raw-production-only for exported production replay")
+    local_url(args.engine_url)
+    owned(args.index)
+    if type(args.depth) is not int or type(args.repetitions) is not int or args.depth < 1 or args.repetitions < 1:
+        raise ValueError("Depth and repetitions must be positive integers")
+    if not request_sets or any(label not in EXPORTED_VARIANTS for label in request_sets):
+        raise ValueError("Unknown or empty exported variant set")
+    systems = tuple(label for label in EXPORTED_VARIANTS if label in request_sets)
+    source_paths = {label: pathlib.Path(request_sets[label]) for label in systems}
+    exports = {label: load_jsonl(path) for label, path in source_paths.items()}
+    by_id = {}
+    query_ids = None
+    for label, rows in exports.items():
+        ids = [row.get("query_id") for row in rows]
+        if not ids or any(not isinstance(qid, str) or not qid for qid in ids) or len(ids) != len(set(ids)):
+            raise ValueError("Empty, missing or duplicate query ID in " + label)
+        if query_ids is not None and set(ids) != set(query_ids):
+            raise ValueError("All exported request sets must have the same query ID set")
+        if query_ids is None:
+            query_ids = ids
+        by_id[label] = {row["query_id"]: row for row in rows}
+    config_paths = {label: pathlib.Path(path) for label, path in (config_paths or {}).items()}
+    if set(config_paths) != set(systems):
+        raise ValueError("Declare exactly one config file per exported request set")
+    if validate_request_sets is None:
+        # Lazy import avoids an adapter/run.py circular dependency.
+        spec = importlib.util.spec_from_file_location(
+            "threshold_export_contract", pathlib.Path(__file__).parent / "threshold" / "export_contract.py")
+        contract = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(contract)
+        validate_request_sets = contract.validate_request_sets
+    validation = validate_request_sets(exports, config_paths=config_paths)
+    compact = getattr(args, "compact_output", True)
+    metadata = ({d["identifier"]: d for d in load_jsonl(args.corpus)}
+                if not compact and getattr(args, "corpus", None) else {})
+    entries = {}
+    sources = {label: {"source_path": str(source_paths[label]), "source_sha256": sha(source_paths[label]),
+                       "config_path": str(config_paths[label]), "config_file_sha256": sha(config_paths[label])}
+               for label in systems}
+    provenance = [{"kind": "export_set_validation", "sources": sources, "validation": validation}]
+    for qid in query_ids:
+        for label in systems:
+            exported = by_id[label][qid]
+            original = exported.get("request", {})
+            if original.get("method") != "POST" or not isinstance(original.get("body"), dict):
+                raise ValueError("Expected complete Scala POST search request")
+            body = original["body"]
+            if body.get("size") != args.depth:
+                raise ValueError("Exported size must equal replay depth; re-export, never rewrite DSL")
+            params = copy.deepcopy(original.get("query_params", {}))
+            if not isinstance(params, dict) or any(not isinstance(k, str) or not isinstance(v, str) for k, v in params.items()):
+                raise ValueError("Scala query_params must be a string mapping")
+            source_pipeline = params.get("search_pipeline")
+            if source_pipeline not in (None, "_none", "magda-datasets-hybrid-search") or "search_pipeline" in body:
+                raise ValueError("Unexpected exported production pipeline")
+            # Explicit raw mode bypasses the known production NOP pipeline. The
+            # higher-level adapter must gate execution on an engine parity receipt.
+            params["search_pipeline"] = "_none"  # Never inherit an index default pipeline.
+            path = "/" + args.index + "/_search?" + urllib.parse.urlencode(params)
+            request_hash = hashlib.sha256(json.dumps(original, sort_keys=True, ensure_ascii=False,
+                                                       allow_nan=False, separators=(",", ":")).encode("utf8")).hexdigest()
+            entries[qid, label] = {"body": body, "path": path, "samples": [], "variants": set(),
+                                   "export_request_sha256": request_hash}
+            provenance.append({"kind": "exported_request", "system": label, "query_id": qid, "export": exported,
+                               "export_request_sha256": request_hash, "replay_path": path,
+                               "replay_body_sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest(),
+                               "source_search_pipeline": source_pipeline, "replay_search_pipeline": "_none",
+                               "pipeline_override_reason": "explicit raw-production-only; adapter owns engine parity gate",
+                               "pipeline": None})
+    output = pathlib.Path(args.output)
+    ledger = pathlib.Path(getattr(args, "raw_output", None) or str(output) + ".repetitions.jsonl")
+    provenance_path = pathlib.Path(str(output) + ".requests.jsonl")
+    targets = (output, ledger, provenance_path)
+    resolved = [path.resolve() for path in targets]
+    inputs = {path.resolve() for path in (*source_paths.values(), *config_paths.values())}
+    if getattr(args, "corpus", None):
+        inputs.add(pathlib.Path(args.corpus).resolve())
+    if len(set(resolved)) != len(resolved) or any(path in inputs for path in resolved):
+        raise ValueError("Replay artifact paths must be distinct and must not overwrite inputs")
+    if any(path.exists() for path in targets):
+        raise FileExistsError("Refusing to overwrite an existing replay artifact")
+    for path in targets:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("x", encoding="utf8"):
+            pass
+    write_jsonl(provenance_path, provenance)
+    execute = response_executor(args, ledger, receipt=export_response_receipt)
+    rows = []
+    for qid in query_ids:
+        order = rotation_order(qid, systems)
+        for label in order:
+            entry = entries[qid, label]
+            execute(entry["path"], entry["body"], qid, label, "warmup", 0,
+                    export_request_sha256=entry["export_request_sha256"])
+        for repetition in range(args.repetitions):
+            for label in measurement_order(order, repetition):
+                entry = entries[qid, label]
+                response, elapsed = execute(entry["path"], entry["body"], qid, label, "measured", repetition + 1,
+                                            export_request_sha256=entry["export_request_sha256"])
+                entry["samples"].append(elapsed)
+                entry["response"] = response
+                signature = [(hit["_id"], hit.get("_score")) for hit in response["hits"]["hits"]]
+                entry["variants"].add(hashlib.sha256(json.dumps(signature).encode()).hexdigest())
+        for label in order:
+            entry = entries[qid, label]
+            response, samples = entry.pop("response"), entry["samples"]
+            ranked = hits(response, {} if compact else metadata)
+            if compact:
+                for hit in ranked:
+                    hit.pop("metadata")
+            rows.append({"system": label, "query_id": qid, "seed": getattr(args, "seed", None),
+                         "latency_scope": "local_warmed", "warmup": False, "hits": ranked,
+                         "latency_ms": statistics.median(samples), "latency_samples_ms": samples,
+                         "ranking_score_variants": sorted(entry["variants"]),
+                         "repeat_instability": len(entry["variants"]) > 1,
+                         "total_hits": response["hits"].get("total"), "shards": response.get("_shards"),
+                         "timed_out": response.get("timed_out"), "took": response.get("took"),
+                         "aggregations": facet_counts(response.get("aggregations")) if compact else response.get("aggregations"),
+                         "config": {"warmup_excluded": 1, "repetitions": args.repetitions,
+                                    "latency_scope": "local_warmed", "index": args.index,
+                                    "raw_production_only": True, "compact_output": compact,
+                                    "export_request_sha256": entry["export_request_sha256"]}})
+    write_jsonl(output, rows)
+    return rows
+
+
+def run_exports(args):
+    return run_export_sets(args, labelled_paths(args.request_set), config_paths=labelled_paths(args.config_set))
 
 
 def parser():
@@ -426,6 +622,22 @@ def parser():
     a.add_argument("--raw-output", help="New JSONL ledger of every warmup/measured response receipt")
     a.add_argument("--allow-local-writes", action="store_true")
     a.set_defaults(func=run)
+    a = sub.add_parser("run-exports", help="Raw-only replay of actual Scala-exported request sets")
+    a.add_argument("--engine-url", type=local_url, required=True)
+    for name in ("index", "output"):
+        a.add_argument("--" + name, required=True)
+    a.add_argument("--request-set", action="append", required=True, metavar="LABEL=path")
+    a.add_argument("--config-set", action="append", required=True, metavar="LABEL=path",
+                   help="Explicit effective-config export for each request label")
+    a.add_argument("--corpus", help="Optional metadata source for --no-compact-output")
+    a.add_argument("--depth", type=int, default=10)
+    a.add_argument("--repetitions", type=int, default=10)
+    a.add_argument("--seed", type=int, default=0, help="Recorded context; query hash rotation remains unchanged")
+    a.add_argument("--raw-output", help="New repetition ledger (default: OUTPUT.repetitions.jsonl)")
+    a.add_argument("--raw-production-only", action="store_true", required=True)
+    a.add_argument("--compact-output", action=argparse.BooleanOptionalAction, default=True,
+                   help="Omit hit metadata and facet top_hits payloads (default: enabled)")
+    a.set_defaults(func=run_exports)
     return p
 
 

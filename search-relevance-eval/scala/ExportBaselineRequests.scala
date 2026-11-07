@@ -37,7 +37,7 @@ import scala.io.Source
 object ExportBaselineRequests {
   private val hybridPath = HybridSearchConfig.configPath
   private val usage = """ExportBaselineRequests --input tasks.jsonl --output baseline.jsonl --index eval-datasets
-    |  [--config runtime.conf] [--dimension 768] [--k N] [--limit 50]
+    |  [--config runtime.conf] [--dimension 768] [--min-score SCORE | --k N | --keyword-only true] [--limit 50]
     |  [--facet-size 10] [--mapping-output mapping.json]
     |  [--config-output config.json]
     |  [--regions-endpoint http://127.0.0.1:19200] [--baseline-commit ba181562]
@@ -46,6 +46,9 @@ object ExportBaselineRequests {
     |Input: {"id":"q1","query":"water quality","vector":[...],
     |        "filters":{"publisher":"Example","format":["CSV"],"dateFrom":"2020","regions":["ste:1"]}}
     |Supported filters: publisher/publishers, format/formats, region/regions, dateFrom, dateTo.
+    |--min-score explicitly selects radial mode (finite 0 < SCORE <= 1); --k selects diagnostic top-k.
+    |Omitting mode options preserves production config. --min-score clears fallback k/maxDistance, never rewrites DSL.
+    |--keyword-only true is attribution-only: validates but ignores input vector; keeps hybrid config enabled for OR.
     |No endpoint is needed unless --regions-endpoint explicitly enables read-only region augmentation.
     |Mapping export uses production IndexDefinition, with local shardCount=1/replicaCount=0 defaults.
     |Provision the production analysis/wn_s.pl synonym file in the target OpenSearch node.
@@ -59,10 +62,16 @@ object ExportBaselineRequests {
       pair(0).drop(2) -> pair(1)
     }.toVector
     require(pairs.map(_._1).distinct.size == pairs.size, "Duplicate CLI options")
-    val known = Set("input", "output", "index", "config", "dimension", "k", "limit",
+    val known = Set("input", "output", "index", "config", "dimension", "k", "min-score", "keyword-only", "limit",
       "facet-size", "mapping-output", "config-output", "regions-endpoint", "regions-index", "baseline-commit")
     require(pairs.forall(p => known(p._1)), "Unknown CLI option; use --help")
     val result = pairs.toMap
+    require(!(result.contains("min-score") && result.contains("k")), "--min-score and --k are mutually exclusive")
+    result.get("keyword-only").foreach { value =>
+      require(value == "true", "--keyword-only accepts only literal true; omit it for ordinary export")
+      require(!result.contains("min-score") && !result.contains("k"),
+        "--keyword-only is mutually exclusive with --min-score and --k")
+    }
     Seq("input", "output", "index").foreach(k => require(result.contains(k), s"Missing --$k\n$usage"))
     result
   }
@@ -94,7 +103,7 @@ object ExportBaselineRequests {
       "lv4Id" -> text(region.lv4Id), "lv5Id" -> text(region.lv5Id))
   }
 
-  private def inputQuery(row: JsObject)(implicit config: Config): (String, Query) = {
+  private def inputQuery(row: JsObject, keywordOnly: Boolean = false)(implicit config: Config): (String, Query) = {
     val fields = row.fields
     def requiredString(name: String): String = fields.get(name) match {
       case Some(JsString(value)) if value.trim.nonEmpty => value
@@ -157,7 +166,11 @@ object ExportBaselineRequests {
     val parsedBoosts = Query.fromQueryParams(None, Nil, None, None, boostIds, Nil, Nil,
       None, SpecifiedTenantId(BigInt(0))).regions.collect { case Specified(region) => region }
     require(parsedBoosts.size == boostIds.map(_.toLowerCase).distinct.size, s"$id: invalid explicit boost_regions")
-    id -> parsed.copy(freeTextVector = Some(vector), hybridSearch = true, boostRegions = parsedBoosts)
+    // Attribution diagnostic only: validate the same frozen vector above, then
+    // use the ordinary production lexical branch by withholding that vector.
+    // Never disable HybridSearchConfig.enabled: that would change OR to AND.
+    id -> parsed.copy(freeTextVector = if (keywordOnly) None else Some(vector),
+      hybridSearch = !keywordOnly, boostRegions = parsedBoosts)
   }
 
   def main(args: Array[String]): Unit = {
@@ -182,6 +195,17 @@ object ExportBaselineRequests {
     opts.get("k").foreach { n =>
       require(n.toInt > 0, "--k must be positive")
       overrides = overrides.withFallback(ConfigFactory.parseString(s"$hybridPath.k=$n"))
+    }
+    opts.get("min-score").foreach { value =>
+      val score = value.toDouble
+      require(!score.isNaN && !score.isInfinity && score > 0 && score <= 1,
+        "--min-score must be finite and satisfy 0 < SCORE <= 1")
+      // Production KnnQuery prioritizes k, then maxDistance, then minScore.
+      // Explicit nulls mask fallback/runtime values; without this CLI override
+      // the original config is untouched. Always let the production builder
+      // choose radial structure and filter placement, never transform its DSL.
+      overrides = overrides.withFallback(ConfigFactory.parseString(
+        s"$hybridPath.minScore=$score\n$hybridPath.k=null\n$hybridPath.maxDistance=null"))
     }
     val supplied = opts.get("config").map { path =>
       require(Files.isRegularFile(Paths.get(path)), s"Config file does not exist: $path")
@@ -243,7 +267,7 @@ object ExportBaselineRequests {
           val explicitBoosts = row.fields.contains("boost_regions")
           require(!explicitBoosts || (opts.contains("regions-index") && !opts.contains("regions-endpoint")),
             "Explicit boost_regions are correctness fixtures requiring --regions-index and no HTTP augmentation")
-          val (id, initial) = inputQuery(row)
+          val (id, initial) = inputQuery(row, keywordOnly = opts.contains("keyword-only"))
           require(!seen(id), s"Duplicate query id: $id")
           seen += id
           val query = if (opts.contains("regions-endpoint")) {
@@ -255,7 +279,7 @@ object ExportBaselineRequests {
           val params = JsObject(lowLevel.params.map { case (key, value) => key -> JsString(value) })
           val body = requestBody(client.show(request).query)
           val boosts = JsArray(query.boostRegions.toVector.sortBy(_.queryRegion.toString).map(regionJson))
-          output.println(JsObject(
+          val exported = JsObject(
             "query_id" -> JsString(id),
             "request" -> JsObject("body" -> body, "query_params" -> params,
               "method" -> JsString(lowLevel.method), "path" -> JsString(lowLevel.endpoint)),
@@ -267,7 +291,11 @@ object ExportBaselineRequests {
             "boost_regions" -> boosts,
             "public_corpus_assumptions" -> JsObject("tenant_id" -> JsNumber(0),
               "publishing_state" -> JsString("published"), "dataset_and_distribution_auth" -> JsString("UnconditionalTrueDecision"))
-          ).compactPrint)
+          )
+          val diagnostic = if (opts.contains("keyword-only"))
+            JsObject(exported.fields + ("diagnostic_mode" -> JsString("keyword_only_attribution")))
+          else exported
+          output.println(diagnostic.compactPrint)
         } catch {
           case error: Exception => throw new IllegalArgumentException(s"Input line ${number + 1}: ${error.getMessage}", error)
         }
