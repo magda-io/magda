@@ -1,0 +1,286 @@
+{
+  "approval_sha256": "d92ee19b616c8d7350559cd8184b3a50354da43b2c1c7d6fa590bd5d6bd29839",
+  "development_decision_sha256": "eb8c2d917843c84560b23b48ee4015f6b36c463fcbdc38bc2cf1ae7f03e068ac",
+  "forced_recommendation": "D",
+  "inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "mixed_search_requests_expected": 9900,
+  "phases": {
+    "development": {
+      "case_measurement_summary": [
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38871,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38871,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38871,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38872,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38872,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38872,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38873,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38873,
+          "warmup_requests": 104
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 1040,
+          "query_count": 13,
+          "seed": 38873,
+          "warmup_requests": 104
+        }
+      ],
+      "cases": 9,
+      "completed_utc": "2026-11-08T00:38:22.327811+00:00",
+      "completion_sha256": "5a808a822442d39ebccdb92f568c6f309a15a53002b26f3551c4d77412671a95"
+    },
+    "heldout": {
+      "case_measurement_summary": [
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38871,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38871,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38871,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38872,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38872,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38872,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38873,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38873,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 2960,
+          "query_count": 37,
+          "seed": 38873,
+          "warmup_requests": 296
+        },
+        {
+          "catalog_size": 180,
+          "cohort": "LEGACY",
+          "measured_requests": 6000,
+          "query_count": 75,
+          "seed": 39031,
+          "warmup_requests": 600
+        },
+        {
+          "catalog_size": 180,
+          "cohort": "LEGACY",
+          "measured_requests": 6000,
+          "query_count": 75,
+          "seed": 39032,
+          "warmup_requests": 600
+        },
+        {
+          "catalog_size": 180,
+          "cohort": "LEGACY",
+          "measured_requests": 6000,
+          "query_count": 75,
+          "seed": 39033,
+          "warmup_requests": 600
+        },
+        {
+          "catalog_size": 494,
+          "cohort": "REAL",
+          "measured_requests": 1200,
+          "query_count": 15,
+          "seed": 3901,
+          "warmup_requests": 120
+        }
+      ],
+      "cases": 13,
+      "completed_utc": "2026-11-08T03:47:58.842705+00:00",
+      "completion_sha256": "cef69fdb750b294dff439c7de76dcbfab2ad3db138f95fa87b98719da0d7552c"
+    },
+    "roles": {
+      "case_measurement_summary": [
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38871,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38871,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38871,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38872,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38872,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38872,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 60,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38873,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 1000,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38873,
+          "warmup_requests": 100
+        },
+        {
+          "catalog_size": 2000,
+          "cohort": "NEW",
+          "measured_requests": 1000,
+          "query_count": 50,
+          "seed": 38873,
+          "warmup_requests": 100
+        }
+      ],
+      "cases": 9,
+      "completed_utc": "2026-11-08T03:58:04.098381+00:00",
+      "completion_sha256": "47e760b10e853d67c8743e118196ac62da95c011fca22cf53b317b9ffe744f31"
+    }
+  },
+  "primary_search_requests_expected": 60720,
+  "promotion_allowed": false,
+  "relevance_metrics_not_yet_computed": true,
+  "schema_version": 1,
+  "scope": "Source closure, fixed-case/task/repetition grids and immutable phase ordering only; not a relevance/correctness/promotional validation pass.",
+  "source_input_classification": "NEW known/U, unchanged LEGACY known/U, REAL unjudged snapshots",
+  "status": "passed",
+  "verified_utc": "2026-11-08T03:58:46.685083+00:00"
+}

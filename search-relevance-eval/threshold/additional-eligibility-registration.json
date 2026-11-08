@@ -1,0 +1,37 @@
+{
+  "REAL_scope": "Unjudged admission/source counts only; never false-positive labels or exhaustive recall.",
+  "collector_code_sha256": "2b5297f31c074f523695db825c885c4b6772f22723134ccda33375a484cab7e0",
+  "created_utc": "2026-11-08T04:01:27.639828+00:00",
+  "execution_authorized_by_this_document": false,
+  "expected_diagnostic_requests": 1920,
+  "expected_membership_rows": 1680,
+  "fixed_cohorts": [
+    "LEGACY",
+    "REAL"
+  ],
+  "forced_recommendation": "D",
+  "legacy_U_preserved": 12,
+  "method": "For all225 legacy and15 real query/seed/corpus tasks, enumerate actual builder keyword-only OR membership once and all7 uniform full-window hybrid memberships. Use existing response-only projection/collector helpers, preserve all query/filter/vector/scoring leaves, and record primary/window discrepancies rather than assert an exact HNSW oracle.",
+  "new_data_or_relevance_judgments": false,
+  "new_geometry_completion_and_explicit_source_bound_parent_approval_required": true,
+  "original_approval_sha256": "d92ee19b616c8d7350559cd8184b3a50354da43b2c1c7d6fa590bd5d6bd29839",
+  "original_inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "original_promotion_gates_changed": false,
+  "phase": "After fixed capture; before comparative outcome analysis and before additional eligibility probes",
+  "post_latency_only": true,
+  "profiles": [
+    0.5,
+    0.48,
+    0.46,
+    0.45,
+    0.44,
+    0.42,
+    0.4
+  ],
+  "promotion_allowed": false,
+  "query_selection": "all_frozen_queries",
+  "schema_version": 1,
+  "selection_basis": "All inherited tasks and fixed profiles, no query or threshold selected from observed comparative outcomes. New captured relevance/ranking outcomes have not been inspected to choose this scope.",
+  "status": "Supplemental engineering diagnostic, not original confirmatory registration",
+  "task_cases": 240
+}
