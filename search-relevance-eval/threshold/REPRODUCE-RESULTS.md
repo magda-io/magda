@@ -73,10 +73,8 @@ python3 -B search-relevance-eval/threshold/visualize.py \
   search-relevance-eval/threshold/.local/replayed-analysis.json \
   search-relevance-eval/threshold/.local/replayed-figures \
   --descriptive-populations search-relevance-eval/threshold/descriptive-populations.json
-python3 -B search-relevance-eval/threshold/result_audit.py \
-  --compare-report search-relevance-eval/threshold/.local/replayed-analysis.json
 ```
 
-The audit command has its own exclusive output safeguards; preserve the committed completed audit when choosing output locations. Independent raw anchors and [comparison scope](<search-relevance-eval/threshold/results/independent-comparison.json>) remain authoritative. New analysis timestamps and local rebased paths are not expected to be byte-identical, but metric rows, U suppression and event sets should agree.
+The original audit command is a one-shot blinded-audit operation: its committed state is now complete, so do not rerun it expecting a new blind comparison or overwrite its outputs. Independent raw anchors and [completed comparison scope](<search-relevance-eval/threshold/results/independent-comparison.json>) remain available for checking replayed rows. New analysis timestamps and local rebased paths are not expected to be byte-identical, but metric rows, U suppression and event sets should agree.
 
 All13 owned disposable indices were UUID-verified and deleted after capture; both temporary port-forwards were stopped. Offline reproduction is deliberately independent of those live resources. Fresh backend capture is a different operational replay, not a license to tune on held-out results. This completed study remains **D / nonpromotional**, not a validation pass or proof of an optimal .50.
