@@ -1,0 +1,13 @@
+{
+  "compressed_bytes": 3120848,
+  "compressed_path": "search-relevance-eval/threshold/results/threshold-analysis.json.xz",
+  "compressed_sha256": "7173899d8a6ae18f3503feb73f4efb294cb66ce5548a537424eed980503c3409",
+  "created_utc": "2026-11-08T07:38:01.457729+00:00",
+  "forced_recommendation": "D",
+  "promotion_allowed": false,
+  "raw_bytes": 365759686,
+  "raw_path": "search-relevance-eval/threshold/results/threshold-analysis.json",
+  "raw_sha256": "5a065886e8c1ae4168e680585424fbd2d2e52ab41e2ad8000084497180bcfd05",
+  "schema_version": 1,
+  "scope": "Entire original source-bound analysis, all per-ID events and U/scenario/legacy evidence retained. No projection or metric changes."
+}

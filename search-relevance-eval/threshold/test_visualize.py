@@ -108,9 +108,50 @@ class VisualizeTests(unittest.TestCase):
         text = (self.render()[0]).read_text()
         self.assertIn(vis.COMMON_LABEL, text)
         self.assertIn("full six", text)
-        self.assertIn("N/A 7/7 (gaps)", text)
+        self.assertIn("Full six-family metrics: N/A in all 9 seed/size cases (U)", text)
+        self.assertNotIn("N/A 7/7 (gaps)", text)
         self.assertIn("not CI", text)
         self.assertIn("Full-six plausible sensitivity; not a statistical CI", text)
+
+    def test_compact_legend_keeps_all_source_series_and_sensitivity(self):
+        with mock.patch.object(vis, "_panel", return_value=("", 1)) as panel:
+            vis._sweep(self.report, populations())
+        call = panel.call_args_list[0]
+        lines = call.args[2]
+        self.assertEqual(18, len(lines))
+        self.assertEqual(9, sum(s.get("legend", True) for s in lines))
+        self.assertTrue(all(s["values"] == [None] * 7 for s in lines[::2]))
+        self.assertTrue(any(any(b is not None for b in s["bounds"]) for s in lines[::2]))
+        self.assertEqual(3, call.kwargs["legend_columns"])
+        self.assertFalse(call.kwargs["legend_topk"])
+        self.assertEqual("n=60 · seed38871", lines[1]["legend_label"])
+        root = ET.fromstring('<svg xmlns="http://www.w3.org/2000/svg">' + vis._sweep(self.report, populations())[0][0][0] + '</svg>')
+        self.assertEqual(63, len(root.findall("s:circle", NS)))
+        self.assertTrue(root.findall("s:polygon", NS))
+        # Topk numeric values stay in accessible marker titles, not repeated legends.
+        self.assertIn("separate topk10", " ".join(root.itertext()))
+
+    def test_partial_full_six_never_collapsed_as_all_na(self):
+        for row in self.report["per_family"]:
+            if row["seed"] == vis.SEEDS[0] and row["size"] == 60 and row["system"] == "ms_050":
+                for metric, _ in vis.METRICS:
+                    row[metric] = .5
+        with mock.patch.object(vis, "_panel", return_value=("", 1)) as panel:
+            vis._sweep(self.report, populations())
+        call = panel.call_args_list[0]
+        self.assertIsNone(call.kwargs["legend_note"])
+        self.assertTrue(all(s.get("legend", True) for s in call.args[2]))
+        self.assertEqual(1, call.kwargs["legend_columns"])
+
+    def test_partial_common_four_keeps_visible_na_and_single_column(self):
+        for row in self.report["per_family"]:
+            if row["seed"] == vis.SEEDS[0] and row["size"] == 60 and row["system"] == "ms_048" and row["intent_id"] == "t04":
+                row[vis.METRICS[0][0]] = None
+        with mock.patch.object(vis, "_panel", return_value=("", 1)) as panel:
+            vis._sweep(self.report, populations())
+        self.assertEqual(1, panel.call_args_list[0].kwargs["legend_columns"])
+        body = vis._sweep(self.report, populations())[0][0][0]
+        self.assertIn("N/A 1/7 (gaps)", body)
 
     def test_without_population_never_silently_drop_unknown_families(self):
         with mock.patch.object(vis, "_panel", return_value=("", 1)) as panel:

@@ -2,4 +2,5 @@
 capture-archive-parts/* -text
 *.tar.gz -text
 *.tar.xz -text
-results/*.csv -text
+results/*.csv -text whitespace=cr-at-eol
+results/*.xz -text

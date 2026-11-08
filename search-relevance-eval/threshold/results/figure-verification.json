@@ -1,0 +1,15 @@
+{
+  "note": "MCP refused writing screenshots into this workspace; no file-path workaround used. Existing SVG deliverables were not changed by browser inspection.",
+  "pages_opened_and_visually_inspected": [
+    "figures/threshold-sweep.svg",
+    "figures/native-score-cdf.svg",
+    "figures-v2/threshold-sweep.svg"
+  ],
+  "primary_figures_directory": "figures-v2",
+  "renderer": "Chromium via chrome-devtools MCP",
+  "saved_screenshot_file": false,
+  "scope": "Visual layout/title/axes/legend/null/diagnostic-banner inspection only; no rerendered data or numerical truth assertion.",
+  "screenshots_inspected_inline": true,
+  "source_report_sha256": "5a065886e8c1ae4168e680585424fbd2d2e52ab41e2ad8000084497180bcfd05",
+  "verified_utc": "2026-11-08T07:39:47.224010+00:00"
+}

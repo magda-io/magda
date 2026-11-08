@@ -1,0 +1,58 @@
+{
+  "active_indexing_and_merges_zero": true,
+  "all13cases_installed": true,
+  "created_utc": "2026-11-08T00:30:27.057052+00:00",
+  "engine_node_index_stats": {
+    "nodes": {
+      "2IOy7DaYSFe8mDgLF3KeFQ": {
+        "indices": {
+          "flush": {
+            "periodic": 340,
+            "total": 340,
+            "total_time_in_millis": 19851
+          },
+          "indexing": {
+            "delete_current": 0,
+            "delete_time_in_millis": 0,
+            "delete_total": 0,
+            "doc_status": {
+              "2xx": 15603,
+              "4xx": 502
+            },
+            "index_current": 0,
+            "index_failed": 0,
+            "index_time_in_millis": 26110,
+            "index_total": 15603,
+            "is_throttled": false,
+            "noop_update_total": 0,
+            "throttle_time_in_millis": 0
+          },
+          "merges": {
+            "current": 0,
+            "current_docs": 0,
+            "current_size_in_bytes": 0,
+            "total": 83,
+            "total_auto_throttle_in_bytes": 3271557120,
+            "total_docs": 28584,
+            "total_size_in_bytes": 496394158,
+            "total_stopped_time_in_millis": 0,
+            "total_throttled_time_in_millis": 0,
+            "total_time_in_millis": 7057,
+            "unreferenced_file_cleanups_performed": 0
+          },
+          "refresh": {
+            "external_total": 1032,
+            "external_total_time_in_millis": 7509,
+            "listeners": 0,
+            "total": 1402,
+            "total_time_in_millis": 7396
+          }
+        }
+      }
+    }
+  },
+  "installation_sha256": "a20616a587de61d262676be040930d5b66e51426807c1d92db1a303d0ca31bd5",
+  "no_embedding_or_installation_job_running": true,
+  "pre_measurement_mapping_observation_repair_approval_sha256": "073c91e592f6f805ee04765b69359335aa463dc9cb1c3f93c360377438af4a99",
+  "source_mapping_requests_unchanged": true
+}

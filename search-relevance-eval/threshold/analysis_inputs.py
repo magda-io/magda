@@ -29,15 +29,37 @@ def sha_bytes(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
+def file_sha(path):
+    value = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            value.update(block)
+    return value.hexdigest()
+
+
 def read_bound(ref, base=Path(".")):
     path = (Path(base) / ref["path"]).resolve()
-    raw = path.read_bytes()
-    require(sha_bytes(raw) == ref["sha256"], "Source SHA mismatch: " + str(path))
+    require(file_sha(path) == ref["sha256"], "Source SHA mismatch: " + str(path))
     fmt = ref.get("format", "jsonl" if path.suffix == ".jsonl" else "json")
     require(fmt in ("json", "jsonl"), "Only typed JSON/JSONL sources allowed")
-    value = ([json.loads(line) for line in raw.decode("utf8").splitlines() if line.strip()]
-             if fmt == "jsonl" else json.loads(raw))
+    with path.open(encoding="utf8") as stream:
+        value = [json.loads(line) for line in stream if line.strip()] if fmt == "jsonl" else json.load(stream)
     return value, dict(path=str(path), sha256=ref["sha256"], format=fmt)
+
+
+def canonical_digest(value):
+    """Identical canonical SHA to analyzer.digest without a giant JSON string."""
+    hasher = hashlib.sha256()
+    encoder = json.JSONEncoder(sort_keys=True, separators=(",", ":"), allow_nan=False)
+    for chunk in encoder.iterencode(value):
+        hasher.update(chunk.encode())
+    return hasher.hexdigest()
+
+
+def canonical_labels(rows):
+    labels = {r.get("system") for r in rows}
+    require(not {"topk10diag", "topk10"} <= labels, "Duplicate topk source/canonical aliases")
+    return [dict(row, system=MAPPING.get(row["system"], row["system"])) for row in rows]
 
 
 def source_binding(ref):
@@ -48,11 +70,11 @@ def case_key(case):
     return case["cohort"], case["seed"], case["catalog_size"]
 
 
-def inject_case(rows, case, receipt=False):
+def inject_case(rows, case, receipt=False, copy_rows=True):
     """Inject ONLY identity fixed by the signed execution manifest/index binding."""
     out = []
     for row in rows:
-        current = copy.deepcopy(row)
+        current = copy.deepcopy(row) if copy_rows else row
         expected = dict(cohort=case["cohort"], seed=case["seed"], size=case["catalog_size"])
         for key, value in expected.items():
             require(key not in current or current[key] == value, "Artifact case identity contradicts execution manifest")
@@ -68,11 +90,12 @@ def inject_case(rows, case, receipt=False):
             require([project(h) for h in roots[0]["hits"]] == [project(h) for h in current["hits"]], "Root receipt signatures disagree")
             # Keep every original nested/source identity; only the duplicated root
             # comparison view is projected to evaluator's existing three fields.
-            current["source_all_hit_signatures"] = copy.deepcopy(current["all_hit_signatures"])
-            roots[0]["hits"] = [project(h) for h in roots[0]["hits"]]
+            current["source_all_hit_signatures"] = current["all_hit_signatures"]
+            current["all_hit_signatures"] = [dict(signature, hits=[project(h) for h in signature["hits"]])
+                if signature.get("path") == ["hits", "hits"] else signature for signature in current["all_hit_signatures"]]
             current["hits"] = [project(h) for h in current["hits"]]
         out.append(current)
-    analysis.normalize_run_labels(out, MAPPING)  # Validate only; conversion belongs to analyzer.
+    require(not {"topk10diag", "topk10"} <= {r.get("system") for r in out}, "Duplicate topk aliases")
     return out
 
 
@@ -161,7 +184,7 @@ def make_decision(policy, inputs_ref, development_completion_ref, *, timestamp_u
     record = analysis.nonpromotional_no_selection(policy, timestamp_utc=timestamp_utc, parent_acknowledgment=parent_acknowledgment)
     record.update(created_utc=timestamp_utc, immutable_before_heldout=True, selected_threshold=None,
                   inputs_sha256=ir["sha256"], development_completion_sha256=cr["sha256"])
-    record["record_sha256"] = analysis.digest({k: v for k, v in record.items() if k != "record_sha256"})
+    record["record_sha256"] = canonical_digest({k: v for k, v in record.items() if k != "record_sha256"})
     return record
 
 
@@ -198,7 +221,7 @@ def _write(path, value):
     with path.open("x", encoding="utf8") as stream:
         json.dump(value, stream, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
         stream.write("\n")
-    return dict(path=str(path.resolve()), sha256=sha_bytes(path.read_bytes()), format="json")
+    return dict(path=str(path.resolve()), sha256=file_sha(path), format="json")
 
 
 def prepare_inputs(*, workspace, execution_inputs, execution_root, completion_refs, source_refs, output_dir):
@@ -217,13 +240,18 @@ def prepare_inputs(*, workspace, execution_inputs, execution_root, completion_re
     allowed = Path(workspace).resolve() / "search-relevance-eval/threshold/.local/analysis-inputs"
     require(output == allowed or allowed in output.parents, "Adapter writes only .local/analysis-inputs")
     require(not output.exists(), "No overwrite of an analysis-input artifact directory")
-    refs, values = {}, {}
+    refs, values, cache = {}, {}, {}
     for name, ref in source_refs.items():
-        values[name], refs[name] = read_bound(ref, workspace)
+        key = (str((Path(workspace) / ref["path"]).resolve()), ref["sha256"], ref.get("format"))
+        if key not in cache:
+            cache[key] = read_bound(ref, workspace)
+        values[name], refs[name] = cache[key]
     for name in ("native_scores", "eligibility", "vector_inventory"):
-        # Geometry rows must be named by a completed execution/collector source,
-        # not simply a freshly caller-hashed replacement file.
-        require(values[name] == sources.read(refs[name]["path"]), "Geometry source payload mismatch")
+        # Already read/hashed above: verify the same raw bytes are independently
+        # named in collector completion without allocating a duplicate huge list.
+        relative = str(Path(refs[name]["path"]).relative_to(sources.workspace))
+        require(sources.expected.get(relative) == refs[name]["sha256"], "Geometry source absent from completion closure")
+    cache.clear()
     require(values["analysis_bindings"].get("raw_to_analysis_system_mapping") == MAPPING, "Pre-execution label mapping differs")
     cases = sources.inputs["cases"]
     require(len({case_key(c) for c in cases}) == len(cases), "Duplicate signed case keys")
@@ -234,8 +262,8 @@ def prepare_inputs(*, workspace, execution_inputs, execution_root, completion_re
         target = root / case["cohort"] / str(case["seed"]) / str(case["catalog_size"])
         phases = ("development", "heldout", "roles") if case["cohort"] == "NEW" else ("heldout",)
         for phase in phases:
-            rs = inject_case(sources.read(target / (phase + "-runs.jsonl")), case)
-            rr = inject_case(sources.read(target / (phase + "-receipts.jsonl")), case, receipt=True)
+            rs = inject_case(sources.read(target / (phase + "-runs.jsonl")), case, copy_rows=False)
+            rr = inject_case(sources.read(target / (phase + "-receipts.jsonl")), case, receipt=True, copy_rows=False)
             if case["cohort"] == "REAL":
                 real.append(dict(case=list(case_key(case)), runs=rs, receipts=rr,
                                  label_policy="Unjudged, never0; raw observations only, excluded from primary metrics"))
@@ -254,8 +282,8 @@ def prepare_inputs(*, workspace, execution_inputs, execution_root, completion_re
         binding = values["analysis_bindings"]["legacy"]
         payload["legacy"] = dict(queries=values["legacy_queries"], intents=values.get("legacy_intents", []),
             qrels=legacy_qrels(values["legacy_qrels"]), corpora=[c for c in descriptors if c["cohort"] == "LEGACY"],
-            runs=analysis.normalize_run_labels([r for r in runs if r["cohort"] == "LEGACY"], MAPPING)[0],
-            receipts=analysis.normalize_run_labels([r for r in receipts if r["cohort"] == "LEGACY"], MAPPING)[0],
+            runs=canonical_labels([r for r in runs if r["cohort"] == "LEGACY"]),
+            receipts=canonical_labels([r for r in receipts if r["cohort"] == "LEGACY"]),
             resolved_positive_intent_ids=binding["resolved_positive_intent_ids"],
             uncertainty_pairs=[[r["seed"], r["query_id"], r["dataset_id"]] for r in binding["uncertainty_pairs"]])
     evidence = dict(supplementary_validation_passed=False,
@@ -269,8 +297,8 @@ def prepare_inputs(*, workspace, execution_inputs, execution_root, completion_re
     evidence["runtime_and_DSL_verified"] = values.get("binding_runtime", {}).get("status") == "passed" and values.get("binding_dsl", {}).get("status") == "passed"
     evidence["native_engine_calibration_passed"] = values.get("geometry_completion", {}).get("native_engine_calibration_passed") is True
     primary_systems = [s["id"] for s in payload["gates"]["registered_systems"]] + [payload["gates"]["diagnostic_ids"]["topk"]]
-    normalized = analysis.normalize_run_labels(payload["runs"], MAPPING)[0]
-    normalized_receipts = analysis.normalize_run_labels(payload["receipts"], MAPPING)[0]
+    normalized = canonical_labels(payload["runs"])
+    normalized_receipts = canonical_labels(payload["receipts"])
     qm, _, grades, indexed = analysis._prepare(payload["queries"], payload["qrels"], normalized, payload["corpora"], intents=payload["intents"])
     mixed = [payload["gates"]["diagnostic_ids"][n] for n in ("dataset045_nested050", "dataset050_nested045")]
     expected = {(*key, system) for key in grades for system in primary_systems + mixed}
@@ -280,7 +308,7 @@ def prepare_inputs(*, workspace, execution_inputs, execution_root, completion_re
     require(first_held, "Actual held event timestamps unavailable")
     evidence.update(first_heldout_event_utc=min(first_held, key=analysis._utc),
         dev_record_sha256_before_heldout=payload["selection"]["record_sha256"],
-        diagnostic_policy_sha256_before_embedding=analysis.digest(payload["diagnostic_policy"]))
+        diagnostic_policy_sha256_before_embedding=canonical_digest(payload["diagnostic_policy"]))
     preparation = values.get("preparation", {})
     require(preparation.get("started_utc"), "Source-bound preparation start chronology required")
     evidence["first_target_embedding_utc"] = preparation["started_utc"]
@@ -290,21 +318,21 @@ def prepare_inputs(*, workspace, execution_inputs, execution_root, completion_re
     for name, value in list(payload.items()):
         ref = _write(output / (name + ".json"), value)
         evidence["argument_files"][name] = ref
-        evidence["input_sha256"][name] = analysis.digest(value)
+        evidence["input_sha256"][name] = canonical_digest(value)
     mask = payload["diagnostic_policy"]["uncertainty_pairs"]
     evidence["argument_files"]["uncertainty_pairs"] = _write(output / "uncertainty_pairs.json", mask)
-    evidence["input_sha256"]["uncertainty_pairs"] = analysis.digest(mask)
+    evidence["input_sha256"]["uncertainty_pairs"] = canonical_digest(mask)
     if payload.get("legacy") is not None:
         legacy = payload["legacy"]
         legacy["bindings"] = {role: source_binding(refs["legacy_binding_" + role]) for role in ("queries", "qrels", "corpora", "uncertainty_mask", "validation")}
         legacy.update(source_base=str(output), argument_files={}, input_sha256={})
         for name in ("queries", "qrels", "runs", "corpora"):
             legacy["argument_files"][name] = _write(output / ("legacy_" + name + ".json"), legacy[name])
-            legacy["input_sha256"][name] = analysis.digest(legacy[name])
+            legacy["input_sha256"][name] = canonical_digest(legacy[name])
         # Rewrite is forbidden: legacy's complete bundle is sealed only now.
         # Earlier generic legacy.json is a retained pre-closure intermediate.
         evidence["argument_files"]["legacy"] = _write(output / "legacy_closed.json", legacy)
-        evidence["input_sha256"]["legacy"] = analysis.digest(legacy)
+        evidence["input_sha256"]["legacy"] = canonical_digest(legacy)
     payload["evidence"] = evidence
     manifest = dict(schema_version=1, adapter="threshold_analysis_inputs_v1", created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         execution_inputs=sources.execution_ref, source_refs=refs, execution_source_files=sources.reads,

@@ -120,7 +120,7 @@ def build_role_report(payload):
                 common.append(dict(seed=seed, size=size, system=system, intent_ids=[f["intent_id"] for f in members],
                     complete=len(members) == 4, interpretation="Prespecified common-four descriptive population, not full-six primary",
                     **{m: a._mean(f[m] for f in members) if len(members) == 4 else None for m in a.METRICS}))
-    sensitivity = a.legacy_sensitivity(payload["queries"], payload["qrels"], runs, payload["corpora"],
+    sensitivity = a.legacy_sensitivity(list(qm.values()), payload["qrels"], runs, payload["corpora"],
         systems=list(roles), baseline=gates["baseline"], uncertainty_domains=policy.get("uncertainty_pairs", []))
     geometry = defaultdict(lambda: dict(pairs=0, root_available=0, nested_available=0, root_at_or_above_cutoff=0, nested_at_or_above_cutoff=0, either_at_or_above_cutoff=0))
     for key, score in a._native_index(payload.get("native_scores", ())).items():

@@ -1,0 +1,1405 @@
+baseline_grade0_top10,baseline_grade0_top5,candidate_grade0_top10,candidate_grade0_top5,kind,new_grade0_ids_top10,new_grade0_ids_top5,new_grade0_top10,new_grade0_top5,query_id,seed,size,split,system
+6,1,6,1,semantic,[],[],0,0,t03p1,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t03p2,38871,60,heldout,ms_048
+,,,,semantic,,,,,t03p3,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p1,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p2,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p3,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p1,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p2,38871,60,heldout,ms_048
+6,2,6,2,semantic,[],[],0,0,t05p3,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],"[""t035""]",0,1,t06p1,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t06p2,38871,60,heldout,ms_048
+6,3,6,3,semantic,"[""t035""]",[],1,0,t06p3,38871,60,heldout,ms_048
+6,2,6,2,semantic,[],[],0,0,t07p1,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t07p2,38871,60,heldout,ms_048
+8,4,8,4,semantic,[],[],0,0,t07p3,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t08p1,38871,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t08p2,38871,60,heldout,ms_048
+6,2,6,2,semantic,[],[],0,0,t08p3,38871,60,heldout,ms_048
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38871,60,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38871,60,heldout,ms_048
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz10,38871,60,heldout,ms_048
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38871,60,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,60,heldout,ms_048
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,1000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,1000,heldout,ms_048
+,,,,semantic,,,,,t03p3,38871,1000,heldout,ms_048
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,1000,heldout,ms_048
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r020"", ""g05-r031"", ""g05-r037"", ""g05-r038""]","[""g05-r009""]",6,1,t05p2,38871,1000,heldout,ms_048
+7,2,7,2,semantic,[],[],0,0,t05p3,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,1000,heldout,ms_048
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p3,38871,1000,heldout,ms_048
+7,2,7,2,semantic,"[""g08-r043""]",[],1,0,t08p1,38871,1000,heldout,ms_048
+7,2,7,2,semantic,"[""g08-r033"", ""g08-r044""]",[],2,0,t08p2,38871,1000,heldout,ms_048
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r019"", ""g08-r021"", ""g08-r022""]",[],4,0,t08p3,38871,1000,heldout,ms_048
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38871,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38871,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38871,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,1000,heldout,ms_048
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,2000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,2000,heldout,ms_048
+,,,,semantic,,,,,t03p3,38871,2000,heldout,ms_048
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,2000,heldout,ms_048
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r066"", ""g05-r070"", ""g05-r072""]",[],4,0,t05p2,38871,2000,heldout,ms_048
+7,2,7,2,semantic,[],[],0,0,t05p3,38871,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,2000,heldout,ms_048
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,2000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t07p3,38871,2000,heldout,ms_048
+7,2,7,2,semantic,[],[],0,0,t08p1,38871,2000,heldout,ms_048
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r056"", ""g08-r068"", ""g08-r069""]",[],4,0,t08p2,38871,2000,heldout,ms_048
+7,2,7,2,semantic,"[""g08-r021"", ""g08-r022"", ""g08-r049"", ""g08-r053"", ""g08-r087""]",[],5,0,t08p3,38871,2000,heldout,ms_048
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38871,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38871,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38871,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,2000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t03p1,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t03p2,38872,60,heldout,ms_048
+,,,,semantic,,,,,t03p3,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p1,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p2,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p3,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p2,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p3,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t06p1,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t06p2,38872,60,heldout,ms_048
+6,2,6,2,semantic,[],[],0,0,t06p3,38872,60,heldout,ms_048
+6,2,6,2,semantic,[],[],0,0,t07p1,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t07p2,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t08p1,38872,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t08p2,38872,60,heldout,ms_048
+6,2,6,2,semantic,[],[],0,0,t08p3,38872,60,heldout,ms_048
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38872,60,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,60,heldout,ms_048
+7,5,7,5,negative_or_lookalike,[],[],0,0,tz10,38872,60,heldout,ms_048
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38872,60,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,60,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,1000,heldout,ms_048
+,,,,semantic,,,,,t03p3,38872,1000,heldout,ms_048
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,1000,heldout,ms_048
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,1000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p1,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p2,38872,1000,heldout,ms_048
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,1000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,1000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,1000,heldout,ms_048
+2,2,2,2,semantic,[],[],0,0,t08p3,38872,1000,heldout,ms_048
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38872,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38872,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38872,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,2000,heldout,ms_048
+,,,,semantic,,,,,t03p3,38872,2000,heldout,ms_048
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,2000,heldout,ms_048
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,2000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,2000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t06p1,38872,2000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t06p2,38872,2000,heldout,ms_048
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,2000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,2000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,2000,heldout,ms_048
+3,3,3,2,semantic,[],[],0,0,t08p3,38872,2000,heldout,ms_048
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38872,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38872,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38872,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,2000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t03p1,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t03p2,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t03p3,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p1,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p2,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t04p3,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p1,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p2,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t06p1,38873,60,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t06p2,38873,60,heldout,ms_048
+9,4,7,4,semantic,[],[],0,0,t06p3,38873,60,heldout,ms_048
+6,2,6,2,semantic,[],[],0,0,t07p1,38873,60,heldout,ms_048
+6,3,6,3,semantic,[],[],0,0,t07p2,38873,60,heldout,ms_048
+6,4,6,4,semantic,[],[],0,0,t07p3,38873,60,heldout,ms_048
+,,,,semantic,,,,,t08p1,38873,60,heldout,ms_048
+,,,,semantic,,,,,t08p2,38873,60,heldout,ms_048
+,,,,semantic,,,,,t08p3,38873,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,60,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,60,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38873,60,heldout,ms_048
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz10,38873,60,heldout,ms_048
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38873,60,heldout,ms_048
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz12,38873,60,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,1000,heldout,ms_048
+9,4,9,4,semantic,"[""g03-r025"", ""g03-r030"", ""g03-r039"", ""g03-r040""]","[""g03-r033""]",4,1,t03p2,38873,1000,heldout,ms_048
+9,4,9,4,semantic,"[""g03-r019"", ""g03-r020"", ""g03-r025"", ""g03-r028"", ""g03-r030"", ""g03-r037"", ""g03-r039"", ""g03-r042""]","[""g03-r008"", ""g03-r020"", ""g03-r030"", ""g03-r039""]",8,4,t03p3,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,1000,heldout,ms_048
+6,1,6,1,semantic,"[""g05-r038"", ""g05-r042""]","[""g05-r038""]",2,1,t05p2,38873,1000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,1000,heldout,ms_048
+3,1,1,1,semantic,[],[],0,0,t06p2,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p3,38873,1000,heldout,ms_048
+,,,,semantic,,,,,t08p1,38873,1000,heldout,ms_048
+,,,,semantic,,,,,t08p2,38873,1000,heldout,ms_048
+,,,,semantic,,,,,t08p3,38873,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,1000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38873,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38873,1000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,1000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,2000,heldout,ms_048
+9,4,9,4,semantic,"[""g03-r056"", ""g03-r057"", ""g03-r068"", ""g03-r069"", ""g03-r081""]","[""g03-r056"", ""g03-r057"", ""g03-r069""]",5,3,t03p2,38873,2000,heldout,ms_048
+9,4,9,4,semantic,"[""g03-r030"", ""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r056"", ""g03-r057"", ""g03-r072"", ""g03-r084""]","[""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r072""]",8,4,t03p3,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,2000,heldout,ms_048
+6,1,6,1,semantic,"[""g05-r038"", ""g05-r042"", ""g05-r074"", ""g05-r088""]","[""g05-r038""]",4,1,t05p2,38873,2000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,2000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t06p2,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,2000,heldout,ms_048
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,2000,heldout,ms_048
+1,1,1,1,semantic,[],[],0,0,t07p3,38873,2000,heldout,ms_048
+,,,,semantic,,,,,t08p1,38873,2000,heldout,ms_048
+,,,,semantic,,,,,t08p2,38873,2000,heldout,ms_048
+,,,,semantic,,,,,t08p3,38873,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,2000,heldout,ms_048
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38873,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38873,2000,heldout,ms_048
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,2000,heldout,ms_048
+6,1,6,1,semantic,[],[],0,0,t03p1,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t03p2,38871,60,heldout,ms_046
+,,,,semantic,,,,,t03p3,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p1,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p2,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p3,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p1,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p2,38871,60,heldout,ms_046
+6,2,6,1,semantic,[],[],0,0,t05p3,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],"[""t035""]",0,1,t06p1,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t06p2,38871,60,heldout,ms_046
+6,3,6,3,semantic,"[""t035""]",[],1,0,t06p3,38871,60,heldout,ms_046
+6,2,6,2,semantic,[],[],0,0,t07p1,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t07p2,38871,60,heldout,ms_046
+8,4,8,4,semantic,[],[],0,0,t07p3,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t08p1,38871,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t08p2,38871,60,heldout,ms_046
+6,2,6,2,semantic,[],[],0,0,t08p3,38871,60,heldout,ms_046
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38871,60,heldout,ms_046
+10,5,10,5,negative_or_lookalike,"[""t015"", ""t016"", ""t017""]","[""t016"", ""t017""]",3,2,tz09,38871,60,heldout,ms_046
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz10,38871,60,heldout,ms_046
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38871,60,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,60,heldout,ms_046
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,1000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,1000,heldout,ms_046
+,,,,semantic,,,,,t03p3,38871,1000,heldout,ms_046
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,1000,heldout,ms_046
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r020"", ""g05-r031"", ""g05-r037"", ""g05-r038""]","[""g05-r009""]",6,1,t05p2,38871,1000,heldout,ms_046
+7,2,7,2,semantic,"[""g05-r017"", ""g05-r019"", ""g05-r038""]","[""g05-r017"", ""g05-r019""]",3,2,t05p3,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,1000,heldout,ms_046
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p3,38871,1000,heldout,ms_046
+7,2,7,2,semantic,"[""g08-r043""]",[],1,0,t08p1,38871,1000,heldout,ms_046
+7,2,7,2,semantic,"[""g08-r033"", ""g08-r044"", ""g08-r045""]",[],3,0,t08p2,38871,1000,heldout,ms_046
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r043""]",[],5,0,t08p3,38871,1000,heldout,ms_046
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38871,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,"[""g03-r009"", ""g03-r011"", ""g03-r023"", ""g03-r025"", ""g03-r037"", ""g03-r039"", ""g03-r040"", ""g03-r042"", ""g03-r045"", ""g03-r047""]","[""g03-r009"", ""g03-r023"", ""g03-r039"", ""g03-r042"", ""g03-r045""]",10,5,tz09,38871,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38871,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,1000,heldout,ms_046
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,2000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,2000,heldout,ms_046
+,,,,semantic,,,,,t03p3,38871,2000,heldout,ms_046
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,2000,heldout,ms_046
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r066"", ""g05-r070"", ""g05-r072""]",[],4,0,t05p2,38871,2000,heldout,ms_046
+7,2,7,2,semantic,"[""g05-r017"", ""g05-r019"", ""g05-r038"", ""g05-r066"", ""g05-r071"", ""g05-r088""]","[""g05-r019"", ""g05-r053""]",6,2,t05p3,38871,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,2000,heldout,ms_046
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,2000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t07p3,38871,2000,heldout,ms_046
+7,2,7,2,semantic,[],[],0,0,t08p1,38871,2000,heldout,ms_046
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r056"", ""g08-r068"", ""g08-r069""]",[],4,0,t08p2,38871,2000,heldout,ms_046
+7,2,7,2,semantic,"[""g08-r021"", ""g08-r022"", ""g08-r049"", ""g08-r053"", ""g08-r087""]",[],5,0,t08p3,38871,2000,heldout,ms_046
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38871,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,"[""g03-r009"", ""g03-r023"", ""g03-r037"", ""g03-r039"", ""g03-r042"", ""g03-r045"", ""g03-r057"", ""g03-r060"", ""g03-r085"", ""g03-r086""]","[""g03-r009"", ""g03-r023"", ""g03-r039"", ""g03-r042"", ""g03-r057""]",10,5,tz09,38871,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38871,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,2000,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t03p1,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t03p2,38872,60,heldout,ms_046
+,,,,semantic,,,,,t03p3,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p1,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p2,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p3,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],"[""t029""]",0,1,t05p2,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p3,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t06p1,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t06p2,38872,60,heldout,ms_046
+6,2,6,2,semantic,[],[],0,0,t06p3,38872,60,heldout,ms_046
+6,2,6,2,semantic,[],[],0,0,t07p1,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t07p2,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t08p1,38872,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t08p2,38872,60,heldout,ms_046
+6,2,6,2,semantic,[],[],0,0,t08p3,38872,60,heldout,ms_046
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38872,60,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,60,heldout,ms_046
+7,5,7,5,negative_or_lookalike,[],[],0,0,tz10,38872,60,heldout,ms_046
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38872,60,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,60,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,1000,heldout,ms_046
+,,,,semantic,,,,,t03p3,38872,1000,heldout,ms_046
+2,2,2,1,semantic,[],[],0,0,t04p1,38872,1000,heldout,ms_046
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,1000,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p1,38872,1000,heldout,ms_046
+0,0,1,1,semantic,"[""t035""]","[""t035""]",1,1,t06p2,38872,1000,heldout,ms_046
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,1000,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,1000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,1000,heldout,ms_046
+2,2,2,2,semantic,[],[],0,0,t08p3,38872,1000,heldout,ms_046
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,"[""g16-r006"", ""g16-r012""]","[""g16-r006"", ""g16-r012""]",2,2,tz06,38872,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38872,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38872,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,2000,heldout,ms_046
+,,,,semantic,,,,,t03p3,38872,2000,heldout,ms_046
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,2000,heldout,ms_046
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,2000,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,2000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t06p1,38872,2000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t06p2,38872,2000,heldout,ms_046
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,2000,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,2000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,2000,heldout,ms_046
+3,3,3,2,semantic,[],[],0,0,t08p3,38872,2000,heldout,ms_046
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,"[""g16-r006"", ""g16-r012""]","[""g16-r006"", ""g16-r012""]",2,2,tz06,38872,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38872,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38872,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,2000,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t03p1,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t03p2,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t03p3,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p1,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p2,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t04p3,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p1,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p2,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t06p1,38873,60,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t06p2,38873,60,heldout,ms_046
+9,4,6,4,semantic,[],[],0,0,t06p3,38873,60,heldout,ms_046
+6,2,6,2,semantic,[],[],0,0,t07p1,38873,60,heldout,ms_046
+6,3,6,2,semantic,[],[],0,0,t07p2,38873,60,heldout,ms_046
+6,4,6,4,semantic,[],[],0,0,t07p3,38873,60,heldout,ms_046
+,,,,semantic,,,,,t08p1,38873,60,heldout,ms_046
+,,,,semantic,,,,,t08p2,38873,60,heldout,ms_046
+,,,,semantic,,,,,t08p3,38873,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,60,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,60,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38873,60,heldout,ms_046
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz10,38873,60,heldout,ms_046
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38873,60,heldout,ms_046
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz12,38873,60,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,1000,heldout,ms_046
+9,4,9,4,semantic,"[""g03-r039""]","[""g03-r033""]",1,1,t03p2,38873,1000,heldout,ms_046
+9,4,9,4,semantic,"[""g03-r019"", ""g03-r020"", ""g03-r025"", ""g03-r028"", ""g03-r030"", ""g03-r037"", ""g03-r039"", ""g03-r042""]","[""g03-r008"", ""g03-r020"", ""g03-r030"", ""g03-r039""]",8,4,t03p3,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,1000,heldout,ms_046
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r041"", ""g05-r042""]","[""g05-r038""]",6,1,t05p2,38873,1000,heldout,ms_046
+6,1,6,1,semantic,"[""g05-r036"", ""g05-r038"", ""g05-r042""]","[""g05-r038""]",3,1,t05p3,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,1000,heldout,ms_046
+3,1,1,1,semantic,[],[],0,0,t06p2,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p3,38873,1000,heldout,ms_046
+,,,,semantic,,,,,t08p1,38873,1000,heldout,ms_046
+,,,,semantic,,,,,t08p2,38873,1000,heldout,ms_046
+,,,,semantic,,,,,t08p3,38873,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,1000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,"[""g11-r004"", ""g11-r006"", ""g11-r012"", ""g11-r028"", ""g11-r036"", ""g11-r038"", ""g11-r039"", ""g11-r040""]","[""g11-r006"", ""g11-r024"", ""g11-r036"", ""g11-r040""]",8,4,tz09,38873,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38873,1000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,1000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,2000,heldout,ms_046
+9,4,9,4,semantic,"[""g03-r056"", ""g03-r057"", ""g03-r068"", ""g03-r069"", ""g03-r081""]","[""g03-r056"", ""g03-r057"", ""g03-r069""]",5,3,t03p2,38873,2000,heldout,ms_046
+9,4,9,4,semantic,"[""g03-r030"", ""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r056"", ""g03-r057"", ""g03-r072"", ""g03-r084""]","[""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r072""]",8,4,t03p3,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,2000,heldout,ms_046
+6,1,6,1,semantic,"[""g05-r038"", ""g05-r039"", ""g05-r042"", ""g05-r074"", ""g05-r088"", ""g05-r092""]","[""g05-r038""]",6,1,t05p2,38873,2000,heldout,ms_046
+6,1,6,1,semantic,"[""g05-r036"", ""g05-r038"", ""g05-r042"", ""g05-r051"", ""g05-r074"", ""g05-r088""]","[""g05-r088""]",6,1,t05p3,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,2000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t06p2,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,2000,heldout,ms_046
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,2000,heldout,ms_046
+1,1,1,1,semantic,[],[],0,0,t07p3,38873,2000,heldout,ms_046
+,,,,semantic,,,,,t08p1,38873,2000,heldout,ms_046
+,,,,semantic,,,,,t08p2,38873,2000,heldout,ms_046
+,,,,semantic,,,,,t08p3,38873,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,2000,heldout,ms_046
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,"[""g11-r006"", ""g11-r040"", ""g11-r049"", ""g11-r052"", ""g11-r054"", ""g11-r069"", ""g11-r071"", ""g11-r097""]","[""g11-r006"", ""g11-r052"", ""g11-r069"", ""g11-r071""]",8,4,tz09,38873,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz11,38873,2000,heldout,ms_046
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,2000,heldout,ms_046
+6,1,6,1,semantic,[],[],0,0,t03p1,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t03p2,38871,60,heldout,ms_045
+,,,,semantic,,,,,t03p3,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p1,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p2,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p3,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p1,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p2,38871,60,heldout,ms_045
+6,2,6,1,semantic,[],[],0,0,t05p3,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],"[""t035""]",0,1,t06p1,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t06p2,38871,60,heldout,ms_045
+6,3,6,3,semantic,"[""t035"", ""t036""]",[],2,0,t06p3,38871,60,heldout,ms_045
+6,2,6,2,semantic,[],[],0,0,t07p1,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t07p2,38871,60,heldout,ms_045
+8,4,8,4,semantic,[],[],0,0,t07p3,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t08p1,38871,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t08p2,38871,60,heldout,ms_045
+6,2,6,2,semantic,[],[],0,0,t08p3,38871,60,heldout,ms_045
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38871,60,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""t015"", ""t016"", ""t017""]","[""t016"", ""t017""]",3,2,tz09,38871,60,heldout,ms_045
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz10,38871,60,heldout,ms_045
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38871,60,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,60,heldout,ms_045
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,1000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,1000,heldout,ms_045
+,,,,semantic,,,,,t03p3,38871,1000,heldout,ms_045
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,1000,heldout,ms_045
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r020"", ""g05-r031"", ""g05-r037"", ""g05-r038""]","[""g05-r009""]",6,1,t05p2,38871,1000,heldout,ms_045
+7,2,7,2,semantic,"[""g05-r008"", ""g05-r009"", ""g05-r017"", ""g05-r019"", ""g05-r033"", ""g05-r038"", ""g05-r046""]","[""g05-r017"", ""g05-r019""]",7,2,t05p3,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,1000,heldout,ms_045
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p3,38871,1000,heldout,ms_045
+7,2,7,2,semantic,"[""g08-r043""]",[],1,0,t08p1,38871,1000,heldout,ms_045
+7,2,7,2,semantic,"[""g08-r033"", ""g08-r044"", ""g08-r045""]",[],3,0,t08p2,38871,1000,heldout,ms_045
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r043""]",[],5,0,t08p3,38871,1000,heldout,ms_045
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r028""]","[""g16-r013"", ""g16-r028""]",2,2,tz06,38871,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g03-r009"", ""g03-r011"", ""g03-r023"", ""g03-r025"", ""g03-r037"", ""g03-r039"", ""g03-r040"", ""g03-r042"", ""g03-r045"", ""g03-r047""]","[""g03-r009"", ""g03-r023"", ""g03-r039"", ""g03-r042"", ""g03-r045""]",10,5,tz09,38871,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g14-r011"", ""g14-r031"", ""g14-r043""]","[""g14-r011"", ""g14-r031"", ""g14-r043""]",3,3,tz11,38871,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,1000,heldout,ms_045
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,2000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,2000,heldout,ms_045
+,,,,semantic,,,,,t03p3,38871,2000,heldout,ms_045
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,2000,heldout,ms_045
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r066"", ""g05-r070"", ""g05-r072""]",[],4,0,t05p2,38871,2000,heldout,ms_045
+7,2,7,2,semantic,"[""g05-r017"", ""g05-r019"", ""g05-r038"", ""g05-r066"", ""g05-r071"", ""g05-r088""]","[""g05-r019"", ""g05-r053""]",6,2,t05p3,38871,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,2000,heldout,ms_045
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,2000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t07p3,38871,2000,heldout,ms_045
+7,2,7,2,semantic,[],[],0,0,t08p1,38871,2000,heldout,ms_045
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r056"", ""g08-r068"", ""g08-r069""]",[],4,0,t08p2,38871,2000,heldout,ms_045
+7,2,7,2,semantic,"[""g08-r021"", ""g08-r022"", ""g08-r049"", ""g08-r053"", ""g08-r087""]",[],5,0,t08p3,38871,2000,heldout,ms_045
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r028"", ""g16-r065"", ""g16-r089"", ""g16-r093"", ""g16-r095""]","[""g16-r013"", ""g16-r028"", ""g16-r065"", ""g16-r089"", ""g16-r093""]",6,5,tz06,38871,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g03-r009"", ""g03-r023"", ""g03-r037"", ""g03-r039"", ""g03-r042"", ""g03-r045"", ""g03-r057"", ""g03-r060"", ""g03-r085"", ""g03-r086""]","[""g03-r009"", ""g03-r023"", ""g03-r039"", ""g03-r042"", ""g03-r057""]",10,5,tz09,38871,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g06-r059"", ""g06-r093"", ""g14-r011"", ""g14-r031"", ""g14-r043""]","[""g06-r059"", ""g06-r093"", ""g14-r011"", ""g14-r031"", ""g14-r043""]",5,5,tz11,38871,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,2000,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t03p1,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t03p2,38872,60,heldout,ms_045
+,,,,semantic,,,,,t03p3,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p1,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p2,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p3,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],"[""t029""]",0,1,t05p2,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p3,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t06p1,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t06p2,38872,60,heldout,ms_045
+6,2,6,2,semantic,"[""t035""]",[],1,0,t06p3,38872,60,heldout,ms_045
+6,2,6,1,semantic,[],[],0,0,t07p1,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t07p2,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],"[""t042""]",0,1,t07p3,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t08p1,38872,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t08p2,38872,60,heldout,ms_045
+6,2,6,2,semantic,[],[],0,0,t08p3,38872,60,heldout,ms_045
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38872,60,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,60,heldout,ms_045
+7,5,7,5,negative_or_lookalike,[],[],0,0,tz10,38872,60,heldout,ms_045
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38872,60,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,60,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,1000,heldout,ms_045
+,,,,semantic,,,,,t03p3,38872,1000,heldout,ms_045
+2,2,2,1,semantic,[],[],0,0,t04p1,38872,1000,heldout,ms_045
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,1000,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p1,38872,1000,heldout,ms_045
+0,0,1,1,semantic,"[""t035""]","[""t035""]",1,1,t06p2,38872,1000,heldout,ms_045
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,1000,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,1000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,1000,heldout,ms_045
+2,2,2,2,semantic,[],[],0,0,t08p3,38872,1000,heldout,ms_045
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,"[""g16-r004"", ""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r009"", ""g16-r012"", ""g16-r021"", ""g16-r023"", ""g16-r024"", ""g16-r045""]","[""g16-r006"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045""]",10,5,tz06,38872,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38872,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g06-r046"", ""g14-r006"", ""g14-r024"", ""g14-r030"", ""g14-r031"", ""g14-r040"", ""g14-r043"", ""g14-r044""]","[""g06-r046"", ""g14-r024"", ""g14-r030"", ""g14-r031"", ""g14-r043""]",8,5,tz11,38872,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,2000,heldout,ms_045
+,,,,semantic,,,,,t03p3,38872,2000,heldout,ms_045
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,2000,heldout,ms_045
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,2000,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,2000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t06p1,38872,2000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t06p2,38872,2000,heldout,ms_045
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,2000,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,2000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,2000,heldout,ms_045
+3,3,3,2,semantic,[],[],0,0,t08p3,38872,2000,heldout,ms_045
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,"[""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045"", ""g16-r062"", ""g16-r073"", ""g16-r074"", ""g16-r091""]","[""g16-r006"", ""g16-r012"", ""g16-r023"", ""g16-r062"", ""g16-r073""]",10,5,tz06,38872,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38872,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g06-r046"", ""g14-r024"", ""g14-r030"", ""g14-r031"", ""g14-r043"", ""g14-r044"", ""g14-r059"", ""g14-r061"", ""g14-r073"", ""g14-r091""]","[""g06-r046"", ""g14-r031"", ""g14-r059"", ""g14-r073"", ""g14-r091""]",10,5,tz11,38872,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,2000,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t03p1,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t03p2,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t03p3,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p1,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p2,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t04p3,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p1,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p2,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t06p1,38873,60,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t06p2,38873,60,heldout,ms_045
+9,4,6,4,semantic,[],[],0,0,t06p3,38873,60,heldout,ms_045
+6,2,6,2,semantic,[],[],0,0,t07p1,38873,60,heldout,ms_045
+6,3,6,2,semantic,[],[],0,0,t07p2,38873,60,heldout,ms_045
+6,4,6,4,semantic,[],[],0,0,t07p3,38873,60,heldout,ms_045
+,,,,semantic,,,,,t08p1,38873,60,heldout,ms_045
+,,,,semantic,,,,,t08p2,38873,60,heldout,ms_045
+,,,,semantic,,,,,t08p3,38873,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,60,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,60,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38873,60,heldout,ms_045
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz10,38873,60,heldout,ms_045
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38873,60,heldout,ms_045
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz12,38873,60,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,1000,heldout,ms_045
+9,4,9,4,semantic,"[""g03-r039""]","[""g03-r033""]",1,1,t03p2,38873,1000,heldout,ms_045
+9,4,9,4,semantic,"[""g03-r019"", ""g03-r020"", ""g03-r025"", ""g03-r028"", ""g03-r030"", ""g03-r037"", ""g03-r039"", ""g03-r042""]","[""g03-r008"", ""g03-r020"", ""g03-r030"", ""g03-r039""]",8,4,t03p3,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,1000,heldout,ms_045
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r041"", ""g05-r042""]","[""g05-r038""]",6,1,t05p2,38873,1000,heldout,ms_045
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r042""]","[""g05-r038""]",5,1,t05p3,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,1000,heldout,ms_045
+3,1,1,1,semantic,[],[],0,0,t06p2,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p3,38873,1000,heldout,ms_045
+,,,,semantic,,,,,t08p1,38873,1000,heldout,ms_045
+,,,,semantic,,,,,t08p2,38873,1000,heldout,ms_045
+,,,,semantic,,,,,t08p3,38873,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,1000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g11-r004"", ""g11-r006"", ""g11-r012"", ""g11-r028"", ""g11-r036"", ""g11-r038"", ""g11-r039"", ""g11-r040""]","[""g11-r006"", ""g11-r024"", ""g11-r036"", ""g11-r040""]",8,4,tz09,38873,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g06-r033""]","[""g06-r033""]",1,1,tz11,38873,1000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,1000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,2000,heldout,ms_045
+9,4,9,4,semantic,"[""g03-r056"", ""g03-r057"", ""g03-r068"", ""g03-r069"", ""g03-r081""]","[""g03-r056"", ""g03-r057"", ""g03-r069""]",5,3,t03p2,38873,2000,heldout,ms_045
+9,4,9,4,semantic,"[""g03-r030"", ""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r056"", ""g03-r057"", ""g03-r072"", ""g03-r084""]","[""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r072""]",8,4,t03p3,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,2000,heldout,ms_045
+6,1,6,1,semantic,"[""g05-r038"", ""g05-r039"", ""g05-r042"", ""g05-r074"", ""g05-r088"", ""g05-r092""]","[""g05-r038""]",6,1,t05p2,38873,2000,heldout,ms_045
+6,1,6,1,semantic,"[""g05-r036"", ""g05-r038"", ""g05-r042"", ""g05-r051"", ""g05-r074"", ""g05-r088""]","[""g05-r088""]",6,1,t05p3,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,2000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t06p2,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,2000,heldout,ms_045
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,2000,heldout,ms_045
+1,1,1,1,semantic,[],[],0,0,t07p3,38873,2000,heldout,ms_045
+,,,,semantic,,,,,t08p1,38873,2000,heldout,ms_045
+,,,,semantic,,,,,t08p2,38873,2000,heldout,ms_045
+,,,,semantic,,,,,t08p3,38873,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,2000,heldout,ms_045
+10,5,10,5,negative_unrelated,"[""g09-r069""]","[""g09-r069""]",1,1,tz06,38873,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g11-r006"", ""g11-r040"", ""g11-r049"", ""g11-r052"", ""g11-r054"", ""g11-r069"", ""g11-r071"", ""g11-r097""]","[""g11-r006"", ""g11-r052"", ""g11-r069"", ""g11-r071""]",8,4,tz09,38873,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,"[""g06-r033"", ""g06-r069""]","[""g06-r033"", ""g06-r069""]",2,2,tz11,38873,2000,heldout,ms_045
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,2000,heldout,ms_045
+6,1,6,1,semantic,[],[],0,0,t03p1,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t03p2,38871,60,heldout,ms_044
+,,,,semantic,,,,,t03p3,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p1,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p2,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p3,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p1,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p2,38871,60,heldout,ms_044
+6,2,6,1,semantic,[],[],0,0,t05p3,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],"[""t035""]",0,1,t06p1,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t06p2,38871,60,heldout,ms_044
+6,3,6,3,semantic,"[""t035"", ""t036""]",[],2,0,t06p3,38871,60,heldout,ms_044
+6,2,6,2,semantic,[],[],0,0,t07p1,38871,60,heldout,ms_044
+6,1,6,1,semantic,"[""t017""]",[],1,0,t07p2,38871,60,heldout,ms_044
+8,4,8,4,semantic,[],[],0,0,t07p3,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t08p1,38871,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t08p2,38871,60,heldout,ms_044
+6,2,6,2,semantic,[],[],0,0,t08p3,38871,60,heldout,ms_044
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,60,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""t046""]","[""t046""]",1,1,tz06,38871,60,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""t013"", ""t015"", ""t016"", ""t017""]","[""t016"", ""t017""]",4,2,tz09,38871,60,heldout,ms_044
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz10,38871,60,heldout,ms_044
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38871,60,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,60,heldout,ms_044
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,1000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,1000,heldout,ms_044
+,,,,semantic,,,,,t03p3,38871,1000,heldout,ms_044
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,1000,heldout,ms_044
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r020"", ""g05-r031"", ""g05-r037"", ""g05-r038""]","[""g05-r009""]",6,1,t05p2,38871,1000,heldout,ms_044
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r019"", ""g05-r033"", ""g05-r038"", ""g05-r046""]","[""g05-r019""]",6,1,t05p3,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,1000,heldout,ms_044
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p3,38871,1000,heldout,ms_044
+7,2,7,2,semantic,"[""g08-r043""]",[],1,0,t08p1,38871,1000,heldout,ms_044
+7,2,7,2,semantic,"[""g08-r033"", ""g08-r044"", ""g08-r045""]",[],3,0,t08p2,38871,1000,heldout,ms_044
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r043""]",[],5,0,t08p3,38871,1000,heldout,ms_044
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r015"", ""g16-r019"", ""g16-r027"", ""g16-r028"", ""g16-r030"", ""g16-r037"", ""g16-r038"", ""g16-r045"", ""g16-r046""]","[""g16-r013"", ""g16-r019"", ""g16-r028"", ""g16-r037"", ""g16-r046""]",10,5,tz06,38871,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g03-r009"", ""g03-r011"", ""g03-r023"", ""g03-r025"", ""g03-r037"", ""g03-r039"", ""g03-r040"", ""g03-r042"", ""g03-r045"", ""g03-r047""]","[""g03-r009"", ""g03-r023"", ""g03-r039"", ""g03-r042"", ""g03-r045""]",10,5,tz09,38871,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g06-r015"", ""g06-r017"", ""g06-r021"", ""g06-r027"", ""g06-r028"", ""g06-r030"", ""g06-r031"", ""g06-r040"", ""g06-r046""]","[""g06-r015"", ""g06-r021"", ""g06-r031"", ""g06-r040"", ""g06-r046""]",9,5,tz11,38871,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,1000,heldout,ms_044
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,2000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,2000,heldout,ms_044
+,,,,semantic,,,,,t03p3,38871,2000,heldout,ms_044
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,2000,heldout,ms_044
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r066"", ""g05-r070"", ""g05-r072""]",[],4,0,t05p2,38871,2000,heldout,ms_044
+7,2,7,2,semantic,"[""g05-r017"", ""g05-r019"", ""g05-r038"", ""g05-r066"", ""g05-r088""]","[""g05-r019""]",5,1,t05p3,38871,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,2000,heldout,ms_044
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,2000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t07p3,38871,2000,heldout,ms_044
+7,2,7,2,semantic,[],[],0,0,t08p1,38871,2000,heldout,ms_044
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r056"", ""g08-r068"", ""g08-r069""]",[],4,0,t08p2,38871,2000,heldout,ms_044
+7,2,7,2,semantic,"[""g08-r021"", ""g08-r022"", ""g08-r049"", ""g08-r053"", ""g08-r087""]",[],5,0,t08p3,38871,2000,heldout,ms_044
+8,5,8,5,negative_unrelated,[],[],0,0,tz03,38871,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r028"", ""g16-r037"", ""g16-r046"", ""g16-r061"", ""g16-r065"", ""g16-r072"", ""g16-r089"", ""g16-r093"", ""g16-r095""]","[""g16-r013"", ""g16-r028"", ""g16-r065"", ""g16-r089"", ""g16-r093""]",10,5,tz06,38871,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g03-r009"", ""g03-r023"", ""g03-r037"", ""g03-r039"", ""g03-r042"", ""g03-r045"", ""g03-r057"", ""g03-r060"", ""g03-r085"", ""g03-r086""]","[""g03-r009"", ""g03-r023"", ""g03-r039"", ""g03-r042"", ""g03-r057""]",10,5,tz09,38871,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38871,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g06-r015"", ""g06-r021"", ""g06-r040"", ""g06-r046"", ""g06-r056"", ""g06-r059"", ""g06-r072"", ""g06-r075"", ""g06-r091"", ""g06-r093""]","[""g06-r040"", ""g06-r046"", ""g06-r056"", ""g06-r059"", ""g06-r093""]",10,5,tz11,38871,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g08-r062""]","[""g08-r062""]",1,1,tz12,38871,2000,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t03p1,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t03p2,38872,60,heldout,ms_044
+,,,,semantic,,,,,t03p3,38872,60,heldout,ms_044
+6,1,6,1,semantic,"[""t023""]",[],1,0,t04p1,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p2,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p3,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],"[""t029""]",0,1,t05p2,38872,60,heldout,ms_044
+6,1,6,2,semantic,[],"[""t029""]",0,1,t05p3,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t06p1,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t06p2,38872,60,heldout,ms_044
+6,2,6,2,semantic,"[""t035"", ""t036""]",[],2,0,t06p3,38872,60,heldout,ms_044
+6,2,6,1,semantic,[],[],0,0,t07p1,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t07p2,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],"[""t042""]",0,1,t07p3,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t08p1,38872,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t08p2,38872,60,heldout,ms_044
+6,2,6,2,semantic,[],[],0,0,t08p3,38872,60,heldout,ms_044
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,60,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""t052"", ""t053""]","[""t052"", ""t053""]",2,2,tz06,38872,60,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,60,heldout,ms_044
+7,5,7,5,negative_or_lookalike,[],[],0,0,tz10,38872,60,heldout,ms_044
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38872,60,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,60,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,1000,heldout,ms_044
+,,,,semantic,,,,,t03p3,38872,1000,heldout,ms_044
+2,2,2,1,semantic,[],[],0,0,t04p1,38872,1000,heldout,ms_044
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,1000,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p1,38872,1000,heldout,ms_044
+0,0,1,1,semantic,"[""t035""]","[""t035""]",1,1,t06p2,38872,1000,heldout,ms_044
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,1000,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,1000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,1000,heldout,ms_044
+2,2,2,2,semantic,[],[],0,0,t08p3,38872,1000,heldout,ms_044
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g16-r004"", ""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r009"", ""g16-r012"", ""g16-r021"", ""g16-r023"", ""g16-r024"", ""g16-r045""]","[""g16-r006"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045""]",10,5,tz06,38872,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g13-r008"", ""g13-r028"", ""g13-r029"", ""g13-r030"", ""g13-r044""]","[""g13-r008"", ""g13-r028"", ""g13-r029"", ""g13-r030"", ""g13-r044""]",5,5,tz10,38872,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g06-r008"", ""g06-r012"", ""g06-r017"", ""g06-r029"", ""g06-r032"", ""g06-r041"", ""g06-r046""]","[""g06-r008"", ""g06-r012"", ""g06-r029"", ""g06-r032"", ""g06-r046""]",7,5,tz11,38872,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,2000,heldout,ms_044
+,,,,semantic,,,,,t03p3,38872,2000,heldout,ms_044
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,2000,heldout,ms_044
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,2000,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,2000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t06p1,38872,2000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t06p2,38872,2000,heldout,ms_044
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,2000,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,2000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,2000,heldout,ms_044
+3,3,3,2,semantic,[],[],0,0,t08p3,38872,2000,heldout,ms_044
+7,5,7,5,negative_unrelated,[],[],0,0,tz03,38872,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045"", ""g16-r062"", ""g16-r073"", ""g16-r074"", ""g16-r091""]","[""g16-r006"", ""g16-r012"", ""g16-r023"", ""g16-r062"", ""g16-r073""]",10,5,tz06,38872,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g05-r057"", ""g13-r008"", ""g13-r028"", ""g13-r029"", ""g13-r030"", ""g13-r044"", ""g13-r070"", ""g13-r081"", ""g13-r082"", ""g13-r086""]","[""g13-r008"", ""g13-r044"", ""g13-r070"", ""g13-r082"", ""g13-r086""]",10,5,tz10,38872,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g06-r008"", ""g06-r029"", ""g06-r032"", ""g06-r046"", ""g06-r055"", ""g06-r089"", ""g06-r091"", ""g06-r093"", ""g06-r094""]","[""g06-r032"", ""g06-r046"", ""g06-r055"", ""g06-r093"", ""g06-r094""]",9,5,tz11,38872,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g16-r066"", ""g16-r069"", ""g16-r091""]","[""g16-r066"", ""g16-r069"", ""g16-r091""]",3,3,tz12,38872,2000,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t03p1,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t03p2,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t03p3,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p1,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p2,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t04p3,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p1,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p2,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t06p1,38873,60,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t06p2,38873,60,heldout,ms_044
+9,4,7,4,semantic,"[""t036""]",[],1,0,t06p3,38873,60,heldout,ms_044
+6,2,6,2,semantic,[],[],0,0,t07p1,38873,60,heldout,ms_044
+6,3,6,2,semantic,[],[],0,0,t07p2,38873,60,heldout,ms_044
+6,4,6,4,semantic,[],[],0,0,t07p3,38873,60,heldout,ms_044
+,,,,semantic,,,,,t08p1,38873,60,heldout,ms_044
+,,,,semantic,,,,,t08p2,38873,60,heldout,ms_044
+,,,,semantic,,,,,t08p3,38873,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,60,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz06,38873,60,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""t014""]",[],1,0,tz09,38873,60,heldout,ms_044
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz10,38873,60,heldout,ms_044
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38873,60,heldout,ms_044
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz12,38873,60,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,1000,heldout,ms_044
+9,4,9,4,semantic,"[""g03-r039""]","[""g03-r033""]",1,1,t03p2,38873,1000,heldout,ms_044
+9,4,9,4,semantic,"[""g03-r019"", ""g03-r020"", ""g03-r025"", ""g03-r028"", ""g03-r030"", ""g03-r037"", ""g03-r039"", ""g03-r042""]","[""g03-r008"", ""g03-r020"", ""g03-r030"", ""g03-r039""]",8,4,t03p3,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,1000,heldout,ms_044
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r041"", ""g05-r042""]","[""g05-r038""]",6,1,t05p2,38873,1000,heldout,ms_044
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r042""]","[""g05-r038""]",5,1,t05p3,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,1000,heldout,ms_044
+3,1,1,1,semantic,[],[],0,0,t06p2,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p3,38873,1000,heldout,ms_044
+,,,,semantic,,,,,t08p1,38873,1000,heldout,ms_044
+,,,,semantic,,,,,t08p2,38873,1000,heldout,ms_044
+,,,,semantic,,,,,t08p3,38873,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g17-r040""]","[""g17-r040""]",1,1,tz03,38873,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,1000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g09-r007"", ""g09-r009"", ""g09-r014"", ""g09-r020"", ""g09-r024"", ""g09-r029"", ""g09-r042"", ""g09-r044"", ""g16-r020"", ""g16-r036""]","[""g09-r007"", ""g09-r014"", ""g09-r020"", ""g09-r044"", ""g16-r020""]",10,5,tz06,38873,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g11-r004"", ""g11-r006"", ""g11-r012"", ""g11-r028"", ""g11-r036"", ""g11-r038"", ""g11-r039"", ""g11-r040""]","[""g11-r006"", ""g11-r024"", ""g11-r036"", ""g11-r040""]",8,4,tz09,38873,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g06-r002"", ""g06-r006"", ""g06-r021"", ""g06-r028"", ""g06-r031"", ""g06-r033"", ""g06-r036"", ""g06-r041"", ""g06-r046"", ""g14-r043""]","[""g06-r006"", ""g06-r021"", ""g06-r033"", ""g06-r046"", ""g14-r043""]",10,5,tz11,38873,1000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,1000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,2000,heldout,ms_044
+9,4,9,4,semantic,"[""g03-r056"", ""g03-r057"", ""g03-r068"", ""g03-r069"", ""g03-r081""]","[""g03-r056"", ""g03-r057"", ""g03-r069""]",5,3,t03p2,38873,2000,heldout,ms_044
+9,4,9,4,semantic,"[""g03-r030"", ""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r056"", ""g03-r057"", ""g03-r072"", ""g03-r084""]","[""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r072""]",8,4,t03p3,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,2000,heldout,ms_044
+6,1,6,1,semantic,"[""g05-r038"", ""g05-r039"", ""g05-r042"", ""g05-r074"", ""g05-r088"", ""g05-r092""]","[""g05-r038""]",6,1,t05p2,38873,2000,heldout,ms_044
+6,1,6,1,semantic,"[""g05-r036"", ""g05-r038"", ""g05-r042"", ""g05-r051"", ""g05-r074"", ""g05-r088""]","[""g05-r088""]",6,1,t05p3,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,2000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t06p2,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,2000,heldout,ms_044
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,2000,heldout,ms_044
+1,1,1,1,semantic,[],[],0,0,t07p3,38873,2000,heldout,ms_044
+,,,,semantic,,,,,t08p1,38873,2000,heldout,ms_044
+,,,,semantic,,,,,t08p2,38873,2000,heldout,ms_044
+,,,,semantic,,,,,t08p3,38873,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g17-r040""]","[""g17-r040""]",1,1,tz03,38873,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,2000,heldout,ms_044
+10,5,10,5,negative_unrelated,"[""g09-r007"", ""g09-r014"", ""g09-r042"", ""g09-r044"", ""g09-r069"", ""g09-r077"", ""g09-r088"", ""g09-r093"", ""g09-r094"", ""g16-r020""]","[""g09-r014"", ""g09-r044"", ""g09-r069"", ""g09-r088"", ""g16-r020""]",10,5,tz06,38873,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g11-r006"", ""g11-r040"", ""g11-r049"", ""g11-r052"", ""g11-r054"", ""g11-r069"", ""g11-r071"", ""g11-r097""]","[""g11-r006"", ""g11-r052"", ""g11-r069"", ""g11-r071""]",8,4,tz09,38873,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz10,38873,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,"[""g06-r006"", ""g06-r033"", ""g06-r046"", ""g06-r056"", ""g06-r069"", ""g06-r091"", ""g06-r092"", ""g14-r043"", ""g14-r060"", ""g14-r077""]","[""g06-r033"", ""g06-r069"", ""g14-r043"", ""g14-r060"", ""g14-r077""]",10,5,tz11,38873,2000,heldout,ms_044
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38873,2000,heldout,ms_044
+6,1,6,1,semantic,[],[],0,0,t03p1,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t03p2,38871,60,heldout,ms_042
+,,,,semantic,,,,,t03p3,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t04p1,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t04p2,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t04p3,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t05p1,38871,60,heldout,ms_042
+6,1,6,1,semantic,"[""t017""]",[],1,0,t05p2,38871,60,heldout,ms_042
+6,2,6,1,semantic,[],[],0,0,t05p3,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t06p1,38871,60,heldout,ms_042
+6,1,6,1,semantic,"[""t005""]",[],1,0,t06p2,38871,60,heldout,ms_042
+6,3,6,3,semantic,"[""t015"", ""t016"", ""t036""]",[],3,0,t06p3,38871,60,heldout,ms_042
+6,2,6,2,semantic,[],[],0,0,t07p1,38871,60,heldout,ms_042
+6,1,6,1,semantic,"[""t014""]",[],1,0,t07p2,38871,60,heldout,ms_042
+8,4,8,4,semantic,[],[],0,0,t07p3,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t08p1,38871,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t08p2,38871,60,heldout,ms_042
+6,2,6,2,semantic,[],[],0,0,t08p3,38871,60,heldout,ms_042
+8,5,10,5,negative_unrelated,"[""t027"", ""t039"", ""t040""]","[""t027"", ""t039"", ""t040""]",3,3,tz03,38871,60,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,60,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,60,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""t003"", ""t004"", ""t021"", ""t022"", ""t027"", ""t028"", ""t045"", ""t046"", ""t047""]","[""t021"", ""t027"", ""t045"", ""t046""]",9,4,tz06,38871,60,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""t003"", ""t013"", ""t015"", ""t016"", ""t017"", ""t039"", ""t046""]","[""t016"", ""t017""]",7,2,tz09,38871,60,heldout,ms_042
+6,5,6,5,negative_or_lookalike,[],"[""t029""]",0,1,tz10,38871,60,heldout,ms_042
+6,5,6,5,negative_or_lookalike,[],"[""t033""]",0,1,tz11,38871,60,heldout,ms_042
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38871,60,heldout,ms_042
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,1000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,1000,heldout,ms_042
+,,,,semantic,,,,,t03p3,38871,1000,heldout,ms_042
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,1000,heldout,ms_042
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r020"", ""g05-r031"", ""g05-r037"", ""g05-r038""]","[""g05-r009""]",6,1,t05p2,38871,1000,heldout,ms_042
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r019"", ""g05-r033"", ""g05-r038"", ""g05-r046""]","[""g05-r019""]",6,1,t05p3,38871,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,1000,heldout,ms_042
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,1000,heldout,ms_042
+0,0,1,1,semantic,"[""t042""]","[""t042""]",1,1,t07p3,38871,1000,heldout,ms_042
+7,2,7,2,semantic,"[""g08-r043""]",[],1,0,t08p1,38871,1000,heldout,ms_042
+7,2,7,2,semantic,"[""g08-r033"", ""g08-r044"", ""g08-r045""]",[],3,0,t08p2,38871,1000,heldout,ms_042
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r043""]",[],5,0,t08p3,38871,1000,heldout,ms_042
+8,5,10,5,negative_unrelated,"[""g18-r011"", ""g18-r015"", ""g18-r024"", ""g18-r025"", ""g18-r027"", ""g18-r028"", ""g18-r029"", ""g18-r045"", ""t027"", ""t039""]","[""g18-r015"", ""g18-r025"", ""g18-r027"", ""g18-r045"", ""t039""]",10,5,tz03,38871,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r015"", ""g16-r019"", ""g16-r027"", ""g16-r028"", ""g16-r030"", ""g16-r037"", ""g16-r038"", ""g16-r045"", ""g16-r046""]","[""g16-r013"", ""g16-r019"", ""g16-r028"", ""g16-r037"", ""g16-r046""]",10,5,tz06,38871,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g03-r023"", ""g03-r039"", ""g03-r042"", ""g20-r024"", ""g20-r025"", ""g20-r030"", ""g20-r034"", ""g20-r040""]","[""g20-r009"", ""g20-r024"", ""g20-r025"", ""g20-r030"", ""g20-r040""]",8,5,tz09,38871,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g13-r012"", ""g13-r022"", ""g13-r030"", ""g13-r032"", ""g13-r037"", ""g13-r042"", ""g13-r043"", ""g13-r045""]","[""g13-r008"", ""g13-r022"", ""g13-r030"", ""g13-r037"", ""g13-r042""]",8,5,tz10,38871,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g06-r015"", ""g06-r017"", ""g06-r021"", ""g06-r027"", ""g06-r028"", ""g06-r030"", ""g06-r031"", ""g06-r040"", ""g06-r046""]","[""g06-r015"", ""g06-r021"", ""g06-r031"", ""g06-r040"", ""g06-r046""]",9,5,tz11,38871,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r028"", ""g08-r029"", ""g08-r030"", ""g08-r041"", ""g08-r043"", ""g08-r044""]","[""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r028"", ""g08-r030""]",9,5,tz12,38871,1000,heldout,ms_042
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,2000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,2000,heldout,ms_042
+,,,,semantic,,,,,t03p3,38871,2000,heldout,ms_042
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,2000,heldout,ms_042
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r066"", ""g05-r070"", ""g05-r072""]",[],4,0,t05p2,38871,2000,heldout,ms_042
+7,2,7,2,semantic,"[""g05-r017"", ""g05-r019"", ""g05-r038"", ""g05-r066"", ""g05-r088""]","[""g05-r019""]",5,1,t05p3,38871,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,2000,heldout,ms_042
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,2000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t07p3,38871,2000,heldout,ms_042
+7,2,7,2,semantic,[],[],0,0,t08p1,38871,2000,heldout,ms_042
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r056"", ""g08-r068"", ""g08-r069""]",[],4,0,t08p2,38871,2000,heldout,ms_042
+7,2,7,2,semantic,"[""g08-r021"", ""g08-r022"", ""g08-r049"", ""g08-r053"", ""g08-r087""]",[],5,0,t08p3,38871,2000,heldout,ms_042
+8,5,10,5,negative_unrelated,"[""g18-r015"", ""g18-r025"", ""g18-r027"", ""g18-r029"", ""g18-r045"", ""g18-r051"", ""g18-r059"", ""g18-r089"", ""g18-r091"", ""t039""]","[""g18-r025"", ""g18-r027"", ""g18-r045"", ""g18-r051"", ""g18-r059""]",10,5,tz03,38871,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r019"", ""g16-r028"", ""g16-r037"", ""g16-r046"", ""g16-r065"", ""g16-r089"", ""g16-r092"", ""g16-r093"", ""g16-r095""]","[""g16-r013"", ""g16-r065"", ""g16-r089"", ""g16-r093"", ""g16-r095""]",10,5,tz06,38871,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g20-r024"", ""g20-r025"", ""g20-r030"", ""g20-r040"", ""g20-r057"", ""g20-r067"", ""g20-r072"", ""g20-r078"", ""g20-r086"", ""g20-r093""]","[""g20-r024"", ""g20-r025"", ""g20-r072"", ""g20-r078"", ""g20-r093""]",10,5,tz09,38871,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g13-r012"", ""g13-r022"", ""g13-r030"", ""g13-r037"", ""g13-r042"", ""g13-r058"", ""g13-r061"", ""g13-r092"", ""g13-r096""]","[""g13-r022"", ""g13-r030"", ""g13-r042"", ""g13-r061"", ""g13-r092""]",9,5,tz10,38871,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g06-r015"", ""g06-r021"", ""g06-r040"", ""g06-r046"", ""g06-r056"", ""g06-r059"", ""g06-r072"", ""g06-r075"", ""g06-r091"", ""g06-r093""]","[""g06-r040"", ""g06-r046"", ""g06-r056"", ""g06-r059"", ""g06-r093""]",10,5,tz11,38871,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r028"", ""g08-r049"", ""g08-r052"", ""g08-r056"", ""g08-r062"", ""g08-r072"", ""g08-r085""]","[""g08-r019"", ""g08-r028"", ""g08-r052"", ""g08-r062"", ""g08-r072""]",10,5,tz12,38871,2000,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t03p1,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t03p2,38872,60,heldout,ms_042
+,,,,semantic,,,,,t03p3,38872,60,heldout,ms_042
+6,1,6,1,semantic,"[""t023""]",[],1,0,t04p1,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t04p2,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t04p3,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],"[""t029""]",0,1,t05p2,38872,60,heldout,ms_042
+6,1,6,2,semantic,[],"[""t029""]",0,1,t05p3,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t06p1,38872,60,heldout,ms_042
+6,1,6,1,semantic,"[""t040""]",[],1,0,t06p2,38872,60,heldout,ms_042
+6,2,6,2,semantic,"[""t035"", ""t036"", ""t053""]",[],3,0,t06p3,38872,60,heldout,ms_042
+6,2,6,1,semantic,[],[],0,0,t07p1,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t07p2,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],"[""t042""]",0,1,t07p3,38872,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t08p1,38872,60,heldout,ms_042
+6,1,6,1,semantic,"[""t055"", ""t056""]",[],2,0,t08p2,38872,60,heldout,ms_042
+6,2,6,2,semantic,[],[],0,0,t08p3,38872,60,heldout,ms_042
+7,5,7,5,negative_unrelated,[],"[""t044""]",0,1,tz03,38872,60,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,60,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,60,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""t043"", ""t045"", ""t046"", ""t052"", ""t053"", ""t054""]","[""t043"", ""t045"", ""t052"", ""t053"", ""t054""]",6,5,tz06,38872,60,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""t039"", ""t040""]","[""t014"", ""t017""]",2,2,tz09,38872,60,heldout,ms_042
+7,5,7,5,negative_or_lookalike,[],[],0,0,tz10,38872,60,heldout,ms_042
+6,5,6,5,negative_or_lookalike,[],"[""t033""]",0,1,tz11,38872,60,heldout,ms_042
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,60,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,1000,heldout,ms_042
+,,,,semantic,,,,,t03p3,38872,1000,heldout,ms_042
+2,2,2,1,semantic,[],[],0,0,t04p1,38872,1000,heldout,ms_042
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,1000,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,1000,heldout,ms_042
+0,0,1,1,semantic,"[""t035""]","[""t035""]",1,1,t06p1,38872,1000,heldout,ms_042
+0,0,1,1,semantic,"[""t035""]","[""t035""]",1,1,t06p2,38872,1000,heldout,ms_042
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,1000,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,1000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,1000,heldout,ms_042
+2,2,2,2,semantic,[],[],0,0,t08p3,38872,1000,heldout,ms_042
+7,5,10,5,negative_unrelated,"[""g17-r021"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r029"", ""g17-r033"", ""g17-r034"", ""g17-r035"", ""g17-r038"", ""g19-r022""]","[""g17-r021"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r034""]",10,5,tz03,38872,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g16-r004"", ""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r009"", ""g16-r012"", ""g16-r021"", ""g16-r023"", ""g16-r024"", ""g16-r045""]","[""g16-r006"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045""]",10,5,tz06,38872,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g13-r008"", ""g13-r012"", ""g13-r015"", ""g13-r021"", ""g13-r028"", ""g13-r029"", ""g13-r030"", ""g13-r037"", ""g13-r042"", ""g13-r044""]","[""g13-r008"", ""g13-r028"", ""g13-r029"", ""g13-r030"", ""g13-r044""]",10,5,tz10,38872,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g06-r008"", ""g06-r012"", ""g06-r029"", ""g06-r032"", ""g06-r041"", ""g06-r046""]","[""g06-r008"", ""g06-r029"", ""g06-r032"", ""g06-r046""]",6,4,tz11,38872,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g16-r003"", ""g16-r006"", ""g16-r009"", ""g16-r023"", ""g16-r024"", ""g16-r033"", ""g16-r034"", ""g16-r036"", ""g16-r040"", ""g16-r044""]","[""g16-r006"", ""g16-r009"", ""g16-r033"", ""g16-r034"", ""g16-r044""]",10,5,tz12,38872,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,2000,heldout,ms_042
+,,,,semantic,,,,,t03p3,38872,2000,heldout,ms_042
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,2000,heldout,ms_042
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,2000,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,2000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t06p1,38872,2000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t06p2,38872,2000,heldout,ms_042
+8,3,8,3,semantic,[],[],0,0,t06p3,38872,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,2000,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t07p3,38872,2000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,2000,heldout,ms_042
+3,3,3,2,semantic,[],[],0,0,t08p3,38872,2000,heldout,ms_042
+7,5,10,5,negative_unrelated,"[""g17-r021"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r034"", ""g17-r053"", ""g17-r056"", ""g17-r057"", ""g17-r081"", ""g17-r088""]","[""g17-r021"", ""g17-r024"", ""g17-r027"", ""g17-r057"", ""g17-r081""]",10,5,tz03,38872,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045"", ""g16-r062"", ""g16-r073"", ""g16-r074"", ""g16-r091""]","[""g16-r006"", ""g16-r012"", ""g16-r023"", ""g16-r062"", ""g16-r073""]",10,5,tz06,38872,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz09,38872,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g05-r057"", ""g13-r008"", ""g13-r028"", ""g13-r029"", ""g13-r030"", ""g13-r044"", ""g13-r070"", ""g13-r081"", ""g13-r082"", ""g13-r086""]","[""g13-r008"", ""g13-r044"", ""g13-r070"", ""g13-r082"", ""g13-r086""]",10,5,tz10,38872,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g06-r008"", ""g06-r029"", ""g06-r032"", ""g06-r046"", ""g06-r055"", ""g06-r089"", ""g06-r093"", ""g06-r094""]","[""g06-r032"", ""g06-r046"", ""g06-r055"", ""g06-r094""]",8,4,tz11,38872,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g16-r006"", ""g16-r009"", ""g16-r033"", ""g16-r034"", ""g16-r044"", ""g16-r049"", ""g16-r066"", ""g16-r068"", ""g16-r069"", ""g16-r091""]","[""g16-r009"", ""g16-r044"", ""g16-r066"", ""g16-r069"", ""g16-r091""]",10,5,tz12,38872,2000,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t03p1,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t03p2,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t03p3,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],"[""t023""]",0,1,t04p1,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t04p2,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t04p3,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t05p1,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t05p2,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t06p1,38873,60,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t06p2,38873,60,heldout,ms_042
+9,4,7,4,semantic,"[""t036""]",[],1,0,t06p3,38873,60,heldout,ms_042
+6,2,6,2,semantic,[],[],0,0,t07p1,38873,60,heldout,ms_042
+6,3,6,2,semantic,[],[],0,0,t07p2,38873,60,heldout,ms_042
+6,4,6,4,semantic,[],[],0,0,t07p3,38873,60,heldout,ms_042
+,,,,semantic,,,,,t08p1,38873,60,heldout,ms_042
+,,,,semantic,,,,,t08p2,38873,60,heldout,ms_042
+,,,,semantic,,,,,t08p3,38873,60,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz03,38873,60,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,60,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,60,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""t046""]","[""t046""]",1,1,tz06,38873,60,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""t014"", ""t017""]",[],2,0,tz09,38873,60,heldout,ms_042
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz10,38873,60,heldout,ms_042
+6,5,6,5,negative_or_lookalike,[],[],0,0,tz11,38873,60,heldout,ms_042
+8,5,8,5,negative_or_lookalike,[],[],0,0,tz12,38873,60,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,1000,heldout,ms_042
+9,4,9,4,semantic,"[""g03-r039""]","[""g03-r033""]",1,1,t03p2,38873,1000,heldout,ms_042
+9,4,9,4,semantic,"[""g03-r019"", ""g03-r020"", ""g03-r025"", ""g03-r028"", ""g03-r030"", ""g03-r037"", ""g03-r039"", ""g03-r042""]","[""g03-r008"", ""g03-r020"", ""g03-r030"", ""g03-r039""]",8,4,t03p3,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,1000,heldout,ms_042
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r041"", ""g05-r042""]","[""g05-r038""]",6,1,t05p2,38873,1000,heldout,ms_042
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r042""]","[""g05-r038""]",5,1,t05p3,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,1000,heldout,ms_042
+3,1,1,1,semantic,[],[],0,0,t06p2,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p3,38873,1000,heldout,ms_042
+,,,,semantic,,,,,t08p1,38873,1000,heldout,ms_042
+,,,,semantic,,,,,t08p2,38873,1000,heldout,ms_042
+,,,,semantic,,,,,t08p3,38873,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g17-r009"", ""g17-r010"", ""g17-r014"", ""g17-r018"", ""g17-r020"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r040"", ""g17-r041""]","[""g17-r010"", ""g17-r018"", ""g17-r020"", ""g17-r040"", ""g17-r041""]",10,5,tz03,38873,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,1000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g09-r007"", ""g09-r009"", ""g09-r014"", ""g09-r020"", ""g09-r024"", ""g09-r029"", ""g09-r042"", ""g09-r044"", ""g16-r020"", ""g16-r036""]","[""g09-r007"", ""g09-r014"", ""g09-r020"", ""g09-r044"", ""g16-r020""]",10,5,tz06,38873,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g11-r006"", ""g11-r012"", ""g11-r028"", ""g11-r036"", ""g11-r038"", ""g11-r039"", ""g11-r040""]","[""g11-r006"", ""g11-r024"", ""g11-r040""]",7,3,tz09,38873,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g13-r004"", ""g13-r008"", ""g13-r009"", ""g13-r011"", ""g13-r012"", ""g13-r027"", ""g13-r035"", ""g13-r038"", ""g13-r039"", ""g13-r047""]","[""g13-r008"", ""g13-r009"", ""g13-r011"", ""g13-r012"", ""g13-r047""]",10,5,tz10,38873,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g14-r013"", ""g14-r014"", ""g14-r022"", ""g14-r029"", ""g14-r030"", ""g14-r043"", ""g14-r044"", ""g14-r046""]","[""g14-r013"", ""g14-r043"", ""g14-r046""]",8,3,tz11,38873,1000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g08-r013"", ""g08-r018"", ""g08-r021"", ""g08-r023"", ""g08-r032"", ""g08-r037"", ""g08-r038"", ""g08-r039""]","[""g08-r010"", ""g08-r021"", ""g08-r023"", ""g08-r032"", ""g08-r039""]",8,5,tz12,38873,1000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,2000,heldout,ms_042
+9,4,9,4,semantic,"[""g03-r056"", ""g03-r057"", ""g03-r068"", ""g03-r069"", ""g03-r081""]","[""g03-r056"", ""g03-r057"", ""g03-r069""]",5,3,t03p2,38873,2000,heldout,ms_042
+9,4,9,4,semantic,"[""g03-r030"", ""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r056"", ""g03-r057"", ""g03-r072"", ""g03-r084""]","[""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r072""]",8,4,t03p3,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,2000,heldout,ms_042
+6,1,6,1,semantic,"[""g05-r038"", ""g05-r039"", ""g05-r042"", ""g05-r074"", ""g05-r088"", ""g05-r092""]","[""g05-r038""]",6,1,t05p2,38873,2000,heldout,ms_042
+6,1,6,1,semantic,"[""g05-r036"", ""g05-r038"", ""g05-r042"", ""g05-r051"", ""g05-r074"", ""g05-r088""]","[""g05-r088""]",6,1,t05p3,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,2000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t06p2,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,2000,heldout,ms_042
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,2000,heldout,ms_042
+1,1,1,1,semantic,[],[],0,0,t07p3,38873,2000,heldout,ms_042
+,,,,semantic,,,,,t08p1,38873,2000,heldout,ms_042
+,,,,semantic,,,,,t08p2,38873,2000,heldout,ms_042
+,,,,semantic,,,,,t08p3,38873,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g17-r010"", ""g17-r018"", ""g17-r020"", ""g17-r040"", ""g17-r041"", ""g17-r059"", ""g17-r070"", ""g17-r077"", ""g17-r079"", ""g17-r089""]","[""g17-r020"", ""g17-r040"", ""g17-r059"", ""g17-r077"", ""g17-r089""]",10,5,tz03,38873,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,2000,heldout,ms_042
+10,5,10,5,negative_unrelated,"[""g09-r007"", ""g09-r014"", ""g09-r042"", ""g09-r044"", ""g09-r069"", ""g09-r077"", ""g09-r088"", ""g09-r093"", ""g09-r094"", ""g16-r020""]","[""g09-r014"", ""g09-r044"", ""g09-r069"", ""g09-r088"", ""g16-r020""]",10,5,tz06,38873,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g11-r006"", ""g11-r040"", ""g11-r052"", ""g11-r054"", ""g11-r069"", ""g11-r071"", ""g11-r097""]","[""g11-r052"", ""g11-r069"", ""g11-r071""]",7,3,tz09,38873,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g13-r008"", ""g13-r009"", ""g13-r011"", ""g13-r012"", ""g13-r047"", ""g13-r050"", ""g13-r068"", ""g13-r077"", ""g13-r080"", ""g13-r086""]","[""g13-r009"", ""g13-r011"", ""g13-r050"", ""g13-r068"", ""g13-r080""]",10,5,tz10,38873,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g14-r013"", ""g14-r029"", ""g14-r043"", ""g14-r046"", ""g14-r060"", ""g14-r077"", ""g14-r094"", ""g14-r095""]","[""g14-r043"", ""g14-r060"", ""g14-r077""]",8,3,tz11,38873,2000,heldout,ms_042
+10,5,10,5,negative_or_lookalike,"[""g08-r021"", ""g08-r023"", ""g08-r032"", ""g08-r038"", ""g08-r039"", ""g08-r049"", ""g08-r057"", ""g08-r082"", ""g08-r085""]","[""g08-r021"", ""g08-r039"", ""g08-r049"", ""g08-r057"", ""g08-r085""]",9,5,tz12,38873,2000,heldout,ms_042
+6,1,6,1,semantic,[],[],0,0,t03p1,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t027""]",[],1,0,t03p2,38871,60,heldout,ms_040
+,,,,semantic,,,,,t03p3,38871,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t04p1,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t009"", ""t010""]",[],2,0,t04p2,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t050"", ""t053""]",[],2,0,t04p3,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t015""]",[],1,0,t05p1,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t017""]",[],1,0,t05p2,38871,60,heldout,ms_040
+6,2,6,2,semantic,[],[],0,0,t05p3,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t015"", ""t016""]",[],2,0,t06p1,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t014""]",[],1,0,t06p2,38871,60,heldout,ms_040
+6,3,6,3,semantic,"[""t026""]",[],1,0,t06p3,38871,60,heldout,ms_040
+6,2,6,2,semantic,"[""t046""]","[""t016""]",1,1,t07p1,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t014""]",[],1,0,t07p2,38871,60,heldout,ms_040
+8,4,8,4,semantic,[],[],0,0,t07p3,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t015""]",[],1,0,t08p1,38871,60,heldout,ms_040
+6,1,6,1,semantic,"[""t020""]",[],1,0,t08p2,38871,60,heldout,ms_040
+6,2,6,2,semantic,[],[],0,0,t08p3,38871,60,heldout,ms_040
+8,5,10,5,negative_unrelated,"[""t027"", ""t039"", ""t040""]","[""t038""]",3,1,tz03,38871,60,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,60,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,60,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""t003"", ""t004"", ""t021"", ""t022"", ""t027"", ""t028"", ""t045"", ""t046"", ""t047""]","[""t021"", ""t027"", ""t045"", ""t046""]",9,4,tz06,38871,60,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""t013"", ""t015"", ""t016"", ""t017""]","[""t016"", ""t017""]",4,2,tz09,38871,60,heldout,ms_040
+6,5,7,5,negative_or_lookalike,"[""t055""]","[""t029""]",1,1,tz10,38871,60,heldout,ms_040
+6,5,8,5,negative_or_lookalike,"[""t013"", ""t014""]","[""t033""]",2,1,tz11,38871,60,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""t039""]",[],1,0,tz12,38871,60,heldout,ms_040
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,1000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,1000,heldout,ms_040
+,,,,semantic,,,,,t03p3,38871,1000,heldout,ms_040
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,1000,heldout,ms_040
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r020"", ""g05-r031"", ""g05-r037"", ""g05-r038""]","[""g05-r009""]",6,1,t05p2,38871,1000,heldout,ms_040
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r017"", ""g05-r019"", ""g05-r033"", ""g05-r038"", ""g05-r046""]","[""g05-r019""]",6,1,t05p3,38871,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,1000,heldout,ms_040
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,1000,heldout,ms_040
+0,0,1,1,semantic,"[""t042""]","[""t042""]",1,1,t07p3,38871,1000,heldout,ms_040
+7,2,7,2,semantic,"[""g08-r043""]",[],1,0,t08p1,38871,1000,heldout,ms_040
+7,2,7,2,semantic,"[""g08-r033"", ""g08-r044"", ""g08-r045""]",[],3,0,t08p2,38871,1000,heldout,ms_040
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r043""]",[],5,0,t08p3,38871,1000,heldout,ms_040
+8,5,10,5,negative_unrelated,"[""g18-r025"", ""g18-r027"", ""g18-r045""]","[""t038""]",3,1,tz03,38871,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38871,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r015"", ""g16-r019"", ""g16-r027"", ""g16-r028"", ""g16-r030"", ""g16-r037"", ""g16-r038"", ""g16-r045"", ""g16-r046""]","[""g16-r013"", ""g16-r019"", ""g16-r028"", ""g16-r037"", ""g16-r046""]",10,5,tz06,38871,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g20-r012"", ""g20-r022"", ""g20-r024"", ""g20-r025"", ""g20-r030"", ""g20-r034"", ""g20-r040""]","[""g20-r009"", ""g20-r024"", ""g20-r025"", ""g20-r030"", ""g20-r040""]",7,5,tz09,38871,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g13-r012"", ""g13-r022"", ""g13-r030"", ""g13-r032"", ""g13-r037"", ""g13-r042"", ""g13-r043"", ""g13-r045""]","[""g13-r008"", ""g13-r022"", ""g13-r030"", ""g13-r037"", ""g13-r042""]",8,5,tz10,38871,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g06-r015"", ""g06-r017"", ""g06-r021"", ""g06-r027"", ""g06-r030"", ""g06-r031"", ""g06-r040"", ""g06-r046""]","[""g06-r015"", ""g06-r021"", ""g06-r040"", ""g06-r046""]",8,4,tz11,38871,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r028"", ""g08-r029"", ""g08-r030"", ""g08-r041"", ""g08-r043"", ""g08-r044""]","[""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r028"", ""g08-r030""]",9,5,tz12,38871,1000,heldout,ms_040
+7,2,7,2,semantic,[],[],0,0,t03p1,38871,2000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t03p2,38871,2000,heldout,ms_040
+,,,,semantic,,,,,t03p3,38871,2000,heldout,ms_040
+9,4,9,4,semantic,"[""t023""]","[""t023""]",1,1,t04p1,38871,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p2,38871,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p3,38871,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p1,38871,2000,heldout,ms_040
+7,2,7,2,semantic,"[""g05-r009"", ""g05-r066"", ""g05-r070"", ""g05-r072""]",[],4,0,t05p2,38871,2000,heldout,ms_040
+7,2,7,2,semantic,"[""g05-r017"", ""g05-r019"", ""g05-r038"", ""g05-r066"", ""g05-r088""]","[""g05-r019""]",5,1,t05p3,38871,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p1,38871,2000,heldout,ms_040
+7,2,7,2,semantic,[],[],0,0,t06p2,38871,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p3,38871,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p1,38871,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p2,38871,2000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t07p3,38871,2000,heldout,ms_040
+7,2,7,2,semantic,[],[],0,0,t08p1,38871,2000,heldout,ms_040
+7,2,7,2,semantic,"[""g08-r008"", ""g08-r056"", ""g08-r068"", ""g08-r069""]",[],4,0,t08p2,38871,2000,heldout,ms_040
+7,2,7,2,semantic,"[""g08-r021"", ""g08-r022"", ""g08-r049"", ""g08-r053"", ""g08-r087""]",[],5,0,t08p3,38871,2000,heldout,ms_040
+8,5,10,5,negative_unrelated,"[""g18-r027"", ""g18-r051"", ""g18-r059""]","[""t038""]",3,1,tz03,38871,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g03-r091""]","[""g03-r091""]",1,1,tz04,38871,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38871,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g16-r013"", ""g16-r019"", ""g16-r028"", ""g16-r037"", ""g16-r046"", ""g16-r065"", ""g16-r089"", ""g16-r092"", ""g16-r093"", ""g16-r095""]","[""g16-r013"", ""g16-r065"", ""g16-r089"", ""g16-r093"", ""g16-r095""]",10,5,tz06,38871,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g20-r024"", ""g20-r025"", ""g20-r030"", ""g20-r040"", ""g20-r057"", ""g20-r067"", ""g20-r072"", ""g20-r078"", ""g20-r086"", ""g20-r093""]","[""g20-r024"", ""g20-r025"", ""g20-r072"", ""g20-r078"", ""g20-r093""]",10,5,tz09,38871,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g13-r012"", ""g13-r022"", ""g13-r030"", ""g13-r037"", ""g13-r042"", ""g13-r058"", ""g13-r061"", ""g13-r092"", ""g13-r096""]","[""g13-r022"", ""g13-r030"", ""g13-r042"", ""g13-r061"", ""g13-r092""]",9,5,tz10,38871,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g06-r015"", ""g06-r021"", ""g06-r040"", ""g06-r046"", ""g06-r056"", ""g06-r059"", ""g06-r072"", ""g06-r075"", ""g06-r093""]","[""g06-r040"", ""g06-r056"", ""g06-r059"", ""g06-r093""]",9,4,tz11,38871,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g08-r019"", ""g08-r021"", ""g08-r022"", ""g08-r028"", ""g08-r049"", ""g08-r052"", ""g08-r056"", ""g08-r062"", ""g08-r072"", ""g08-r085""]","[""g08-r019"", ""g08-r028"", ""g08-r052"", ""g08-r062"", ""g08-r072""]",10,5,tz12,38871,2000,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t03p1,38872,60,heldout,ms_040
+6,1,6,1,semantic,"[""t058""]",[],1,0,t03p2,38872,60,heldout,ms_040
+,,,,semantic,,,,,t03p3,38872,60,heldout,ms_040
+6,1,6,1,semantic,"[""t040""]","[""t040""]",1,1,t04p1,38872,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t04p2,38872,60,heldout,ms_040
+6,1,6,1,semantic,"[""t051""]",[],1,0,t04p3,38872,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,60,heldout,ms_040
+6,1,6,1,semantic,[],"[""t029""]",0,1,t05p2,38872,60,heldout,ms_040
+6,1,6,2,semantic,[],"[""t029""]",0,1,t05p3,38872,60,heldout,ms_040
+6,1,6,1,semantic,"[""t040""]",[],1,0,t06p1,38872,60,heldout,ms_040
+6,1,6,1,semantic,"[""t013"", ""t015""]",[],2,0,t06p2,38872,60,heldout,ms_040
+6,2,6,2,semantic,"[""t002"", ""t015"", ""t036""]",[],3,0,t06p3,38872,60,heldout,ms_040
+6,2,6,1,semantic,[],[],0,0,t07p1,38872,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t07p2,38872,60,heldout,ms_040
+6,1,6,1,semantic,"[""t008""]","[""t042""]",1,1,t07p3,38872,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t08p1,38872,60,heldout,ms_040
+6,1,6,1,semantic,"[""t003"", ""t028""]",[],2,0,t08p2,38872,60,heldout,ms_040
+6,2,6,2,semantic,[],[],0,0,t08p3,38872,60,heldout,ms_040
+7,5,10,5,negative_unrelated,"[""t006"", ""t028"", ""t040"", ""t043"", ""t051"", ""t053"", ""t054""]","[""t006"", ""t028"", ""t040"", ""t053"", ""t054""]",7,5,tz03,38872,60,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38872,60,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,60,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""t004"", ""t022"", ""t023"", ""t040"", ""t043"", ""t045"", ""t046"", ""t052"", ""t053"", ""t054""]","[""t043"", ""t045"", ""t052"", ""t053"", ""t054""]",10,5,tz06,38872,60,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""t003"", ""t039"", ""t047""]","[""t014"", ""t017""]",3,2,tz09,38872,60,heldout,ms_040
+7,5,7,5,negative_or_lookalike,[],"[""t028""]",0,1,tz10,38872,60,heldout,ms_040
+6,5,10,5,negative_or_lookalike,"[""t013"", ""t014"", ""t015"", ""t050""]","[""t033""]",4,1,tz11,38872,60,heldout,ms_040
+10,5,10,5,negative_or_lookalike,[],[],0,0,tz12,38872,60,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,1000,heldout,ms_040
+,,,,semantic,,,,,t03p3,38872,1000,heldout,ms_040
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,1000,heldout,ms_040
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,1000,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,1000,heldout,ms_040
+0,0,1,1,semantic,"[""t035""]","[""t035""]",1,1,t06p1,38872,1000,heldout,ms_040
+0,0,1,1,semantic,"[""t035""]","[""t035""]",1,1,t06p2,38872,1000,heldout,ms_040
+8,3,8,3,semantic,"[""g20-r008"", ""g20-r009"", ""g20-r023"", ""g20-r028"", ""g20-r033"", ""g20-r043"", ""g20-r045""]","[""g20-r008"", ""g20-r009""]",7,2,t06p3,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,1000,heldout,ms_040
+6,1,6,1,semantic,"[""g20-r008"", ""g20-r037"", ""g20-r043""]",[],3,0,t07p3,38872,1000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,1000,heldout,ms_040
+2,2,2,2,semantic,[],[],0,0,t08p3,38872,1000,heldout,ms_040
+7,5,10,5,negative_unrelated,"[""g17-r021"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r029"", ""g17-r033"", ""g17-r034"", ""g17-r035"", ""g17-r038"", ""g19-r022""]","[""g17-r021"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r034""]",10,5,tz03,38872,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g08-r021"", ""g08-r022"", ""g08-r023"", ""g08-r028"", ""g08-r029"", ""g08-r032"", ""g08-r036"", ""g08-r038"", ""g08-r042""]","[""g08-r021"", ""g08-r022"", ""g08-r023"", ""g08-r038"", ""g08-r042""]",9,5,tz04,38872,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g16-r004"", ""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r009"", ""g16-r012"", ""g16-r021"", ""g16-r023"", ""g16-r024"", ""g16-r045""]","[""g16-r006"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045""]",10,5,tz06,38872,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g20-r022"", ""g20-r023"", ""g20-r032"", ""g20-r033"", ""g20-r037"", ""g20-r041"", ""g20-r043""]","[""g20-r022"", ""g20-r023"", ""g20-r032"", ""g20-r033"", ""g20-r043""]",7,5,tz09,38872,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g13-r008"", ""g19-r022"", ""g19-r024"", ""g19-r039"", ""g19-r044"", ""t027"", ""t029""]","[""g19-r008"", ""g19-r022"", ""g19-r024"", ""g19-r039"", ""g19-r044""]",7,5,tz10,38872,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g06-r008"", ""g06-r012"", ""g06-r029"", ""g06-r032"", ""g06-r046""]","[""g06-r029"", ""g06-r032"", ""g06-r046""]",5,3,tz11,38872,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g16-r003"", ""g16-r006"", ""g16-r009"", ""g16-r024"", ""g16-r033"", ""g16-r034"", ""g16-r036"", ""g16-r040"", ""g16-r044""]","[""g16-r006"", ""g16-r009"", ""g16-r033"", ""g16-r044""]",9,4,tz12,38872,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t03p1,38872,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t03p2,38872,2000,heldout,ms_040
+,,,,semantic,,,,,t03p3,38872,2000,heldout,ms_040
+2,2,2,2,semantic,[],[],0,0,t04p1,38872,2000,heldout,ms_040
+2,2,2,2,semantic,[],[],0,0,t04p2,38872,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p3,38872,2000,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t05p1,38872,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p2,38872,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p3,38872,2000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t06p1,38872,2000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t06p2,38872,2000,heldout,ms_040
+8,3,8,3,semantic,"[""g20-r008"", ""g20-r009"", ""g20-r057"", ""g20-r069"", ""g20-r072"", ""g20-r081"", ""g20-r091""]","[""g20-r008"", ""g20-r091""]",7,2,t06p3,38872,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p1,38872,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p2,38872,2000,heldout,ms_040
+6,1,6,1,semantic,"[""g07-r041""]",[],1,0,t07p3,38872,2000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t08p1,38872,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t08p2,38872,2000,heldout,ms_040
+3,3,3,2,semantic,[],[],0,0,t08p3,38872,2000,heldout,ms_040
+7,5,10,5,negative_unrelated,"[""g17-r021"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r034"", ""g17-r053"", ""g17-r056"", ""g17-r057"", ""g17-r081"", ""g17-r088""]","[""g17-r021"", ""g17-r024"", ""g17-r027"", ""g17-r057"", ""g17-r081""]",10,5,tz03,38872,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g08-r021"", ""g08-r022"", ""g08-r023"", ""g08-r038"", ""g08-r042"", ""g08-r066"", ""g08-r067"", ""g08-r069"", ""g08-r081"", ""g08-r085""]","[""g08-r021"", ""g08-r042"", ""g08-r067"", ""g08-r081"", ""g08-r085""]",10,5,tz04,38872,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38872,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g16-r006"", ""g16-r007"", ""g16-r008"", ""g16-r012"", ""g16-r023"", ""g16-r045"", ""g16-r062"", ""g16-r073"", ""g16-r074"", ""g16-r091""]","[""g16-r006"", ""g16-r012"", ""g16-r023"", ""g16-r062"", ""g16-r073""]",10,5,tz06,38872,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g20-r022"", ""g20-r023"", ""g20-r032"", ""g20-r043"", ""g20-r050"", ""g20-r053"", ""g20-r069"", ""g20-r072"", ""g20-r082"", ""g20-r091""]","[""g20-r043"", ""g20-r050"", ""g20-r069"", ""g20-r072"", ""g20-r091""]",10,5,tz09,38872,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g19-r022"", ""g19-r039"", ""g19-r044"", ""g19-r069"", ""g19-r072"", ""g19-r073"", ""g19-r078"", ""g19-r084"", ""g19-r091""]","[""g19-r022"", ""g19-r039"", ""g19-r044"", ""g19-r073"", ""g19-r084""]",9,5,tz10,38872,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g06-r029"", ""g06-r032"", ""g06-r046"", ""g06-r055"", ""g06-r089"", ""g06-r093"", ""g06-r094""]","[""g06-r032"", ""g06-r046"", ""g06-r055""]",7,3,tz11,38872,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g16-r006"", ""g16-r009"", ""g16-r033"", ""g16-r044"", ""g16-r049"", ""g16-r066"", ""g16-r068"", ""g16-r069"", ""g16-r091""]","[""g16-r009"", ""g16-r066"", ""g16-r069"", ""g16-r091""]",9,4,tz12,38872,2000,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t03p1,38873,60,heldout,ms_040
+6,1,6,1,semantic,"[""t047""]",[],1,0,t03p2,38873,60,heldout,ms_040
+6,1,6,1,semantic,"[""t045"", ""t047""]",[],2,0,t03p3,38873,60,heldout,ms_040
+6,1,6,1,semantic,[],"[""t023""]",0,1,t04p1,38873,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t04p2,38873,60,heldout,ms_040
+6,1,6,1,semantic,"[""t009""]",[],1,0,t04p3,38873,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t05p1,38873,60,heldout,ms_040
+6,1,6,1,semantic,"[""t016""]",[],1,0,t05p2,38873,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t05p3,38873,60,heldout,ms_040
+6,1,6,1,semantic,[],[],0,0,t06p1,38873,60,heldout,ms_040
+6,1,6,1,semantic,"[""t058""]",[],1,0,t06p2,38873,60,heldout,ms_040
+9,4,8,4,semantic,"[""t014""]",[],1,0,t06p3,38873,60,heldout,ms_040
+6,2,6,2,semantic,[],[],0,0,t07p1,38873,60,heldout,ms_040
+6,3,6,3,semantic,[],[],0,0,t07p2,38873,60,heldout,ms_040
+6,4,6,4,semantic,"[""t010""]",[],1,0,t07p3,38873,60,heldout,ms_040
+,,,,semantic,,,,,t08p1,38873,60,heldout,ms_040
+,,,,semantic,,,,,t08p2,38873,60,heldout,ms_040
+,,,,semantic,,,,,t08p3,38873,60,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""t006""]","[""t006"", ""t038""]",1,2,tz03,38873,60,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz04,38873,60,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,60,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""t003"", ""t004"", ""t005"", ""t022"", ""t023"", ""t043"", ""t045"", ""t046"", ""t047""]","[""t003"", ""t043"", ""t045"", ""t046""]",9,4,tz06,38873,60,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""t014"", ""t038"", ""t044"", ""t047""]",[],4,0,tz09,38873,60,heldout,ms_040
+8,5,8,5,negative_or_lookalike,[],"[""t029""]",0,1,tz10,38873,60,heldout,ms_040
+6,5,10,5,negative_or_lookalike,"[""t006"", ""t013"", ""t015"", ""t016""]",[],4,0,tz11,38873,60,heldout,ms_040
+8,5,9,5,negative_or_lookalike,"[""t037""]",[],1,0,tz12,38873,60,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,1000,heldout,ms_040
+9,4,9,4,semantic,"[""g03-r039""]","[""g03-r033""]",1,1,t03p2,38873,1000,heldout,ms_040
+9,4,9,4,semantic,"[""g03-r019"", ""g03-r020"", ""g03-r025"", ""g03-r028"", ""g03-r030"", ""g03-r037"", ""g03-r039"", ""g03-r042""]","[""g03-r008"", ""g03-r020"", ""g03-r030"", ""g03-r039""]",8,4,t03p3,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,1000,heldout,ms_040
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r041"", ""g05-r042""]","[""g05-r038""]",6,1,t05p2,38873,1000,heldout,ms_040
+6,1,6,1,semantic,"[""g05-r019"", ""g05-r036"", ""g05-r038"", ""g05-r039"", ""g05-r042""]","[""g05-r038""]",5,1,t05p3,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,1000,heldout,ms_040
+3,1,1,1,semantic,[],[],0,0,t06p2,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p3,38873,1000,heldout,ms_040
+,,,,semantic,,,,,t08p1,38873,1000,heldout,ms_040
+,,,,semantic,,,,,t08p2,38873,1000,heldout,ms_040
+,,,,semantic,,,,,t08p3,38873,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g17-r009"", ""g17-r010"", ""g17-r014"", ""g17-r018"", ""g17-r020"", ""g17-r024"", ""g17-r025"", ""g17-r027"", ""g17-r040"", ""g17-r041""]","[""g17-r010"", ""g17-r018"", ""g17-r020"", ""g17-r040"", ""g17-r041""]",10,5,tz03,38873,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g06-r002"", ""g06-r020"", ""g06-r021"", ""g06-r029"", ""g06-r033"", ""g17-r008"", ""g17-r021"", ""g17-r040"", ""g17-r047""]","[""g06-r020"", ""g06-r021"", ""g06-r029"", ""g06-r033""]",9,4,tz04,38873,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,1000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g09-r007"", ""g09-r009"", ""g09-r014"", ""g09-r020"", ""g09-r024"", ""g09-r029"", ""g09-r042"", ""g09-r044"", ""g16-r020"", ""g16-r036""]","[""g09-r007"", ""g09-r014"", ""g09-r020"", ""g09-r044"", ""g16-r020""]",10,5,tz06,38873,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g11-r006"", ""g11-r012"", ""g11-r028"", ""g11-r036"", ""g11-r038"", ""g11-r039"", ""g11-r040""]","[""g11-r006"", ""g11-r036"", ""g11-r040""]",7,3,tz09,38873,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g13-r004"", ""g13-r008"", ""g13-r009"", ""g13-r011"", ""g13-r012"", ""g13-r027"", ""g13-r035"", ""g13-r038"", ""g13-r039"", ""g13-r047""]","[""g13-r008"", ""g13-r009"", ""g13-r011"", ""g13-r012"", ""g13-r047""]",10,5,tz10,38873,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g14-r013"", ""g14-r022"", ""g14-r029"", ""g14-r043"", ""g14-r044"", ""g14-r046""]","[""g14-r043""]",6,1,tz11,38873,1000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g08-r013"", ""g08-r018"", ""g08-r021"", ""g08-r023"", ""g08-r032"", ""g08-r037"", ""g08-r038"", ""g08-r039""]","[""g08-r010"", ""g08-r021"", ""g08-r023"", ""g08-r032"", ""g08-r039""]",8,5,tz12,38873,1000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t03p1,38873,2000,heldout,ms_040
+9,4,9,4,semantic,"[""g03-r056"", ""g03-r057"", ""g03-r068"", ""g03-r069"", ""g03-r081""]","[""g03-r056"", ""g03-r057"", ""g03-r069""]",5,3,t03p2,38873,2000,heldout,ms_040
+9,4,9,4,semantic,"[""g03-r030"", ""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r056"", ""g03-r057"", ""g03-r072"", ""g03-r084""]","[""g03-r039"", ""g03-r049"", ""g03-r050"", ""g03-r072""]",8,4,t03p3,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p1,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p2,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t04p3,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t05p1,38873,2000,heldout,ms_040
+6,1,6,1,semantic,"[""g05-r038"", ""g05-r039"", ""g05-r042"", ""g05-r074"", ""g05-r088"", ""g05-r092""]","[""g05-r038""]",6,1,t05p2,38873,2000,heldout,ms_040
+6,1,6,1,semantic,"[""g05-r036"", ""g05-r038"", ""g05-r042"", ""g05-r051"", ""g05-r074"", ""g05-r088""]","[""g05-r088""]",6,1,t05p3,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p1,38873,2000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t06p2,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t06p3,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p1,38873,2000,heldout,ms_040
+0,0,0,0,semantic,[],[],0,0,t07p2,38873,2000,heldout,ms_040
+1,1,1,1,semantic,[],[],0,0,t07p3,38873,2000,heldout,ms_040
+,,,,semantic,,,,,t08p1,38873,2000,heldout,ms_040
+,,,,semantic,,,,,t08p2,38873,2000,heldout,ms_040
+,,,,semantic,,,,,t08p3,38873,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g17-r010"", ""g17-r018"", ""g17-r020"", ""g17-r040"", ""g17-r041"", ""g17-r059"", ""g17-r070"", ""g17-r077"", ""g17-r079"", ""g17-r089""]","[""g17-r020"", ""g17-r040"", ""g17-r059"", ""g17-r077"", ""g17-r089""]",10,5,tz03,38873,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g06-r002"", ""g06-r020"", ""g06-r021"", ""g06-r029"", ""g06-r033"", ""g06-r069"", ""g06-r081"", ""g06-r092"", ""g06-r097""]","[""g06-r021"", ""g06-r033"", ""g06-r069"", ""g06-r092""]",9,4,tz04,38873,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,[],[],0,0,tz05,38873,2000,heldout,ms_040
+10,5,10,5,negative_unrelated,"[""g09-r007"", ""g09-r014"", ""g09-r042"", ""g09-r044"", ""g09-r069"", ""g09-r077"", ""g09-r088"", ""g09-r093"", ""g09-r094"", ""g16-r020""]","[""g09-r014"", ""g09-r044"", ""g09-r069"", ""g09-r088"", ""g16-r020""]",10,5,tz06,38873,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g11-r006"", ""g11-r036"", ""g11-r040"", ""g11-r052"", ""g11-r064"", ""g11-r069"", ""g11-r071"", ""g11-r097""]","[""g11-r052"", ""g11-r069"", ""g11-r071""]",8,3,tz09,38873,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g13-r008"", ""g13-r009"", ""g13-r011"", ""g13-r012"", ""g13-r047"", ""g13-r050"", ""g13-r068"", ""g13-r077"", ""g13-r080"", ""g13-r086""]","[""g13-r009"", ""g13-r011"", ""g13-r050"", ""g13-r068"", ""g13-r080""]",10,5,tz10,38873,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g14-r043"", ""g14-r046"", ""g14-r060"", ""g14-r077"", ""g14-r094"", ""g14-r095""]","[""g14-r060""]",6,1,tz11,38873,2000,heldout,ms_040
+10,5,10,5,negative_or_lookalike,"[""g08-r021"", ""g08-r023"", ""g08-r032"", ""g08-r038"", ""g08-r039"", ""g08-r049"", ""g08-r057"", ""g08-r082"", ""g08-r085""]","[""g08-r021"", ""g08-r039"", ""g08-r049"", ""g08-r057"", ""g08-r085""]",9,5,tz12,38873,2000,heldout,ms_040

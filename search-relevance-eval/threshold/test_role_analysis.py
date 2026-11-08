@@ -41,6 +41,22 @@ def payload():
 
 
 class RoleReportTests(unittest.TestCase):
+    def test_sensitivity_retains_exact_identity_fields_from_intent_merge(self):
+        data = payload()
+        data['queries'].append(dict(id='exact', intent_id='exact_intent', kind='exact', split='development'))
+        data['intents'] = [dict(intent_id='exact_intent', authoritative_target_ids=['positive'], near_identifier_ids=['negative'])]
+        for qrel in [q for q in data['qrels'] if q['query_id']=='t04p1']:
+            data['qrels'].append(dict(qrel, query_id='exact'))
+        for row in [v for v in data['runs'] if v['query_id']=='t04p1']:
+            data['runs'].append(dict(row, query_id='exact'))
+        for row in [v for v in data['receipts'] if v['query_id']=='t04p1']:
+            data['receipts'].append(dict(row, query_id='exact'))
+        report = r.build_role_report(data)
+        exact = [q for q in report['per_query'] if q['query_id']=='exact']
+        self.assertEqual(4, len(exact))
+        self.assertTrue(all('positive' in q['authoritative_target_ranks'] for q in exact))
+        self.assertEqual(2, report['uncertainty_sensitivity'][0]['scenario_count'])
+
     def test_four_fixed_pairs_reuse_and_measured_role_difference(self):
         out = r.build_role_report(payload())
         self.assertEqual(4, len(out["registered_role_pairs"]))

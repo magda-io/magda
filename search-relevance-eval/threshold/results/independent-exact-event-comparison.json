@@ -1,0 +1,123 @@
+{
+  "all_independent_events": 58,
+  "diagnostic_events_not_in_report": [
+    [
+      "NEW",
+      38871,
+      60,
+      "tx01a",
+      "topk10",
+      "target_displacement",
+      "t049",
+      null,
+      1,
+      2,
+      null
+    ],
+    [
+      "NEW",
+      38871,
+      60,
+      "tx03a",
+      "topk10",
+      "target_displacement",
+      "t055",
+      null,
+      1,
+      null,
+      null
+    ],
+    [
+      "NEW",
+      38871,
+      60,
+      "tx03b",
+      "topk10",
+      "target_displacement",
+      "t056",
+      null,
+      1,
+      null,
+      null
+    ],
+    [
+      "NEW",
+      38871,
+      1000,
+      "tx01a",
+      "topk10",
+      "target_displacement",
+      "t049",
+      null,
+      1,
+      2,
+      null
+    ],
+    [
+      "NEW",
+      38871,
+      2000,
+      "tx01a",
+      "topk10",
+      "target_displacement",
+      "t049",
+      null,
+      1,
+      2,
+      null
+    ],
+    [
+      "NEW",
+      38872,
+      2000,
+      "tx01a",
+      "topk10",
+      "target_displacement",
+      "t049",
+      null,
+      1,
+      2,
+      null
+    ],
+    [
+      "NEW",
+      38873,
+      60,
+      "tx03a",
+      "topk10",
+      "target_displacement",
+      "t055",
+      null,
+      1,
+      null,
+      null
+    ],
+    [
+      "NEW",
+      38873,
+      60,
+      "tx03b",
+      "topk10",
+      "target_displacement",
+      "t056",
+      null,
+      1,
+      null,
+      null
+    ]
+  ],
+  "forced_recommendation": "D",
+  "independent_diagnostic_events": 12,
+  "independent_radial_events": 46,
+  "missing_radial": [],
+  "notes": [
+    "NEW cohort is implicit in primary exact-blocker records; normalized to NEW for comparison.",
+    "NEW DEV exact controls are confirmed during held phase; split field there labels evaluation phase, not original query split."
+  ],
+  "promotion_allowed": false,
+  "reported_diagnostic_events": 4,
+  "reported_events": 50,
+  "reported_radial_events": 46,
+  "status": "passed",
+  "unexpected": []
+}

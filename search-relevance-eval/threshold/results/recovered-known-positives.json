@@ -1,0 +1,1461 @@
+{
+  "nonzero_summaries": [
+    {
+      "known_recovered_families": [
+        "t07"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_040"
+    },
+    {
+      "known_recovered_families": [
+        "t07"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_042"
+    },
+    {
+      "known_recovered_families": [
+        "t07"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_044"
+    },
+    {
+      "known_recovered_families": [
+        "t07"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_045"
+    },
+    {
+      "known_recovered_families": [
+        "t07"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_046"
+    },
+    {
+      "known_recovered_families": [
+        "t07"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_048"
+    },
+    {
+      "known_recovered_families": [
+        "t07"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 60,
+      "system": "topk10"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 4,
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 4,
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 4,
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 4,
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "known_recovered_families": [
+        "t03"
+      ],
+      "known_recovered_query_ID_occurrences": 2,
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_048"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 5,
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 5,
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 5,
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06",
+        "t08"
+      ],
+      "known_recovered_query_ID_occurrences": 5,
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "known_recovered_families": [
+        "t03",
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "known_recovered_families": [
+        "t03"
+      ],
+      "known_recovered_query_ID_occurrences": 2,
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_040"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_042"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_044"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 2,
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_045"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 2,
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_046"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_048"
+    },
+    {
+      "known_recovered_families": [
+        "t06"
+      ],
+      "known_recovered_query_ID_occurrences": 1,
+      "seed": 38873,
+      "size": 60,
+      "system": "topk10"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_048"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "known_recovered_families": [
+        "t04"
+      ],
+      "known_recovered_query_ID_occurrences": 3,
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_048"
+    }
+  ],
+  "rows": [
+    {
+      "dataset_id": "t037",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t07",
+      "query_id": "t07p3",
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t037",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t07",
+      "query_id": "t07p3",
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t037",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t07",
+      "query_id": "t07p3",
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t037",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t07",
+      "query_id": "t07p3",
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t037",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t07",
+      "query_id": "t07p3",
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t037",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t07",
+      "query_id": "t07p3",
+      "seed": 38871,
+      "size": 60,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t037",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t07",
+      "query_id": "t07p3",
+      "seed": 38871,
+      "size": 60,
+      "system": "topk10"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38871,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t015",
+      "full_query_graded_metrics_available": false,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t03",
+      "query_id": "t03p3",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t032",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p1",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t044",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t08",
+      "query_id": "t08p2",
+      "seed": 38872,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t033",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t033",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t031",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t06",
+      "query_id": "t06p3",
+      "seed": 38873,
+      "size": 60,
+      "system": "topk10"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 1000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p1",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_048"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_046"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_045"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_044"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_042"
+    },
+    {
+      "dataset_id": "t020",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_040"
+    },
+    {
+      "dataset_id": "t021",
+      "full_query_graded_metrics_available": true,
+      "grade_scope": "Explicit known grade>=2 only; U never numerically resolved",
+      "intent_id": "t04",
+      "query_id": "t04p2",
+      "seed": 38873,
+      "size": 2000,
+      "system": "ms_040"
+    }
+  ],
+  "scope": "Descriptive lower-bound observations from unchanged per_query known-useful lists; not full6validated metric, not independent records, and no U coercion. U-dependent family/count sensitivities remain separate in full analysis."
+}

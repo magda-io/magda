@@ -1,0 +1,589 @@
+{
+  "deterministic_scope": "x01 first registered legacy exact and s08p1 original-U family; all3legacy seeds/all7radial systems; no REAL grade0 claims",
+  "forced_recommendation": "D",
+  "promotion_allowed": false,
+  "rows": [
+    {
+      "events": [
+        {
+          "dataset_id": "a013",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a013"
+      ],
+      "query_id": "s08p1",
+      "seed": 39031,
+      "system": "ms_040"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a013",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a013"
+      ],
+      "query_id": "s08p1",
+      "seed": 39031,
+      "system": "ms_042"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a013",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a013"
+      ],
+      "query_id": "s08p1",
+      "seed": 39031,
+      "system": "ms_044"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a013",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a013"
+      ],
+      "query_id": "s08p1",
+      "seed": 39031,
+      "system": "ms_045"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a013",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a013"
+      ],
+      "query_id": "s08p1",
+      "seed": 39031,
+      "system": "ms_046"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a013",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a013"
+      ],
+      "query_id": "s08p1",
+      "seed": 39031,
+      "system": "ms_048"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39031,
+      "system": "ms_050"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39031,
+      "system": "ms_040"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39031,
+      "system": "ms_042"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b035",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b035"
+      ],
+      "query_id": "x01",
+      "seed": 39031,
+      "system": "ms_044"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b035",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b035"
+      ],
+      "query_id": "x01",
+      "seed": 39031,
+      "system": "ms_045"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39031,
+      "system": "ms_046"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39031,
+      "system": "ms_048"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39031,
+      "system": "ms_050"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39032,
+      "system": "ms_040"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39032,
+      "system": "ms_042"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39032,
+      "system": "ms_044"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39032,
+      "system": "ms_045"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39032,
+      "system": "ms_046"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39032,
+      "system": "ms_048"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39032,
+      "system": "ms_050"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b012",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b012"
+      ],
+      "query_id": "x01",
+      "seed": 39032,
+      "system": "ms_040"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b012",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b012"
+      ],
+      "query_id": "x01",
+      "seed": 39032,
+      "system": "ms_042"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b012",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        },
+        {
+          "dataset_id": "b034",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 2,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b012",
+        "b034"
+      ],
+      "query_id": "x01",
+      "seed": 39032,
+      "system": "ms_044"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b012",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        },
+        {
+          "dataset_id": "b039",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 2,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b012",
+        "b039"
+      ],
+      "query_id": "x01",
+      "seed": 39032,
+      "system": "ms_045"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39032,
+      "system": "ms_046"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39032,
+      "system": "ms_048"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39032,
+      "system": "ms_050"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a020",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a020"
+      ],
+      "query_id": "s08p1",
+      "seed": 39033,
+      "system": "ms_040"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a020",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a020"
+      ],
+      "query_id": "s08p1",
+      "seed": 39033,
+      "system": "ms_042"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a020",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a020"
+      ],
+      "query_id": "s08p1",
+      "seed": 39033,
+      "system": "ms_044"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a020",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a020"
+      ],
+      "query_id": "s08p1",
+      "seed": 39033,
+      "system": "ms_045"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a020",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a020"
+      ],
+      "query_id": "s08p1",
+      "seed": 39033,
+      "system": "ms_046"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "a020",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [
+        "a020"
+      ],
+      "query_id": "s08p1",
+      "seed": 39033,
+      "system": "ms_048"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": null,
+      "full_query_U": 1,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "s08p1",
+      "seed": 39033,
+      "system": "ms_050"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b041",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b041"
+      ],
+      "query_id": "x01",
+      "seed": 39033,
+      "system": "ms_040"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b041",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b041"
+      ],
+      "query_id": "x01",
+      "seed": 39033,
+      "system": "ms_042"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b039",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        },
+        {
+          "dataset_id": "b041",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 2,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b039",
+        "b041"
+      ],
+      "query_id": "x01",
+      "seed": 39033,
+      "system": "ms_044"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b041",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b041"
+      ],
+      "query_id": "x01",
+      "seed": 39033,
+      "system": "ms_045"
+    },
+    {
+      "events": [
+        {
+          "dataset_id": "b041",
+          "keyword_eligible": true,
+          "newly_admitted_hybrid": false
+        }
+      ],
+      "full_grade0_exposure_count": 1,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [
+        "b041"
+      ],
+      "query_id": "x01",
+      "seed": 39033,
+      "system": "ms_046"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39033,
+      "system": "ms_048"
+    },
+    {
+      "events": [],
+      "full_grade0_exposure_count": 0,
+      "full_query_U": 0,
+      "known_grade0_new_top10_ids": [],
+      "query_id": "x01",
+      "seed": 39033,
+      "system": "ms_050"
+    }
+  ],
+  "source_sha256": "baa139c4651653db1928c24b396b85771719890c2fdd8fd874f3ad02f6bc2598",
+  "status": "raw_checks_complete_pending_supplemental_comparison"
+}

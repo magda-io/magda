@@ -1,0 +1,14 @@
+{
+  "FP_exposure_rows": 1404,
+  "LEGACY_U_suppressed_query_system_rows": 96,
+  "NEW_scoped_U_suppressed_rows": 120,
+  "analyst_outputs_not_read_before_raw_freeze": true,
+  "analyst_report_path": "search-relevance-eval/threshold/results/threshold-analysis.json",
+  "analyst_report_sha256": "5a065886e8c1ae4168e680585424fbd2d2e52ab41e2ad8000084497180bcfd05",
+  "compared_subset_rows": 1872,
+  "errors": [],
+  "expected_subset_rows": 1872,
+  "legacy_full_heldout_semantic_null_groups": 24,
+  "raw_subset_sha256": "68beedc8fc1be8248708b3368bc25a50ed893e4d5852c8c2c20c980c6a4a4667",
+  "status": "passed"
+}

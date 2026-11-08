@@ -1,0 +1,224 @@
+{
+  "completion_refs": [
+    {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/complete-development.json",
+      "sha256": "5a808a822442d39ebccdb92f568c6f309a15a53002b26f3551c4d77412671a95"
+    },
+    {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/complete-heldout.json",
+      "sha256": "cef69fdb750b294dff439c7de76dcbfab2ad3db138f95fa87b98719da0d7552c"
+    },
+    {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/complete-roles.json",
+      "sha256": "47e760b10e853d67c8743e118196ac62da95c011fca22cf53b317b9ffe744f31"
+    },
+    {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/geometry/complete.json",
+      "sha256": "4cef81039ca241be543626b495efa507cae1942880e4446b27f950179f7c1f37"
+    }
+  ],
+  "execution_inputs": {
+    "format": "json",
+    "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/execution-inputs.json",
+    "sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8"
+  },
+  "execution_root": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution",
+  "output_dir": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/analysis-inputs/main",
+  "source_refs": {
+    "analysis_bindings": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/analysis-bindings.json",
+      "sha256": "8a105328c7756c9da08e38c442d8e333f261466217afd9f47e1f1ea41e7a39bc"
+    },
+    "binding_architecture": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/spec-freeze.json",
+      "sha256": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e"
+    },
+    "binding_corpora": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/expanded-v2/manifest.json",
+      "sha256": "17f59f0cf0730f092a0dfd4b71d76356937db62aec2c41322b133fbf701f0e5e"
+    },
+    "binding_correctness": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/results/correctness-attempt2.json",
+      "sha256": "f03be94931011aa43aad5e58c892f440a2f6be585671c713318beb5b3ac78188"
+    },
+    "binding_diagnostic_policy": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/diagnostic-execution-policy.json",
+      "sha256": "9e8ef53a8414ffc1d1271c25c23a0890dcf25621a65c3d76e97bd45b6c44a771"
+    },
+    "binding_dsl": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/results/dsl-source-proof.json",
+      "sha256": "e8f6ca24aa45b245e0881294e7e920d91f844e936441de5d59c63aca3b4c0a56"
+    },
+    "binding_eligibility": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/geometry/eligibility.jsonl",
+      "sha256": "23edf86c66bcefc1b92ded07f22a2278f8fd588ac5ee945a4a99c9563c1056a9"
+    },
+    "binding_legacy": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/diagnostic-validation.json",
+      "sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f"
+    },
+    "binding_native_scores": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/geometry/native.jsonl",
+      "sha256": "f98902b9146ffac5aeb3dc723afb9707ac7caaf88d934bfadce121d8e736a8c5"
+    },
+    "binding_qrels": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/diagnostic-validation/expanded-qrels.jsonl",
+      "sha256": "28a0ad070ca46b03366098e1f53745492404637441fc4e727bdef962485eb968"
+    },
+    "binding_receipts": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/results/timing-capture-completion.json",
+      "sha256": "d513a1697237dfd0046d8778fb6476f137455aeed13c159ef5e3eecdc5694e33"
+    },
+    "binding_runtime": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/results/runtime-source-proof.json",
+      "sha256": "3afe0c95675af142504578ae3916dac9e0f5c592fa771109964cba7eec8aaded"
+    },
+    "binding_schedule": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/results/timing-capture-completion.json",
+      "sha256": "d513a1697237dfd0046d8778fb6476f137455aeed13c159ef5e3eecdc5694e33"
+    },
+    "binding_selection": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/development-decision.json",
+      "sha256": "eb8c2d917843c84560b23b48ee4015f6b36c463fcbdc38bc2cf1ae7f03e068ac"
+    },
+    "binding_uncertainty_mask": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/uncertainty-mask.json",
+      "sha256": "1825875fd6c9a66f5b69c965dbfd0a5b67f3dac851cfbf66fd9230675bdeffdb"
+    },
+    "binding_validation": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/diagnostic-validation-manifest.json",
+      "sha256": "8c7ac3766bead6be33493fcaf49480cc66e2dd74333fe772fff6a44811384b29"
+    },
+    "binding_vectors": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/preparation.json",
+      "sha256": "97c246500540195874b9a81f79255b39e201292d96c1de27ba4ad26d1974f08e"
+    },
+    "diagnostic_policy": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/diagnostic-execution-policy.json",
+      "sha256": "9e8ef53a8414ffc1d1271c25c23a0890dcf25621a65c3d76e97bd45b6c44a771"
+    },
+    "eligibility": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/geometry/eligibility.jsonl",
+      "sha256": "23edf86c66bcefc1b92ded07f22a2278f8fd588ac5ee945a4a99c9563c1056a9"
+    },
+    "expanded_evidence": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/diagnostic-validation/expanded-evidence.jsonl",
+      "sha256": "b8831cbad72b5821fda2c36adecf611b57eec7a7f8a2366678cf44a3728f040a"
+    },
+    "gates": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/decision-gates.json",
+      "sha256": "720b93e4461b46c38e2bff26f1fe60de6b4b76c88d26c39af89924a19c8b093f"
+    },
+    "generation_spec": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/generation-spec.json",
+      "sha256": "c3db25ab0cccf20ba1cb15829175e73316568fdb3174a5a920a30bedfbaf517d"
+    },
+    "geometry_completion": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/geometry/complete.json",
+      "sha256": "4cef81039ca241be543626b495efa507cae1942880e4446b27f950179f7c1f37"
+    },
+    "intents": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/intents.jsonl",
+      "sha256": "7c2ed0e8a17d5502f5dc5c2b25bb43921efa64a95785154b78581e1482e19d61"
+    },
+    "legacy_binding_corpora": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/diagnostic-validation.json",
+      "sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f"
+    },
+    "legacy_binding_qrels": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/diagnostic-qrels.jsonl",
+      "sha256": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38"
+    },
+    "legacy_binding_queries": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/query-spec.jsonl",
+      "sha256": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d"
+    },
+    "legacy_binding_uncertainty_mask": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/auditoutputs/diagnostic-uncertainty-mask-v1.jsonl",
+      "sha256": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac"
+    },
+    "legacy_binding_validation": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/diagnostic-validation.json",
+      "sha256": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f"
+    },
+    "legacy_intents": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/intents.jsonl",
+      "sha256": "61b5469fbbfdaa9cd1729bd14a412f12166d94be044ff8ad020691aa5c1dbefc"
+    },
+    "legacy_qrels": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/diagnostic-qrels.jsonl",
+      "sha256": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38"
+    },
+    "legacy_queries": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/synthetic/query-spec.jsonl",
+      "sha256": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d"
+    },
+    "native_scores": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/geometry/native.jsonl",
+      "sha256": "f98902b9146ffac5aeb3dc723afb9707ac7caaf88d934bfadce121d8e736a8c5"
+    },
+    "new_qrels": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/diagnostic-validation/expanded-qrels.jsonl",
+      "sha256": "28a0ad070ca46b03366098e1f53745492404637441fc4e727bdef962485eb968"
+    },
+    "preparation": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/preparation.json",
+      "sha256": "97c246500540195874b9a81f79255b39e201292d96c1de27ba4ad26d1974f08e"
+    },
+    "queries": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/query-spec.jsonl",
+      "sha256": "803bb51de8ca57fc4a5d95915f52f060a6d8eaacd99d97aee9593afc20cf18eb"
+    },
+    "selection": {
+      "format": "json",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/development-decision.json",
+      "sha256": "eb8c2d917843c84560b23b48ee4015f6b36c463fcbdc38bc2cf1ae7f03e068ac"
+    },
+    "vector_inventory": {
+      "format": "jsonl",
+      "path": "/Users/t1000/development/magda/search-relevance-eval/threshold/.local/execution/geometry/vector-inventory.jsonl",
+      "sha256": "1b880ec73fe72f40420af173dfc4ba3de3c5e0bf3dd3e83fa3748e3c5b9f62a4"
+    }
+  },
+  "workspace": "/Users/t1000/development/magda"
+}

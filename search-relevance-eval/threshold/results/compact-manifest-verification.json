@@ -1,0 +1,10 @@
+{
+  "actual_analysis_manifest_sha256": "7bbdd371c6b03db25420330cfc8a797b3fe2d5428439281f40a66d724d2c54db",
+  "canonical_manifest_equality": true,
+  "first_attempt": "Expected indented JSON; original adapter writes compact sorted JSON. Failed without output, fixed source-pin-prefixed extraction, no data changes.",
+  "new_extraction_source_sha256": "c7d9567022c8801b793663ffcdf4b3ae42c09f2e51387520fa13bc4064c67b6c",
+  "no_backend_or_model_calls": true,
+  "scope": "Portable streaming extraction equals actual evidence-only analyst input, including every typed argument source/hash; no metric or raw changes.",
+  "status": "passed",
+  "verified_utc": "2026-11-08T08:23:44.808889+00:00"
+}

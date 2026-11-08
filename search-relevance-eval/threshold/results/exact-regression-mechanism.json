@@ -1,0 +1,252 @@
+{
+  "captured_memberships": [
+    {
+      "datasets": {
+        "t049": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": false,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t050": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": false,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t051": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": false,
+          "full_hybrid": true,
+          "keyword": true
+        }
+      },
+      "system": "ms_050"
+    },
+    {
+      "datasets": {
+        "t049": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": false,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t050": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": false,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t051": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        }
+      },
+      "system": "ms_048"
+    },
+    {
+      "datasets": {
+        "t049": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": false,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t050": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t051": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        }
+      },
+      "system": "ms_046"
+    },
+    {
+      "datasets": {
+        "t049": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t050": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t051": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        }
+      },
+      "system": "ms_045"
+    },
+    {
+      "datasets": {
+        "t049": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t050": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t051": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        }
+      },
+      "system": "ms_044"
+    },
+    {
+      "datasets": {
+        "t049": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t050": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t051": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        }
+      },
+      "system": "ms_042"
+    },
+    {
+      "datasets": {
+        "t049": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t050": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        },
+        "t051": {
+          "actual_nested_vector_member": false,
+          "actual_root_vector_member": true,
+          "full_hybrid": true,
+          "keyword": true
+        }
+      },
+      "system": "ms_040"
+    }
+  ],
+  "captured_native_pairs": {
+    "t049": {
+      "children": [
+        {
+          "allowed": true,
+          "dimension": 768,
+          "distribution_id": "t049-d1",
+          "offset": 0,
+          "projection_sha256": "6c73ff0a5b8e942390f27abe49f4fc1f0c67e01ac6a494c0595185445cfca27a",
+          "score": 0.3606616,
+          "vector_sha256": "609c784753f9ef7346b12f39383cb14d759a6fea33e8d1e0385269ae78cea046"
+        }
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t049",
+      "dimension": 768,
+      "max_child_score": 0.3606616,
+      "nested_request_sha256": "ea559967da21b07856dae1e3765858f7e15f3b3f7bed2d14306cf08bbd876e15",
+      "query_id": "tx01a",
+      "query_vector_sha256": "3855f592d2a52be56043f99d96732523c5645eecb7ff7c0dc2c80acb596f19ab",
+      "root_dimension": 768,
+      "root_projection_sha256": "6f8de37ddb9742bacd2eb2bd00dbcfcad09b845c2d62e91135fc40bf7889fcfe",
+      "root_request_sha256": "00a30d61a6b70cc0e118236c42f70eaaf47fa58978e16e9c6430977432db5a76",
+      "root_score": 0.4545584,
+      "seed": 38871,
+      "size": 60,
+      "source": "engine_exact_docvalues_l2"
+    },
+    "t050": {
+      "children": [
+        {
+          "allowed": true,
+          "dimension": 768,
+          "distribution_id": "t050-d1",
+          "offset": 0,
+          "projection_sha256": "6c73ff0a5b8e942390f27abe49f4fc1f0c67e01ac6a494c0595185445cfca27a",
+          "score": 0.3606616,
+          "vector_sha256": "609c784753f9ef7346b12f39383cb14d759a6fea33e8d1e0385269ae78cea046"
+        }
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t050",
+      "dimension": 768,
+      "max_child_score": 0.3606616,
+      "nested_request_sha256": "ea559967da21b07856dae1e3765858f7e15f3b3f7bed2d14306cf08bbd876e15",
+      "query_id": "tx01a",
+      "query_vector_sha256": "3855f592d2a52be56043f99d96732523c5645eecb7ff7c0dc2c80acb596f19ab",
+      "root_dimension": 768,
+      "root_projection_sha256": "f50d5565d2799def5451f3430b0d21591d251a1599974fa91cf84dc8bd3daa85",
+      "root_request_sha256": "00a30d61a6b70cc0e118236c42f70eaaf47fa58978e16e9c6430977432db5a76",
+      "root_score": 0.46989354,
+      "seed": 38871,
+      "size": 60,
+      "source": "engine_exact_docvalues_l2"
+    },
+    "t051": {
+      "children": [
+        {
+          "allowed": true,
+          "dimension": 768,
+          "distribution_id": "t051-d1",
+          "offset": 0,
+          "projection_sha256": "6c73ff0a5b8e942390f27abe49f4fc1f0c67e01ac6a494c0595185445cfca27a",
+          "score": 0.3606616,
+          "vector_sha256": "609c784753f9ef7346b12f39383cb14d759a6fea33e8d1e0385269ae78cea046"
+        }
+      ],
+      "cohort": "NEW",
+      "dataset_id": "t051",
+      "dimension": 768,
+      "max_child_score": 0.3606616,
+      "nested_request_sha256": "ea559967da21b07856dae1e3765858f7e15f3b3f7bed2d14306cf08bbd876e15",
+      "query_id": "tx01a",
+      "query_vector_sha256": "3855f592d2a52be56043f99d96732523c5645eecb7ff7c0dc2c80acb596f19ab",
+      "root_dimension": 768,
+      "root_projection_sha256": "76b5687159cfaf7fbfda025114cc75391d67d123677fff1e4a0933226c5cdefe",
+      "root_request_sha256": "00a30d61a6b70cc0e118236c42f70eaaf47fa58978e16e9c6430977432db5a76",
+      "root_score": 0.48229095,
+      "seed": 38871,
+      "size": 60,
+      "source": "engine_exact_docvalues_l2"
+    }
+  },
+  "query_id": "tx01a",
+  "scope": "Illustrative fixed critical control, not a new query selection or ranking run. t051 retains the original fixture-conformance defect; this observed mechanism is conditional descriptive evidence. Stored-vector script geometry is not exact Faiss admission scores or boosted/fused scores.",
+  "seed": 38871,
+  "size": 60
+}

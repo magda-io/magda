@@ -1,0 +1,243 @@
+{
+  "comparison_includes_DEV_critical_exact_safety": true,
+  "query": "QLR-260",
+  "query_id": "tx01a",
+  "rows": [
+    {
+      "authoritative_rank": 1,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "ms_050",
+      "top3": [
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 1,
+          "score": 619.23206,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 2,
+          "score": 619.23206,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 292.40433,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    },
+    {
+      "authoritative_rank": 2,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "ms_048",
+      "top3": [
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 1,
+          "score": 667.4613,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 2,
+          "score": 619.23206,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 292.40433,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    },
+    {
+      "authoritative_rank": 2,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "ms_046",
+      "top3": [
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 1,
+          "score": 667.4613,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 2,
+          "score": 619.23206,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 339.39413,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    },
+    {
+      "authoritative_rank": 2,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "ms_045",
+      "top3": [
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 1,
+          "score": 667.4613,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 2,
+          "score": 664.6873,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 339.39413,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    },
+    {
+      "authoritative_rank": 2,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "ms_044",
+      "top3": [
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 1,
+          "score": 667.4613,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 2,
+          "score": 664.6873,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 339.39413,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    },
+    {
+      "authoritative_rank": 2,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "ms_042",
+      "top3": [
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 1,
+          "score": 667.4613,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 2,
+          "score": 664.6873,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 339.39413,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    },
+    {
+      "authoritative_rank": 2,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "ms_040",
+      "top3": [
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 1,
+          "score": 667.4613,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 2,
+          "score": 664.6873,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 339.39413,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    },
+    {
+      "authoritative_rank": 2,
+      "authoritative_target": "t049",
+      "authoritative_title": "QLR-260 Acoustic Logger",
+      "system": "topk10",
+      "top3": [
+        {
+          "grade": 0,
+          "id": "t051",
+          "rank": 1,
+          "score": 667.4612,
+          "title": "QLR-260 Microphone Module"
+        },
+        {
+          "grade": 3,
+          "id": "t049",
+          "rank": 2,
+          "score": 664.68787,
+          "title": "QLR-260 Acoustic Logger"
+        },
+        {
+          "grade": 0,
+          "id": "t050",
+          "rank": 3,
+          "score": 339.39368,
+          "title": "QLR-26O Acoustic Logger"
+        }
+      ]
+    }
+  ],
+  "scope": "Fixed critical-control illustration; all targets/cases retained in complete tables. Scores are boosted fused raw scores, not native minScore.",
+  "seed": 38871,
+  "size": 60,
+  "source_query_split": "development"
+}

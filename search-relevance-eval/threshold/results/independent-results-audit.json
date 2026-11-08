@@ -7,8 +7,21 @@
   },
   "U_suppressed_rows": 120,
   "analyst_comparison": {
-    "analyst_outputs_not_read": true,
-    "status": "not_started"
+    "analyst_outputs_not_read_before_raw_freeze": true,
+    "status": "passed",
+    "analyst_report_path": "search-relevance-eval/threshold/results/threshold-analysis.json",
+    "analyst_report_sha256": "5a065886e8c1ae4168e680585424fbd2d2e52ab41e2ad8000084497180bcfd05",
+    "comparison_path": "search-relevance-eval/threshold/results/independent-primary-comparison.json",
+    "exact_event_comparison_path": "search-relevance-eval/threshold/results/independent-exact-event-comparison.json",
+    "matched_subset_rows": 1872,
+    "matched_FP_exposure_rows": 1404,
+    "matched_NEW_scoped_U_null_rows": 120,
+    "matched_LEGACY_U_null_query_system_rows": 96,
+    "matched_legacy_full_heldout_semantic_null_groups": 24,
+    "matched_radial_exact_events": 46,
+    "reported_exact_event_total_including_4_legacy_topk_events": 50,
+    "all_independently_recorded_exact_events_including_12_topk_events": 58,
+    "mismatches": 0
   },
   "counts": {
     "native": {
@@ -1479,5 +1492,5 @@
     "pre_held_NONE_commit": "5f23827fb93ba48e13e31bacdb828f15460bf0ab",
     "pre_held_NONE_commit_utc": "2026-11-08T02:58:24Z"
   },
-  "status": "raw_checks_complete_pending_analyst_comparison"
+  "status": "independent_scoped_comparison_passed_forced_D_nonpromotional"
 }

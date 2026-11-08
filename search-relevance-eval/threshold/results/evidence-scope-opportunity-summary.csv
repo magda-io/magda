@@ -1,0 +1,4 @@
+fixed_held_pairs,max_proxy_band,max_proxy_narrow,original_strict_adequacy_certified,proxy_vs_scoped_narrow_disagreements,scope_available,scoped_band,scoped_narrow,scoped_narrow_families,seed,unavailable
+54,32,12,False,0,52,31,12,"['t04', 't05', 't06', 't07', 't08']",38871,2
+54,43,26,False,0,52,41,25,"['t03', 't04', 't05', 't06', 't07', 't08']",38872,2
+54,43,33,False,0,51,40,31,"['t03', 't04', 't05', 't06', 't07', 't08']",38873,3

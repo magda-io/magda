@@ -11,7 +11,10 @@ import tempfile
 import unittest
 from unittest import mock
 
-import restore_capture as restore
+try:
+    from . import restore_capture as restore
+except ImportError:
+    import restore_capture as restore
 
 
 class RestoreCaptureTests(unittest.TestCase):

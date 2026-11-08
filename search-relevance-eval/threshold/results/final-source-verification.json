@@ -1,0 +1,19 @@
+{
+  "original_execution_source_closure_files_verified": 92,
+  "production_baseline_commit": "ba18156201c50565c85c62f76469245925994ece",
+  "production_configuration_or_ranking_changed": false,
+  "production_files_count": 8,
+  "production_files_sha256": {
+    "magda-scala-common/src/main/resources/common.conf": "e4c238c3e16faf7c92c5e5fcbc7b68809fd19248f73be723673e1e8bed98f469",
+    "magda-scala-common/src/main/scala/au/csiro/data61/magda/model/Misc.scala": "2efcac1dcbb7cd90f39d469536d9153904cedf94b8d38c22ca842f1b9c57b1bd",
+    "magda-scala-common/src/main/scala/au/csiro/data61/magda/search/elasticsearch/HybridSearchConfig.scala": "4eebf387db5bd23724c3c40deed754051dc5824ac5b3835e0020cc2de7e51690",
+    "magda-scala-common/src/main/scala/au/csiro/data61/magda/search/elasticsearch/IndexDefinition.scala": "217f028d9a673ba2fd55463c1a1d3a4cafb2ad4aa8d0d0643f34ff91d2b02182",
+    "magda-scala-common/src/main/scala/au/csiro/data61/magda/search/elasticsearch/Indices.scala": "c0cb4c6aaae65c77b7a8a0959a3ac76e367e0f50b2bd56315c349e4709d5975b",
+    "magda-search-api/src/main/scala/au/csiro/data61/magda/api/QueryParser.scala": "51d656c85fbf75d34d2efc6b1f9de347fb2ef27946da9a80f15a9ce6e11bec38",
+    "magda-search-api/src/main/scala/au/csiro/data61/magda/search/elasticsearch/ElasticSearchQueryer.scala": "933d621527ef6befc2cf4cb79f463b7d48875f748dd81f780a2f4865db773c1b",
+    "magda-search-api/src/main/scala/au/csiro/data61/magda/search/elasticsearch/Queries.scala": "c8df9380ebb9132b8812c1bd77ddda756d69608116b261e3f3e490422e6665d4"
+  },
+  "scope": "Byte/source closure only, not scientific validity or new production correctness tests.",
+  "status": "passed",
+  "verified_utc": "2026-11-08T08:18:55.244939+00:00"
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "status": "passed_for_predeclared_independent_scope",
+  "forced_recommendation": "D",
+  "promotion_allowed": false,
+  "future_strict_ABC_certified": false,
+  "analyst_report": "search-relevance-eval/threshold/results/threshold-analysis.json",
+  "analyst_report_sha256": "5a065886e8c1ae4168e680585424fbd2d2e52ab41e2ad8000084497180bcfd05",
+  "raw_subset_sha256": "68beedc8fc1be8248708b3368bc25a50ed893e4d5852c8c2c20c980c6a4a4667",
+  "raw_FP_checks_sha256": "1e89775796a36f9bf75907258b4636d9365140d8244f0891dd1387d20a6f288d",
+  "subset_query_system_case_rows_matched": 1872,
+  "applicable_heldout_radial_candidate_FP_rows_matched": 1404,
+  "NEW_scoped_U_null_rows_matched": 120,
+  "LEGACY_U_null_query_system_rows_matched": 96,
+  "legacy_full_heldout_semantic_null_groups_matched": 24,
+  "radial_exact_events_matched": 46,
+  "radial_exact_events_missing": 0,
+  "radial_exact_events_unexpected": 0,
+  "primary_exact_blocker_total_including_legacy_topk": 50,
+  "independent_exact_total_including_all_topk": 58,
+  "independent_topk_exact_events": 12,
+  "primary_array_topk_exact_events": 4,
+  "NEW_topk_displacements_outside_candidate_array_but_audited": 8,
+  "supplemental_legacy_spotcheck_rows_matched": 42,
+  "mismatches": 0,
+  "details": [
+    "search-relevance-eval/threshold/results/independent-primary-comparison.json",
+    "search-relevance-eval/threshold/results/independent-exact-event-comparison.json",
+    "search-relevance-eval/threshold/results/independent-supplemental-comparison.json",
+    "search-relevance-eval/threshold/results/independent-ledger-closure.json",
+    "search-relevance-eval/threshold/results/independent-keyword-source-check.json",
+    "search-relevance-eval/threshold/results/independent-results-audit.json"
+  ],
+  "limitations": [
+    "Raw audit scope and calculations were fixed and saved before opening analyst outputs.",
+    "All comparisons are scoped verification of forced-D nonpromotional descriptive results, not a whole-report independent recomputation.",
+    "No model, search, generation, semantic relabeling, threshold selection or production change was performed.",
+    "Full-window approximate membership, exact script/native L2 geometry, and raw boosted fusion remain distinct.",
+    "Original failed conformance, all original U labels and full-population null metrics remain unchanged."
+  ]
+}

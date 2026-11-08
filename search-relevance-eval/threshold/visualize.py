@@ -105,7 +105,8 @@ def _series(label, values, color, dash="", *, topk=None, bounds=None, xs=None):
     return dict(label=label, values=values, color=color, dash=dash, topk=topk, bounds=bounds, xs=xs)
 
 
-def _panel(title, subtitle, series=(), *, mode="threshold", ylim=None, notes=(), cutoffs=False):
+def _panel(title, subtitle, series=(), *, mode="threshold", ylim=None, notes=(), cutoffs=False,
+           legend_note=None, legend_columns=1, legend_topk=True):
     """One modest line panel; all numeric inputs are computed report values."""
     values = [v for s in series for v in s["values"] if v is not None]
     values += [s["topk"] for s in series if s["topk"] is not None]
@@ -179,14 +180,20 @@ def _panel(title, subtitle, series=(), *, mode="threshold", ylim=None, notes=(),
     if not values:
         out.append(_text(left + 16, top + 80, "N/A — computed aggregate unavailable (not zero)", font_size=12))
     y = top + PLOT_H + 62
-    for s in series:
-        out.append(f'<path d="M20,{y-4}h23" stroke="{s["color"]}" stroke-width="2" stroke-dasharray="{s["dash"]}"/>')
+    if legend_note:
+        out.append(_text(20, y, legend_note, font_size=11, fill="#596579"))
+        y += 22
+    legend_rows = [s for s in series if s.get("legend", True)]
+    for i, s in enumerate(legend_rows):
+        x = 20 + (i % legend_columns) * (PANEL_W - 30) / legend_columns
+        ly = y + (i // legend_columns) * 18
+        out.append(f'<path d="M{x:.2f},{ly-4}h23" stroke="{s["color"]}" stroke-width="2" stroke-dasharray="{s["dash"]}"/>')
         missing = sum(v is None for v in s["values"])
-        label = s["label"] + (f" · N/A {missing}/{len(s['values'])} (gaps)" if missing else "")
-        if mode == "threshold":
+        label = s.get("legend_label", s["label"]) + (f" · N/A {missing}/{len(s['values'])} (gaps)" if missing else "")
+        if mode == "threshold" and legend_topk:
             label += " · topk " + _fmt(s["topk"])
-        out.append(_text(50, y, label, font_size=10))
-        y += 16
+        out.append(_text(round(x + 30, 2), ly, label, font_size=11 if legend_columns > 1 else 10))
+    y += math.ceil(len(legend_rows) / legend_columns) * 18
     for note in notes:
         out.append(_text(20, y, note, font_size=10, fill="#596579"))
         y += 16
@@ -248,7 +255,7 @@ def _sweep(report, populations):
     panels = []
     for metric, label in METRICS:
         for delta in (False, True):
-            lines = []
+            lines, primary_lines, common_lines = [], [], []
             for si, size in enumerate(SIZES):
                 for sj, seed in enumerate(SEEDS):
                     primary = [_family_values(index, seed, size, sy, metric, FAMILIES) for sy in SYSTEMS]
@@ -256,16 +263,33 @@ def _sweep(report, populations):
                         primary = [0 if primary[0] is not None else None] + [
                             contrasts.get((seed, size, sy), {}).get("paired_deltas", {}).get(metric) for sy in SYSTEMS[1:]]
                     base_label = f"size {size} · seed {seed} · full six"
-                    lines.append(_series(base_label, primary, COLORS[si], DASHES[sj],
+                    primary_series = _series(base_label, primary, COLORS[si], DASHES[sj],
                         topk=None if delta else _family_values(index, seed, size, "topk10", metric, FAMILIES),
-                        bounds=None if delta else [bounds.get((seed, size, sy, metric)) for sy in SYSTEMS]))
+                        bounds=None if delta else [bounds.get((seed, size, sy, metric)) for sy in SYSTEMS])
+                    lines.append(primary_series)
+                    primary_lines.append(primary_series)
                     if common:
                         vals = [_family_values(index, seed, size, sy, metric, COMMON) for sy in SYSTEMS]
                         if delta:
                             vals = [v - vals[0] if v is not None and vals[0] is not None else None for v in vals]
                         topk = None if delta else _family_values(index, seed, size, "topk10", metric, COMMON)
-                        lines.append(_series(f"size {size} · seed {seed} · common four diagnostic", vals,
-                                             COLORS[si], DASHES[sj], topk=topk))
+                        common_series = _series(f"size {size} · seed {seed} · common four diagnostic", vals,
+                                                COLORS[si], DASHES[sj], topk=topk)
+                        common_series["compact_label"] = f"n={size} · seed{seed}"
+                        lines.append(common_series)
+                        common_lines.append(common_series)
+            # Presentation projection only: retain every source series and its
+            # null gaps / sensitivity bounds; compact nine identical N/A legends.
+            collapse_null_legend = common and all(
+                all(v is None for v in s["values"]) and s["topk"] is None for s in primary_lines)
+            if collapse_null_legend:
+                for s in primary_lines:
+                    s["legend"] = False
+                for s in common_lines:
+                    s["legend_label"] = s["compact_label"]
+            legend_note = "Full six-family metrics: N/A in all 9 seed/size cases (U)" if collapse_null_legend else None
+            legend_columns = 3 if collapse_null_legend and all(
+                all(v is not None for v in s["values"]) for s in common_lines) else 1
             notes = ["Equal family mean from per_family; required missing families keep full-six N/A.",
                      "Bands: analyzer full-six plausible U sensitivity; not CI; full IDCG in analyzer.",
                      "topk10 diamond is separate, never a radial threshold or primary candidate."]
@@ -275,7 +299,8 @@ def _sweep(report, populations):
                 notes.append("Common-four population not supplied: full-six N/A remains unfilled.")
             panels.append(_panel(label + (" · Δ vs .50" if delta else " · absolute"),
                                  "NEW heldout semantic · per seed and catalog size", lines,
-                                 ylim=None if delta else (0, 1), notes=notes))
+                                 ylim=None if delta else (0, 1), notes=notes,
+                                 legend_note=legend_note, legend_columns=legend_columns, legend_topk=False))
     return panels, common
 
 

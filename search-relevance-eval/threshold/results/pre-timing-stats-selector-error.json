@@ -1,0 +1,18 @@
+{
+  "benchmark_query": false,
+  "path": "/_nodes/stats/indices/merges,indexing,refresh,flush?filter_path=nodes.*.indices.merges,nodes.*.indices.indexing",
+  "response": {
+    "error": {
+      "reason": "request [/_nodes/stats/indices/merges,indexing,refresh,flush] contains unrecognized index metric: [merges] -> did you mean [merge]?",
+      "root_cause": [
+        {
+          "reason": "request [/_nodes/stats/indices/merges,indexing,refresh,flush] contains unrecognized index metric: [merges] -> did you mean [merge]?",
+          "type": "illegal_argument_exception"
+        }
+      ],
+      "type": "illegal_argument_exception"
+    },
+    "status": 400
+  },
+  "status": 400
+}
