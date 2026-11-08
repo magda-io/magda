@@ -1,0 +1,5 @@
+# Preserve byte-level provenance for captured artifacts and CSV deliverables.
+capture-archive-parts/* -text
+*.tar.gz -text
+*.tar.xz -text
+results/*.csv -text
