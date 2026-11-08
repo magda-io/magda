@@ -1,0 +1,18 @@
+{
+  "chosen_system_or_none": null,
+  "chosen_threshold_or_none": null,
+  "created_utc": "2026-11-08T02:58:17.384915+00:00",
+  "development_completion_sha256": "5a808a822442d39ebccdb92f568c6f309a15a53002b26f3551c4d77412671a95",
+  "diagnostic_policy_sha256": "268a3b0e82a973f56e7056599e97423682eda495cd03577b95c2852cb041dca3",
+  "forced_recommendation": "D",
+  "gates_sha256": "131c09cc7bc67c39ccf9519729a0710511bfef21aae7214307dbb522474fba9f",
+  "immutable_before_heldout": true,
+  "inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "parent_acknowledgment": "Parent sealed after all registered DEV13 observations and before any heldout/legacy/native-score or keyword-eligibility inspection. NONE follows the preregistered unconditional-D/nonpromotion policy, not a claim that any threshold was selected or failed DEV utility gates.",
+  "phase": "nonpromotional_no_selection",
+  "promotion_allowed": false,
+  "record_sha256": "8eaa8b8df9f989efc230e50384d27453c205723b6844bd8689ce21d33b4f55b1",
+  "schema_version": 1,
+  "selected_threshold": null,
+  "timestamp_before_first_heldout_request": "2026-11-08T02:58:17.384915+00:00"
+}
