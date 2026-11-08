@@ -1,0 +1,128 @@
+{
+  "all_targets_verified_before_any_delete": true,
+  "completed_utc": "2026-11-08T07:21:27.115796+00:00",
+  "engine_cluster_uuid": "viVc8uCxQ7uJgmpPBWapaQ",
+  "resources": [
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38871-n60",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "HFb9FceDTBi3rDObwjYdCw",
+      "index": "magda-relevance-eval-threshold3887-new-38871-n60",
+      "observed_uuid": "HFb9FceDTBi3rDObwjYdCw",
+      "path": "/magda-relevance-eval-threshold3887-new-38871-n60"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38871-n1000",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "vnboTmQkQZCkd0afOfD6NQ",
+      "index": "magda-relevance-eval-threshold3887-new-38871-n1000",
+      "observed_uuid": "vnboTmQkQZCkd0afOfD6NQ",
+      "path": "/magda-relevance-eval-threshold3887-new-38871-n1000"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38871-n2000",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "OlVy9tEFQrCciYvF5QJo3A",
+      "index": "magda-relevance-eval-threshold3887-new-38871-n2000",
+      "observed_uuid": "OlVy9tEFQrCciYvF5QJo3A",
+      "path": "/magda-relevance-eval-threshold3887-new-38871-n2000"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38872-n60",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "-bE-uCffSAScUPZ6VMrj_g",
+      "index": "magda-relevance-eval-threshold3887-new-38872-n60",
+      "observed_uuid": "-bE-uCffSAScUPZ6VMrj_g",
+      "path": "/magda-relevance-eval-threshold3887-new-38872-n60"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38872-n1000",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "YwWNe1PnRDymQM2aM6jlUg",
+      "index": "magda-relevance-eval-threshold3887-new-38872-n1000",
+      "observed_uuid": "YwWNe1PnRDymQM2aM6jlUg",
+      "path": "/magda-relevance-eval-threshold3887-new-38872-n1000"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38872-n2000",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "cRBR63dyT4m9mgjN96JX5w",
+      "index": "magda-relevance-eval-threshold3887-new-38872-n2000",
+      "observed_uuid": "cRBR63dyT4m9mgjN96JX5w",
+      "path": "/magda-relevance-eval-threshold3887-new-38872-n2000"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38873-n60",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "OQz3IHGLT9q9CC8pfxWTUg",
+      "index": "magda-relevance-eval-threshold3887-new-38873-n60",
+      "observed_uuid": "OQz3IHGLT9q9CC8pfxWTUg",
+      "path": "/magda-relevance-eval-threshold3887-new-38873-n60"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38873-n1000",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "9jTpw1YrS6uWdRNg0jxbWQ",
+      "index": "magda-relevance-eval-threshold3887-new-38873-n1000",
+      "observed_uuid": "9jTpw1YrS6uWdRNg0jxbWQ",
+      "path": "/magda-relevance-eval-threshold3887-new-38873-n1000"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-new-38873-n2000",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "0ZLkM67sTxOjyb_67HbPmA",
+      "index": "magda-relevance-eval-threshold3887-new-38873-n2000",
+      "observed_uuid": "0ZLkM67sTxOjyb_67HbPmA",
+      "path": "/magda-relevance-eval-threshold3887-new-38873-n2000"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-legacy-39031",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "bLkaPx8jTy-qW5z9bpvsaQ",
+      "index": "magda-relevance-eval-threshold3887-legacy-39031",
+      "observed_uuid": "bLkaPx8jTy-qW5z9bpvsaQ",
+      "path": "/magda-relevance-eval-threshold3887-legacy-39031"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-legacy-39032",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "SwwqWpy4T_eTdyKiDtJcFQ",
+      "index": "magda-relevance-eval-threshold3887-legacy-39032",
+      "observed_uuid": "SwwqWpy4T_eTdyKiDtJcFQ",
+      "path": "/magda-relevance-eval-threshold3887-legacy-39032"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-legacy-39033",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "KfAxDKbvSD2kn6Fed1H4NA",
+      "index": "magda-relevance-eval-threshold3887-legacy-39033",
+      "observed_uuid": "KfAxDKbvSD2kn6Fed1H4NA",
+      "path": "/magda-relevance-eval-threshold3887-legacy-39033"
+    },
+    {
+      "absolute_url": "http://127.0.0.1:19200/magda-relevance-eval-threshold3887-real-3901",
+      "cleanup": "deleted",
+      "cleanup_acknowledged": true,
+      "expected_uuid": "enRw_OslTfC11EW2NM_xJQ",
+      "index": "magda-relevance-eval-threshold3887-real-3901",
+      "observed_uuid": "enRw_OslTfC11EW2NM_xJQ",
+      "path": "/magda-relevance-eval-threshold3887-real-3901"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Only the13 explicitly registered disposable study indices, after all timed and diagnostic capture completed. No user/catalogue index, pipeline, server or cluster is stopped.",
+  "started_utc": "2026-11-08T07:21:23.684686+00:00",
+  "status": "passed"
+}

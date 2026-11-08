@@ -1,0 +1,69 @@
+{
+  "context_scope": "Six separate fresh AI-agent review contexts blinded to per-record expected maps, generator implementation and rankings. This is not human annotation or independent model-provider validation.",
+  "coverage_not_independence": "180 actual core realizations and60 growth representatives; replicas/pairs/paraphrases/seeds are correlated. No6000-manual or population-validity claim.",
+  "original_reviews_context_parameters_and_flags_unchanged": true,
+  "reviews": [
+    {
+      "actual_records_assigned": 40,
+      "core": 30,
+      "growth_representatives": 10,
+      "model": "gpt-6.1-sol",
+      "packet": "38871-1",
+      "parent_observed_subagent_tool_id": "2d49cf44-a44f-44e7-9e32-2959a51d58ae",
+      "review_path": "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38871-1.json",
+      "review_sha256": "86c91ffce46b0cce9e837e065248865ac12fc459e993b85736cb5a68653c1b03"
+    },
+    {
+      "actual_records_assigned": 40,
+      "core": 30,
+      "growth_representatives": 10,
+      "model": "gpt-6.1-sol",
+      "packet": "38871-2",
+      "parent_observed_subagent_tool_id": "51376e00-9301-4eab-997b-d5d863e2f9b1",
+      "review_path": "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38871-2.json",
+      "review_sha256": "bbd8cfb846b33882425662f622607d45550ac81d28ba6d224e4d70aad9bceef7"
+    },
+    {
+      "actual_records_assigned": 40,
+      "core": 30,
+      "growth_representatives": 10,
+      "model": "gpt-6.1-sol",
+      "packet": "38872-1",
+      "parent_observed_subagent_tool_id": "2f52847d-6c16-4dce-9558-c0342eb2d906",
+      "review_path": "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38872-1.json",
+      "review_sha256": "c94f14d617cce6e3fa8568d87788fa65318ccca2696404a838d930c3cecb22d9"
+    },
+    {
+      "actual_records_assigned": 40,
+      "core": 30,
+      "growth_representatives": 10,
+      "model": "gpt-6.1-sol",
+      "packet": "38872-2",
+      "parent_observed_subagent_tool_id": "57ed7f8a-d6a3-436e-add6-ce9755d39d5e",
+      "review_path": "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38872-2.json",
+      "review_sha256": "95d06c51f061fdd15867fe6a88f7522da4f8b318a64623f9dbe6256b03272e7e"
+    },
+    {
+      "actual_records_assigned": 40,
+      "core": 30,
+      "growth_representatives": 10,
+      "model": "gpt-6.1-sol",
+      "packet": "38873-1",
+      "parent_observed_subagent_tool_id": "60990094-5688-4482-b679-9feac65ed644",
+      "review_path": "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38873-1.json",
+      "review_sha256": "4f5694a73cb8b86b034661d9692bc98f2749cdcc8b82860ddeb52213337b9d47"
+    },
+    {
+      "actual_records_assigned": 40,
+      "core": 30,
+      "growth_representatives": 10,
+      "model": "gpt-6.1-sol",
+      "packet": "38873-2",
+      "parent_observed_subagent_tool_id": "a7af808c-3d27-43c4-9c4a-bcc773a9151f",
+      "review_path": "search-relevance-eval/threshold/auditoutputs/reviews-v2/packet-38873-2.json",
+      "review_sha256": "163bac984adeec9c783a31ba5a3d634ba15fb153ed436882167a38e749d558f7"
+    }
+  ],
+  "schema_version": 1,
+  "tool_handles_are_not_claimed_private_provider_context_ids": true
+}

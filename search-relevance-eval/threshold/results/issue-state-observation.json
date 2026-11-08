@@ -1,0 +1,16 @@
+{
+  "disposition": "Do not claim both issues remain open or reopen an existing maintainer decision. Keep3887 open and do not use closing keywords in PR; explicitly disclose3885 pre-existing closure.",
+  "issue3885": {
+    "closed_at": "2026-11-07T00:29:47Z",
+    "closed_by": "t83714",
+    "state": "CLOSED",
+    "state_reason": "NOT_PLANNED",
+    "url": "https://github.com/magda-io/magda/issues/3885"
+  },
+  "issue3887": {
+    "state": "OPEN",
+    "url": "https://github.com/magda-io/magda/issues/3887"
+  },
+  "observed_utc": "2026-11-07T23:59:24.567512+00:00",
+  "this_evaluation_changed_issue_states": false
+}

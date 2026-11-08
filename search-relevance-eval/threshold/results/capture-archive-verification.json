@@ -1,0 +1,15 @@
+{
+  "archive_sha256": "1b9baeafe87c2e02a3b63fb4e713eeff50c029c68bcf77718d5549990909fba4",
+  "bytes_verified": 6192286386,
+  "existing_identical": 787,
+  "files_restored": 0,
+  "manifest_sha256": "c34db9c9ac0bf50d3c4b516cf74f9fa732706b8c80f22e6833da0fc3542d3a43",
+  "members_verified": 787,
+  "no_backend_calls": true,
+  "promotion_allowed": false,
+  "safe_restoration_test_count": 30,
+  "scope": "Actual full compressed-archive and everymember byte/hash verification, existing target conflicts checked; not scientific conformance or production recommendation.",
+  "status": "passed",
+  "verified_utc": "2026-11-08T07:22:33.849474+00:00",
+  "verifier_sha256": "da74fa6a1790903851a657c5b54bb0c9dd56a4291c41ba1b74a0134eb31c8a68"
+}
