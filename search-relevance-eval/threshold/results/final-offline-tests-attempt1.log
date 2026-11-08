@@ -1,0 +1,68 @@
+.........................................................unit baseline 1 0.01
+unit raw_boost1 1 0.01
+.....embedded 1/1 new texts
+embedded 1/1 new texts
+........................................................................................................................................................................................................................................................................DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-95bfad9b-79b7-4c76-846a-49146a6b4e64-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-95bfad9b-79b7-4c76-846a-49146a6b4e64-eligibility
+.DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-d91ec73b-e2ee-4f45-b65e-fadad8d78fd6-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-d91ec73b-e2ee-4f45-b65e-fadad8d78fd6-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-130b40e7-6da7-4dd1-8271-fcdd8ab69fe9-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-130b40e7-6da7-4dd1-8271-fcdd8ab69fe9-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-89294853-3271-4d61-8d15-b521a70852a3-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-89294853-3271-4d61-8d15-b521a70852a3-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-1b57cdd7-bc1c-49ea-bf22-99b03510aece-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-1b57cdd7-bc1c-49ea-bf22-99b03510aece-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-246d49c1-049c-4e50-b8cb-4b31a802d87d-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-246d49c1-049c-4e50-b8cb-4b31a802d87d-eligibility
+.DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-54cfa8ef-e1ab-4e7d-af90-5edc9664ab6d-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-54cfa8ef-e1ab-4e7d-af90-5edc9664ab6d-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-86c3739d-94ac-4145-b815-2b23851c704e-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-86c3739d-94ac-4145-b815-2b23851c704e-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-aeb35a41-420c-40b1-b953-ec2df53c28e4-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-aeb35a41-420c-40b1-b953-ec2df53c28e4-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-51963287-651c-42a5-b08f-f9b36a1ad015-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-51963287-651c-42a5-b08f-f9b36a1ad015-eligibility
+....DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e4035787-7139-4a0e-a976-d99e4b35046c-prefilter-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e4035787-7139-4a0e-a976-d99e4b35046c-prefilter-root
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e4035787-7139-4a0e-a976-d99e4b35046c-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e4035787-7139-4a0e-a976-d99e4b35046c-eligibility
+.DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-535a8cbb-94e6-453b-bcef-99738d0052fa-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-535a8cbb-94e6-453b-bcef-99738d0052fa-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-bb83cfa2-64ef-4007-8d8f-e2b8c5126dd6-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-bb83cfa2-64ef-4007-8d8f-e2b8c5126dd6-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-da9e81de-041e-4b13-958f-4e2e46adff6b-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-da9e81de-041e-4b13-958f-4e2e46adff6b-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-423ab0e2-eb5a-4ed9-98f7-fb1a707995bf-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-423ab0e2-eb5a-4ed9-98f7-fb1a707995bf-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-af005acb-4763-4d51-ab6c-311548b3d21d-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-af005acb-4763-4d51-ab6c-311548b3d21d-eligibility
+..FAILED ms_050/root: AssertionError: Native inclusive cutoff admission mismatch: root/0.5
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e434a282-711a-4459-9abd-b1c702c4c71b-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e434a282-711a-4459-9abd-b1c702c4c71b-boundary-root
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e8cb8dfd-c370-496b-a4a1-dc55dae59d77-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e8cb8dfd-c370-496b-a4a1-dc55dae59d77-boundary-root
+.FAILED ms_050/root: AssertionError: Native inclusive cutoff admission mismatch: root/0.5
+FAILED ms_050/child: AssertionError: Native inclusive cutoff admission mismatch: child/0.5
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-f2fb86f2-45a2-4dd7-a4a0-08af615bbaa7-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-f2fb86f2-45a2-4dd7-a4a0-08af615bbaa7-boundary-root
+..DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-35095eb9-c81e-4bfd-8550-42ff0aa8c348-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-35095eb9-c81e-4bfd-8550-42ff0aa8c348-boundary-root
+.................................................................................................................E......................................................................................
+======================================================================
+ERROR: threshold.test_restore_capture (unittest.loader._FailedTest)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: threshold.test_restore_capture
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py", line 436, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/loader.py", line 377, in _get_module_from_name
+    __import__(name)
+  File "/Users/t1000/development/magda/search-relevance-eval/threshold/test_restore_capture.py", line 14, in <module>
+    import restore_capture as restore
+ModuleNotFoundError: No module named 'restore_capture'
+
+
+----------------------------------------------------------------------
+Ran 538 tests in 18.862s
+
+FAILED (errors=1)

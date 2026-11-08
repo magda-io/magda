@@ -1,0 +1,42 @@
+{
+  "adapter_first_attempt": "Canceled before outputs because redundant full-source arrays/deep receipts created resource pressure; cached/streaming equivalent source projection passed all actual source bindings.",
+  "final_primary_sha256": "5a065886e8c1ae4168e680585424fbd2d2e52ab41e2ad8000084497180bcfd05",
+  "final_role_sha256": "5e7afc8bd52257b59804231f36d9823469fb3e018efb200ea5821855c8d6edeb",
+  "logs": [
+    {
+      "bytes": 429,
+      "path": "search-relevance-eval/threshold/results/threshold-analysis-console-attempt1.log",
+      "sha256": "938e09216ecc707dc92c154995caf0afe4ed8f12949ed6dc2b34d854953cab79"
+    },
+    {
+      "bytes": 1760,
+      "path": "search-relevance-eval/threshold/results/threshold-analysis-console-attempt2.log",
+      "sha256": "77ae0644c51a56362871cd5f1f0b0f8bd3808592b0d192291b832bfcadc26b88"
+    },
+    {
+      "bytes": 1031,
+      "path": "search-relevance-eval/threshold/results/role-analysis-console-attempt1.log",
+      "sha256": "29bb7cb8e100bf5122d7efd65a579dcda2623d693325ef0568343f6c5dd115c8"
+    },
+    {
+      "bytes": 1297,
+      "path": "search-relevance-eval/threshold/results/role-analysis-console-attempt2.log",
+      "sha256": "2f925d4d291f9c50819c4312c7eab1532594b65ba6f3180c78357ac1d9b2ab65"
+    },
+    {
+      "bytes": 0,
+      "path": "search-relevance-eval/threshold/results/analysis-inputs-console-attempt1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 214,
+      "path": "search-relevance-eval/threshold/results/analysis-inputs-console-attempt2.log",
+      "sha256": "a4427ba555155a3f08e452cd02358e6ef699e6281ace1d33603883ed29476cc8"
+    }
+  ],
+  "primary_first_failure": "Original locked CLI forwarded auxiliary uncertainty_pairs keyword; rejected by signature. Actual wrapper retained full evidence/policy and verified mask equality before dropping only duplicate top-level auxiliary keyword.",
+  "recommendation": "D",
+  "recorded_utc": "2026-11-08T08:41:10.727847+00:00",
+  "role_first_failure": "Sensitivity call used raw exact queries without target IDs from frozen intents; helper corrected to same enriched map as primary.",
+  "scope": "Offline source transport/resource and invocation history only; no new target inference/capture, cutoff/label/gate changes."
+}

@@ -1,0 +1,54 @@
+.........................................................unit baseline 1 0.0
+unit raw_boost1 1 0.0
+.....embedded 1/1 new texts
+embedded 1/1 new texts
+..........................................................................................................................................................................................................................................................................DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-236b45e0-57c7-401a-84b7-005fddfff32b-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-236b45e0-57c7-401a-84b7-005fddfff32b-eligibility
+.DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-b1902043-5063-42a2-9323-3cef99c0b587-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-b1902043-5063-42a2-9323-3cef99c0b587-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-bdb53281-bb6c-45dd-9f34-0fb06fbb7ec9-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-bdb53281-bb6c-45dd-9f34-0fb06fbb7ec9-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-1c10468e-9851-462d-8ebb-e979e070822e-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-1c10468e-9851-462d-8ebb-e979e070822e-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-41ad0c6a-9076-4157-948c-ffdd57910143-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-41ad0c6a-9076-4157-948c-ffdd57910143-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-1f2edc12-7d90-49f1-90e7-bf9717bf04c7-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-1f2edc12-7d90-49f1-90e7-bf9717bf04c7-eligibility
+.DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-6e88017d-b76a-4325-9446-124416b440b6-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-6e88017d-b76a-4325-9446-124416b440b6-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-402912ee-1b8f-4c29-87aa-9a92159d6432-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-402912ee-1b8f-4c29-87aa-9a92159d6432-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-9106f861-a8ce-4b12-a32c-a098fb18cbd4-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-9106f861-a8ce-4b12-a32c-a098fb18cbd4-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-9bac4bf1-83dd-47f4-9f0f-8b71b56367a0-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-9bac4bf1-83dd-47f4-9f0f-8b71b56367a0-eligibility
+....DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-05d22509-299d-4328-a323-33bac75e5062-prefilter-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-05d22509-299d-4328-a323-33bac75e5062-prefilter-root
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-05d22509-299d-4328-a323-33bac75e5062-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-05d22509-299d-4328-a323-33bac75e5062-eligibility
+.DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e1ed946f-627e-47c2-b9a1-6fa75d4490be-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-e1ed946f-627e-47c2-b9a1-6fa75d4490be-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-d75978be-f881-4655-a282-4e2b45aa15f0-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-d75978be-f881-4655-a282-4e2b45aa15f0-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-ef5af469-5786-440a-a157-133cffbbabb7-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-ef5af469-5786-440a-a157-133cffbbabb7-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-cb141d41-afc8-4696-a79f-d18da984a353-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-cb141d41-afc8-4696-a79f-d18da984a353-eligibility
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-609cf7a0-75de-412d-b258-e6ad56c1cadb-legacy
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-609cf7a0-75de-412d-b258-e6ad56c1cadb-eligibility
+..FAILED ms_050/root: AssertionError: Native inclusive cutoff admission mismatch: root/0.5
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-669de017-dc22-4b29-8239-a7b796cb4f1a-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-669de017-dc22-4b29-8239-a7b796cb4f1a-boundary-root
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-aaa336b8-3245-477a-b676-e83fffd2e112-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-aaa336b8-3245-477a-b676-e83fffd2e112-boundary-root
+.FAILED ms_050/root: AssertionError: Native inclusive cutoff admission mismatch: root/0.5
+FAILED ms_050/child: AssertionError: Native inclusive cutoff admission mismatch: child/0.5
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-8d0cc182-cab8-41ad-8374-20a7b15edbc7-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-8d0cc182-cab8-41ad-8374-20a7b15edbc7-boundary-root
+..DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-4dcad33a-159a-435a-8fa0-a5c4b9cf8ce4-boundary-child
+DELETE http://127.0.0.1:19200/magda-relevance-eval-threshold3887-control-4dcad33a-159a-435a-8fa0-a5c4b9cf8ce4-boundary-root
+.......................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 571 tests in 14.216s
+
+OK

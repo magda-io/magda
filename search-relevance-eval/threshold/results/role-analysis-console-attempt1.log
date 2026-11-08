@@ -1,0 +1,15 @@
+loading role-required source artifacts only 2026-11-08T07:27:09.719319+00:00
+computing fixedrole diagnostics 2026-11-08T07:28:46.185177+00:00
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+  File "search-relevance-eval/threshold/role_analysis.py", line 123, in build_role_report
+    sensitivity = a.legacy_sensitivity(payload["queries"], payload["qrels"], runs, payload["corpora"],
+  File "search-relevance-eval/threshold/analyze.py", line 712, in legacy_sensitivity
+    qm, catalog, grades, indexed = _prepare(queries, qrels, runs, corpora)
+  File "search-relevance-eval/threshold/analyze.py", line 172, in _prepare
+    query_map = _queries(queries, intents)
+  File "search-relevance-eval/threshold/analyze.py", line 159, in _queries
+    targets = _ids(row.get("authoritative_target_ids"), "authoritative targets")
+  File "search-relevance-eval/threshold/analyze.py", line 61, in _ids
+    raise ValueError(label + " must enumerate unique IDs")
+ValueError: authoritative targets must enumerate unique IDs

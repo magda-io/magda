@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/t1000/development/magda/search-relevance-eval/threshold/analyze.py", line 1372, in <module>
+    main()
+  File "/Users/t1000/development/magda/search-relevance-eval/threshold/analyze.py", line 1362, in main
+    report = select_development(**payload) if args.development else build_report(**payload)
+TypeError: build_report() got an unexpected keyword argument 'uncertainty_pairs'
