@@ -43,6 +43,10 @@ SOURCE_FIELDS = {
 
 
 def source_values(value, parts):
+    # OpenSearch ignores explicit nulls for dynamic type inference; source bytes
+    # remain unchanged and explicit typed_source([None], ...) still fails closed.
+    if value is None:
+        return []
     if not parts:
         return [value]
     if isinstance(value, list):
@@ -56,10 +60,10 @@ def typed_source(values, kind):
     ex.require(values, "Dynamic mapping has no actual source values")
     for value in values:
         if kind == "string_list":
-            ex.require(type(value) is list and all(type(item) is str for item in value), "Expected source string array")
+            ex.require(type(value) is list and all(item is None or type(item) is str for item in value), "Expected source string array")
         elif kind == "source_object":
-            ex.require(type(value) is dict and set(value) == {"id", "name", "url"}
-                       and all(type(item) is str for item in value.values()), "Unexpected publisher.source shape")
+            ex.require(type(value) is dict and set(value) <= {"id", "name", "url"}
+                       and all(item is None or type(item) is str for item in value.values()), "Unexpected publisher.source shape")
         else:
             ex.require(type(value) is str, "Expected source string, never null/numeric")
             if kind == "date":
@@ -106,15 +110,22 @@ def semantic_mapping(expected, actual, documents, exports, cohort="NEW"):
         if name in expected_parent.get("properties", {}) or name not in actual_parent.get("properties", {}):
             continue
         observed = actual_parent["properties"][name]
-        schema = ({"properties": {key: LANDING_PAGE for key in ("id", "name", "url")}}
+        values = [value for doc in documents for value in source_values(doc, parts)]
+        typed_source(values, kind)
+        if kind == "string_list":
+            ex.require(any(item is not None for value in values for item in value),
+                       "All-null/empty arrays cannot authorize a dynamic field mapping")
+        object_keys = {key for value in values if isinstance(value, dict)
+                       for key, item in value.items() if item is not None}
+        if kind == "source_object":
+            ex.require(object_keys, "All-null source object cannot authorize dynamic child mappings")
+        schema = ({"properties": {key: LANDING_PAGE for key in sorted(object_keys)}}
                   if kind == "source_object" else {"type": "date"} if kind == "date" else LANDING_PAGE)
         normalized_observed = normalize_objects(observed)
         if kind == "date" and normalized_observed == {"type": "date", "format": "strict_date_optional_time||epoch_millis"}:
             normalized_observed = {"type": "date"}
         ex.require(ex.contract.canonical(normalized_observed) == ex.contract.canonical(schema),
                    "Unexpected exact mapping for licensed source field: " + field)
-        values = [value for doc in documents for value in source_values(doc, parts)]
-        typed_source(values, kind)
         unused_field(exports, field)
         actual_parent["properties"].pop(name)
         allowed.append({"source_path": field, "source_type": kind, "actual": observed,

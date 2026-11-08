@@ -1,0 +1,22 @@
+{
+  "source_only_no_backend_calls": true,
+  "source_values_unmodified": true,
+  "method": "Count existing prepared source metadata at the exact cohort-specific approved dynamic field paths. No labels, scores, rankings, model calls or engine requests.",
+  "all_array_null_elements": 0,
+  "all_source_object_attribute_nulls": 0,
+  "cases": [
+    {"cohort":"NEW","seed":38871,"size":60,"prepared_corpus_sha256":"ee5cab7552de1bab9a16489ef7aa12d2d8773784d79a1bebc872f0ef1e0e1b49","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":60}}}},
+    {"cohort":"NEW","seed":38871,"size":1000,"prepared_corpus_sha256":"97072b96f24c82eba984266bf186bee7c2d1254f4fc01aa573e068835a51c06f","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":1000}}}},
+    {"cohort":"NEW","seed":38871,"size":2000,"prepared_corpus_sha256":"3bde2857812888cf2421b9115baf54adbc52f17e9cd59ff2201a9981d36d8828","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":2000}}}},
+    {"cohort":"NEW","seed":38872,"size":60,"prepared_corpus_sha256":"b85e7a95b2ce93ad17c377bc9ff6436ea60ec1e22f1013c84715263f923264b4","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":60}}}},
+    {"cohort":"NEW","seed":38872,"size":1000,"prepared_corpus_sha256":"34f91e2eac7e6ab1acb023cb04dc6f77db8b66f72e4bfa668ad4bc7179abd82e","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":1000}}}},
+    {"cohort":"NEW","seed":38872,"size":2000,"prepared_corpus_sha256":"f7525b4bd2ef5b070d291150cade899922d8ef1ecfa402df93bf4db985e10ce3","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":2000}}}},
+    {"cohort":"NEW","seed":38873,"size":60,"prepared_corpus_sha256":"42c41207d3d51af40dfc04416a2c38b73f4444631f0d3a839fdc6ab118b8e95a","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":60}}}},
+    {"cohort":"NEW","seed":38873,"size":1000,"prepared_corpus_sha256":"217626deeded42fb9f0bc06a9d9c607346e020787fe8d6e654eec2b36f473852","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":1000}}}},
+    {"cohort":"NEW","seed":38873,"size":2000,"prepared_corpus_sha256":"7d39aa1d82b41cc84d663f6ad18fd2d6f2aa6e22636acdd09aa8cf091d571594","fields":{"landingPage":{"null_count":0,"nonnull_types":{"str":2000}}}},
+    {"cohort":"LEGACY","seed":39031,"size":180,"prepared_corpus_sha256":"27a9a379e371d66448d7ece818e469b7c76507b96313e18bca794f79327e79bb","fields":{"contactPoint.email":{"null_count":0,"nonnull_types":{"str":122}},"contactPoint.name":{"null_count":0,"nonnull_types":{"str":122}},"issued":{"null_count":0,"nonnull_types":{"str":126}},"languages":{"null_count":0,"nonnull_types":{"list":119}},"spatial.text":{"null_count":0,"nonnull_types":{"str":116}}}},
+    {"cohort":"LEGACY","seed":39032,"size":180,"prepared_corpus_sha256":"6aa76b15390ffe9e7fb86f8d99e41521cf5dabe6f3bd50c334e3dc1b9e67f955","fields":{"contactPoint.email":{"null_count":0,"nonnull_types":{"str":123}},"contactPoint.name":{"null_count":0,"nonnull_types":{"str":123}},"issued":{"null_count":0,"nonnull_types":{"str":107}},"languages":{"null_count":0,"nonnull_types":{"list":120}},"spatial.text":{"null_count":0,"nonnull_types":{"str":108}}}},
+    {"cohort":"LEGACY","seed":39033,"size":180,"prepared_corpus_sha256":"81d96f6406cffc6f6c8be84f3f7ace60c5d09336f3384f02f47700a0fe33d269","fields":{"contactPoint.email":{"null_count":0,"nonnull_types":{"str":114}},"contactPoint.name":{"null_count":0,"nonnull_types":{"str":114}},"issued":{"null_count":0,"nonnull_types":{"str":113}},"languages":{"null_count":0,"nonnull_types":{"list":114}},"spatial.text":{"null_count":0,"nonnull_types":{"str":111}}}},
+    {"cohort":"REAL","seed":3901,"size":494,"prepared_corpus_sha256":"80862a1ef9b1d4eadc039ca8f6410b3b32b4d7b428581fcbf8baa6dac88cff65","fields":{"distributions.issued":{"null_count":847,"nonnull_types":{"str":1045}},"distributions.modified":{"null_count":768,"nonnull_types":{"str":1124}},"issued":{"null_count":78,"nonnull_types":{"str":416}},"modified":{"null_count":82,"nonnull_types":{"str":412}},"landingPage":{"null_count":126,"nonnull_types":{"str":368}},"languages":{"null_count":0,"nonnull_types":{"list":494}},"publisher.source":{"null_count":0,"nonnull_types":{"dict":490}},"spatial.text":{"null_count":0,"nonnull_types":{"str":358}}}}
+  ]
+}

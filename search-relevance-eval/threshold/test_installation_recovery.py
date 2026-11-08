@@ -65,6 +65,27 @@ class InstallationRecoveryTests(unittest.TestCase):
             with self.subTest(actual=actual), self.assertRaises(ValueError):
                 r.semantic_mapping(self.expected, actual, self.docs, self.exports)
 
+    def test_null_source_values_skip_engine_nonindexed_nulls_without_data_mutation(self):
+        documents = [{"landingPage": None}, {"landingPage": "https://unit.invalid"},
+                     {"distributions": [None, {"issued": None}, {"issued": "2025-01-01T00:00:00Z"}]}]
+        before = copy.deepcopy(documents)
+        values = [value for doc in documents for value in r.source_values(doc, ["landingPage"])]
+        self.assertEqual(values, ["https://unit.invalid"])
+        r.semantic_mapping(self.expected, self.actual, documents, self.exports)
+        self.assertEqual(r.source_values(documents[-1], ["distributions", "issued"]), ["2025-01-01T00:00:00Z"])
+        self.assertEqual(documents, before)
+        with self.assertRaises(ValueError):
+            r.typed_source([None], "string")
+        with self.assertRaises(ValueError):
+            r.typed_source([1], "string")
+        r.semantic_mapping(self.expected, self.expected, [{"landingPage": None}], self.exports)
+        with self.assertRaises(ValueError):
+            r.semantic_mapping(self.expected, self.actual, [{"landingPage": None}], self.exports)
+        r.typed_source([[None, "eng"]], "string_list")
+        r.typed_source([{"id": "unit", "name": None, "url": None}], "source_object")
+        with self.assertRaises(ValueError):
+            r.typed_source([[None, 1]], "string_list")
+
     def test_object_type_without_properties_is_not_normalized(self):
         self.assertEqual(r.normalize_objects({"type": "object"}), {"type": "object"})
         self.assertEqual(r.normalize_objects({"type": "nested", "properties": {}}), {"type": "nested", "properties": {}})
