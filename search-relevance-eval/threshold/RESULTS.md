@@ -45,6 +45,8 @@ Full-six shared-assignment sensitivity is reported, not substituted for validate
 
 ## Exact identifiers: every target, not best-target averages
 
+[Every NEW and LEGACY authority rank, top1 and MRR@10](<search-relevance-eval/threshold/results/all-exact-authority-ranks.csv>) contains all1,440 exact query/system/case rows, including separate top-k diagnostics; null ranks mean censored beyond10.
+
 All 12 NEW critical queries, including DEV controls, are retained for exact safety. Ranks missing from the captured top10 are censored >10, not assigned an invented exact rank; MRR is **MRR@10**, not full-list MRR. [Every NEW authority rank](<search-relevance-eval/threshold/results/new-exact-all-targets.json>) and [All radial exact aggregates](<search-relevance-eval/threshold/results/exact-window-censored.csv>).
 
 - .45 displaces NEW authoritative t049 from rank1 to2 for query tx01a, seed38871, at **all three sizes**. At .50 logger and module initially tie at raw score619.23206; the returned order is logger then module. At .45 the module is667.4613 versus logger664.6873. Both were already keyword/full-hybrid eligible; this is a root-vector **promotion**, not a new match.

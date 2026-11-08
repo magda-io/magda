@@ -17,9 +17,9 @@ All seven cutoffs .50/.48/.46/**.45 fixed primary**/.44/.42/.40, separate top-k1
 
 ### Report, complete artifacts and reproducibility
 
-- [Methods and decision](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/REPORT.md)
-- [All-profile tables, regressions, exact cases and SVGs](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/RESULTS.md)
-- [Portable offline reproduction](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/REPRODUCE-RESULTS.md)
+- [Methods and decision](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/REPORT-GITHUB.md)
+- [All-profile tables, regressions, exact cases and SVGs](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/RESULTS-GITHUB.md)
+- [Portable offline reproduction](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/REPRODUCE-RESULTS-GITHUB.md)
 - [Complete analyzed JSON, losslessly compressed](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/results/threshold-analysis.json.xz)
 - [Raw capture archive, four ordered Git-compatible parts](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/capture-archive-parts.json):149,751,500 compressed bytes;787 members/6,192,286,386 raw bytes. Every member was actually verified, all existing bytes identical, zero restoration. Includes exact vectors, actual Scala exports, receipts and native/membership evidence, not merely hashes of unavailable local files.
 - [Independent comparison](https://github.com/magda-io/magda/blob/eval/hybrid-minscore-threshold-3887/search-relevance-eval/threshold/results/independent-comparison.json): zero mismatches across the predefined1,872 metric rows,1,404 held radial FP rows, U-null checks and46 radial exact events. Scoped audit, not entire-study/future-ABC certification.
