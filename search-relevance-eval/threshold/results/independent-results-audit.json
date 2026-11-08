@@ -1,0 +1,1483 @@
+{
+  "FP_attribution": {
+    "keyword_false_new_hybrid_admission": 187,
+    "keyword_true_new_top10": 2060,
+    "same_full_hybrid_eligible_rank_promotion": 2060,
+    "unavailable": 985
+  },
+  "U_suppressed_rows": 120,
+  "analyst_comparison": {
+    "analyst_outputs_not_read": true,
+    "status": "not_started"
+  },
+  "counts": {
+    "native": {
+      "authorized_child_scores": 876096,
+      "calibration_cases": 9,
+      "calibration_max_error": 5.96113409190302e-08,
+      "first_geometry_request_utc": "2026-11-08T03:58:15.128842+00:00",
+      "full_HNSW_window_is_not_exact_oracle": true,
+      "membership_primary_subset_failures": 0,
+      "membership_rows": 3024,
+      "parent_pairs": 440640,
+      "vector_inventory_rows": 9180
+    },
+    "new_negative_all_zero_pairs": 110160,
+    "qrels": {
+      "LEGACY": {
+        "0": 39012,
+        "1": 300,
+        "2": 429,
+        "3": 747,
+        "U": 12
+      },
+      "NEW": {
+        "0": 429300,
+        "1": 10584,
+        "2": 207,
+        "3": 528,
+        "U": 18381
+      }
+    },
+    "receipt_surfaces_missing": 0,
+    "timed_request_failures": [],
+    "timing_phases": {
+      "development": {
+        "actual_requests": 10296,
+        "cases": 9,
+        "expected_requests": 10296,
+        "first_started_utc": "2026-11-08T00:30:53.598264+00:00",
+        "last_completed_utc": "2026-11-08T00:38:22.141985+00:00",
+        "measured": 9360,
+        "warmup": 936
+      },
+      "heldout": {
+        "actual_requests": 50424,
+        "cases": 13,
+        "expected_requests": 50424,
+        "first_started_utc": "2026-11-08T02:58:49.659285+00:00",
+        "last_completed_utc": "2026-11-08T03:47:58.341186+00:00",
+        "measured": 45840,
+        "warmup": 4584
+      },
+      "roles": {
+        "actual_requests": 9900,
+        "cases": 9,
+        "expected_requests": 9900,
+        "first_started_utc": "2026-11-08T03:48:22.937287+00:00",
+        "last_completed_utc": "2026-11-08T03:58:03.857496+00:00",
+        "measured": 9000,
+        "warmup": 900
+      }
+    }
+  },
+  "equal_absolute_counts_with_new_ID_additions": 514,
+  "exact_event_count": 58,
+  "failures": [],
+  "files": {
+    "checked_subset": "search-relevance-eval/threshold/results/independent-checked-subset.jsonl",
+    "checked_subset_sha256": "68beedc8fc1be8248708b3368bc25a50ed893e4d5852c8c2c20c980c6a4a4667",
+    "false_positive_checks": "search-relevance-eval/threshold/results/independent-fp-checks.jsonl",
+    "false_positive_checks_sha256": "1e89775796a36f9bf75907258b4636d9365140d8244f0891dd1387d20a6f288d"
+  },
+  "forced_recommendation": "D",
+  "limitations": [
+    "Forced-D nonpromotion only; no future strict A/B/C certification.",
+    "Audits supplied C grade/source truth; assigns no new semantic labels.",
+    "Native script L2 scores are distinct from SQ/fp16 approximate Faiss membership and raw boosted fusion.",
+    "FULL collector membership is observed approximate/window evidence, not an exact eligibility oracle.",
+    "No model/search/network request was performed."
+  ],
+  "native_dataset_grade_distributions": [
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.53596514,
+      "mean": 0.3885066189646427,
+      "minimum": 0.35553277,
+      "n": 2772,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.58125174,
+      "mean": 0.3874410803138532,
+      "minimum": 0.32130638,
+      "n": 2772,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.39943296,
+      "mean": 0.38531855708333335,
+      "minimum": 0.3677663,
+      "n": 24,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.5832113,
+      "mean": 0.5340364054166667,
+      "minimum": 0.48982033,
+      "n": 24,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.39943296,
+      "mean": 0.38531855708333335,
+      "minimum": 0.3677663,
+      "n": 24,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.57183903,
+      "mean": 0.5244319004166668,
+      "minimum": 0.49971804,
+      "n": 24,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.58196783,
+      "mean": 0.44452980379310353,
+      "minimum": 0.3606616,
+      "n": 58,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.6230869,
+      "mean": 0.5038983058620687,
+      "minimum": 0.38158363,
+      "n": 58,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.537838,
+      "mean": 0.45775827,
+      "minimum": 0.37767854,
+      "n": 2,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.5086511,
+      "mean": 0.500737335,
+      "minimum": 0.49282357,
+      "n": 2,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.53596514,
+      "mean": 0.38582426520368784,
+      "minimum": 0.35553277,
+      "n": 46764,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.58125174,
+      "mean": 0.39364636656829854,
+      "minimum": 0.32130638,
+      "n": 46764,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.39943296,
+      "mean": 0.38531855708332946,
+      "minimum": 0.3677663,
+      "n": 1152,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.6763656,
+      "mean": 0.5650970022135419,
+      "minimum": 0.48483822,
+      "n": 1152,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.39943296,
+      "mean": 0.38531855708333335,
+      "minimum": 0.3677663,
+      "n": 24,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.57183903,
+      "mean": 0.5244319004166668,
+      "minimum": 0.49971804,
+      "n": 24,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.58196783,
+      "mean": 0.44452980379310353,
+      "minimum": 0.3606616,
+      "n": 58,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.6230869,
+      "mean": 0.5038983058620687,
+      "minimum": 0.38158363,
+      "n": 58,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.537838,
+      "mean": 0.45775827,
+      "minimum": 0.37767854,
+      "n": 2,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.5086511,
+      "mean": 0.500737335,
+      "minimum": 0.49282357,
+      "n": 2,
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.53596514,
+      "mean": 0.38573972317846184,
+      "minimum": 0.35553277,
+      "n": 93564,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.58125174,
+      "mean": 0.393780073348511,
+      "minimum": 0.32130638,
+      "n": 93564,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.39943296,
+      "mean": 0.3853185570833335,
+      "minimum": 0.3677663,
+      "n": 2352,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.6763656,
+      "mean": 0.5659792181845233,
+      "minimum": 0.4815922,
+      "n": 2352,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.39943296,
+      "mean": 0.38531855708333335,
+      "minimum": 0.3677663,
+      "n": 24,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.57183903,
+      "mean": 0.5244319004166668,
+      "minimum": 0.49971804,
+      "n": 24,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.58196783,
+      "mean": 0.44452980379310353,
+      "minimum": 0.3606616,
+      "n": 58,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.6230869,
+      "mean": 0.5038983058620687,
+      "minimum": 0.38158363,
+      "n": 58,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.537838,
+      "mean": 0.45775827,
+      "minimum": 0.37767854,
+      "n": 2,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.5086511,
+      "mean": 0.500737335,
+      "minimum": 0.49282357,
+      "n": 2,
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.54567665,
+      "mean": 0.39506169036796407,
+      "minimum": 0.35882783,
+      "n": 2772,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.6156506,
+      "mean": 0.3812180882359305,
+      "minimum": 0.32784793,
+      "n": 2772,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.40380502,
+      "mean": 0.3906481716666667,
+      "minimum": 0.3739003,
+      "n": 24,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.5467638,
+      "mean": 0.50846700875,
+      "minimum": 0.4651222,
+      "n": 24,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.40380502,
+      "mean": 0.3906481716666667,
+      "minimum": 0.3739003,
+      "n": 24,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.5489377,
+      "mean": 0.5111673687499999,
+      "minimum": 0.48760793,
+      "n": 24,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.61422926,
+      "mean": 0.45063429379310344,
+      "minimum": 0.3739003,
+      "n": 58,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.6237174,
+      "mean": 0.49163327120689665,
+      "minimum": 0.38486555,
+      "n": 58,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.510994,
+      "mean": 0.45017878,
+      "minimum": 0.38936356,
+      "n": 2,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.4926168,
+      "mean": 0.48754719,
+      "minimum": 0.48247758,
+      "n": 2,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.54567665,
+      "mean": 0.3931580921704439,
+      "minimum": 0.35882783,
+      "n": 46764,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.6156506,
+      "mean": 0.3925292977125572,
+      "minimum": 0.32784793,
+      "n": 46764,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.40380502,
+      "mean": 0.39064817166666793,
+      "minimum": 0.3739003,
+      "n": 1152,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.6581642,
+      "mean": 0.5512641164670142,
+      "minimum": 0.4651222,
+      "n": 1152,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.40380502,
+      "mean": 0.3906481716666667,
+      "minimum": 0.3739003,
+      "n": 24,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.5489377,
+      "mean": 0.5111673687499999,
+      "minimum": 0.48760793,
+      "n": 24,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.61422926,
+      "mean": 0.45063429379310344,
+      "minimum": 0.3739003,
+      "n": 58,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.6237174,
+      "mean": 0.49163327120689665,
+      "minimum": 0.38486555,
+      "n": 58,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.510994,
+      "mean": 0.45017878,
+      "minimum": 0.38936356,
+      "n": 2,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.4926168,
+      "mean": 0.48754719,
+      "minimum": 0.48247758,
+      "n": 2,
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.54567665,
+      "mean": 0.39309809484688896,
+      "minimum": 0.35882783,
+      "n": 93564,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.6156506,
+      "mean": 0.3928613096461274,
+      "minimum": 0.32784793,
+      "n": 93564,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.40380502,
+      "mean": 0.39064817166666777,
+      "minimum": 0.3739003,
+      "n": 2352,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.66205996,
+      "mean": 0.551953964111397,
+      "minimum": 0.4651222,
+      "n": 2352,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.40380502,
+      "mean": 0.3906481716666667,
+      "minimum": 0.3739003,
+      "n": 24,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.5489377,
+      "mean": 0.5111673687499999,
+      "minimum": 0.48760793,
+      "n": 24,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.61422926,
+      "mean": 0.45063429379310344,
+      "minimum": 0.3739003,
+      "n": 58,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.6237174,
+      "mean": 0.49163327120689665,
+      "minimum": 0.38486555,
+      "n": 58,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.510994,
+      "mean": 0.45017878,
+      "minimum": 0.38936356,
+      "n": 2,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.4926168,
+      "mean": 0.48754719,
+      "minimum": 0.48247758,
+      "n": 2,
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.51885563,
+      "mean": 0.3883027915872977,
+      "minimum": 0.3515421,
+      "n": 2772,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.5319519,
+      "mean": 0.3769259382828282,
+      "minimum": 0.32060218,
+      "n": 2772,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.40348577,
+      "mean": 0.3869104941666666,
+      "minimum": 0.37516817,
+      "n": 24,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.5299703,
+      "mean": 0.4928910008333333,
+      "minimum": 0.4589499,
+      "n": 24,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.40348577,
+      "mean": 0.3876643585714286,
+      "minimum": 0.37526086,
+      "n": 21,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.5235763,
+      "mean": 0.49135459904761897,
+      "minimum": 0.461644,
+      "n": 21,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.5576658,
+      "mean": 0.44150679966666656,
+      "minimum": 0.35750896,
+      "n": 60,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.598808,
+      "mean": 0.48995413999999976,
+      "minimum": 0.34240723,
+      "n": 60,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.3864627,
+      "mean": 0.3816334433333333,
+      "minimum": 0.37516817,
+      "n": 3,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.5033954,
+      "mean": 0.49179070666666663,
+      "minimum": 0.47359392,
+      "n": 3,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.51885563,
+      "mean": 0.3878250766627984,
+      "minimum": 0.3515421,
+      "n": 46764,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.5319519,
+      "mean": 0.39127176775938866,
+      "minimum": 0.32060218,
+      "n": 46764,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.40348577,
+      "mean": 0.3869104941666673,
+      "minimum": 0.37516817,
+      "n": 1152,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.64224356,
+      "mean": 0.54958140797743,
+      "minimum": 0.4589499,
+      "n": 1152,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.40348577,
+      "mean": 0.3876643585714286,
+      "minimum": 0.37526086,
+      "n": 21,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.5235763,
+      "mean": 0.49135459904761897,
+      "minimum": 0.461644,
+      "n": 21,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.5576658,
+      "mean": 0.44150679966666656,
+      "minimum": 0.35750896,
+      "n": 60,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.598808,
+      "mean": 0.48995413999999976,
+      "minimum": 0.34240723,
+      "n": 60,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.3864627,
+      "mean": 0.3816334433333333,
+      "minimum": 0.37516817,
+      "n": 3,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.5033954,
+      "mean": 0.49179070666666663,
+      "minimum": 0.47359392,
+      "n": 3,
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "0",
+      "maximum": 0.51885563,
+      "mean": 0.3878100201151734,
+      "minimum": 0.3515421,
+      "n": 93564,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "0",
+      "maximum": 0.5346934,
+      "mean": 0.3916812220777214,
+      "minimum": 0.32060218,
+      "n": 93564,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "1",
+      "maximum": 0.40348577,
+      "mean": 0.386910494166664,
+      "minimum": 0.37516817,
+      "n": 2352,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "1",
+      "maximum": 0.64639014,
+      "mean": 0.5503859270280613,
+      "minimum": 0.4589499,
+      "n": 2352,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "2",
+      "maximum": 0.40348577,
+      "mean": 0.3876643585714286,
+      "minimum": 0.37526086,
+      "n": 21,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "2",
+      "maximum": 0.5235763,
+      "mean": 0.49135459904761897,
+      "minimum": 0.461644,
+      "n": 21,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "3",
+      "maximum": 0.5576658,
+      "mean": 0.44150679966666656,
+      "minimum": 0.35750896,
+      "n": 60,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "3",
+      "maximum": 0.598808,
+      "mean": 0.48995413999999976,
+      "minimum": 0.34240723,
+      "n": 60,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "max_authorized_child",
+      "dataset_grade": "U",
+      "maximum": 0.3864627,
+      "mean": 0.3816334433333333,
+      "minimum": 0.37516817,
+      "n": 3,
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "branch": "root",
+      "dataset_grade": "U",
+      "maximum": 0.5033954,
+      "mean": 0.49179070666666663,
+      "minimum": 0.47359392,
+      "n": 3,
+      "seed": 38873,
+      "size": 2000
+    }
+  ],
+  "native_useful_sample": [
+    {
+      "dataset_id": "t019",
+      "grade": 3,
+      "max_child_score": 0.3835157,
+      "query_id": "t04p1",
+      "root_score": 0.49205616,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t020",
+      "grade": 3,
+      "max_child_score": 0.50514907,
+      "query_id": "t04p1",
+      "root_score": 0.51261264,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t021",
+      "grade": 2,
+      "max_child_score": 0.3835157,
+      "query_id": "t04p1",
+      "root_score": 0.51226276,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t025",
+      "grade": 3,
+      "max_child_score": 0.38215604,
+      "query_id": "t05p1",
+      "root_score": 0.53480756,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t026",
+      "grade": 3,
+      "max_child_score": 0.5253665,
+      "query_id": "t05p1",
+      "root_score": 0.5368439,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t027",
+      "grade": 2,
+      "max_child_score": 0.38215604,
+      "query_id": "t05p1",
+      "root_score": 0.5510474,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t031",
+      "grade": 3,
+      "max_child_score": 0.38464,
+      "query_id": "t06p1",
+      "root_score": 0.49051845,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t032",
+      "grade": 3,
+      "max_child_score": 0.47203636,
+      "query_id": "t06p1",
+      "root_score": 0.48878282,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t033",
+      "grade": 2,
+      "max_child_score": 0.38464,
+      "query_id": "t06p1",
+      "root_score": 0.5029563,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t037",
+      "grade": 3,
+      "max_child_score": 0.37768814,
+      "query_id": "t07p1",
+      "root_score": 0.53703684,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t038",
+      "grade": 3,
+      "max_child_score": 0.5359387,
+      "query_id": "t07p1",
+      "root_score": 0.46187377,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t039",
+      "grade": 2,
+      "max_child_score": 0.37768814,
+      "query_id": "t07p1",
+      "root_score": 0.518183,
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "dataset_id": "t019",
+      "grade": 3,
+      "max_child_score": 0.38908836,
+      "query_id": "t04p1",
+      "root_score": 0.4783895,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t020",
+      "grade": 3,
+      "max_child_score": 0.5152851,
+      "query_id": "t04p1",
+      "root_score": 0.44964445,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t021",
+      "grade": 2,
+      "max_child_score": 0.38908836,
+      "query_id": "t04p1",
+      "root_score": 0.5004981,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t025",
+      "grade": 3,
+      "max_child_score": 0.38527787,
+      "query_id": "t05p1",
+      "root_score": 0.51667076,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t026",
+      "grade": 3,
+      "max_child_score": 0.46673658,
+      "query_id": "t05p1",
+      "root_score": 0.46757445,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t027",
+      "grade": 2,
+      "max_child_score": 0.38527787,
+      "query_id": "t05p1",
+      "root_score": 0.5489377,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t031",
+      "grade": 3,
+      "max_child_score": 0.388676,
+      "query_id": "t06p1",
+      "root_score": 0.47929513,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t032",
+      "grade": 3,
+      "max_child_score": 0.4999907,
+      "query_id": "t06p1",
+      "root_score": 0.4591311,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t033",
+      "grade": 2,
+      "max_child_score": 0.388676,
+      "query_id": "t06p1",
+      "root_score": 0.48850045,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t037",
+      "grade": 3,
+      "max_child_score": 0.3906483,
+      "query_id": "t07p1",
+      "root_score": 0.4945323,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t038",
+      "grade": 3,
+      "max_child_score": 0.47549573,
+      "query_id": "t07p1",
+      "root_score": 0.4524751,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t039",
+      "grade": 2,
+      "max_child_score": 0.3906483,
+      "query_id": "t07p1",
+      "root_score": 0.48760793,
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "dataset_id": "t019",
+      "grade": 3,
+      "max_child_score": 0.38721356,
+      "query_id": "t04p1",
+      "root_score": 0.49187198,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t020",
+      "grade": 3,
+      "max_child_score": 0.49948603,
+      "query_id": "t04p1",
+      "root_score": 0.51303196,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t021",
+      "grade": 2,
+      "max_child_score": 0.38721356,
+      "query_id": "t04p1",
+      "root_score": 0.4918097,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t025",
+      "grade": 3,
+      "max_child_score": 0.37871027,
+      "query_id": "t05p1",
+      "root_score": 0.53133816,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t026",
+      "grade": 3,
+      "max_child_score": 0.4996666,
+      "query_id": "t05p1",
+      "root_score": 0.49617344,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t027",
+      "grade": 2,
+      "max_child_score": 0.37871027,
+      "query_id": "t05p1",
+      "root_score": 0.49013996,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t031",
+      "grade": 3,
+      "max_child_score": 0.39689115,
+      "query_id": "t06p1",
+      "root_score": 0.4783403,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t032",
+      "grade": 3,
+      "max_child_score": 0.46486866,
+      "query_id": "t06p1",
+      "root_score": 0.4698479,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t033",
+      "grade": 2,
+      "max_child_score": 0.39689115,
+      "query_id": "t06p1",
+      "root_score": 0.46856147,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t037",
+      "grade": 3,
+      "max_child_score": 0.38575238,
+      "query_id": "t07p1",
+      "root_score": 0.53236127,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t038",
+      "grade": 3,
+      "max_child_score": 0.48426545,
+      "query_id": "t07p1",
+      "root_score": 0.46526527,
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "dataset_id": "t039",
+      "grade": 2,
+      "max_child_score": 0.38575238,
+      "query_id": "t07p1",
+      "root_score": 0.48966965,
+      "seed": 38873,
+      "size": 60
+    }
+  ],
+  "phase_order": {
+    "development_last_request_utc": "2026-11-08T00:38:22.141985+00:00",
+    "first_held_request_utc": "2026-11-08T02:58:49.659285+00:00",
+    "first_target_preparation_utc": "2026-11-07T23:56:19.489405+00:00",
+    "none_record_utc": "2026-11-08T02:58:17.384915+00:00",
+    "policy_sealed_utc": "2026-11-07T19:36:09.679817+00:00",
+    "release_bound_to_actual_NONE_sha": true
+  },
+  "promotion_allowed": false,
+  "schema_version": 1,
+  "scope": {
+    "additional_U_scope": "t03p3 all seeds/sizes; t08p1/p2/p3 seed38873 all sizes",
+    "common_semantic_qids": [
+      "t04p1",
+      "t05p1",
+      "t06p1",
+      "t07p1"
+    ],
+    "exact": "all NEW12 and LEGACY24 queries, every authoritative target, all eight systems",
+    "fp_rows": 2592,
+    "frozen_before_analyst_output": true,
+    "independent_formulae_not_primary_reimplementation": true,
+    "subset_rows": 1872
+  },
+  "source_hashes": {
+    "search-relevance-eval/synthetic/auditoutputs/diagnostic-uncertainty-mask-v1.jsonl": "b256142c4426ce7191e5b7c39622b85410cd1bcf50b4507c8f371953c00f28ac",
+    "search-relevance-eval/synthetic/diagnostic-qrels.jsonl": "19f27d7f9fa72b6261e8014654ead248c52446a65d5d5adf0431f5e386927d38",
+    "search-relevance-eval/synthetic/diagnostic-validation.json": "a3b611689c0d005e30e65c9a385eb6152ed4c213ab5bc451ed2524b9e36e476f",
+    "search-relevance-eval/synthetic/intents.jsonl": "61b5469fbbfdaa9cd1729bd14a412f12166d94be044ff8ad020691aa5c1dbefc",
+    "search-relevance-eval/synthetic/query-spec.jsonl": "083366c868eea5d8f71c133cc5a022f7aba86f03fd2596c931feaf927d78377d",
+    "search-relevance-eval/threshold/.local/diagnostic-validation/expanded-evidence.jsonl": "b8831cbad72b5821fda2c36adecf611b57eec7a7f8a2366678cf44a3728f040a",
+    "search-relevance-eval/threshold/.local/diagnostic-validation/expanded-qrels.jsonl": "28a0ad070ca46b03366098e1f53745492404637441fc4e727bdef962485eb968",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39031/180/heldout-receipts.jsonl": "446c59bcc7ea9799681783dcaceeb3c2cecc0c0fb8b44f67deb3d289d6ccbc27",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39031/180/heldout-runs.jsonl": "da40712e209e3d27c40b0154fbacc2f9999d2733cc81db742ee095fb001420ca",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39031/180/heldout-runs.jsonl.requests.jsonl": "dcb12a804d8008daeb31aaa67e59181fdf92a616cfea3c8f549baf38d22fedd3",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39032/180/heldout-receipts.jsonl": "ae1350612521a92d6ab73a50ffefc76fe1f3c9af61b721b0bee0652f3e60f42a",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39032/180/heldout-runs.jsonl": "e088053a25c79444d730ae96e25f82f17c359d7af7dde9c67e0294585afade74",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39032/180/heldout-runs.jsonl.requests.jsonl": "471242c3af74ee2134df6bd1505efaf2aa68e298efa74dd3c488109f10ebb498",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39033/180/heldout-receipts.jsonl": "a16390e7e0a60abe4fcaeaa5bbbcb660eb4f50422913945cf46785d73b61a4f1",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39033/180/heldout-runs.jsonl": "dc95d0c581d67d9bd71fc409f32f0d021081b9377c398c2e8b73bf6a261a7988",
+    "search-relevance-eval/threshold/.local/execution/LEGACY/39033/180/heldout-runs.jsonl.requests.jsonl": "3b07aad3b010d317abb340b265408e540b19f423dfa45023f41f4da94137ce2b",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/development-receipts.jsonl": "dce1f43f57d56ba66cf5a162f624eef176d236e490045ba9ea86b99a096df5f1",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/development-runs.jsonl": "92f6ed3ba3534c72d04cdc175f047b00ffdedc006e093ffeeab8ea2b0d5941a1",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/development-runs.jsonl.requests.jsonl": "cf745140aa4d13b193fbaa36b118fbe79f8187c17e26a45cdaa93bf52c911f19",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/heldout-receipts.jsonl": "14e37b62469eb5f64bf4fb3f2eb0b542fb54350f0680892386530425a7f4c69d",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/heldout-runs.jsonl": "ca7a94ebaa5a62b44d8370940769474e16ddf1e1567af9a49fddf19435e59f1c",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/heldout-runs.jsonl.requests.jsonl": "f3613a46f38685a9ffce4ed1a62ca9a931e34e3435c9f7044df7dbd3f73de6da",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/roles-receipts.jsonl": "db54ef99eed5972e2425b173eaf232b35b1b8844774879a982a66cb11045e9b8",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/roles-runs.jsonl": "50339b608054de01bd7fe766a1796d0b0cba0be3a8f432cf5a667b1a01d9a67e",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/1000/roles-runs.jsonl.requests.jsonl": "9fe49591d3e3fcb332752123e8fa189cf51647ef35dbb58ae5c91997a006385a",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/development-receipts.jsonl": "5e196bb32dba83e2a9afc95c27d0801a170b49a1f59a5f7ed3e53fb36d0c0cf2",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/development-runs.jsonl": "1db05bb28cf961cd04db63278e22e2b5bc1e0f6b98844217b53b6a24ed7f0893",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/development-runs.jsonl.requests.jsonl": "90e3487e782d865a18ac572e1147a67470e235f14a97912dcd38642709663f90",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/heldout-receipts.jsonl": "214ac82a47d62bd49fc06df16d3c625339891ab0f504154c83f0b34f4b83cb71",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/heldout-runs.jsonl": "8dba6508a2a1f467a699bd7c59b4d8ea9ccf5ff030a5596a26045e957a502ea1",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/heldout-runs.jsonl.requests.jsonl": "a23f5af734e5d29a68846b8a923bf73442b42ced3f3d8fca284247821b0bd0d1",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/roles-receipts.jsonl": "60ce31fd982edef4ba4db7ddcb337d939b5c33567e537237bad5e4fd5daa37dd",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/roles-runs.jsonl": "bd203e203e06095b351fc595a512889a94bbfeddac6a136b8fa6ec73d4aa0cfe",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/2000/roles-runs.jsonl.requests.jsonl": "362bde770bd4d21e30c7bcdbb750d950218ec0beafe701876298db5016875a44",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/development-receipts.jsonl": "d0f4adeebea30f5650938d919802b014d0cea5fcf2170c98d810890b3bdf5af9",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/development-runs.jsonl": "9e12c402a3f70af49462fbbfbbcfa7d6543560b4224c3c612703d0cf7121ec18",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/development-runs.jsonl.requests.jsonl": "3b4acb50485f1eea2c6ded3122a2959405699489507ceb0241f8bd0bcd02d87f",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/heldout-receipts.jsonl": "d524ec370bdc2b9684f2a1f61d865dc8d0c752fdc215e74bafe6191fb6d410ff",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/heldout-runs.jsonl": "36e555b82d375634fdff244e6f7848bade88c1970a3a8f2d6917704a41e95790",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/heldout-runs.jsonl.requests.jsonl": "cf8be4fd60b5b74a57baed11555f5ad167a5732695847223a5cb19088d363951",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/roles-receipts.jsonl": "f8b753e84f2ced756be03c57366a41ac282d34d35802e299dcb876dba80fa324",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/roles-runs.jsonl": "116662749bd521876399cb9fbb6e7a9549b315be10527f157e622062216c151e",
+    "search-relevance-eval/threshold/.local/execution/NEW/38871/60/roles-runs.jsonl.requests.jsonl": "6d79732f428c6ce88420f75afb44adcc18deb315304f2f072fae5d7d67e24a8b",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/development-receipts.jsonl": "094841dc2e5ec11ded5c7ed0421832a0ac70ea3bd3c51e9d343a22d39e06c509",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/development-runs.jsonl": "6fd047db8728e14c02b760733504c4cee57c23bb817e5fd485ebe6cc9d85399f",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/development-runs.jsonl.requests.jsonl": "d67f31f9921b03c52d4c5c89439c7eee9d0fa583542f8518c8845c9fdcf54508",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/heldout-receipts.jsonl": "2ce2e7b250cdf8a92c5782631723e1187465fd25b600ce775f1b4323185f8abd",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/heldout-runs.jsonl": "7f2bb446f938a3249988d1906310a4f633bea2b5f61903f08269df5fe2547143",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/heldout-runs.jsonl.requests.jsonl": "12511356a40e7e8ca1de859ab6ea99fa674bb73d396ba371676e74f1fe68634e",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/roles-receipts.jsonl": "38302e19878956b9937f130251a10010c5564d221b3e418d91ae43bb4921a04a",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/roles-runs.jsonl": "46dfe8a7bd7ecef72b02cc2f5e85231c5e1199b7eecad0ff0db297842b153b3e",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/1000/roles-runs.jsonl.requests.jsonl": "a3904ccf5ea315d4fb40288991493a2046e8fce9ddbbf92ea20025b9f7f2b0f7",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/development-receipts.jsonl": "cca0e33034a3e375b92d367f8ed016ff7f8064c59369b0606ab05d53a7d57a60",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/development-runs.jsonl": "dc728b243d2c37860d08149aa7bc762fcf33583ae53e80c1992ddbf78dd00726",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/development-runs.jsonl.requests.jsonl": "954bf4fceb59d6983cc92d75a09d8c91874bca55fa676acdb14f4c6d1622b878",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/heldout-receipts.jsonl": "1d8d30d92d18e8edc262bafa8e9e605f532e8ed3777b66494314bcf842e442c5",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/heldout-runs.jsonl": "82c8fc42a7951f15c254ca4a89fc2d77675c74faa96e085f770840e2a58e5201",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/heldout-runs.jsonl.requests.jsonl": "c8bd0598b8946921d6faaefbf3e966ae8c8ae8c78578e2f43f94e4fae488c531",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/roles-receipts.jsonl": "91304f1d81675f07be29b2608a73377921acf7e55b09e122a398826293242264",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/roles-runs.jsonl": "40f65a456557f50f8c8be7bb2fb402b18f8949ec6d967c9e5287fc7597180928",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/2000/roles-runs.jsonl.requests.jsonl": "8f67429dbc707c7a213f86d3bb1c6f9f968eafeeaa051b7a68ea7824fc31fa05",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/development-receipts.jsonl": "7676f05a2df36333aba20c4c92d502112215f76750e28eeda66cca3d0906b2f6",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/development-runs.jsonl": "26a4fe74756d12068bf08a3c768d56c7dfedc8804a8911933a208ba36e4372c2",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/development-runs.jsonl.requests.jsonl": "7566aa2118203d078060660fe09bafd0d5b2d3a29ce155ec5f2c4d36aa51219f",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/heldout-receipts.jsonl": "c360801b25257afde7efc93e2e13e1cc427111a5cb67225344ac173d3521777a",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/heldout-runs.jsonl": "c0b2834c131109c0a3f7624791c01e7ab99732dba0e1d35b076481f2656c296f",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/heldout-runs.jsonl.requests.jsonl": "8aa8d21bd6572e7642208801828dce2b7c2907ab7cd38b891dd63205bf5b7fd9",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/roles-receipts.jsonl": "f393104641aad44e396e463cbf7d95c88c65c280ced91a3990cc79a0a0e62e5b",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/roles-runs.jsonl": "f4b2acc3496ef86ff77097920096e277bef217140a873ee7aeb2ea524f7307b5",
+    "search-relevance-eval/threshold/.local/execution/NEW/38872/60/roles-runs.jsonl.requests.jsonl": "0a14a8de7678bbdee940508110633d1695ef2ec616c279ceea364f54d80f0d09",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/development-receipts.jsonl": "77d336120c91983ae91e7d3bc1fa560b46e6e0bfd7069c296908a8a3fd58faac",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/development-runs.jsonl": "44eaa3b699c1071a5c160d734c1ba6d8bcd477fd984dcb2b5195ad3118ae32a5",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/development-runs.jsonl.requests.jsonl": "78f60ccaa6888270c5e8e65b3bed722ca099d93689a99b14d9db36f766df56a3",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/heldout-receipts.jsonl": "3c144a9e285c6ffbaa233d588f9f59528be8cf47063519c75a015f2a1edfe0e9",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/heldout-runs.jsonl": "6e13544884ed2a1b95cf671667753d7fcf88458c06b55f2d6b91302e6b4ab04d",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/heldout-runs.jsonl.requests.jsonl": "1bad67ee0419a8ff9f497dc8cfb7eba34535af26efa01c411caf6d8881d8ff17",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/roles-receipts.jsonl": "89cc277ce624e5ee09901bb9dfbe9b628064b36d78745fb8ae681d896405a4de",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/roles-runs.jsonl": "5b3effa78279073edfc23ed8548ab5c5c64d220b4a646d17e2e6f96e43bc1750",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/1000/roles-runs.jsonl.requests.jsonl": "45b966ac05955d5cf025fb778421c9c5f1cee2d75bacce1cfd151a7e6246b88d",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/development-receipts.jsonl": "03f6848d2ab77e383466994f97b8d7f714d74a014a22978678898ecc028ee0a0",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/development-runs.jsonl": "305695b19fe8bcae976fd8d9d2dbd00db62fe7d8597c0f4fea05f55bf600540c",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/development-runs.jsonl.requests.jsonl": "752bc5fc25f8dbaba379f0daefc9691f8098d47562d8b54ccb256d45d1acf676",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/heldout-receipts.jsonl": "47ecd833da6c4e189a8c5a5ea627fba7843de5fc9908a4ba0d56329488f774ff",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/heldout-runs.jsonl": "e9eebf5a2dd970e0dad3ace7e9c17a88b0039ada05fb817269a20ef1117ceb90",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/heldout-runs.jsonl.requests.jsonl": "9570878b22ea66687970c0474137b1a451cbae94d47405352ac40c966ba738b5",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/roles-receipts.jsonl": "c864379aee731d28283ccb8cd35a83ccd983099c059f5ea8b4ec949affe3c187",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/roles-runs.jsonl": "3f3460e835cd3ef1ec113a19f1532718357d59b1535f41e8c92490f2da2c0b58",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/2000/roles-runs.jsonl.requests.jsonl": "5488c7663e35af8484d74b96fbdcb8b31e3d59fa13d2f2d2a138c8bcd3b340e6",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/development-receipts.jsonl": "850bc2d1776290dec26228717dab190816bc93eb4fa27e1381c3bef6438dc876",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/development-runs.jsonl": "cd9fcb2688a4a65bd09f6de7759b0c7c9e1d128c4c5a7195956ae2499e103d48",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/development-runs.jsonl.requests.jsonl": "a4c0d20584c5b2fa752aae9d29e5ea00838a21bd86466b6ac1d5910c62f40cf4",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/heldout-receipts.jsonl": "3d42d409f90d11b624d4506cbc70baec14136697f6c131e4fa306af7d37a8883",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/heldout-runs.jsonl": "ca016ca7b00a01f442e3da3d04ab7faee1a442456f3bab30c69e5125e547cba9",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/heldout-runs.jsonl.requests.jsonl": "738e6d1e2128de4f3d08ac41c3e41498b6d623ed4945a476c2f4b230283560d9",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/roles-receipts.jsonl": "c2b8d7d5b6aec44f4f6d1422c93ab96de481543cdc47ed6eed355800598e8bff",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/roles-runs.jsonl": "0d46470459ef56e534c125e2325b4fcec5f1bb193005aa9e89a6bd52245aca8f",
+    "search-relevance-eval/threshold/.local/execution/NEW/38873/60/roles-runs.jsonl.requests.jsonl": "1ce47cc9da23835fa48678d86edb3d8d23354722b6448e9b40e1721244d1bc84",
+    "search-relevance-eval/threshold/.local/execution/REAL/3901/494/heldout-receipts.jsonl": "35b51d8c34311eaf155b38420f4eee2b456cd648b94ea3f1ca2ae5ac86204d58",
+    "search-relevance-eval/threshold/.local/execution/REAL/3901/494/heldout-runs.jsonl": "585e1023d77f03844b3239d8e636484e60c274582af327edfa37eca794f669a6",
+    "search-relevance-eval/threshold/.local/execution/REAL/3901/494/heldout-runs.jsonl.requests.jsonl": "e4fbbc65f76d962f1cbf2215fc50ed64a29d5d2617adf57f924665e228fecc43",
+    "search-relevance-eval/threshold/.local/execution/complete-development.json": "5a808a822442d39ebccdb92f568c6f309a15a53002b26f3551c4d77412671a95",
+    "search-relevance-eval/threshold/.local/execution/complete-heldout.json": "cef69fdb750b294dff439c7de76dcbfab2ad3db138f95fa87b98719da0d7552c",
+    "search-relevance-eval/threshold/.local/execution/complete-roles.json": "47e760b10e853d67c8743e118196ac62da95c011fca22cf53b317b9ffe744f31",
+    "search-relevance-eval/threshold/.local/execution/geometry/complete.json": "4cef81039ca241be543626b495efa507cae1942880e4446b27f950179f7c1f37",
+    "search-relevance-eval/threshold/.local/execution/geometry/eligibility.jsonl": "23edf86c66bcefc1b92ded07f22a2278f8fd588ac5ee945a4a99c9563c1056a9",
+    "search-relevance-eval/threshold/.local/execution/geometry/native.jsonl": "f98902b9146ffac5aeb3dc723afb9707ac7caaf88d934bfadce121d8e736a8c5",
+    "search-relevance-eval/threshold/.local/execution/geometry/vector-inventory.jsonl": "1b880ec73fe72f40420af173dfc4ba3de3c5e0bf3dd3e83fa3748e3c5b9f62a4",
+    "search-relevance-eval/threshold/.local/execution/preparation.json": "97c246500540195874b9a81f79255b39e201292d96c1de27ba4ad26d1974f08e",
+    "search-relevance-eval/threshold/.local/execution/release-heldout.json": "9b9f32597b1131583ae1775f4fb411574b310d61bbe2a872160457d0bdd090f3",
+    "search-relevance-eval/threshold/.local/expanded-v2/manifest.json": "17f59f0cf0730f092a0dfd4b71d76356937db62aec2c41322b133fbf701f0e5e",
+    "search-relevance-eval/threshold/analysis-bindings.json": "8a105328c7756c9da08e38c442d8e333f261466217afd9f47e1f1ea41e7a39bc",
+    "search-relevance-eval/threshold/decision-gates.json": "720b93e4461b46c38e2bff26f1fe60de6b4b76c88d26c39af89924a19c8b093f",
+    "search-relevance-eval/threshold/development-decision.json": "eb8c2d917843c84560b23b48ee4015f6b36c463fcbdc38bc2cf1ae7f03e068ac",
+    "search-relevance-eval/threshold/diagnostic-execution-policy.json": "9e8ef53a8414ffc1d1271c25c23a0890dcf25621a65c3d76e97bd45b6c44a771",
+    "search-relevance-eval/threshold/diagnostic-validation-manifest.json": "8c7ac3766bead6be33493fcaf49480cc66e2dd74333fe772fff6a44811384b29",
+    "search-relevance-eval/threshold/execution-inputs.json": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+    "search-relevance-eval/threshold/generation-spec.json": "c3db25ab0cccf20ba1cb15829175e73316568fdb3174a5a920a30bedfbaf517d",
+    "search-relevance-eval/threshold/intents.jsonl": "7c2ed0e8a17d5502f5dc5c2b25bb43921efa64a95785154b78581e1482e19d61",
+    "search-relevance-eval/threshold/query-spec.jsonl": "803bb51de8ca57fc4a5d95915f52f060a6d8eaacd99d97aee9593afc20cf18eb",
+    "search-relevance-eval/threshold/results/correctness-attempt2.json": "f03be94931011aa43aad5e58c892f440a2f6be585671c713318beb5b3ac78188",
+    "search-relevance-eval/threshold/results/dsl-source-proof.json": "e8f6ca24aa45b245e0881294e7e920d91f844e936441de5d59c63aca3b4c0a56",
+    "search-relevance-eval/threshold/results/runtime-source-proof.json": "3afe0c95675af142504578ae3916dac9e0f5c592fa771109964cba7eec8aaded",
+    "search-relevance-eval/threshold/results/timing-capture-completion.json": "d513a1697237dfd0046d8778fb6476f137455aeed13c159ef5e3eecdc5694e33",
+    "search-relevance-eval/threshold/spec-freeze.json": "d8746926b03e4e94e78c7d777d9868db0ffb997aa4d99c01d2551224ded0c84e",
+    "search-relevance-eval/threshold/uncertainty-mask.json": "1825875fd6c9a66f5b69c965dbfd0a5b67f3dac851cfbf66fd9230675bdeffdb"
+  },
+  "supplemental_independent_checks": {
+    "ledger_closure_path": "search-relevance-eval/threshold/results/independent-ledger-closure.json",
+    "keyword_source_check_path": "search-relevance-eval/threshold/results/independent-keyword-source-check.json",
+    "supplemental_comparison_path": "search-relevance-eval/threshold/results/independent-supplemental-comparison.json",
+    "all_3024_keyword_sets_unchanged_across_thresholds": true,
+    "scoped_U_suppressed_rows_with_no_U_returned_top10": 24,
+    "unreturned_U_example": {"seed": 38872, "size": 1000, "query_id": "t03p3", "system": "ms_044", "unreturned_U_ids": ["t013", "t014"]},
+    "pre_embedding_release_commit": "aeb4badd23b22cf138d470cbf8e18e3630539641",
+    "pre_embedding_release_commit_utc": "2026-11-07T23:55:57Z",
+    "pre_held_NONE_commit": "5f23827fb93ba48e13e31bacdb828f15460bf0ab",
+    "pre_held_NONE_commit_utc": "2026-11-08T02:58:24Z"
+  },
+  "status": "raw_checks_complete_pending_analyst_comparison"
+}

@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "compared_rows": 42,
+  "fields": [
+    "known_grade0_new_ID_set_top10",
+    "original_query_U_count"
+  ],
+  "errors": [],
+  "forced_recommendation": "D",
+  "promotion_allowed": false,
+  "source_sha256": "baa139c4651653db1928c24b396b85771719890c2fdd8fd874f3ad02f6bc2598",
+  "supplemental_csv_sha256": "e9f0fa1cbce43fd3355a8d356814d6f885ab290ee275c17a7b129b2f989bbe76",
+  "note": "Known-grade0 observations on U-affected legacy queries do not establish exhaustive FP point truth; REAL remains unjudged."
+}

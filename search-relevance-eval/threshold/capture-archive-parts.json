@@ -1,0 +1,32 @@
+{
+  "archive_bytes": 149751500,
+  "archive_sha256": "1b9baeafe87c2e02a3b63fb4e713eeff50c029c68bcf77718d5549990909fba4",
+  "assembly": "Concatenate parts in listed order into a NEW regular file; no extraction until full archive SHA and member manifest are verified.",
+  "created_utc": "2026-11-08T07:16:43.058455+00:00",
+  "forced_recommendation": "D",
+  "parts": [
+    {
+      "bytes": 41943040,
+      "path": "search-relevance-eval/threshold/capture-archive-parts/frozen-execution-bundle.tar.xz.part001",
+      "sha256": "32daa9960908196c3bb3181fa2c313af4bb1e2cde99fdbcd79aac17b1240257f"
+    },
+    {
+      "bytes": 41943040,
+      "path": "search-relevance-eval/threshold/capture-archive-parts/frozen-execution-bundle.tar.xz.part002",
+      "sha256": "de51ee577aba86e3610ee023a08532e74871ebeda145c7d64938388afae633ae"
+    },
+    {
+      "bytes": 41943040,
+      "path": "search-relevance-eval/threshold/capture-archive-parts/frozen-execution-bundle.tar.xz.part003",
+      "sha256": "53924ba700d49ec0b5930ef7203b8576fdf4a044c0f9198d7a0bfaf27eafd76b"
+    },
+    {
+      "bytes": 23922380,
+      "path": "search-relevance-eval/threshold/capture-archive-parts/frozen-execution-bundle.tar.xz.part004",
+      "sha256": "440ff2b2f1c46e38947e84cc26dcb380a6295e9ec9d692725a66a484583cdcb5"
+    }
+  ],
+  "promotion_allowed": false,
+  "purpose": "Exact raw capture in sub50MiB Git files, not a metric/report substitute.",
+  "schema_version": 1
+}

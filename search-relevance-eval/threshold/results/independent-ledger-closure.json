@@ -1,0 +1,235 @@
+{
+  "additional_all_after_NONE": true,
+  "additional_diagnostic_receipts": 1920,
+  "additional_eligibility_rows": 1680,
+  "additional_membership_source_sha256": "baa139c4651653db1928c24b396b85771719890c2fdd8fd874f3ad02f6bc2598",
+  "additional_primary_subset_failures": 0,
+  "closed_case_phases": [
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "closed_runs": 104,
+      "cohort": "NEW",
+      "phase": "development",
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "closed_runs": 296,
+      "cohort": "NEW",
+      "phase": "heldout",
+      "seed": 38873,
+      "size": 2000
+    },
+    {
+      "closed_runs": 600,
+      "cohort": "LEGACY",
+      "phase": "heldout",
+      "seed": 39031,
+      "size": 180
+    },
+    {
+      "closed_runs": 600,
+      "cohort": "LEGACY",
+      "phase": "heldout",
+      "seed": 39032,
+      "size": 180
+    },
+    {
+      "closed_runs": 600,
+      "cohort": "LEGACY",
+      "phase": "heldout",
+      "seed": 39033,
+      "size": 180
+    },
+    {
+      "closed_runs": 120,
+      "cohort": "REAL",
+      "phase": "heldout",
+      "seed": 3901,
+      "size": 494
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38871,
+      "size": 60
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38871,
+      "size": 1000
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38871,
+      "size": 2000
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38872,
+      "size": 60
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38872,
+      "size": 1000
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38872,
+      "size": 2000
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38873,
+      "size": 60
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38873,
+      "size": 1000
+    },
+    {
+      "closed_runs": 100,
+      "cohort": "NEW",
+      "phase": "roles",
+      "seed": 38873,
+      "size": 2000
+    }
+  ],
+  "closed_run_latency_and_final_ranking_pairs": 6420,
+  "concurrent_interval_overlap_count": 0,
+  "forced_recommendation": "D",
+  "native_full_ID_counts_each_group": true,
+  "native_pair_duplicates": 0,
+  "native_unique_query_case_groups": 432,
+  "promotion_allowed": false,
+  "status": "passed",
+  "timed_requests": 70620
+}
