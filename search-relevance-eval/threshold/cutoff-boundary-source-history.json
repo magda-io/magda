@@ -1,0 +1,22 @@
+{
+  "archive": "cutoff-boundary-source-history.tar.gz",
+  "members": [
+    {
+      "bytes": 11320,
+      "name": "attempt1-cutoff_boundary.py",
+      "sha256": "ec3546bac7e1a86e2622db9a8108985e1a98707e63248187a1d1f59d74777262"
+    },
+    {
+      "bytes": 14557,
+      "name": "attempt2-cutoff_boundary.py",
+      "sha256": "61152b8f1a22454d3963ed5952ecd0907a801e6e56228c242fc201c33f90f1ee"
+    },
+    {
+      "bytes": 537,
+      "name": "source-history.json",
+      "sha256": "fddc3c65ae3839888830b1bbbe6417e55bdb61e84b133fe851cd7a30da679abe"
+    }
+  ],
+  "note": "First execution source reconstructed from captured tool-write buffer only after exact SHA matched its pre-existing receipt; no control rerun or expected-admission adjustment. Original first unit-test bytes unavailable and explicitly not asserted.",
+  "sha256": "f2fa9504a24b83da1d855172ddcd6fa7c64767d33225a9538e3ba4c6db57a803"
+}

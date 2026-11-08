@@ -1,0 +1,51 @@
+{
+  "action": "repair_mapping_observation_guard",
+  "allow_expected_source_dynamic_fields": {
+    "LEGACY": {
+      "contactPoint.email": "string",
+      "contactPoint.name": "string",
+      "issued": "date",
+      "languages": "string_list",
+      "spatial.text": "string"
+    },
+    "NEW": {
+      "landingPage": "string"
+    },
+    "REAL": {
+      "distributions.issued": "date",
+      "distributions.modified": "date",
+      "issued": "date",
+      "landingPage": "string",
+      "languages": "string_list",
+      "modified": "date",
+      "publisher.source": "source_object",
+      "spatial.text": "string"
+    }
+  },
+  "approved_by": "parent-agent",
+  "authorization_scope": "Before first retrieval only: correct a byte-equality observation guard for OpenSearch omission of redundant object type and exact known source-driven unused-field dynamic mappings. Do not alter mappings, source metadata, queries, vectors, profile definitions or existing index contents. Verify every existing first-index source via mget; create only absent remaining12 indices using original installer. Preserve all failures and unexpected mappings; no generic drift exceptions.",
+  "created_utc": "2026-11-08T00:18:21.309678+00:00",
+  "diagnostic_only": true,
+  "forced_recommendation": "D",
+  "installation_failed_log": {
+    "path": "search-relevance-eval/threshold/.local/installation-console.log",
+    "sha256": "4045f713ac6fa570cf990cc207b02fd4fb4ff9fdcab5cac9395ff4d2bce3a032"
+  },
+  "mapping_diff_source": {
+    "path": "search-relevance-eval/threshold/results/initial-installation-mapping-difference.json",
+    "sha256": "e20e64482159e52f3907a81e1858f3e5cf6e22d586161df05ed4d96e12c9c454"
+  },
+  "original_approval_sha256": "d92ee19b616c8d7350559cd8184b3a50354da43b2c1c7d6fa590bd5d6bd29839",
+  "original_core_code_unchanged": true,
+  "original_inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "production_mapping_unchanged": true,
+  "promotion_allowed": false,
+  "recovery_code_sha256": "d1de23d7b7c74a47cd62980bbbce32a6e49abbb4076e1c596e3dd6c876fbf8a6",
+  "reuse_existing_index": "magda-relevance-eval-threshold3887-new-38871-n60",
+  "schema_version": 1,
+  "source_documents_queries_vectors_unchanged": true,
+  "source_extension_inventory": {
+    "path": "search-relevance-eval/threshold/results/prepared-mapping-extension-inventory.json",
+    "sha256": "0bf8cdc8e89ea88457a57c05f096b4b9230d36478526d84fbaa9062f9af6e9c7"
+  }
+}

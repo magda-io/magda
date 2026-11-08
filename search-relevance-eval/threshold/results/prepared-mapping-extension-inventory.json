@@ -1,0 +1,521 @@
+{
+  "cases": [
+    {
+      "cohort": "NEW",
+      "seed": 38871,
+      "size": 60,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38871,
+      "size": 1000,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38871,
+      "size": 2000,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38872,
+      "size": 60,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38872,
+      "size": 1000,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38872,
+      "size": 2000,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38873,
+      "size": 60,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38873,
+      "size": 1000,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38873,
+      "size": 2000,
+      "unmapped_prepared_fields": {
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://reserved.invalid/collections/t001",
+            "https://reserved.invalid/collections/t002",
+            "https://reserved.invalid/collections/t003"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "LEGACY",
+      "seed": 39031,
+      "size": 180,
+      "unmapped_prepared_fields": {
+        "$.contactPoint.email": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "data@synthetic.invalid"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.contactPoint.name": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "Synthetic institutional data desk"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.issued": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "2022-05-01T00:00:00Z",
+            "2023-10-01T00:00:00Z",
+            "2025-03-01T00:00:00Z"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.languages": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "en"
+          ],
+          "object_fields": {},
+          "types": [
+            "list"
+          ]
+        },
+        "$.spatial.text": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "Fictional study location; no geographic preference"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "LEGACY",
+      "seed": 39032,
+      "size": 180,
+      "unmapped_prepared_fields": {
+        "$.contactPoint.email": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "data@synthetic.invalid"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.contactPoint.name": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "Synthetic institutional data desk"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.issued": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "2022-07-01T00:00:00Z",
+            "2023-06-01T00:00:00Z",
+            "2021-05-01T00:00:00Z"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.languages": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "en"
+          ],
+          "object_fields": {},
+          "types": [
+            "list"
+          ]
+        },
+        "$.spatial.text": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "Fictional study location; no geographic preference"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "LEGACY",
+      "seed": 39033,
+      "size": 180,
+      "unmapped_prepared_fields": {
+        "$.contactPoint.email": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "data@synthetic.invalid"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.contactPoint.name": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "Synthetic institutional data desk"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.issued": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "2024-07-01T00:00:00Z",
+            "2025-10-01T00:00:00Z",
+            "2023-01-01T00:00:00Z"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.languages": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "en"
+          ],
+          "object_fields": {},
+          "types": [
+            "list"
+          ]
+        },
+        "$.spatial.text": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "Fictional study location; no geographic preference"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    },
+    {
+      "cohort": "REAL",
+      "seed": 3901,
+      "size": 494,
+      "unmapped_prepared_fields": {
+        "$.distributions.issued": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "2025-03-06T10:46:19Z",
+            "2026-09-21T03:42:35Z",
+            "2026-09-21T03:43:40Z"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.distributions.modified": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "2026-09-21T03:42:34Z",
+            "2026-09-21T03:43:39Z",
+            "2024-08-29T00:34:26Z"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.issued": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "2025-03-06T10:46:18Z",
+            "2026-09-21T03:40:38Z",
+            "2016-04-06T06:55:29Z"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.landingPage": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "https://data.aurin.org.au/dataset/3c44a8a9-ccf5-4a90-9fbf-10f1b1e4a9fe",
+            "https://data.gov.au/data/dataset/61428e58-5f16-4564-86ae-490b77bad152",
+            "https://data.qld.gov.au/dataset/40b98318-11ab-4c1b-8e41-9b11a2db6071"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.languages": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "English",
+            "eng",
+            "aus"
+          ],
+          "object_fields": {},
+          "types": [
+            "list"
+          ]
+        },
+        "$.modified": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "2025-03-06T10:46:20Z",
+            "2026-09-21T03:44:02Z",
+            "2024-08-29T02:07:58Z"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        },
+        "$.publisher.source": {
+          "element_types": [
+            "dict"
+          ],
+          "examples": [],
+          "object_fields": {
+            "id": "str",
+            "name": "str",
+            "url": "str"
+          },
+          "types": [
+            "dict"
+          ]
+        },
+        "$.spatial.text": {
+          "element_types": [
+            "str"
+          ],
+          "examples": [
+            "POLYGON((143.5 -44.0, 149.0 -44.0, 149.0 -39.0, 143.5 -39.0, 143.5 -44.0))",
+            "POLYGON((112.00 -44.00, 154.00 -44.00, 154.00 -9.00, 112.00 -9.00, 112.00 -44.00))",
+            "New South Wales (NSW81093)"
+          ],
+          "object_fields": {},
+          "types": [
+            "str"
+          ]
+        }
+      }
+    }
+  ],
+  "created_utc": "2026-11-08T00:12:46.758557+00:00",
+  "source_only_no_retrieval": true
+}

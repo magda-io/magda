@@ -1,0 +1,199 @@
+{
+  "cases": [
+    {
+      "cohort": "NEW",
+      "seed": 38871,
+      "size": 60,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38871,
+      "size": 1000,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38871,
+      "size": 2000,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38872,
+      "size": 60,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38872,
+      "size": 1000,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38872,
+      "size": 2000,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38873,
+      "size": 60,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38873,
+      "size": 1000,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "NEW",
+      "seed": 38873,
+      "size": 2000,
+      "unmapped_source_fields": {
+        "$.landingPage": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "LEGACY",
+      "seed": 39031,
+      "size": 180,
+      "unmapped_source_fields": {
+        "$.contactPoint.email": [
+          "str"
+        ],
+        "$.contactPoint.name": [
+          "str"
+        ],
+        "$.issued": [
+          "str"
+        ],
+        "$.languages": [
+          "list"
+        ],
+        "$.spatial.text": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "LEGACY",
+      "seed": 39032,
+      "size": 180,
+      "unmapped_source_fields": {
+        "$.contactPoint.email": [
+          "str"
+        ],
+        "$.contactPoint.name": [
+          "str"
+        ],
+        "$.issued": [
+          "str"
+        ],
+        "$.languages": [
+          "list"
+        ],
+        "$.spatial.text": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "LEGACY",
+      "seed": 39033,
+      "size": 180,
+      "unmapped_source_fields": {
+        "$.contactPoint.email": [
+          "str"
+        ],
+        "$.contactPoint.name": [
+          "str"
+        ],
+        "$.issued": [
+          "str"
+        ],
+        "$.languages": [
+          "list"
+        ],
+        "$.spatial.text": [
+          "str"
+        ]
+      }
+    },
+    {
+      "cohort": "REAL",
+      "seed": 3901,
+      "size": 494,
+      "unmapped_source_fields": {
+        "$.distributions.issued": [
+          "str"
+        ],
+        "$.distributions.modified": [
+          "str"
+        ],
+        "$.distributions.score": [
+          "float"
+        ],
+        "$.issued": [
+          "str"
+        ],
+        "$.landingPage": [
+          "str"
+        ],
+        "$.languages": [
+          "list"
+        ],
+        "$.modified": [
+          "str"
+        ],
+        "$.publisher.source": [
+          "dict"
+        ],
+        "$.score": [
+          "float"
+        ],
+        "$.spatial.text": [
+          "str"
+        ]
+      }
+    }
+  ],
+  "created_utc": "2026-11-08T00:11:52.900854+00:00",
+  "source_only_no_retrieval": true
+}
