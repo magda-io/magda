@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-11-08T04:07:47.746959+00:00",
+  "export_completion_sha256": "ed24394f9a9009e47a34f19d746e0e71183a14abd9b361f9ccbb648eee75a7ce",
+  "export_tasks": 117,
+  "exported_files": 351,
+  "inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "keyword_OR_actual_builder_preserved": true,
+  "mapping_observation_recovery_recorded_separately": true,
+  "promotion_allowed": false,
+  "root_boost_50_child_implicit_1_preserved": true,
+  "schema_version": 1,
+  "scope": "Actual Scala uniform7/topk exports and keyword diagnostic structural/config/source closure; no promotion or strict fixture validation.",
+  "source_checker_sha256": "f15ee1f0dedcc673e455333dba664e4b8608591f627ff70d1163ab5b717b3cc4",
+  "source_mapping_unchanged": true,
+  "status": "passed",
+  "threshold_pairs_only_six_numeric_min_score_leaves": true
+}

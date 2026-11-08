@@ -1,0 +1,16 @@
+{
+  "actual_pipeline_definition_sha256": "3477e80111667b6eeb6205df929cf7e7adabcef1aee04b234252aa2fcb849450",
+  "closed_pipeline_parity_report_sha256": "f03be94931011aa43aad5e58c892f440a2f6be585671c713318beb5b3ac78188",
+  "created_utc": "2026-11-08T04:07:47.746959+00:00",
+  "inclusive_boundary_control_passed": false,
+  "independent_upstream_model_revision_verified": false,
+  "inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "promotion_allowed": false,
+  "runtime_receipt_sha256": "c11ce0eb33d94dcf65dc49fc2d80975e8ca5b3611efe1e4ce5650cc63e32bb13",
+  "schema_version": 1,
+  "scope": "Pinned runtime/model/vector source identity and unchanged existing pipeline definition only; not a relevance, fullOPA or inclusive-boundary pass.",
+  "source8_production_files_match_baseline": true,
+  "status": "passed",
+  "supplementary_strict_validation_passed": false,
+  "vector_verification_sha256": "514788e8ae66f6dd4f2234877ecfe7833d0e31ced697c013a39b87d0d0b071dc"
+}

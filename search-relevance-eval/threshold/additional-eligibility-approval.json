@@ -1,0 +1,29 @@
+{
+  "action": "collect_all_inherited_eligibility",
+  "approved_by": "parent-agent",
+  "authorization_scope": "Only the publicly registered240 whole inherited taskcases: actual keyword-only plus7fullhybrid collectors, no model/primary timing/ranking modifications, no label invention, REAL unjudged, legacy12U unchanged. Preserve approximate-window discrepancies and raw errors; no retries/overwrites.",
+  "code_sha256": "2b5297f31c074f523695db825c885c4b6772f22723134ccda33375a484cab7e0",
+  "created_utc": "2026-11-08T04:21:48.516533+00:00",
+  "diagnostic_only": true,
+  "execution_approval_sha256": "d92ee19b616c8d7350559cd8184b3a50354da43b2c1c7d6fa590bd5d6bd29839",
+  "execution_inputs_sha256": "65ccfff999b87d6f91cee561c71a96e5c84c9bc260dfc4834544015260702ad8",
+  "fixed_cohorts": [
+    "LEGACY",
+    "REAL"
+  ],
+  "forced_recommendation": "D",
+  "original_geometry_completion_sha256": "4cef81039ca241be543626b495efa507cae1942880e4446b27f950179f7c1f37",
+  "profiles": [
+    0.5,
+    0.48,
+    0.46,
+    0.45,
+    0.44,
+    0.42,
+    0.4
+  ],
+  "promotion_allowed": false,
+  "query_selection": "all_frozen_queries",
+  "registration_sha256": "4a74643de7d6945c52ef0c8afccd2c8c633392610a0fcc8aa2a56132b0ec3c5d",
+  "schema_version": 1
+}
