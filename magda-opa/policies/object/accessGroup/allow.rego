@@ -11,7 +11,7 @@ default allow = false
 # Access groups are authorised with typed `object/accessGroup/*` operations (MAGDA v8):
 #
 # - `object/accessGroup/create`: create a group with the access group API (`POST /v0/auth/accessGroups`).
-#   The decision input is the group to be created, as `input.accessGroup`.
+#   The decision input is the validated group to be created, as `input.object.accessGroup`.
 # - `object/accessGroup/read`: read a group record. Group members get this as a pre-authorised
 #   permission, listed in the group record's `access-control.preAuthorisedPermissionIds`.
 #   Holding any `object/accessGroup/read` permission also shows the access group UI.
@@ -38,28 +38,45 @@ allow {
 }
 
 # --- create
+#
+# The access group API makes this decision on the validated group to be created (with `ownerId` defaulted
+# to the caller), sent as `input.object.accessGroup`.
 
 verifyCreatePermission {
 	hasNoConstraintPermission("object/accessGroup/create")
 }
 
+# Constrained grants create only record groups, without Agent Skill share keywords: Agent Skill share
+# groups are created by Agent Services.
+constrainedCreateAllowed {
+	input.object.accessGroup.resourceUri == "object/record"
+	not hasShareKeyword
+}
+
+hasShareKeyword {
+	startswith(input.object.accessGroup.keywords[_], "agent-skill-share-")
+}
+
 # With an ownership constraint, the new group must be owned by the user.
 verifyCreatePermission {
 	hasOwnerConstraintPermission("object/accessGroup/create")
-	input.accessGroup.ownerId = input.user.id
+	constrainedCreateAllowed
+	input.object.accessGroup.ownerId = input.user.id
 }
 
 # With an org unit constraint, the new group must belong to an org unit the user manages.
 verifyCreatePermission {
 	hasOrgUnitConstraintPermission("object/accessGroup/create")
-	input.accessGroup.orgUnitId = input.user.managingOrgUnitIds[_]
+	constrainedCreateAllowed
+	input.object.accessGroup.orgUnitId = input.user.managingOrgUnitIds[_]
 }
 
 # With both constraints, both must hold.
 verifyCreatePermission {
 	hasPermissionWithBothOwnerOrgUnitConstraint("object/accessGroup/create")
-	input.accessGroup.ownerId = input.user.id
-	input.accessGroup.orgUnitId = input.user.managingOrgUnitIds[_]
+	constrainedCreateAllowed
+	input.object.accessGroup.ownerId = input.user.id
+	input.object.accessGroup.orgUnitId = input.user.managingOrgUnitIds[_]
 }
 
 # --- read, update and delete of an existing group record

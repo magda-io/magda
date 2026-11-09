@@ -152,11 +152,12 @@ test_generic_record_grant_does_not_authorise_update {
 	not decide("object/accessGroup/update", [generic], own_group)
 }
 
+# the access group API sends the validated group to be created as `input.object.accessGroup`
 create(permissions, group) {
 	allow with input as {
 		"operationUri": "object/accessGroup/create",
 		"user": user(permissions),
-		"accessGroup": group,
+		"object": {"accessGroup": object.union({"resourceUri": "object/record", "keywords": []}, group)},
 	}
 }
 
@@ -178,4 +179,16 @@ test_create_orgunit_constraint_requires_managed_orgunit {
 
 test_create_owner_constraint_does_not_allow_by_orgunit {
 	not create([owner_permission], {"ownerId": other_id, "orgUnitId": org_unit_id})
+}
+
+test_create_owner_constraint_skill_share_group_denied {
+	not create([owner_permission], {"ownerId": user_id, "resourceUri": "object/agentSkill/user"})
+}
+
+test_create_owner_constraint_share_keyword_denied {
+	not create([owner_permission], {"ownerId": user_id, "keywords": ["a", "agent-skill-share-0123abcd"]})
+}
+
+test_create_unconstrained_skill_share_group_allowed {
+	create([unconstrained_permission], {"ownerId": null, "resourceUri": "object/agentSkill/user", "keywords": ["agent-skill-share-0123abcd"]})
 }

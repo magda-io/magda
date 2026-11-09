@@ -6,6 +6,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar.js";
 import fakeArgv from "magda-typescript-common/src/test/fakeArgv.js";
+import buildJwt from "magda-typescript-common/src/session/buildJwt.js";
 import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient.js";
 import mockDatabase from "../mockDatabase.js";
 import Database from "../../Database.js";
@@ -42,6 +43,16 @@ describe("Access Group API Router", function () {
     let deniedOperations: Set<string>;
     // when true, the group's stored role doesn't hold the group's permission
     let roleMismatch: boolean;
+    // when true, the group's control permissions aren't the group's own
+    let controlMismatch: boolean;
+    // record IDs whose `object/record/update` decision is denied
+    let deniedRecordIds: Set<string>;
+    // when true, the caller has no unconstrained `object/accessGroup/update`
+    let notUnconstrained: boolean;
+    // every decision request config, in order
+    let decisionConfigs: any[];
+    // extra records the registry GET mock returns
+    let extraRecords: Record<string, any>;
 
     before(function () {
         nock.disableNetConnect();
@@ -77,6 +88,11 @@ describe("Access Group API Router", function () {
         requestedOperations = [];
         deniedOperations = new Set();
         roleMismatch = false;
+        controlMismatch = false;
+        deniedRecordIds = new Set();
+        notUnconstrained = false;
+        decisionConfigs = [];
+        extraRecords = {};
         db = new mockDatabase();
         db.deleteRole = async () => {};
         let permissionIdCounter = 1;
@@ -122,9 +138,23 @@ describe("Access Group API Router", function () {
                             : [{ id: params[0] }]
                     };
                 }
-                // the add-user check that the stored role holds the group's permission
-                if (/from\s+"?role_permissions"?/i.test(query)) {
+                // the group integrity check: the stored role is the group's member role
+                if (/from\s+roles\s+r\s+join\s+role_permissions/i.test(query)) {
                     return { rows: roleMismatch ? [] : [{ exists: 1 }] };
+                }
+                // the group integrity check: the control permissions are the group's own
+                if (/count\(\*\).*from\s+permissions/is.test(query)) {
+                    const ids = (params.find((p: any) => Array.isArray(p)) ||
+                        []) as string[];
+                    return {
+                        rows: [
+                            {
+                                count: controlMismatch
+                                    ? Math.max(0, ids.length - 1)
+                                    : ids.length
+                            }
+                        ]
+                    };
                 }
                 return { rows: [] as unknown[] };
             }
@@ -202,6 +232,8 @@ describe("Access Group API Router", function () {
                     targetRecord = currentGroupDetails;
                 } else if (recordId === datasetRecordMock.id) {
                     targetRecord = datasetRecordMock;
+                } else if (recordId && extraRecords[recordId]) {
+                    targetRecord = extraRecords[recordId];
                 }
 
                 if (targetRecord) {
@@ -281,9 +313,18 @@ describe("Access Group API Router", function () {
             authDecisionClient: createMockAuthDecisionQueryClient(
                 async (config: any) => {
                     requestedOperations.push(config.operationUri);
-                    return deniedOperations.has(config.operationUri)
-                        ? UnconditionalFalseDecision
-                        : UnconditionalTrueDecision;
+                    decisionConfigs.push(config);
+                    const recordId = config?.input?.object?.record?.id;
+                    const groupId = config?.input?.object?.accessGroup?.id;
+                    if (
+                        deniedOperations.has(config.operationUri) ||
+                        (recordId && deniedRecordIds.has(recordId)) ||
+                        (notUnconstrained &&
+                            groupId === "unconstrained-access-group-check")
+                    ) {
+                        return UnconditionalFalseDecision;
+                    }
+                    return UnconditionalTrueDecision;
                 }
             ),
             registryClient: new AuthorizedRegistryClient({
@@ -704,6 +745,10 @@ describe("Access Group API Router", function () {
                 }
             };
             datasetRecordMock = datasetRecord; // Update the mock dataset record
+            // the listed distributions exist (each is authorised before the write)
+            [distId1, distId2].forEach((id) => {
+                extraRecords[id] = { id, name: id, aspects: {} };
+            });
             let putRecordsAspectBody: any = undefined;
             let mergeParamSeen = false;
             registryScope
@@ -768,6 +813,10 @@ describe("Access Group API Router", function () {
                 }
             };
             datasetRecordMock = datasetRecord; // Update the mock dataset record
+            // the listed distributions exist (each is authorised before the write)
+            [distId1, distId2].forEach((id) => {
+                extraRecords[id] = { id, name: id, aspects: {} };
+            });
             let deleteRecordsAspectArrayItemsBody: any = undefined;
 
             // Update nock to match DELETE /v0/records/aspectArrayItems/access-control
@@ -1350,6 +1399,176 @@ describe("Access Group API Router", function () {
                     (p) => p.resourceUri === "object/record"
                 )
             ).to.have.length(1);
+        });
+    });
+
+    describe("Review fixes: create decision, dataset records, grant widening, group integrity", () => {
+        function useGroup() {
+            currentGroupDetails.id = uuidV4();
+            return currentGroupDetails.id as string;
+        }
+        function distribution(id: string) {
+            extraRecords[id] = {
+                id,
+                name: id,
+                aspects: {
+                    "dcat-distribution-strings": { title: id },
+                    "access-control": { ownerId: "someone-else" }
+                }
+            };
+        }
+
+        it("POST / makes the create decision on the validated group, with ownerId defaulted to the caller", async () => {
+            const callerId = uuidV4();
+            registryScope
+                .post("/records", (body) => {
+                    registryRequestBody = body;
+                    return true;
+                })
+                .reply(200, () => ({ id: registryRequestBody.id }));
+            const res = await request(app)
+                .post("/v0/auth/accessGroups")
+                .set("X-Magda-Session", buildJwt(argv.jwtSecret, callerId))
+                .send({
+                    name: "A group",
+                    resourceUri: "object/record",
+                    keywords: ["a", "a"],
+                    operationUris: ["object/record/read"]
+                });
+            expect(res.status).to.equal(200);
+            const create = decisionConfigs.find(
+                (c) => c.operationUri === "object/accessGroup/create"
+            );
+            expect(create.input.object.accessGroup.ownerId).to.equal(callerId);
+            expect(create.input.object.accessGroup.keywords).to.deep.equal([
+                "a"
+            ]);
+            expect(create.input.object.accessGroup.resourceUri).to.equal(
+                "object/record"
+            );
+        });
+
+        silenceErrorLogs(() => {
+            it("POST / validates before the create decision", async () => {
+                const res = await request(app)
+                    .post("/v0/auth/accessGroups")
+                    .send({ resourceUri: "object/record" });
+                expect(res.status).to.equal(400);
+                expect(requestedOperations).to.not.include(
+                    "object/accessGroup/create"
+                );
+            });
+
+            it("adding a dataset returns 403 and writes nothing when a listed distribution can't be updated", async () => {
+                const groupId = useGroup();
+                distribution("dist-1");
+                distribution("dist-2");
+                deniedRecordIds.add("dist-2");
+                let written = false;
+                registryScope.put(/.*/).reply(200, () => {
+                    written = true;
+                    return {};
+                });
+                const res = await request(app)
+                    .post(
+                        `/v0/auth/accessGroups/${groupId}/datasets/${datasetRecordMock.id}`
+                    )
+                    .send();
+                expect(res.status).to.equal(403);
+                expect(written).to.be.false;
+            });
+
+            it("adding a dataset returns 400 when a listed distribution doesn't exist", async () => {
+                const groupId = useGroup();
+                distribution("dist-1");
+                const res = await request(app)
+                    .post(
+                        `/v0/auth/accessGroups/${groupId}/datasets/${datasetRecordMock.id}`
+                    )
+                    .send();
+                expect(res.status).to.equal(400);
+            });
+
+            it("removing a dataset returns 403 when a listed distribution can't be updated", async () => {
+                const groupId = useGroup();
+                distribution("dist-1");
+                distribution("dist-2");
+                deniedRecordIds.add("dist-1");
+                const res = await request(app)
+                    .delete(
+                        `/v0/auth/accessGroups/${groupId}/datasets/${datasetRecordMock.id}`
+                    )
+                    .send();
+                expect(res.status).to.equal(403);
+            });
+
+            it("PUT returns 403 when a manager without an unconstrained grant widens operationUris", async () => {
+                const groupId = useGroup();
+                notUnconstrained = true;
+                const res = await request(app)
+                    .put(`/v0/auth/accessGroups/${groupId}`)
+                    .send({
+                        operationUris: [
+                            "object/record/read",
+                            "object/record/delete"
+                        ]
+                    });
+                expect(res.status).to.equal(403);
+            });
+
+            it("PUT returns 403 when a manager without an unconstrained grant sets an Agent Skill share keyword", async () => {
+                const groupId = useGroup();
+                notUnconstrained = true;
+                const res = await request(app)
+                    .put(`/v0/auth/accessGroups/${groupId}`)
+                    .send({ keywords: ["agent-skill-share-0123abcd"] });
+                expect(res.status).to.equal(403);
+            });
+
+            it("remove-user returns 400 when the stored role isn't the group's member role", async () => {
+                const groupId = useGroup();
+                roleMismatch = true;
+                const res = await request(app)
+                    .delete(
+                        `/v0/auth/accessGroups/${groupId}/users/${uuidV4()}`
+                    )
+                    .send();
+                expect(res.status).to.equal(400);
+                expect(
+                    executedQueries.some((q) =>
+                        q.query.toLowerCase().includes("delete from user_roles")
+                    )
+                ).to.be.false;
+            });
+
+            it("delete-group returns 400 when the stored role isn't the group's member role", async () => {
+                const groupId = useGroup();
+                roleMismatch = true;
+                const res = await request(app).delete(
+                    `/v0/auth/accessGroups/${groupId}`
+                );
+                expect(res.status).to.equal(400);
+            });
+
+            it("delete-group returns 400 when a control permission isn't the group's own", async () => {
+                const groupId = useGroup();
+                controlMismatch = true;
+                const res = await request(app).delete(
+                    `/v0/auth/accessGroups/${groupId}`
+                );
+                expect(res.status).to.equal(400);
+            });
+        });
+
+        it("PUT allows narrowing operationUris without an unconstrained grant", async () => {
+            const groupId = useGroup();
+            notUnconstrained = true;
+            registryScope.put(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            const res = await request(app)
+                .put(`/v0/auth/accessGroups/${groupId}`)
+                .send({ operationUris: ["object/record/read"] });
+            expect(res.status).to.not.equal(403);
         });
     });
 });

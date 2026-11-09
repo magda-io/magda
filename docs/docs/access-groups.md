@@ -21,7 +21,7 @@ Administrators can do everything.
 Assign the stock role **Access Group Managers** (see [how to manage users, roles & permissions](https://www.npmjs.com/package/@magda/acs-cmd)).
 Its holders can create groups and manage the groups they own: a new group is owned by its creator.
 
-They can only add datasets they're allowed to update, for example a data steward's own datasets.
+They can only add datasets, and their distributions, that they're allowed to update, for example a data steward's own datasets. They can narrow what their group grants, but not widen it: adding operations needs an administrator.
 
 For other scopes, create a permission on the `object/accessGroup` resource with the operations and constraint
 you need. For example, an org unit constraint to manage the groups in the org units a user manages.
