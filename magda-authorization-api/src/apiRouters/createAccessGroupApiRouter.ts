@@ -867,11 +867,46 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 if (typeof data?.orgUnitId !== "undefined") {
                     if (!isUuid(data.orgUnitId) && data.orgUnitId !== null) {
                         throw new ServerError(
-                            "`ownerId` field needs to be either an UUID or null.",
+                            "`orgUnitId` field needs to be either an UUID or null.",
                             400
                         );
                     }
                     accessControlAspectData["orgUnitId"] = data.orgUnitId;
+                }
+
+                // A new owner or org unit is checked like the create constraints: the caller must be able to
+                // update the group as it would be after the change, too.
+                if (!isEmpty(accessControlAspectData)) {
+                    const original = res?.locals?.originalAccessGroup;
+                    const decision = await authDecisionClient.getAuthDecision(
+                        {
+                            operationUri: "object/accessGroup/update",
+                            input: {
+                                object: {
+                                    accessGroup: {
+                                        id: groupId,
+                                        ...(original?.aspects || {}),
+                                        "access-control": {
+                                            ...(original?.aspects?.[
+                                                "access-control"
+                                            ] || {}),
+                                            ...accessControlAspectData
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        req.get("X-Magda-Session")
+                    );
+                    if (
+                        decision?.hasResidualRules !== false ||
+                        !isTrueEquivalent(decision?.result)
+                    ) {
+                        throw new ServerError(
+                            "you are not permitted to give the access group this owner or org unit.",
+                            403
+                        );
+                    }
                 }
 
                 if (typeof data?.operationUris === "undefined") {
@@ -884,7 +919,14 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             "editTime"
                         ] = new Date().toISOString();
                     }
-                    // no need to update permission operations as it's not supplied
+                    // no need to update permission operations as it's not supplied,
+                    // but keep the group permission's owner in step with the group's
+                    if (typeof data?.ownerId !== "undefined") {
+                        await database.updatePermission(permissionId, {
+                            ownerId: data.ownerId,
+                            editBy: userId ? userId : null
+                        });
+                    }
                     res.json(
                         await updateAccessGroupRecord(
                             groupId,
@@ -939,7 +981,10 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         permissionId,
                         {
                             operationUris: data.operationUris,
-                            ownerId: data?.ownerId ? data.ownerId : null,
+                            // only change the permission's owner when the group's owner changes
+                            ...(typeof data?.ownerId !== "undefined"
+                                ? { ownerId: data.ownerId }
+                                : {}),
                             editBy: userId ? userId : null
                         },
                         client

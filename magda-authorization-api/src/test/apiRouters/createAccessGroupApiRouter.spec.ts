@@ -53,6 +53,10 @@ describe("Access Group API Router", function () {
     let decisionConfigs: any[];
     // extra records the registry GET mock returns
     let extraRecords: Record<string, any>;
+    // owner / org unit IDs the caller can't manage: update decisions on a group with them are denied
+    let unmanagedIds: Set<string>;
+    // calls to database.updatePermission
+    let updatePermissionCalls: { id: string; data: any }[];
 
     before(function () {
         nock.disableNetConnect();
@@ -93,7 +97,13 @@ describe("Access Group API Router", function () {
         notUnconstrained = false;
         decisionConfigs = [];
         extraRecords = {};
+        unmanagedIds = new Set();
+        updatePermissionCalls = [];
         db = new mockDatabase();
+        db.updatePermission = async (id: string, data: any) => {
+            updatePermissionCalls.push({ id, data });
+            return { id };
+        };
         db.deleteRole = async () => {};
         let permissionIdCounter = 1;
         db.setDbPool({
@@ -316,6 +326,16 @@ describe("Access Group API Router", function () {
                     decisionConfigs.push(config);
                     const recordId = config?.input?.object?.record?.id;
                     const groupId = config?.input?.object?.accessGroup?.id;
+                    const groupAccessControl =
+                        config?.input?.object?.accessGroup?.["access-control"];
+                    if (
+                        config.operationUri === "object/accessGroup/update" &&
+                        groupAccessControl &&
+                        (unmanagedIds.has(groupAccessControl.ownerId) ||
+                            unmanagedIds.has(groupAccessControl.orgUnitId))
+                    ) {
+                        return UnconditionalFalseDecision;
+                    }
                     if (
                         deniedOperations.has(config.operationUri) ||
                         (recordId && deniedRecordIds.has(recordId)) ||
@@ -1569,6 +1589,85 @@ describe("Access Group API Router", function () {
                 .put(`/v0/auth/accessGroups/${groupId}`)
                 .send({ operationUris: ["object/record/read"] });
             expect(res.status).to.not.equal(403);
+        });
+    });
+
+    describe("Review follow-ups: proposed state on update, permission owner", () => {
+        function useGroup(ownerId: string | null = uuidV4()) {
+            currentGroupDetails.id = uuidV4();
+            currentGroupDetails.aspects["access-control"].ownerId = ownerId;
+            return currentGroupDetails.id as string;
+        }
+
+        silenceErrorLogs(() => {
+            it("PUT returns 403 when handing the group to an owner the caller can't manage", async () => {
+                const groupId = useGroup();
+                const otherUser = uuidV4();
+                unmanagedIds.add(otherUser);
+                let written = false;
+                registryScope.put(/.*/).reply(200, () => {
+                    written = true;
+                    return {};
+                });
+                const res = await request(app)
+                    .put(`/v0/auth/accessGroups/${groupId}`)
+                    .send({ ownerId: otherUser });
+                expect(res.status).to.equal(403);
+                expect(written).to.be.false;
+            });
+
+            it("PUT returns 403 when moving the group to an org unit the caller can't manage", async () => {
+                const groupId = useGroup();
+                const otherUnit = uuidV4();
+                unmanagedIds.add(otherUnit);
+                const res = await request(app)
+                    .put(`/v0/auth/accessGroups/${groupId}`)
+                    .send({ orgUnitId: otherUnit });
+                expect(res.status).to.equal(403);
+            });
+        });
+
+        it("PUT checks the proposed owner and org unit against object/accessGroup/update", async () => {
+            const groupId = useGroup();
+            const newUnit = uuidV4();
+            registryScope.put(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            await request(app)
+                .put(`/v0/auth/accessGroups/${groupId}`)
+                .send({ orgUnitId: newUnit });
+            const proposed = decisionConfigs.find(
+                (c) =>
+                    c.operationUri === "object/accessGroup/update" &&
+                    c.input?.object?.accessGroup?.["access-control"]
+                        ?.orgUnitId === newUnit
+            );
+            expect(proposed).to.not.be.undefined;
+            expect(proposed.input.object.accessGroup.id).to.equal(groupId);
+        });
+
+        it("PUT changing operationUris without ownerId leaves the group permission's owner unchanged", async () => {
+            const groupId = useGroup();
+            registryScope.put(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            await request(app)
+                .put(`/v0/auth/accessGroups/${groupId}`)
+                .send({ operationUris: ["object/record/read"] });
+            expect(updatePermissionCalls).to.have.length(1);
+            expect(updatePermissionCalls[0].data).to.not.have.property(
+                "ownerId"
+            );
+        });
+
+        it("PUT changing ownerId without operationUris also updates the group permission's owner", async () => {
+            const groupId = useGroup();
+            const newOwner = uuidV4();
+            registryScope.put(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            await request(app)
+                .put(`/v0/auth/accessGroups/${groupId}`)
+                .send({ ownerId: newOwner });
+            expect(updatePermissionCalls).to.have.length(1);
+            expect(updatePermissionCalls[0].data.ownerId).to.equal(newOwner);
         });
     });
 });
