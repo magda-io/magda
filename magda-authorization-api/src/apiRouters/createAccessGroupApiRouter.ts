@@ -418,16 +418,16 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             VALUES (${role.id}, ${permissionRecord.id})`.toQuery()
                         );
                     } else {
-                        // this permission allow the user (who're in the group) to be able to read the access group information
-                        // this permission is a `preAuthorised` permission.
-                        // And it will be added to `access-control` aspect, `preAuthorisedPermissionIds` field of the access group that is to be created
-                        // see https://github.com/magda-io/magda/issues/3402
-                        const accessGroupRecordPermissionRecord = await database.createPermission(
+                        // Group members read the group record with this pre-authorised
+                        // `object/accessGroup/read` permission. It's listed in the group
+                        // record's `access-control.preAuthorisedPermissionIds`, so it covers
+                        // this group only. Holding it also shows the access group UI.
+                        const accessGroupReadPermissionRecord = await database.createPermission(
                             {
                                 name: "System managed for access group",
-                                description: `Auto-created access group record permission for access group ${recordId}.`,
-                                resourceUri: "object/record",
-                                operationUris: ["object/record/read"],
+                                description: `Auto-created access group read permission for access group ${recordId}.`,
+                                resourceUri: "object/accessGroup",
+                                operationUris: ["object/accessGroup/read"],
                                 userOwnershipConstraint: false,
                                 orgUnitOwnershipConstraint: false,
                                 preAuthorisedConstraint: true,
@@ -437,47 +437,23 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             client
                         );
 
-                        // this permission currently only used by UI as a short-cut to determine which user has access to access group UI
-                        // Actually access group access is controlled by uri `object/record` see:
-                        // - https://github.com/magda-io/magda/issues/3402
-                        // - https://github.com/magda-io/magda/issues/3269
-                        const accessGroupPermissionRecord = await database.createPermission(
-                            {
-                                name: "System managed for access group",
-                                description: `Auto-created access group UI permission for access group ${recordId}.`,
-                                resourceUri: "object/accessGroup",
-                                operationUris: ["object/accessGroup/read"],
-                                userOwnershipConstraint: false,
-                                orgUnitOwnershipConstraint: false,
-                                preAuthorisedConstraint: false,
-                                createBy: userId ? userId : null,
-                                ownerId: userId ? userId : null
-                            },
-                            client
-                        );
-
-                        // add 3 permissions to the role
                         await client.query(
                             ...sqls`INSERT INTO role_permissions (role_id, permission_id)
                         VALUES 
                         (${role.id}, ${permissionRecord.id}),
-                        (${role.id}, ${accessGroupRecordPermissionRecord.id}),
-                        (${role.id}, ${accessGroupPermissionRecord.id})`.toQuery()
+                        (${role.id}, ${accessGroupReadPermissionRecord.id})`.toQuery()
                         );
 
                         agRecord.aspects[
                             "access-group-details"
                         ].extraControlPermissionIds = [
-                            accessGroupRecordPermissionRecord.id,
-                            accessGroupPermissionRecord.id
+                            accessGroupReadPermissionRecord.id
                         ];
 
-                        // make sure group users have read access to access group information
-                        // `accessGroupRecordPermissionRecord` is a preAuthorised permission tha requires explicit grant.
                         agRecord.aspects[
                             "access-control"
                         ].preAuthorisedPermissionIds.push(
-                            accessGroupRecordPermissionRecord.id
+                            accessGroupReadPermissionRecord.id
                         );
                     }
 
@@ -657,7 +633,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:groupId",
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         getUserId(options.jwtSecret),
         async function (req: Request, res: Response) {
             try {
@@ -833,7 +809,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * You can only delete an access group when all resources (e.g. datasets) that are associated with the access group are removed from the access group.
      * Once an access group is deleted, the role & permission that are associated with the access group will be also deleted.
      *
-     * You need `object/record/delete` permission to the access group record in order to access this API.
+     * You need `object/accessGroup/delete` permission to the access group record in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      *
@@ -853,7 +829,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.delete(
         "/:groupId",
         requireAccessGroupUnconditionalPermission(
-            "object/record/delete",
+            "object/accessGroup/delete",
             (req, res, next: Function) => {
                 // reach here indicates the access group record doesn't exist
                 // we will response 200 with {result: false}
@@ -987,7 +963,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *
      * Access group users will all granted access (specified by the access group permission) to all added datasets.
      *
-     * You need `object/record/update` permission to both access group and dataset record in order to access this API.
+     * You need `object/accessGroup/update` permission to the access group, and `object/record/update` permission to the dataset record, in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} datasetId id of the dataset
@@ -1040,7 +1016,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 };
             }
         ),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const recordIds = [] as string[];
@@ -1113,7 +1089,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *
      * Access group users will lost the access (granted by the access group) to the removed dataset.
      *
-     * You need `object/record/update` permission to the access group.
+     * You need `object/accessGroup/update` permission to the access group.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} datasetId id of the dataset
@@ -1134,7 +1110,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.delete(
         "/:groupId/datasets/:datasetId",
         getUserId(options.jwtSecret),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const datasetId = req.params?.datasetId;
@@ -1218,7 +1194,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *
      * Access group users have access (specified by the access group permission) to all datasets in the access group.
      *
-     * You need `object/record/update` permission to the access group record in order to access this API.
+     * You need `object/accessGroup/update` permission to the access group record in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} userId id of the user to be added to the access group
@@ -1239,7 +1215,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.post(
         "/:groupId/users/:userId",
         getUserId(options.jwtSecret),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const userId = req.params?.userId;
@@ -1266,6 +1242,24 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     throw new ServerError(
                         "Cannot locate access group role with id: " + roleId,
                         500
+                    );
+                }
+
+                // Only the group's own member role is ever assigned: it holds the
+                // group's permission.
+                const permissionId =
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]?.["permissionId"];
+                const memberRole = isUuid(permissionId)
+                    ? await pool.query(
+                          ...sqls`SELECT 1 FROM role_permissions WHERE role_id=${roleId} AND permission_id=${permissionId}`.toQuery()
+                      )
+                    : null;
+                if (!memberRole?.rows?.length) {
+                    throw new ServerError(
+                        "The access group's role doesn't match the group.",
+                        400
                     );
                 }
 
@@ -1325,7 +1319,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @api {delete} /v0/auth/accessGroups/:groupId/users/:userId Remove an User from an Access Group
      * @apiDescription Remove an User from an Access Group
      *
-     * You need `object/record/update` permission to the access group record in order to access this API.
+     * You need `object/accessGroup/update` permission to the access group record in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} userId id of the user to be added to the access group
@@ -1346,7 +1340,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.delete(
         "/:groupId/users/:userId",
         getUserId(options.jwtSecret),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const userId = req.params?.userId;
@@ -1496,7 +1490,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth Access Groups
      * @api {get} /v0/auth/accessGroups/:groupId/users Get all matched users in an access group
      * @apiDescription return a list matched users of an access group.
-     * Required `object/record/read` permission to the access group in order to access this API.
+     * Required `object/accessGroup/update` permission to the access group in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (Query String) {number} [offset] The index of the first record in the result set to retrieve.
@@ -1526,7 +1520,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:groupId/users",
-        requireAccessGroupUnconditionalPermission("object/record/read"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         createFetchUsersHandler(false, "Get users in an access group")
     );
 
@@ -1534,7 +1528,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth Access Groups
      * @api {get} /v0/auth/accessGroups/:groupId/users/count Get the count of all matched users in an access group
      * @apiDescription return the count number of all matched users of an access group.
-     * Required `object/record/read` permission to the access group in order to access this API.
+     * Required `object/accessGroup/update` permission to the access group in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
@@ -1557,7 +1551,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:groupId/users/count",
-        requireAccessGroupUnconditionalPermission("object/record/read"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         createFetchUsersHandler(true, "Get user count in an access group")
     );
 

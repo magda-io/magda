@@ -10,7 +10,10 @@ import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/
 import mockDatabase from "../mockDatabase.js";
 import Database from "../../Database.js";
 import createAccessGroupApiRouter from "../../apiRouters/createAccessGroupApiRouter.js";
-import { UnconditionalTrueDecision } from "@magda/typescript-common/dist/opa/AuthDecision.js";
+import {
+    UnconditionalTrueDecision,
+    UnconditionalFalseDecision
+} from "@magda/typescript-common/dist/opa/AuthDecision.js";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import { v4 as uuidV4 } from "uuid";
 
@@ -34,6 +37,11 @@ describe("Access Group API Router", function () {
     let accessControlPatched: boolean; // Added flag
     // users / roles that table lookups should report as missing
     let missingRecordIds: Set<string>;
+    // operation URIs the router asked the auth decision client for, and those to deny
+    let requestedOperations: string[];
+    let deniedOperations: Set<string>;
+    // when true, the group's stored role doesn't hold the group's permission
+    let roleMismatch: boolean;
 
     before(function () {
         nock.disableNetConnect();
@@ -66,6 +74,9 @@ describe("Access Group API Router", function () {
         patchBody = undefined;
         accessControlPatched = false;
         missingRecordIds = new Set();
+        requestedOperations = [];
+        deniedOperations = new Set();
+        roleMismatch = false;
         db = new mockDatabase();
         db.deleteRole = async () => {};
         let permissionIdCounter = 1;
@@ -110,6 +121,10 @@ describe("Access Group API Router", function () {
                             ? []
                             : [{ id: params[0] }]
                     };
+                }
+                // the add-user check that the stored role holds the group's permission
+                if (/from\s+"?role_permissions"?/i.test(query)) {
+                    return { rows: roleMismatch ? [] : [{ exists: 1 }] };
                 }
                 return { rows: [] as unknown[] };
             }
@@ -264,7 +279,12 @@ describe("Access Group API Router", function () {
             jwtSecret: argv.jwtSecret,
             database: (db as unknown) as Database,
             authDecisionClient: createMockAuthDecisionQueryClient(
-                UnconditionalTrueDecision
+                async (config: any) => {
+                    requestedOperations.push(config.operationUri);
+                    return deniedOperations.has(config.operationUri)
+                        ? UnconditionalFalseDecision
+                        : UnconditionalTrueDecision;
+                }
             ),
             registryClient: new AuthorizedRegistryClient({
                 baseUrl: REGISTRY_BASE_URL,
@@ -353,8 +373,7 @@ describe("Access Group API Router", function () {
             expect(agd.permissionId).to.equal("mock-permission-id-1");
             expect(agd.roleId).to.equal("mock-role-id");
             expect(agd.extraControlPermissionIds).to.deep.equal([
-                "mock-permission-id-2",
-                "mock-permission-id-3"
+                "mock-permission-id-2"
             ]);
             const ac = registryRequestBody.aspects["access-control"];
             expect(ac.ownerId).to.equal(reqBody.ownerId);
@@ -363,7 +382,7 @@ describe("Access Group API Router", function () {
             ]);
 
             // Permission assertions
-            expect(createPermissionCalls.length).to.equal(3);
+            expect(createPermissionCalls.length).to.equal(2);
             // 1. Group item permission
             expect(createPermissionCalls[0].resourceUri).to.equal(
                 "object/record"
@@ -372,20 +391,16 @@ describe("Access Group API Router", function () {
                 "object/record/read",
                 "object/record/update"
             ]);
-            // 2. Group record read permission
+            // 2. Members' pre-authorised read of the group record (also shows the UI)
             expect(createPermissionCalls[1].resourceUri).to.equal(
-                "object/record"
-            );
-            expect(createPermissionCalls[1].operationUris).to.deep.equal([
-                "object/record/read"
-            ]);
-            // 3. Group UI access permission
-            expect(createPermissionCalls[2].resourceUri).to.equal(
                 "object/accessGroup"
             );
-            expect(createPermissionCalls[2].operationUris).to.deep.equal([
+            expect(createPermissionCalls[1].operationUris).to.deep.equal([
                 "object/accessGroup/read"
             ]);
+            expect(createPermissionCalls[1].preAuthorisedConstraint).to.equal(
+                true
+            );
 
             // SQL assertions
             const rolesInsertQuery = executedQueries.find((q) =>
@@ -404,9 +419,7 @@ describe("Access Group API Router", function () {
                 "mock-role-id",
                 "mock-permission-id-1",
                 "mock-role-id",
-                "mock-permission-id-2",
-                "mock-role-id",
-                "mock-permission-id-3"
+                "mock-permission-id-2"
             ]);
         });
 
@@ -799,7 +812,8 @@ describe("Access Group API Router", function () {
                 id: groupId,
                 aspects: {
                     "access-group-details": {
-                        roleId: validRoleId
+                        roleId: validRoleId,
+                        permissionId: uuidV4()
                     }
                 }
             };
@@ -855,7 +869,8 @@ describe("Access Group API Router", function () {
                 id: groupId,
                 aspects: {
                     "access-group-details": {
-                        roleId: validRoleId
+                        roleId: validRoleId,
+                        permissionId: uuidV4()
                     }
                 }
             };
@@ -911,7 +926,8 @@ describe("Access Group API Router", function () {
                 id: groupId,
                 aspects: {
                     "access-group-details": {
-                        roleId: validRoleId
+                        roleId: validRoleId,
+                        permissionId: uuidV4()
                     }
                 }
             };
@@ -964,7 +980,8 @@ describe("Access Group API Router", function () {
                 id: groupId,
                 aspects: {
                     "access-group-details": {
-                        roleId: validRoleId
+                        roleId: validRoleId,
+                        permissionId: uuidV4()
                     }
                 }
             };
@@ -1157,6 +1174,182 @@ describe("Access Group API Router", function () {
                     )
                 ).to.equal(false);
             });
+        });
+    });
+
+    describe("Typed access group operations (#3910, #3914)", () => {
+        function useGroup() {
+            currentGroupDetails.id = uuidV4();
+            return currentGroupDetails.id as string;
+        }
+
+        it("GET /:groupId/users requests object/accessGroup/update", async () => {
+            const groupId = useGroup();
+            const res = await request(app).get(
+                `/v0/auth/accessGroups/${groupId}/users`
+            );
+            expect(res.status).to.equal(200);
+            expect(requestedOperations).to.include("object/accessGroup/update");
+            expect(requestedOperations).to.not.include("object/record/read");
+        });
+
+        it("GET /:groupId/users/count requests object/accessGroup/update", async () => {
+            const groupId = useGroup();
+            const res = await request(app).get(
+                `/v0/auth/accessGroups/${groupId}/users/count`
+            );
+            expect(res.status).to.equal(200);
+            expect(requestedOperations).to.include("object/accessGroup/update");
+        });
+
+        silenceErrorLogs(() => {
+            it("returns 403 on the member list for a member who can't update the group", async () => {
+                const groupId = useGroup();
+                deniedOperations.add("object/accessGroup/update");
+                const list = await request(app).get(
+                    `/v0/auth/accessGroups/${groupId}/users`
+                );
+                const count = await request(app).get(
+                    `/v0/auth/accessGroups/${groupId}/users/count`
+                );
+                expect(list.status).to.equal(403);
+                expect(count.status).to.equal(403);
+            });
+
+            it("returns 403 on PUT, DELETE and add-user for a member", async () => {
+                const groupId = useGroup();
+                deniedOperations.add("object/accessGroup/update");
+                deniedOperations.add("object/accessGroup/delete");
+                const put = await request(app)
+                    .put(`/v0/auth/accessGroups/${groupId}`)
+                    .send({ name: "renamed" });
+                const del = await request(app).delete(
+                    `/v0/auth/accessGroups/${groupId}`
+                );
+                const add = await request(app)
+                    .post(`/v0/auth/accessGroups/${groupId}/users/${uuidV4()}`)
+                    .send();
+                expect(put.status).to.equal(403);
+                expect(del.status).to.equal(403);
+                expect(add.status).to.equal(403);
+                expect(
+                    executedQueries.some((q) =>
+                        q.query.toLowerCase().includes("insert into user_roles")
+                    )
+                ).to.be.false;
+            });
+
+            it("POST /:groupId/users/:userId returns 400 when the stored roleId doesn't hold the group's permissionId", async () => {
+                const groupId = useGroup();
+                roleMismatch = true;
+                const res = await request(app)
+                    .post(`/v0/auth/accessGroups/${groupId}/users/${uuidV4()}`)
+                    .send();
+                expect(res.status).to.equal(400);
+                expect(
+                    executedQueries.some((q) =>
+                        q.query.toLowerCase().includes("insert into user_roles")
+                    )
+                ).to.be.false;
+            });
+        });
+
+        it("PUT /:groupId requests object/accessGroup/update", async () => {
+            const groupId = useGroup();
+            registryScope.patch(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            await request(app)
+                .put(`/v0/auth/accessGroups/${groupId}`)
+                .send({ name: "renamed" });
+            expect(requestedOperations).to.include("object/accessGroup/update");
+            expect(requestedOperations).to.not.include("object/record/update");
+        });
+
+        it("DELETE /:groupId requests object/accessGroup/delete", async () => {
+            const groupId = useGroup();
+            registryScope.delete(/.*/).reply(200, { deleted: true });
+            await request(app).delete(`/v0/auth/accessGroups/${groupId}`);
+            expect(requestedOperations).to.include("object/accessGroup/delete");
+            expect(requestedOperations).to.not.include("object/record/delete");
+        });
+
+        it("adding and removing users requests object/accessGroup/update", async () => {
+            const groupId = useGroup();
+            registryScope.put(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            await request(app)
+                .post(`/v0/auth/accessGroups/${groupId}/users/${uuidV4()}`)
+                .send();
+            await request(app)
+                .delete(`/v0/auth/accessGroups/${groupId}/users/${uuidV4()}`)
+                .send();
+            expect(
+                requestedOperations.filter(
+                    (op) => op === "object/accessGroup/update"
+                ).length
+            ).to.be.at.least(2);
+            expect(requestedOperations).to.not.include("object/record/update");
+        });
+
+        it("adding a dataset requests object/accessGroup/update on the group and object/record/update on the dataset", async () => {
+            const groupId = useGroup();
+            registryScope.put(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            registryScope.put(/.*/).reply(200, {});
+            await request(app)
+                .post(
+                    `/v0/auth/accessGroups/${groupId}/datasets/${datasetRecordMock.id}`
+                )
+                .send();
+            expect(requestedOperations).to.include("object/accessGroup/update");
+            expect(requestedOperations).to.include("object/record/update");
+        });
+
+        it("POST /v0/auth/accessGroups (record groups) gives the member role the group permission and one pre-authorised object/accessGroup/read", async () => {
+            registryScope
+                .post("/records", (body) => {
+                    registryRequestBody = body;
+                    return true;
+                })
+                .reply(200, () => ({ id: registryRequestBody.id }));
+            const res = await request(app)
+                .post("/v0/auth/accessGroups")
+                .send({
+                    name: "A group",
+                    description: "",
+                    resourceUri: "object/record",
+                    keywords: [],
+                    operationUris: ["object/record/read"],
+                    ownerId: uuidV4(),
+                    orgUnitId: null
+                });
+            expect(res.status).to.equal(200);
+            const controls = createPermissionCalls.filter(
+                (p) => p.resourceUri === "object/accessGroup"
+            );
+            expect(controls).to.have.length(1);
+            expect(controls[0].resourceUri).to.equal("object/accessGroup");
+            expect(controls[0].operationUris).to.deep.equal([
+                "object/accessGroup/read"
+            ]);
+            expect(controls[0].preAuthorisedConstraint).to.equal(true);
+            expect(controls[0].userOwnershipConstraint).to.equal(false);
+            expect(controls[0].orgUnitOwnershipConstraint).to.equal(false);
+            const details = registryRequestBody.aspects["access-group-details"];
+            const accessControl = registryRequestBody.aspects["access-control"];
+            const controlId = details.extraControlPermissionIds[0];
+            expect(details.extraControlPermissionIds).to.deep.equal([
+                controlId
+            ]);
+            expect(accessControl.preAuthorisedPermissionIds).to.include(
+                controlId
+            );
+            // only the group's item permission is on object/record
+            expect(
+                createPermissionCalls.filter(
+                    (p) => p.resourceUri === "object/record"
+                )
+            ).to.have.length(1);
         });
     });
 });
