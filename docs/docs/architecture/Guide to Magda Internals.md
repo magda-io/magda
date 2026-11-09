@@ -672,7 +672,7 @@ In practice:
 5. **The feature's service checks the typed read permission on every record it returns**, including lists, rather than relying on Registry's filtering alone. So generic record permissions don't grant access to the feature (e.g. its catalogue).
 6. **Use partial evaluation only to filter reads.** Decide on known records (including the proposed state of changes) with full evaluations, batched for many records (see [Types of Decision Queries](#types-of-decision-queries)).
 
-Agent Skills follow this model; see [Agent Skills](./agent-skills.md) for a worked example, including a table of who can do what. Existing dataset, distribution and organisation records predate it: generic record permissions also apply to them, and they're written directly through Registry APIs.
+Agent Skills and access groups follow this model; see [Agent Skills](./agent-skills.md) for a worked example, including a table of who can do what, and [access groups](./access-groups.md). Existing dataset, distribution and organisation records predate it: generic record permissions also apply to them, and they're written directly through Registry APIs.
 
 ### Run OPA as a Sidecar Container
 

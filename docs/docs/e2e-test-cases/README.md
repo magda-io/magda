@@ -22,6 +22,7 @@ scripted, assertion/checksum-based driver), and how to clean up.
 - [Agent Workspace (DSH, lifecycle, LLM and local smoke)](./agent-workspace.md)
 - [Agent Workspace GKE security qualification (NetworkPolicy, IAM, CSI)](./agent-workspace-gke-security.md)
 - [Agent Skills sharing, authorization and fork](./agent-skills-sharing.md)
+- [Access group management (owner, member, administrator)](./access-groups.md)
 - [Agent Skill reuse across changing input cycles](./agent-skills-reuse.md)
 - [Resource-backed ML maintenance and prediction skills](./agent-skills-model-workflow.md)
 - [Distribution version aspect in the Web UI](./distribution-version-web-ui.md)

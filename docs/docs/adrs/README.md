@@ -31,3 +31,4 @@ wondering "why was it done this way?".
 - [0009 — Isolated, on-demand Python dependencies in Agent Sandboxes](./0009-on-demand-python-environments-in-sandboxes.md)
 - [0010 — Separate distribution structure from access mechanics](./0010-separate-distribution-structure-and-access-contracts.md)
 - [0011 — Keep Data Understanding metadata provenance-aware and advisory](./0011-provenance-aware-advisory-data-understanding.md)
+- [0012 — Typed access group authorisation, with group records written only by the access group API](./0012-typed-access-group-authorisation.md)
