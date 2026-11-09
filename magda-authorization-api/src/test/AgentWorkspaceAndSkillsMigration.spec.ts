@@ -145,7 +145,7 @@ describe("Agent Workspace and Skills authorization migration (V2_4)", function (
         expect(agentRows.rows).to.deep.equal([]);
 
         // Upgrade the released baseline to the final state.
-        await runMigrationSql(pool, false, Infinity, BASELINE_VERSION);
+        await runMigrationSql(pool, false, 2.4, BASELINE_VERSION);
     });
 
     after(async () => {
