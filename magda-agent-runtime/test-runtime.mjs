@@ -65,6 +65,47 @@ assert.match(
 );
 assert.match(
     dockerfile,
+    /ARG DSH_SOURCE_REPO=https:\/\/github\.com\/t83714\/deepseek-harness\.git/,
+    "DSH must build from the dedicated source fork"
+);
+assert.match(
+    dockerfile,
+    /ARG DSH_SOURCE_BRANCH=upstream\/0\.2\.1-alpha\.1/,
+    "The fork baseline branch must be explicitly selected"
+);
+assert.match(
+    dockerfile,
+    /ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc/,
+    "DSH must be pinned to the official release commit, not a moving fork ref"
+);
+assert.match(
+    dockerfile,
+    /git rev-parse HEAD/,
+    "The checkout must verify the exact commit SHA before building"
+);
+assert.match(
+    dockerfile,
+    /pnpm install --frozen-lockfile/,
+    "The pinned source build must use the committed dependency lockfile"
+);
+assert.match(
+    dockerfile,
+    /--prod deploy --legacy/,
+    "The source build must deploy its workspace dependency closure"
+);
+assert.match(
+    dockerfile,
+    /COPY --from=dsh-build \/opt\/dsh-release\//,
+    "Only built DSH production artifacts should enter the runtime image"
+);
+assert.doesNotMatch(
+    dockerfile,
+    /npm install -g[^\n]*@deepseek-ai\/dsh/,
+    "MAGDA must not mix a source-built DSH with official npm DSH packages"
+);
+
+assert.match(
+    dockerfile,
     /ARG UV_VERSION=0\.13\.6/,
     "uv must remain pinned to the qualified version"
 );
