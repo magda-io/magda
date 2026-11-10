@@ -68,6 +68,38 @@ Changing `warmPool.type` while claims exist is a migration, not an in-place
 runtime switch. Drain or reset active workspaces, confirm their claims and warm
 Sandboxes are gone, then upgrade the release and admit new workspaces.
 
+### Source-pinned DSH image build (experimental)
+
+The [`magda-agent-runtime/Dockerfile`](../../magda-agent-runtime/Dockerfile) has a
+multistage DSH build that checks out the public
+[`t83714/deepseek-harness`](https://github.com/t83714/deepseek-harness)
+fork at the `upstream/0.2.1-alpha.1` branch **and verifies full commit
+`5badb15009ae1756c3afe0ae0cef1faafc290ccc`**. The commit matches the
+official `dsh-v0.2.1-alpha.1` tag exactly; unrelated changes on the fork's
+`master` are not included. If the branch moves, the build fails rather than
+silently consuming a new revision.
+
+The DSH source is a **pnpm monorepo** with local `workspace:` dependencies.
+The builder therefore uses the commit's frozen `pnpm-lock.yaml`, runs
+`pnpm run build:official`, and deploys the production dependency closure via
+`pnpm --filter @deepseek-ai/dsh --prod deploy --legacy` (needed for the
+repository's pnpm 11 configuration). It does **not** use `npm install` against
+the public `@deepseek-ai/dsh` package. The final runtime keeps the existing
+MAGDA `mgd`, Python/`uv`, managed plugins, non-root user, entrypoint, and
+bootstrap contracts.
+
+This change concerns **where the DSH executable and dependent packages come
+from**, not the user-facing harness or the Kubernetes isolation runtime. The
+same `agent-services.runtime.image` Helm option selects the built image.
+Source control does not itself prove security/compliance suitability, and
+version equality does not guarantee that npm-installed and source-deployed
+runtime layouts behave identically. Before promoting the image, run the
+runtime-image build for all supported architectures and regression checks for
+DSH startup, packaged web assets, MAGDA-managed plugins, token/cookie exchange,
+`mgd` skill operations, session persistence, pod restart, suspend/resume and
+WebSocket activity tracking. A new DSH source commit needs an explicit new
+SHA, review, and test; do not use a moving source branch in production.
+
 ### On-demand Python environments and storage
 
 The runtime contains Debian's system Python and pandas plus `python3-pip`,
