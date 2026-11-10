@@ -9,6 +9,7 @@ import data.common.isPublishedDistribution
 import data.common.verifyRecordPermission
 import data.object.agentSkill.verifyPermission as verifyAgentSkillPermission
 import data.object.agentSkillInstallation.verifyPermission as verifyAgentSkillInstallationPermission
+import data.object.accessGroup.verifyPermission as verifyAccessGroupPermission
 import data.object.dataset.verifyPermission as verifyDatasetPermission
 import data.object.distribution.verifyPermission as verifyDistributionPermission
 import data.object.organization.verifyPermission as verifyOrgPermission
@@ -57,11 +58,29 @@ verifyPermission(operationUri) {
 	verifyAgentSkillInstallationPermission("object/agentSkill/install/read", "record")
 }
 
-# A concrete typed publication or installation never falls back to constrained
-# generic object/record grants.
+# Access group records (any record with an `access-group-details` aspect) are read
+# with the typed access group read rules. They're written by the access group API
+# only, with its internal session, because their details drive role assignment:
+# the API authorises its callers with the typed `object/accessGroup/*` operations.
+# So generic writes on group records are limited to admins and unconstrained grants
+# above, whatever other aspects the record has (e.g. a dataset carrying the aspect).
+#
+# Before MAGDA v8, group records were authorised with generic `object/record/*`
+# grants. Those grants no longer authorise reading or managing a group.
+verifyPermission(operationUri) {
+	input.object.record["access-group-details"]
+
+	[resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(operationUri)
+	operationType == "read"
+	verifyAccessGroupPermission("object/accessGroup/read", "record")
+}
+
+# A concrete typed publication, installation or access group never falls back to
+# constrained generic object/record grants.
 verifyPermission(operationUri) {
 	not input.object.record["agent-skill"]
 	not input.object.record["agent-skill-installation"]
+	not input.object.record["access-group-details"]
 	verifyNonAgentSkillPermission(operationUri)
 }
 

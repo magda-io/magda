@@ -13,6 +13,7 @@ import {
 } from "@magda/typescript-common/dist/authorization-api/model";
 import { Record } from "./RegistryApis";
 import ServerError from "@magda/typescript-common/dist/ServerError.js";
+import AuthDecisionQueryClient from "@magda/typescript-common/dist/opa/AuthDecisionQueryClient.js";
 import { v4 as isUuid } from "is-uuid";
 
 export type QrCodeImgDataResponse = {
@@ -820,6 +821,43 @@ export async function getAccessGroupById(
         ownerId: accessControls?.ownerId ? accessControls.ownerId : null,
         orgUnitId: accessControls?.orgUnitId ? accessControls.orgUnitId : null
     };
+}
+
+/**
+ * Whether the current user can manage an access group (rename it, manage and list its members,
+ * add or remove datasets), i.e. holds `object/accessGroup/update` on the group record.
+ * Used to decide which UI to show; the API enforces it either way.
+ */
+export async function canManageAccessGroup(groupId: string): Promise<boolean> {
+    if (!groupId) {
+        throw new ServerError("groupId cannot be empty!", 400);
+    }
+    const groupRecord = await getRequest<Record>(
+        getAbsoluteUrl(
+            `records/${encodeURIComponent(groupId)}`,
+            config.registryApiReadOnlyBaseUrl,
+            {
+                aspect: ["access-group-details"],
+                optionalAspect: ["access-control"],
+                dereference: false
+            }
+        ),
+        true
+    );
+    const decision = await new AuthDecisionQueryClient(
+        config.authApiBaseUrl
+    ).getAuthDecision({
+        operationUri: "object/accessGroup/update",
+        input: {
+            object: {
+                accessGroup: {
+                    id: groupRecord.id,
+                    ...groupRecord.aspects
+                }
+            }
+        }
+    });
+    return !decision.hasResidualRules && decision.result === true;
 }
 
 export type AccessGroupCreateData = Omit<

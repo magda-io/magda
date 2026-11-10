@@ -8,6 +8,8 @@
 - [Agent Skills architecture](./architecture/agent-skills.md)
 - [Agent Skills authorization and sharing](./architecture/agent-skills-authorization.md)
 - [Agent Skill synchronization and provenance](./architecture/agent-skills-sync.md)
+- [Access groups guide](./access-groups.md)
+- [Access groups architecture and authorisation](./architecture/access-groups.md)
 - [LLM Services architecture](./architecture/llm-services.md)
 - [Agent Workspace deployment and operations](./agent-workspace-deployment.md)
 - [Agent Workspace / Agent Skills E2E cases](./e2e-test-cases/README.md)

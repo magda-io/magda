@@ -1,8 +1,19 @@
 import React, { FunctionComponent, useState, useCallback } from "react";
-import { useLocation, Switch, Route, useHistory, Link } from "react-router-dom";
+import {
+    useLocation,
+    Switch,
+    Route,
+    useHistory,
+    Link,
+    Redirect
+} from "react-router-dom";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb, { BreadcrumbItem } from "./Breadcrumb";
-import { AccessGroup, getAccessGroupById } from "api-clients/AuthApis";
+import {
+    AccessGroup,
+    getAccessGroupById,
+    canManageAccessGroup
+} from "api-clients/AuthApis";
 import reportError from "../../helpers/reportError";
 import { useAsync } from "react-async-hook";
 import urijs from "urijs";
@@ -84,6 +95,24 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
         [accessGroupId, dataReloadToken]
     );
 
+    // Only users who can manage the group see its members. The API enforces it either way.
+    const { result: canManage, loading: isCheckingManage } = useAsync(
+        async (accessGroupId?: string, dataReloadToken?: string) => {
+            if (!accessGroupId) {
+                return false;
+            }
+            try {
+                return await canManageAccessGroup(accessGroupId);
+            } catch (e) {
+                console.error(
+                    `Failed to check access group management permission: ${e}`
+                );
+                return false;
+            }
+        },
+        [accessGroupId, dataReloadToken]
+    );
+
     return (
         <div className="flex-main-container setting-page-main-container access-group-details-page">
             <SideNavigation />
@@ -107,12 +136,14 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
                     >
                         Datasets
                     </Nav.Item>
-                    <Nav.Item
-                        eventKey={`/settings/accessGroups/${accessGroupId}/users`}
-                        icon={<BsPeopleFill />}
-                    >
-                        Users
-                    </Nav.Item>
+                    {canManage ? (
+                        <Nav.Item
+                            eventKey={`/settings/accessGroups/${accessGroupId}/users`}
+                            icon={<BsPeopleFill />}
+                        >
+                            Users
+                        </Nav.Item>
+                    ) : null}
                 </Nav>
                 <Switch>
                     <Route
@@ -302,10 +333,14 @@ const AccessGroupDetailsPage: FunctionComponent<PropsType> = (props) => {
                         exact
                         path={`/settings/accessGroups/${accessGroupId}/users`}
                     >
-                        {isLoading ? (
+                        {isLoading || isCheckingManage ? (
                             <Placeholder.Paragraph rows={8}>
                                 <Loader center content="loading" />
                             </Placeholder.Paragraph>
+                        ) : !canManage ? (
+                            <Redirect
+                                to={`/settings/accessGroups/${accessGroupId}`}
+                            />
                         ) : accessGroupId && accessGroup?.roleId ? (
                             <Panel bordered>
                                 <AccessGroupUsersPanel

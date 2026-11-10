@@ -1,13 +1,34 @@
-import { queryAccessGroupUsers, queryAccessGroupUsersCount } from "./AuthApis";
+import {
+    queryAccessGroupUsers,
+    queryAccessGroupUsersCount,
+    canManageAccessGroup
+} from "./AuthApis";
 import getRequest from "../helpers/getRequest";
 
 jest.mock("../config", () => ({
-    config: { authApiBaseUrl: "https://example.test/api/v0/auth/" }
+    config: {
+        authApiBaseUrl: "https://example.test/api/v0/auth/",
+        registryApiReadOnlyBaseUrl: "https://example.test/api/v0/registry/"
+    }
 }));
 jest.mock("../helpers/getRequest", () => ({
     __esModule: true,
     default: jest.fn()
 }));
+
+const mockGetAuthDecision = jest.fn();
+jest.mock(
+    "@magda/typescript-common/dist/opa/AuthDecisionQueryClient.js",
+    () => ({
+        __esModule: true,
+        // a plain class: CRA's jest config resets mock implementations before each test
+        default: class {
+            getAuthDecision(...args: any[]) {
+                return mockGetAuthDecision(...args);
+            }
+        }
+    })
+);
 
 const mockGetRequest = getRequest as jest.Mock;
 const groupId = "access-group/team & research";
@@ -105,5 +126,57 @@ describe("access group member queries", () => {
         mockGetRequest.mockRejectedValue(error);
         await expect(queryAccessGroupUsers(groupId)).rejects.toBe(error);
         await expect(queryAccessGroupUsersCount(groupId)).rejects.toBe(error);
+    });
+});
+
+describe("canManageAccessGroup", () => {
+    const record = {
+        id: "group-1",
+        aspects: {
+            "access-group-details": {
+                name: "A group",
+                resourceUri: "object/record"
+            },
+            "access-control": {
+                ownerId: "user-1",
+                preAuthorisedPermissionIds: [] as string[]
+            }
+        }
+    };
+
+    beforeEach(() => mockGetAuthDecision.mockReset());
+
+    it("asks for object/accessGroup/update with the group record as input.object.accessGroup", async () => {
+        mockGetRequest.mockResolvedValue(record);
+        mockGetAuthDecision.mockResolvedValue({
+            hasResidualRules: false,
+            result: true
+        });
+        expect(await canManageAccessGroup("group-1")).toBe(true);
+        expect(mockGetRequest.mock.calls[0][0].split("?")[0]).toBe(
+            "https://example.test/api/v0/registry/records/group-1"
+        );
+        expect(mockGetAuthDecision).toHaveBeenCalledWith({
+            operationUri: "object/accessGroup/update",
+            input: {
+                object: {
+                    accessGroup: { id: "group-1", ...record.aspects }
+                }
+            }
+        });
+    });
+
+    it("is false for a conditional or false decision", async () => {
+        mockGetRequest.mockResolvedValue(record);
+        mockGetAuthDecision.mockResolvedValue({
+            hasResidualRules: true,
+            result: undefined
+        });
+        expect(await canManageAccessGroup("group-1")).toBe(false);
+        mockGetAuthDecision.mockResolvedValue({
+            hasResidualRules: false,
+            result: false
+        });
+        expect(await canManageAccessGroup("group-1")).toBe(false);
     });
 });

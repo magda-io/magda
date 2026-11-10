@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import Database from "../Database.js";
+import Database, { UpdatePermissionOptions } from "../Database.js";
 import respondWithError from "../respondWithError.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
@@ -19,6 +19,7 @@ import {
 } from "magda-typescript-common/src/authorization-api/model.js";
 import { JsonPatch } from "magda-typescript-common/src/registry/model.js";
 import isUuid from "magda-typescript-common/src/util/isUuid.js";
+import { isTrueEquivalent } from "magda-typescript-common/src/opa/AuthDecision.js";
 import { v4 as uuidV4 } from "uuid";
 import { Record } from "magda-typescript-common/src/generated/registry/api.js";
 import isArray from "lodash/isArray.js";
@@ -147,6 +148,139 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 `Datasets can only be added to or removed from \`${RECORD_RESOURCE_URI}\` access groups.`,
                 400
             );
+        }
+    }
+
+    // Whether the caller holds an unconstrained grant of an access group operation: the decision is made on a
+    // group no ownership, org unit or pre-authorised constraint covers. For create, that's a group to be
+    // created; for the other operations, a group record.
+    async function hasUnconstrainedAccessGroupPermission(
+        req: Request,
+        operationUri: string
+    ) {
+        const accessGroup =
+            operationUri === "object/accessGroup/create"
+                ? {
+                      resourceUri: RECORD_RESOURCE_URI,
+                      keywords: [] as string[],
+                      ownerId: null as string | null,
+                      orgUnitId: null as string | null
+                  }
+                : {
+                      id: "unconstrained-access-group-check",
+                      "access-group-details": {
+                          resourceUri: RECORD_RESOURCE_URI
+                      },
+                      "access-control": {
+                          ownerId: null as string | null,
+                          orgUnitId: null as string | null,
+                          preAuthorisedPermissionIds: [] as string[]
+                      }
+                  };
+        const decision = await authDecisionClient.getAuthDecision(
+            {
+                operationUri,
+                input: { object: { accessGroup } }
+            },
+            req.get("X-Magda-Session")
+        );
+        return (
+            decision?.hasResidualRules === false &&
+            isTrueEquivalent(decision?.result)
+        );
+    }
+
+    // The access group API writes records with its internal session: before writing to records named in
+    // caller-controlled data (e.g. a dataset's distribution list), check the caller could update each one.
+    async function requireUpdatableRecords(req: Request, recordIds: string[]) {
+        for (const recordId of recordIds) {
+            let record: any;
+            try {
+                record = await registryClient.getRecordInFull(recordId);
+                if (record instanceof Error) {
+                    throw record;
+                }
+            } catch (e) {
+                // the registry client may use another copy of ServerError: match on its status code
+                if ((e as any)?.statusCode === 404) {
+                    throw new ServerError(
+                        `Record "${recordId}" listed in the dataset doesn't exist.`,
+                        400
+                    );
+                }
+                throw e;
+            }
+            const { aspects, ...recordData } = record;
+            const decision = await authDecisionClient.getAuthDecision(
+                {
+                    operationUri: "object/record/update",
+                    input: {
+                        object: {
+                            record: { ...recordData, ...(aspects || {}) }
+                        }
+                    }
+                },
+                req.get("X-Magda-Session")
+            );
+            if (
+                decision?.hasResidualRules !== false ||
+                !isTrueEquivalent(decision?.result)
+            ) {
+                throw new ServerError(
+                    `you are not permitted to perform \`object/record/update\` on record "${recordId}".`,
+                    403
+                );
+            }
+        }
+    }
+
+    // Before assigning, removing or deleting a group's role and permissions, check they're the group's own:
+    // its member role (created for this group) holds its pre-authorised group permission, and its control
+    // permissions were created for this group.
+    async function verifyAccessGroupIntegrity(
+        groupId: string,
+        details: any,
+        checkControlPermissions: boolean = false
+    ) {
+        const roleId = details?.roleId;
+        const permissionId = details?.permissionId;
+        if (!isUuid(roleId) || !isUuid(permissionId)) {
+            throw new ServerError(
+                "The access group's role doesn't match the group.",
+                400
+            );
+        }
+        const pool = database.getPool();
+        const memberRole = await pool.query(
+            ...sqls`SELECT 1 FROM roles r JOIN role_permissions rp ON rp.role_id = r.id JOIN permissions p ON p.id = rp.permission_id
+            WHERE r.id = ${roleId} AND r.description = ${
+                "auto-created for access group " + groupId
+            } AND p.id = ${permissionId} AND p.pre_authorised_constraint = true`.toQuery()
+        );
+        if (!memberRole?.rows?.length) {
+            throw new ServerError(
+                "The access group's role doesn't match the group.",
+                400
+            );
+        }
+        const controlIds = ((details?.extraControlPermissionIds ||
+            []) as string[]).filter((id) => isUuid(id));
+        // Every listed control permission that still exists must be the group's own. A listed permission may no
+        // longer exist: e.g. the authorization DB migration V2_5 removes the UI permission groups created before
+        // v8 list, but can't change their records, which are in the registry's database.
+        if (checkControlPermissions && controlIds.length) {
+            const result = await pool.query(
+                ...sqls`SELECT count(*)::int AS count FROM permissions
+                WHERE id = ANY(${controlIds}::uuid[]) AND NOT (name = 'System managed for access group' AND description LIKE ${
+                    "%" + groupId + "%"
+                })`.toQuery()
+            );
+            if (result?.rows?.[0]?.count !== 0) {
+                throw new ServerError(
+                    "The access group's permissions don't match the group.",
+                    400
+                );
+            }
         }
     }
 
@@ -314,18 +448,53 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/",
+        getUserId(options.jwtSecret),
+        // validate (and default `ownerId` to the caller) first, so the decision is made on the group to be created
+        async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                res.locals.accessGroupCreationData = await validateAccessGroupCreationData(
+                    req,
+                    res
+                );
+                next();
+            } catch (e) {
+                respondWithError("Create Access Group", res, e);
+            }
+        },
         requireUnconditionalAuthDecision(authDecisionClient, (req, res) => ({
             operationUri: "object/accessGroup/create",
             input: {
                 object: {
-                    accessGroup: req.body
+                    accessGroup: res.locals.accessGroupCreationData
                 }
             }
         })),
-        getUserId(options.jwtSecret),
+        // Agent Skill share keywords are reserved for Agent Services' share groups. The policy can't check
+        // keywords' prefixes and still have a translatable partial decision, so the check is made here.
+        async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const keywords = res.locals.accessGroupCreationData
+                    .keywords as string[];
+                if (
+                    keywords.some((k) => k.startsWith("agent-skill-share-")) &&
+                    !(await hasUnconstrainedAccessGroupPermission(
+                        req,
+                        "object/accessGroup/create"
+                    ))
+                ) {
+                    throw new ServerError(
+                        "Only an unconstrained `object/accessGroup/create` grant can set an Agent Skill share keyword.",
+                        403
+                    );
+                }
+                next();
+            } catch (e) {
+                respondWithError("Create Access Group", res, e);
+            }
+        },
         async (req: Request, res: Response) => {
             try {
-                const agData = await validateAccessGroupCreationData(req, res);
+                const agData = res.locals.accessGroupCreationData;
                 const recordId = uuidV4();
                 const userId = res.locals.userId;
                 const timestamp = new Date().toISOString();
@@ -418,16 +587,16 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             VALUES (${role.id}, ${permissionRecord.id})`.toQuery()
                         );
                     } else {
-                        // this permission allow the user (who're in the group) to be able to read the access group information
-                        // this permission is a `preAuthorised` permission.
-                        // And it will be added to `access-control` aspect, `preAuthorisedPermissionIds` field of the access group that is to be created
-                        // see https://github.com/magda-io/magda/issues/3402
-                        const accessGroupRecordPermissionRecord = await database.createPermission(
+                        // Group members read the group record with this pre-authorised
+                        // `object/accessGroup/read` permission. It's listed in the group
+                        // record's `access-control.preAuthorisedPermissionIds`, so it covers
+                        // this group only. Holding it also shows the access group UI.
+                        const accessGroupReadPermissionRecord = await database.createPermission(
                             {
                                 name: "System managed for access group",
-                                description: `Auto-created access group record permission for access group ${recordId}.`,
-                                resourceUri: "object/record",
-                                operationUris: ["object/record/read"],
+                                description: `Auto-created access group read permission for access group ${recordId}.`,
+                                resourceUri: "object/accessGroup",
+                                operationUris: ["object/accessGroup/read"],
                                 userOwnershipConstraint: false,
                                 orgUnitOwnershipConstraint: false,
                                 preAuthorisedConstraint: true,
@@ -437,47 +606,23 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             client
                         );
 
-                        // this permission currently only used by UI as a short-cut to determine which user has access to access group UI
-                        // Actually access group access is controlled by uri `object/record` see:
-                        // - https://github.com/magda-io/magda/issues/3402
-                        // - https://github.com/magda-io/magda/issues/3269
-                        const accessGroupPermissionRecord = await database.createPermission(
-                            {
-                                name: "System managed for access group",
-                                description: `Auto-created access group UI permission for access group ${recordId}.`,
-                                resourceUri: "object/accessGroup",
-                                operationUris: ["object/accessGroup/read"],
-                                userOwnershipConstraint: false,
-                                orgUnitOwnershipConstraint: false,
-                                preAuthorisedConstraint: false,
-                                createBy: userId ? userId : null,
-                                ownerId: userId ? userId : null
-                            },
-                            client
-                        );
-
-                        // add 3 permissions to the role
                         await client.query(
                             ...sqls`INSERT INTO role_permissions (role_id, permission_id)
                         VALUES 
                         (${role.id}, ${permissionRecord.id}),
-                        (${role.id}, ${accessGroupRecordPermissionRecord.id}),
-                        (${role.id}, ${accessGroupPermissionRecord.id})`.toQuery()
+                        (${role.id}, ${accessGroupReadPermissionRecord.id})`.toQuery()
                         );
 
                         agRecord.aspects[
                             "access-group-details"
                         ].extraControlPermissionIds = [
-                            accessGroupRecordPermissionRecord.id,
-                            accessGroupPermissionRecord.id
+                            accessGroupReadPermissionRecord.id
                         ];
 
-                        // make sure group users have read access to access group information
-                        // `accessGroupRecordPermissionRecord` is a preAuthorised permission tha requires explicit grant.
                         agRecord.aspects[
                             "access-control"
                         ].preAuthorisedPermissionIds.push(
-                            accessGroupRecordPermissionRecord.id
+                            accessGroupReadPermissionRecord.id
                         );
                     }
 
@@ -505,6 +650,39 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
             }
         }
     );
+
+    // The group permission and the group record are in different databases. The permission is updated in a
+    // transaction committed only once the group record is updated, so a failed registry update leaves the
+    // permission unchanged.
+    async function updatePermissionWithGroupRecord(
+        permissionId: string,
+        permissionData: UpdatePermissionOptions,
+        groupId: string,
+        accessGroupDetailsAspectData: any,
+        accessControlAspectData: any
+    ) {
+        const client = await database.getPool().connect();
+        try {
+            await client.query("BEGIN");
+            await database.updatePermission(
+                permissionId,
+                permissionData,
+                client
+            );
+            const result = await updateAccessGroupRecord(
+                groupId,
+                accessGroupDetailsAspectData,
+                accessControlAspectData
+            );
+            await client.query("COMMIT");
+            return result;
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+    }
 
     async function updateAccessGroupRecord(
         groupId: string,
@@ -657,7 +835,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.put(
         "/:groupId",
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         getUserId(options.jwtSecret),
         async function (req: Request, res: Response) {
             try {
@@ -675,6 +853,41 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
 
                 const data = req.body as UpdateAccessGroupRequestBodyType;
+
+                // Widening what the group grants (on records others may have added), or using an Agent Skill
+                // share keyword (reserved for Agent Services' share groups), needs an unconstrained grant.
+                const currentOperationUris = ((res?.locals?.originalAccessGroup
+                    ?.aspects?.["access-group-details"]?.operationUris ||
+                    []) as string[]).map((op) => `${op}`.trim().toLowerCase());
+                const widens =
+                    isArray(data?.operationUris) &&
+                    data.operationUris.some(
+                        (op: any) =>
+                            !currentOperationUris.includes(
+                                `${op}`.trim().toLowerCase()
+                            )
+                    );
+                const usesShareKeyword =
+                    isArray(data?.keywords) &&
+                    data.keywords.some(
+                        (k: any) =>
+                            typeof k === "string" &&
+                            k.startsWith("agent-skill-share-")
+                    );
+                if (
+                    (widens || usesShareKeyword) &&
+                    !(await hasUnconstrainedAccessGroupPermission(
+                        req,
+                        "object/accessGroup/update"
+                    ))
+                ) {
+                    throw new ServerError(
+                        widens
+                            ? "Only an unconstrained `object/accessGroup/update` grant can add operations to an access group."
+                            : "Only an unconstrained `object/accessGroup/update` grant can set an Agent Skill share keyword.",
+                        403
+                    );
+                }
 
                 const accessGroupDetailsAspectData: any = {};
                 const accessControlAspectData: any = {};
@@ -719,11 +932,46 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 if (typeof data?.orgUnitId !== "undefined") {
                     if (!isUuid(data.orgUnitId) && data.orgUnitId !== null) {
                         throw new ServerError(
-                            "`ownerId` field needs to be either an UUID or null.",
+                            "`orgUnitId` field needs to be either an UUID or null.",
                             400
                         );
                     }
                     accessControlAspectData["orgUnitId"] = data.orgUnitId;
+                }
+
+                // A new owner or org unit is checked like the create constraints: the caller must be able to
+                // update the group as it would be after the change, too.
+                if (!isEmpty(accessControlAspectData)) {
+                    const original = res?.locals?.originalAccessGroup;
+                    const decision = await authDecisionClient.getAuthDecision(
+                        {
+                            operationUri: "object/accessGroup/update",
+                            input: {
+                                object: {
+                                    accessGroup: {
+                                        id: groupId,
+                                        ...(original?.aspects || {}),
+                                        "access-control": {
+                                            ...(original?.aspects?.[
+                                                "access-control"
+                                            ] || {}),
+                                            ...accessControlAspectData
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        req.get("X-Magda-Session")
+                    );
+                    if (
+                        decision?.hasResidualRules !== false ||
+                        !isTrueEquivalent(decision?.result)
+                    ) {
+                        throw new ServerError(
+                            "you are not permitted to give the access group this owner or org unit.",
+                            403
+                        );
+                    }
                 }
 
                 if (typeof data?.operationUris === "undefined") {
@@ -736,14 +984,30 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                             "editTime"
                         ] = new Date().toISOString();
                     }
-                    // no need to update permission operations as it's not supplied
-                    res.json(
-                        await updateAccessGroupRecord(
-                            groupId,
-                            accessGroupDetailsAspectData,
-                            accessControlAspectData
-                        )
-                    );
+                    // no need to update permission operations as it's not supplied,
+                    // but keep the group permission's owner in step with the group's
+                    if (typeof data?.ownerId !== "undefined") {
+                        res.json(
+                            await updatePermissionWithGroupRecord(
+                                permissionId,
+                                {
+                                    ownerId: data.ownerId,
+                                    editBy: userId ? userId : null
+                                },
+                                groupId,
+                                accessGroupDetailsAspectData,
+                                accessControlAspectData
+                            )
+                        );
+                    } else {
+                        res.json(
+                            await updateAccessGroupRecord(
+                                groupId,
+                                accessGroupDetailsAspectData,
+                                accessControlAspectData
+                            )
+                        );
+                    }
                     return;
                 } else {
                     const resourceUri =
@@ -781,41 +1045,27 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     ] = operationUris;
                 }
 
-                const pool = database.getPool();
-                const client = await pool.connect();
+                accessGroupDetailsAspectData["editBy"] = userId;
+                accessGroupDetailsAspectData[
+                    "editTime"
+                ] = new Date().toISOString();
 
-                try {
-                    await client.query("BEGIN");
-
-                    await database.updatePermission(
+                res.json(
+                    await updatePermissionWithGroupRecord(
                         permissionId,
                         {
                             operationUris: data.operationUris,
-                            ownerId: data?.ownerId ? data.ownerId : null,
+                            // only change the permission's owner when the group's owner changes
+                            ...(typeof data?.ownerId !== "undefined"
+                                ? { ownerId: data.ownerId }
+                                : {}),
                             editBy: userId ? userId : null
                         },
-                        client
-                    );
-
-                    accessGroupDetailsAspectData["editBy"] = userId;
-                    accessGroupDetailsAspectData[
-                        "editTime"
-                    ] = new Date().toISOString();
-
-                    res.json(
-                        await updateAccessGroupRecord(
-                            groupId,
-                            accessGroupDetailsAspectData,
-                            accessControlAspectData
-                        )
-                    );
-                    await client.query("COMMIT");
-                } catch (e) {
-                    await client.query("ROLLBACK");
-                    throw e;
-                } finally {
-                    client.release();
-                }
+                        groupId,
+                        accessGroupDetailsAspectData,
+                        accessControlAspectData
+                    )
+                );
             } catch (e) {
                 respondWithError(
                     `Update Access Group: ${req?.params?.id}`,
@@ -833,7 +1083,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * You can only delete an access group when all resources (e.g. datasets) that are associated with the access group are removed from the access group.
      * Once an access group is deleted, the role & permission that are associated with the access group will be also deleted.
      *
-     * You need `object/record/delete` permission to the access group record in order to access this API.
+     * You need `object/accessGroup/delete` permission to the access group record in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      *
@@ -853,7 +1103,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.delete(
         "/:groupId",
         requireAccessGroupUnconditionalPermission(
-            "object/record/delete",
+            "object/accessGroup/delete",
             (req, res, next: Function) => {
                 // reach here indicates the access group record doesn't exist
                 // we will response 200 with {result: false}
@@ -876,11 +1126,11 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         "roleId"
                     ];
 
-                const extraControlPermissionIds = accessGroupRecord?.aspects?.[
-                    "access-group-details"
-                ]?.["extraControlPermissionIds"].filter((pid: string) =>
-                    isUuid(pid)
-                );
+                // groups created before v2.1.0 have no `extraControlPermissionIds`
+                const extraControlPermissionIds = ((accessGroupRecord
+                    ?.aspects?.["access-group-details"]?.[
+                    "extraControlPermissionIds"
+                ] || []) as string[]).filter((pid: string) => isUuid(pid));
 
                 if (!isUuid(permissionId)) {
                     throw new ServerError(
@@ -894,6 +1144,12 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         500
                     );
                 }
+
+                await verifyAccessGroupIntegrity(
+                    groupId,
+                    accessGroupRecord?.aspects?.["access-group-details"],
+                    true
+                );
                 const searchRecordResult = await registryClient.getRecords(
                     [],
                     [],
@@ -987,7 +1243,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *
      * Access group users will all granted access (specified by the access group permission) to all added datasets.
      *
-     * You need `object/record/update` permission to both access group and dataset record in order to access this API.
+     * You need `object/accessGroup/update` permission to the access group, and `object/record/update` permission to the dataset record, in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} datasetId id of the dataset
@@ -1040,7 +1296,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 };
             }
         ),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const recordIds = [] as string[];
@@ -1070,6 +1326,10 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
 
                 rejectAgentSkillGroupDatasets(res);
+
+                if (distributionIds?.length) {
+                    await requireUpdatableRecords(req, distributionIds);
+                }
 
                 const result = await registryClient.putRecordsAspect(
                     recordIds,
@@ -1113,7 +1373,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *
      * Access group users will lost the access (granted by the access group) to the removed dataset.
      *
-     * You need `object/record/update` permission to the access group.
+     * You need `object/accessGroup/update` permission to the access group.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} datasetId id of the dataset
@@ -1134,7 +1394,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.delete(
         "/:groupId/datasets/:datasetId",
         getUserId(options.jwtSecret),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const datasetId = req.params?.datasetId;
@@ -1181,6 +1441,8 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         : [])
                 ];
 
+                await requireUpdatableRecords(req, recordIds.slice(1));
+
                 const result = await registryClient.deleteRecordsAspectArrayItems(
                     recordIds,
                     "access-control",
@@ -1218,7 +1480,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      *
      * Access group users have access (specified by the access group permission) to all datasets in the access group.
      *
-     * You need `object/record/update` permission to the access group record in order to access this API.
+     * You need `object/accessGroup/update` permission to the access group record in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} userId id of the user to be added to the access group
@@ -1239,7 +1501,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.post(
         "/:groupId/users/:userId",
         getUserId(options.jwtSecret),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const userId = req.params?.userId;
@@ -1268,6 +1530,14 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         500
                     );
                 }
+
+                // Only the group's own member role is ever assigned.
+                await verifyAccessGroupIntegrity(
+                    `${req.params.groupId}`,
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]
+                );
 
                 const user = await getTableRecord(pool, "users", userId);
                 if (!user) {
@@ -1325,7 +1595,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @api {delete} /v0/auth/accessGroups/:groupId/users/:userId Remove an User from an Access Group
      * @apiDescription Remove an User from an Access Group
      *
-     * You need `object/record/update` permission to the access group record in order to access this API.
+     * You need `object/accessGroup/update` permission to the access group record in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (URL Path) {string} userId id of the user to be added to the access group
@@ -1346,7 +1616,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     router.delete(
         "/:groupId/users/:userId",
         getUserId(options.jwtSecret),
-        requireAccessGroupUnconditionalPermission("object/record/update"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         async function (req, res) {
             try {
                 const userId = req.params?.userId;
@@ -1365,6 +1635,14 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         500
                     );
                 }
+
+                // Only the group's own member role is ever removed.
+                await verifyAccessGroupIntegrity(
+                    `${req.params.groupId}`,
+                    res?.locals?.originalAccessGroup?.aspects?.[
+                        "access-group-details"
+                    ]
+                );
 
                 const pool = database.getPool();
 
@@ -1496,7 +1774,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth Access Groups
      * @api {get} /v0/auth/accessGroups/:groupId/users Get all matched users in an access group
      * @apiDescription return a list matched users of an access group.
-     * Required `object/record/read` permission to the access group in order to access this API.
+     * Required `object/accessGroup/update` permission to the access group in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (Query String) {number} [offset] The index of the first record in the result set to retrieve.
@@ -1526,7 +1804,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:groupId/users",
-        requireAccessGroupUnconditionalPermission("object/record/read"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         createFetchUsersHandler(false, "Get users in an access group")
     );
 
@@ -1534,7 +1812,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      * @apiGroup Auth Access Groups
      * @api {get} /v0/auth/accessGroups/:groupId/users/count Get the count of all matched users in an access group
      * @apiDescription return the count number of all matched users of an access group.
-     * Required `object/record/read` permission to the access group in order to access this API.
+     * Required `object/accessGroup/update` permission to the access group in order to access this API.
      *
      * @apiParam (URL Path) {string} groupId id of the access group
      * @apiParam (Query String) {string} [keyword] When set, will only return user records whose "displayName", "email" or "source" field contains the specified keyword.
@@ -1557,7 +1835,7 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
      */
     router.get(
         "/:groupId/users/count",
-        requireAccessGroupUnconditionalPermission("object/record/read"),
+        requireAccessGroupUnconditionalPermission("object/accessGroup/update"),
         createFetchUsersHandler(true, "Get user count in an access group")
     );
 
