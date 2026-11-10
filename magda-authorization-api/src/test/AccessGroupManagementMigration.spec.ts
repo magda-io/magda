@@ -18,6 +18,23 @@ const UI_CONTROL_ID = "00000000-0000-4000-8000-0000000000e4";
 const UNRELATED_PERMISSION_ID = "00000000-0000-4000-8000-0000000000e5";
 const MEMBER_USER_ID = "00000000-0000-4000-8000-0000000000f1";
 
+// Lookalikes of the access group API's member-role permissions that V2_5 must leave unchanged.
+const OTHER_GROUP_ID = "00000000-0000-4000-8000-0000000000d2";
+const OTHER_GROUP_ROLE_ID = "00000000-0000-4000-8000-0000000000e6";
+// a record-read lookalike held by no role
+const ORPHAN_RECORD_READ_GROUP_ID = "00000000-0000-4000-8000-0000000000d3";
+const ORPHAN_RECORD_READ_ID = "00000000-0000-4000-8000-0000000000e7";
+// a record-read lookalike held by a role whose description names another group
+const MISMATCHED_RECORD_READ_GROUP_ID = "00000000-0000-4000-8000-0000000000d4";
+const MISMATCHED_RECORD_READ_ID = "00000000-0000-4000-8000-0000000000e8";
+// a record-read lookalike with an extra operation, held by its group's member role
+const WIDER_GROUP_ID = "00000000-0000-4000-8000-0000000000d5";
+const WIDER_GROUP_ROLE_ID = "00000000-0000-4000-8000-0000000000e9";
+const WIDER_RECORD_READ_ID = "00000000-0000-4000-8000-0000000000ea";
+// a UI lookalike held by a role whose description names another group
+const MISMATCHED_UI_GROUP_ID = "00000000-0000-4000-8000-0000000000d6";
+const MISMATCHED_UI_ID = "00000000-0000-4000-8000-0000000000eb";
+
 describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite) {
     this.timeout(30000);
     const dbConfig = getTestDBConfig();
@@ -48,12 +65,21 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
         ).rows[0];
     }
 
+    async function roleLinks(permissionId: string) {
+        return (
+            await pool.query(
+                `SELECT role_id FROM role_permissions WHERE permission_id = $1 ORDER BY role_id`,
+                [permissionId]
+            )
+        ).rows.map((r) => r.role_id as string);
+    }
+
     async function seedPermission(
         id: string,
         name: string,
         description: string,
         resourceUri: string,
-        operationUri: string,
+        operationUris: string | string[],
         preAuthorised: boolean
     ) {
         await pool.query(
@@ -62,12 +88,33 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
              VALUES ($1, $2, (SELECT id FROM resources WHERE uri = $3), false, false, $4, false, $5)`,
             [id, name, resourceUri, preAuthorised, description]
         );
+        for (const operationUri of ([] as string[]).concat(operationUris)) {
+            await pool.query(
+                `INSERT INTO permission_operations (permission_id, operation_id)
+                 VALUES ($1, (SELECT id FROM operations WHERE uri = $2))`,
+                [id, operationUri]
+            );
+        }
+    }
+
+    async function seedMemberRole(roleId: string, groupId: string) {
         await pool.query(
-            `INSERT INTO permission_operations (permission_id, operation_id)
-             VALUES ($1, (SELECT id FROM operations WHERE uri = $2))`,
-            [id, operationUri]
+            `INSERT INTO roles (id, name, description) VALUES ($1, 'auto-created for access group', $2)`,
+            [roleId, `auto-created for access group ${groupId}`]
         );
     }
+
+    async function grant(roleId: string, permissionId: string) {
+        await pool.query(
+            `INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)`,
+            [roleId, permissionId]
+        );
+    }
+
+    const recordReadDescription = (groupId: string) =>
+        `Auto-created access group record permission for access group ${groupId}.`;
+    const uiDescription = (groupId: string) =>
+        `Auto-created access group UI permission for access group ${groupId}.`;
 
     before(async () => {
         const adminPool = new pg.Pool({ ...dbConfig });
@@ -78,10 +125,7 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
         await runMigrationSql(pool, false, BASELINE_VERSION);
 
         // A record access group's member role, as the access group API created it before V2_5.
-        await pool.query(
-            `INSERT INTO roles (id, name, description) VALUES ($1, 'auto-created for access group', $2)`,
-            [MEMBER_ROLE_ID, `auto-created for access group ${GROUP_ID}`]
-        );
+        await seedMemberRole(MEMBER_ROLE_ID, GROUP_ID);
         await seedPermission(
             GROUP_PERMISSION_ID,
             "auto-created for access group",
@@ -93,7 +137,7 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
         await seedPermission(
             RECORD_READ_CONTROL_ID,
             "System managed for access group",
-            `Auto-created access group record permission for access group ${GROUP_ID}.`,
+            recordReadDescription(GROUP_ID),
             "object/record",
             "object/record/read",
             true
@@ -101,7 +145,7 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
         await seedPermission(
             UI_CONTROL_ID,
             "System managed for access group",
-            `Auto-created access group UI permission for access group ${GROUP_ID}.`,
+            uiDescription(GROUP_ID),
             "object/accessGroup",
             "object/accessGroup/read",
             false
@@ -132,6 +176,44 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
             `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)`,
             [MEMBER_USER_ID, MEMBER_ROLE_ID]
         );
+
+        await seedMemberRole(OTHER_GROUP_ROLE_ID, OTHER_GROUP_ID);
+        await seedPermission(
+            ORPHAN_RECORD_READ_ID,
+            "System managed for access group",
+            recordReadDescription(ORPHAN_RECORD_READ_GROUP_ID),
+            "object/record",
+            "object/record/read",
+            true
+        );
+        await seedPermission(
+            MISMATCHED_RECORD_READ_ID,
+            "System managed for access group",
+            recordReadDescription(MISMATCHED_RECORD_READ_GROUP_ID),
+            "object/record",
+            "object/record/read",
+            true
+        );
+        await grant(OTHER_GROUP_ROLE_ID, MISMATCHED_RECORD_READ_ID);
+        await seedMemberRole(WIDER_GROUP_ROLE_ID, WIDER_GROUP_ID);
+        await seedPermission(
+            WIDER_RECORD_READ_ID,
+            "System managed for access group",
+            recordReadDescription(WIDER_GROUP_ID),
+            "object/record",
+            ["object/record/read", "object/record/update"],
+            true
+        );
+        await grant(WIDER_GROUP_ROLE_ID, WIDER_RECORD_READ_ID);
+        await seedPermission(
+            MISMATCHED_UI_ID,
+            "System managed for access group",
+            uiDescription(MISMATCHED_UI_GROUP_ID),
+            "object/accessGroup",
+            "object/accessGroup/read",
+            false
+        );
+        await grant(OTHER_GROUP_ROLE_ID, MISMATCHED_UI_ID);
 
         await runMigrationSql(pool, false, Infinity, BASELINE_VERSION);
     });
@@ -185,6 +267,59 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
             [MEMBER_USER_ID, MEMBER_ROLE_ID]
         );
         expect(member.rowCount).to.equal(1);
+    });
+
+    describe("leaves lookalikes of the member-role permissions unchanged", () => {
+        async function expectUnchanged(
+            permissionId: string,
+            resourceUri: string,
+            operationUris: string[],
+            roleIds: string[]
+        ) {
+            expect((await permission(permissionId)).resource_uri).to.equal(
+                resourceUri
+            );
+            expect(await permissionOperations(permissionId)).to.deep.equal(
+                operationUris
+            );
+            expect(await roleLinks(permissionId)).to.deep.equal(roleIds);
+        }
+
+        it("a record-read permission held by no role", async () => {
+            await expectUnchanged(
+                ORPHAN_RECORD_READ_ID,
+                "object/record",
+                ["object/record/read"],
+                []
+            );
+        });
+
+        it("a record-read permission held by a role whose description names another group", async () => {
+            await expectUnchanged(
+                MISMATCHED_RECORD_READ_ID,
+                "object/record",
+                ["object/record/read"],
+                [OTHER_GROUP_ROLE_ID]
+            );
+        });
+
+        it("a record-read permission with an extra operation, held by its group's member role", async () => {
+            await expectUnchanged(
+                WIDER_RECORD_READ_ID,
+                "object/record",
+                ["object/record/read", "object/record/update"],
+                [WIDER_GROUP_ROLE_ID]
+            );
+        });
+
+        it("a UI permission held by a role whose description names another group", async () => {
+            await expectUnchanged(
+                MISMATCHED_UI_ID,
+                "object/accessGroup",
+                ["object/accessGroup/read"],
+                [OTHER_GROUP_ROLE_ID]
+            );
+        });
     });
 
     it("registers update and delete operations", async () => {

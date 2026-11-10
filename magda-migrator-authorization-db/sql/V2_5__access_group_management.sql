@@ -13,7 +13,7 @@
 --   `object/accessGroup/read`, keeping its ID, so the group records need no change;
 -- - an unconstrained `object/accessGroup/read`, used only to show the UI: it is
 --   removed, since an unconstrained typed read would cover every group.
--- Both are identified by the exact name and description prefix the API used.
+-- Only permissions that match what the API created are touched (see below).
 -- Agent Skill share groups never had them and are not touched.
 --
 -- The stock role "Access Group Managers" lets its holders create groups and read,
@@ -35,47 +35,93 @@ UPDATE "public"."operations"
 SET "description" = 'Read an access group record. Group members get it as a pre-authorised permission. Holding any `object/accessGroup/read` permission also shows the access group UI.'
 WHERE "uri" = 'object/accessGroup/read';
 
--- Member roles: the pre-authorised record read becomes a pre-authorised typed read.
+-- Member roles. A permission is converted or removed only if it is exactly what the
+-- access group API created:
+-- - its name and description are the API's, and the role the API created for the
+--   same group (described as `auto-created for access group <the group ID>`) holds it;
+-- - the record read is on `object/record`, pre-authorised, with no ownership or org
+--   unit constraint, and has exactly one operation, `object/record/read`;
+-- - the UI read is on `object/accessGroup`, unconstrained, and has exactly one
+--   operation, `object/accessGroup/read`.
+-- Lookalikes that don't qualify are left unchanged and reported with a notice.
+-- (The group records, which hold the permission IDs, are in the registry's database,
+-- out of this migration's reach.)
 
-UPDATE "public"."permission_operations" po
-SET "operation_id" = (SELECT id FROM "public"."operations" WHERE "uri" = 'object/accessGroup/read')
-FROM "public"."permissions" p
-WHERE po."permission_id" = p."id"
-  AND p."name" = 'System managed for access group'
-  AND p."description" LIKE 'Auto-created access group record permission for access group %'
-  AND p."pre_authorised_constraint" = true
-  AND po."operation_id" = (SELECT id FROM "public"."operations" WHERE "uri" = 'object/record/read');
+DO $$
+DECLARE
+    record_read_ids uuid[];
+    ui_read_ids uuid[];
+    skipped record;
+BEGIN
+    SELECT coalesce(array_agg(p."id"), '{}') INTO record_read_ids
+    FROM "public"."permissions" p
+    WHERE p."name" = 'System managed for access group'
+      AND p."resource_id" = (SELECT id FROM "public"."resources" WHERE "uri" = 'object/record')
+      AND p."user_ownership_constraint" = false
+      AND p."org_unit_ownership_constraint" = false
+      AND p."pre_authorised_constraint" = true
+      AND (SELECT count(*) FROM "public"."permission_operations" po WHERE po."permission_id" = p."id") = 1
+      AND EXISTS (
+          SELECT 1 FROM "public"."permission_operations" po
+          WHERE po."permission_id" = p."id"
+            AND po."operation_id" = (SELECT id FROM "public"."operations" WHERE "uri" = 'object/record/read'))
+      AND EXISTS (
+          SELECT 1 FROM "public"."role_permissions" rp
+          JOIN "public"."roles" r ON r."id" = rp."role_id"
+          WHERE rp."permission_id" = p."id"
+            AND r."description" = 'auto-created for access group '
+                || substring(p."description" FROM '^Auto-created access group record permission for access group (.+)\.$'));
 
-UPDATE "public"."permissions"
-SET "resource_id" = (SELECT id FROM "public"."resources" WHERE "uri" = 'object/accessGroup')
-WHERE "name" = 'System managed for access group'
-  AND "description" LIKE 'Auto-created access group record permission for access group %'
-  AND "pre_authorised_constraint" = true;
+    SELECT coalesce(array_agg(p."id"), '{}') INTO ui_read_ids
+    FROM "public"."permissions" p
+    WHERE p."name" = 'System managed for access group'
+      AND p."resource_id" = (SELECT id FROM "public"."resources" WHERE "uri" = 'object/accessGroup')
+      AND p."user_ownership_constraint" = false
+      AND p."org_unit_ownership_constraint" = false
+      AND p."pre_authorised_constraint" = false
+      AND (SELECT count(*) FROM "public"."permission_operations" po WHERE po."permission_id" = p."id") = 1
+      AND EXISTS (
+          SELECT 1 FROM "public"."permission_operations" po
+          WHERE po."permission_id" = p."id"
+            AND po."operation_id" = (SELECT id FROM "public"."operations" WHERE "uri" = 'object/accessGroup/read'))
+      AND EXISTS (
+          SELECT 1 FROM "public"."role_permissions" rp
+          JOIN "public"."roles" r ON r."id" = rp."role_id"
+          WHERE rp."permission_id" = p."id"
+            AND r."description" = 'auto-created for access group '
+                || substring(p."description" FROM '^Auto-created access group UI permission for access group (.+)\.$'));
 
--- Member roles: remove the unconstrained UI-only read.
+    -- The pre-authorised record read becomes a pre-authorised typed read, keeping its
+    -- ID, so the group records need no change.
+    UPDATE "public"."permission_operations"
+    SET "operation_id" = (SELECT id FROM "public"."operations" WHERE "uri" = 'object/accessGroup/read')
+    WHERE "permission_id" = ANY (record_read_ids);
 
-DELETE FROM "public"."role_permissions" WHERE "permission_id" IN (
-    SELECT "id" FROM "public"."permissions"
-    WHERE "name" = 'System managed for access group'
-      AND "description" LIKE 'Auto-created access group UI permission for access group %'
-      AND "user_ownership_constraint" = false
-      AND "org_unit_ownership_constraint" = false
-      AND "pre_authorised_constraint" = false
-);
-DELETE FROM "public"."permission_operations" WHERE "permission_id" IN (
-    SELECT "id" FROM "public"."permissions"
-    WHERE "name" = 'System managed for access group'
-      AND "description" LIKE 'Auto-created access group UI permission for access group %'
-      AND "user_ownership_constraint" = false
-      AND "org_unit_ownership_constraint" = false
-      AND "pre_authorised_constraint" = false
-);
-DELETE FROM "public"."permissions"
-WHERE "name" = 'System managed for access group'
-  AND "description" LIKE 'Auto-created access group UI permission for access group %'
-  AND "user_ownership_constraint" = false
-  AND "org_unit_ownership_constraint" = false
-  AND "pre_authorised_constraint" = false;
+    UPDATE "public"."permissions"
+    SET "resource_id" = (SELECT id FROM "public"."resources" WHERE "uri" = 'object/accessGroup')
+    WHERE "id" = ANY (record_read_ids);
+
+    -- The unconstrained UI-only read is removed.
+    DELETE FROM "public"."role_permissions" WHERE "permission_id" = ANY (ui_read_ids);
+    DELETE FROM "public"."permission_operations" WHERE "permission_id" = ANY (ui_read_ids);
+    DELETE FROM "public"."permissions" WHERE "id" = ANY (ui_read_ids);
+
+    RAISE NOTICE 'V2_5: converted % access group record permission(s) and removed % access group UI permission(s).',
+        cardinality(record_read_ids), cardinality(ui_read_ids);
+
+    FOR skipped IN
+        SELECT p."id", p."description"
+        FROM "public"."permissions" p
+        WHERE p."name" = 'System managed for access group'
+          AND (p."description" LIKE 'Auto-created access group record permission for access group %'
+               OR p."description" LIKE 'Auto-created access group UI permission for access group %')
+          AND NOT (p."id" = ANY (record_read_ids))
+        ORDER BY p."id"
+    LOOP
+        RAISE NOTICE 'V2_5: left permission % ("%") unchanged: it does not match the permission the access group API created for a member role.',
+            skipped."id", skipped."description";
+    END LOOP;
+END $$;
 
 -- The stock "Access Group Managers" role
 
