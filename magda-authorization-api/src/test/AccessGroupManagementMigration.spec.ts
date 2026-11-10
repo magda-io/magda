@@ -1,8 +1,16 @@
 import "mocha";
 import pg from "pg";
 import { expect } from "chai";
+import express from "express";
+import request from "supertest";
+import nock from "nock";
+import createMockAuthDecisionQueryClient from "magda-typescript-common/src/test/createMockAuthDecisionQueryClient.js";
+import { UnconditionalTrueDecision } from "@magda/typescript-common/dist/opa/AuthDecision.js";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
 import getTestDBConfig from "./getTestDBConfig.js";
 import runMigrationSql from "./runMigrationSql.js";
+import Database from "../Database.js";
+import createAccessGroupApiRouter from "../apiRouters/createAccessGroupApiRouter.js";
 
 // The last migration before typed access group management.
 const BASELINE_VERSION = 2.4;
@@ -34,6 +42,15 @@ const WIDER_RECORD_READ_ID = "00000000-0000-4000-8000-0000000000ea";
 // a UI lookalike held by a role whose description names another group
 const MISMATCHED_UI_GROUP_ID = "00000000-0000-4000-8000-0000000000d6";
 const MISMATCHED_UI_ID = "00000000-0000-4000-8000-0000000000eb";
+
+// A record group created by the access group API before V2_5, deleted through the API after it.
+const LEGACY_GROUP_ID = "00000000-0000-4000-8000-0000000000d7";
+const LEGACY_ROLE_ID = "00000000-0000-4000-8000-0000000000ec";
+const LEGACY_GROUP_PERMISSION_ID = "00000000-0000-4000-8000-0000000000ed";
+const LEGACY_RECORD_READ_ID = "00000000-0000-4000-8000-0000000000ee";
+const LEGACY_UI_ID = "00000000-0000-4000-8000-0000000000ef";
+
+const REGISTRY_BASE_URL = "http://localhost:6101/v0";
 
 describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite) {
     this.timeout(30000);
@@ -215,6 +232,39 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
         );
         await grant(OTHER_GROUP_ROLE_ID, MISMATCHED_UI_ID);
 
+        await seedMemberRole(LEGACY_ROLE_ID, LEGACY_GROUP_ID);
+        await seedPermission(
+            LEGACY_GROUP_PERMISSION_ID,
+            "auto-created for access group",
+            `auto-created for access group ${LEGACY_GROUP_ID}`,
+            "object/record",
+            "object/record/read",
+            true
+        );
+        await seedPermission(
+            LEGACY_RECORD_READ_ID,
+            "System managed for access group",
+            recordReadDescription(LEGACY_GROUP_ID),
+            "object/record",
+            "object/record/read",
+            true
+        );
+        await seedPermission(
+            LEGACY_UI_ID,
+            "System managed for access group",
+            uiDescription(LEGACY_GROUP_ID),
+            "object/accessGroup",
+            "object/accessGroup/read",
+            false
+        );
+        for (const permissionId of [
+            LEGACY_GROUP_PERMISSION_ID,
+            LEGACY_RECORD_READ_ID,
+            LEGACY_UI_ID
+        ]) {
+            await grant(LEGACY_ROLE_ID, permissionId);
+        }
+
         await runMigrationSql(pool, false, Infinity, BASELINE_VERSION);
     });
 
@@ -319,6 +369,142 @@ describe("Access Group Management migration (V2_5)", function (this: Mocha.Suite
                 ["object/accessGroup/read"],
                 [OTHER_GROUP_ROLE_ID]
             );
+        });
+    });
+
+    describe("a record group created before V2_5", () => {
+        let database: Database;
+
+        before(() => {
+            // `Database` connects to the `auth` database: point it at the test database instead.
+            database = new Database({ dbHost: dbConfig.host, dbPort: 5432 });
+            const unusedPool = database.getPool();
+            (database as any).pool = pool;
+            return unusedPool.end();
+        });
+
+        afterEach(() => {
+            nock.cleanAll();
+            nock.enableNetConnect();
+        });
+
+        // The group record as the access group API created it before V2_5: it still lists both control
+        // permission IDs, although V2_5 removed the UI permission.
+        function legacyGroupRecord(extraControlPermissionIds: string[]) {
+            return {
+                id: LEGACY_GROUP_ID,
+                name: "Legacy group",
+                aspects: {
+                    "access-group-details": {
+                        name: "Legacy group",
+                        resourceUri: "object/record",
+                        operationUris: ["object/record/read"],
+                        permissionId: LEGACY_GROUP_PERMISSION_ID,
+                        roleId: LEGACY_ROLE_ID,
+                        extraControlPermissionIds
+                    },
+                    "access-control": {
+                        ownerId: null as string | null,
+                        orgUnitId: null as string | null,
+                        preAuthorisedPermissionIds: [LEGACY_RECORD_READ_ID]
+                    }
+                }
+            };
+        }
+
+        // Deletes the group through the access group API, with the registry returning `groupRecord` and no
+        // dataset listing the group permission.
+        async function deleteGroup(groupRecord: any) {
+            nock.disableNetConnect();
+            nock.enableNetConnect("127.0.0.1");
+            let deleted = false;
+            nock(REGISTRY_BASE_URL)
+                .get(`/records/inFull/${LEGACY_GROUP_ID}`)
+                .reply(200, groupRecord)
+                .get("/records")
+                .query(true)
+                .reply(200, { records: [], hasMore: false })
+                .delete(`/records/${LEGACY_GROUP_ID}`)
+                .reply(200, () => {
+                    deleted = true;
+                    return { deleted: true };
+                });
+
+            const app = express();
+            app.use(express.json());
+            app.use(
+                "/v0/auth/accessGroups",
+                createAccessGroupApiRouter({
+                    jwtSecret: "squirrel",
+                    database,
+                    authDecisionClient: createMockAuthDecisionQueryClient(
+                        async () => UnconditionalTrueDecision
+                    ),
+                    registryClient: new AuthorizedRegistryClient({
+                        baseUrl: REGISTRY_BASE_URL,
+                        jwtSecret: "squirrel",
+                        userId: "test-user-id",
+                        tenantId: 0,
+                        maxRetries: 0
+                    })
+                })
+            );
+            const res = await request(app).delete(
+                `/v0/auth/accessGroups/${LEGACY_GROUP_ID}`
+            );
+            return { res, deleted };
+        }
+
+        async function existingPermissions(ids: string[]) {
+            return (
+                await pool.query(
+                    `SELECT id FROM permissions WHERE id = ANY($1::uuid[]) ORDER BY id`,
+                    [ids]
+                )
+            ).rows.map((r) => r.id as string);
+        }
+
+        it("isn't deleted when it lists a control permission that isn't its own", async () => {
+            const { res, deleted } = await deleteGroup(
+                legacyGroupRecord([
+                    LEGACY_RECORD_READ_ID,
+                    LEGACY_UI_ID,
+                    UNRELATED_PERMISSION_ID
+                ])
+            );
+            expect(res.status).to.equal(400);
+            expect(deleted).to.be.false;
+            expect(
+                await existingPermissions([
+                    LEGACY_GROUP_PERMISSION_ID,
+                    LEGACY_RECORD_READ_ID,
+                    UNRELATED_PERMISSION_ID
+                ])
+            ).to.have.members([
+                LEGACY_GROUP_PERMISSION_ID,
+                LEGACY_RECORD_READ_ID,
+                UNRELATED_PERMISSION_ID
+            ]);
+        });
+
+        it("can still be deleted through the access group API once its datasets are removed", async () => {
+            const { res, deleted } = await deleteGroup(
+                legacyGroupRecord([LEGACY_RECORD_READ_ID, LEGACY_UI_ID])
+            );
+            expect(res.status, JSON.stringify(res.body)).to.equal(200);
+            expect(deleted).to.be.true;
+            const roles = await pool.query(
+                `SELECT 1 FROM roles WHERE id = $1`,
+                [LEGACY_ROLE_ID]
+            );
+            expect(roles.rowCount).to.equal(0);
+            expect(
+                await existingPermissions([
+                    LEGACY_GROUP_PERMISSION_ID,
+                    LEGACY_RECORD_READ_ID,
+                    LEGACY_UI_ID
+                ])
+            ).to.deep.equal([]);
         });
     });
 

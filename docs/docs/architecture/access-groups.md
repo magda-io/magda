@@ -90,5 +90,9 @@ API's name and description, the expected resource, constraints and single operat
 API created for the same group. Any other permission is left unchanged, and the migration reports it with a
 `NOTICE` naming its ID, so it can be reviewed by hand.
 
+The group records, in the registry's database, still list the removed UI permission's ID in
+`extraControlPermissionIds`. Deleting a group checks only that each listed permission that still exists is the
+group's own, so these groups can still be deleted.
+
 Any custom grant of `object/record/*` meant to let someone manage a group must be replaced by the typed
 operations.

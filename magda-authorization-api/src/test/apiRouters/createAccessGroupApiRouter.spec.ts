@@ -56,7 +56,7 @@ describe("Access Group API Router", function () {
     // owner / org unit IDs the caller can't manage: update decisions on a group with them are denied
     let unmanagedIds: Set<string>;
     // calls to database.updatePermission
-    let updatePermissionCalls: { id: string; data: any }[];
+    let updatePermissionCalls: { id: string; data: any; client?: any }[];
 
     before(function () {
         nock.disableNetConnect();
@@ -100,8 +100,8 @@ describe("Access Group API Router", function () {
         unmanagedIds = new Set();
         updatePermissionCalls = [];
         db = new mockDatabase();
-        db.updatePermission = async (id: string, data: any) => {
-            updatePermissionCalls.push({ id, data });
+        db.updatePermission = async (id: string, data: any, client?: any) => {
+            updatePermissionCalls.push({ id, data, client });
             return { id };
         };
         db.deleteRole = async () => {};
@@ -152,19 +152,9 @@ describe("Access Group API Router", function () {
                 if (/from\s+roles\s+r\s+join\s+role_permissions/i.test(query)) {
                     return { rows: roleMismatch ? [] : [{ exists: 1 }] };
                 }
-                // the group integrity check: the control permissions are the group's own
+                // the group integrity check: the number of listed control permissions that aren't the group's own
                 if (/count\(\*\).*from\s+permissions/is.test(query)) {
-                    const ids = (params.find((p: any) => Array.isArray(p)) ||
-                        []) as string[];
-                    return {
-                        rows: [
-                            {
-                                count: controlMismatch
-                                    ? Math.max(0, ids.length - 1)
-                                    : ids.length
-                            }
-                        ]
-                    };
+                    return { rows: [{ count: controlMismatch ? 1 : 0 }] };
                 }
                 return { rows: [] as unknown[] };
             }
@@ -743,6 +733,36 @@ describe("Access Group API Router", function () {
                     q.query.toLowerCase().includes("delete from permissions")
                 )
             ).to.be.true;
+        });
+
+        it("deletes a group whose record has no extraControlPermissionIds (created before v2.1.0)", async () => {
+            const groupId = uuidV4();
+            const permissionId = uuidV4();
+            currentGroupDetails = {
+                id: groupId,
+                aspects: {
+                    "access-group-details": {
+                        permissionId,
+                        roleId: uuidV4()
+                    },
+                    "access-control": {
+                        ownerId: null as string | null,
+                        orgUnitId: null as string | null,
+                        preAuthorisedPermissionIds: [] as string[]
+                    }
+                }
+            };
+            registryScope
+                .delete(`/records/${groupId}`)
+                .reply(200, { deleted: true });
+            const res = await request(app)
+                .delete(`/v0/auth/accessGroups/${groupId}`)
+                .send();
+            expect(res.status, JSON.stringify(res.body)).to.equal(200);
+            const deletePermissions = executedQueries.find((q) =>
+                q.query.toLowerCase().includes("delete from permissions")
+            );
+            expect(deletePermissions.params).to.deep.equal([permissionId]);
         });
     });
 
@@ -1752,6 +1772,24 @@ describe("Access Group API Router", function () {
                 .send({ ownerId: newOwner });
             expect(updatePermissionCalls).to.have.length(1);
             expect(updatePermissionCalls[0].data.ownerId).to.equal(newOwner);
+        });
+
+        silenceErrorLogs(() => {
+            it("PUT changing ownerId without operationUris rolls back the group permission's owner when the registry update fails", async () => {
+                const groupId = useGroup();
+                registryScope.put(/.*/).reply(500, "registry unavailable");
+                const res = await request(app)
+                    .put(`/v0/auth/accessGroups/${groupId}`)
+                    .send({ ownerId: uuidV4() });
+                expect(res.status).to.equal(500);
+                // the permission is updated in a transaction, rolled back after the failed registry update
+                expect(updatePermissionCalls).to.have.length(1);
+                expect(updatePermissionCalls[0].client).to.not.equal(undefined);
+                const statements = executedQueries
+                    .map((q) => `${q.query}`.trim().toUpperCase())
+                    .filter((q) => ["BEGIN", "COMMIT", "ROLLBACK"].includes(q));
+                expect(statements).to.deep.equal(["BEGIN", "ROLLBACK"]);
+            });
         });
     });
 });

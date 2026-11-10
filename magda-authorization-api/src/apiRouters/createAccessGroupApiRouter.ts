@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import Database from "../Database.js";
+import Database, { UpdatePermissionOptions } from "../Database.js";
 import respondWithError from "../respondWithError.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient.js";
@@ -265,14 +265,17 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
         }
         const controlIds = ((details?.extraControlPermissionIds ||
             []) as string[]).filter((id) => isUuid(id));
+        // Every listed control permission that still exists must be the group's own. A listed permission may no
+        // longer exist: e.g. the authorization DB migration V2_5 removes the UI permission groups created before
+        // v8 list, but can't change their records, which are in the registry's database.
         if (checkControlPermissions && controlIds.length) {
             const result = await pool.query(
                 ...sqls`SELECT count(*)::int AS count FROM permissions
-                WHERE id = ANY(${controlIds}::uuid[]) AND name = 'System managed for access group' AND description LIKE ${
+                WHERE id = ANY(${controlIds}::uuid[]) AND NOT (name = 'System managed for access group' AND description LIKE ${
                     "%" + groupId + "%"
-                }`.toQuery()
+                })`.toQuery()
             );
-            if (result?.rows?.[0]?.count !== controlIds.length) {
+            if (result?.rows?.[0]?.count !== 0) {
                 throw new ServerError(
                     "The access group's permissions don't match the group.",
                     400
@@ -648,6 +651,39 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    // The group permission and the group record are in different databases. The permission is updated in a
+    // transaction committed only once the group record is updated, so a failed registry update leaves the
+    // permission unchanged.
+    async function updatePermissionWithGroupRecord(
+        permissionId: string,
+        permissionData: UpdatePermissionOptions,
+        groupId: string,
+        accessGroupDetailsAspectData: any,
+        accessControlAspectData: any
+    ) {
+        const client = await database.getPool().connect();
+        try {
+            await client.query("BEGIN");
+            await database.updatePermission(
+                permissionId,
+                permissionData,
+                client
+            );
+            const result = await updateAccessGroupRecord(
+                groupId,
+                accessGroupDetailsAspectData,
+                accessControlAspectData
+            );
+            await client.query("COMMIT");
+            return result;
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
+        }
+    }
+
     async function updateAccessGroupRecord(
         groupId: string,
         accessGroupDetailsAspectData: any,
@@ -951,18 +987,27 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     // no need to update permission operations as it's not supplied,
                     // but keep the group permission's owner in step with the group's
                     if (typeof data?.ownerId !== "undefined") {
-                        await database.updatePermission(permissionId, {
-                            ownerId: data.ownerId,
-                            editBy: userId ? userId : null
-                        });
+                        res.json(
+                            await updatePermissionWithGroupRecord(
+                                permissionId,
+                                {
+                                    ownerId: data.ownerId,
+                                    editBy: userId ? userId : null
+                                },
+                                groupId,
+                                accessGroupDetailsAspectData,
+                                accessControlAspectData
+                            )
+                        );
+                    } else {
+                        res.json(
+                            await updateAccessGroupRecord(
+                                groupId,
+                                accessGroupDetailsAspectData,
+                                accessControlAspectData
+                            )
+                        );
                     }
-                    res.json(
-                        await updateAccessGroupRecord(
-                            groupId,
-                            accessGroupDetailsAspectData,
-                            accessControlAspectData
-                        )
-                    );
                     return;
                 } else {
                     const resourceUri =
@@ -1000,13 +1045,13 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                     ] = operationUris;
                 }
 
-                const pool = database.getPool();
-                const client = await pool.connect();
+                accessGroupDetailsAspectData["editBy"] = userId;
+                accessGroupDetailsAspectData[
+                    "editTime"
+                ] = new Date().toISOString();
 
-                try {
-                    await client.query("BEGIN");
-
-                    await database.updatePermission(
+                res.json(
+                    await updatePermissionWithGroupRecord(
                         permissionId,
                         {
                             operationUris: data.operationUris,
@@ -1016,28 +1061,11 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                                 : {}),
                             editBy: userId ? userId : null
                         },
-                        client
-                    );
-
-                    accessGroupDetailsAspectData["editBy"] = userId;
-                    accessGroupDetailsAspectData[
-                        "editTime"
-                    ] = new Date().toISOString();
-
-                    res.json(
-                        await updateAccessGroupRecord(
-                            groupId,
-                            accessGroupDetailsAspectData,
-                            accessControlAspectData
-                        )
-                    );
-                    await client.query("COMMIT");
-                } catch (e) {
-                    await client.query("ROLLBACK");
-                    throw e;
-                } finally {
-                    client.release();
-                }
+                        groupId,
+                        accessGroupDetailsAspectData,
+                        accessControlAspectData
+                    )
+                );
             } catch (e) {
                 respondWithError(
                     `Update Access Group: ${req?.params?.id}`,
@@ -1098,11 +1126,11 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                         "roleId"
                     ];
 
-                const extraControlPermissionIds = accessGroupRecord?.aspects?.[
-                    "access-group-details"
-                ]?.["extraControlPermissionIds"].filter((pid: string) =>
-                    isUuid(pid)
-                );
+                // groups created before v2.1.0 have no `extraControlPermissionIds`
+                const extraControlPermissionIds = ((accessGroupRecord
+                    ?.aspects?.["access-group-details"]?.[
+                    "extraControlPermissionIds"
+                ] || []) as string[]).filter((pid: string) => isUuid(pid));
 
                 if (!isUuid(permissionId)) {
                     throw new ServerError(
