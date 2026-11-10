@@ -185,10 +185,6 @@ test_create_owner_constraint_skill_share_group_denied {
 	not create([owner_permission], {"ownerId": user_id, "resourceUri": "object/agentSkill/user"})
 }
 
-test_create_owner_constraint_share_keyword_denied {
-	not create([owner_permission], {"ownerId": user_id, "keywords": ["a", "agent-skill-share-0123abcd"]})
-}
-
 test_create_unconstrained_skill_share_group_allowed {
 	create([unconstrained_permission], {"ownerId": null, "resourceUri": "object/agentSkill/user", "keywords": ["agent-skill-share-0123abcd"]})
 }

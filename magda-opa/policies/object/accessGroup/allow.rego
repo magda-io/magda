@@ -46,15 +46,12 @@ verifyCreatePermission {
 	hasNoConstraintPermission("object/accessGroup/create")
 }
 
-# Constrained grants create only record groups, without Agent Skill share keywords: Agent Skill share
-# groups are created by Agent Services.
+# Constrained grants create only record groups: Agent Skill share groups are created by Agent Services.
+# The access group API also requires an unconstrained grant to set an Agent Skill share keyword: the check
+# is made there, because a built-in function on the unknown group's keywords can't be translated into a
+# partial decision's SQL.
 constrainedCreateAllowed {
 	input.object.accessGroup.resourceUri == "object/record"
-	not hasShareKeyword
-}
-
-hasShareKeyword {
-	startswith(input.object.accessGroup.keywords[_], "agent-skill-share-")
 }
 
 # With an ownership constraint, the new group must be owned by the user.

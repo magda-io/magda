@@ -328,6 +328,11 @@ describe("Access Group API Router", function () {
                     const groupId = config?.input?.object?.accessGroup?.id;
                     const groupAccessControl =
                         config?.input?.object?.accessGroup?.["access-control"];
+                    // the unconstrained create check is made on a group with no owner or org unit
+                    const unconstrainedCreateCheck =
+                        config.operationUri === "object/accessGroup/create" &&
+                        config?.input?.object?.accessGroup?.ownerId === null &&
+                        config?.input?.object?.accessGroup?.orgUnitId === null;
                     if (
                         config.operationUri === "object/accessGroup/update" &&
                         groupAccessControl &&
@@ -340,7 +345,8 @@ describe("Access Group API Router", function () {
                         deniedOperations.has(config.operationUri) ||
                         (recordId && deniedRecordIds.has(recordId)) ||
                         (notUnconstrained &&
-                            groupId === "unconstrained-access-group-check")
+                            (groupId === "unconstrained-access-group-check" ||
+                                unconstrainedCreateCheck))
                     ) {
                         return UnconditionalFalseDecision;
                     }
@@ -1545,6 +1551,37 @@ describe("Access Group API Router", function () {
                 expect(res.status).to.equal(403);
             });
 
+            it("POST / returns 403 when a constrained creator sets an Agent Skill share keyword", async () => {
+                notUnconstrained = true;
+                let written = false;
+                registryScope.post("/records").reply(200, () => {
+                    written = true;
+                    return {};
+                });
+                const res = await request(app)
+                    .post("/v0/auth/accessGroups")
+                    .set("X-Magda-Session", buildJwt(argv.jwtSecret, uuidV4()))
+                    .send({
+                        name: "A group",
+                        resourceUri: "object/record",
+                        keywords: ["a", "agent-skill-share-0123abcd"],
+                        operationUris: ["object/record/read"]
+                    });
+                expect(res.status).to.equal(403);
+                expect(written).to.be.false;
+                const check = decisionConfigs.find(
+                    (c) =>
+                        c.operationUri === "object/accessGroup/create" &&
+                        c.input.object.accessGroup.ownerId === null
+                );
+                expect(check.input.object.accessGroup).to.deep.include({
+                    resourceUri: "object/record",
+                    keywords: [],
+                    ownerId: null,
+                    orgUnitId: null
+                });
+            });
+
             it("remove-user returns 400 when the stored role isn't the group's member role", async () => {
                 const groupId = useGroup();
                 roleMismatch = true;
@@ -1578,6 +1615,53 @@ describe("Access Group API Router", function () {
                 );
                 expect(res.status).to.equal(400);
             });
+        });
+
+        it("POST / allows an unconstrained creator to set an Agent Skill share keyword", async () => {
+            registryScope
+                .post("/records", (body) => {
+                    registryRequestBody = body;
+                    return true;
+                })
+                .reply(200, () => ({ id: registryRequestBody.id }));
+            const res = await request(app)
+                .post("/v0/auth/accessGroups")
+                .set("X-Magda-Session", buildJwt(argv.jwtSecret, uuidV4()))
+                .send({
+                    name: "A group",
+                    resourceUri: "object/record",
+                    keywords: ["agent-skill-share-0123abcd"],
+                    operationUris: ["object/record/read"]
+                });
+            expect(res.status).to.equal(200);
+            expect(
+                registryRequestBody.aspects["access-group-details"].keywords
+            ).to.deep.equal(["agent-skill-share-0123abcd"]);
+        });
+
+        it("POST / skips the unconstrained check without a share keyword", async () => {
+            notUnconstrained = true;
+            registryScope
+                .post("/records", (body) => {
+                    registryRequestBody = body;
+                    return true;
+                })
+                .reply(200, () => ({ id: registryRequestBody.id }));
+            const res = await request(app)
+                .post("/v0/auth/accessGroups")
+                .set("X-Magda-Session", buildJwt(argv.jwtSecret, uuidV4()))
+                .send({
+                    name: "A group",
+                    resourceUri: "object/record",
+                    keywords: ["a"],
+                    operationUris: ["object/record/read"]
+                });
+            expect(res.status).to.equal(200);
+            expect(
+                decisionConfigs.filter(
+                    (c) => c.operationUri === "object/accessGroup/create"
+                )
+            ).to.have.length(1);
         });
 
         it("PUT allows narrowing operationUris without an unconstrained grant", async () => {

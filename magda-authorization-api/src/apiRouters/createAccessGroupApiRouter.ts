@@ -152,29 +152,35 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
     }
 
     // Whether the caller holds an unconstrained grant of an access group operation: the decision is made on a
-    // group no ownership, org unit or pre-authorised constraint covers.
+    // group no ownership, org unit or pre-authorised constraint covers. For create, that's a group to be
+    // created; for the other operations, a group record.
     async function hasUnconstrainedAccessGroupPermission(
         req: Request,
         operationUri: string
     ) {
+        const accessGroup =
+            operationUri === "object/accessGroup/create"
+                ? {
+                      resourceUri: RECORD_RESOURCE_URI,
+                      keywords: [] as string[],
+                      ownerId: null as string | null,
+                      orgUnitId: null as string | null
+                  }
+                : {
+                      id: "unconstrained-access-group-check",
+                      "access-group-details": {
+                          resourceUri: RECORD_RESOURCE_URI
+                      },
+                      "access-control": {
+                          ownerId: null as string | null,
+                          orgUnitId: null as string | null,
+                          preAuthorisedPermissionIds: [] as string[]
+                      }
+                  };
         const decision = await authDecisionClient.getAuthDecision(
             {
                 operationUri,
-                input: {
-                    object: {
-                        accessGroup: {
-                            id: "unconstrained-access-group-check",
-                            "access-group-details": {
-                                resourceUri: RECORD_RESOURCE_URI
-                            },
-                            "access-control": {
-                                ownerId: null,
-                                orgUnitId: null,
-                                preAuthorisedPermissionIds: []
-                            }
-                        }
-                    }
-                }
+                input: { object: { accessGroup } }
             },
             req.get("X-Magda-Session")
         );
@@ -460,6 +466,29 @@ export default function createAccessGroupApiRouter(options: ApiRouterOptions) {
                 }
             }
         })),
+        // Agent Skill share keywords are reserved for Agent Services' share groups. The policy can't check
+        // keywords' prefixes and still have a translatable partial decision, so the check is made here.
+        async (req: Request, res: Response, next: NextFunction) => {
+            try {
+                const keywords = res.locals.accessGroupCreationData
+                    .keywords as string[];
+                if (
+                    keywords.some((k) => k.startsWith("agent-skill-share-")) &&
+                    !(await hasUnconstrainedAccessGroupPermission(
+                        req,
+                        "object/accessGroup/create"
+                    ))
+                ) {
+                    throw new ServerError(
+                        "Only an unconstrained `object/accessGroup/create` grant can set an Agent Skill share keyword.",
+                        403
+                    );
+                }
+                next();
+            } catch (e) {
+                respondWithError("Create Access Group", res, e);
+            }
+        },
         async (req: Request, res: Response) => {
             try {
                 const agData = res.locals.accessGroupCreationData;
