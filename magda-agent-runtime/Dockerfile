@@ -2,6 +2,12 @@
 #   cd magda-agent-runtime && yarn prepare-docker
 #   create-docker-context-for-node-component --build --tag magda-agent-runtime:local
 ARG NODE_VERSION=22.22.0
+ARG DSH_VERSION=0.2.1-alpha.1
+# Source baseline: official dsh-v0.2.1-alpha.1, mirrored in this clean fork branch.
+# Pin the full Git SHA: moving the branch later must NOT change MAGDA's build.
+ARG DSH_SOURCE_REPO=https://github.com/t83714/deepseek-harness.git
+ARG DSH_SOURCE_BRANCH=upstream/0.2.1-alpha.1
+ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
 ARG UV_VERSION=0.13.6
 ARG UV_IMAGE_DIGEST=sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0
 
@@ -9,8 +15,35 @@ ARG UV_IMAGE_DIGEST=sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8ed
 # index digest. Only its binaries are copied; the runtime keeps Debian's Python.
 FROM ghcr.io/astral-sh/uv:${UV_VERSION}@${UV_IMAGE_DIGEST} AS uv
 
+# Build the exact source commit and its local workspace dependency closure.
+# The pinned DSH package is a pnpm monorepo, not an installable Git root package.
+# Use the same Node major/minor in build and runtime for native add-on ABI parity.
+FROM node:${NODE_VERSION}-bookworm-slim AS dsh-build
+ARG DSH_VERSION
+ARG DSH_SOURCE_REPO
+ARG DSH_SOURCE_BRANCH
+ARG DSH_SOURCE_SHA
+ENV DSH_TELEMETRY_DISABLED=1
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates git build-essential python3 \
+  && rm -rf /var/lib/apt/lists/* \
+  && corepack enable \
+  && corepack prepare pnpm@11.7.0 --activate
+WORKDIR /src/dsh
+RUN git clone --depth=1 --branch "${DSH_SOURCE_BRANCH}" "${DSH_SOURCE_REPO}" . \
+  && test "$(git rev-parse HEAD)" = "${DSH_SOURCE_SHA}" \
+  && test "$(node -p 'require("./package.json").version')" = "${DSH_VERSION}" \
+  && test "$(node -p 'require("./apps/cli/package.json").version')" = "${DSH_VERSION}"
+# deploy --legacy is required for this pnpm 11 workspace's linked packages.
+# It creates an isolated, portable production dependency tree, with artifacts
+# built from this exact source checkout rather than official npm DSH packages.
+RUN pnpm install --frozen-lockfile \
+  && pnpm run build:official \
+  && pnpm --filter @deepseek-ai/dsh --prod deploy --legacy /opt/dsh-release \
+  && test -f /opt/dsh-release/lib/bin.js
+
 FROM node:${NODE_VERSION}-bookworm-slim
-ARG DSH_VERSION=0.2.1-alpha.1
+ARG DSH_VERSION
 ARG UV_VERSION
 COPY --from=uv /uv /usr/local/lib/magda-agent/uv
 COPY --chmod=0755 component/uv-wrapper.sh /usr/local/bin/uv
@@ -22,12 +55,18 @@ RUN apt-get update \
   && /usr/local/lib/magda-agent/uv --version | grep -Eq "^uv ${UV_VERSION}( |$)" \
   && python3 -m pip --version \
   && python3 -c 'import venv'
-RUN npm install -g --no-audit --no-fund "@deepseek-ai/dsh@${DSH_VERSION}" \
-  && npm cache clean --force
+# Keep the existing runtime layout expected by MAGDA's managed profile
+# plugins, but source every DSH workspace package from the pinned fork commit.
+COPY --from=dsh-build /opt/dsh-release/ /usr/local/lib/node_modules/@deepseek-ai/dsh/
+RUN printf '#!/bin/sh\nexec node /usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js "$@"\n' > /usr/local/bin/dsh \
+  && chmod 0755 /usr/local/bin/dsh \
+  && dsh --version | grep -F "${DSH_VERSION}"
 # The pinned DSH release hard-codes its first-use directory name. Fail closed if
 # that exact implementation changes, then brand both published entry points.
 RUN set -eu; \
-  package=/usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@deepseek-ai/dsh-api-workspace-controller; \
+  package="$(find /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules \
+    -type d -path '*/node_modules/@deepseek-ai/dsh-api-workspace-controller' -print -quit)"; \
+  test -n "$package"; \
   bundled="$package/lib/index.js"; typed="$package/lib/types/default-directory.js"; \
   test "$(grep -F -c 'paths.join(directory, "deepseek-harness", DEFAULT_WORKSPACE_DIRECTORY)' "$bundled")" = 1; \
   test "$(grep -F -c "paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)" "$typed")" = 1; \
