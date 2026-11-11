@@ -25,7 +25,7 @@ ARG DSH_SOURCE_BRANCH
 ARG DSH_SOURCE_SHA
 ENV DSH_TELEMETRY_DISABLED=1
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates git build-essential python3 \
+  && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
   && rm -rf /var/lib/apt/lists/* \
   && corepack enable \
   && corepack prepare pnpm@11.7.0 --activate
@@ -34,17 +34,33 @@ RUN git clone --depth=1 --branch "${DSH_SOURCE_BRANCH}" "${DSH_SOURCE_REPO}" . \
   && test "$(git rev-parse HEAD)" = "${DSH_SOURCE_SHA}" \
   && test "$(node -p 'require("./package.json").version')" = "${DSH_VERSION}" \
   && test "$(node -p 'require("./apps/cli/package.json").version')" = "${DSH_VERSION}"
-# deploy --legacy is required for this pnpm 11 workspace's linked packages.
-# It creates an isolated, portable production dependency tree, with artifacts
-# built from this exact source checkout rather than official npm DSH packages.
-RUN pnpm install --frozen-lockfile \
-  && pnpm run build:official \
-  && pnpm --filter @deepseek-ai/dsh --prod deploy --legacy /opt/dsh-release \
-  && test -f /opt/dsh-release/lib/bin.js
+RUN pnpm install --frozen-lockfile
+RUN pnpm run build:official \
+  && pnpm exec tsx native/system/scripts/build.ts \
+  && pnpm run verify-runtime-closure
+# The CLI manifest alone does not provide its required runtime peers. Use the
+# upstream executable assembly. Modern offline deploy preserves the committed
+# external graph; pnpm 11 legacy+hoisted deploy silently ignores that lockfile.
+COPY component/prepare-dsh-deploy.mjs component/verify-dsh-lock.mjs component/deploy-dsh.mjs /opt/
+RUN node /opt/prepare-dsh-deploy.mjs \
+  && pnpm --filter dsh-python-runtime-closure --prod deploy --offline \
+    --config.inject-workspace-packages=true --config.allow-unused-patches=true \
+    --config.node-linker=hoisted /opt/dsh-release \
+  && git diff --exit-code -- pnpm-lock.yaml \
+  && node /opt/verify-dsh-lock.mjs /opt/dsh-release \
+  && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_SOURCE_BRANCH="${DSH_SOURCE_BRANCH}" \
+    DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release \
+  && test -f /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js \
+  && node /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js --version
 
 FROM node:${NODE_VERSION}-bookworm-slim
 ARG DSH_VERSION
+ARG DSH_SOURCE_REPO
+ARG DSH_SOURCE_SHA
 ARG UV_VERSION
+LABEL io.magda.dsh.source="${DSH_SOURCE_REPO}" \
+  io.magda.dsh.revision="${DSH_SOURCE_SHA}" \
+  io.magda.dsh.version="${DSH_VERSION}"
 COPY --from=uv /uv /usr/local/lib/magda-agent/uv
 COPY --chmod=0755 component/uv-wrapper.sh /usr/local/bin/uv
 RUN apt-get update \
@@ -57,16 +73,20 @@ RUN apt-get update \
   && python3 -c 'import venv'
 # Keep the existing runtime layout expected by MAGDA's managed profile
 # plugins, but source every DSH workspace package from the pinned fork commit.
-COPY --from=dsh-build /opt/dsh-release/ /usr/local/lib/node_modules/@deepseek-ai/dsh/
-RUN printf '#!/bin/sh\nexec node /usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js "$@"\n' > /usr/local/bin/dsh \
+COPY --from=dsh-build /opt/dsh-release/node_modules/ /usr/local/lib/magda-agent/dsh/node_modules/
+COPY --from=dsh-build /opt/dsh-release/provenance/ /usr/local/share/magda-agent/
+# Isolate DSH's locked external dependencies from MAGDA's separately built mgd
+# dependency tree. Preserve the existing global CLI path for managed plugins.
+RUN mkdir -p /usr/local/lib/node_modules/@deepseek-ai \
+  && ln -s /usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/dsh /usr/local/lib/node_modules/@deepseek-ai/dsh \
+  && printf '#!/bin/sh\nexec node /usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js "$@"\n' > /usr/local/bin/dsh \
   && chmod 0755 /usr/local/bin/dsh \
-  && dsh --version | grep -F "${DSH_VERSION}"
+  && test "$(dsh --version)" = "${DSH_VERSION}"
 # The pinned DSH release hard-codes its first-use directory name. Fail closed if
 # that exact implementation changes, then brand both published entry points.
 RUN set -eu; \
-  package="$(find /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules \
-    -type d -path '*/node_modules/@deepseek-ai/dsh-api-workspace-controller' -print -quit)"; \
-  test -n "$package"; \
+  package=/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/dsh-api-workspace-controller; \
+  test -d "$package"; \
   bundled="$package/lib/index.js"; typed="$package/lib/types/default-directory.js"; \
   test "$(grep -F -c 'paths.join(directory, "deepseek-harness", DEFAULT_WORKSPACE_DIRECTORY)' "$bundled")" = 1; \
   test "$(grep -F -c "paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)" "$typed")" = 1; \
@@ -88,7 +108,7 @@ RUN groupadd --gid 10001 agent \
   && useradd --uid 10001 --gid 10001 --create-home --shell /bin/bash agent \
   && mkdir -p /data /run/magda-agent \
   && chown -R agent:agent /data /run/magda-agent \
-  && install -d -m 0755 /etc/magda-agent /usr/local/lib/magda-agent \
+  && install -d -m 0755 /etc/magda-agent /usr/local/lib/magda-agent /usr/local/lib/magda-agent/qualification \
   && install -o root -g root -m 0444 /dev/null /etc/magda-agent/workspace-runtime
 COPY --chmod=0644 component/magda.cordis.patch.yml /etc/magda-agent/magda.cordis.patch.yml
 COPY --chmod=0755 component/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
@@ -120,5 +140,11 @@ ENV DSH_HOME=/data/agent-home \
 USER 10001:10001
 RUN mgd skills install --agent codex
 WORKDIR /data/workspace
+# Execute detached packaging/native checks as the actual runtime user on every
+# target architecture, before an image can be published by CI.
+COPY --chmod=0644 component/test-image.mjs /usr/local/lib/magda-agent/qualification/test-image.mjs
+COPY --chmod=0644 component/test-image-web.mjs /usr/local/lib/magda-agent/qualification/test-image-web.mjs
+RUN node /usr/local/lib/magda-agent/qualification/test-image.mjs \
+  && MAGDA_IMAGE_TEST=1 node /usr/local/lib/magda-agent/qualification/test-image-web.mjs
 EXPOSE 3080
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/magda-agent-entrypoint"]

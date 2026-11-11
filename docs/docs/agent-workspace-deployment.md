@@ -81,12 +81,35 @@ silently consuming a new revision.
 
 The DSH source is a **pnpm monorepo** with local `workspace:` dependencies.
 The builder therefore uses the commit's frozen `pnpm-lock.yaml`, runs
-`pnpm run build:official`, and deploys the production dependency closure via
-`pnpm --filter @deepseek-ai/dsh --prod deploy --legacy` (needed for the
-repository's pnpm 11 configuration). It does **not** use `npm install` against
-the public `@deepseek-ai/dsh` package. The final runtime keeps the existing
-MAGDA `mgd`, Python/`uv`, managed plugins, non-root user, entrypoint, and
-bootstrap contracts.
+`pnpm run build:official`, builds the architecture-native system binaries
+(including the static-musl Landlock launcher), and verifies the upstream runtime
+closure. It deploys **`dsh-python-runtime-closure`**, the upstream executable
+assembly, with modern `--prod deploy --offline`, a hoisted linker and
+`inject-workspace-packages=true`. **Do not use pnpm 11's legacy hoisted deploy:**
+it disables lockfile usage and can silently re-resolve external dependencies.
+Modern deploy creates a dedicated frozen closure lock from the committed lockfile;
+a post-deploy audit rejects external package/snapshot drift and any registry
+resolution of a source workspace package. Offline deployment prohibits fetching
+replacement tarballs after the frozen install. The one reviewed workspace
+postinstall retains its approval under the converted absolute `file:` identity;
+all other upstream script approvals/denials remain unchanged.
+
+Deploying the CLI manifest alone is insufficient: required workspace peers and
+dynamically loaded preset plugins are not all ordinary CLI dependencies. The
+packaging helper materializes links and compares every shipped workspace payload
+to the pinned source build. It does
+**not** install public DSH workspace tarballs from npm. External dependencies
+(including some packages in the `@deepseek-ai` scope) still come from the frozen
+lockfile; source mirroring is not a ban on all registry dependencies.
+
+The resulting dependency assembly is isolated under
+`/usr/local/lib/magda-agent/dsh/node_modules` so MAGDA's `mgd` dependencies cannot
+overwrite DSH's locked dependency versions. A global CLI symlink preserves the
+managed-plugin installation path. `/usr/local/share/magda-agent/dsh-source.json`
+records the source pin, workspace artifact hashes, and package/license inventory;
+the upstream license and third-party notices are retained beside it. The final
+runtime keeps the existing MAGDA `mgd`, Python/`uv`, managed plugins, non-root
+user, entrypoint, and bootstrap contracts.
 
 This change concerns **where the DSH executable and dependent packages come
 from**, not the user-facing harness or the Kubernetes isolation runtime. The

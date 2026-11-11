@@ -90,13 +90,48 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    /--prod deploy --legacy/,
+    /--prod deploy --offline/,
     "The source build must deploy its workspace dependency closure"
 );
 assert.match(
     dockerfile,
-    /COPY --from=dsh-build \/opt\/dsh-release\//,
+    /COPY --from=dsh-build \/opt\/dsh-release\/node_modules\//,
     "Only built DSH production artifacts should enter the runtime image"
+);
+assert.match(
+    dockerfile,
+    /--filter dsh-python-runtime-closure/,
+    "Deploy the peer-complete upstream runtime assembly, not the CLI alone"
+);
+assert.match(
+    dockerfile,
+    /pnpm run verify-runtime-closure/,
+    "Check preset plugins and required workspace peers before packaging"
+);
+assert.doesNotMatch(
+    dockerfile,
+    /deploy --legacy/,
+    "pnpm 11 legacy hoisted deploy ignores the source lockfile"
+);
+assert.match(
+    dockerfile,
+    /--config.inject-workspace-packages=true/,
+    "Use lockfile-preserving modern deploy"
+);
+assert.match(
+    dockerfile,
+    /node \/opt\/verify-dsh-lock.mjs/,
+    "Reject external resolution drift and registry workspace substitutions"
+);
+assert.match(
+    dockerfile,
+    /pnpm exec tsx native\/system\/scripts\/build.ts/,
+    "Build the native launcher, not only the host addon"
+);
+assert.match(
+    dockerfile,
+    /node \/opt\/deploy-dsh.mjs/,
+    "Validate deployed artifacts against pinned source"
 );
 assert.doesNotMatch(
     dockerfile,
@@ -359,7 +394,7 @@ assert.match(packageJson.scripts.check, /bash -n entrypoint\.sh/);
 assert.equal(packageJson.scripts.build, "yarn run check");
 assert.match(
     packageJson.scripts.test,
-    /yarn run check && node test-runtime\.mjs/
+    /yarn run check && node --test test-deploy-dsh\.mjs test-dsh-lock\.mjs && node test-image\.mjs --self-test && node test-runtime\.mjs/
 );
 assert.match(packageJson.scripts["prepare-docker"], /packages\/mgd build/);
 assert.match(
