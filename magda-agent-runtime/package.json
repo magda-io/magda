@@ -7,9 +7,10 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "check": "bash -n entrypoint.sh && bash -n uv-wrapper.sh && sh -n workspace-resources.sh && node --check prepare-dsh-deploy.mjs && node --check verify-dsh-lock.mjs && node --check deploy-dsh.mjs && node --check test-image.mjs && node --check test-image-web.mjs && node --check bootstrap.mjs && node --check dsh-launch.mjs && node --check session-history.mjs && node --check dsh-agent-skill-tools/lib/operations.js",
+    "check": "bash -n entrypoint.sh && bash -n uv-wrapper.sh && sh -n workspace-resources.sh && node --check prepare-dsh-deploy.mjs && node --check verify-dsh-lock.mjs && node --check deploy-dsh.mjs && node --check prune-dsh-runtime.mjs && node --check test-image.mjs && node --check test-image-web.mjs && node --check bootstrap.mjs && node --check dsh-launch.mjs && node --check session-history.mjs && node --check dsh-agent-skill-tools/lib/operations.js",
     "build": "yarn run check",
-    "test": "yarn run check && node --test test-deploy-dsh.mjs test-dsh-lock.mjs && node test-image.mjs --self-test && node test-runtime.mjs && node test-workflow-capture.mjs && node test-session-history.mjs && node test-agent-skill-tools.mjs",
+    "test": "yarn run check && node --test test-deploy-dsh.mjs test-dsh-lock.mjs test-prune-dsh-runtime.mjs && node test-image.mjs --self-test && node test-runtime.mjs && node test-workflow-capture.mjs && node test-session-history.mjs && node test-agent-skill-tools.mjs",
+    "test:qualification": "node --test qualification/test-source-references.mjs qualification/test-retag-runtime.mjs && python3 qualification/test-image-evidence.py && python3 qualification/test-published-image.py",
     "prepare-docker": "yarn --cwd ../packages/mgd build && test -x ../packages/mgd/bin/mgd.js && yarn test",
     "predocker-build-local": "yarn prepare-docker",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
@@ -26,7 +27,7 @@
   "config": {
     "docker": {
       "name": "magda-agent-runtime",
-      "include": "node_modules Dockerfile prepare-dsh-deploy.mjs verify-dsh-lock.mjs deploy-dsh.mjs test-image.mjs test-image-web.mjs dsh-client-managed-profile dsh-workflow-capture-guidance dsh-agent-skill-tools skills magda.cordis.patch.yml entrypoint.sh uv-wrapper.sh workspace-resources.sh bootstrap.mjs dsh-launch.mjs session-history.mjs"
+      "include": "node_modules Dockerfile prepare-dsh-deploy.mjs verify-dsh-lock.mjs deploy-dsh.mjs prune-dsh-runtime.mjs test-image.mjs test-image-web.mjs dsh-client-managed-profile dsh-workflow-capture-guidance dsh-agent-skill-tools skills magda.cordis.patch.yml entrypoint.sh uv-wrapper.sh workspace-resources.sh bootstrap.mjs dsh-launch.mjs session-history.mjs"
     }
   },
   "magda": {

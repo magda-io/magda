@@ -30,7 +30,7 @@ const EXPECTED = Object.freeze({
     branch: "upstream/0.2.1-alpha.1",
     sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc",
     version: "0.2.1-alpha.1",
-    assembly: "dsh-python-runtime-closure"
+    assembly: "magda-dsh-cli-peer-closure"
 });
 const CLI = "/usr/local/lib/node_modules/@deepseek-ai/dsh";
 const PROVENANCE = "/usr/local/share/magda-agent/dsh-source.json";

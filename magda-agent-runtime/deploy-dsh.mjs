@@ -19,7 +19,7 @@ import path from "node:path";
 const source = process.cwd();
 const target = path.resolve(process.argv[2]);
 assert(target !== source && !source.startsWith(target + path.sep));
-const manifest = JSON.parse(
+let manifest = JSON.parse(
     await readFile(path.join(target, "package.json"), "utf8")
 );
 const modules = path.join(target, "node_modules");
@@ -56,6 +56,12 @@ async function materialize(directory) {
     }
 }
 await materialize(modules);
+if (process.argv.includes("--prune")) {
+    const { pruneRuntime } = await import("./prune-dsh-runtime.mjs");
+    const report = await pruneRuntime({ root: target });
+    console.log(`Production CLI closure: removed ${report.removed.length}, retained ${report.retained.packages} package instances`);
+    manifest = JSON.parse(await readFile(path.join(target, "package.json"), "utf8"));
+}
 
 const workspace = new Map();
 const root = JSON.parse(await readFile("package.json", "utf8"));

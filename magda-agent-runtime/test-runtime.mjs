@@ -88,6 +88,10 @@ assert.match(
     /pnpm install --frozen-lockfile/,
     "The pinned source build must use the committed dependency lockfile"
 );
+assert.match(dockerfile, /FROM --platform=\$BUILDPLATFORM node:\$\{NODE_VERSION\}-bookworm-slim AS dsh-source-build/, "Compile JS/Web on the native build CPU, not through target emulation");
+assert.match(dockerfile, /tar --exclude='node_modules' --exclude='\.\/native\/system\/packages\/\*\/bin' -cf \/opt\/dsh-built-source\.tar/, "Never copy host dependency trees into target native modules");
+assert.match(dockerfile, /COPY --from=dsh-source-build \/opt\/dsh-built-source\.tar/, "Transfer only built source payloads into the target stage");
+assert.match(dockerfile, /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune/, "Ship the CLI's required peer closure, not optional-only server branches");
 assert.match(
     dockerfile,
     /--prod deploy --offline/,
@@ -394,7 +398,7 @@ assert.match(packageJson.scripts.check, /bash -n entrypoint\.sh/);
 assert.equal(packageJson.scripts.build, "yarn run check");
 assert.match(
     packageJson.scripts.test,
-    /yarn run check && node --test test-deploy-dsh\.mjs test-dsh-lock\.mjs && node test-image\.mjs --self-test && node test-runtime\.mjs/
+    /yarn run check && node --test test-deploy-dsh\.mjs test-dsh-lock\.mjs test-prune-dsh-runtime\.mjs && node test-image\.mjs --self-test && node test-runtime\.mjs/
 );
 assert.match(packageJson.scripts["prepare-docker"], /packages\/mgd build/);
 assert.match(

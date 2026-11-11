@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "scope": "Narrow source/notice evidence for existing PR3916 runtime components; not a compliance certification or dependency policy",
+  "observedImage": {
+    "reference": "magda-agent-runtime:source-pinned-local",
+    "id": "sha256:df9b0bc33cfe6797927869f4d63598f9aff5c36126c9d318de2029cfc0a41df5",
+    "architecture": "arm64",
+    "os": "linux",
+    "purpose": "Observation only. Always qualify the final image digest separately."
+  },
+  "magdaLicense": {
+    "spdx": "Apache-2.0",
+    "repositoryPath": "LICENSE",
+    "bundlePath": "licenses/MAGDA-Apache-2.0.txt",
+    "sha256": "b27d704504a5e516616724af61c5630b5641778e15fb96d80499141ee59832d2",
+    "scope": "MAGDA-owned code only; never substitute this for dependency licenses"
+  },
+  "additionalObservedImage": {
+    "reference": "magda-agent-runtime:source-pinned-pruned-amd64",
+    "id": "sha256:648c7e0d64b888deecc21862b7e711166982fc89105fe35019cf3d7ac6c71f51",
+    "architecture": "amd64",
+    "os": "linux",
+    "purpose": "Observed versions, notices and all 40 WASM source/receipt files verified independently. Final collector must supply AMD64 native ELF linkage."
+  },
+  "referenceInheritance": "An extends key shares reviewed architecture-independent notice/source data; architecture-specific package artifacts and native binary hashes are explicitly overridden.",
+  "components": {
+    "@deepseek-ai/libreoffice-kit@0.1.5/linux-amd64": {
+      "extends": "@deepseek-ai/libreoffice-kit@0.1.5/linux-arm64",
+      "architecture": "amd64"
+    },
+    "@deepseek-ai/libreoffice-kit-wasm@0.1.5/linux-amd64": {
+      "extends": "@deepseek-ai/libreoffice-kit-wasm@0.1.5/linux-arm64",
+      "architecture": "amd64"
+    },
+    "sharp@0.35.3/linux-amd64": {
+      "extends": "sharp@0.35.3/linux-arm64",
+      "architecture": "amd64"
+    },
+    "@img/sharp-linux-x64@0.35.3/linux-amd64": {
+      "extends": "@img/sharp-linux-arm64@0.35.3/linux-arm64",
+      "name": "@img/sharp-linux-x64",
+      "architecture": "amd64",
+      "packagePath": "/usr/local/lib/magda-agent/dsh/node_modules/@img/sharp-linux-x64",
+      "artifact": {
+        "metadataUrl": "https://registry.npmjs.org/@img/sharp-linux-x64/0.35.3",
+        "url": "https://registry.npmjs.org/@img/sharp-linux-x64/-/sharp-linux-x64-0.35.3.tgz",
+        "integrity": "sha512-8pqvxubL2PGdhlPy6GLqzDYMUjyRmKAwKHYKixpdJYBUK7PJ0C029XdsnpFIdgRZG68fZiGdHVWcKPvtiPB4cA=="
+      },
+      "sharedLinkage": { "path": "lib/sharp-linux-x64-0.35.3.node", "sha256": "62ad8a4400d01452a37034e527b3f0849c4d685b33e8acde79abfbcc9fe5bc12", "needed": "libvips-cpp.so.8.18.3" }
+    },
+    "@img/sharp-libvips-linux-x64@1.3.2/linux-amd64": {
+      "extends": "@img/sharp-libvips-linux-arm64@1.3.2/linux-arm64",
+      "name": "@img/sharp-libvips-linux-x64",
+      "architecture": "amd64",
+      "packagePath": "/usr/local/lib/magda-agent/dsh/node_modules/@img/sharp-libvips-linux-x64",
+      "artifact": {
+        "metadataUrl": "https://registry.npmjs.org/@img/sharp-libvips-linux-x64/1.3.2",
+        "url": "https://registry.npmjs.org/@img/sharp-libvips-linux-x64/-/sharp-libvips-linux-x64-1.3.2.tgz",
+        "integrity": "sha512-ITPEtgffGJ0S6G9dRyw/366tJQqFRcHWPHhC+Stpg3Z8AEMrDrTr2lhdz4f/Y/HMbRh//7Z5mBzEpVdi62Oc3w==",
+        "fileCount": 6
+      },
+      "requiredFiles": [
+        { "path": "README.md", "sha256": "4f87b4934d26d52ed65a42e96bfe88e75ac98dbd3bc302b50fe6c07d22e42630", "kind": "notice" },
+        { "path": "versions.json", "sha256": "71e22ad5154a3891e09291e2f316b3d9b0d0f405459144a94897a203580df055", "kind": "source" }
+      ],
+      "sharedLibrary": { "path": "lib/libvips-cpp.so.8.18.3", "sha256": "0c1a1560417bbcdac38ce83151e52e56711deb70c5373053822c3301a19a4496" }
+    },
+    "@deepseek-ai/libreoffice-kit@0.1.5/linux-arm64": {
+      "name": "@deepseek-ai/libreoffice-kit",
+      "version": "0.1.5",
+      "architecture": "arm64",
+      "license": "MPL-2.0",
+      "packagePath": "/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/libreoffice-kit",
+      "artifact": {
+        "metadataUrl": "https://registry.npmjs.org/@deepseek-ai/libreoffice-kit/0.1.5",
+        "url": "https://registry.npmjs.org/@deepseek-ai/libreoffice-kit/-/libreoffice-kit-0.1.5.tgz",
+        "integrity": "sha512-H12xtUsAyl70zFeQ5pk5GGRc3N1+6zn+DVAcqwlguI6EvqopBGP3xkUmePU7g5f6ydYlDZLWedHT9lTSL7zLxA==",
+        "sha256": "f3ed9e424e7a25fc0eaee0b23ac754029343dafe7ff9daf710a86825f58ba576"
+      },
+      "requiredFiles": [
+        { "path": "LICENSE", "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5", "kind": "notice" },
+        { "path": "NOTICE", "sha256": "b8841df06ad9243a1fe973f35943c68a076675829680847bc2f506e9080e8737", "kind": "notice" }
+      ],
+      "sources": [
+        { "url": "https://github.com/deepseek-ai/dsh-libreoffice-kit/tree/b19bb73c74ed893b8a5d1716d32df32a113ed31b", "commit": "b19bb73c74ed893b8a5d1716d32df32a113ed31b", "status": "Public source candidate, not authenticated npm release mapping; registry has no gitHead and repository has no release tags" },
+        { "url": "https://raw.githubusercontent.com/LibreOffice/core/bce0998afefdbc355585ca324285661a2170ba77/unotools/source/misc/fontdefs.cxx", "commit": "bce0998afefdbc355585ca324285661a2170ba77", "status": "Immutable font-name data upstream identified by shipped NOTICE" }
+      ],
+      "unresolved": ["Entry adapter's complete corresponding source at an authenticated 0.1.5 release commit has not been established; no npm gitHead/release tag. Public source candidate is not proof of published adapter correspondence."]
+    },
+    "@deepseek-ai/libreoffice-kit-wasm@0.1.5/linux-arm64": {
+      "name": "@deepseek-ai/libreoffice-kit-wasm",
+      "version": "0.1.5",
+      "architecture": "arm64",
+      "license": "MPL-2.0 plus bundled third-party terms",
+      "packagePath": "/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/libreoffice-kit-wasm",
+      "artifact": {
+        "metadataUrl": "https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/0.1.5",
+        "url": "https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/-/libreoffice-kit-wasm-0.1.5.tgz",
+        "integrity": "sha512-V+pu5xJsKhVD4AU1xbFlMWY91svK9ZIC2JsNOph9kWp/arF/KQcuytt76bcbozJqPbE8o0n04lyh0m3QW5RYSA==",
+        "sha256": "4d5dda19a257d75fd09776d37a4f37708d7c2e163defede64b3377cb411ed406",
+        "independentVerification": "Downloaded npm artifact, verified registry SHA-512 integrity, and matched all 49 package file SHA-256 hashes to observed ARM64 image files, including full sources, notices, loader, data and WASM. This is retrieval/correspondence evidence, not a source rebuild.",
+        "unpackedSize": 152357942,
+        "fileCount": 49
+      },
+      "requiredFiles": [
+        { "path": "licenses/LICENSE", "sha256": "31c915ae5b7eafe51f06fc2537d2e7fefdee08e40d6b0d761d03d9f0fd58d660", "kind": "notice" },
+        { "path": "licenses/NOTICE", "sha256": "8d34210ebbfaee4ba258ef7b30c3044170f356ab82c8259c81b53860bcdeef7b", "kind": "notice" },
+        { "path": "licenses/DeepSeek-Harness-MIT.txt", "sha256": "69393380a3ec85c465dd4b22497a5de04c3408435126d8f50930d46de3886034", "kind": "notice" },
+        { "path": "sources/core-source.json", "sha256": "39340edab26fd8f702380a0b9fedcfcc6a181793b46dd6d7dee01fa80a2458f0", "kind": "source" },
+        { "path": "sources/source-changes.patch", "sha256": "d91124546ab0502728693e537c9570b0290c8bbc2bf06d063551a0960da459cc", "kind": "source" },
+        { "path": "sources/engine/wasm-source/build.mjs", "sha256": "d7350ff446ffc5f0b6672d437b00ed3890cc588c2e21a499454a830d272b2b4b", "kind": "source" },
+        { "path": "sources/engine/wasm-source/source.json", "sha256": "5cbd80154f0d6a83442335ffec195021709d0ba26319758f9ad9e24c083e1709", "kind": "source" },
+        { "path": "sources/build-autogen.input", "sha256": "d3b017df5f5daade84df90ae94f628b29a902aae3f6bbab58d12b54a2ade46f8", "kind": "source" },
+        { "path": "prebuilds.json", "sha256": "302237d6b29faf2dc2edcf81cf97b6f8bedc45639216d2887911977c9a1b784e", "kind": "source" }
+      ],
+      "coreSource": { "repository": "https://github.com/LibreOffice/core.git", "revision": "bce0998afefdbc355585ca324285661a2170ba77" },
+      "verifyReceipt": "prebuilds.json",
+      "wasmBinary": { "path": "assets/soffice.wasm", "sha256": "c0a378364db66b97835fc56084146eb284f79a728aea9f6531b5ac9b24b8d46c", "size": 127844128 },
+      "sources": [
+        { "url": "https://api.github.com/repos/LibreOffice/core/commits/bce0998afefdbc355585ca324285661a2170ba77", "commit": "bce0998afefdbc355585ca324285661a2170ba77", "status": "GitHub API confirmed exact upstream commit" },
+        { "url": "https://github.com/LibreOffice/core/archive/bce0998afefdbc355585ca324285661a2170ba77.tar.gz", "commit": "bce0998afefdbc355585ca324285661a2170ba77", "status": "Commit-addressed source; archive bytes/checksum not independently downloaded" },
+        { "url": "https://raw.githubusercontent.com/deepseek-ai/dsh-libreoffice-kit/b19bb73c74ed893b8a5d1716d32df32a113ed31b/engine/wasm-source/build.mjs", "commit": "b19bb73c74ed893b8a5d1716d32df32a113ed31b", "sha256": "d7350ff446ffc5f0b6672d437b00ed3890cc588c2e21a499454a830d272b2b4b", "status": "Fetched and byte-matched shipped recipe; not a release-commit assertion" },
+        { "url": "https://raw.githubusercontent.com/deepseek-ai/dsh-libreoffice-kit/b19bb73c74ed893b8a5d1716d32df32a113ed31b/engine/wasm-source/patches/0003-node-runtime.patch", "commit": "b19bb73c74ed893b8a5d1716d32df32a113ed31b", "sha256": "eab28d72335db04e1f0056c24103ba3975ef8c9984008db30e38774393ee8f54", "status": "Fetched and byte-matched shipped patch; all shipped patches additionally verified via receipt" },
+        { "url": "https://github.com/emscripten-core/emsdk/tree/5eb0bde7585670252e8ba05e9d361627bffd08b5", "commit": "5eb0bde7585670252e8ba05e9d361627bffd08b5", "version": "4.0.10", "status": "Shipped toolchain descriptor; not independently rebuilt" },
+        { "url": "https://download.documentfoundation.org/libreoffice/src/26.8.0/libreoffice-26.8.0.3.tar.xz", "status": "Versioned fallback in shipped descriptor, not a verified immutable substitute for core-source.json revision; no checksum observed" }
+      ],
+      "unresolved": ["Complete LibreOffice external-dependency source availability and reproducible rebuild were not qualified. Shipped LICENSE is an aggregate potentially-included list, not proof of exact WASM embedded dependency coverage."]
+    },
+    "sharp@0.35.3/linux-arm64": {
+      "name": "sharp", "version": "0.35.3", "architecture": "arm64", "license": "Apache-2.0",
+      "packagePath": "/usr/local/lib/magda-agent/dsh/node_modules/sharp",
+      "artifact": { "metadataUrl": "https://registry.npmjs.org/sharp/0.35.3", "url": "https://registry.npmjs.org/sharp/-/sharp-0.35.3.tgz", "integrity": "sha512-ej0zVHuZGHCiABXcNxeYhpRnPNPAcvbG8RMdBAhDAxLKkCRVSpK3Iyu7qbqw3JMzoj0REeM6f3tJLtVwl0023Q==", "sha256": "53637f5503f81d10b02097eca6f94c44e69d92ba7ef759f268a0c4ea1d06ae54" },
+      "requiredFiles": [{ "path": "LICENSE", "sha256": "73ba74dfaa520b49a401b5d21459a8523a146f3b7518a833eea5efa85130bf68", "kind": "notice" }],
+      "sources": [{ "url": "https://github.com/lovell/sharp/tree/1018449164723ba0203c1beffaba0e21f7829c18", "commit": "1018449164723ba0203c1beffaba0e21f7829c18", "status": "npm registry gitHead" }], "unresolved": []
+    },
+    "@img/sharp-linux-arm64@0.35.3/linux-arm64": {
+      "name": "@img/sharp-linux-arm64", "version": "0.35.3", "architecture": "arm64", "license": "Apache-2.0",
+      "packagePath": "/usr/local/lib/magda-agent/dsh/node_modules/@img/sharp-linux-arm64",
+      "artifact": { "metadataUrl": "https://registry.npmjs.org/@img/sharp-linux-arm64/0.35.3", "url": "https://registry.npmjs.org/@img/sharp-linux-arm64/-/sharp-linux-arm64-0.35.3.tgz", "integrity": "sha512-QgKDspHPnrU+GQ55XPhGwyhC8acLVOOSyAvo1oVfFmrIXLkDNmGWzAfDZ4xK8oSA1qBQrALcHX0G5UZni/SuFQ==" },
+      "requiredFiles": [{ "path": "LICENSE", "sha256": "73ba74dfaa520b49a401b5d21459a8523a146f3b7518a833eea5efa85130bf68", "kind": "notice" }],
+      "sharedLinkage": { "path": "lib/sharp-linux-arm64-0.35.3.node", "sha256": "ca16f6b4af700f2eb8fb43e9f32103b50c39a16fe882bb1282d3d76c975069ac", "needed": "libvips-cpp.so.8.18.3" },
+      "sources": [{ "url": "https://github.com/lovell/sharp/tree/1018449164723ba0203c1beffaba0e21f7829c18", "commit": "1018449164723ba0203c1beffaba0e21f7829c18", "status": "Parent sharp package npm gitHead; native binary correspondence not independently rebuilt" }],
+      "unresolved": ["Derived-image replacement fixture has not been built/run; ELF DT_NEEDED alone establishes a shared-library boundary, not end-to-end replacement success."]
+    },
+    "@img/sharp-libvips-linux-arm64@1.3.2/linux-arm64": {
+      "name": "@img/sharp-libvips-linux-arm64", "version": "1.3.2", "architecture": "arm64", "license": "LGPL-3.0-or-later (package declaration; dependency terms vary)",
+      "packagePath": "/usr/local/lib/magda-agent/dsh/node_modules/@img/sharp-libvips-linux-arm64",
+      "artifact": { "metadataUrl": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm64/1.3.2", "url": "https://registry.npmjs.org/@img/sharp-libvips-linux-arm64/-/sharp-libvips-linux-arm64-1.3.2.tgz", "integrity": "sha512-dqVSFynCox4C/J8kT16V7SIFAns0IjgLwkvYT7p8LQVmJ5OS5b6tI9IGflxTeuBS//zXeFIUbwt5dwxyZ17cnA==", "sha256": "8e57184950f004478587574f84d2b042b888ed2a4679e2c0e801ecd809a36404", "fileCount": 6 },
+      "requiredFiles": [
+        { "path": "README.md", "sha256": "b05efaa208519f349746a54ee195c433ab8e5c250847a257c984c7a9dc68df20", "kind": "notice" },
+        { "path": "versions.json", "sha256": "71e22ad5154a3891e09291e2f316b3d9b0d0f405459144a94897a203580df055", "kind": "source" }
+      ],
+      "sharedLibrary": { "path": "lib/libvips-cpp.so.8.18.3", "sha256": "56f7e7c98d134371c07990a318e41178cf0b6a956b8d5cd73779881c17deaaab" },
+      "embeddedVersions": { "heif": "1.23.1", "rsvg": "2.62.90", "vips": "8.18.3" },
+      "sources": [
+        { "url": "https://github.com/lovell/sharp-libvips/tree/4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6", "commit": "4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6", "status": "npm gitHead matches annotated v1.3.2 tag commit; tag object 3338b03c138b3e1328e0a20b6543b99ab4438d8f" },
+        { "url": "https://raw.githubusercontent.com/lovell/sharp-libvips/4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6/build/posix.sh", "commit": "4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6", "sha256": "0f8c3f3c6b1144ce1ceae185440ae1e04209df5031bc97ccae9954c3ecfaee02", "status": "Fetched recipe; source URLs and patches; not complete dependency source" },
+        { "url": "https://raw.githubusercontent.com/lovell/sharp-libvips/4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6/versions.properties", "commit": "4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6", "sha256": "cebb421de9568ae3ce8cfd66be62c3da53c2d549232c2e4327d9a9f97276c237", "status": "All 28 entries match shipped versions.json" },
+        { "url": "https://raw.githubusercontent.com/lovell/sharp-libvips/4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6/THIRD-PARTY-NOTICES.md", "commit": "4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6", "sha256": "25ffcfa69e28b1913ced27ec778b90f24911a1bb3021253577e8b0af55db0d49", "status": "License summary only; README in npm is similar table, not full license texts" },
+        { "url": "https://github.com/lovell/sharp-libvips/releases/download/v1.3.2/npm-workspace.tar.xz", "sha256": "572b0c345e150172c5817fe50fb7d397206948f2ae9b33e6c0bf326b686c05d9", "status": "GitHub API release asset digest; binary npm workspace, NOT a complete corresponding-source bundle; not downloaded" },
+        { "url": "https://github.com/libvips/libvips/tree/3664cfc5dc2c5661288f5bf5a85ccc51c64c1626", "commit": "3664cfc5dc2c5661288f5bf5a85ccc51c64c1626", "version": "8.18.3", "status": "GitHub v8.18.3 tag resolves to commit; upstream baseline only, recipe patch must also be retained" },
+        { "url": "https://github.com/strukturag/libheif/tree/2c4bbb54c2738d4a5efbbe3e5fa1d5d76bb88eb0", "commit": "2c4bbb54c2738d4a5efbbe3e5fa1d5d76bb88eb0", "version": "1.23.1", "status": "GitHub v1.23.1 tag resolves to commit; correspondence to release archive not byte-rebuilt" },
+        { "url": "https://github.com/GNOME/librsvg/tree/1a830b1e34bab5c69aec7c5cf86812376b4e53e2", "commit": "1a830b1e34bab5c69aec7c5cf86812376b4e53e2", "version": "2.62.90", "status": "GitHub annotated 2.62.90 tag peeled; source archive/build dependencies not reconstructed" },
+        { "url": "https://gist.githubusercontent.com/lovell/313a6901e9db1bf285f2a1f1180499e4/raw/3988223c7dfa4d22745d9392034b0117abef1446/libvips-cpp-soversion.patch", "commit": "3988223c7dfa4d22745d9392034b0117abef1446", "sha256": "256b7d6f8c973bb53b20cff5171c7117d6b35d3aa4e72d22cb906f4fe1e2c890", "status": "Fetched recipe patch" },
+        { "url": "https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/bdad5489a61c217850631571caf57f5db6ea8b2c/glib-without-gregex.patch", "commit": "bdad5489a61c217850631571caf57f5db6ea8b2c", "sha256": "b1f2930a11292e529de137c7eb723850e0cc0969b1a2b0358196389312acd272", "status": "Fetched recipe patch" }
+      ],
+      "unresolved": [
+        "Full license texts/copyright notices for libvips and all statically bundled dependencies have not been found in this package: the npm tarball has six files and no LICENSE/NOTICE. README license links/table are not a complete license bundle.",
+        "No complete corresponding-source bundle, with all dependency archives, applied patches (including Rust vendoring), and build/install scripts matched to this exact binary has been established. Upstream recipe downloads versioned archives without checksums and a mutable libultrahdr PR 383 patch; gitHead plus versions is not reproducibility/source-completeness proof.",
+        "A source-available release/retrieval mechanism and license/replacement review remain distributor actions; this manifest does not satisfy those actions by itself."
+      ]
+    }
+  }
+}

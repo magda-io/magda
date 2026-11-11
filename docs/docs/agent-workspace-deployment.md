@@ -81,9 +81,12 @@ silently consuming a new revision.
 
 The DSH source is a **pnpm monorepo** with local `workspace:` dependencies.
 The builder therefore uses the commit's frozen `pnpm-lock.yaml`, runs
-`pnpm run build:official`, builds the architecture-native system binaries
-(including the static-musl Landlock launcher), and verifies the upstream runtime
-closure. It deploys **`dsh-python-runtime-closure`**, the upstream executable
+`pnpm run build:official` on **`BUILDPLATFORM`** (native TypeScript/Web compilation),
+and verifies the upstream runtime closure. Built source is transferred without
+host `node_modules` or generated native-system binaries; each target independently
+reinstalls the frozen graph and builds its architecture-native system binaries,
+including the static-musl Landlock launcher. This avoids compiling the entire
+monorepo through ARM emulation on small shared CI runners. It deploys **`dsh-python-runtime-closure`**, the upstream executable
 assembly, with modern `--prod deploy --offline`, a hoisted linker and
 `inject-workspace-packages=true`. **Do not use pnpm 11's legacy hoisted deploy:**
 it disables lockfile usage and can silently re-resolve external dependencies.
@@ -96,9 +99,14 @@ all other upstream script approvals/denials remain unchanged.
 
 Deploying the CLI manifest alone is insufficient: required workspace peers and
 dynamically loaded preset plugins are not all ordinary CLI dependencies. The
-packaging helper materializes links and compares every shipped workspace payload
-to the pinned source build. It does
-**not** install public DSH workspace tarballs from npm. External dependencies
+packaging helper materializes links, then keeps only the CLI's ordinary,
+platform-applicable optional, and **required-peer** closure. Optional-peer-only
+server stacks, unused providers, foreign native packages and inert build metadata
+are removed with a recorded `dsh-prune.json` inventory. Browser-private peers that
+are already compiled into the client module table are checked by the live Web
+qualification rather than installed as Node packages. Every retained workspace
+payload is compared to the pinned source build. It does **not** install public
+DSH workspace tarballs from npm. External dependencies
 (including some packages in the `@deepseek-ai` scope) still come from the frozen
 lockfile; source mirroring is not a ban on all registry dependencies.
 
@@ -122,6 +130,45 @@ DSH startup, packaged web assets, MAGDA-managed plugins, token/cookie exchange,
 `mgd` skill operations, session persistence, pod restart, suspend/resume and
 WebSocket activity tracking. A new DSH source commit needs an explicit new
 SHA, review, and test; do not use a moving source branch in production.
+
+#### Digest-bound SBOM, notices and source evidence
+
+The `dockerize:typescript` CI job runs the image qualification for both published
+platform digests before its existing promotion dependencies can succeed. A
+commit-specific producer tag avoids cross-commit branch-tag races; release retagging
+uses the captured qualified runtime index digest rather than a mutable branch tag.
+This is artifact identity binding, not a cryptographic build attestation. The job
+retains `artifacts/agent-runtime/<MAGDA commit>/` for one year, including the OCI
+index/platform descriptors and per-platform SPDX, CycloneDX and native Syft JSON,
+physically installed Node/Python/OS inventories, native/WASM hashes and ELF linkage,
+copied license/notices/source receipts, unresolved-license lists and checksums.
+Syft is version/checksum-pinned and catalogs the final squashed filesystem, not
+just development lockfile entries. The collector never mounts a workspace/PVC or
+starts the application. Artifact retention is not a permanent release archive:
+preserve the digest-bound bundle with promoted images in the distribution channel.
+
+See the [qualification guide](../../magda-agent-runtime/qualification/README.md)
+for commands, corresponding-source instructions, technical checks and explicit
+limitations. In particular:
+
+- An SBOM or package `license` field is **not** complete license compliance.
+  Native/WASM dependencies can contain additional licensed components. Unknown
+  declarations, missing bundled texts and incomplete corresponding-source inputs
+  remain visible review items; a technically successful report is not legal approval.
+- LibreOffice-kit/WASM and Sharp/libvips already belong to the published
+  `@deepseek-ai/dsh@0.2.1-alpha.1` runtime dependency graph. Their optional platform
+  packages are normally installed upfront; they are not the Claude Code/Codex
+  on-demand provider bundles and are not merely monorepo development dependencies.
+  Their presence does not automatically relicense MAGDA. MAGDA's own Apache license
+  is recorded separately from actual third-party notices.
+- A fresh npm installation can resolve newer external versions than the frozen
+  source lock. Compare **actual installed** baseline/image inventories, scoped to
+  DSH rather than global npm/MAGDA packages. Source reproducibility and functional
+  qualification do not establish advisory clearance or dependency parity.
+- The source-reference verifier checks shipped receipts/notices and immutable
+  source/build references. It reports incomplete native license/source materials
+  honestly; `--require-resolved` is an additional release-policy gate, not a flag
+  that turns unresolved obligations into a pass.
 
 ### On-demand Python environments and storage
 

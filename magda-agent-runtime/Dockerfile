@@ -15,10 +15,10 @@ ARG UV_IMAGE_DIGEST=sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8ed
 # index digest. Only its binaries are copied; the runtime keeps Debian's Python.
 FROM ghcr.io/astral-sh/uv:${UV_VERSION}@${UV_IMAGE_DIGEST} AS uv
 
-# Build the exact source commit and its local workspace dependency closure.
-# The pinned DSH package is a pnpm monorepo, not an installable Git root package.
-# Use the same Node major/minor in build and runtime for native add-on ABI parity.
-FROM node:${NODE_VERSION}-bookworm-slim AS dsh-build
+# Compile architecture-independent JS/Web assets on the builder's native CPU.
+# Running the full TypeScript/Vite build under ARM QEMU can exhaust shared CI
+# runners. No host node_modules crosses into a target-architecture dependency tree.
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-bookworm-slim AS dsh-source-build
 ARG DSH_VERSION
 ARG DSH_SOURCE_REPO
 ARG DSH_SOURCE_BRANCH
@@ -38,10 +38,34 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm run build:official \
   && pnpm exec tsx native/system/scripts/build.ts \
   && pnpm run verify-runtime-closure
+# Preserve built JS/Web workspace payloads and the exact checkout, excluding
+# every host dependency tree AND generated native-system binary directory. The
+# target reinstalls the lockfile and rebuilds its selected native outputs itself.
+RUN tar --exclude='node_modules' --exclude='./native/system/packages/*/bin' -cf /opt/dsh-built-source.tar .
+
+FROM node:${NODE_VERSION}-bookworm-slim AS dsh-build
+ARG DSH_VERSION
+ARG DSH_SOURCE_REPO
+ARG DSH_SOURCE_BRANCH
+ARG DSH_SOURCE_SHA
+ENV DSH_TELEMETRY_DISABLED=1
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
+  && rm -rf /var/lib/apt/lists/* \
+  && corepack enable \
+  && corepack prepare pnpm@11.7.0 --activate
+WORKDIR /src/dsh
+COPY --from=dsh-source-build /opt/dsh-built-source.tar /opt/dsh-built-source.tar
+RUN tar -xf /opt/dsh-built-source.tar \
+  && rm /opt/dsh-built-source.tar \
+  && test ! -d node_modules \
+  && test "$(git rev-parse HEAD)" = "${DSH_SOURCE_SHA}" \
+  && pnpm install --frozen-lockfile \
+  && pnpm exec tsx native/system/scripts/build.ts
 # The CLI manifest alone does not provide its required runtime peers. Use the
 # upstream executable assembly. Modern offline deploy preserves the committed
 # external graph; pnpm 11 legacy+hoisted deploy silently ignores that lockfile.
-COPY component/prepare-dsh-deploy.mjs component/verify-dsh-lock.mjs component/deploy-dsh.mjs /opt/
+COPY component/prepare-dsh-deploy.mjs component/verify-dsh-lock.mjs component/deploy-dsh.mjs component/prune-dsh-runtime.mjs /opt/
 RUN node /opt/prepare-dsh-deploy.mjs \
   && pnpm --filter dsh-python-runtime-closure --prod deploy --offline \
     --config.inject-workspace-packages=true --config.allow-unused-patches=true \
@@ -49,7 +73,7 @@ RUN node /opt/prepare-dsh-deploy.mjs \
   && git diff --exit-code -- pnpm-lock.yaml \
   && node /opt/verify-dsh-lock.mjs /opt/dsh-release \
   && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_SOURCE_BRANCH="${DSH_SOURCE_BRANCH}" \
-    DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release \
+    DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release --prune \
   && test -f /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js \
   && node /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js --version
 
@@ -101,6 +125,10 @@ COPY component/dsh-agent-skill-tools/ \
 RUN chown -R root:root /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda \
   && chmod -R a+rX,go-w /usr/local/lib/node_modules/@deepseek-ai/dsh/node_modules/@magda
 COPY node_modules/ /usr/local/lib/node_modules/
+# Generated workspace contexts can include local/CI coverage output. It is not a
+# runtime dependency or source-distribution evidence and must not ship.
+RUN test ! -L /usr/local/lib/node_modules/@magda/mgd \
+  && rm -rf /usr/local/lib/node_modules/@magda/mgd/coverage
 RUN test -x /usr/local/lib/node_modules/@magda/mgd/bin/mgd.js \
   && ln -s /usr/local/lib/node_modules/@magda/mgd/bin/mgd.js /usr/local/bin/mgd \
   && mgd --version
