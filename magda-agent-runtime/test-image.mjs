@@ -26,7 +26,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const EXPECTED = Object.freeze({
-    repository: "https://github.com/t83714/deepseek-harness.git",
+    repository: "https://github.com/magda-io/dsh-fork.git",
     branch: "upstream/0.2.1-alpha.1",
     sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc",
     version: "0.2.1-alpha.1",

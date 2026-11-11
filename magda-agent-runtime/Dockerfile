@@ -5,7 +5,7 @@ ARG NODE_VERSION=22.22.0
 ARG DSH_VERSION=0.2.1-alpha.1
 # Source baseline: official dsh-v0.2.1-alpha.1, mirrored in this clean fork branch.
 # Pin the full Git SHA: moving the branch later must NOT change MAGDA's build.
-ARG DSH_SOURCE_REPO=https://github.com/t83714/deepseek-harness.git
+ARG DSH_SOURCE_REPO=https://github.com/magda-io/dsh-fork.git
 ARG DSH_SOURCE_BRANCH=upstream/0.2.1-alpha.1
 ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
 ARG UV_VERSION=0.13.6
@@ -99,6 +99,7 @@ RUN apt-get update \
 # plugins, but source every DSH workspace package from the pinned fork commit.
 COPY --from=dsh-build /opt/dsh-release/node_modules/ /usr/local/lib/magda-agent/dsh/node_modules/
 COPY --from=dsh-build /opt/dsh-release/provenance/ /usr/local/share/magda-agent/
+COPY --chmod=0644 component/THIRD_PARTY_SOURCES.md /usr/local/share/magda-agent/THIRD_PARTY_SOURCES.md
 # Isolate DSH's locked external dependencies from MAGDA's separately built mgd
 # dependency tree. Preserve the existing global CLI path for managed plugins.
 RUN mkdir -p /usr/local/lib/node_modules/@deepseek-ai \

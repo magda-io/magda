@@ -72,7 +72,7 @@ Sandboxes are gone, then upgrade the release and admit new workspaces.
 
 The [`magda-agent-runtime/Dockerfile`](../../magda-agent-runtime/Dockerfile) has a
 multistage DSH build that checks out the public
-[`t83714/deepseek-harness`](https://github.com/t83714/deepseek-harness)
+[`magda-io/dsh-fork`](https://github.com/magda-io/dsh-fork)
 fork at the `upstream/0.2.1-alpha.1` branch **and verifies full commit
 `5badb15009ae1756c3afe0ae0cef1faafc290ccc`**. The commit matches the
 official `dsh-v0.2.1-alpha.1` tag exactly; unrelated changes on the fork's
@@ -130,45 +130,6 @@ DSH startup, packaged web assets, MAGDA-managed plugins, token/cookie exchange,
 `mgd` skill operations, session persistence, pod restart, suspend/resume and
 WebSocket activity tracking. A new DSH source commit needs an explicit new
 SHA, review, and test; do not use a moving source branch in production.
-
-#### Digest-bound SBOM, notices and source evidence
-
-The `dockerize:typescript` CI job runs the image qualification for both published
-platform digests before its existing promotion dependencies can succeed. A
-commit-specific producer tag avoids cross-commit branch-tag races; release retagging
-uses the captured qualified runtime index digest rather than a mutable branch tag.
-This is artifact identity binding, not a cryptographic build attestation. The job
-retains `artifacts/agent-runtime/<MAGDA commit>/` for one year, including the OCI
-index/platform descriptors and per-platform SPDX, CycloneDX and native Syft JSON,
-physically installed Node/Python/OS inventories, native/WASM hashes and ELF linkage,
-copied license/notices/source receipts, unresolved-license lists and checksums.
-Syft is version/checksum-pinned and catalogs the final squashed filesystem, not
-just development lockfile entries. The collector never mounts a workspace/PVC or
-starts the application. Artifact retention is not a permanent release archive:
-preserve the digest-bound bundle with promoted images in the distribution channel.
-
-See the [qualification guide](../../magda-agent-runtime/qualification/README.md)
-for commands, corresponding-source instructions, technical checks and explicit
-limitations. In particular:
-
-- An SBOM or package `license` field is **not** complete license compliance.
-  Native/WASM dependencies can contain additional licensed components. Unknown
-  declarations, missing bundled texts and incomplete corresponding-source inputs
-  remain visible review items; a technically successful report is not legal approval.
-- LibreOffice-kit/WASM and Sharp/libvips already belong to the published
-  `@deepseek-ai/dsh@0.2.1-alpha.1` runtime dependency graph. Their optional platform
-  packages are normally installed upfront; they are not the Claude Code/Codex
-  on-demand provider bundles and are not merely monorepo development dependencies.
-  Their presence does not automatically relicense MAGDA. MAGDA's own Apache license
-  is recorded separately from actual third-party notices.
-- A fresh npm installation can resolve newer external versions than the frozen
-  source lock. Compare **actual installed** baseline/image inventories, scoped to
-  DSH rather than global npm/MAGDA packages. Source reproducibility and functional
-  qualification do not establish advisory clearance or dependency parity.
-- The source-reference verifier checks shipped receipts/notices and immutable
-  source/build references. It reports incomplete native license/source materials
-  honestly; `--require-resolved` is an additional release-policy gate, not a flag
-  that turns unresolved obligations into a pass.
 
 ### On-demand Python environments and storage
 

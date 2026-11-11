@@ -65,7 +65,7 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_REPO=https:\/\/github\.com\/t83714\/deepseek-harness\.git/,
+    /ARG DSH_SOURCE_REPO=https:\/\/github\.com\/magda-io\/dsh-fork\.git/,
     "DSH must build from the dedicated source fork"
 );
 assert.match(

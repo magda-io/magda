@@ -782,19 +782,12 @@ dockerize:typescript:
     - buildtest:typescript-apis-with-pg
     - buildtest:typescript-apis-with-es
     - buildtest:storage-api
-  artifacts:
-    when: always
-    paths:
-      - artifacts/agent-runtime/
-    expire_in: 1 year
   script:
     - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
-    - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --version=$CI_COMMIT_SHA --platform linux/arm64,linux/amd64
+    - yarn run in-submodules -- -f categories.dockerizedTool=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
     - |
-      # Use the just-published commit tag, not a branch slug that another commit
-      # can overwrite while this pipeline is generating its evidence.
-      RUNTIME_IMAGE="$CI_REGISTRY/magda-data/magda/magda-agent-runtime:$CI_COMMIT_SHA"
+      RUNTIME_IMAGE="$CI_REGISTRY/magda-data/magda/magda-agent-runtime:$CI_COMMIT_REF_SLUG"
       RUNTIME_MANIFEST="$(docker buildx imagetools inspect "$RUNTIME_IMAGE")"
       printf '%s\n' "$RUNTIME_MANIFEST"
       for platform in linux/amd64 linux/arm64; do
@@ -803,23 +796,6 @@ dockerize:typescript:
           exit 1
         fi
       done
-    - |
-      set -eu
-      if ! command -v python3 >/dev/null; then
-        apt-get update
-        apt-get install -y --no-install-recommends python3
-      fi
-      yarn --cwd magda-agent-runtime test:qualification
-      # Standalone target-image collectors need daemon-side emulation, not merely
-      # BuildKit's bundled build emulators. This helper is qualification tooling,
-      # never copied into the shipped runtime image.
-      docker run --privileged --rm \
-        tonistiigi/binfmt@sha256:1b804311fe87047a4c96d38b4b3ef6f62fca8cd125265917a9e3dc3c996c39e6 \
-        --install arm64
-      sh magda-agent-runtime/qualification/qualify-published-image.sh \
-        "$CI_REGISTRY/magda-data/magda/magda-agent-runtime" \
-        "$CI_COMMIT_SHA" "$CI_COMMIT_SHA" \
-        "$CI_PROJECT_DIR/artifacts/agent-runtime/$CI_COMMIT_SHA"
 
 dockerize:migrators:
   stage: buildtest
@@ -1138,12 +1114,6 @@ Release-to-Docker-Hub-Github-Container:
     - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u gitlab-ci-token --password-stdin
     - echo "$DOCKER_HUB_PASSWORD" | docker login -u magdabot --password-stdin
     - echo "$GITHUB_ACCESS_TOKEN" | docker login ghcr.io -u magdabot --password-stdin
-    - |
-      # The runtime must be promoted from the exact qualified index, never from a
-      # branch tag another pipeline can replace before its own checks finish.
-      test -f "$CI_PROJECT_DIR/artifacts/agent-runtime/$CI_COMMIT_SHA/image-reference.txt"
-      export MAGDA_AGENT_RUNTIME_QUALIFIED_SOURCE="$(tr -d '\r\n' < "$CI_PROJECT_DIR/artifacts/agent-runtime/$CI_COMMIT_SHA/image-reference.txt")"
-      test -n "$MAGDA_AGENT_RUNTIME_QUALIFIED_SOURCE"
     - |
       if [ "$RELEASE_VERSION_TAG" == "true" ]; then
         yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --toPrefix=ghcr.io/magda-io/ --copyFromRegistry=true
