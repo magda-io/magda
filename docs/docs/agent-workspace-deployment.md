@@ -68,69 +68,6 @@ Changing `warmPool.type` while claims exist is a migration, not an in-place
 runtime switch. Drain or reset active workspaces, confirm their claims and warm
 Sandboxes are gone, then upgrade the release and admit new workspaces.
 
-### Source-pinned DSH image build (experimental)
-
-The [`magda-agent-runtime/Dockerfile`](../../magda-agent-runtime/Dockerfile) has a
-multistage DSH build that checks out the public
-[`magda-io/dsh-fork`](https://github.com/magda-io/dsh-fork)
-fork at the `upstream/0.2.1-alpha.1` branch **and verifies full commit
-`5badb15009ae1756c3afe0ae0cef1faafc290ccc`**. The commit matches the
-official `dsh-v0.2.1-alpha.1` tag exactly; unrelated changes on the fork's
-`master` are not included. If the branch moves, the build fails rather than
-silently consuming a new revision.
-
-The DSH source is a **pnpm monorepo** with local `workspace:` dependencies.
-The builder therefore uses the commit's frozen `pnpm-lock.yaml`, runs
-`pnpm run build:official` on **`BUILDPLATFORM`** (native TypeScript/Web compilation),
-and verifies the upstream runtime closure. Built source is transferred without
-host `node_modules` or generated native-system binaries; each target independently
-reinstalls the frozen graph and builds its architecture-native system binaries,
-including the static-musl Landlock launcher. This avoids compiling the entire
-monorepo through ARM emulation on small shared CI runners. It deploys **`dsh-python-runtime-closure`**, the upstream executable
-assembly, with modern `--prod deploy --offline`, a hoisted linker and
-`inject-workspace-packages=true`. **Do not use pnpm 11's legacy hoisted deploy:**
-it disables lockfile usage and can silently re-resolve external dependencies.
-Modern deploy creates a dedicated frozen closure lock from the committed lockfile;
-a post-deploy audit rejects external package/snapshot drift and any registry
-resolution of a source workspace package. Offline deployment prohibits fetching
-replacement tarballs after the frozen install. The one reviewed workspace
-postinstall retains its approval under the converted absolute `file:` identity;
-all other upstream script approvals/denials remain unchanged.
-
-Deploying the CLI manifest alone is insufficient: required workspace peers and
-dynamically loaded preset plugins are not all ordinary CLI dependencies. The
-packaging helper materializes links, then keeps only the CLI's ordinary,
-platform-applicable optional, and **required-peer** closure. Optional-peer-only
-server stacks, unused providers, foreign native packages and inert build metadata
-are removed with a recorded `dsh-prune.json` inventory. Browser-private peers that
-are already compiled into the client module table are checked by the live Web
-qualification rather than installed as Node packages. Every retained workspace
-payload is compared to the pinned source build. It does **not** install public
-DSH workspace tarballs from npm. External dependencies
-(including some packages in the `@deepseek-ai` scope) still come from the frozen
-lockfile; source mirroring is not a ban on all registry dependencies.
-
-The resulting dependency assembly is isolated under
-`/usr/local/lib/magda-agent/dsh/node_modules` so MAGDA's `mgd` dependencies cannot
-overwrite DSH's locked dependency versions. A global CLI symlink preserves the
-managed-plugin installation path. `/usr/local/share/magda-agent/dsh-source.json`
-records the source pin, workspace artifact hashes, and package/license inventory;
-the upstream license and third-party notices are retained beside it. The final
-runtime keeps the existing MAGDA `mgd`, Python/`uv`, managed plugins, non-root
-user, entrypoint, and bootstrap contracts.
-
-This change concerns **where the DSH executable and dependent packages come
-from**, not the user-facing harness or the Kubernetes isolation runtime. The
-same `agent-services.runtime.image` Helm option selects the built image.
-Source control does not itself prove security/compliance suitability, and
-version equality does not guarantee that npm-installed and source-deployed
-runtime layouts behave identically. Before promoting the image, run the
-runtime-image build for all supported architectures and regression checks for
-DSH startup, packaged web assets, MAGDA-managed plugins, token/cookie exchange,
-`mgd` skill operations, session persistence, pod restart, suspend/resume and
-WebSocket activity tracking. A new DSH source commit needs an explicit new
-SHA, review, and test; do not use a moving source branch in production.
-
 ### On-demand Python environments and storage
 
 The runtime contains Debian's system Python and pandas plus `python3-pip`,
