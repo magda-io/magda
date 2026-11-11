@@ -764,6 +764,7 @@ dockerize:ui-scss-compiler:
     - yarn docker-build-prod --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64
 
 dockerize:typescript:
+  timeout: 120 minutes
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 2

@@ -65,6 +65,86 @@ assert.match(
 );
 assert.match(
     dockerfile,
+    /ARG DSH_SOURCE_REPO=https:\/\/github\.com\/magda-io\/dsh-fork\.git/,
+    "DSH must build from the dedicated source fork"
+);
+assert.match(
+    dockerfile,
+    /ARG DSH_SOURCE_BRANCH=upstream\/0\.2\.1-alpha\.1/,
+    "The fork baseline branch must be explicitly selected"
+);
+assert.match(
+    dockerfile,
+    /ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc/,
+    "DSH must be pinned to the official release commit, not a moving fork ref"
+);
+assert.match(
+    dockerfile,
+    /git rev-parse HEAD/,
+    "The checkout must verify the exact commit SHA before building"
+);
+assert.match(
+    dockerfile,
+    /pnpm install --frozen-lockfile/,
+    "The pinned source build must use the committed dependency lockfile"
+);
+assert.match(dockerfile, /FROM --platform=\$BUILDPLATFORM node:\$\{NODE_VERSION\}-bookworm-slim AS dsh-source-build/, "Compile JS/Web on the native build CPU, not through target emulation");
+assert.match(dockerfile, /tar --exclude='node_modules' --exclude='\.\/native\/system\/packages\/\*\/bin' -cf \/opt\/dsh-built-source\.tar/, "Never copy host dependency trees into target native modules");
+assert.match(dockerfile, /COPY --from=dsh-source-build \/opt\/dsh-built-source\.tar/, "Transfer only built source payloads into the target stage");
+assert.match(dockerfile, /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune/, "Ship the CLI's required peer closure, not optional-only server branches");
+assert.match(
+    dockerfile,
+    /--prod deploy --offline/,
+    "The source build must deploy its workspace dependency closure"
+);
+assert.match(
+    dockerfile,
+    /COPY --from=dsh-build \/opt\/dsh-release\/node_modules\//,
+    "Only built DSH production artifacts should enter the runtime image"
+);
+assert.match(
+    dockerfile,
+    /--filter dsh-python-runtime-closure/,
+    "Deploy the peer-complete upstream runtime assembly, not the CLI alone"
+);
+assert.match(
+    dockerfile,
+    /pnpm run verify-runtime-closure/,
+    "Check preset plugins and required workspace peers before packaging"
+);
+assert.doesNotMatch(
+    dockerfile,
+    /deploy --legacy/,
+    "pnpm 11 legacy hoisted deploy ignores the source lockfile"
+);
+assert.match(
+    dockerfile,
+    /--config.inject-workspace-packages=true/,
+    "Use lockfile-preserving modern deploy"
+);
+assert.match(
+    dockerfile,
+    /node \/opt\/verify-dsh-lock.mjs/,
+    "Reject external resolution drift and registry workspace substitutions"
+);
+assert.match(
+    dockerfile,
+    /pnpm exec tsx native\/system\/scripts\/build.ts/,
+    "Build the native launcher, not only the host addon"
+);
+assert.match(
+    dockerfile,
+    /node \/opt\/deploy-dsh.mjs/,
+    "Validate deployed artifacts against pinned source"
+);
+assert.doesNotMatch(
+    dockerfile,
+    /npm install -g[^\n]*@deepseek-ai\/dsh/,
+    "MAGDA must not mix a source-built DSH with official npm DSH packages"
+);
+
+assert.match(
+    dockerfile,
     /ARG UV_VERSION=0\.13\.6/,
     "uv must remain pinned to the qualified version"
 );
@@ -318,7 +398,7 @@ assert.match(packageJson.scripts.check, /bash -n entrypoint\.sh/);
 assert.equal(packageJson.scripts.build, "yarn run check");
 assert.match(
     packageJson.scripts.test,
-    /yarn run check && node test-runtime\.mjs/
+    /yarn run check && node --test test-deploy-dsh\.mjs test-dsh-lock\.mjs test-prune-dsh-runtime\.mjs && node test-image\.mjs --self-test && node test-runtime\.mjs/
 );
 assert.match(packageJson.scripts["prepare-docker"], /packages\/mgd build/);
 assert.match(
