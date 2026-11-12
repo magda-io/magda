@@ -26,7 +26,7 @@
   "config": {
     "docker": {
       "name": "magda-agent-runtime",
-      "include": "node_modules Dockerfile THIRD_PARTY_SOURCES.md prepare-dsh-deploy.mjs verify-dsh-lock.mjs deploy-dsh.mjs prune-dsh-runtime.mjs test-image.mjs test-image-web.mjs dsh-client-managed-profile dsh-workflow-capture-guidance dsh-agent-skill-tools skills office-fixtures magda.cordis.patch.yml entrypoint.sh uv-wrapper.sh workspace-resources.sh bootstrap.mjs dsh-launch.mjs session-history.mjs"
+      "include": "node_modules Dockerfile THIRD_PARTY_SOURCES.md prepare-dsh-deploy.mjs verify-dsh-lock.mjs deploy-dsh.mjs prune-dsh-runtime.mjs test-image.mjs test-image-web.mjs dsh-client-managed-profile dsh-workflow-capture-guidance dsh-agent-skill-tools skills office-runtime office-fixtures magda.cordis.patch.yml entrypoint.sh uv-wrapper.sh workspace-resources.sh bootstrap.mjs dsh-launch.mjs session-history.mjs"
     }
   },
   "magda": {

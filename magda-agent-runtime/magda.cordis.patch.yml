@@ -98,6 +98,18 @@
     - id: magda-agent-skill-tools
       name: "@magda/dsh-agent-skill-tools"
 
+# DSH's own Office skills (office-docx, office-pptx, office-xlsx) and their
+# interpreter query. The payload is MAGDA's read-only venv over Debian Python,
+# used in place (no `root`, so nothing is copied to the PVC). skill-office keeps
+# its defaults: packaged assets, this Node and the installed LibreOffice Kit CLI.
+- insert:
+    - id: workspace-dependencies
+      name: '@deepseek-ai/dsh-tool-workspace-dependencies'
+      config:
+        source: /usr/local/lib/magda-agent/primary-runtime
+    - id: skill-office
+      name: '@deepseek-ai/dsh-skill-office'
+
 - id: session-log-deepseek
   disabled: true
 

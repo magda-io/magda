@@ -546,6 +546,81 @@ async function runImageChecks() {
         );
 
         await check(
+            "DSH Office skills over MAGDA's payload and installed LibreOffice Kit",
+            async () => {
+                const payload = "/usr/local/lib/magda-agent/primary-runtime";
+                // The same code load_workspace_dependencies runs on its first call.
+                const dependencies = await load(
+                    requireCLI,
+                    "@deepseek-ai/dsh-tool-workspace-dependencies"
+                );
+                const paths = await dependencies.resolvePrimaryRuntime(payload);
+                assert.equal(
+                    paths.python,
+                    `${payload}/dependencies/python/bin/python3`
+                );
+                assert.equal(
+                    await realpath(paths.python),
+                    "/usr/bin/python3.11"
+                );
+                for (const name of ["python-docx", "python-pptx", "openpyxl"])
+                    assert.ok(
+                        Object.keys(paths.pythonDistributions).some(
+                            (key) => key.toLowerCase() === name
+                        ),
+                        `payload manifest lacks ${name}`
+                    );
+                // skill-office with the managed profile's (default) config.
+                const office = await load(
+                    requireCLI,
+                    "@deepseek-ai/dsh-skill-office"
+                );
+                let factory;
+                office.apply({
+                    skills: { registerProvider: (value) => (factory = value) }
+                });
+                const provider = factory();
+                const candidates = await provider.list();
+                assert.deepEqual(
+                    candidates.map((candidate) => candidate.name),
+                    ["office-docx", "office-pptx", "office-xlsx"]
+                );
+                const kit = await realpath(
+                    path.join(
+                        packageDirectory(
+                            requireCLI,
+                            "@deepseek-ai/libreoffice-kit"
+                        ),
+                        "lib/cli.js"
+                    )
+                );
+                for (const candidate of candidates) {
+                    const loaded = await provider.get(candidate, {
+                        signal: new AbortController().signal
+                    });
+                    const runtime = JSON.parse(
+                        loaded.content
+                            .split("## Installed LibreOffice Kit")[1]
+                            .match(/\{[\s\S]*\}/)[0]
+                    ).libreofficeKit;
+                    assert.equal(await realpath(runtime.cli), kit);
+                    assert.equal(runtime.node, process.execPath);
+                    assert.match(loaded.content, /load_workspace_dependencies/);
+                }
+                const capabilities = JSON.parse(
+                    spawnSync(
+                        process.execPath,
+                        [kit, "capabilities", "--json"],
+                        {
+                            encoding: "utf8"
+                        }
+                    ).stdout
+                );
+                assert.equal(capabilities.runtime.backend, "wasm");
+            }
+        );
+
+        await check(
             "strict bundled and typed workspace-directory branding",
             async () => {
                 const directory = packageDirectory(requireCLI, WORKSPACE);

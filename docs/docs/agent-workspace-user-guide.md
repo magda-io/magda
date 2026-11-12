@@ -4,7 +4,7 @@
 
 ## Understand the three kinds of skills
 
-- **Built-in runtime skills** (for example `magda-mgd`, `capture-workflow`, `python-dependencies`, `magda-builtin-read-office-documents`) are installed with the Agent Runtime image. They help the agent discover MAGDA operations and safe procedures; they are not user publications.
+- **Built-in runtime skills** (for example `magda-mgd`, `capture-workflow`, `python-dependencies`, `office-docx`, `office-pptx`, `office-xlsx`) are installed with the Agent Runtime image. They help the agent discover MAGDA operations and safe procedures; they are not user publications.
 - **Your user skills** are reviewed Markdown instructions and decision rules that you explicitly publish to the Registry-backed skill catalogue. They are visible and writable according to your MAGDA permissions.
 - **Shared skills** are other users' readable publications. **Sharing is not installation**: you must explicitly install an eligible shared source into your own skill set; you do not inherit the publisher's dataset or model permissions.
 
@@ -17,16 +17,16 @@
 
 The Workspace keeps local files and DSH session history across browser refresh, suspend/resume and Pod replacement as long as its PVC remains. **Reset, terminate and logout deliberately destroy** its local Workspace and unpublished drafts. Publish important data/outputs to a suitable durable MAGDA dataset first.
 
-## Ask about Word, PowerPoint and Excel files
+## Work with Word, PowerPoint and Excel files
 
-Attach a `.docx`, `.pptx` or `.xlsx` file with the composer's **+** button (or drag it in) and ask about it, for example "What does the footnote on the salinity figure say?" or "What is the Summary total and its formula?". The agent reads the actual contents with the built-in Office reading skill, and you don't need to mention the skill or install anything. It can cite where it found each answer: paragraph, table, header or footer, footnote, slide, speaker notes, or sheet and cell.
+Attach a `.docx`, `.pptx` or `.xlsx` file with the composer's **+** button and ask about it, or ask the agent to create one. The agent uses the built-in Office skills (`office-docx`, `office-pptx`, `office-xlsx`); you don't need to mention them or install anything.
 
-- **Spreadsheets:** the agent distinguishes a cell's formula (`=SUM(B3:B5)`) from its **cached value**, the result your spreadsheet application last saved. If a file was saved without calculating a formula, the agent says so rather than inventing a value. Hidden sheets and slides are reported as hidden.
-- **Updated files:** attach the new version again; each upload is kept separately, so say which version you mean if it matters.
-- **Not supported:** legacy Word/Excel/PowerPoint 97–2003 files (`.doc`, `.xls`, `.ppt`), password-protected files and OpenDocument files. Save them as `.docx`, `.xlsx` or `.pptx` (without a password) and upload again; renaming a file doesn't convert it. Images inside documents are not read, only their alternative text.
-- **Macros** in `.docm`, `.xlsm` or `.pptm` files are never run.
+- **Reading:** ask concrete questions ("What does the footnote on the salinity figure say?", "What is the Summary total and its formula?"). For spreadsheets, the agent distinguishes a formula from its saved (cached) result. If a workbook was saved without calculating a formula, it can recalculate a copy and says that it did.
+- **Creating:** the agent writes the file in your Workspace, checks its structure, renders it to check layout where possible, and offers it to you as a file you can preview and download.
+- **Not supported:** legacy Word/Excel/PowerPoint 97–2003 files (`.doc`, `.xls`, `.ppt`), password-protected files and damaged files. Save them as `.docx`, `.xlsx` or `.pptx` (without a password) and upload again; renaming a file doesn't convert it. Macros are never run.
+- **Layout checks:** the agent can render pages and slides but may not be able to look at the images, depending on the model your deployment uses. It tells you when it couldn't visually check a layout.
 
-Uploaded files stay in your own Workspace and are read-only to the agent. Text inside a document is treated as content, not as instructions to the agent.
+Uploaded files stay in your own Workspace and are read-only to the agent. Text inside a document is treated as content, not as instructions.
 
 ## Capture and publish reusable expertise
 

@@ -79,6 +79,31 @@ Obtain the core source at the recorded revision and apply the shipped patches;
 use the shipped recipes/configuration for the engine build. These materials are
 also included in the [published WASM 0.1.5 package](https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/-/libreoffice-kit-wasm-0.1.5.tgz).
 
+## Office Python libraries and fonts
+
+DSH's `office-docx`, `office-pptx` and `office-xlsx` skills run the Python
+returned by `load_workspace_dependencies`: a read-only virtual environment at
+`/usr/local/lib/magda-agent/primary-runtime/dependencies/python` over Debian's
+`/usr/bin/python3`. Its pure-Python libraries are installed at build time from
+PyPI wheels pinned by SHA-256 in
+[`office-runtime/requirements.txt`](office-runtime/requirements.txt), copied
+from DSH `dsh-v0.2.1-alpha.1` `scripts/primary-runtime/lock.json`:
+
+| Distribution        | Version | License      | Source                                                                      |
+| ------------------- | ------- | ------------ | --------------------------------------------------------------------------- |
+| `python-docx`       | 1.2.0   | MIT          | [python-openxml/python-docx](https://github.com/python-openxml/python-docx) |
+| `python-pptx`       | 1.0.2   | MIT          | [scanny/python-pptx](https://github.com/scanny/python-pptx)                 |
+| `openpyxl`          | 3.1.5   | MIT          | [openpyxl/openpyxl](https://foss.heptapod.net/openpyxl/openpyxl)            |
+| `XlsxWriter`        | 3.2.9   | BSD-2-Clause | [jmcnamara/XlsxWriter](https://github.com/jmcnamara/XlsxWriter)             |
+| `typing_extensions` | 4.16.0  | PSF-2.0      | [python/typing_extensions](https://github.com/python/typing_extensions)     |
+| `et_xmlfile`        | 2.0.0   | MIT          | [openpyxl/et_xmlfile](https://foss.heptapod.net/openpyxl/et_xmlfile)        |
+
+Each wheel's license and metadata are retained in its `*.dist-info` directory
+under `.../dependencies/python/lib/python3.11/site-packages/`. Native
+dependencies (`lxml`, `Pillow`, `numpy`, `pandas`) and the fonts the
+LibreOffice Kit renders with (`fonts-liberation2`, `fonts-crosextra-carlito`,
+`fonts-crosextra-caladea`, `fonts-dejavu-core`) are Debian packages.
+
 ## Other notices and maintenance
 
 Upstream DSH's license and third-party notices are retained at

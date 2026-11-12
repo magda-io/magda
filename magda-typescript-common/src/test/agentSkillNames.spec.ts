@@ -4,7 +4,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
     RESERVED_RUNTIME_SKILL_NAMES,
-    RESERVED_RUNTIME_SKILL_PREFIX,
     isReservedAgentSkillName
 } from "../agentSkillNames.js";
 
@@ -49,8 +48,7 @@ describe("reserved runtime Agent Skill names", () => {
         const bundledNames = await runtimeBundledSkillNames();
         expect(bundledNames).to.include.members([
             "capture-workflow",
-            "python-dependencies",
-            "magda-builtin-read-office-documents"
+            "python-dependencies"
         ]);
         const separatelyInstalledName = await skillName(
             mgdSkillMarkdown,
@@ -59,31 +57,29 @@ describe("reserved runtime Agent Skill names", () => {
         expect(separatelyInstalledName).to.equal("magda-mgd");
         for (const name of [...bundledNames, separatelyInstalledName]) {
             expect(isReservedAgentSkillName(name), name).to.equal(true);
-            // Only names that predate the prefix convention are listed explicitly.
-            expect(
-                RESERVED_RUNTIME_SKILL_NAMES.has(name) ||
-                    name.startsWith(RESERVED_RUNTIME_SKILL_PREFIX),
-                name
-            ).to.equal(true);
+            expect(RESERVED_RUNTIME_SKILL_NAMES.has(name), name).to.equal(true);
         }
     });
 
-    it("reserves the whole magda-builtin- prefix for runtime-bundled skills", () => {
-        expect(RESERVED_RUNTIME_SKILL_PREFIX).to.equal("magda-builtin-");
-        expect(isReservedAgentSkillName("magda-builtin-example")).to.equal(
-            true
+    it("reserves the DSH Office skills mounted by the managed profile", async () => {
+        const profile = await fs.readFile(
+            fileURLToPath(
+                new URL(
+                    "../../../magda-agent-runtime/magda.cordis.patch.yml",
+                    import.meta.url
+                )
+            ),
+            "utf8"
         );
-        expect(isReservedAgentSkillName("magda-builtin")).to.equal(false);
-        expect(isReservedAgentSkillName("my-magda-builtin-tool")).to.equal(
+        expect(profile).to.include("name: '@deepseek-ai/dsh-skill-office'");
+        for (const name of ["office-docx", "office-pptx", "office-xlsx"]) {
+            expect(isReservedAgentSkillName(name), name).to.equal(true);
+        }
+    });
+
+    it("does not reserve the future naming prefix before it is adopted", () => {
+        expect(isReservedAgentSkillName("magda-builtin-example")).to.equal(
             false
         );
-        expect(isReservedAgentSkillName("magda-mgd-helper")).to.equal(false);
-    });
-
-    it("keeps new runtime-bundled skills under the reserved prefix", async () => {
-        for (const name of await runtimeBundledSkillNames()) {
-            if (RESERVED_RUNTIME_SKILL_NAMES.has(name)) continue;
-            expect(name, name).to.match(/^magda-builtin-/);
-        }
     });
 });

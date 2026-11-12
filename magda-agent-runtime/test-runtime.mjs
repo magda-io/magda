@@ -208,8 +208,20 @@ for (const persistentEnvironment of [
 }
 assert.doesNotMatch(
     dockerfile,
-    /--break-system-packages|pip install(?! -g)|uv python install/,
+    /--break-system-packages|(?<!uv )pip install(?! -g)|uv python install|uv pip install[^\n]*--system/,
     "The image build must not modify or replace Debian's system Python"
+);
+// The only build-time Python install targets the Office payload venv.
+assert.deepEqual(
+    [...dockerfile.matchAll(/uv pip install \\\n\s+--python "([^"]+)"/g)].map(
+        (match) => match[1]
+    ),
+    ["$python"],
+    "uv may install only into the Office payload virtual environment"
+);
+assert.match(
+    dockerfile,
+    /python="\$payload\/dependencies\/python\/bin\/python3"/
 );
 assert.doesNotMatch(
     dockerfile,
@@ -267,104 +279,74 @@ for (const guidance of [
         `Bundled Python dependency guidance must cover: ${guidance}`
     );
 }
-// Office reading (#13): a bundled, discoverable skill and the libraries it
-// mentions ship in the image; nothing is installed in a user's session.
-const officeSkill = await readFile(
-    new URL(
-        "skills/magda-builtin-read-office-documents/SKILL.md",
-        import.meta.url
-    ),
+// Office skills (#13): DSH's own skill-office provider and
+// load_workspace_dependencies tool are mounted over MAGDA's Python payload; the
+// installed LibreOffice Kit CLI stays enabled. No separate MAGDA parser.
+const profilePatch = await readFile(
+    new URL("magda.cordis.patch.yml", import.meta.url),
     "utf8"
 );
-const officeFrontmatter =
-    /^---\n([\s\S]*?)\n---\n/.exec(officeSkill)?.[1] ?? "";
-assert.match(officeFrontmatter, /^name: magda-builtin-read-office-documents$/m);
-const officeDescription =
-    /^description: (.+)$/m.exec(officeFrontmatter)?.[1] ?? "";
-assert.ok(
-    officeDescription.length > 0 && officeDescription.length <= 500,
-    "Office skill description must fit DSH's 500-character catalog cap"
-);
-for (const field of ["description", "whenToUse"]) {
-    const value =
-        new RegExp(`^${field}: (.+)$`, "m").exec(officeFrontmatter)?.[1] ?? "";
-    assert.ok(
-        value && !/: /.test(value),
-        `Office skill ${field} must be a plain YAML scalar without ': '`
-    );
-}
-for (const routing of [".docx", ".pptx", ".xlsx", "upload"]) {
-    assert.ok(
-        officeDescription.includes(routing),
-        `Office skill catalog description must mention ${routing}`
-    );
-}
-for (const guidance of [
-    "/usr/bin/python3 <skill-directory>/scripts/read_office.py",
-    "read-only path",
-    "cached value",
-    "(no cached value)",
-    "untrusted data",
-    "never rename or relabel",
-    "Password-protected",
-    "python-dependencies",
-    "explicit approval"
+for (const mount of [
+    "id: workspace-dependencies\n      name: '@deepseek-ai/dsh-tool-workspace-dependencies'\n      config:\n        source: /usr/local/lib/magda-agent/primary-runtime\n",
+    "id: skill-office\n      name: '@deepseek-ai/dsh-skill-office'\n"
 ]) {
     assert.ok(
-        officeSkill.includes(guidance),
-        `Office reading guidance must cover: ${guidance}`
+        profilePatch.includes(mount),
+        `Managed profile must mount: ${mount.split("\n")[1].trim()}`
     );
 }
-const officeReader = await readFile(
-    new URL(
-        "skills/magda-builtin-read-office-documents/scripts/read_office.py",
-        import.meta.url
-    ),
+assert.doesNotMatch(
+    profilePatch,
+    /cli:\s*false|assetRoot:|\broot:/,
+    "skill-office keeps its packaged assets and installed CLI; the payload is used in place"
+);
+const officeRequirements = await readFile(
+    new URL("office-runtime/requirements.txt", import.meta.url),
     "utf8"
 );
-const officeImports = [
-    ...officeReader.matchAll(/^(?:import|from) ([\w.]+)/gm)
-].map((match) => match[1].split(".")[0]);
-for (const name of officeImports) {
+const lockedOffice = [
+    ...officeRequirements.matchAll(
+        /^([A-Za-z0-9_.-]+)==([^\s]+) \\\n\s+--hash=sha256:([0-9a-f]{64})$/gm
+    )
+].map(([, name, version]) => `${name}==${version}`);
+assert.deepEqual(
+    lockedOffice,
+    [
+        "python-docx==1.2.0",
+        "python-pptx==1.0.2",
+        "openpyxl==3.1.5",
+        "XlsxWriter==3.2.9",
+        "typing_extensions==4.16.0",
+        "et_xmlfile==2.0.0"
+    ],
+    "Office libraries must match DSH 0.2.1-alpha.1's lock, each with a SHA-256 hash"
+);
+for (const step of [
+    "/usr/bin/python3 -m venv --system-site-packages --without-pip",
+    "--require-hashes --no-deps --only-binary :all:",
+    '/usr/bin/python3 -m pip --python "$python" check',
+    "write-runtime-manifest.py",
+    'chmod -R a+rX,go-w "$payload"'
+]) {
     assert.ok(
-        [
-            "argparse",
-            "datetime",
-            "json",
-            "os",
-            "posixpath",
-            "re",
-            "sys",
-            "zipfile",
-            "xml"
-        ].includes(name),
-        `Office reader must use only the Python standard library, not ${name}`
+        dockerfile.includes(step),
+        `Office payload build must include: ${step}`
     );
 }
-assert.ok(
-    !/\b(?:subprocess|urllib|socket|os\.system|os\.popen|os\.exec\w*)\b|["'](?:soffice|libreoffice)/i.test(
-        officeReader
-    ),
-    "Office reader must not spawn processes, use the network or invoke LibreOffice"
+assert.match(
+    dockerfile,
+    /python3-lxml python3-pandas python3-pil/,
+    "Native Office dependencies must come from Debian"
 );
 assert.match(
     dockerfile,
-    /python3-docx python3-openpyxl python3-pandas/,
-    "Debian's python-docx and openpyxl must be installed at build time"
+    /fonts-crosextra-caladea fonts-crosextra-carlito fonts-dejavu-core \\\n\s+fonts-liberation2/,
+    "LibreOffice Kit needs installed fonts to render, convert or recalculate"
 );
 assert.match(
     dockerfile,
-    /python3 -c 'import venv, docx, openpyxl, pandas'/,
-    "The image build must verify the Office libraries import"
-);
-assert.match(
-    dockerfile,
-    /READ_OFFICE=\/usr\/local\/lib\/magda-agent\/skills\/magda-builtin-read-office-documents\/scripts\/read_office\.py \\\n\s+\/usr\/bin\/python3 -m unittest discover -s \/usr\/local\/lib\/magda-agent\/qualification\/office-fixtures/,
-    "The shipped Office reader must be tested in the image as the runtime user"
-);
-assert.ok(
-    pythonDependenciesSkill.includes("magda-builtin-read-office-documents"),
-    "Python dependency guidance must point Office reading at the bundled skill"
+    /primary-runtime\/dependencies\/python\/bin\/python3 -m unittest discover \\\n\s+-s \/usr\/local\/lib\/magda-agent\/qualification\/office-fixtures/,
+    "The Office skills must be qualified in the image with the payload interpreter"
 );
 
 const misleadingHostProbeWarning = pythonDependenciesSkill
@@ -536,6 +518,7 @@ for (const requiredPath of [
     "bootstrap.mjs",
     "dsh-launch.mjs",
     "skills",
+    "office-runtime",
     "office-fixtures"
 ]) {
     assert.ok(

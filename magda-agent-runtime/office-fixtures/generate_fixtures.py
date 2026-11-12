@@ -10,7 +10,7 @@ throwaway virtual environment:
     /tmp/office-fixtures/bin/python generate_fixtures.py
 
 Generated files are committed, so tests do not need these libraries. The
-facts asserted by test_read_office.py are defined here.
+facts asserted by test_office_skills.py are defined here.
 """
 
 import datetime
@@ -286,42 +286,79 @@ def write_package(name, parts):
             target.writestr(info, data)
 
 
-def make_edge_cases():
-    # Shared formulas as Excel writes them (anchor cell + dependants), in the
-    # ISO Strict namespaces that Excel's "Strict Open XML" save option uses.
-    strict_main = "http://purl.oclc.org/ooxml/spreadsheetml/main"
-    strict_rel = "http://purl.oclc.org/ooxml/officeDocument/relationships"
-    sheet_cells = "".join(
+SHARED_FORMULA_SHEETS = {
+    # Doubles: B1:B4 shares A1*2 down a column; C1:E1 shares a sheet-qualified
+    # relative reference across a row with an absolute $A$1; F1:F2 shares a
+    # quoted sheet name with an absolute column and a relative row.
+    "Doubles": "".join(
         f'<row r="{r}"><c r="A{r}"><v>{r * 10}</v></c><c r="B{r}">'
         + (f'<f t="shared" ref="B1:B4" si="0">A{r}*2</f>' if r == 1 else '<f t="shared" si="0"/>')
-        + f"<v>{r * 20}</v></c></row>"
+        + f"<v>{r * 20}</v></c>"
+        + (
+            '<c r="C1"><f t="shared" ref="C1:E1" si="1">Rates!A1+$A$1</f><v>11</v></c>'
+            '<c r="D1"><f t="shared" si="1"/><v>12</v></c><c r="E1"><f t="shared" si="1"/><v>13</v></c>'
+            if r == 1 else ""
+        )
+        + (
+            '<c r="F1"><f t="shared" ref="F1:F2" si="2">\'Rate Table\'!$B1*A1</f><v>50</v></c>'
+            if r == 1 else '<c r="F2"><f t="shared" si="2"/><v>120</v></c>' if r == 2 else ""
+        )
+        + "</row>"
         for r in range(1, 5)
-    )
-    write_package("strict-shared-formulas.xlsx", {
+    ),
+    "Rates": '<row r="1"><c r="A1"><v>1</v></c><c r="B1"><v>2</v></c><c r="C1"><v>3</v></c></row>',
+    "Rate Table": '<row r="1"><c r="B1"><v>5</v></c></row><row r="2"><c r="B2"><v>6</v></c></row>',
+}
+
+
+def shared_formula_workbook(name, strict):
+    main = "http://purl.oclc.org/ooxml/spreadsheetml/main" if strict else \
+        "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    rel = "http://purl.oclc.org/ooxml/officeDocument/relationships" if strict else \
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    sheets = list(SHARED_FORMULA_SHEETS.items())
+    parts = {
         "[Content_Types].xml": (
             '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
             '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
             '<Default Extension="xml" ContentType="application/xml"/>'
             '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-            '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-            "</Types>"
+            + "".join(
+                f'<Override PartName="/xl/worksheets/sheet{i}.xml" ContentType="application/vnd.openxmlformats-'
+                'officedocument.spreadsheetml.worksheet+xml"/>'
+                for i in range(1, len(sheets) + 1)
+            )
+            + "</Types>"
         ),
         "_rels/.rels": (
             '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            f'<Relationship Id="rId1" Type="{strict_rel}/officeDocument" Target="xl/workbook.xml"/>'
+            f'<Relationship Id="rId1" Type="{rel}/officeDocument" Target="xl/workbook.xml"/>'
             "</Relationships>"
         ),
         "xl/workbook.xml": (
-            f'<workbook xmlns="{strict_main}" xmlns:r="{strict_rel}"><sheets>'
-            '<sheet name="Doubles" sheetId="1" r:id="rId1"/></sheets></workbook>'
+            f'<workbook xmlns="{main}" xmlns:r="{rel}"><sheets>'
+            + "".join(f'<sheet name="{n}" sheetId="{i}" r:id="rId{i}"/>' for i, (n, _) in enumerate(sheets, 1))
+            + "</sheets></workbook>"
         ),
         "xl/_rels/workbook.xml.rels": (
             '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            f'<Relationship Id="rId1" Type="{strict_rel}/worksheet" Target="worksheets/sheet1.xml"/>'
-            "</Relationships>"
+            + "".join(
+                f'<Relationship Id="rId{i}" Type="{rel}/worksheet" Target="worksheets/sheet{i}.xml"/>'
+                for i in range(1, len(sheets) + 1)
+            )
+            + "</Relationships>"
         ),
-        "xl/worksheets/sheet1.xml": f'<worksheet xmlns="{strict_main}"><sheetData>{sheet_cells}</sheetData></worksheet>',
-    })
+    }
+    for i, (_, cells) in enumerate(sheets, 1):
+        parts[f"xl/worksheets/sheet{i}.xml"] = f'<worksheet xmlns="{main}"><sheetData>{cells}</sheetData></worksheet>'
+    write_package(name, parts)
+
+
+def make_edge_cases():
+    # Shared formulas as Excel writes them (anchor cell + dependants), in both
+    # Transitional and ISO Strict namespaces (Excel's "Strict Open XML" option).
+    shared_formula_workbook("shared-formulas.xlsx", strict=False)
+    shared_formula_workbook("strict-shared-formulas.xlsx", strict=True)
 
     # Minimal OLE2 compound files: only the header magic and directory entry
     # names matter to the reader's format identification.

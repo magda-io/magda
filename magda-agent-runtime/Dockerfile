@@ -90,12 +90,31 @@ COPY --chmod=0755 component/uv-wrapper.sh /usr/local/bin/uv
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bubblewrap ca-certificates curl file git jq less patch procps python3 \
-    python3-docx python3-openpyxl python3-pandas python3-pip python3-venv \
-    tini unzip util-linux \
+    python3-lxml python3-pandas python3-pil python3-pip python3-venv \
+    fonts-crosextra-caladea fonts-crosextra-carlito fonts-dejavu-core \
+    fonts-liberation2 tini unzip util-linux \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/local/lib/magda-agent/uv --version | grep -Eq "^uv ${UV_VERSION}( |$)" \
   && python3 -m pip --version \
-  && python3 -c 'import venv, docx, openpyxl, pandas'
+  && python3 -c 'import venv'
+# Python payload for DSH's load_workspace_dependencies tool and Office skills:
+# a read-only venv over Debian's interpreter (no second Python). Native libs
+# come from Debian; the pure-Python Office libraries are DSH's locked wheels,
+# verified by hash. The fonts above let the installed LibreOffice Kit render.
+COPY component/office-runtime/ /tmp/office-runtime/
+RUN set -eu; \
+  payload=/usr/local/lib/magda-agent/primary-runtime; \
+  python="$payload/dependencies/python/bin/python3"; \
+  /usr/bin/python3 -m venv --system-site-packages --without-pip "$payload/dependencies/python"; \
+  UV_PYTHON_DOWNLOADS=never UV_NO_CACHE=1 /usr/local/lib/magda-agent/uv pip install \
+    --python "$python" --require-hashes --no-deps --only-binary :all: \
+    -r /tmp/office-runtime/requirements.txt; \
+  PIP_NO_CACHE_DIR=1 /usr/bin/python3 -m pip --python "$python" check; \
+  "$python" /tmp/office-runtime/write-runtime-manifest.py \
+    --arch "$(node -p process.arch)" --out "$payload/runtime.json"; \
+  "$python" -c 'import docx, pptx, openpyxl, xlsxwriter, PIL, lxml, pandas'; \
+  rm -rf /tmp/office-runtime; \
+  chown -R root:root "$payload"; chmod -R a+rX,go-w "$payload"
 # Keep the existing runtime layout expected by MAGDA's managed profile
 # plugins, but source every DSH workspace package from the pinned fork commit.
 COPY --from=dsh-build /opt/dsh-release/node_modules/ /usr/local/lib/magda-agent/dsh/node_modules/
@@ -174,12 +193,12 @@ WORKDIR /data/workspace
 # target architecture, before an image can be published by CI.
 COPY --chmod=0644 component/test-image.mjs /usr/local/lib/magda-agent/qualification/test-image.mjs
 COPY --chmod=0644 component/test-image-web.mjs /usr/local/lib/magda-agent/qualification/test-image-web.mjs
-# Office reading must work with the image's own interpreter and the shipped,
-# root-owned skill script: no package installation, network or LibreOffice.
+# DSH's Office skills must read, generate, check and render with the shipped
+# payload and LibreOffice Kit as the runtime user, without network access.
 COPY component/office-fixtures/ /usr/local/lib/magda-agent/qualification/office-fixtures/
 RUN node /usr/local/lib/magda-agent/qualification/test-image.mjs \
   && MAGDA_IMAGE_TEST=1 node /usr/local/lib/magda-agent/qualification/test-image-web.mjs \
-  && READ_OFFICE=/usr/local/lib/magda-agent/skills/magda-builtin-read-office-documents/scripts/read_office.py \
-    /usr/bin/python3 -m unittest discover -s /usr/local/lib/magda-agent/qualification/office-fixtures -p 'test_*.py'
+  && /usr/local/lib/magda-agent/primary-runtime/dependencies/python/bin/python3 -m unittest discover \
+    -s /usr/local/lib/magda-agent/qualification/office-fixtures -p 'test_*.py'
 EXPOSE 3080
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/magda-agent-entrypoint"]
