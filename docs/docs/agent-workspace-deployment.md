@@ -70,8 +70,8 @@ Sandboxes are gone, then upgrade the release and admit new workspaces.
 
 ### On-demand Python environments and storage
 
-The runtime contains Debian's system Python and pandas plus `python3-pip`,
-`python3-venv`, and `uv` 0.13.6. The uv binary is copied from Astral's official
+The runtime contains Debian's system Python with pandas, `python3-docx` and
+`python3-openpyxl`, plus `python3-pip`, `python3-venv`, and `uv` 0.13.6. The uv binary is copied from Astral's official
 amd64/arm64 multi-architecture image pinned to immutable OCI index digest
 `sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0`;
 no second Python interpreter is bundled. `UV_PYTHON_DOWNLOADS=never` and
@@ -137,6 +137,25 @@ Otherwise publish durable outputs and reset/terminate the Workspace so its
 replacement receives the new size. Reset, termination and logout delete the PVC,
 including every environment and cache; suspend/resume and Pod replacement retain
 it.
+
+### Office document reading
+
+Uploaded DOCX, PPTX and XLSX files are readable out of the box through the
+image-bundled `magda-builtin-read-office-documents` Agent Skill. It needs no
+deployment configuration, package installation, network access or LibreOffice:
+its extractor uses only the Python standard library, and Debian's python-docx
+and openpyxl are installed at build time for follow-up analysis. The image build
+runs the extractor's tests (`office-fixtures/test_read_office.py`) as the
+runtime user with the image's own interpreter, and the image Web test checks the
+skill reaches the model's catalog.
+
+Supported and unsupported inputs, output limits and the trust boundary are in
+the [architecture reference](./architecture/agent-workspace.md#office-document-reading).
+Operators should know that legacy `.doc`/`.xls`/`.ppt`, password-protected and
+OpenDocument files are reported as unsupported rather than converted, and that
+the extractor caps input size and expansion to protect the Workspace's memory
+(a 2.2-million-cell workbook took about 6 seconds and 18 MiB of memory in the
+default 1 CPU / 1536 MiB Workspace on Minikube).
 
 ### Mandatory migration from the split charts
 

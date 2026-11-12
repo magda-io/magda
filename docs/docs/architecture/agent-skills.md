@@ -31,7 +31,8 @@ user publishing, `userId`, `access-control.ownerId`, and the authenticated actor
 must match; the two fields remain distinct for future explicitly delegated use. Names are at
 most 46 lowercase letters/digits with interior hyphens; user names cannot use
 the `system-` prefix, and runtime-owned names `capture-workflow`, `magda-mgd`
-and `python-dependencies` are reserved. Registry's primary key atomically enforces each
+and `python-dependencies`, plus every name starting with `magda-builtin-`, are
+reserved. Registry's primary key atomically enforces each
 intended user's namespace, so the API never accepts a caller-selected ID or uses
 full-text search for uniqueness. Different users may publish the same name.
 
@@ -325,13 +326,16 @@ dependency, without a published runtime dependency on
 `magda-agent-runtime/skills/*/SKILL.md` names and verifies reservation, plus
 `magda-mgd` from its separate installation path.
 
-**Future naming convention:** use `magda-builtin-<purpose>` for newly
-introduced runtime-bundled skills and reserve that entire prefix when
-the convention is adopted. Registry-backed system publications continue to
-use `system-<suffix>`. Existing built-in skill names will not be renamed
-as part of #3896. Name reservation blocks MAGDA-managed publication/sync
-collisions; it does not make higher-priority user-authored project-local
-DSH skills impossible.
+**Naming convention:** newly introduced runtime-bundled skills use
+`magda-builtin-<purpose>`, and the whole prefix is reserved. The first such
+skill is `magda-builtin-read-office-documents` (see
+[Office document reading](./agent-workspace.md#office-document-reading)).
+Registry-backed system publications continue to use `system-<suffix>`. The
+three earlier built-in names are not renamed and remain reserved explicitly;
+the source-tree test also requires every other bundled skill name to carry the
+prefix. Name reservation blocks MAGDA-managed publication/sync collisions; it
+does not make higher-priority user-authored project-local DSH skills
+impossible.
 
 ## Workflow capture and skill suggestions
 

@@ -90,11 +90,12 @@ COPY --chmod=0755 component/uv-wrapper.sh /usr/local/bin/uv
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bubblewrap ca-certificates curl file git jq less patch procps python3 \
-    python3-pandas python3-pip python3-venv tini unzip util-linux \
+    python3-docx python3-openpyxl python3-pandas python3-pip python3-venv \
+    tini unzip util-linux \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/local/lib/magda-agent/uv --version | grep -Eq "^uv ${UV_VERSION}( |$)" \
   && python3 -m pip --version \
-  && python3 -c 'import venv'
+  && python3 -c 'import venv, docx, openpyxl, pandas'
 # Keep the existing runtime layout expected by MAGDA's managed profile
 # plugins, but source every DSH workspace package from the pinned fork commit.
 COPY --from=dsh-build /opt/dsh-release/node_modules/ /usr/local/lib/magda-agent/dsh/node_modules/
@@ -173,7 +174,12 @@ WORKDIR /data/workspace
 # target architecture, before an image can be published by CI.
 COPY --chmod=0644 component/test-image.mjs /usr/local/lib/magda-agent/qualification/test-image.mjs
 COPY --chmod=0644 component/test-image-web.mjs /usr/local/lib/magda-agent/qualification/test-image-web.mjs
+# Office reading must work with the image's own interpreter and the shipped,
+# root-owned skill script: no package installation, network or LibreOffice.
+COPY component/office-fixtures/ /usr/local/lib/magda-agent/qualification/office-fixtures/
 RUN node /usr/local/lib/magda-agent/qualification/test-image.mjs \
-  && MAGDA_IMAGE_TEST=1 node /usr/local/lib/magda-agent/qualification/test-image-web.mjs
+  && MAGDA_IMAGE_TEST=1 node /usr/local/lib/magda-agent/qualification/test-image-web.mjs \
+  && READ_OFFICE=/usr/local/lib/magda-agent/skills/magda-builtin-read-office-documents/scripts/read_office.py \
+    /usr/bin/python3 -m unittest discover -s /usr/local/lib/magda-agent/qualification/office-fixtures -p 'test_*.py'
 EXPOSE 3080
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/magda-agent-entrypoint"]

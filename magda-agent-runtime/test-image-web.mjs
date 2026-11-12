@@ -872,6 +872,16 @@ try {
         requestWithTools.body.model === payload.llm.model,
         "provider did not use bootstrap model"
     );
+    // Office reading is discoverable by default: the bundled skill reaches the
+    // model's skill catalog without any user, mgd or project skill setup.
+    check(
+        llmRequests.some(({ body }) =>
+            JSON.stringify(body.input ?? body).includes(
+                "magda-builtin-read-office-documents"
+            )
+        ),
+        "bundled Office reading skill absent from the model's skill catalog"
+    );
     const markerFile = path.join(
         root,
         "workspace/image-web-persistence-marker"

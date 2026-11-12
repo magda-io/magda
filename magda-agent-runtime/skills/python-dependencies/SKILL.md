@@ -6,7 +6,7 @@ whenToUse: A Python import or tool is missing, project requirements need install
 
 # Manage on-demand Python dependencies
 
-The runtime includes Debian's system Python, pandas, `pip`, `venv`, and pinned `uv`. The system Python is externally managed. Use `uv` with that interpreter and an isolated, PVC-backed virtual environment by default; use pip only as a fallback when uv cannot handle a requirement.
+The runtime includes Debian's system Python, pandas, openpyxl, python-docx, `pip`, `venv`, and pinned `uv`. To read Office documents, use the bundled `magda-builtin-read-office-documents` skill rather than installing a package. The system Python is externally managed. Use `uv` with that interpreter and an isolated, PVC-backed virtual environment by default; use pip only as a fallback when uv cannot handle a requirement.
 
 ## Before installing anything
 

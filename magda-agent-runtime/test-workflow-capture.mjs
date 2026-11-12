@@ -197,7 +197,11 @@ assert.ok(
 assert.ok(!/: /.test(fields.whenToUse));
 assert.deepEqual(
     fs.readdirSync(here("skills")).sort(),
-    ["capture-workflow", "python-dependencies"],
+    [
+        "capture-workflow",
+        "magda-builtin-read-office-documents",
+        "python-dependencies"
+    ],
     "Only immediate skill directories belong in the bundled root"
 );
 for (const required of [

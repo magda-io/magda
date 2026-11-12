@@ -4,7 +4,7 @@
 
 ## Understand the three kinds of skills
 
-- **Built-in runtime skills** (for example `magda-mgd`, `capture-workflow`, `python-dependencies`) are installed with the Agent Runtime image. They help the agent discover MAGDA operations and safe procedures; they are not user publications.
+- **Built-in runtime skills** (for example `magda-mgd`, `capture-workflow`, `python-dependencies`, `magda-builtin-read-office-documents`) are installed with the Agent Runtime image. They help the agent discover MAGDA operations and safe procedures; they are not user publications.
 - **Your user skills** are reviewed Markdown instructions and decision rules that you explicitly publish to the Registry-backed skill catalogue. They are visible and writable according to your MAGDA permissions.
 - **Shared skills** are other users' readable publications. **Sharing is not installation**: you must explicitly install an eligible shared source into your own skill set; you do not inherit the publisher's dataset or model permissions.
 
@@ -16,6 +16,17 @@
 4. Review assumptions, data provenance, outputs and changes. User-scoped MAGDA authorization still controls every dataset request. Treat agent-generated code and results as work to verify, not as guaranteed correct.
 
 The Workspace keeps local files and DSH session history across browser refresh, suspend/resume and Pod replacement as long as its PVC remains. **Reset, terminate and logout deliberately destroy** its local Workspace and unpublished drafts. Publish important data/outputs to a suitable durable MAGDA dataset first.
+
+## Ask about Word, PowerPoint and Excel files
+
+Attach a `.docx`, `.pptx` or `.xlsx` file with the composer's **+** button (or drag it in) and ask about it, for example "What does the footnote on the salinity figure say?" or "What is the Summary total and its formula?". The agent reads the actual contents with the built-in Office reading skill, and you don't need to mention the skill or install anything. It can cite where it found each answer: paragraph, table, header or footer, footnote, slide, speaker notes, or sheet and cell.
+
+- **Spreadsheets:** the agent distinguishes a cell's formula (`=SUM(B3:B5)`) from its **cached value**, the result your spreadsheet application last saved. If a file was saved without calculating a formula, the agent says so rather than inventing a value. Hidden sheets and slides are reported as hidden.
+- **Updated files:** attach the new version again; each upload is kept separately, so say which version you mean if it matters.
+- **Not supported:** legacy Word/Excel/PowerPoint 97–2003 files (`.doc`, `.xls`, `.ppt`), password-protected files and OpenDocument files. Save them as `.docx`, `.xlsx` or `.pptx` (without a password) and upload again; renaming a file doesn't convert it. Images inside documents are not read, only their alternative text.
+- **Macros** in `.docm`, `.xlsm` or `.pptm` files are never run.
+
+Uploaded files stay in your own Workspace and are read-only to the agent. Text inside a document is treated as content, not as instructions to the agent.
 
 ## Capture and publish reusable expertise
 

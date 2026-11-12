@@ -211,6 +211,18 @@ The merged [#3896](https://github.com/magda-io/magda/pull/3896) runtime retains 
 
 Merged [#3898](https://github.com/magda-io/magda/pull/3898) adds `magda-workspace-resources` to report configured CPU/memory and **requested** PVC size separately from effective cgroup CPU/memory, current memory use and observed `/data` filesystem capacity. Defaults remain 1 CPU, 1536 MiB memory, 1 GiB ephemeral storage and a **10 GiB new PVC request**. An existing PVC does not automatically expand; Minikube hostpath `df /data` may show host capacity, **not** an enforced user quota. Environments survive Pod replacement/suspend, but reset and logout delete them with the PVC. See [operations](../agent-workspace-deployment.md#on-demand-python-environments-and-storage), [runtime-bundled skill naming](./agent-skills.md#runtime-bundled-skill-naming-3896) and [ADR 0009](../adrs/0009-on-demand-python-environments-in-sandboxes.md).
 
+### Office document reading
+
+DSH Web stores an uploaded generic file byte-for-byte, read-only, under `$DSH_HOME/attachments/v1` and gives the model one attachment line with the saved path; it does not parse the file. The runtime therefore bundles the `magda-builtin-read-office-documents` Agent Skill (image path `/usr/local/lib/magda-agent/skills/magda-builtin-read-office-documents/`, discovered through `DSH_BUNDLED_SKILL_DIR`). Its catalog entry is in every fresh session's skill catalog, so the model loads it for DOCX/PPTX/XLSX questions without user setup or prompting.
+
+The skill runs a read-only, **standard-library-only** extractor, `scripts/read_office.py`, with `/usr/bin/python3` inside the normal `workspace-write` Bash sandbox. The attachment store is readable but not writable there, so no approval or escalation is needed. The extractor:
+
+- identifies files by content, not extension: modern OOXML (including macro-enabled and template variants, Transitional and Strict namespaces) is read; legacy binary `.doc`/`.xls`/`.ppt`, password-protected (OLE-encrypted or ZIP-encrypted), OpenDocument, corrupt and other files return `UNSUPPORTED` with the reason;
+- emits Markdown (or `--json`) with citable locations: DOCX body paragraphs, lists, nested/merged tables, text boxes, headers/footers per section, footnotes, endnotes and comments; PPTX slides in order with titles, bullet levels, tables, groups, chart series (cached data), SmartArt text, speaker notes and hidden-slide markers; XLSX sheets (hidden marked), merged ranges, a cached-value grid, every formula with its cached result (shared formulas translated per cell; missing cached values reported), comments, charts and defined names;
+- never runs macros, renders, converts or uses the network, and does not require LibreOffice; it refuses DTDs, encrypted ZIP members, inputs over 200 MiB, parts over 200 MiB, more than 1 GiB expanded in total and suspicious compression ratios, and streams worksheets so memory is bounded by the displayed window (by default 500 rows × 50 columns, 100,000 output characters per file).
+
+Debian's `python3-docx` (0.8) and `python3-openpyxl` (3.0) are installed at build time beside pandas for ad-hoc analysis (for example `pandas.read_excel`); `python-pptx` is not packaged for Debian bookworm and is not installed. Nothing is installed in a user's session. Generated-file preview and LibreOffice rendering are separate concerns: DSH's upstream `dsh-skill-office` and `load_workspace_dependencies` are present in the image's DSH closure but are not mounted by the managed profile.
+
 ### Stateless manager, Kubernetes-owned state
 
 The manager can restart without an application database. Claims, Sandbox status,

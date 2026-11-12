@@ -88,10 +88,26 @@ assert.match(
     /pnpm install --frozen-lockfile/,
     "The pinned source build must use the committed dependency lockfile"
 );
-assert.match(dockerfile, /FROM --platform=\$BUILDPLATFORM node:\$\{NODE_VERSION\}-bookworm-slim AS dsh-source-build/, "Compile JS/Web on the native build CPU, not through target emulation");
-assert.match(dockerfile, /tar --exclude='node_modules' --exclude='\.\/native\/system\/packages\/\*\/bin' -cf \/opt\/dsh-built-source\.tar/, "Never copy host dependency trees into target native modules");
-assert.match(dockerfile, /COPY --from=dsh-source-build \/opt\/dsh-built-source\.tar/, "Transfer only built source payloads into the target stage");
-assert.match(dockerfile, /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune/, "Ship the CLI's required peer closure, not optional-only server branches");
+assert.match(
+    dockerfile,
+    /FROM --platform=\$BUILDPLATFORM node:\$\{NODE_VERSION\}-bookworm-slim AS dsh-source-build/,
+    "Compile JS/Web on the native build CPU, not through target emulation"
+);
+assert.match(
+    dockerfile,
+    /tar --exclude='node_modules' --exclude='\.\/native\/system\/packages\/\*\/bin' -cf \/opt\/dsh-built-source\.tar/,
+    "Never copy host dependency trees into target native modules"
+);
+assert.match(
+    dockerfile,
+    /COPY --from=dsh-source-build \/opt\/dsh-built-source\.tar/,
+    "Transfer only built source payloads into the target stage"
+);
+assert.match(
+    dockerfile,
+    /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune/,
+    "Ship the CLI's required peer closure, not optional-only server branches"
+);
 assert.match(
     dockerfile,
     /--prod deploy --offline/,
@@ -251,6 +267,106 @@ for (const guidance of [
         `Bundled Python dependency guidance must cover: ${guidance}`
     );
 }
+// Office reading (#13): a bundled, discoverable skill and the libraries it
+// mentions ship in the image; nothing is installed in a user's session.
+const officeSkill = await readFile(
+    new URL(
+        "skills/magda-builtin-read-office-documents/SKILL.md",
+        import.meta.url
+    ),
+    "utf8"
+);
+const officeFrontmatter =
+    /^---\n([\s\S]*?)\n---\n/.exec(officeSkill)?.[1] ?? "";
+assert.match(officeFrontmatter, /^name: magda-builtin-read-office-documents$/m);
+const officeDescription =
+    /^description: (.+)$/m.exec(officeFrontmatter)?.[1] ?? "";
+assert.ok(
+    officeDescription.length > 0 && officeDescription.length <= 500,
+    "Office skill description must fit DSH's 500-character catalog cap"
+);
+for (const field of ["description", "whenToUse"]) {
+    const value =
+        new RegExp(`^${field}: (.+)$`, "m").exec(officeFrontmatter)?.[1] ?? "";
+    assert.ok(
+        value && !/: /.test(value),
+        `Office skill ${field} must be a plain YAML scalar without ': '`
+    );
+}
+for (const routing of [".docx", ".pptx", ".xlsx", "upload"]) {
+    assert.ok(
+        officeDescription.includes(routing),
+        `Office skill catalog description must mention ${routing}`
+    );
+}
+for (const guidance of [
+    "/usr/bin/python3 <skill-directory>/scripts/read_office.py",
+    "read-only path",
+    "cached value",
+    "(no cached value)",
+    "untrusted data",
+    "never rename or relabel",
+    "Password-protected",
+    "python-dependencies",
+    "explicit approval"
+]) {
+    assert.ok(
+        officeSkill.includes(guidance),
+        `Office reading guidance must cover: ${guidance}`
+    );
+}
+const officeReader = await readFile(
+    new URL(
+        "skills/magda-builtin-read-office-documents/scripts/read_office.py",
+        import.meta.url
+    ),
+    "utf8"
+);
+const officeImports = [
+    ...officeReader.matchAll(/^(?:import|from) ([\w.]+)/gm)
+].map((match) => match[1].split(".")[0]);
+for (const name of officeImports) {
+    assert.ok(
+        [
+            "argparse",
+            "datetime",
+            "json",
+            "os",
+            "posixpath",
+            "re",
+            "sys",
+            "zipfile",
+            "xml"
+        ].includes(name),
+        `Office reader must use only the Python standard library, not ${name}`
+    );
+}
+assert.ok(
+    !/\b(?:subprocess|urllib|socket|os\.system|os\.popen|os\.exec\w*)\b|["'](?:soffice|libreoffice)/i.test(
+        officeReader
+    ),
+    "Office reader must not spawn processes, use the network or invoke LibreOffice"
+);
+assert.match(
+    dockerfile,
+    /python3-docx python3-openpyxl python3-pandas/,
+    "Debian's python-docx and openpyxl must be installed at build time"
+);
+assert.match(
+    dockerfile,
+    /python3 -c 'import venv, docx, openpyxl, pandas'/,
+    "The image build must verify the Office libraries import"
+);
+assert.match(
+    dockerfile,
+    /READ_OFFICE=\/usr\/local\/lib\/magda-agent\/skills\/magda-builtin-read-office-documents\/scripts\/read_office\.py \\\n\s+\/usr\/bin\/python3 -m unittest discover -s \/usr\/local\/lib\/magda-agent\/qualification\/office-fixtures/,
+    "The shipped Office reader must be tested in the image as the runtime user"
+);
+assert.ok(
+    pythonDependenciesSkill.includes("magda-builtin-read-office-documents"),
+    "Python dependency guidance must point Office reading at the bundled skill"
+);
+
 const misleadingHostProbeWarning = pythonDependenciesSkill
     .split("\n")
     .find((line) => line.includes("Never present"));
@@ -418,7 +534,9 @@ for (const requiredPath of [
     "uv-wrapper.sh",
     "workspace-resources.sh",
     "bootstrap.mjs",
-    "dsh-launch.mjs"
+    "dsh-launch.mjs",
+    "skills",
+    "office-fixtures"
 ]) {
     assert.ok(
         dockerIncludes.has(requiredPath),

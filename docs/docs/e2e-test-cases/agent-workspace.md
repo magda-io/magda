@@ -280,6 +280,77 @@ approval.
    and that no `sudo`, runtime `apt-get`, global pip, `--system`,
    `--break-system-packages`, privilege escalation or Python download was used.
 
+## Office document reading checks
+
+Use a **fresh** claimed Workspace (Start New Workspace → Permanently Reset, or a
+new user) with no published, synchronized or project skills and no manual
+package installation. Use the known-content fixtures in
+[`magda-agent-runtime/office-fixtures/`](../../../magda-agent-runtime/office-fixtures/);
+the expected facts are defined in `generate_fixtures.py` and asserted by
+`test_read_office.py`. Rename copies before upload (for example
+`coastal-report.docx`, `field-briefing.pptx`, `programme-budget.xlsx`) so that
+answers cannot come from file names.
+
+1. **Discovery and contents.** In a new DSH session, attach the three files
+   with the composer's **+** button and ask, without mentioning skills or tools:
+
+    > I've attached three files. Please answer from their actual contents and say
+    > where in each file you found each answer. (1) Report: what peak salinity was
+    > recorded, at which station and on what date? Who leads North Reef, and what
+    > are the replicate A and B values? What does the footnote say? (2) Deck: what
+    > is the Pilbara budget, what do the speaker notes remind the committee about,
+    > and is there any hidden slide? (3) Spreadsheet: what is the total cost on the
+    > Summary sheet (give both the formula and its value), and what is the Q3
+    > amount on the Detail sheet?
+
+    Expected: 35.2 PSU at BW-7 on 14 March 2026 (body ¶3); Dr Amara Okafor;
+    replicates 7.81 / 7.79 from the nested table; footnote "Calibrated against
+    the CSIRO reference probe in February 2026."; Pilbara AUD 1,250,000 (slide 3);
+    notes "budget approval is due 30 June" (slide 2); hidden slide 5
+    "Contingency"; `Summary!B6 =SUM(B3:B5)` with cached value 785000.5 and
+    `Detail!C4` 235500.15, described as saved (cached) values. The session
+    history (`magda-session-history events`) shows a `skill` call for
+    `magda-builtin-read-office-documents` and a Bash call of
+    `/usr/bin/python3 …/scripts/read_office.py` on the
+    `$DSH_HOME/attachments/v1/files/…` paths, with **no** approval prompt,
+    escalation or package installation.
+2. **Unsupported and corrupt inputs.** Attach `legacy.doc`, `encrypted.xlsx`,
+   `truncated.docx` and `misnamed-spreadsheet.docx` (renamed) and ask what each
+   contains. Expected: legacy Word 97–2003, password-protected and
+   corrupt/truncated files are reported as unreadable with advice (save as
+   DOCX/XLSX, provide an unprotected copy, request a fresh copy) and no invented
+   contents; the misnamed file is identified as an XLSX workbook by content.
+3. **Re-upload.** Attach an edited workbook with the **same file name** (change
+   `Summary!B5` from 410000 to 450000 with a cached total of 825000.5) and ask
+   for the new total and what changed. Expected: the new upload's distinct saved
+   path is read and the 40,000 increase in Staff is reported.
+4. **Read-only boundary.** Ask the agent to run `test -w` on the attachment's
+   saved path and `touch` a file in its directory. Expected: `not-writable`, and
+   `Permission denied` from the `workspace-write` sandbox; the agent does not
+   request escalation. Cross-user access remains covered by
+   [Workspace access checks](#workspace-access-checks): each user's attachments
+   live on their own PVC.
+5. **Fresh, terse request.** In a new session attach only the deck and ask
+   "summarise this deck in three bullets". Expected: the skill is loaded again
+   and the bullets cite slides.
+6. **Bounded resources.** In the Workspace, read a large workbook (for example
+   200,000 rows × 11 columns with a formula per row, about 14 MB) with the
+   extractor and measure time and peak memory. Expected: a bounded grid and
+   formula list with explicit truncation notes, well within the 1 CPU /
+   1536 MiB limits.
+7. **Reserved name.** Run `mgd agent-skill validate` on a draft named
+   `magda-builtin-impostor`. Expected: rejected as reserved for a
+   runtime-bundled Agent Skill (Agent Manager publication and installation
+   aliases use the same predicate).
+
+**Observed (2026-11-12, Minikube runc, arm64, demo LLM route):** steps 1–7
+passed on the branch image; step 1 was repeated after a permanent reset. Step 6
+read 2.2 million cells in 5.7 s with an 18 MiB peak (an earlier non-streaming
+build needed 11 s and 722 MiB).
+**Not yet tested:** amd64 images, gVisor, files authored by Microsoft Office
+itself (fixtures are produced by python-docx, python-pptx, XlsxWriter and
+openpyxl, plus hand-built Strict/shared-formula packages), and other models.
+
 ## Lifecycle and security checks
 
 Run each check while watching the Settings page and Kubernetes resources:
