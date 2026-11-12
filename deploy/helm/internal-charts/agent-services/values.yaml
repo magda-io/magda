@@ -26,9 +26,13 @@ runtime:
     # -- Default per-user PVC capacity. Existing PVCs are not resized automatically.
     size: 10Gi
     storageClassName: ""
+  # Per-Workspace container resources. Scheduling reserves only `requests`;
+  # `limits` is a cap, and memory above it is OOM-killed. Each LibreOffice Kit
+  # render, conversion or recalculation peaks at about 1.2 GiB, so keep the
+  # memory limit at 2560Mi or higher.
   resources:
     requests: {cpu: 100m, memory: 384Mi, ephemeral-storage: 256Mi}
-    limits: {cpu: "1", memory: 1536Mi, ephemeral-storage: 1Gi}
+    limits: {cpu: "1", memory: 2560Mi, ephemeral-storage: 1Gi}
   hostAliases: []
   externalPrivateCidrs: []
   externalPrivatePorts: [80, 443]

@@ -152,9 +152,12 @@ runtime user: reading, generation from the skills' own examples, structural
 checks, rendering, PDF conversion and recalculation.
 
 Rendering is memory-intensive: each LibreOffice Kit call peaks at about
-1.2 GiB, and a default 1536 MiB Workspace peaked at 1.41 GiB in testing without
-being OOM-killed. Keep `agent-services.runtime.resources.limits.memory` at the
-default or higher; lowering it risks failed previews and renders. See the
+1.2 GiB, and a Workspace limited to 1536 MiB peaked at 1.41 GiB in testing.
+The default `agent-services.runtime.resources.limits.memory` is therefore
+2560Mi. It is a cap, not a reservation: scheduling uses the 384Mi request, so a
+small Minikube node can still run Workspaces, but several Workspaces rendering
+at once can exceed a node's real memory. Lowering the limit risks OOM-killed
+renders and previews. See the
 [architecture reference](./architecture/agent-workspace.md#office-documents)
 for formats and limits.
 

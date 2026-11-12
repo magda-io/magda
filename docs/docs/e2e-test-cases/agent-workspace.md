@@ -164,14 +164,14 @@ continues to use the **direct magda-core** values shape and is not a
 ## On-demand Python dependency checks
 
 Run this qualification in an actual claimed Agent Sandbox with the chart defaults
-of 1 CPU, 1536 MiB memory and 1 GiB ephemeral storage. Confirm the rendered Pod
+of 1 CPU, 2560 MiB memory and 1 GiB ephemeral storage. Confirm the rendered Pod
 limits before testing. Record the runtime image ID and the output of
 `python3 --version`, `python3 -m pip --version`, `uv --version`,
 `env | grep -E '^(UV_|PIP_CACHE_DIR|MAGDA_PYTHON_|MAGDA_WORKSPACE_)'`,
 `magda-workspace-resources`, `df -h / /data`, and
 `du -sh "$MAGDA_PYTHON_VENV_ROOT" "$MAGDA_PYTHON_CACHE_ROOT" "$MAGDA_PYTHON_TMPDIR" 2>/dev/null`.
-The summary must show configured and effective 1 CPU, configured 1536 MiB and
-effective 1610612736-byte (1.50 GiB) memory, current cgroup memory use, and a
+The summary must show configured and effective 1 CPU, configured 2560 MiB and
+effective 2684354560-byte (2.50 GiB) memory, current cgroup memory use, and a
 10 GiB requested PVC. On Minikube hostpath, confirm that a larger `/data` `df`
 value is labelled node-backed observed capacity rather than the Workspace quota.
 `pwd` must report `/data/workspace/agent-harness/default-workspace`; every
@@ -191,7 +191,7 @@ Before changing the Workspace, use a real model turn in a fresh claim and ask:
 
 The agent must load the bundled Python guidance, use the configured/cgroup
 resource sources rather than `nproc`, `os.cpu_count()`, `free` or
-`/proc/meminfo`, and report **1 CPU**, **1.5 GiB memory** and the **10 GiB
+`/proc/meminfo`, and report **1 CPU**, **2.5 GiB memory** and the **10 GiB
 requested PVC**. It must distinguish current memory use from available capacity,
 include the Minikube hostpath caveat when `df` shows the node disk, keep proposed
 scikit-learn/BLAS parallelism within one CPU, and make no installation before
@@ -336,7 +336,7 @@ and watch `/sys/fs/cgroup/memory.peak` and `memory.events`.
 passed (1–4 in a fresh Workspace), with answers and tool paths as expected and no
 approvals. In step 2 the kit reported `missingFonts` `Arial` and `Aptos`, which
 it substituted; the rendered slide was correct on manual inspection. The
-cgroup memory peak across the four turns was 1.41 GiB of 1.5 GiB (including
+cgroup memory peak across the four turns was 1.41 GiB of the then 1.5 GiB limit (including
 page cache), with no OOM kill. **Not yet tested:** amd64 images and emulated
 cross-architecture builds, gVisor, files saved by Microsoft Office itself,
 CJK text, image-capable models, and other models.

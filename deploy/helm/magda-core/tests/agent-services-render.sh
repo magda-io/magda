@@ -210,12 +210,12 @@ for runtime in runc gvisor kata; do
     grep -q 'storage: 10Gi' <<<"$sandbox_template"
     for resource in \
         'cpu: 100m' 'memory: 384Mi' 'ephemeral-storage: 256Mi' \
-        'cpu: "1"' 'memory: 1536Mi' 'ephemeral-storage: 1Gi'; do
+        'cpu: "1"' 'memory: 2560Mi' 'ephemeral-storage: 1Gi'; do
         grep -q "$resource" <<<"$sandbox_template"
     done
     for resource_env in \
         'MAGDA_WORKSPACE_CPU_LIMIT|value: "1"' \
-        'MAGDA_WORKSPACE_MEMORY_LIMIT|value: "1536Mi"' \
+        'MAGDA_WORKSPACE_MEMORY_LIMIT|value: "2560Mi"' \
         'MAGDA_WORKSPACE_STORAGE_SIZE|value: "10Gi"'; do
         env_name="${resource_env%%|*}"
         env_value="${resource_env#*|}"
