@@ -110,6 +110,15 @@
     - id: skill-office
       name: '@deepseek-ai/dsh-skill-office'
 
+# DSH Web's Office previews run LibreOffice Kit conversions inside the Web
+# process, each peaking at about 1.2 GiB. Allow one at a time and no
+# speculative background conversions, so a preview plus one agent-run Kit
+# command fits the Workspace memory limit (three at once are OOM-killed).
+- id: office-to-pdf
+  config:
+    maxConcurrentConversions: 1
+    maxBackgroundConversions: 0
+
 - id: session-log-deepseek
   disabled: true
 

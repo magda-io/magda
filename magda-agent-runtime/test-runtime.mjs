@@ -295,6 +295,12 @@ for (const mount of [
         `Managed profile must mount: ${mount.split("\n")[1].trim()}`
     );
 }
+assert.ok(
+    profilePatch.includes(
+        "- id: office-to-pdf\n  config:\n    maxConcurrentConversions: 1\n    maxBackgroundConversions: 0\n"
+    ),
+    "DSH Web must run at most one Office conversion and no background conversions"
+);
 assert.doesNotMatch(
     profilePatch,
     /cli:\s*false|assetRoot:|\broot:/,
