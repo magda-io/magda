@@ -164,6 +164,9 @@ COPY --chmod=0755 component/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
 COPY --chmod=0755 component/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
 COPY --chmod=0755 component/workspace-resources.sh /usr/local/bin/magda-workspace-resources
 COPY --chmod=0644 component/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
+# skill-office's CLI entry: the installed LibreOffice Kit CLI, one command at a
+# time per Workspace (flock on a file in the agent-writable working tree).
+COPY --chmod=0644 component/libreoffice-kit-cli.mjs /usr/local/lib/magda-agent/libreoffice-kit-cli.mjs
 # Runtime-bundled Agent Skills: immutable, root-owned and independent of
 # Registry/Storage publications. DSH discovers them through DSH_BUNDLED_SKILL_DIR.
 COPY component/skills/ /usr/local/lib/magda-agent/skills/
@@ -179,6 +182,7 @@ ENV DSH_HOME=/data/agent-home \
   PIP_CACHE_DIR=/data/workspace/agent-harness/default-workspace/.cache/pip \
   MAGDA_PYTHON_TMPDIR=/data/workspace/agent-harness/default-workspace/.tmp \
   MAGDA_PYTHON_VENV_ROOT=/data/workspace/agent-harness/default-workspace/.venvs \
+  MAGDA_LIBREOFFICE_KIT_LOCK=/data/workspace/agent-harness/default-workspace/.tmp/libreoffice-kit.lock \
   UV_PYTHON_DOWNLOADS=never \
   UV_PYTHON_PREFERENCE=only-system \
   PIP_REQUIRE_VIRTUALENV=true \

@@ -157,10 +157,10 @@ The default `agent-services.runtime.resources.limits.memory` is therefore
 2560Mi. It is a cap, not a reservation: scheduling uses the 384Mi request, so a
 small Minikube node can still run Workspaces, but several Workspaces rendering
 at once can exceed a node's real memory. Lowering the limit risks OOM-killed
-renders and previews. The managed profile also runs DSH Web's Office previews
-one at a time, without background conversions. Agent-run kit commands are not
-yet limited: several in parallel can still exceed the limit and restart the
-Workspace container. See the
+renders and previews. The managed profile runs DSH Web's Office previews one at
+a time without background conversions, and the agent's kit commands one at a
+time through a lock (`MAGDA_LIBREOFFICE_KIT_LOCK`). A preview and an agent
+command can still run together, which the 2560Mi default accommodates. See the
 [architecture reference](./architecture/agent-workspace.md#office-documents)
 for formats and limits.
 

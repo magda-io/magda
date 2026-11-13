@@ -36,6 +36,7 @@ const CLI = "/usr/local/lib/node_modules/@deepseek-ai/dsh";
 const PROVENANCE = "/usr/local/share/magda-agent/dsh-source.json";
 const WORKSPACE = "@deepseek-ai/dsh-api-workspace-controller";
 const CORDIS = "@deepseek-ai/cordis";
+const WRAPPER = "/usr/local/lib/magda-agent/libreoffice-kit-cli.mjs";
 const MANAGED = [
     "@magda/dsh-client-managed-profile",
     "@magda/dsh-workflow-capture-guidance",
@@ -576,9 +577,14 @@ async function runImageChecks() {
                     "@deepseek-ai/dsh-skill-office"
                 );
                 let factory;
-                office.apply({
-                    skills: { registerProvider: (value) => (factory = value) }
-                });
+                office.apply(
+                    {
+                        skills: {
+                            registerProvider: (value) => (factory = value)
+                        }
+                    },
+                    { cli: WRAPPER }
+                );
                 const provider = factory();
                 const candidates = await provider.list();
                 assert.deepEqual(
@@ -603,20 +609,20 @@ async function runImageChecks() {
                             .split("## Installed LibreOffice Kit")[1]
                             .match(/\{[\s\S]*\}/)[0]
                     ).libreofficeKit;
-                    assert.equal(await realpath(runtime.cli), kit);
+                    assert.equal(runtime.cli, WRAPPER);
                     assert.equal(runtime.node, process.execPath);
                     assert.match(loaded.content, /load_workspace_dependencies/);
                 }
+                // The wrapper delegates to the installed Kit CLI unchanged.
                 const capabilities = JSON.parse(
                     spawnSync(
                         process.execPath,
-                        [kit, "capabilities", "--json"],
-                        {
-                            encoding: "utf8"
-                        }
+                        [WRAPPER, "capabilities", "--json"],
+                        { encoding: "utf8" }
                     ).stdout
                 );
                 assert.equal(capabilities.runtime.backend, "wasm");
+                assert.equal(await realpath(capabilities.runtime.cliPath), kit);
             }
         );
 

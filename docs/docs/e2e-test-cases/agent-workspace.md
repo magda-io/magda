@@ -336,9 +336,10 @@ and watch `/sys/fs/cgroup/memory.peak` and `memory.events`.
    **Workspace files** in two browser tabs. Meanwhile, ask the agent to render
    two of them, export one to PDF and recalculate a workbook. Sample
    `memory.current`, `anon` in `memory.stat` and `oom_kill` in `memory.events`
-   every 100 ms. Expected: DSH Web previews never overlap each other (one
-   conversion at a time); every preview eventually renders; no OOM kill while
-   the agent runs one kit command at a time.
+   every 100 ms. Expected: DSH Web previews never overlap each other; agent kit
+   commands never overlap each other, even when issued as parallel tool calls
+   (a queued one reports `magda: waiting for another LibreOffice Kit command`);
+   every requested output is produced; no OOM kill.
 
 **Observed (2026-11-13, Minikube runc, arm64, demo LLM route):** steps 1–5
 passed (1–4 in a fresh Workspace), with answers and tool paths as expected and no
@@ -347,10 +348,13 @@ it substituted; the rendered slide was correct on manual inspection. The
 cgroup memory peak across the four turns was 1.41 GiB of the then 1.5 GiB limit (including
 page cache), with no OOM kill. Step 6 (2026-11-13, 2560 MiB limit, Web
 conversions limited to one): previews were serialised, and one preview plus one
-kit command at a time peaked at 2.31 GiB with no OOM kill. When the agent
-started four kit commands as parallel tool calls next to a warmed DSH Web
-(about 0.75 GiB), the container was OOM-killed at about 2.4 GiB and DSH Web
-restarted. That is a known open gap: nothing limits the agent's kit commands yet. **Not yet tested:** amd64 images and emulated
+kit command at a time peaked at 2.31 GiB with no OOM kill. Before the agent kit
+lock, four kit commands started as parallel tool calls next to a warmed DSH Web
+(about 0.75 GiB) OOM-killed the container at about 2.4 GiB, and DSH Web
+restarted. With the lock, the same prompt's parallel tool calls queued, the peak
+was 2.27 GiB with no OOM kill, and all 11 images rendered. One queued PDF
+conversion hit the kit's 1-CPU conversion timeout and was retried by the agent
+with `--timeout-ms`. **Not yet tested:** amd64 images and emulated
 cross-architecture builds, gVisor, files saved by Microsoft Office itself,
 CJK text, image-capable models, and other models.
 

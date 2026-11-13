@@ -288,7 +288,7 @@ const profilePatch = await readFile(
 );
 for (const mount of [
     "id: workspace-dependencies\n      name: '@deepseek-ai/dsh-tool-workspace-dependencies'\n      config:\n        source: /usr/local/lib/magda-agent/primary-runtime\n",
-    "id: skill-office\n      name: '@deepseek-ai/dsh-skill-office'\n"
+    "id: skill-office\n      name: '@deepseek-ai/dsh-skill-office'\n      config:\n        cli: /usr/local/lib/magda-agent/libreoffice-kit-cli.mjs\n"
 ]) {
     assert.ok(
         profilePatch.includes(mount),
@@ -300,6 +300,32 @@ assert.ok(
         "- id: office-to-pdf\n  config:\n    maxConcurrentConversions: 1\n    maxBackgroundConversions: 0\n"
     ),
     "DSH Web must run at most one Office conversion and no background conversions"
+);
+const kitWrapper = await readFile(
+    new URL("libreoffice-kit-cli.mjs", import.meta.url),
+    "utf8"
+);
+for (const contract of [
+    "/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/libreoffice-kit/lib/cli.js",
+    '"/usr/bin/flock"',
+    '"--timeout"',
+    '"/bin/true"',
+    'args[0] === "capabilities"'
+]) {
+    assert.ok(
+        kitWrapper.includes(contract),
+        `LibreOffice Kit wrapper must include ${contract}`
+    );
+}
+assert.match(
+    dockerfile,
+    /COPY --chmod=0644 component\/libreoffice-kit-cli\.mjs \/usr\/local\/lib\/magda-agent\/libreoffice-kit-cli\.mjs/
+);
+assert.ok(
+    dockerfile.includes(
+        "MAGDA_LIBREOFFICE_KIT_LOCK=/data/workspace/agent-harness/default-workspace/.tmp/libreoffice-kit.lock"
+    ),
+    "The Kit lock must live in the agent-writable, PVC-backed working tree"
 );
 assert.doesNotMatch(
     profilePatch,
@@ -525,7 +551,8 @@ for (const requiredPath of [
     "dsh-launch.mjs",
     "skills",
     "office-runtime",
-    "office-fixtures"
+    "office-fixtures",
+    "libreoffice-kit-cli.mjs"
 ]) {
     assert.ok(
         dockerIncludes.has(requiredPath),

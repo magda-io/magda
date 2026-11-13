@@ -31,7 +31,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DSH = "/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai"
 PRIMARY_RUNTIME = os.environ.get("OFFICE_PRIMARY_RUNTIME", "/usr/local/lib/magda-agent/primary-runtime")
 ASSETS = os.environ.get("OFFICE_SKILL_ASSETS", f"{DSH}/dsh-skill-office/assets")
-CLI = os.environ.get("LIBREOFFICE_KIT_CLI", f"{DSH}/libreoffice-kit/lib/cli.js")
+KIT_CLI = os.environ.get("LIBREOFFICE_KIT_CLI", f"{DSH}/libreoffice-kit/lib/cli.js")
+# The CLI entry skill-office gives the agent: MAGDA's wrapper, which runs KIT_CLI
+# one command at a time per Workspace.
+CLI = os.environ.get("LIBREOFFICE_KIT_WRAPPER", "/usr/local/lib/magda-agent/libreoffice-kit-cli.mjs")
 NODE = os.environ.get("OFFICE_NODE", "/usr/local/bin/node")
 CHECKER = os.path.join(ASSETS, "scripts", "check_office.py")
 
@@ -345,7 +348,7 @@ class RenderingTest(unittest.TestCase):
     def test_capabilities(self):
         capabilities = kit("capabilities", "--json")
         self.assertEqual(capabilities["runtime"]["backend"], "wasm")
-        self.assertEqual(os.path.realpath(capabilities["runtime"]["cliPath"]), os.path.realpath(CLI))
+        self.assertEqual(os.path.realpath(capabilities["runtime"]["cliPath"]), os.path.realpath(KIT_CLI))
         self.assertTrue(capabilities["recalculation"]["preservesFormulas"])
 
     def test_render_document_slides_and_worksheet_range(self):
@@ -393,6 +396,67 @@ class RenderingTest(unittest.TestCase):
         self.assertEqual(openpyxl.load_workbook(output, data_only=True)["Calc"]["A3"].value, 6)
         with zipfile.ZipFile(fixture("uncalculated.xlsx")) as original:
             self.assertNotIn(b"<v>6</v>", original.read("xl/worksheets/sheet1.xml"))
+
+
+
+class KitLockTest(unittest.TestCase):
+    """The wrapper admits one LibreOffice Kit command at a time; each peaks near 1.2 GiB."""
+
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.work = self.directory.name
+        self.env = {**os.environ, "MAGDA_LIBREOFFICE_KIT_LOCK": os.path.join(self.work, "locks", "kit.lock")}
+
+    def start(self, *args, **env):
+        return subprocess.Popen([NODE, CLI, *args], cwd=self.work, env={**self.env, **env},
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    def hold_lock(self):
+        import fcntl
+
+        os.makedirs(os.path.dirname(self.env["MAGDA_LIBREOFFICE_KIT_LOCK"]), exist_ok=True)
+        handle = open(self.env["MAGDA_LIBREOFFICE_KIT_LOCK"], "a")
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        return handle
+
+    def test_render_waits_for_another_kit_command_then_runs(self):
+        holder = self.hold_lock()
+        output = os.path.join(self.work, "preview")
+        render = self.start("render", "--input", fixture("report.docx"), "--output-dir", output, "--pages", "1", "--dpi", "72")
+        with self.assertRaises(subprocess.TimeoutExpired):
+            render.wait(timeout=3)
+        self.assertFalse(os.path.exists(output), "render ran while another Kit command held the lock")
+        holder.close()
+        stdout, stderr = render.communicate(timeout=300)
+        self.assertEqual(render.returncode, 0, stderr)
+        self.assertIn("waiting for another LibreOffice Kit command", stderr)
+        self.assertEqual(len(json.loads(stdout)["images"]), 1)
+
+    def test_capabilities_does_not_wait(self):
+        holder = self.hold_lock()
+        self.addCleanup(holder.close)
+        capabilities = self.start("capabilities", "--json")
+        stdout, _ = capabilities.communicate(timeout=60)
+        self.assertEqual(capabilities.returncode, 0)
+        self.assertEqual(json.loads(stdout)["runtime"]["backend"], "wasm")
+
+    def test_kit_errors_and_exit_codes_pass_through(self):
+        args = ["convert", "--input", os.path.join(self.work, "missing.docx"), "--output", os.path.join(self.work, "out.pdf")]
+        wrapped = subprocess.run([NODE, CLI, *args], cwd=self.work, env=self.env, capture_output=True, text=True, timeout=120)
+        direct = subprocess.run([NODE, KIT_CLI, *args], cwd=self.work, env=self.env, capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(direct.returncode, 0)
+        self.assertEqual((wrapped.returncode, wrapped.stdout), (direct.returncode, direct.stdout))
+
+    def test_wait_is_bounded(self):
+        holder = self.hold_lock()
+        self.addCleanup(holder.close)
+        render = self.start("recalculate", "--input", fixture("uncalculated.xlsx"), "--output", os.path.join(self.work, "r.xlsx"),
+                            MAGDA_LIBREOFFICE_KIT_LOCK_TIMEOUT_SECONDS="2")
+        stdout, stderr = render.communicate(timeout=60)
+        self.assertEqual(render.returncode, 75, stderr)
+        self.assertEqual(json.loads(stdout)["code"], "busy")
+        self.assertFalse(os.path.exists(os.path.join(self.work, "r.xlsx")))
 
 
 if __name__ == "__main__":
