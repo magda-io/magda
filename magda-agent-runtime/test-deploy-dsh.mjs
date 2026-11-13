@@ -23,8 +23,10 @@ const helper = fileURLToPath(new URL("deploy-dsh.mjs", import.meta.url));
 const version = "4.5.6";
 const sourceMetadata = {
     DSH_SOURCE_REPO: "https://example.invalid/fixture/dsh.git",
-    DSH_SOURCE_BRANCH: "fixture-only",
-    DSH_SOURCE_SHA: "0123456789abcdef0123456789abcdef01234567"
+    DSH_SOURCE_REF: "fixture/0.0.0/1.0.0",
+    DSH_SOURCE_SHA: "0123456789abcdef0123456789abcdef01234567",
+    DSH_UPSTREAM_REF: "upstream/fixture",
+    DSH_UPSTREAM_SHA: "89abcdef0123456789abcdef0123456789abcdef"
 };
 const coreFiles = {
     "lib/index.js": "export const core = 'source-built';\n",
@@ -136,19 +138,19 @@ async function fixture(t) {
     return { source, target, core, plugin, assembly, modules, manifest };
 }
 
-function deploy({ source, target }) {
+function deploy({ source, target }, metadata = sourceMetadata) {
     return spawnSync(process.execPath, [helper, target], {
         cwd: source,
         encoding: "utf8",
         // Deliberately do not forward credentials or the caller's DSH settings.
-        env: { PATH: process.env.PATH, ...sourceMetadata },
+        env: { PATH: process.env.PATH, ...metadata },
         timeout: 30_000,
         maxBuffer: 1024 * 1024
     });
 }
 
-function rejectsDeployment(f, expected) {
-    const result = deploy(f);
+function rejectsDeployment(f, expected, metadata) {
+    const result = deploy(f, metadata);
     assert.ifError(result.error);
     assert.equal(result.signal, null, result.stderr);
     assert.notEqual(
@@ -245,8 +247,12 @@ test("restores hoisted workspaces, materializes links, and records exact provena
     );
     assert.deepEqual(provenance, {
         repository: sourceMetadata.DSH_SOURCE_REPO,
-        branch: sourceMetadata.DSH_SOURCE_BRANCH,
+        ref: sourceMetadata.DSH_SOURCE_REF,
         sha: sourceMetadata.DSH_SOURCE_SHA,
+        upstream: {
+            ref: sourceMetadata.DSH_UPSTREAM_REF,
+            sha: sourceMetadata.DSH_UPSTREAM_SHA
+        },
         version,
         assembly: f.manifest.name,
         packages: [
@@ -274,6 +280,32 @@ test("restores hoisted workspaces, materializes links, and records exact provena
             { name: "nested-external", version: "2.0.0", license: null }
         ]
     });
+});
+
+test("rejects missing or abbreviated source and upstream baseline metadata", async (t) => {
+    for (const [change, expected] of [
+        [{ DSH_UPSTREAM_REF: undefined }, /DSH_UPSTREAM_REF must be set/],
+        [{ DSH_UPSTREAM_SHA: undefined }, /DSH_UPSTREAM_SHA must be set/],
+        [{ DSH_SOURCE_REF: "" }, /DSH_SOURCE_REF must be set/],
+        [
+            { DSH_SOURCE_SHA: "0123456789ab" },
+            /DSH_SOURCE_SHA must be a full SHA/
+        ],
+        [
+            { DSH_UPSTREAM_SHA: "5badb150" },
+            /DSH_UPSTREAM_SHA must be a full SHA/
+        ]
+    ]) {
+        const f = await fixture(t);
+        const metadata = { ...sourceMetadata, ...change };
+        for (const [name, value] of Object.entries(metadata))
+            if (value === undefined) delete metadata[name];
+        rejectsDeployment(f, expected, metadata);
+        await assert.rejects(
+            lstat(path.join(f.target, "provenance/dsh-source.json")),
+            { code: "ENOENT" }
+        );
+    }
 });
 
 test("rejects an assembly direct dependency absent from deployment and source", async (t) => {

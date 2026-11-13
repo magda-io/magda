@@ -70,13 +70,34 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_BRANCH=upstream\/0\.2\.1-alpha\.1/,
-    "The fork baseline branch must be explicitly selected"
+    /ARG DSH_SOURCE_REF=magda\/0\.2\.1-alpha\.1\/1\.0\.1/,
+    "DSH must build from a reviewed MAGDA maintenance tag, not a moving branch"
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc/,
-    "DSH must be pinned to the official release commit, not a moving fork ref"
+    /ARG DSH_SOURCE_SHA=c929e29667e6ccac97c1575e18fb56b1c9ead6c6/,
+    "DSH must be pinned to the full SHA of the reviewed fork commit"
+);
+assert.match(
+    dockerfile,
+    /ARG DSH_UPSTREAM_REF=upstream\/0\.2\.1-alpha\.1\nARG DSH_UPSTREAM_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc/,
+    "The official upstream baseline must stay recorded separately"
+);
+for (const check of [
+    'test "$(git cat-file -t "refs/tags/${DSH_SOURCE_REF}")" = tag',
+    'git fetch -q --deepen=32 origin "refs/tags/${DSH_SOURCE_REF}"',
+    'git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD \\',
+    'io.magda.dsh.upstream-revision="${DSH_UPSTREAM_SHA}"'
+]) {
+    assert.ok(
+        dockerfile.includes(check),
+        `The source build must verify and record its upstream baseline: ${check}`
+    );
+}
+assert.doesNotMatch(
+    dockerfile,
+    /DSH_SOURCE_BRANCH/,
+    "The source is a tag ref; the old branch-named argument must not remain"
 );
 assert.match(
     dockerfile,
@@ -88,10 +109,26 @@ assert.match(
     /pnpm install --frozen-lockfile/,
     "The pinned source build must use the committed dependency lockfile"
 );
-assert.match(dockerfile, /FROM --platform=\$BUILDPLATFORM node:\$\{NODE_VERSION\}-bookworm-slim AS dsh-source-build/, "Compile JS/Web on the native build CPU, not through target emulation");
-assert.match(dockerfile, /tar --exclude='node_modules' --exclude='\.\/native\/system\/packages\/\*\/bin' -cf \/opt\/dsh-built-source\.tar/, "Never copy host dependency trees into target native modules");
-assert.match(dockerfile, /COPY --from=dsh-source-build \/opt\/dsh-built-source\.tar/, "Transfer only built source payloads into the target stage");
-assert.match(dockerfile, /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune/, "Ship the CLI's required peer closure, not optional-only server branches");
+assert.match(
+    dockerfile,
+    /FROM --platform=\$BUILDPLATFORM node:\$\{NODE_VERSION\}-bookworm-slim AS dsh-source-build/,
+    "Compile JS/Web on the native build CPU, not through target emulation"
+);
+assert.match(
+    dockerfile,
+    /tar --exclude='node_modules' --exclude='\.\/native\/system\/packages\/\*\/bin' -cf \/opt\/dsh-built-source\.tar/,
+    "Never copy host dependency trees into target native modules"
+);
+assert.match(
+    dockerfile,
+    /COPY --from=dsh-source-build \/opt\/dsh-built-source\.tar/,
+    "Transfer only built source payloads into the target stage"
+);
+assert.match(
+    dockerfile,
+    /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune/,
+    "Ship the CLI's required peer closure, not optional-only server branches"
+);
 assert.match(
     dockerfile,
     /--prod deploy --offline/,
@@ -192,8 +229,20 @@ for (const persistentEnvironment of [
 }
 assert.doesNotMatch(
     dockerfile,
-    /--break-system-packages|pip install(?! -g)|uv python install/,
+    /--break-system-packages|(?<!uv )pip install(?! -g)|uv python install|uv pip install[^\n]*--system/,
     "The image build must not modify or replace Debian's system Python"
+);
+// The only build-time Python install targets the Office payload venv.
+assert.deepEqual(
+    [...dockerfile.matchAll(/uv pip install \\\n\s+--python "([^"]+)"/g)].map(
+        (match) => match[1]
+    ),
+    ["$python"],
+    "uv may install only into the Office payload virtual environment"
+);
+assert.match(
+    dockerfile,
+    /python="\$payload\/dependencies\/python\/bin\/python3"/
 );
 assert.doesNotMatch(
     dockerfile,
@@ -251,6 +300,109 @@ for (const guidance of [
         `Bundled Python dependency guidance must cover: ${guidance}`
     );
 }
+// Office skills (#13): DSH's own skill-office provider and
+// load_workspace_dependencies tool are mounted over MAGDA's Python payload; the
+// installed LibreOffice Kit CLI stays enabled. No separate MAGDA parser.
+const profilePatch = await readFile(
+    new URL("magda.cordis.patch.yml", import.meta.url),
+    "utf8"
+);
+for (const mount of [
+    "id: workspace-dependencies\n      name: '@deepseek-ai/dsh-tool-workspace-dependencies'\n      config:\n        source: /usr/local/lib/magda-agent/primary-runtime\n",
+    "id: skill-office\n      name: '@deepseek-ai/dsh-skill-office'\n      config:\n        cli: /usr/local/lib/magda-agent/libreoffice-kit-cli.mjs\n"
+]) {
+    assert.ok(
+        profilePatch.includes(mount),
+        `Managed profile must mount: ${mount.split("\n")[1].trim()}`
+    );
+}
+assert.ok(
+    profilePatch.includes(
+        "- id: office-to-pdf\n  config:\n    maxConcurrentConversions: 1\n    maxBackgroundConversions: 0\n"
+    ),
+    "DSH Web must run at most one Office conversion and no background conversions"
+);
+const kitWrapper = await readFile(
+    new URL("libreoffice-kit-cli.mjs", import.meta.url),
+    "utf8"
+);
+for (const contract of [
+    "/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/libreoffice-kit/lib/cli.js",
+    '"/usr/bin/flock"',
+    '"--no-fork"',
+    '"--timeout"',
+    '"/bin/true"',
+    'args[0] === "capabilities"'
+]) {
+    assert.ok(
+        kitWrapper.includes(contract),
+        `LibreOffice Kit wrapper must include ${contract}`
+    );
+}
+assert.match(
+    dockerfile,
+    /COPY --chmod=0644 component\/libreoffice-kit-cli\.mjs \/usr\/local\/lib\/magda-agent\/libreoffice-kit-cli\.mjs/
+);
+assert.ok(
+    dockerfile.includes(
+        "MAGDA_LIBREOFFICE_KIT_LOCK=/data/workspace/agent-harness/default-workspace/.tmp/libreoffice-kit.lock"
+    ),
+    "The Kit lock must live in the agent-writable, PVC-backed working tree"
+);
+assert.doesNotMatch(
+    profilePatch,
+    /cli:\s*false|assetRoot:|\broot:/,
+    "skill-office keeps its packaged assets and installed CLI; the payload is used in place"
+);
+const officeRequirements = await readFile(
+    new URL("office-runtime/requirements.txt", import.meta.url),
+    "utf8"
+);
+const lockedOffice = [
+    ...officeRequirements.matchAll(
+        /^([A-Za-z0-9_.-]+)==([^\s]+) \\\n\s+--hash=sha256:([0-9a-f]{64})$/gm
+    )
+].map(([, name, version]) => `${name}==${version}`);
+assert.deepEqual(
+    lockedOffice,
+    [
+        "python-docx==1.2.0",
+        "python-pptx==1.0.2",
+        "openpyxl==3.1.5",
+        "XlsxWriter==3.2.9",
+        "typing_extensions==4.16.0",
+        "et_xmlfile==2.0.0"
+    ],
+    "Office libraries must match DSH 0.2.1-alpha.1's lock, each with a SHA-256 hash"
+);
+for (const step of [
+    "/usr/bin/python3 -m venv --system-site-packages --without-pip",
+    "--require-hashes --no-deps --only-binary :all:",
+    '/usr/bin/python3 -m pip --python "$python" check',
+    "write-runtime-manifest.py",
+    'chmod -R a+rX,go-w "$payload"'
+]) {
+    assert.ok(
+        dockerfile.includes(step),
+        `Office payload build must include: ${step}`
+    );
+}
+assert.match(
+    dockerfile,
+    /python3-lxml python3-pandas python3-pil/,
+    "Native Office dependencies must come from Debian"
+);
+assert.match(
+    dockerfile,
+    /fonts-crosextra-caladea fonts-crosextra-carlito fonts-dejavu-core \\\n\s+fonts-liberation2/,
+    "LibreOffice Kit needs installed fonts to render, convert or recalculate"
+);
+assert.match(
+    dockerfile,
+    /primary-runtime\/dependencies\/python\/bin\/python3 -m unittest discover \\\n\s+-s \/usr\/local\/lib\/magda-agent\/qualification\/office-fixtures/,
+    "The Office skills must be qualified in the image with the payload interpreter"
+);
+
 const misleadingHostProbeWarning = pythonDependenciesSkill
     .split("\n")
     .find((line) => line.includes("Never present"));
@@ -418,7 +570,11 @@ for (const requiredPath of [
     "uv-wrapper.sh",
     "workspace-resources.sh",
     "bootstrap.mjs",
-    "dsh-launch.mjs"
+    "dsh-launch.mjs",
+    "skills",
+    "office-runtime",
+    "office-fixtures",
+    "libreoffice-kit-cli.mjs"
 ]) {
     assert.ok(
         dockerIncludes.has(requiredPath),

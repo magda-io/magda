@@ -61,6 +61,22 @@ describe("reserved runtime Agent Skill names", () => {
         }
     });
 
+    it("reserves the DSH Office skills mounted by the managed profile", async () => {
+        const profile = await fs.readFile(
+            fileURLToPath(
+                new URL(
+                    "../../../magda-agent-runtime/magda.cordis.patch.yml",
+                    import.meta.url
+                )
+            ),
+            "utf8"
+        );
+        expect(profile).to.include("name: '@deepseek-ai/dsh-skill-office'");
+        for (const name of ["office-docx", "office-pptx", "office-xlsx"]) {
+            expect(isReservedAgentSkillName(name), name).to.equal(true);
+        }
+    });
+
     it("does not reserve the future naming prefix before it is adopted", () => {
         expect(isReservedAgentSkillName("magda-builtin-example")).to.equal(
             false

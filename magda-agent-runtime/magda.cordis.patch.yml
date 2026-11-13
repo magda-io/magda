@@ -98,6 +98,30 @@
     - id: magda-agent-skill-tools
       name: "@magda/dsh-agent-skill-tools"
 
+# DSH's own Office skills (office-docx, office-pptx, office-xlsx) and their
+# interpreter query. The payload is MAGDA's read-only venv over Debian Python,
+# used in place (no `root`, so nothing is copied to the PVC). skill-office keeps
+# its packaged assets and this Node; its CLI entry is MAGDA's wrapper, which runs
+# the installed LibreOffice Kit CLI unchanged, one command at a time.
+- insert:
+    - id: workspace-dependencies
+      name: '@deepseek-ai/dsh-tool-workspace-dependencies'
+      config:
+        source: /usr/local/lib/magda-agent/primary-runtime
+    - id: skill-office
+      name: '@deepseek-ai/dsh-skill-office'
+      config:
+        cli: /usr/local/lib/magda-agent/libreoffice-kit-cli.mjs
+
+# DSH Web's Office previews run LibreOffice Kit conversions inside the Web
+# process, each peaking at about 1.2 GiB. Allow one at a time and no
+# speculative background conversions, so a preview plus one agent-run Kit
+# command fits the Workspace memory limit (three at once are OOM-killed).
+- id: office-to-pdf
+  config:
+    maxConcurrentConversions: 1
+    maxBackgroundConversions: 0
+
 - id: session-log-deepseek
   disabled: true
 

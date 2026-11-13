@@ -51,7 +51,7 @@ Kubernetes: `>= 1.24.0-0`
 | runtime.image.tag | string | `""` |  |
 | runtime.resources.limits.cpu | string | `"1"` |  |
 | runtime.resources.limits.ephemeral-storage | string | `"1Gi"` |  |
-| runtime.resources.limits.memory | string | `"1536Mi"` |  |
+| runtime.resources.limits.memory | string | `"2560Mi"` |  |
 | runtime.resources.requests.cpu | string | `"100m"` |  |
 | runtime.resources.requests.ephemeral-storage | string | `"256Mi"` |  |
 | runtime.resources.requests.memory | string | `"384Mi"` |  |

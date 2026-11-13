@@ -138,6 +138,32 @@ replacement receives the new size. Reset, termination and logout delete the PVC,
 including every environment and cache; suspend/resume and Pod replacement retain
 it.
 
+### Office documents
+
+DSH's `office-docx`, `office-pptx` and `office-xlsx` skills and its
+`load_workspace_dependencies` tool are enabled in the managed profile with no
+deployment configuration. The tool returns a read-only Python environment over
+Debian's interpreter with python-docx, python-pptx, openpyxl, XlsxWriter, lxml,
+Pillow and pandas, and the skills use the image's LibreOffice Kit CLI to render,
+convert and recalculate. The image includes Liberation, Carlito, Caladea and
+DejaVu fonts because the kit refuses to run without fonts. Image builds run the
+Office qualification suite (`office-fixtures/test_office_skills.py`) as the
+runtime user: reading, generation from the skills' own examples, structural
+checks, rendering, PDF conversion and recalculation.
+
+Rendering is memory-intensive: each LibreOffice Kit call peaks at about
+1.2 GiB, and a Workspace limited to 1536 MiB peaked at 1.41 GiB in testing.
+The default `agent-services.runtime.resources.limits.memory` is therefore
+2560Mi. It is a cap, not a reservation: scheduling uses the 384Mi request, so a
+small Minikube node can still run Workspaces, but several Workspaces rendering
+at once can exceed a node's real memory. Lowering the limit risks OOM-killed
+renders and previews. The managed profile runs DSH Web's Office previews one at
+a time without background conversions, and the agent's kit commands one at a
+time through a lock (`MAGDA_LIBREOFFICE_KIT_LOCK`). A preview and an agent
+command can still run together, which the 2560Mi default accommodates. See the
+[architecture reference](./architecture/agent-workspace.md#office-documents)
+for formats and limits.
+
 ### Mandatory migration from the split charts
 
 Upgrading from the earlier `agent-manager` + `agent-runtime` charts to

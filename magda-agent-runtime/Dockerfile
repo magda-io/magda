@@ -3,11 +3,15 @@
 #   create-docker-context-for-node-component --build --tag magda-agent-runtime:local
 ARG NODE_VERSION=22.22.0
 ARG DSH_VERSION=0.2.1-alpha.1
-# Source baseline: official dsh-v0.2.1-alpha.1, mirrored in this clean fork branch.
-# Pin the full Git SHA: moving the branch later must NOT change MAGDA's build.
+# Source: MAGDA's reviewed DSH maintenance release, an annotated tag on the
+# fork's `magda` branch. Pin the full Git SHA: moving refs must NOT change
+# MAGDA's build. The build also proves the official upstream baseline
+# (dsh-v0.2.1-alpha.1, kept unchanged as upstream/0.2.1-alpha.1) is an ancestor.
 ARG DSH_SOURCE_REPO=https://github.com/magda-io/dsh-fork.git
-ARG DSH_SOURCE_BRANCH=upstream/0.2.1-alpha.1
-ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
+ARG DSH_SOURCE_REF=magda/0.2.1-alpha.1/1.0.1
+ARG DSH_SOURCE_SHA=c929e29667e6ccac97c1575e18fb56b1c9ead6c6
+ARG DSH_UPSTREAM_REF=upstream/0.2.1-alpha.1
+ARG DSH_UPSTREAM_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
 ARG UV_VERSION=0.13.6
 ARG UV_IMAGE_DIGEST=sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0
 
@@ -21,8 +25,10 @@ FROM ghcr.io/astral-sh/uv:${UV_VERSION}@${UV_IMAGE_DIGEST} AS uv
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-bookworm-slim AS dsh-source-build
 ARG DSH_VERSION
 ARG DSH_SOURCE_REPO
-ARG DSH_SOURCE_BRANCH
+ARG DSH_SOURCE_REF
 ARG DSH_SOURCE_SHA
+ARG DSH_UPSTREAM_REF
+ARG DSH_UPSTREAM_SHA
 ENV DSH_TELEMETRY_DISABLED=1
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
@@ -30,8 +36,14 @@ RUN apt-get update \
   && corepack enable \
   && corepack prepare pnpm@11.7.0 --activate
 WORKDIR /src/dsh
-RUN git clone --depth=1 --branch "${DSH_SOURCE_BRANCH}" "${DSH_SOURCE_REPO}" . \
+RUN git clone --depth=1 --branch "${DSH_SOURCE_REF}" "${DSH_SOURCE_REPO}" . \
   && test "$(git rev-parse HEAD)" = "${DSH_SOURCE_SHA}" \
+  && test "$(git cat-file -t "refs/tags/${DSH_SOURCE_REF}")" = tag \
+  && for attempt in 1 2 3 4 5 6 7 8; do \
+       git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD 2>/dev/null && break; \
+       git fetch -q --deepen=32 origin "refs/tags/${DSH_SOURCE_REF}"; \
+     done \
+  && git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD \
   && test "$(node -p 'require("./package.json").version')" = "${DSH_VERSION}" \
   && test "$(node -p 'require("./apps/cli/package.json").version')" = "${DSH_VERSION}"
 RUN pnpm install --frozen-lockfile
@@ -46,8 +58,10 @@ RUN tar --exclude='node_modules' --exclude='./native/system/packages/*/bin' -cf 
 FROM node:${NODE_VERSION}-bookworm-slim AS dsh-build
 ARG DSH_VERSION
 ARG DSH_SOURCE_REPO
-ARG DSH_SOURCE_BRANCH
+ARG DSH_SOURCE_REF
 ARG DSH_SOURCE_SHA
+ARG DSH_UPSTREAM_REF
+ARG DSH_UPSTREAM_SHA
 ENV DSH_TELEMETRY_DISABLED=1
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
@@ -72,29 +86,54 @@ RUN node /opt/prepare-dsh-deploy.mjs \
     --config.node-linker=hoisted /opt/dsh-release \
   && git diff --exit-code -- pnpm-lock.yaml \
   && node /opt/verify-dsh-lock.mjs /opt/dsh-release \
-  && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_SOURCE_BRANCH="${DSH_SOURCE_BRANCH}" \
-    DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release --prune \
+  && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_SOURCE_REF="${DSH_SOURCE_REF}" \
+    DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" DSH_UPSTREAM_REF="${DSH_UPSTREAM_REF}" \
+    DSH_UPSTREAM_SHA="${DSH_UPSTREAM_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release --prune \
   && test -f /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js \
   && node /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js --version
 
 FROM node:${NODE_VERSION}-bookworm-slim
 ARG DSH_VERSION
 ARG DSH_SOURCE_REPO
+ARG DSH_SOURCE_REF
 ARG DSH_SOURCE_SHA
+ARG DSH_UPSTREAM_SHA
 ARG UV_VERSION
 LABEL io.magda.dsh.source="${DSH_SOURCE_REPO}" \
+  io.magda.dsh.ref="${DSH_SOURCE_REF}" \
   io.magda.dsh.revision="${DSH_SOURCE_SHA}" \
+  io.magda.dsh.upstream-revision="${DSH_UPSTREAM_SHA}" \
   io.magda.dsh.version="${DSH_VERSION}"
 COPY --from=uv /uv /usr/local/lib/magda-agent/uv
 COPY --chmod=0755 component/uv-wrapper.sh /usr/local/bin/uv
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bubblewrap ca-certificates curl file git jq less patch procps python3 \
-    python3-pandas python3-pip python3-venv tini unzip util-linux \
+    python3-lxml python3-pandas python3-pil python3-pip python3-venv \
+    fonts-crosextra-caladea fonts-crosextra-carlito fonts-dejavu-core \
+    fonts-liberation2 tini unzip util-linux \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/local/lib/magda-agent/uv --version | grep -Eq "^uv ${UV_VERSION}( |$)" \
   && python3 -m pip --version \
   && python3 -c 'import venv'
+# Python payload for DSH's load_workspace_dependencies tool and Office skills:
+# a read-only venv over Debian's interpreter (no second Python). Native libs
+# come from Debian; the pure-Python Office libraries are DSH's locked wheels,
+# verified by hash. The fonts above let the installed LibreOffice Kit render.
+COPY component/office-runtime/ /tmp/office-runtime/
+RUN set -eu; \
+  payload=/usr/local/lib/magda-agent/primary-runtime; \
+  python="$payload/dependencies/python/bin/python3"; \
+  /usr/bin/python3 -m venv --system-site-packages --without-pip "$payload/dependencies/python"; \
+  UV_PYTHON_DOWNLOADS=never UV_NO_CACHE=1 /usr/local/lib/magda-agent/uv pip install \
+    --python "$python" --require-hashes --no-deps --only-binary :all: \
+    -r /tmp/office-runtime/requirements.txt; \
+  PIP_NO_CACHE_DIR=1 /usr/bin/python3 -m pip --python "$python" check; \
+  "$python" /tmp/office-runtime/write-runtime-manifest.py \
+    --arch "$(node -p process.arch)" --out "$payload/runtime.json"; \
+  "$python" -c 'import docx, pptx, openpyxl, xlsxwriter, PIL, lxml, pandas'; \
+  rm -rf /tmp/office-runtime; \
+  chown -R root:root "$payload"; chmod -R a+rX,go-w "$payload"
 # Keep the existing runtime layout expected by MAGDA's managed profile
 # plugins, but source every DSH workspace package from the pinned fork commit.
 COPY --from=dsh-build /opt/dsh-release/node_modules/ /usr/local/lib/magda-agent/dsh/node_modules/
@@ -144,6 +183,9 @@ COPY --chmod=0755 component/entrypoint.sh /usr/local/bin/magda-agent-entrypoint
 COPY --chmod=0755 component/bootstrap.mjs /usr/local/bin/magda-agent-bootstrap
 COPY --chmod=0755 component/workspace-resources.sh /usr/local/bin/magda-workspace-resources
 COPY --chmod=0644 component/dsh-launch.mjs /usr/local/lib/magda-agent/dsh-launch.mjs
+# skill-office's CLI entry: the installed LibreOffice Kit CLI, one command at a
+# time per Workspace (flock on a file in the agent-writable working tree).
+COPY --chmod=0644 component/libreoffice-kit-cli.mjs /usr/local/lib/magda-agent/libreoffice-kit-cli.mjs
 # Runtime-bundled Agent Skills: immutable, root-owned and independent of
 # Registry/Storage publications. DSH discovers them through DSH_BUNDLED_SKILL_DIR.
 COPY component/skills/ /usr/local/lib/magda-agent/skills/
@@ -159,6 +201,7 @@ ENV DSH_HOME=/data/agent-home \
   PIP_CACHE_DIR=/data/workspace/agent-harness/default-workspace/.cache/pip \
   MAGDA_PYTHON_TMPDIR=/data/workspace/agent-harness/default-workspace/.tmp \
   MAGDA_PYTHON_VENV_ROOT=/data/workspace/agent-harness/default-workspace/.venvs \
+  MAGDA_LIBREOFFICE_KIT_LOCK=/data/workspace/agent-harness/default-workspace/.tmp/libreoffice-kit.lock \
   UV_PYTHON_DOWNLOADS=never \
   UV_PYTHON_PREFERENCE=only-system \
   PIP_REQUIRE_VIRTUALENV=true \
@@ -173,7 +216,12 @@ WORKDIR /data/workspace
 # target architecture, before an image can be published by CI.
 COPY --chmod=0644 component/test-image.mjs /usr/local/lib/magda-agent/qualification/test-image.mjs
 COPY --chmod=0644 component/test-image-web.mjs /usr/local/lib/magda-agent/qualification/test-image-web.mjs
+# DSH's Office skills must read, generate, check and render with the shipped
+# payload and LibreOffice Kit as the runtime user, without network access.
+COPY component/office-fixtures/ /usr/local/lib/magda-agent/qualification/office-fixtures/
 RUN node /usr/local/lib/magda-agent/qualification/test-image.mjs \
-  && MAGDA_IMAGE_TEST=1 node /usr/local/lib/magda-agent/qualification/test-image-web.mjs
+  && MAGDA_IMAGE_TEST=1 node /usr/local/lib/magda-agent/qualification/test-image-web.mjs \
+  && /usr/local/lib/magda-agent/primary-runtime/dependencies/python/bin/python3 -m unittest discover \
+    -s /usr/local/lib/magda-agent/qualification/office-fixtures -p 'test_*.py'
 EXPOSE 3080
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/magda-agent-entrypoint"]

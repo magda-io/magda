@@ -5,7 +5,13 @@ LibreOffice-kit/WASM. These components retain their own licenses; MAGDA remains
 licensed under Apache-2.0.
 
 This document records source locations for the versions selected by DSH
-`0.2.1-alpha.1`, source commit `5badb15009ae1756c3afe0ae0cef1faafc290ccc`.
+`0.2.1-alpha.1`, built from MAGDA's maintenance tag `magda/0.2.1-alpha.1/1.0.1`
+(commit `c929e29667e6ccac97c1575e18fb56b1c9ead6c6`) in
+[magda-io/dsh-fork](https://github.com/magda-io/dsh-fork). It extends the
+official upstream baseline `upstream/0.2.1-alpha.1`
+(`5badb15009ae1756c3afe0ae0cef1faafc290ccc`) with changes to DSH's Office
+skills and `check_office.py` only; package versions and the dependency
+lockfile are unchanged.
 It is installed at `/usr/local/share/magda-agent/THIRD_PARTY_SOURCES.md`.
 Source is available from the upstream locations below; no separate release-specific
 source manifest is needed to use these references.
@@ -78,6 +84,31 @@ configuration, recipes and additional patches:
 Obtain the core source at the recorded revision and apply the shipped patches;
 use the shipped recipes/configuration for the engine build. These materials are
 also included in the [published WASM 0.1.5 package](https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/-/libreoffice-kit-wasm-0.1.5.tgz).
+
+## Office Python libraries and fonts
+
+DSH's `office-docx`, `office-pptx` and `office-xlsx` skills run the Python
+returned by `load_workspace_dependencies`: a read-only virtual environment at
+`/usr/local/lib/magda-agent/primary-runtime/dependencies/python` over Debian's
+`/usr/bin/python3`. Its pure-Python libraries are installed at build time from
+PyPI wheels pinned by SHA-256 in
+[`office-runtime/requirements.txt`](office-runtime/requirements.txt), copied
+from DSH `dsh-v0.2.1-alpha.1` `scripts/primary-runtime/lock.json`:
+
+| Distribution        | Version | License      | Source                                                                      |
+| ------------------- | ------- | ------------ | --------------------------------------------------------------------------- |
+| `python-docx`       | 1.2.0   | MIT          | [python-openxml/python-docx](https://github.com/python-openxml/python-docx) |
+| `python-pptx`       | 1.0.2   | MIT          | [scanny/python-pptx](https://github.com/scanny/python-pptx)                 |
+| `openpyxl`          | 3.1.5   | MIT          | [openpyxl/openpyxl](https://foss.heptapod.net/openpyxl/openpyxl)            |
+| `XlsxWriter`        | 3.2.9   | BSD-2-Clause | [jmcnamara/XlsxWriter](https://github.com/jmcnamara/XlsxWriter)             |
+| `typing_extensions` | 4.16.0  | PSF-2.0      | [python/typing_extensions](https://github.com/python/typing_extensions)     |
+| `et_xmlfile`        | 2.0.0   | MIT          | [openpyxl/et_xmlfile](https://foss.heptapod.net/openpyxl/et_xmlfile)        |
+
+Each wheel's license and metadata are retained in its `*.dist-info` directory
+under `.../dependencies/python/lib/python3.11/site-packages/`. Native
+dependencies (`lxml`, `Pillow`, `numpy`, `pandas`) and the fonts the
+LibreOffice Kit renders with (`fonts-liberation2`, `fonts-crosextra-carlito`,
+`fonts-crosextra-caladea`, `fonts-dejavu-core`) are Debian packages.
 
 ## Other notices and maintenance
 

@@ -27,8 +27,12 @@ import { pathToFileURL } from "node:url";
 
 const EXPECTED = Object.freeze({
     repository: "https://github.com/magda-io/dsh-fork.git",
-    branch: "upstream/0.2.1-alpha.1",
-    sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc",
+    ref: "magda/0.2.1-alpha.1/1.0.1",
+    sha: "c929e29667e6ccac97c1575e18fb56b1c9ead6c6",
+    upstream: {
+        ref: "upstream/0.2.1-alpha.1",
+        sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc"
+    },
     version: "0.2.1-alpha.1",
     assembly: "magda-dsh-cli-peer-closure"
 });
@@ -36,6 +40,7 @@ const CLI = "/usr/local/lib/node_modules/@deepseek-ai/dsh";
 const PROVENANCE = "/usr/local/share/magda-agent/dsh-source.json";
 const WORKSPACE = "@deepseek-ai/dsh-api-workspace-controller";
 const CORDIS = "@deepseek-ai/cordis";
+const WRAPPER = "/usr/local/lib/magda-agent/libreoffice-kit-cli.mjs";
 const MANAGED = [
     "@magda/dsh-client-managed-profile",
     "@magda/dsh-workflow-capture-guidance",
@@ -276,7 +281,11 @@ async function runImageChecks() {
             "pinned source provenance and artifact hashes",
             async () => {
                 for (const [key, value] of Object.entries(EXPECTED))
-                    assert.equal(provenance[key], value, `Provenance ${key}`);
+                    assert.deepEqual(
+                        provenance[key],
+                        value,
+                        `Provenance ${key}`
+                    );
                 const lock = await json(
                     "/usr/local/share/magda-agent/dsh-lock.json"
                 );
@@ -542,6 +551,86 @@ async function runImageChecks() {
                 );
                 const tools = await load(requireCLI, "@deepseek-ai/dsh-tools");
                 assert.equal(typeof tools.defineTool, "function");
+            }
+        );
+
+        await check(
+            "DSH Office skills over MAGDA's payload and installed LibreOffice Kit",
+            async () => {
+                const payload = "/usr/local/lib/magda-agent/primary-runtime";
+                // The same code load_workspace_dependencies runs on its first call.
+                const dependencies = await load(
+                    requireCLI,
+                    "@deepseek-ai/dsh-tool-workspace-dependencies"
+                );
+                const paths = await dependencies.resolvePrimaryRuntime(payload);
+                assert.equal(
+                    paths.python,
+                    `${payload}/dependencies/python/bin/python3`
+                );
+                assert.equal(
+                    await realpath(paths.python),
+                    "/usr/bin/python3.11"
+                );
+                for (const name of ["python-docx", "python-pptx", "openpyxl"])
+                    assert.ok(
+                        Object.keys(paths.pythonDistributions).some(
+                            (key) => key.toLowerCase() === name
+                        ),
+                        `payload manifest lacks ${name}`
+                    );
+                // skill-office with the managed profile's (default) config.
+                const office = await load(
+                    requireCLI,
+                    "@deepseek-ai/dsh-skill-office"
+                );
+                let factory;
+                office.apply(
+                    {
+                        skills: {
+                            registerProvider: (value) => (factory = value)
+                        }
+                    },
+                    { cli: WRAPPER }
+                );
+                const provider = factory();
+                const candidates = await provider.list();
+                assert.deepEqual(
+                    candidates.map((candidate) => candidate.name),
+                    ["office-docx", "office-pptx", "office-xlsx"]
+                );
+                const kit = await realpath(
+                    path.join(
+                        packageDirectory(
+                            requireCLI,
+                            "@deepseek-ai/libreoffice-kit"
+                        ),
+                        "lib/cli.js"
+                    )
+                );
+                for (const candidate of candidates) {
+                    const loaded = await provider.get(candidate, {
+                        signal: new AbortController().signal
+                    });
+                    const runtime = JSON.parse(
+                        loaded.content
+                            .split("## Installed LibreOffice Kit")[1]
+                            .match(/\{[\s\S]*\}/)[0]
+                    ).libreofficeKit;
+                    assert.equal(runtime.cli, WRAPPER);
+                    assert.equal(runtime.node, process.execPath);
+                    assert.match(loaded.content, /load_workspace_dependencies/);
+                }
+                // The wrapper delegates to the installed Kit CLI unchanged.
+                const capabilities = JSON.parse(
+                    spawnSync(
+                        process.execPath,
+                        [WRAPPER, "capabilities", "--json"],
+                        { encoding: "utf8" }
+                    ).stdout
+                );
+                assert.equal(capabilities.runtime.backend, "wasm");
+                assert.equal(await realpath(capabilities.runtime.cliPath), kit);
             }
         );
 

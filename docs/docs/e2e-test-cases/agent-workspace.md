@@ -164,14 +164,14 @@ continues to use the **direct magda-core** values shape and is not a
 ## On-demand Python dependency checks
 
 Run this qualification in an actual claimed Agent Sandbox with the chart defaults
-of 1 CPU, 1536 MiB memory and 1 GiB ephemeral storage. Confirm the rendered Pod
+of 1 CPU, 2560 MiB memory and 1 GiB ephemeral storage. Confirm the rendered Pod
 limits before testing. Record the runtime image ID and the output of
 `python3 --version`, `python3 -m pip --version`, `uv --version`,
 `env | grep -E '^(UV_|PIP_CACHE_DIR|MAGDA_PYTHON_|MAGDA_WORKSPACE_)'`,
 `magda-workspace-resources`, `df -h / /data`, and
 `du -sh "$MAGDA_PYTHON_VENV_ROOT" "$MAGDA_PYTHON_CACHE_ROOT" "$MAGDA_PYTHON_TMPDIR" 2>/dev/null`.
-The summary must show configured and effective 1 CPU, configured 1536 MiB and
-effective 1610612736-byte (1.50 GiB) memory, current cgroup memory use, and a
+The summary must show configured and effective 1 CPU, configured 2560 MiB and
+effective 2684354560-byte (2.50 GiB) memory, current cgroup memory use, and a
 10 GiB requested PVC. On Minikube hostpath, confirm that a larger `/data` `df`
 value is labelled node-backed observed capacity rather than the Workspace quota.
 `pwd` must report `/data/workspace/agent-harness/default-workspace`; every
@@ -191,7 +191,7 @@ Before changing the Workspace, use a real model turn in a fresh claim and ask:
 
 The agent must load the bundled Python guidance, use the configured/cgroup
 resource sources rather than `nproc`, `os.cpu_count()`, `free` or
-`/proc/meminfo`, and report **1 CPU**, **1.5 GiB memory** and the **10 GiB
+`/proc/meminfo`, and report **1 CPU**, **2.5 GiB memory** and the **10 GiB
 requested PVC**. It must distinguish current memory use from available capacity,
 include the Minikube hostpath caveat when `df` shows the node disk, keep proposed
 scikit-learn/BLAS parallelism within one CPU, and make no installation before
@@ -279,6 +279,84 @@ approval.
    and re-check usage. Confirm errors and actual versions are reported truthfully
    and that no `sudo`, runtime `apt-get`, global pip, `--system`,
    `--break-system-packages`, privilege escalation or Python download was used.
+
+## Office document checks
+
+Use a **fresh** claimed Workspace (Start New Workspace → Permanently Reset, or a
+new user) with no published, synchronized or project skills and no manual
+package installation. Use the known-content fixtures in
+[`magda-agent-runtime/office-fixtures/`](../../../magda-agent-runtime/office-fixtures/)
+(facts defined in `generate_fixtures.py`, asserted in the image by
+`test_office_skills.py`). Rename copies before upload, for example
+`coastal-report.docx`, `field-briefing.pptx` and `programme-budget.xlsx`, so
+that answers cannot come from file names. Inspect each turn with
+`magda-session-history events --session <id> --turn <n>` in the claimed Pod,
+and watch `/sys/fs/cgroup/memory.peak` and `memory.events`.
+
+1. **Reading.** In a new session attach the three files and ask, without
+   mentioning skills or tools:
+
+    > I've attached three files. Please answer from their actual contents and say
+    > where in each file you found each answer. (1) Report: what peak salinity was
+    > recorded, at which station and on what date? Who leads North Reef, and what
+    > are the replicate A and B values? What does the footnote say? (2) Deck: what
+    > is the Pilbara budget, what do the speaker notes remind the committee about,
+    > and is there any hidden slide? (3) Spreadsheet: what is the total cost on the
+    > Summary sheet (give both the formula and its value), and what is the Q3
+    > amount on the Detail sheet?
+
+    Expected: 35.2 PSU at BW-7 on 14 March 2026; Dr Amara Okafor; replicates
+    7.81 / 7.79 from the nested table; footnote "Calibrated against the CSIRO
+    reference probe in February 2026."; Pilbara AUD 1,250,000 (slide 3); notes
+    "budget approval is due 30 June" (slide 2); hidden slide 5 "Contingency";
+    `Summary!B6 =SUM(B3:B5)` = 785000.5 and `Detail!C4` 235500.15 as cached
+    values. History shows `skill` calls for `office-docx`, `office-pptx` and
+    `office-xlsx`, a `load_workspace_dependencies` call, and Bash using
+    `/usr/local/lib/magda-agent/primary-runtime/dependencies/python/bin/python3`
+    on the `$DSH_HOME/attachments/v1/files/…` paths, with no approval prompt or
+    package installation.
+2. **Generation, rendering and delivery.** Ask for a two-slide deck from the
+   workbook with a column chart of the Summary items and the total in a
+   caption, and to check how the slides look. Expected: python-pptx generation,
+   `check_office.py`, a kit `render` using the skill's absolute `node`/`cli`
+   paths, and `present` of the final `.pptx` as a deliverable. With the current
+   text-only model entry, `read_image` refuses the previews and the agent says
+   visual inspection was unavailable.
+3. **Recalculation.** Attach `uncalculated.xlsx` (renamed) and ask what `A3`
+   shows. Expected: the agent reports there is no cached result, runs the kit's
+   `recalculate` into a new file, and answers 6 (`=A1*A2`).
+4. **Unsupported inputs.** Attach `legacy.doc`, `encrypted.xlsx`,
+   `truncated.docx` and `misnamed-spreadsheet.docx` (renamed). Expected: no
+   invented contents for the first three, advice to re-export, and the misnamed
+   file identified as an XLSX workbook by content.
+5. **Reserved names.** `mgd agent-skill validate` on a draft named `office-docx`
+   is rejected as reserved for a runtime-bundled Agent Skill.
+6. **Concurrent previews and agent kit commands.** Put several distinct DOCX and
+   PPTX files in the working tree and open them one after another from
+   **Workspace files** in two browser tabs. Meanwhile, ask the agent to render
+   two of them, export one to PDF and recalculate a workbook. Sample
+   `memory.current`, `anon` in `memory.stat` and `oom_kill` in `memory.events`
+   every 100 ms. Expected: DSH Web previews never overlap each other; agent kit
+   commands never overlap each other, even when issued as parallel tool calls
+   (a queued one reports `magda: waiting for another LibreOffice Kit command`);
+   every requested output is produced; no OOM kill.
+
+**Observed (2026-11-13, Minikube runc, arm64, demo LLM route):** steps 1–5
+passed (1–4 in a fresh Workspace), with answers and tool paths as expected and no
+approvals. In step 2 the kit reported `missingFonts` `Arial` and `Aptos`, which
+it substituted; the rendered slide was correct on manual inspection. The
+cgroup memory peak across the four turns was 1.41 GiB of the then 1.5 GiB limit (including
+page cache), with no OOM kill. Step 6 (2026-11-13, 2560 MiB limit, Web
+conversions limited to one): previews were serialised, and one preview plus one
+kit command at a time peaked at 2.31 GiB with no OOM kill. Before the agent kit
+lock, four kit commands started as parallel tool calls next to a warmed DSH Web
+(about 0.75 GiB) OOM-killed the container at about 2.4 GiB, and DSH Web
+restarted. With the lock, the same prompt's parallel tool calls queued, the peak
+was 2.27 GiB with no OOM kill, and all 11 images rendered. One queued PDF
+conversion hit the kit's 1-CPU conversion timeout and was retried by the agent
+with `--timeout-ms`. **Not yet tested:** amd64 images and emulated
+cross-architecture builds, gVisor, files saved by Microsoft Office itself,
+CJK text, image-capable models, and other models.
 
 ## Lifecycle and security checks
 

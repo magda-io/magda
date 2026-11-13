@@ -872,6 +872,26 @@ try {
         requestWithTools.body.model === payload.llm.model,
         "provider did not use bootstrap model"
     );
+    // DSH's Office skills and their interpreter tool reach the real provider
+    // request by default, without any user, mgd or project skill setup.
+    check(
+        requestWithTools.body.tools?.some(
+            (tool) => tool.name === "load_workspace_dependencies"
+        ),
+        "load_workspace_dependencies absent from real provider request"
+    );
+    const catalog = JSON.stringify(
+        llmRequests.map(({ body }) => body.input ?? body)
+    );
+    for (const skill of ["office-docx", "office-pptx", "office-xlsx"])
+        check(
+            catalog.includes(skill),
+            `${skill} absent from the model's skill catalog: ${catalog
+                .slice(
+                    Math.max(0, catalog.indexOf("python-dependencies") - 400)
+                )
+                .slice(0, 1200)}`
+        );
     const markerFile = path.join(
         root,
         "workspace/image-web-persistence-marker"

@@ -8,7 +8,11 @@
 export const RESERVED_RUNTIME_SKILL_NAMES: ReadonlySet<string> = new Set([
     "capture-workflow",
     "magda-mgd",
-    "python-dependencies"
+    "python-dependencies",
+    // Provided by DSH's mounted `@deepseek-ai/dsh-skill-office` provider.
+    "office-docx",
+    "office-pptx",
+    "office-xlsx"
 ]);
 
 export function isReservedAgentSkillName(name: string): boolean {

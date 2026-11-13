@@ -30,8 +30,9 @@ skills use `agent-skill-<user-uuid>-<name>` and system skills use
 user publishing, `userId`, `access-control.ownerId`, and the authenticated actor
 must match; the two fields remain distinct for future explicitly delegated use. Names are at
 most 46 lowercase letters/digits with interior hyphens; user names cannot use
-the `system-` prefix, and runtime-owned names `capture-workflow`, `magda-mgd`
-and `python-dependencies` are reserved. Registry's primary key atomically enforces each
+the `system-` prefix, and runtime-owned names `capture-workflow`, `magda-mgd`,
+`python-dependencies` and DSH's `office-docx`, `office-pptx` and `office-xlsx`
+are reserved. Registry's primary key atomically enforces each
 intended user's namespace, so the API never accepts a caller-selected ID or uses
 full-text search for uniqueness. Different users may publish the same name.
 
@@ -311,8 +312,13 @@ Runtime image. They are not Registry-backed `system-` publications, which have
 separate authenticated Agent Services APIs and typed OPA authorization.
 
 The runtime reserves `capture-workflow`, the separately installed `magda-mgd`
-skill, and the image-bundled `python-dependencies` skill introduced by
-[PR #3896](https://github.com/magda-io/magda/pull/3896). Agent Services
+skill, the image-bundled `python-dependencies` skill introduced by
+[PR #3896](https://github.com/magda-io/magda/pull/3896), and the
+`office-docx`, `office-pptx` and `office-xlsx` skills that DSH's
+`@deepseek-ai/dsh-skill-office` provider contributes to the managed profile
+(see [Office documents](./agent-workspace.md#office-documents)). Those
+provider skills rank as bundled (600), so a same-named user skill (rank 400/500)
+would otherwise shadow them. Agent Services
 publication and installation-alias validation and `mgd` publication and
 local/Workspace synchronization all enforce the same reserved names. OPA
 contains no name-specific rules.

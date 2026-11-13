@@ -59,8 +59,12 @@ await materialize(modules);
 if (process.argv.includes("--prune")) {
     const { pruneRuntime } = await import("./prune-dsh-runtime.mjs");
     const report = await pruneRuntime({ root: target });
-    console.log(`Production CLI closure: removed ${report.removed.length}, retained ${report.retained.packages} package instances`);
-    manifest = JSON.parse(await readFile(path.join(target, "package.json"), "utf8"));
+    console.log(
+        `Production CLI closure: removed ${report.removed.length}, retained ${report.retained.packages} package instances`
+    );
+    manifest = JSON.parse(
+        await readFile(path.join(target, "package.json"), "utf8")
+    );
 }
 
 const workspace = new Map();
@@ -165,6 +169,21 @@ for (const name of Object.keys(manifest.dependencies)) {
             `Workspace omitted from deployment: ${name}`
         );
 }
+// Record which reviewed fork commit was built and the upstream baseline it
+// extends; the Dockerfile verifies both SHAs and their ancestry.
+for (const name of [
+    "DSH_SOURCE_REPO",
+    "DSH_SOURCE_REF",
+    "DSH_SOURCE_SHA",
+    "DSH_UPSTREAM_REF",
+    "DSH_UPSTREAM_SHA"
+])
+    assert(process.env[name], `${name} must be set`);
+for (const name of ["DSH_SOURCE_SHA", "DSH_UPSTREAM_SHA"])
+    assert(
+        /^[0-9a-f]{40}$/.test(process.env[name]),
+        `${name} must be a full SHA`
+    );
 await mkdir(path.join(target, "provenance"), { recursive: true });
 for (const name of ["LICENSE", "THIRD_PARTY_NOTICES.md"]) {
     await cp(path.join(source, name), path.join(target, "provenance", name));
@@ -174,8 +193,12 @@ await writeFile(
     JSON.stringify(
         {
             repository: process.env.DSH_SOURCE_REPO,
-            branch: process.env.DSH_SOURCE_BRANCH,
+            ref: process.env.DSH_SOURCE_REF,
             sha: process.env.DSH_SOURCE_SHA,
+            upstream: {
+                ref: process.env.DSH_UPSTREAM_REF,
+                sha: process.env.DSH_UPSTREAM_SHA
+            },
             version: root.version,
             assembly: manifest.name,
             packages: packages.sort((a, b) => a.name.localeCompare(b.name)),
