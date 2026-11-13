@@ -3,11 +3,15 @@
 #   create-docker-context-for-node-component --build --tag magda-agent-runtime:local
 ARG NODE_VERSION=22.22.0
 ARG DSH_VERSION=0.2.1-alpha.1
-# Source baseline: official dsh-v0.2.1-alpha.1, mirrored in this clean fork branch.
-# Pin the full Git SHA: moving the branch later must NOT change MAGDA's build.
+# Source: MAGDA's reviewed DSH maintenance release, an annotated tag on the
+# fork's `magda` branch. Pin the full Git SHA: moving refs must NOT change
+# MAGDA's build. The build also proves the official upstream baseline
+# (dsh-v0.2.1-alpha.1, kept unchanged as upstream/0.2.1-alpha.1) is an ancestor.
 ARG DSH_SOURCE_REPO=https://github.com/magda-io/dsh-fork.git
-ARG DSH_SOURCE_BRANCH=upstream/0.2.1-alpha.1
-ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
+ARG DSH_SOURCE_REF=magda/0.2.1-alpha.1/1.0.1
+ARG DSH_SOURCE_SHA=c929e29667e6ccac97c1575e18fb56b1c9ead6c6
+ARG DSH_UPSTREAM_REF=upstream/0.2.1-alpha.1
+ARG DSH_UPSTREAM_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
 ARG UV_VERSION=0.13.6
 ARG UV_IMAGE_DIGEST=sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0
 
@@ -21,8 +25,10 @@ FROM ghcr.io/astral-sh/uv:${UV_VERSION}@${UV_IMAGE_DIGEST} AS uv
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-bookworm-slim AS dsh-source-build
 ARG DSH_VERSION
 ARG DSH_SOURCE_REPO
-ARG DSH_SOURCE_BRANCH
+ARG DSH_SOURCE_REF
 ARG DSH_SOURCE_SHA
+ARG DSH_UPSTREAM_REF
+ARG DSH_UPSTREAM_SHA
 ENV DSH_TELEMETRY_DISABLED=1
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
@@ -30,8 +36,14 @@ RUN apt-get update \
   && corepack enable \
   && corepack prepare pnpm@11.7.0 --activate
 WORKDIR /src/dsh
-RUN git clone --depth=1 --branch "${DSH_SOURCE_BRANCH}" "${DSH_SOURCE_REPO}" . \
+RUN git clone --depth=1 --branch "${DSH_SOURCE_REF}" "${DSH_SOURCE_REPO}" . \
   && test "$(git rev-parse HEAD)" = "${DSH_SOURCE_SHA}" \
+  && test "$(git cat-file -t "refs/tags/${DSH_SOURCE_REF}")" = tag \
+  && for attempt in 1 2 3 4 5 6 7 8; do \
+       git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD 2>/dev/null && break; \
+       git fetch -q --deepen=32 origin "refs/tags/${DSH_SOURCE_REF}"; \
+     done \
+  && git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD \
   && test "$(node -p 'require("./package.json").version')" = "${DSH_VERSION}" \
   && test "$(node -p 'require("./apps/cli/package.json").version')" = "${DSH_VERSION}"
 RUN pnpm install --frozen-lockfile
@@ -46,8 +58,10 @@ RUN tar --exclude='node_modules' --exclude='./native/system/packages/*/bin' -cf 
 FROM node:${NODE_VERSION}-bookworm-slim AS dsh-build
 ARG DSH_VERSION
 ARG DSH_SOURCE_REPO
-ARG DSH_SOURCE_BRANCH
+ARG DSH_SOURCE_REF
 ARG DSH_SOURCE_SHA
+ARG DSH_UPSTREAM_REF
+ARG DSH_UPSTREAM_SHA
 ENV DSH_TELEMETRY_DISABLED=1
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
@@ -72,18 +86,23 @@ RUN node /opt/prepare-dsh-deploy.mjs \
     --config.node-linker=hoisted /opt/dsh-release \
   && git diff --exit-code -- pnpm-lock.yaml \
   && node /opt/verify-dsh-lock.mjs /opt/dsh-release \
-  && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_SOURCE_BRANCH="${DSH_SOURCE_BRANCH}" \
-    DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release --prune \
+  && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_SOURCE_REF="${DSH_SOURCE_REF}" \
+    DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" DSH_UPSTREAM_REF="${DSH_UPSTREAM_REF}" \
+    DSH_UPSTREAM_SHA="${DSH_UPSTREAM_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release --prune \
   && test -f /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js \
   && node /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js --version
 
 FROM node:${NODE_VERSION}-bookworm-slim
 ARG DSH_VERSION
 ARG DSH_SOURCE_REPO
+ARG DSH_SOURCE_REF
 ARG DSH_SOURCE_SHA
+ARG DSH_UPSTREAM_SHA
 ARG UV_VERSION
 LABEL io.magda.dsh.source="${DSH_SOURCE_REPO}" \
+  io.magda.dsh.ref="${DSH_SOURCE_REF}" \
   io.magda.dsh.revision="${DSH_SOURCE_SHA}" \
+  io.magda.dsh.upstream-revision="${DSH_UPSTREAM_SHA}" \
   io.magda.dsh.version="${DSH_VERSION}"
 COPY --from=uv /uv /usr/local/lib/magda-agent/uv
 COPY --chmod=0755 component/uv-wrapper.sh /usr/local/bin/uv

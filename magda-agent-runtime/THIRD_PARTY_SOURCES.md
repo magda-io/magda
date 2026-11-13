@@ -5,7 +5,13 @@ LibreOffice-kit/WASM. These components retain their own licenses; MAGDA remains
 licensed under Apache-2.0.
 
 This document records source locations for the versions selected by DSH
-`0.2.1-alpha.1`, source commit `5badb15009ae1756c3afe0ae0cef1faafc290ccc`.
+`0.2.1-alpha.1`, built from MAGDA's maintenance tag `magda/0.2.1-alpha.1/1.0.1`
+(commit `c929e29667e6ccac97c1575e18fb56b1c9ead6c6`) in
+[magda-io/dsh-fork](https://github.com/magda-io/dsh-fork). It extends the
+official upstream baseline `upstream/0.2.1-alpha.1`
+(`5badb15009ae1756c3afe0ae0cef1faafc290ccc`) with changes to DSH's Office
+skills and `check_office.py` only; package versions and the dependency
+lockfile are unchanged.
 It is installed at `/usr/local/share/magda-agent/THIRD_PARTY_SOURCES.md`.
 Source is available from the upstream locations below; no separate release-specific
 source manifest is needed to use these references.

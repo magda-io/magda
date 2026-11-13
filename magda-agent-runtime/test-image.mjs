@@ -27,8 +27,12 @@ import { pathToFileURL } from "node:url";
 
 const EXPECTED = Object.freeze({
     repository: "https://github.com/magda-io/dsh-fork.git",
-    branch: "upstream/0.2.1-alpha.1",
-    sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc",
+    ref: "magda/0.2.1-alpha.1/1.0.1",
+    sha: "c929e29667e6ccac97c1575e18fb56b1c9ead6c6",
+    upstream: {
+        ref: "upstream/0.2.1-alpha.1",
+        sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc"
+    },
     version: "0.2.1-alpha.1",
     assembly: "magda-dsh-cli-peer-closure"
 });
@@ -277,7 +281,11 @@ async function runImageChecks() {
             "pinned source provenance and artifact hashes",
             async () => {
                 for (const [key, value] of Object.entries(EXPECTED))
-                    assert.equal(provenance[key], value, `Provenance ${key}`);
+                    assert.deepEqual(
+                        provenance[key],
+                        value,
+                        `Provenance ${key}`
+                    );
                 const lock = await json(
                     "/usr/local/share/magda-agent/dsh-lock.json"
                 );

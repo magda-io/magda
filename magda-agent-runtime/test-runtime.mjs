@@ -70,13 +70,34 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_BRANCH=upstream\/0\.2\.1-alpha\.1/,
-    "The fork baseline branch must be explicitly selected"
+    /ARG DSH_SOURCE_REF=magda\/0\.2\.1-alpha\.1\/1\.0\.1/,
+    "DSH must build from a reviewed MAGDA maintenance tag, not a moving branch"
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc/,
-    "DSH must be pinned to the official release commit, not a moving fork ref"
+    /ARG DSH_SOURCE_SHA=c929e29667e6ccac97c1575e18fb56b1c9ead6c6/,
+    "DSH must be pinned to the full SHA of the reviewed fork commit"
+);
+assert.match(
+    dockerfile,
+    /ARG DSH_UPSTREAM_REF=upstream\/0\.2\.1-alpha\.1\nARG DSH_UPSTREAM_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc/,
+    "The official upstream baseline must stay recorded separately"
+);
+for (const check of [
+    'test "$(git cat-file -t "refs/tags/${DSH_SOURCE_REF}")" = tag',
+    'git fetch -q --deepen=32 origin "refs/tags/${DSH_SOURCE_REF}"',
+    'git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD \\',
+    'io.magda.dsh.upstream-revision="${DSH_UPSTREAM_SHA}"'
+]) {
+    assert.ok(
+        dockerfile.includes(check),
+        `The source build must verify and record its upstream baseline: ${check}`
+    );
+}
+assert.doesNotMatch(
+    dockerfile,
+    /DSH_SOURCE_BRANCH/,
+    "The source is a tag ref; the old branch-named argument must not remain"
 );
 assert.match(
     dockerfile,
