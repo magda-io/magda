@@ -448,6 +448,64 @@ class KitLockTest(unittest.TestCase):
         self.assertNotEqual(direct.returncode, 0)
         self.assertEqual((wrapped.returncode, wrapped.stdout), (direct.returncode, direct.stdout))
 
+    def long_document(self):
+        import docx
+
+        path = os.path.join(self.work, "long.docx")
+        document = docx.Document()
+        for page in range(60):
+            document.add_heading(f"Page {page}", level=1)
+            document.add_paragraph("Rendering load text. " * 120)
+            document.add_page_break()
+        document.save(path)
+        return path
+
+    def kit_processes(self, marker):
+        """PIDs whose command line names this test's unique output directory."""
+        found = []
+        for entry in os.listdir("/proc"):
+            if not entry.isdigit():
+                continue
+            try:
+                with open(f"/proc/{entry}/cmdline", "rb") as handle:
+                    if marker.encode() in handle.read():
+                        found.append(int(entry))
+            except OSError:
+                continue
+        return found
+
+    def assert_cancel_releases_lock(self, cancel, new_session):
+        import fcntl
+        import signal
+        import time
+
+        output = os.path.join(self.work, "cancelled-preview")
+        # Discard output: a surviving Kit process would otherwise keep the pipes open.
+        render = subprocess.Popen([NODE, CLI, "render", "--input", self.long_document(), "--output-dir", output, "--dpi", "150"],
+                                  cwd=self.work, env=self.env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                  start_new_session=new_session)
+        deadline = time.monotonic() + 30
+        while not [pid for pid in self.kit_processes(output) if pid != render.pid] and time.monotonic() < deadline:
+            time.sleep(0.1)
+        time.sleep(1)
+        self.assertIsNone(render.poll(), "render finished before it could be cancelled")
+        cancel(render, signal.SIGTERM)
+        render.wait(timeout=30)
+        deadline = time.monotonic() + 3
+        while self.kit_processes(output) and time.monotonic() < deadline:
+            time.sleep(0.1)
+        self.assertEqual(self.kit_processes(output), [], "a cancelled Kit command kept running")
+        # The lock is free at once, not only after a surviving render would have finished.
+        with open(self.env["MAGDA_LIBREOFFICE_KIT_LOCK"], "a") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+    def test_terminating_the_wrapper_stops_the_kit_and_releases_the_lock(self):
+        self.assert_cancel_releases_lock(lambda process, signal: process.send_signal(signal), new_session=False)
+
+    def test_terminating_the_process_group_stops_the_kit_and_releases_the_lock(self):
+        # DSH's Bash tool signals the command's process group.
+        self.assert_cancel_releases_lock(lambda process, signal: os.killpg(process.pid, signal), new_session=True)
+
     def test_wait_is_bounded(self):
         holder = self.hold_lock()
         self.addCleanup(holder.close)

@@ -5,8 +5,9 @@
 // agent can start several as parallel tool calls. This wrapper runs the
 // installed Kit CLI unchanged, but under an exclusive flock(1) on one lock file
 // in the agent-writable working tree, so agent Kit commands in a Workspace run
-// one at a time. The kernel releases the lock when the command exits or is
-// killed. `capabilities` is cheap and never waits.
+// one at a time. The Kit runs as this wrapper's direct child holding the
+// lock, so the kernel releases it when the Kit exits or is killed.
+// `capabilities` is cheap and never waits.
 //
 // Environment:
 //   MAGDA_LIBREOFFICE_KIT_LOCK                  lock file path
@@ -80,7 +81,12 @@ if (probe.code === BUSY)
         "magda: waiting for another LibreOffice Kit command in this Workspace to finish (one runs at a time)"
     );
 // The Kit CLI exits 0 or 1, so BUSY here means flock timed out before running it.
+// --no-fork: flock execs the Kit itself with the lock held, so a signal this
+// wrapper forwards reaches the Kit, and the lock is released when it exits.
+// (A forked flock child would keep running, and holding the lock, after a
+// SIGTERM to flock.)
 const result = await run(FLOCK, [
+    "--no-fork",
     "--timeout",
     String(timeout),
     "--conflict-exit-code",

@@ -308,6 +308,7 @@ const kitWrapper = await readFile(
 for (const contract of [
     "/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/libreoffice-kit/lib/cli.js",
     '"/usr/bin/flock"',
+    '"--no-fork"',
     '"--timeout"',
     '"/bin/true"',
     'args[0] === "capabilities"'
