@@ -8,8 +8,8 @@ ARG DSH_VERSION=0.2.1-alpha.1
 # MAGDA's build. The build also proves the official upstream baseline
 # (dsh-v0.2.1-alpha.1, kept unchanged as upstream/0.2.1-alpha.1) is an ancestor.
 ARG DSH_SOURCE_REPO=https://github.com/magda-io/dsh-fork.git
-ARG DSH_SOURCE_REF=magda/0.2.1-alpha.1/1.0.1
-ARG DSH_SOURCE_SHA=c929e29667e6ccac97c1575e18fb56b1c9ead6c6
+ARG DSH_SOURCE_REF=magda/0.2.1-alpha.1/1.0.2
+ARG DSH_SOURCE_SHA=882fb72bf45cd2da225adf445e49e0418f4ed2ef
 ARG DSH_UPSTREAM_REF=upstream/0.2.1-alpha.1
 ARG DSH_UPSTREAM_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
 ARG UV_VERSION=0.13.6
@@ -79,6 +79,8 @@ RUN tar -xf /opt/dsh-built-source.tar \
 # The CLI manifest alone does not provide its required runtime peers. Use the
 # upstream executable assembly. Modern offline deploy preserves the committed
 # external graph; pnpm 11 legacy+hoisted deploy silently ignores that lockfile.
+# DSH's package-origin audit then checks the pruned tree: no published
+# @deepseek-ai package other than MAGDA's LibreOffice Kit release tarballs.
 COPY component/prepare-dsh-deploy.mjs component/verify-dsh-lock.mjs component/deploy-dsh.mjs component/prune-dsh-runtime.mjs /opt/
 RUN node /opt/prepare-dsh-deploy.mjs \
   && pnpm --filter dsh-python-runtime-closure --prod deploy --offline \
@@ -89,6 +91,7 @@ RUN node /opt/prepare-dsh-deploy.mjs \
   && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_SOURCE_REF="${DSH_SOURCE_REF}" \
     DSH_SOURCE_SHA="${DSH_SOURCE_SHA}" DSH_UPSTREAM_REF="${DSH_UPSTREAM_REF}" \
     DSH_UPSTREAM_SHA="${DSH_UPSTREAM_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release --prune \
+  && pnpm exec tsx scripts/verify-package-origins.ts --lockfile pnpm-lock.yaml --installed /opt/dsh-release \
   && test -f /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js \
   && node /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js --version
 

@@ -70,12 +70,12 @@ assert.match(
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_REF=magda\/0\.2\.1-alpha\.1\/1\.0\.1/,
+    /ARG DSH_SOURCE_REF=magda\/0\.2\.1-alpha\.1\/1\.0\.2/,
     "DSH must build from a reviewed MAGDA maintenance tag, not a moving branch"
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_SHA=c929e29667e6ccac97c1575e18fb56b1c9ead6c6/,
+    /ARG DSH_SOURCE_SHA=882fb72bf45cd2da225adf445e49e0418f4ed2ef/,
     "DSH must be pinned to the full SHA of the reviewed fork commit"
 );
 assert.match(
@@ -148,6 +148,11 @@ assert.match(
     dockerfile,
     /pnpm run verify-runtime-closure/,
     "Check preset plugins and required workspace peers before packaging"
+);
+assert.match(
+    dockerfile,
+    /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune \\\n\s+&& pnpm exec tsx scripts\/verify-package-origins\.ts --lockfile pnpm-lock\.yaml --installed \/opt\/dsh-release/,
+    "Audit the pruned runtime tree: no published @deepseek-ai package except MAGDA's Office kit release"
 );
 assert.doesNotMatch(
     dockerfile,
