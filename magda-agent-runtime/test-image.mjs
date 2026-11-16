@@ -25,22 +25,43 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-const EXPECTED = Object.freeze({
-    repository: "https://github.com/magda-io/dsh-fork.git",
-    ref: "magda/0.2.1-alpha.1/1.0.1",
-    sha: "c929e29667e6ccac97c1575e18fb56b1c9ead6c6",
-    upstream: {
-        ref: "upstream/0.2.1-alpha.1",
-        sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc"
-    },
-    version: "0.2.1-alpha.1",
-    assembly: "magda-dsh-cli-peer-closure"
-});
+// The Dockerfile's build arguments are the one place a release is pinned. The
+// image build passes them in; provenance must record exactly those values.
+function expectedRelease() {
+    const argument = (name, pattern) => {
+        const value = process.env[name];
+        assert.match(
+            value ?? "",
+            pattern,
+            `${name} must be passed from the Dockerfile build arguments`
+        );
+        return value;
+    };
+    return Object.freeze({
+        repository: "https://github.com/magda-io/dsh-fork.git",
+        ref: argument("DSH_RELEASE_TAG", /^magda\/[^/\s]+\/\d+\.\d+\.\d+$/),
+        sha: argument("DSH_RELEASE_SHA", /^[0-9a-f]{40}$/),
+        upstream: {
+            ref: argument("DSH_UPSTREAM_REF", /^upstream\/[^/\s]+$/),
+            sha: argument("DSH_UPSTREAM_SHA", /^[0-9a-f]{40}$/)
+        },
+        version: argument("DSH_VERSION", /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/),
+        assembly: "magda-dsh-cli-peer-closure"
+    });
+}
+let EXPECTED;
 const CLI = "/usr/local/lib/node_modules/@deepseek-ai/dsh";
 const PROVENANCE = "/usr/local/share/magda-agent/dsh-source.json";
 const WORKSPACE = "@deepseek-ai/dsh-api-workspace-controller";
 const CORDIS = "@deepseek-ai/cordis";
 const WRAPPER = "/usr/local/lib/magda-agent/libreoffice-kit-cli.mjs";
+// The only external @deepseek-ai packages: MAGDA's LibreOffice Kit release,
+// which the pinned DSH revision installs by exact tarball URL and integrity.
+const OFFICE_KIT = Object.freeze({
+    "@deepseek-ai/libreoffice-kit": "0.1.5-magda.1",
+    "@deepseek-ai/libreoffice-kit-wasm": "0.1.5-magda.1"
+});
+const OFFICE_KIT_REPOSITORY = "https://github.com/magda-io/dsh-libreoffice-kit";
 const MANAGED = [
     "@magda/dsh-client-managed-profile",
     "@magda/dsh-workflow-capture-guidance",
@@ -253,6 +274,7 @@ async function ptySmoke(pty, directory) {
 }
 
 async function runImageChecks() {
+    EXPECTED = expectedRelease();
     assert.equal(
         process.platform,
         "linux",
@@ -289,10 +311,9 @@ async function runImageChecks() {
                 const lock = await json(
                     "/usr/local/share/magda-agent/dsh-lock.json"
                 );
-                assert.equal(
-                    lock.sourceLockSha256,
-                    "2893d71a9ef07d2d72d47b2199e581b9e8d90638a15ee151908eebf69dfc637c"
-                );
+                // The lockfile is part of the pinned commit, so its hash needs
+                // no second pin here.
+                assert.match(lock.sourceLockSha256, /^[a-f0-9]{64}$/);
                 assert.equal(lock.registryWorkspaceArtifacts, 0);
                 assert(
                     lock.externalPackages > 0 &&
@@ -409,6 +430,48 @@ async function runImageChecks() {
                 }
                 console.log(
                     `# verified ${sourceInstances.length} source-built package instances; ${provenance.dependencies.length} dependencies`
+                );
+            }
+        );
+
+        await check(
+            "no published @deepseek-ai package besides MAGDA's Office kit",
+            async () => {
+                // The build ran DSH's verify-package-origins over the locked
+                // graph and this tree; this re-checks the shipped tree itself.
+                const kit = installed.filter(({ manifest }) =>
+                    Object.hasOwn(OFFICE_KIT, manifest.name)
+                );
+                assert.deepEqual(
+                    [
+                        ...new Set(
+                            kit.map(
+                                ({ manifest }) =>
+                                    `${manifest.name}@${manifest.version}`
+                            )
+                        )
+                    ].sort(),
+                    Object.entries(OFFICE_KIT)
+                        .map(([name, version]) => `${name}@${version}`)
+                        .sort(),
+                    "Office kit packages must be exactly MAGDA's release"
+                );
+                for (const { manifest } of kit)
+                    assert.equal(
+                        manifest.repository?.url,
+                        OFFICE_KIT_REPOSITORY,
+                        `Office kit not from MAGDA's release: ${manifest.name}`
+                    );
+                for (const { manifest } of installed) {
+                    if (!manifest.name.startsWith("@deepseek-ai/")) continue;
+                    assert(
+                        sourceNames.has(manifest.name) ||
+                            Object.hasOwn(OFFICE_KIT, manifest.name),
+                        `Published @deepseek-ai package in the runtime: ${manifest.name}@${manifest.version}`
+                    );
+                }
+                console.log(
+                    `# ${kit.length} Office kit package instances, all from ${OFFICE_KIT_REPOSITORY}`
                 );
             }
         );

@@ -173,13 +173,13 @@ for (const name of Object.keys(manifest.dependencies)) {
 // extends; the Dockerfile verifies both SHAs and their ancestry.
 for (const name of [
     "DSH_SOURCE_REPO",
-    "DSH_SOURCE_REF",
-    "DSH_SOURCE_SHA",
+    "DSH_RELEASE_TAG",
+    "DSH_RELEASE_SHA",
     "DSH_UPSTREAM_REF",
     "DSH_UPSTREAM_SHA"
 ])
     assert(process.env[name], `${name} must be set`);
-for (const name of ["DSH_SOURCE_SHA", "DSH_UPSTREAM_SHA"])
+for (const name of ["DSH_RELEASE_SHA", "DSH_UPSTREAM_SHA"])
     assert(
         /^[0-9a-f]{40}$/.test(process.env[name]),
         `${name} must be a full SHA`
@@ -193,8 +193,8 @@ await writeFile(
     JSON.stringify(
         {
             repository: process.env.DSH_SOURCE_REPO,
-            ref: process.env.DSH_SOURCE_REF,
-            sha: process.env.DSH_SOURCE_SHA,
+            ref: process.env.DSH_RELEASE_TAG,
+            sha: process.env.DSH_RELEASE_SHA,
             upstream: {
                 ref: process.env.DSH_UPSTREAM_REF,
                 sha: process.env.DSH_UPSTREAM_SHA

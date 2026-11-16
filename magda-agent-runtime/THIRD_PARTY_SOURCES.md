@@ -5,13 +5,10 @@ LibreOffice-kit/WASM. These components retain their own licenses; MAGDA remains
 licensed under Apache-2.0.
 
 This document records source locations for the versions selected by DSH
-`0.2.1-alpha.1`, built from MAGDA's maintenance tag `magda/0.2.1-alpha.1/1.0.1`
-(commit `c929e29667e6ccac97c1575e18fb56b1c9ead6c6`) in
-[magda-io/dsh-fork](https://github.com/magda-io/dsh-fork). It extends the
-official upstream baseline `upstream/0.2.1-alpha.1`
-(`5badb15009ae1756c3afe0ae0cef1faafc290ccc`) with changes to DSH's Office
-skills and `check_office.py` only; package versions and the dependency
-lockfile are unchanged.
+`0.2.1-alpha.1`, built from MAGDA's maintenance release
+[`magda/0.2.1-alpha.1/1.0.2`](https://github.com/magda-io/dsh-fork/releases/tag/magda/0.2.1-alpha.1/1.0.2)
+of [magda-io/dsh-fork](https://github.com/magda-io/dsh-fork). The release page
+lists what it changes from the official upstream source.
 It is installed at `/usr/local/share/magda-agent/THIRD_PARTY_SOURCES.md`.
 Source is available from the upstream locations below; no separate release-specific
 source manifest is needed to use these references.
@@ -61,21 +58,30 @@ libvips shared library from that directory; an interface-compatible replacement
 can be supplied in a derived image. GPLv3 and LGPLv3 license texts are included at
 `/usr/share/common-licenses/GPL-3` and `/usr/share/common-licenses/LGPL-3`.
 
-## LibreOffice-kit and WASM engine 0.1.5
+## LibreOffice-kit and WASM engine 0.1.5-magda.1
 
 Licenses: MPL-2.0, with the separately retained notices and terms for incorporated
 third-party components.
 
-- [Upstream adapter/build project](https://github.com/deepseek-ai/dsh-libreoffice-kit/tree/b19bb73c74ed893b8a5d1716d32df32a113ed31b)
-- [WASM build recipe](https://github.com/deepseek-ai/dsh-libreoffice-kit/blob/b19bb73c74ed893b8a5d1716d32df32a113ed31b/engine/wasm-source/build.mjs)
+The adapter and WASM engine are MAGDA's source-built release
+[`v0.1.5-magda.1`](https://github.com/magda-io/dsh-libreoffice-kit/releases/tag/v0.1.5-magda.1)
+of [magda-io/dsh-libreoffice-kit](https://github.com/magda-io/dsh-libreoffice-kit),
+not the published npm packages. DSH installs both release tarballs by exact URL
+and sha512 integrity, and the image build rejects any other `@deepseek-ai`
+package that isn't built from the pinned DSH source.
+
+- [Adapter and engine build project](https://github.com/magda-io/dsh-libreoffice-kit/tree/f82a98880acf46ba5c547aa625b14664d3f8ffc7),
+  including its [reconstruction and release record](https://github.com/magda-io/dsh-libreoffice-kit/blob/f82a98880acf46ba5c547aa625b14664d3f8ffc7/MAGDA.md)
+- [WASM build recipe](https://github.com/magda-io/dsh-libreoffice-kit/blob/f82a98880acf46ba5c547aa625b14664d3f8ffc7/engine/wasm-source/build.mjs)
+  and [build container](https://github.com/magda-io/dsh-libreoffice-kit/tree/f82a98880acf46ba5c547aa625b14664d3f8ffc7/engine/wasm-source/container)
 - [LibreOffice core source identified by the shipped source receipt](https://github.com/LibreOffice/core/tree/bce0998afefdbc355585ca324285661a2170ba77)
 - [LibreOffice core source archive](https://github.com/LibreOffice/core/archive/bce0998afefdbc355585ca324285661a2170ba77.tar.gz)
 
 The image retains the adapter's `LICENSE` and `NOTICE` in
 `/usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/libreoffice-kit/`.
 The engine package below retains its `licenses/` directory, `prebuilds.json`, and
-`sources/`, including the exact core revision, `source-changes.patch`, build
-configuration, recipes and additional patches:
+`sources/`, including the exact core revision, build configuration, recipes and
+patches:
 
 ```text
 /usr/local/lib/magda-agent/dsh/node_modules/@deepseek-ai/libreoffice-kit-wasm/
@@ -83,7 +89,10 @@ configuration, recipes and additional patches:
 
 Obtain the core source at the recorded revision and apply the shipped patches;
 use the shipped recipes/configuration for the engine build. These materials are
-also included in the [published WASM 0.1.5 package](https://registry.npmjs.org/@deepseek-ai/libreoffice-kit-wasm/-/libreoffice-kit-wasm-0.1.5.tgz).
+also included in the release's
+[WASM engine package](https://github.com/magda-io/dsh-libreoffice-kit/releases/download/v0.1.5-magda.1/deepseek-ai-libreoffice-kit-wasm-0.1.5-magda.1.tgz),
+with the engine build receipt
+[`wasm-engine-build-manifest.json`](https://github.com/magda-io/dsh-libreoffice-kit/releases/download/v0.1.5-magda.1/wasm-engine-build-manifest.json).
 
 ## Office Python libraries and fonts
 
