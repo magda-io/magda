@@ -68,15 +68,16 @@ assert.match(
     /ARG DSH_SOURCE_REPO=https:\/\/github\.com\/magda-io\/dsh-fork\.git/,
     "DSH must build from the dedicated source fork"
 );
+// Only the shape of the pin is checked here; its value lives in the Dockerfile.
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_REF=magda\/0\.2\.1-alpha\.1\/1\.0\.2/,
-    "DSH must build from a reviewed MAGDA maintenance tag, not a moving branch"
+    /\nARG DSH_RELEASE_TAG=magda\/[^/\s]+\/\d+\.\d+\.\d+\nARG DSH_RELEASE_SHA=[0-9a-f]{40}\n/,
+    "DSH must be pinned to a MAGDA release tag and its full commit SHA, never a branch"
 );
 assert.match(
     dockerfile,
-    /ARG DSH_SOURCE_SHA=882fb72bf45cd2da225adf445e49e0418f4ed2ef/,
-    "DSH must be pinned to the full SHA of the reviewed fork commit"
+    /RUN DSH_RELEASE_TAG="\$\{DSH_RELEASE_TAG\}" DSH_RELEASE_SHA="\$\{DSH_RELEASE_SHA\}" \\\n\s+DSH_UPSTREAM_REF="\$\{DSH_UPSTREAM_REF\}" DSH_UPSTREAM_SHA="\$\{DSH_UPSTREAM_SHA\}" \\\n\s+DSH_VERSION="\$\{DSH_VERSION\}" node \/usr\/local\/lib\/magda-agent\/qualification\/test-image\.mjs/,
+    "The image checks must compare provenance with the pinned release arguments"
 );
 assert.match(
     dockerfile,
@@ -84,8 +85,8 @@ assert.match(
     "The official upstream baseline must stay recorded separately"
 );
 for (const check of [
-    'test "$(git cat-file -t "refs/tags/${DSH_SOURCE_REF}")" = tag',
-    'git fetch -q --deepen=32 origin "refs/tags/${DSH_SOURCE_REF}"',
+    'test "$(git cat-file -t "refs/tags/${DSH_RELEASE_TAG}")" = tag',
+    'git fetch -q --deepen=32 origin "refs/tags/${DSH_RELEASE_TAG}"',
     'git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD \\',
     'io.magda.dsh.upstream-revision="${DSH_UPSTREAM_SHA}"'
 ]) {

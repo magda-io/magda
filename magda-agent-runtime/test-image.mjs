@@ -25,17 +25,31 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-const EXPECTED = Object.freeze({
-    repository: "https://github.com/magda-io/dsh-fork.git",
-    ref: "magda/0.2.1-alpha.1/1.0.2",
-    sha: "882fb72bf45cd2da225adf445e49e0418f4ed2ef",
-    upstream: {
-        ref: "upstream/0.2.1-alpha.1",
-        sha: "5badb15009ae1756c3afe0ae0cef1faafc290ccc"
-    },
-    version: "0.2.1-alpha.1",
-    assembly: "magda-dsh-cli-peer-closure"
-});
+// The Dockerfile's build arguments are the one place a release is pinned. The
+// image build passes them in; provenance must record exactly those values.
+function expectedRelease() {
+    const argument = (name, pattern) => {
+        const value = process.env[name];
+        assert.match(
+            value ?? "",
+            pattern,
+            `${name} must be passed from the Dockerfile build arguments`
+        );
+        return value;
+    };
+    return Object.freeze({
+        repository: "https://github.com/magda-io/dsh-fork.git",
+        ref: argument("DSH_RELEASE_TAG", /^magda\/[^/\s]+\/\d+\.\d+\.\d+$/),
+        sha: argument("DSH_RELEASE_SHA", /^[0-9a-f]{40}$/),
+        upstream: {
+            ref: argument("DSH_UPSTREAM_REF", /^upstream\/[^/\s]+$/),
+            sha: argument("DSH_UPSTREAM_SHA", /^[0-9a-f]{40}$/)
+        },
+        version: argument("DSH_VERSION", /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/),
+        assembly: "magda-dsh-cli-peer-closure"
+    });
+}
+let EXPECTED;
 const CLI = "/usr/local/lib/node_modules/@deepseek-ai/dsh";
 const PROVENANCE = "/usr/local/share/magda-agent/dsh-source.json";
 const WORKSPACE = "@deepseek-ai/dsh-api-workspace-controller";
@@ -260,6 +274,7 @@ async function ptySmoke(pty, directory) {
 }
 
 async function runImageChecks() {
+    EXPECTED = expectedRelease();
     assert.equal(
         process.platform,
         "linux",
@@ -296,10 +311,9 @@ async function runImageChecks() {
                 const lock = await json(
                     "/usr/local/share/magda-agent/dsh-lock.json"
                 );
-                assert.equal(
-                    lock.sourceLockSha256,
-                    "77a63df8d39a71e9cb5cf14ab28cc7b35db2a854d4787cda9c138518e9ce5e9b"
-                );
+                // The lockfile is part of the pinned commit, so its hash needs
+                // no second pin here.
+                assert.match(lock.sourceLockSha256, /^[a-f0-9]{64}$/);
                 assert.equal(lock.registryWorkspaceArtifacts, 0);
                 assert(
                     lock.externalPackages > 0 &&

@@ -23,8 +23,8 @@ const helper = fileURLToPath(new URL("deploy-dsh.mjs", import.meta.url));
 const version = "4.5.6";
 const sourceMetadata = {
     DSH_SOURCE_REPO: "https://example.invalid/fixture/dsh.git",
-    DSH_SOURCE_REF: "fixture/0.0.0/1.0.0",
-    DSH_SOURCE_SHA: "0123456789abcdef0123456789abcdef01234567",
+    DSH_RELEASE_TAG: "fixture/0.0.0/1.0.0",
+    DSH_RELEASE_SHA: "0123456789abcdef0123456789abcdef01234567",
     DSH_UPSTREAM_REF: "upstream/fixture",
     DSH_UPSTREAM_SHA: "89abcdef0123456789abcdef0123456789abcdef"
 };
@@ -247,8 +247,8 @@ test("restores hoisted workspaces, materializes links, and records exact provena
     );
     assert.deepEqual(provenance, {
         repository: sourceMetadata.DSH_SOURCE_REPO,
-        ref: sourceMetadata.DSH_SOURCE_REF,
-        sha: sourceMetadata.DSH_SOURCE_SHA,
+        ref: sourceMetadata.DSH_RELEASE_TAG,
+        sha: sourceMetadata.DSH_RELEASE_SHA,
         upstream: {
             ref: sourceMetadata.DSH_UPSTREAM_REF,
             sha: sourceMetadata.DSH_UPSTREAM_SHA
@@ -286,10 +286,10 @@ test("rejects missing or abbreviated source and upstream baseline metadata", asy
     for (const [change, expected] of [
         [{ DSH_UPSTREAM_REF: undefined }, /DSH_UPSTREAM_REF must be set/],
         [{ DSH_UPSTREAM_SHA: undefined }, /DSH_UPSTREAM_SHA must be set/],
-        [{ DSH_SOURCE_REF: "" }, /DSH_SOURCE_REF must be set/],
+        [{ DSH_RELEASE_TAG: "" }, /DSH_RELEASE_TAG must be set/],
         [
-            { DSH_SOURCE_SHA: "0123456789ab" },
-            /DSH_SOURCE_SHA must be a full SHA/
+            { DSH_RELEASE_SHA: "0123456789ab" },
+            /DSH_RELEASE_SHA must be a full SHA/
         ],
         [
             { DSH_UPSTREAM_SHA: "5badb150" },

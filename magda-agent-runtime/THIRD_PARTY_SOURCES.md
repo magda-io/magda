@@ -7,13 +7,8 @@ licensed under Apache-2.0.
 This document records source locations for the versions selected by DSH
 `0.2.1-alpha.1`, built from MAGDA's maintenance release
 [`magda/0.2.1-alpha.1/1.0.2`](https://github.com/magda-io/dsh-fork/releases/tag/magda/0.2.1-alpha.1/1.0.2)
-(commit `882fb72bf45cd2da225adf445e49e0418f4ed2ef`) in
-[magda-io/dsh-fork](https://github.com/magda-io/dsh-fork). It extends the
-official upstream baseline `upstream/0.2.1-alpha.1`
-(`5badb15009ae1756c3afe0ae0cef1faafc290ccc`) with changes to DSH's Office
-skills and `check_office.py`, and installs MAGDA's own LibreOffice-kit release
-in place of the published npm packages; all other package versions are
-unchanged.
+of [magda-io/dsh-fork](https://github.com/magda-io/dsh-fork). The release page
+lists what it changes from the official upstream source.
 It is installed at `/usr/local/share/magda-agent/THIRD_PARTY_SOURCES.md`.
 Source is available from the upstream locations below; no separate release-specific
 source manifest is needed to use these references.
