@@ -357,6 +357,11 @@ assert.match(
 );
 assert.match(
     dockerfile,
+    /\bfonts-wqy-microhei\b/,
+    "Chinese, Japanese and Korean text needs a CJK font, or the kit drops it silently"
+);
+assert.match(
+    dockerfile,
     /primary-runtime\/dependencies\/python\/bin\/python3 -m unittest discover \\\n\s+-s \/usr\/local\/lib\/magda-agent\/qualification\/office-fixtures/,
     "The Office skills must be qualified in the image with the payload interpreter"
 );

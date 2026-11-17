@@ -146,7 +146,8 @@ deployment configuration. The tool returns a read-only Python environment over
 Debian's interpreter with python-docx, python-pptx, openpyxl, XlsxWriter, lxml,
 Pillow and pandas, and the skills use the image's LibreOffice Kit CLI to render,
 convert and recalculate. The image includes Liberation, Carlito, Caladea and
-DejaVu fonts because the kit refuses to run without fonts. Image builds run the
+DejaVu fonts because the kit refuses to run without fonts, and WenQuanYi Micro
+Hei for Chinese, Japanese and Korean text. Image builds run the
 Office qualification suite (`office-fixtures/test_office_skills.py`) as the
 runtime user: reading, generation from the skills' own examples, structural
 checks, rendering, PDF conversion and recalculation.
