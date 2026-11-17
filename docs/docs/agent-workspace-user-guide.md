@@ -23,7 +23,8 @@ Attach a `.docx`, `.pptx` or `.xlsx` file with the composer's **+** button and a
 
 - **Reading:** ask concrete questions ("What does the footnote on the salinity figure say?", "What is the Summary total and its formula?"). For spreadsheets, the agent distinguishes a formula from its saved (cached) result. If a workbook was saved without calculating a formula, it can recalculate a copy and says that it did.
 - **Creating:** the agent writes the file in your Workspace, checks its structure, renders it to check layout where possible, and offers it to you as a file you can preview and download.
-- **Not supported:** legacy Word/Excel/PowerPoint 97–2003 files (`.doc`, `.xls`, `.ppt`), password-protected files and damaged files. Save them as `.docx`, `.xlsx` or `.pptx` (without a password) and upload again; renaming a file doesn't convert it. Macros are never run.
+- **Older formats:** Word/Excel/PowerPoint 97–2003 files (`.doc`, `.xls`, `.ppt`) can usually be read, by converting a copy, and previewed. Their full structure (for example formulas or speaker notes) may not survive the conversion, so for detailed work save them as `.docx`, `.xlsx` or `.pptx` first.
+- **Not supported:** password-protected and damaged files. The agent tells you what it found instead of guessing their contents. Save them again without a password, or re-export them, and upload again; renaming a file doesn't convert it. Macros are never run.
 - **Layout checks:** the agent can render pages and slides but may not be able to look at the images, depending on the model your deployment uses. It tells you when it couldn't visually check a layout.
 
 Uploaded files stay in your own Workspace and are read-only to the agent. Text inside a document is treated as content, not as instructions.
