@@ -211,16 +211,27 @@ The merged [#3896](https://github.com/magda-io/magda/pull/3896) runtime retains 
 
 Merged [#3898](https://github.com/magda-io/magda/pull/3898) adds `magda-workspace-resources` to report configured CPU/memory and **requested** PVC size separately from effective cgroup CPU/memory, current memory use and observed `/data` filesystem capacity. Defaults are 1 CPU, a 2560 MiB memory limit (raised from 1536 MiB for LibreOffice Kit rendering, see [Office documents](#office-documents)), 1 GiB ephemeral storage and a **10 GiB new PVC request**. The memory request stays 384 MiB. An existing PVC does not automatically expand; Minikube hostpath `df /data` may show host capacity, **not** an enforced user quota. Environments survive Pod replacement/suspend, but reset and logout delete them with the PVC. See [operations](../agent-workspace-deployment.md#on-demand-python-environments-and-storage), [runtime-bundled skill naming](./agent-skills.md#runtime-bundled-skill-naming-3896) and [ADR 0009](../adrs/0009-on-demand-python-environments-in-sandboxes.md).
 
-### Pinned DSH source
+### Pinned DSH release
 
-The runtime builds DSH from [magda-io/dsh-fork](https://github.com/magda-io/dsh-fork) rather than installing published DSH packages. Reviewed MAGDA changes land on the fork's `magda` branch and are published as releases: an annotated tag with a GitHub release record. The image pins one of them. The fork's [Releases page](https://github.com/magda-io/dsh-fork/releases) lists the available releases and what each one changes, and its [`MAGDA.md`](https://github.com/magda-io/dsh-fork/blob/magda/MAGDA.md) describes the release process and which releases may be pinned.
+The runtime installs DSH from a release of [magda-io/dsh-fork](https://github.com/magda-io/dsh-fork) rather than published DSH packages. Reviewed MAGDA changes land on the fork's `magda` branch and are published as releases: an annotated tag with a GitHub release record. The image pins one of them. The fork's [Releases page](https://github.com/magda-io/dsh-fork/releases) lists the available releases and what each one changes. Its [`MAGDA.md`](https://github.com/magda-io/dsh-fork/blob/magda/MAGDA.md) describes the release process and which releases may be pinned.
 
-The build fails unless:
-- the clone of that ref resolves to the pinned SHA, and the ref is a tag;
-- the upstream baseline is an ancestor of the pinned commit;
-- the shipped workspace packages match the checkout and its frozen lockfile.
+MAGDA's image doesn't compile DSH. The fork's CI builds each release into two runtime archives, one for amd64 and one for arm64, and attaches them to the release with their `SHA256SUMS`; see [Runtime archives](https://github.com/magda-io/dsh-fork/blob/magda/MAGDA.md#runtime-archives). That build runs from the tag, inside the same `node:<version>-bookworm-slim` image as this runtime, because the archive's native addons must match the image's Node version and glibc. It fails unless:
+- the tag is annotated and points at the built commit;
+- the upstream baseline is an ancestor of that commit;
+- the deploy leaves the frozen lockfile unchanged;
+- DSH's `verify-package-origins` passes on the deployed tree.
 
-`/usr/local/share/magda-agent/dsh-source.json` and the image labels `io.magda.dsh.ref`, `io.magda.dsh.revision` and `io.magda.dsh.upstream-revision` record both commits. Moving a branch later never changes a build. Adopting a new release means updating its tag and commit SHA arguments together in [`magda-agent-runtime/Dockerfile`](../../../magda-agent-runtime/Dockerfile).
+MAGDA's image build fails unless:
+- the downloaded archive matches its pinned SHA-256;
+- its build record names the pinned tag, commit SHA and upstream baseline;
+- it was built for the image's architecture and Node version ([`verify-dsh-runtime.mjs`](../../../magda-agent-runtime/verify-dsh-runtime.mjs)).
+
+The image checks then test the installed tree itself. `/usr/local/share/magda-agent/dsh-source.json` and the image labels `io.magda.dsh.ref`, `io.magda.dsh.revision` and `io.magda.dsh.upstream-revision` record both commits. Moving a branch later never changes a build.
+
+To adopt another release:
+1. Choose a release on the fork's Releases page that meets `MAGDA.md`'s pinning rules.
+2. In [`magda-agent-runtime/Dockerfile`](../../../magda-agent-runtime/Dockerfile), set `DSH_RELEASE_TAG` to its tag and `DSH_RELEASE_SHA` to the tag's full commit SHA. Set `DSH_RUNTIME_SHA256_AMD64` and `DSH_RUNTIME_SHA256_ARM64` from the release's `SHA256SUMS`.
+3. Build the image; its checks must pass on both architectures.
 
 ### Office documents
 
@@ -240,7 +251,7 @@ The agent runs the payload Python and the kit inside the normal `workspace-write
 - **Formats:** legacy `.doc`/`.xls`/`.ppt`, encrypted and corrupt files are reported as unreadable; the shared checker refuses non-OOXML extensions with advice not to rename. openpyxl cannot open ISO **Strict** workbooks; the checker can, and the kit can `convert` them to a Transitional `.xlsx` that openpyxl reads. python-docx has no footnote API; the checker's `--contains` covers footnotes and the agent reads the XML when needed.
 - **Visual inspection:** the managed model entry does not declare image input, so `read_image` refuses rendered previews and the skills report visual QA as unavailable rather than guessing. Rendering, PDF export and recalculation still work.
 
-The kit is MAGDA's own source-built release from [magda-io/dsh-libreoffice-kit](https://github.com/magda-io/dsh-libreoffice-kit/releases), which the pinned DSH release installs instead of the published npm packages. The image build runs DSH's `verify-package-origins` over the locked graph and the pruned runtime tree. An image check then rejects any installed `@deepseek-ai` package that is neither a recorded source-built DSH package nor that kit release. Sources and licences: [`THIRD_PARTY_SOURCES.md`](../../../magda-agent-runtime/THIRD_PARTY_SOURCES.md).
+The kit is MAGDA's own source-built release from [magda-io/dsh-libreoffice-kit](https://github.com/magda-io/dsh-libreoffice-kit/releases), which the pinned DSH release installs instead of the published npm packages. The fork's release build runs DSH's `verify-package-origins` over the locked graph and the pruned runtime tree. An image check then rejects any installed `@deepseek-ai` package that is neither a recorded source-built DSH package nor that kit release. Sources and licences: [`THIRD_PARTY_SOURCES.md`](../../../magda-agent-runtime/THIRD_PARTY_SOURCES.md).
 
 ### Stateless manager, Kubernetes-owned state
 

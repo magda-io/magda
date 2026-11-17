@@ -1,16 +1,21 @@
+# syntax=docker/dockerfile:1.7
 # Build through MAGDA's generated Node component context:
 #   cd magda-agent-runtime && yarn prepare-docker
 #   create-docker-context-for-node-component --build --tag magda-agent-runtime:local
 ARG NODE_VERSION=22.22.0
 ARG DSH_VERSION=0.2.1-alpha.1
-# Source: a MAGDA DSH release from magda-io/dsh-fork's Releases page, an
-# annotated tag on the fork's `magda` branch (see the fork's MAGDA.md). These
-# two arguments are the one place a release is pinned; adopt a new release by
-# updating both together. The commit SHA makes the build fail if the tag is
-# ever moved. The build also proves the upstream baseline is an ancestor.
+# DSH: a MAGDA DSH release from magda-io/dsh-fork's Releases page, an
+# annotated tag on the fork's `magda` branch (see the fork's MAGDA.md). The
+# image doesn't build DSH: it installs the release's runtime archive for its
+# architecture, which the fork's CI builds from the tag. These four arguments
+# are the one place a release is pinned; adopt a new release by updating all
+# four from the release and its SHA256SUMS. The archive must record this tag,
+# commit SHA and upstream baseline (verify-dsh-runtime.mjs).
 ARG DSH_SOURCE_REPO=https://github.com/magda-io/dsh-fork.git
-ARG DSH_RELEASE_TAG=magda/0.2.1-alpha.1/1.0.2
-ARG DSH_RELEASE_SHA=882fb72bf45cd2da225adf445e49e0418f4ed2ef
+ARG DSH_RELEASE_TAG=magda/0.2.1-alpha.1/1.0.3
+ARG DSH_RELEASE_SHA=55b810b7d2ad6c7d0287a6b5f110730b7e9ac4f5
+ARG DSH_RUNTIME_SHA256_AMD64=a5b5d09d5c9113bfedd63382b329c70c7385caaad21b71710678b1d85a5d55ed
+ARG DSH_RUNTIME_SHA256_ARM64=27a4b207a6f9fdc5e9517115ac1de2bb1927f3e84d9448fc0dac198ceb738617
 ARG DSH_UPSTREAM_REF=upstream/0.2.1-alpha.1
 ARG DSH_UPSTREAM_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc
 ARG UV_VERSION=0.13.6
@@ -20,81 +25,33 @@ ARG UV_IMAGE_DIGEST=sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8ed
 # index digest. Only its binaries are copied; the runtime keeps Debian's Python.
 FROM ghcr.io/astral-sh/uv:${UV_VERSION}@${UV_IMAGE_DIGEST} AS uv
 
-# Compile architecture-independent JS/Web assets on the builder's native CPU.
-# Running the full TypeScript/Vite build under ARM QEMU can exhaust shared CI
-# runners. No host node_modules crosses into a target-architecture dependency tree.
-FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-bookworm-slim AS dsh-source-build
-ARG DSH_VERSION
-ARG DSH_SOURCE_REPO
+# Each stage downloads one architecture's archive by exact URL and pinned
+# checksum; only the target architecture's stage runs.
+FROM node:${NODE_VERSION}-bookworm-slim AS dsh-runtime-amd64
 ARG DSH_RELEASE_TAG
-ARG DSH_RELEASE_SHA
-ARG DSH_UPSTREAM_REF
-ARG DSH_UPSTREAM_SHA
-ENV DSH_TELEMETRY_DISABLED=1
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
-  && rm -rf /var/lib/apt/lists/* \
-  && corepack enable \
-  && corepack prepare pnpm@11.7.0 --activate
-WORKDIR /src/dsh
-RUN git clone --depth=1 --branch "${DSH_RELEASE_TAG}" "${DSH_SOURCE_REPO}" . \
-  && test "$(git rev-parse HEAD)" = "${DSH_RELEASE_SHA}" \
-  && test "$(git cat-file -t "refs/tags/${DSH_RELEASE_TAG}")" = tag \
-  && for attempt in 1 2 3 4 5 6 7 8; do \
-       git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD 2>/dev/null && break; \
-       git fetch -q --deepen=32 origin "refs/tags/${DSH_RELEASE_TAG}"; \
-     done \
-  && git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD \
-  && test "$(node -p 'require("./package.json").version')" = "${DSH_VERSION}" \
-  && test "$(node -p 'require("./apps/cli/package.json").version')" = "${DSH_VERSION}"
-RUN pnpm install --frozen-lockfile
-RUN pnpm run build:official \
-  && pnpm exec tsx native/system/scripts/build.ts \
-  && pnpm run verify-runtime-closure
-# Preserve built JS/Web workspace payloads and the exact checkout, excluding
-# every host dependency tree AND generated native-system binary directory. The
-# target reinstalls the lockfile and rebuilds its selected native outputs itself.
-RUN tar --exclude='node_modules' --exclude='./native/system/packages/*/bin' -cf /opt/dsh-built-source.tar .
+ARG DSH_RUNTIME_SHA256_AMD64
+ADD --checksum=sha256:${DSH_RUNTIME_SHA256_AMD64} https://github.com/magda-io/dsh-fork/releases/download/${DSH_RELEASE_TAG}/dsh-runtime-linux-amd64.tar.gz /tmp/dsh-runtime.tar.gz
 
-FROM node:${NODE_VERSION}-bookworm-slim AS dsh-build
-ARG DSH_VERSION
+FROM node:${NODE_VERSION}-bookworm-slim AS dsh-runtime-arm64
+ARG DSH_RELEASE_TAG
+ARG DSH_RUNTIME_SHA256_ARM64
+ADD --checksum=sha256:${DSH_RUNTIME_SHA256_ARM64} https://github.com/magda-io/dsh-fork/releases/download/${DSH_RELEASE_TAG}/dsh-runtime-linux-arm64.tar.gz /tmp/dsh-runtime.tar.gz
+
+FROM dsh-runtime-${TARGETARCH} AS dsh-runtime
+ARG TARGETARCH
 ARG DSH_SOURCE_REPO
 ARG DSH_RELEASE_TAG
 ARG DSH_RELEASE_SHA
 ARG DSH_UPSTREAM_REF
 ARG DSH_UPSTREAM_SHA
-ENV DSH_TELEMETRY_DISABLED=1
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates git build-essential musl-tools python3 \
-  && rm -rf /var/lib/apt/lists/* \
-  && corepack enable \
-  && corepack prepare pnpm@11.7.0 --activate
-WORKDIR /src/dsh
-COPY --from=dsh-source-build /opt/dsh-built-source.tar /opt/dsh-built-source.tar
-RUN tar -xf /opt/dsh-built-source.tar \
-  && rm /opt/dsh-built-source.tar \
-  && test ! -d node_modules \
-  && test "$(git rev-parse HEAD)" = "${DSH_RELEASE_SHA}" \
-  && pnpm install --frozen-lockfile \
-  && pnpm exec tsx native/system/scripts/build.ts
-# The CLI manifest alone does not provide its required runtime peers. Use the
-# upstream executable assembly. Modern offline deploy preserves the committed
-# external graph; pnpm 11 legacy+hoisted deploy silently ignores that lockfile.
-# DSH's package-origin audit then checks the pruned tree: no published
-# @deepseek-ai package other than MAGDA's LibreOffice Kit release tarballs.
-COPY component/prepare-dsh-deploy.mjs component/verify-dsh-lock.mjs component/deploy-dsh.mjs component/prune-dsh-runtime.mjs /opt/
-RUN node /opt/prepare-dsh-deploy.mjs \
-  && pnpm --filter dsh-python-runtime-closure --prod deploy --offline \
-    --config.inject-workspace-packages=true --config.allow-unused-patches=true \
-    --config.node-linker=hoisted /opt/dsh-release \
-  && git diff --exit-code -- pnpm-lock.yaml \
-  && node /opt/verify-dsh-lock.mjs /opt/dsh-release \
+COPY component/verify-dsh-runtime.mjs /opt/verify-dsh-runtime.mjs
+RUN mkdir /opt/dsh-release \
+  && tar -xzf /tmp/dsh-runtime.tar.gz -C /opt/dsh-release \
+  && rm /tmp/dsh-runtime.tar.gz \
   && DSH_SOURCE_REPO="${DSH_SOURCE_REPO}" DSH_RELEASE_TAG="${DSH_RELEASE_TAG}" \
     DSH_RELEASE_SHA="${DSH_RELEASE_SHA}" DSH_UPSTREAM_REF="${DSH_UPSTREAM_REF}" \
-    DSH_UPSTREAM_SHA="${DSH_UPSTREAM_SHA}" node /opt/deploy-dsh.mjs /opt/dsh-release --prune \
-  && pnpm exec tsx scripts/verify-package-origins.ts --lockfile pnpm-lock.yaml --installed /opt/dsh-release \
-  && test -f /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js \
-  && node /opt/dsh-release/node_modules/@deepseek-ai/dsh/lib/bin.js --version
+    DSH_UPSTREAM_SHA="${DSH_UPSTREAM_SHA}" TARGETARCH="${TARGETARCH}" \
+    node /opt/verify-dsh-runtime.mjs /opt/dsh-release
 
 FROM node:${NODE_VERSION}-bookworm-slim
 ARG DSH_VERSION
@@ -140,9 +97,9 @@ RUN set -eu; \
   rm -rf /tmp/office-runtime; \
   chown -R root:root "$payload"; chmod -R a+rX,go-w "$payload"
 # Keep the existing runtime layout expected by MAGDA's managed profile
-# plugins, but source every DSH workspace package from the pinned fork commit.
-COPY --from=dsh-build /opt/dsh-release/node_modules/ /usr/local/lib/magda-agent/dsh/node_modules/
-COPY --from=dsh-build /opt/dsh-release/provenance/ /usr/local/share/magda-agent/
+# plugins; every DSH workspace package comes from the pinned release's archive.
+COPY --from=dsh-runtime /opt/dsh-release/node_modules/ /usr/local/lib/magda-agent/dsh/node_modules/
+COPY --from=dsh-runtime /opt/dsh-release/build-info/ /usr/local/share/magda-agent/
 COPY --chmod=0644 component/THIRD_PARTY_SOURCES.md /usr/local/share/magda-agent/THIRD_PARTY_SOURCES.md
 # Isolate DSH's locked external dependencies from MAGDA's separately built mgd
 # dependency tree. Preserve the existing global CLI path for managed plugins.

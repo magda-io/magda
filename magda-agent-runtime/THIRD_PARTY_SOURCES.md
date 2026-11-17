@@ -5,10 +5,12 @@ LibreOffice-kit/WASM. These components retain their own licenses; MAGDA remains
 licensed under Apache-2.0.
 
 This document records source locations for the versions selected by DSH
-`0.2.1-alpha.1`, built from MAGDA's maintenance release
-[`magda/0.2.1-alpha.1/1.0.2`](https://github.com/magda-io/dsh-fork/releases/tag/magda/0.2.1-alpha.1/1.0.2)
-of [magda-io/dsh-fork](https://github.com/magda-io/dsh-fork). The release page
-lists what it changes from the official upstream source.
+`0.2.1-alpha.1`, installed from the MAGDA maintenance release of
+[magda-io/dsh-fork](https://github.com/magda-io/dsh-fork) that this image pins
+(`DSH_RELEASE_TAG`, recorded in `/usr/local/share/magda-agent/dsh-source.json`).
+That release's page on the fork's
+[Releases page](https://github.com/magda-io/dsh-fork/releases) lists what it
+changes from the official upstream source.
 It is installed at `/usr/local/share/magda-agent/THIRD_PARTY_SOURCES.md`.
 Source is available from the upstream locations below; no separate release-specific
 source manifest is needed to use these references.
