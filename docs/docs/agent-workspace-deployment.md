@@ -646,8 +646,10 @@ cleanup evidence—is in `docs/docs/e2e-test-cases/agent-workspace.md`.
 
 - Agent Runtime is a versioned workspace package. The normal Docker CI publishes
   both amd64 and arm64 manifests and the release retag/push path copies
-  `magda-agent-runtime` alongside other Magda images. DSH remains pinned to the
-  qualified runtime version in the Dockerfile.
+  `magda-agent-runtime` alongside other Magda images. DSH comes from the
+  dsh-fork release pinned in the Dockerfile, as that release's prebuilt runtime
+  archives; see
+  [Pinned DSH release](./architecture/agent-workspace.md#pinned-dsh-release).
 - A same-tag local runtime image does not replace existing warm Sandboxes. Delete
   only the unclaimed warm Sandbox and wait for its replacement before resetting a
   test workspace onto a rebuilt image.

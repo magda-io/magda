@@ -110,7 +110,8 @@ function sourceBytes(name, relative, bytes) {
     return Buffer.from(text.replace(branded, upstream));
 }
 
-// Same traversal and byte framing as deploy-dsh.mjs. package.json is intentionally
+// Same traversal and byte framing as dsh-fork's magda/runtime/deploy-runtime.mjs,
+// which records these digests in the runtime archive. package.json is intentionally
 // excluded upstream because pnpm rewrites workspace ranges during deployment.
 async function artifactDigest(directory, name) {
     const hash = createHash("sha256");
@@ -437,8 +438,8 @@ async function runImageChecks() {
         await check(
             "no published @deepseek-ai package besides MAGDA's Office kit",
             async () => {
-                // The build ran DSH's verify-package-origins over the locked
-                // graph and this tree; this re-checks the shipped tree itself.
+                // The fork's release build ran DSH's verify-package-origins over
+                // the locked graph and this tree; this re-checks the shipped tree.
                 const kit = installed.filter(({ manifest }) =>
                     Object.hasOwn(OFFICE_KIT, manifest.name)
                 );

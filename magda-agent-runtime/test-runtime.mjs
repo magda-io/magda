@@ -66,120 +66,72 @@ assert.match(
 assert.match(
     dockerfile,
     /ARG DSH_SOURCE_REPO=https:\/\/github\.com\/magda-io\/dsh-fork\.git/,
-    "DSH must build from the dedicated source fork"
+    "DSH must come from the dedicated fork"
 );
 // Only the shape of the pin is checked here; its value lives in the Dockerfile.
 assert.match(
     dockerfile,
-    /\nARG DSH_RELEASE_TAG=magda\/[^/\s]+\/\d+\.\d+\.\d+\nARG DSH_RELEASE_SHA=[0-9a-f]{40}\n/,
-    "DSH must be pinned to a MAGDA release tag and its full commit SHA, never a branch"
+    /\nARG DSH_RELEASE_TAG=magda\/[^/\s]+\/\d+\.\d+\.\d+\nARG DSH_RELEASE_SHA=[0-9a-f]{40}\nARG DSH_RUNTIME_SHA256_AMD64=[0-9a-f]{64}\nARG DSH_RUNTIME_SHA256_ARM64=[0-9a-f]{64}\n/,
+    "DSH must be pinned to a MAGDA release tag, its full commit SHA and its runtime archives' checksums, never a branch"
 );
 assert.match(
     dockerfile,
     /RUN DSH_RELEASE_TAG="\$\{DSH_RELEASE_TAG\}" DSH_RELEASE_SHA="\$\{DSH_RELEASE_SHA\}" \\\n\s+DSH_UPSTREAM_REF="\$\{DSH_UPSTREAM_REF\}" DSH_UPSTREAM_SHA="\$\{DSH_UPSTREAM_SHA\}" \\\n\s+DSH_VERSION="\$\{DSH_VERSION\}" node \/usr\/local\/lib\/magda-agent\/qualification\/test-image\.mjs/,
-    "The image checks must compare provenance with the pinned release arguments"
+    "The image checks must compare the recorded release with the pinned release arguments"
 );
 assert.match(
     dockerfile,
     /ARG DSH_UPSTREAM_REF=upstream\/0\.2\.1-alpha\.1\nARG DSH_UPSTREAM_SHA=5badb15009ae1756c3afe0ae0cef1faafc290ccc/,
     "The official upstream baseline must stay recorded separately"
 );
-for (const check of [
-    'test "$(git cat-file -t "refs/tags/${DSH_RELEASE_TAG}")" = tag',
-    'git fetch -q --deepen=32 origin "refs/tags/${DSH_RELEASE_TAG}"',
-    'git merge-base --is-ancestor "${DSH_UPSTREAM_SHA}" HEAD \\',
-    'io.magda.dsh.upstream-revision="${DSH_UPSTREAM_SHA}"'
-]) {
-    assert.ok(
-        dockerfile.includes(check),
-        `The source build must verify and record its upstream baseline: ${check}`
+// The fork's release workflow builds DSH; the image installs its archive for
+// the target architecture, verified by the pinned checksum.
+for (const arch of ["amd64", "arm64"]) {
+    assert.match(
+        dockerfile,
+        new RegExp(
+            `FROM node:\\$\\{NODE_VERSION\\}-bookworm-slim AS dsh-runtime-${arch}\\n` +
+                `ARG DSH_RELEASE_TAG\\nARG DSH_RUNTIME_SHA256_${arch.toUpperCase()}\\n` +
+                `ADD --checksum=sha256:\\$\\{DSH_RUNTIME_SHA256_${arch.toUpperCase()}\\} ` +
+                `https://github\\.com/magda-io/dsh-fork/releases/download/\\$\\{DSH_RELEASE_TAG\\}/dsh-runtime-linux-${arch}\\.tar\\.gz /tmp/dsh-runtime\\.tar\\.gz`
+        ),
+        `The ${arch} runtime archive must be downloaded by exact URL and checksum`
     );
 }
-assert.doesNotMatch(
+assert.match(
     dockerfile,
-    /DSH_SOURCE_BRANCH/,
-    "The source is a tag ref; the old branch-named argument must not remain"
+    /\nFROM dsh-runtime-\$\{TARGETARCH\} AS dsh-runtime\n/,
+    "Install only the target architecture's archive"
 );
 assert.match(
     dockerfile,
-    /git rev-parse HEAD/,
-    "The checkout must verify the exact commit SHA before building"
+    /node \/opt\/verify-dsh-runtime\.mjs \/opt\/dsh-release/,
+    "The archive must name the pinned release and match this image's Node and architecture"
 );
 assert.match(
     dockerfile,
-    /pnpm install --frozen-lockfile/,
-    "The pinned source build must use the committed dependency lockfile"
+    /COPY --from=dsh-runtime \/opt\/dsh-release\/node_modules\/ \/usr\/local\/lib\/magda-agent\/dsh\/node_modules\//,
+    "Only the archive's production tree should enter the runtime image"
 );
 assert.match(
     dockerfile,
-    /FROM --platform=\$BUILDPLATFORM node:\$\{NODE_VERSION\}-bookworm-slim AS dsh-source-build/,
-    "Compile JS/Web on the native build CPU, not through target emulation"
+    /COPY --from=dsh-runtime \/opt\/dsh-release\/build-info\/ \/usr\/local\/share\/magda-agent\//,
+    "The archive's build records stay where the image checks read them"
 );
-assert.match(
-    dockerfile,
-    /tar --exclude='node_modules' --exclude='\.\/native\/system\/packages\/\*\/bin' -cf \/opt\/dsh-built-source\.tar/,
-    "Never copy host dependency trees into target native modules"
-);
-assert.match(
-    dockerfile,
-    /COPY --from=dsh-source-build \/opt\/dsh-built-source\.tar/,
-    "Transfer only built source payloads into the target stage"
-);
-assert.match(
-    dockerfile,
-    /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune/,
-    "Ship the CLI's required peer closure, not optional-only server branches"
-);
-assert.match(
-    dockerfile,
-    /--prod deploy --offline/,
-    "The source build must deploy its workspace dependency closure"
-);
-assert.match(
-    dockerfile,
-    /COPY --from=dsh-build \/opt\/dsh-release\/node_modules\//,
-    "Only built DSH production artifacts should enter the runtime image"
-);
-assert.match(
-    dockerfile,
-    /--filter dsh-python-runtime-closure/,
-    "Deploy the peer-complete upstream runtime assembly, not the CLI alone"
-);
-assert.match(
-    dockerfile,
-    /pnpm run verify-runtime-closure/,
-    "Check preset plugins and required workspace peers before packaging"
-);
-assert.match(
-    dockerfile,
-    /node \/opt\/deploy-dsh\.mjs \/opt\/dsh-release --prune \\\n\s+&& pnpm exec tsx scripts\/verify-package-origins\.ts --lockfile pnpm-lock\.yaml --installed \/opt\/dsh-release/,
-    "Audit the pruned runtime tree: no published @deepseek-ai package except MAGDA's Office kit release"
-);
-assert.doesNotMatch(
-    dockerfile,
-    /deploy --legacy/,
-    "pnpm 11 legacy hoisted deploy ignores the source lockfile"
-);
-assert.match(
-    dockerfile,
-    /--config.inject-workspace-packages=true/,
-    "Use lockfile-preserving modern deploy"
-);
-assert.match(
-    dockerfile,
-    /node \/opt\/verify-dsh-lock.mjs/,
-    "Reject external resolution drift and registry workspace substitutions"
-);
-assert.match(
-    dockerfile,
-    /pnpm exec tsx native\/system\/scripts\/build.ts/,
-    "Build the native launcher, not only the host addon"
-);
-assert.match(
-    dockerfile,
-    /node \/opt\/deploy-dsh.mjs/,
-    "Validate deployed artifacts against pinned source"
-);
+for (const step of [
+    /git clone/,
+    /pnpm install/,
+    /pnpm --filter/,
+    /deploy-dsh\.mjs/,
+    /AS dsh-source-build/,
+    /AS dsh-build\b/
+]) {
+    assert.doesNotMatch(
+        dockerfile,
+        step,
+        `The image must not build DSH itself: ${step}`
+    );
+}
 assert.doesNotMatch(
     dockerfile,
     /npm install -g[^\n]*@deepseek-ai\/dsh/,
@@ -556,7 +508,7 @@ assert.match(packageJson.scripts.check, /bash -n entrypoint\.sh/);
 assert.equal(packageJson.scripts.build, "yarn run check");
 assert.match(
     packageJson.scripts.test,
-    /yarn run check && node --test test-deploy-dsh\.mjs test-dsh-lock\.mjs test-prune-dsh-runtime\.mjs && node test-image\.mjs --self-test && node test-runtime\.mjs/
+    /yarn run check && node --test test-verify-dsh-runtime\.mjs && node test-image\.mjs --self-test && node test-runtime\.mjs/
 );
 assert.match(packageJson.scripts["prepare-docker"], /packages\/mgd build/);
 assert.match(
