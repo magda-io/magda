@@ -282,16 +282,21 @@ approval.
 
 ## Office document checks
 
+These steps check MAGDA's integration: the runtime image, its Python payload,
+the managed profile and DSH Web previews. The Office skills' and LibreOffice
+Kit's own behaviour is tested by the image's `test_office_skills.py`, and in
+[magda-io/dsh-fork](https://github.com/magda-io/dsh-fork) and
+[magda-io/dsh-libreoffice-kit](https://github.com/magda-io/dsh-libreoffice-kit).
+
 Use a **fresh** claimed Workspace (Start New Workspace → Permanently Reset, or a
 new user) with no published, synchronized or project skills and no manual
 package installation. Use the known-content fixtures in
 [`magda-agent-runtime/office-fixtures/`](../../../magda-agent-runtime/office-fixtures/)
-(facts defined in `generate_fixtures.py`, asserted in the image by
-`test_office_skills.py`). Rename copies before upload, for example
-`coastal-report.docx`, `field-briefing.pptx` and `programme-budget.xlsx`, so
-that answers cannot come from file names. Inspect each turn with
-`magda-session-history events --session <id> --turn <n>` in the claimed Pod,
-and watch `/sys/fs/cgroup/memory.peak` and `memory.events`.
+(facts defined in `generate_fixtures.py`). Rename copies before upload, for
+example `coastal-report.docx`, `field-briefing.pptx` and
+`programme-budget.xlsx`, so that answers cannot come from file names. Inspect
+each turn with `magda-session-history events --session <id> --turn <n>` in the
+claimed Pod.
 
 1. **Reading.** In a new session attach the three files and ask, without
    mentioning skills or tools:
@@ -306,57 +311,31 @@ and watch `/sys/fs/cgroup/memory.peak` and `memory.events`.
     > amount on the Detail sheet?
 
     Expected: 35.2 PSU at BW-7 on 14 March 2026; Dr Amara Okafor; replicates
-    7.81 / 7.79 from the nested table; footnote "Calibrated against the CSIRO
-    reference probe in February 2026."; Pilbara AUD 1,250,000 (slide 3); notes
-    "budget approval is due 30 June" (slide 2); hidden slide 5 "Contingency";
-    `Summary!B6 =SUM(B3:B5)` = 785000.5 and `Detail!C4` 235500.15 as cached
-    values. History shows `skill` calls for `office-docx`, `office-pptx` and
-    `office-xlsx`, a `load_workspace_dependencies` call, and Bash using
-    `/usr/local/lib/magda-agent/primary-runtime/dependencies/python/bin/python3`
-    on the `$DSH_HOME/attachments/v1/files/…` paths, with no approval prompt or
-    package installation.
-2. **Generation, rendering and delivery.** Ask for a two-slide deck from the
-   workbook with a column chart of the Summary items and the total in a
-   caption, and to check how the slides look. Expected: python-pptx generation,
-   `check_office.py`, a kit `render` using the skill's absolute `node`/`cli`
-   paths, and `present` of the final `.pptx` as a deliverable. With the current
-   text-only model entry, `read_image` refuses the previews and the agent says
-   visual inspection was unavailable.
-3. **Recalculation.** Attach `uncalculated.xlsx` (renamed) and ask what `A3`
-   shows. Expected: the agent reports there is no cached result, runs the kit's
-   `recalculate` into a new file, and answers 6 (`=A1*A2`).
-4. **Unsupported inputs.** Attach `legacy.doc`, `encrypted.xlsx`,
-   `truncated.docx` and `misnamed-spreadsheet.docx` (renamed). Expected: no
-   invented contents for the first three, advice to re-export, and the misnamed
-   file identified as an XLSX workbook by content.
-5. **Reserved names.** `mgd agent-skill validate` on a draft named `office-docx`
-   is rejected as reserved for a runtime-bundled Agent Skill.
-6. **Concurrent previews and agent kit commands.** Put several distinct DOCX and
-   PPTX files in the working tree and open them one after another from
-   **Workspace files** in two browser tabs. Meanwhile, ask the agent to render
-   two of them, export one to PDF and recalculate a workbook. Sample
-   `memory.current`, `anon` in `memory.stat` and `oom_kill` in `memory.events`
-   every 100 ms. Expected: DSH Web previews never overlap each other; agent kit
-   commands never overlap each other, even when issued as parallel tool calls
-   (a queued one reports `magda: waiting for another LibreOffice Kit command`);
-   every requested output is produced; no OOM kill.
+    7.81 / 7.79; the CSIRO calibration footnote; Pilbara AUD 1,250,000; "budget
+    approval is due 30 June"; hidden slide 5 "Contingency"; `=SUM(B3:B5)` =
+    785,000.50 and Q3 235,500.15. The history shows the Office skills and
+    MAGDA's payload Python, with no approval prompt or package installation.
 
-**Observed (2026-11-13, Minikube runc, arm64, demo LLM route):** steps 1–5
-passed (1–4 in a fresh Workspace), with answers and tool paths as expected and no
-approvals. In step 2 the kit reported `missingFonts` `Arial` and `Aptos`, which
-it substituted; the rendered slide was correct on manual inspection. The
-cgroup memory peak across the four turns was 1.41 GiB of the then 1.5 GiB limit (including
-page cache), with no OOM kill. Step 6 (2026-11-13, 2560 MiB limit, Web
-conversions limited to one): previews were serialised, and one preview plus one
-kit command at a time peaked at 2.31 GiB with no OOM kill. Before the agent kit
-lock, four kit commands started as parallel tool calls next to a warmed DSH Web
-(about 0.75 GiB) OOM-killed the container at about 2.4 GiB, and DSH Web
-restarted. With the lock, the same prompt's parallel tool calls queued, the peak
-was 2.27 GiB with no OOM kill, and all 11 images rendered. One queued PDF
-conversion hit the kit's 1-CPU conversion timeout and was retried by the agent
-with `--timeout-ms`. **Not yet tested:** amd64 images and emulated
-cross-architecture builds, gVisor, files saved by Microsoft Office itself,
-CJK text, image-capable models, and other models.
+2. **Generation and delivery.** Ask for a two-slide deck from the workbook.
+   Expected: the agent creates and checks the `.pptx` and presents it as a
+   deliverable card.
+3. **DSH Web previews.** Open each uploaded file and the deliverable in the
+   sidebar. Expected: DOCX and PPTX show as PDF pages (hidden slides left out);
+   XLSX opens in the grid viewer with its "contains formulas" note; missing
+   fonts are reported, not fatal.
+4. **Unsupported inputs.** Attach `encrypted.xlsx`, `truncated.docx` and
+   `misnamed-spreadsheet.docx` (renamed). Expected: no invented contents, advice
+   to re-save or re-export, and the misnamed file identified as an XLSX workbook
+   by content. Their previews show a read-failed message with Retry.
+5. **Reserved names.** `mgd agent-skill validate` on a draft named
+   `office-docx` is rejected as reserved for a runtime-bundled Agent Skill.
+6. **Concurrent previews and agent kit commands.** Open several distinct DOCX
+   and PPTX previews in two browser tabs while the agent renders two files,
+   exports one to PDF and recalculates a workbook. Watch `memory.peak` and
+   `oom_kill` in `/sys/fs/cgroup/memory.events` in the Pod. Expected: previews
+   queue one at a time, agent kit commands queue one at a time (a queued one
+   reports `magda: waiting for another LibreOffice Kit command`), every output
+   is produced, and there's no OOM kill under the default 2560 MiB limit.
 
 ## Lifecycle and security checks
 

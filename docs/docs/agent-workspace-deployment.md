@@ -164,6 +164,31 @@ command can still run together, which the 2560Mi default accommodates. See the
 [architecture reference](./architecture/agent-workspace.md#office-documents)
 for formats and limits.
 
+### Updating the runtime image and rolling back
+
+The runtime image (`agent-services.runtime.image`, normally the Magda release's
+`magda-agent-runtime` tag) sets the SandboxTemplate image. Each image pins one
+DSH release; to change it, see
+[Pinned DSH release](./architecture/agent-workspace.md#pinned-dsh-release).
+
+A new image reaches users gradually:
+
+- Each Sandbox keeps the image it was created with, including across suspend and
+  resume. Existing Workspaces, running or suspended, stay on their image.
+- Unclaimed warm Sandboxes also keep their image. After the upgrade, delete them
+  so that the warm pool recreates them from the new template.
+- A user moves to the new image when they next get a new Workspace: after
+  Permanently Reset, terminate or logout. These delete the Workspace's files and
+  sessions, so users should publish durable results first.
+
+Rolling back is the same in reverse: deploy the previous image, then recycle the
+unclaimed warm Sandboxes. Workspaces already created from the newer image keep
+it until they're reset. Images pinning releases on the same upstream DSH version
+(the first part of the release tag, for example `0.2.1-alpha.1`) share the same
+session format, so a Workspace's history works with either. A release on a
+different upstream version may not; its release notes say whether Workspaces
+must be reset.
+
 ### Mandatory migration from the split charts
 
 Upgrading from the earlier `agent-manager` + `agent-runtime` charts to
