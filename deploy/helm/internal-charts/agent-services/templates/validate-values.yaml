@@ -41,6 +41,14 @@
 {{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %q" $reasoningEffort) -}}
 {{- end -}}
 
+{{- $imageInput := get $globalModel "imageInput" -}}
+{{- if and (hasKey .Values.llm "imageInput") (ne (kindOf .Values.llm.imageInput) "invalid") -}}
+{{- $imageInput = .Values.llm.imageInput -}}
+{{- end -}}
+{{- if not (has (kindOf $imageInput) (list "bool" "invalid")) -}}
+{{- fail (printf "agent-services: llm.imageInput or global.defaultAgentModel.imageInput must be true or false; got %v (%s)" $imageInput (kindOf $imageInput)) -}}
+{{- end -}}
+
 {{- $contextWindow := get $globalModel "contextWindow" -}}
 {{- if and (hasKey .Values.llm "contextWindow") (ne (kindOf .Values.llm.contextWindow) "invalid") -}}
 {{- $contextWindow = .Values.llm.contextWindow -}}

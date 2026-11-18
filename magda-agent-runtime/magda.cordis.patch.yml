@@ -25,6 +25,10 @@
             name: Magda Agent Default
             contextWindow: !!js Number(process.env.MAGDA_LLM_CONTEXT_WINDOW || 1050000)
             maxTokens: !!js Number(process.env.MAGDA_LLM_MAX_TOKENS || 128000)
+            # Text only unless the deployment declares a vision-capable model
+            # (global.defaultAgentModel.imageInput); DSH then attaches images.
+            # Quoted: unquoted, YAML reads the expression's ': ' as a mapping.
+            input: !!js "process.env.MAGDA_LLM_IMAGE_INPUT === 'true' ? ['text', 'image'] : ['text']"
             reasoningEfforts:
               off:
               low: low

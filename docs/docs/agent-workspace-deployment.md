@@ -28,6 +28,8 @@ global:
     reasoningEffort: medium
     contextWindow: 1050000
     maxTokens: 128000
+    # true only for a vision-capable model; text-only models fail on images.
+    imageInput: false
 
 agent-services:
   warmPool:
@@ -43,6 +45,7 @@ agent-services:
     model: ""
     contextWindow: null
     maxTokens: null
+    imageInput: null
   runtime:
     storage:
       size: 10Gi
@@ -234,6 +237,14 @@ default. This is distinct from the explicit `off` effort. When selecting another
 model, update `providerModel`, `reasoningEffort`, `contextWindow`, and `maxTokens`
 to its capabilities. See the
 [GPT-6.1 Sol model specification](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
+
+`global.defaultAgentModel.imageInput` declares whether the model accepts
+images. It is `false` by default, so the agent sends text only and a text-only
+`providerModel` needs no other change. With `true`, the agent can attach images,
+including its own renders of the Office files it creates, and check their
+layout. Set it only for a vision-capable model such as the default GPT-6.1 Sol: a
+text-only model rejects a request with an image and the turn fails. The setting
+reaches new Workspaces; reset existing ones to pick it up.
 
 Model settings are written into a workspace during provisioning. Existing
 PVC-backed workspaces are intentionally not rebootstraped during a Helm upgrade;
