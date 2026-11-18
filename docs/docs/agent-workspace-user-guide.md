@@ -27,7 +27,7 @@ Attach a `.docx`, `.pptx` or `.xlsx` file with the composer's **+** button and a
 - **Not supported:** password-protected and damaged files. The agent tells you what it found instead of guessing their contents. Save them again without a password, or re-export them, and upload again; renaming a file doesn't convert it. Macros are never run.
 - **Layout checks:** the agent can render pages and slides but may not be able to look at the images, depending on the model your deployment uses. It tells you when it couldn't visually check a layout.
 
-Uploaded files stay in your own Workspace and are read-only to the agent. Text inside a document is treated as content, not as instructions.
+Each attached file can be up to 16 MiB, unless your deployment sets another limit; a larger file fails to upload. Uploaded files stay in your own Workspace and are read-only to the agent. Text inside a document is treated as content, not as instructions.
 
 ## Capture and publish reusable expertise
 

@@ -306,6 +306,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     let claimLookups: string[];
     let upstreamUpgrades: number;
     let upgradedSockets: Socket[];
+    let upstreamBodyBytes: number[];
 
     beforeEach(async () => {
         auth = new FakeAuthorizationApi();
@@ -313,14 +314,20 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         claimLookups = [];
         upstreamUpgrades = 0;
         upgradedSockets = [];
+        upstreamBodyBytes = [];
         upstream = http.createServer((req, res) => {
             if (req.url?.startsWith("/?token=")) {
                 res.writeHead(303, { "set-cookie": "dsh=managed; Path=/" });
                 res.end();
                 return;
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ path: req.url }));
+            let bytes = 0;
+            req.on("data", (chunk: Buffer) => (bytes += chunk.length));
+            req.on("end", () => {
+                upstreamBodyBytes.push(bytes);
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ path: req.url }));
+            });
         });
         upstream.on("upgrade", (_req, socket: Socket) => {
             upstreamUpgrades += 1;
@@ -392,6 +399,82 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                         );
                     }
                 ).on("error", reject);
+            }
+        );
+    }
+
+    /**
+     * POST `chunks` of `chunkBytes` each, one write at a time, so the proxy
+     * can answer while the client is still sending. A proxy that closes the
+     * connection mid-upload is reported as `error`: behind the gateway that
+     * close is an EPIPE, which the gateway turns into a 500.
+     */
+    function postInChunks(
+        path: string,
+        session: string,
+        chunks: number,
+        chunkBytes: number,
+        { chunked = false } = {}
+    ) {
+        return new Promise<{ status?: number; body?: string; error?: string }>(
+            (resolve) => {
+                const req = http.request({
+                    host: "127.0.0.1",
+                    port: proxyPort,
+                    method: "POST",
+                    path,
+                    headers: {
+                        "X-Magda-Session": session,
+                        // As the gateway's http-proxy sends upstream.
+                        connection: "close",
+                        "content-type": "application/octet-stream",
+                        ...(chunked
+                            ? { "transfer-encoding": "chunked" }
+                            : { "content-length": String(chunks * chunkBytes) })
+                    }
+                });
+                let response: { status: number; body: string } | undefined;
+                let written = 0;
+                let sent = false;
+                let settled = false;
+                const settle = (result?: { error: string }) => {
+                    if (settled) return;
+                    if (!result && !(response && sent)) return;
+                    settled = true;
+                    resolve(result || response!);
+                };
+                req.on("response", (res) => {
+                    let body = "";
+                    res.on("data", (chunk) => (body += chunk));
+                    res.on("end", () => {
+                        response = { status: res.statusCode || 0, body };
+                        settle();
+                    });
+                });
+                req.on("error", (error: NodeJS.ErrnoException) =>
+                    settle({ error: error.code || error.message })
+                );
+                req.on("close", () => {
+                    if (!sent) {
+                        settle({
+                            error: `closed after ${written} of ${chunks} chunks`
+                        });
+                    }
+                });
+                const writeNext = () => {
+                    if (written === chunks) {
+                        req.end(() => {
+                            sent = true;
+                            settle();
+                        });
+                        return;
+                    }
+                    written += 1;
+                    req.write(Buffer.alloc(chunkBytes, 1), (error) => {
+                        if (!error) setImmediate(writeNext);
+                    });
+                };
+                writeNext();
             }
         );
     }
@@ -468,6 +551,39 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         expect(claimLookups).to.deep.equal([bob, bob]);
         expect(upstreamUpgrades).to.equal(1);
     });
+
+    it("forwards a runtime request body within the size limit", async () => {
+        auth.granted.add(bob);
+        const response = await postInChunks(
+            "/v0/runtime/api/session/uploadFileBinary?name=small.bin",
+            token(bob),
+            4,
+            256
+        );
+        expect(response.status).to.equal(200);
+        expect(upstreamBodyBytes).to.deep.equal([1024]);
+    });
+
+    for (const chunked of [false, true]) {
+        it(`answers 413 to an oversized ${
+            chunked ? "chunked" : "Content-Length"
+        } upload without resetting the connection`, async () => {
+            auth.granted.add(bob);
+            const response = await postInChunks(
+                "/v0/runtime/api/session/uploadFileBinary?name=big.bin",
+                token(bob),
+                256,
+                16 * 1024,
+                { chunked }
+            );
+            expect(response.error).to.equal(undefined);
+            expect(response.status).to.equal(413);
+            expect(JSON.parse(response.body!).message).to.equal(
+                "Agent runtime request body is too large"
+            );
+            expect(upstreamBodyBytes).to.deep.equal([]);
+        });
+    }
 
     it("closes an open WebSocket after revocation but survives a policy outage", async () => {
         auth.granted.add(bob);

@@ -303,21 +303,41 @@ export class RuntimeProxy {
         return write;
     }
 
-    private async readBody(req: IncomingMessage): Promise<Buffer> {
-        const chunks: Buffer[] = [];
-        let size = 0;
-        for await (const chunk of req) {
-            const value = Buffer.from(chunk);
-            size += value.length;
-            if (size > this.config.runtimeMaxBodyBytes) {
-                throw new AgentAuthorizationError(
-                    "Agent runtime request body is too large",
-                    413
+    /**
+     * Buffer the request body up to `runtimeMaxBodyBytes`. An oversized body
+     * is read to the end and discarded before the 413 is sent. The gateway
+     * proxies with `Connection: close`, so Node closes the connection as soon
+     * as a response is sent; answering mid-upload makes the gateway's write
+     * fail (EPIPE) and the client gets a 500 instead of the 413. The ingress
+     * body-size limit bounds how much is discarded.
+     */
+    private readBody(req: IncomingMessage): Promise<Buffer> {
+        const limit = this.config.runtimeMaxBodyBytes;
+        return new Promise((resolve, reject) => {
+            const chunks: Buffer[] = [];
+            let size = 0;
+            let tooLarge = Number(req.headers["content-length"]) > limit;
+            req.on("data", (chunk: Buffer) => {
+                if (tooLarge) return;
+                size += chunk.length;
+                if (size > limit) {
+                    tooLarge = true;
+                    chunks.length = 0;
+                    return;
+                }
+                chunks.push(chunk);
+            });
+            req.on("end", () => {
+                if (!tooLarge) return resolve(Buffer.concat(chunks));
+                reject(
+                    new AgentAuthorizationError(
+                        "Agent runtime request body is too large",
+                        413
+                    )
                 );
-            }
-            chunks.push(value);
-        }
-        return Buffer.concat(chunks);
+            });
+            req.on("error", reject);
+        });
     }
 
     private observeSessionList(
