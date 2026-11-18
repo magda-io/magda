@@ -118,6 +118,8 @@ spec:
             - name: DSH_TRUSTED_HOSTS
               value: {{ (urlParse (include "agent-services.externalUrl" .)).host | quote }}
             - {name: DSH_BROWSER_AUTH, value: "true"}
+            # Declares image input for the managed model (magda.cordis.patch.yml).
+            - {name: MAGDA_LLM_IMAGE_INPUT, value: {{ include "agent-services.imageInput" . | quote }}}
             - name: MAGDA_LLM_BASE_URL
               value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}
             # Human-readable configured limits for agent guidance. CPU and memory

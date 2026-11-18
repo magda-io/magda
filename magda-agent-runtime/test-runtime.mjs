@@ -620,6 +620,11 @@ assert.match(
 );
 assert.match(
     cordisPatch,
+    /input: !!js "process\.env\.MAGDA_LLM_IMAGE_INPUT === 'true' \? \['text', 'image'\] : \['text'\]"/,
+    "The model accepts images only when the deployment declares image input"
+);
+assert.match(
+    cordisPatch,
     /reasoningEffort: !!js process\.env\.MAGDA_LLM_REASONING_EFFORT \|\| undefined/,
     "Reasoning effort must remain optional with no runtime default"
 );

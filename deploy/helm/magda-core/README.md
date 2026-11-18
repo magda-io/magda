@@ -117,6 +117,7 @@ doc for how the CA is delivered to each workload.
 | global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
 | global.defaultAgentModel.alias | string | `"magda-agent-default"` | Stable model alias exposed by MAGDA LLM Services and managed DSH. |
 | global.defaultAgentModel.contextWindow | int | `1050000` | Model context-window capability. |
+| global.defaultAgentModel.imageInput | bool | `false` | Whether the model accepts image input. When true, the agent can look at images, including its own renders of the Office files it creates, to check their layout. Set it to true only for a vision-capable model, such as the default `openai/gpt-6.1-sol`: a text-only model given an image rejects the request, and the turn fails. Off by default, so changing `providerModel` to a text-only model needs no other change. New Workspaces pick up a change; existing ones keep their setting until reset. |
 | global.defaultAgentModel.maxTokens | int | `128000` | Model maximum output tokens, including reasoning tokens. |
 | global.defaultAgentModel.providerModel | string | `"openai/gpt-6.1-sol"` | LiteLLM provider model routed behind the stable MAGDA alias. |
 | global.defaultAgentModel.reasoningEffort | string | `"medium"` | Provider reasoning effort. Supported values: off, low, medium, high, xhigh, and max. Set to an empty string to omit the setting and let the provider choose its model default. |

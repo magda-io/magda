@@ -76,6 +76,7 @@ for expected in \
     'model: "openai/gpt-6.1-sol"' \
     'name: MAGDA_LLM_CONTEXT_WINDOW, value: "1050000"' \
     'name: MAGDA_LLM_MAX_TOKENS, value: "128000"' \
+    'name: MAGDA_LLM_IMAGE_INPUT, value: "false"' \
     'name: MAGDA_LLM_REASONING_EFFORT, value: "medium"' \
     'reasoning_effort: "medium"' \
     'api_key: "os.environ/LITELLM_PROVIDER_API_KEY"' \
@@ -127,6 +128,20 @@ render "$tmp/capabilities.yaml" magda test \
     --set global.defaultAgentModel.maxTokens=50000
 grep -q 'name: MAGDA_LLM_CONTEXT_WINDOW, value: "200000"' "$tmp/capabilities.yaml"
 grep -q 'name: MAGDA_LLM_MAX_TOKENS, value: "50000"' "$tmp/capabilities.yaml"
+
+# Image input is off unless the deployment declares a vision-capable model; the
+# chart-specific override wins over the global value.
+render "$tmp/image-input.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set global.defaultAgentModel.imageInput=true
+grep -q 'name: MAGDA_LLM_IMAGE_INPUT, value: "true"' "$tmp/image-input.yaml"
+render "$tmp/image-input-override.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set global.defaultAgentModel.imageInput=true \
+    --set agent-services.llm.imageInput=false
+grep -q 'name: MAGDA_LLM_IMAGE_INPUT, value: "false"' "$tmp/image-input-override.yaml"
 
 render "$tmp/chart-overrides.yaml" magda test \
     --set global.agentWorkspace.enabled=true \
@@ -392,6 +407,13 @@ expect_failure 'must not exceed contextWindow' \
         --set global.llmServices.enabled=true \
         --set global.defaultAgentModel.contextWindow=100 \
         --set global.defaultAgentModel.maxTokens=101
+for invalid_image_input in '"true"' '1' '[]'; do
+    expect_failure 'imageInput must be true or false' \
+        helm template magda "$chart" --namespace test \
+            --set global.agentWorkspace.enabled=true \
+            --set global.llmServices.enabled=true \
+            --set-json "global.defaultAgentModel.imageInput=$invalid_image_input"
+done
 for invalid_reasoning_type in '1' 'true' '[]' '{}'; do
     expect_failure 'reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max' \
         helm template magda "$chart" --namespace test \

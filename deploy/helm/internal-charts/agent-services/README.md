@@ -25,6 +25,7 @@ Kubernetes: `>= 1.24.0-0`
 | kasValidation.image.repository | string | `"alpine/k8s"` |  |
 | kasValidation.image.tag | string | `"1.31.5"` |  |
 | llm.contextWindow | string | `nil` | Model context-window override. |
+| llm.imageInput | string | `nil` | Model image-input override (`true` or `false`). See `global.defaultAgentModel.imageInput`. |
 | llm.maxTokens | string | `nil` | Model maximum-output-token override. |
 | llm.model | string | `""` | Stable public model alias override. |
 | llmApiUrl | string | `""` |  |
