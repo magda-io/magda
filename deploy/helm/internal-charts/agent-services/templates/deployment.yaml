@@ -83,6 +83,7 @@ spec:
             - {name: IDLE_SUSPEND_SECONDS, value: {{ .Values.idleSuspendSeconds | quote }}}
             - {name: RECONCILE_INTERVAL_SECONDS, value: {{ .Values.reconcileIntervalSeconds | quote }}}
             - {name: RUNTIME_MAX_BODY_BYTES, value: {{ .Values.runtimeMaxBodyBytes | int64 | quote }}}
+            - {name: RUNTIME_MAX_UPLOAD_BYTES, value: {{ dig "agentWorkspace" "maxUploadBytes" 1073741824 .Values.global | int64 | quote }}}
             - {name: MAGDA_LLM_MODEL, value: {{ required "agent-services: llm.model or global.defaultAgentModel.alias is required" $model | quote }}}
             - {name: MAGDA_LLM_CONTEXT_WINDOW, value: {{ printf "%.0f" (float64 (required "agent-services: llm.contextWindow or global.defaultAgentModel.contextWindow is required" $contextWindow)) | quote }}}
             - {name: MAGDA_LLM_MAX_TOKENS, value: {{ printf "%.0f" (float64 (required "agent-services: llm.maxTokens or global.defaultAgentModel.maxTokens is required" $maxTokens)) | quote }}}

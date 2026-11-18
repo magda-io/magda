@@ -4,7 +4,10 @@ import buildApp from "./buildApp.js";
 import { ManagedApiKeyClient } from "./apiKeys.js";
 import { AgentKubernetesClient } from "./kubernetes.js";
 import { AgentManager } from "./manager.js";
-import { RuntimeProxy } from "./runtimeProxy.js";
+import {
+    DEFAULT_RUNTIME_MAX_UPLOAD_BYTES,
+    RuntimeProxy
+} from "./runtimeProxy.js";
 import { ManagerConfig, resolveLlmModel } from "./types.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
@@ -101,6 +104,9 @@ const config: ManagerConfig = {
     ),
     runtimeMaxBodyBytes: Number(
         process.env.RUNTIME_MAX_BODY_BYTES || 16 * 1024 * 1024
+    ),
+    runtimeMaxUploadBytes: Number(
+        process.env.RUNTIME_MAX_UPLOAD_BYTES || DEFAULT_RUNTIME_MAX_UPLOAD_BYTES
     ),
     runtimeAuthRecheckSeconds: Math.max(
         5,

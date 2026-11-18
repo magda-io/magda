@@ -50,6 +50,12 @@ the metadata conversation first):
 mgd dataset add-file ds-abc ./analysis/summary.parquet --title "2026 summary" --json
 ```
 
+`add-file` reads the file from disk and uploads it in parts, so a large file
+(for example a 1 GB attachment) can be uploaded as it is: pass its path, and
+don't copy it or load it into memory first. To inspect or summarise a large
+file, read it in chunks or with a streaming tool (pandas `chunksize`, DuckDB)
+rather than loading it whole, which can exceed the Workspace memory limit.
+
 Remove a distribution (unlinks it, bumps the dataset version, deletes the
 record and its stored files; `--keep-files` keeps the objects):
 

@@ -92,6 +92,8 @@ export interface ManagerConfig {
     idleSuspendSeconds: number;
     reconcileIntervalSeconds: number;
     runtimeMaxBodyBytes: number;
+    // Largest DSH attachment upload, streamed rather than buffered.
+    runtimeMaxUploadBytes?: number;
     // How often open DSH WebSockets re-check `agentWorkspace/access`.
     runtimeAuthRecheckSeconds?: number;
     // How long a Retry request waits for its sync before answering 202.

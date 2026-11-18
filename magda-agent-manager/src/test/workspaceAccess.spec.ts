@@ -307,6 +307,15 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     let upstreamUpgrades: number;
     let upgradedSockets: Socket[];
     let upstreamBodyBytes: number[];
+    // The fake DSH's session cookie and upload route.
+    let issuedCookie: string;
+    let validCookie: string;
+    let tokenExchanges: number;
+    let uploadChecks: number;
+    let uploads: number[];
+    let rejectNextUpload: boolean;
+    let holdUploads: boolean;
+    let releaseUploads: () => void;
 
     beforeEach(async () => {
         auth = new FakeAuthorizationApi();
@@ -315,10 +324,48 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         upstreamUpgrades = 0;
         upgradedSockets = [];
         upstreamBodyBytes = [];
+        issuedCookie = validCookie = "dsh=managed";
+        tokenExchanges = uploadChecks = 0;
+        uploads = [];
+        rejectNextUpload = holdUploads = false;
+        releaseUploads = () => undefined;
         upstream = http.createServer((req, res) => {
             if (req.url?.startsWith("/?token=")) {
-                res.writeHead(303, { "set-cookie": "dsh=managed; Path=/" });
+                tokenExchanges += 1;
+                res.writeHead(303, { "set-cookie": `${issuedCookie}; Path=/` });
                 res.end();
+                return;
+            }
+            if (req.url?.split("?", 1)[0] === "/api/session/uploadFileBinary") {
+                // As DSH: authenticate, then require the octet-stream type
+                // before reading the body.
+                const refuse = (status: number) => {
+                    req.resume();
+                    res.writeHead(status);
+                    res.end();
+                };
+                if (req.headers.cookie !== validCookie) return refuse(401);
+                if (
+                    req.headers["content-type"] !== "application/octet-stream"
+                ) {
+                    uploadChecks += 1;
+                    return refuse(415);
+                }
+                if (rejectNextUpload) {
+                    rejectNextUpload = false;
+                    return refuse(401);
+                }
+                if (holdUploads) {
+                    req.pause();
+                    releaseUploads = () => req.resume();
+                }
+                let bytes = 0;
+                req.on("data", (chunk: Buffer) => (bytes += chunk.length));
+                req.on("end", () => {
+                    uploads.push(bytes);
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ ok: true, bytes }));
+                });
                 return;
             }
             let bytes = 0;
@@ -356,7 +403,11 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
             readLaunchToken: async () => "launch-token"
         } as unknown) as AgentKubernetesClient;
         proxy = new RuntimeProxy(
-            config({ sandboxPort, runtimeAuthRecheckSeconds: 3600 }),
+            config({
+                sandboxPort,
+                runtimeAuthRecheckSeconds: 3600,
+                runtimeMaxUploadBytes: 2 * 1024 * 1024
+            }),
             kubernetes
         );
         proxyServer = http.createServer((req, res) =>
@@ -414,7 +465,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         session: string,
         chunks: number,
         chunkBytes: number,
-        { chunked = false } = {}
+        { chunked = false, progress = { written: 0 } } = {}
     ) {
         return new Promise<{ status?: number; body?: string; error?: string }>(
             (resolve) => {
@@ -470,6 +521,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                         return;
                     }
                     written += 1;
+                    progress.written = written;
                     req.write(Buffer.alloc(chunkBytes, 1), (error) => {
                         if (!error) setImmediate(writeNext);
                     });
@@ -552,10 +604,10 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         expect(upstreamUpgrades).to.equal(1);
     });
 
-    it("forwards a runtime request body within the size limit", async () => {
+    it("forwards a buffered runtime request body within the size limit", async () => {
         auth.granted.add(bob);
         const response = await postInChunks(
-            "/v0/runtime/api/session/uploadFileBinary?name=small.bin",
+            "/v0/runtime/api/session/prompt",
             token(bob),
             4,
             256
@@ -565,12 +617,12 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     });
 
     for (const chunked of [false, true]) {
-        it(`answers 413 to an oversized ${
+        it(`answers 413 to an oversized buffered ${
             chunked ? "chunked" : "Content-Length"
-        } upload without resetting the connection`, async () => {
+        } request without resetting the connection`, async () => {
             auth.granted.add(bob);
             const response = await postInChunks(
-                "/v0/runtime/api/session/uploadFileBinary?name=big.bin",
+                "/v0/runtime/api/session/prompt",
                 token(bob),
                 256,
                 16 * 1024,
@@ -584,6 +636,85 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
             expect(upstreamBodyBytes).to.deep.equal([]);
         });
     }
+
+    const upload =
+        "/v0/runtime/api/session/uploadFileBinary?sessionId=s&name=f";
+
+    it("streams an upload past the buffered limit, with backpressure", async () => {
+        auth.granted.add(bob);
+        holdUploads = true;
+        const progress = { written: 0 };
+        const pending = postInChunks(upload, token(bob), 64, 32 * 1024, {
+            progress
+        });
+        // DSH isn't reading yet. A buffering proxy would accept the whole
+        // upload; a streaming one holds the client back.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        expect(progress.written).to.be.below(64);
+        releaseUploads();
+        const response = await pending;
+        expect(response.status).to.equal(200);
+        expect(uploads).to.deep.equal([64 * 32 * 1024]);
+        expect(uploadChecks).to.equal(0);
+    });
+
+    for (const chunked of [false, true]) {
+        it(`answers 413 to an upload over the upload limit (${
+            chunked ? "chunked" : "Content-Length"
+        }) without resetting the connection`, async () => {
+            auth.granted.add(bob);
+            const response = await postInChunks(
+                upload,
+                token(bob),
+                128,
+                32 * 1024,
+                {
+                    chunked
+                }
+            );
+            expect(response.error).to.equal(undefined);
+            expect(response.status).to.equal(413);
+            expect(JSON.parse(response.body!).message).to.equal(
+                "Agent runtime upload is larger than the 2097152-byte limit"
+            );
+            expect(uploads).to.deep.equal([]);
+        });
+    }
+
+    it("checks a cached DSH cookie before streaming and refreshes a stale one", async () => {
+        auth.granted.add(bob);
+        const first = await postInChunks(upload, token(bob), 4, 1024);
+        expect(first.status).to.equal(200);
+        // A freshly exchanged cookie isn't checked.
+        expect([tokenExchanges, uploadChecks]).to.deep.equal([1, 0]);
+
+        // DSH restarts with a new session secret: the cached cookie is stale.
+        issuedCookie = validCookie = "dsh=rotated";
+        const second = await postInChunks(upload, token(bob), 4, 1024);
+        expect(second.status).to.equal(200);
+        expect([tokenExchanges, uploadChecks]).to.deep.equal([2, 0]);
+
+        // A valid cached cookie passes the check without an exchange.
+        const third = await postInChunks(upload, token(bob), 4, 1024);
+        expect(third.status).to.equal(200);
+        expect([tokenExchanges, uploadChecks]).to.deep.equal([2, 1]);
+        expect(uploads).to.deep.equal([4096, 4096, 4096]);
+    });
+
+    it("answers a retryable 503 when DSH refuses the streamed upload's cookie", async () => {
+        auth.granted.add(bob);
+        rejectNextUpload = true;
+        const refused = await postInChunks(upload, token(bob), 64, 16 * 1024);
+        expect(refused.error).to.equal(undefined);
+        expect(refused.status).to.equal(503);
+        expect(JSON.parse(refused.body!).message).to.equal(
+            "Agent runtime session was renewed; retry the upload"
+        );
+        const retried = await postInChunks(upload, token(bob), 4, 1024);
+        expect(retried.status).to.equal(200);
+        expect(tokenExchanges).to.equal(2);
+        expect(uploads).to.deep.equal([4096]);
+    });
 
     it("closes an open WebSocket after revocation but survives a policy outage", async () => {
         auth.granted.add(bob);

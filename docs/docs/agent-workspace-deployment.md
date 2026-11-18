@@ -170,14 +170,29 @@ for formats and limits.
 
 ### Attachment size
 
-The Manager accepts a Workspace runtime request of up to
-`agent-services.runtimeMaxBodyBytes` bytes (default 16777216, 16 MiB). DSH Web
-uploads each attachment in one request, so this is the largest file a user can
-attach; a larger upload is answered with HTTP 413. The Manager buffers each
-request in memory, so raising the limit also needs a larger
-`agent-services.manager.resources` memory limit (default 384Mi) for concurrent
-uploads. The ingress `proxyBodySize` must be at least as large, or the ingress
-rejects the upload first.
+`global.agentWorkspace.maxUploadBytes` (default 1073741824, 1 GiB) is the
+largest file a user can attach; a larger upload is answered with HTTP 413. The
+Manager streams uploads to the Workspace, so the limit doesn't add to its
+memory. Other Workspace requests are buffered, up to
+`agent-services.runtimeMaxBodyBytes` (default 16 MiB).
+
+The bundled ingress chart renders a separate Ingress, `ingress-agent-upload`,
+for the upload route (`/api/v0/agent/runtime/api/session/uploadFileBinary`).
+It sets that route's body-size limit to `maxUploadBytes` and turns off request
+buffering, so nginx streams uploads instead of writing them to disk first.
+Other paths keep `ingress.proxyBodySize`. With another ingress or load
+balancer, apply the same limit and streaming to that path.
+
+An upload has up to an hour to arrive, so a 1 GiB file needs about 2.4 Mbit/s.
+The gateway gives every request `gateway.requestTimeout` (default 300 seconds)
+to arrive, and `gateway.requestTimeoutPerPath` sets `/api/v0/agent` to 3600
+when Agent Workspace is enabled; set that path there to change it. The upload
+Ingress and DSH's web server in the Workspace also allow an hour.
+
+Uploaded files are stored on the user's Workspace PVC
+(`agent-services.runtime.storage.size`, default 10Gi) and stay there until the
+Workspace is reset. Size the PVC for the files users are expected to attach,
+plus room for the agent's working copies.
 
 ### Mandatory migration from the split charts
 

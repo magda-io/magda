@@ -115,6 +115,8 @@ spec:
 {{- if .Values.proxyTimeout }}
             "--proxyTimeout", {{ .Values.proxyTimeout | quote }},
 {{- end }}
+            "--requestTimeout", {{ ternary 300 .Values.requestTimeout (kindIs "invalid" .Values.requestTimeout) | int64 | quote }},
+            "--requestTimeoutPerPathJson", "/etc/config/requestTimeoutPerPath.json",
 {{- if .Values.websocketHandshakeTimeout }}
             "--websocketHandshakeTimeout", {{ .Values.websocketHandshakeTimeout | quote }},
 {{- end }}

@@ -25,6 +25,32 @@ const DROP_REQUEST_HEADERS = new Set([
     "proxy-authorization"
 ]);
 
+/** DSH Web's attachment upload route, streamed rather than buffered. */
+export const DSH_UPLOAD_PATH = "/api/session/uploadFileBinary";
+export const DEFAULT_RUNTIME_MAX_UPLOAD_BYTES = 1024 * 1024 * 1024;
+
+export function isStreamedUpload(method: string | undefined, path: string) {
+    return (
+        (method || "GET").toUpperCase() === "POST" &&
+        new URL(path, "http://runtime.invalid").pathname === DSH_UPLOAD_PATH
+    );
+}
+
+/** Resolves once the request body has been read to the end or aborted. */
+function whenBodyDone(req: IncomingMessage): Promise<void> {
+    if (req.complete || req.readableEnded) return Promise.resolve();
+    return new Promise((resolve) => {
+        req.once("end", resolve);
+        req.once("close", resolve);
+    });
+}
+
+function sendJson(res: ServerResponse, status: number, message: string) {
+    if (res.headersSent || res.writableEnded) return;
+    res.writeHead(status, { "content-type": "application/json" });
+    res.end(JSON.stringify({ message }));
+}
+
 interface RuntimeTarget {
     sandbox: string;
     host: string;
@@ -241,6 +267,43 @@ export class RuntimeProxy {
         })().finally(() => this.cookieExchanges.delete(target.sandbox));
         this.cookieExchanges.set(target.sandbox, exchange);
         return exchange;
+    }
+
+    /**
+     * The DSH cookie for a streamed upload. A stream can't be resent after a
+     * 401, so a cached cookie is checked first. DSH authenticates before
+     * routing, and its upload handler refuses a request without the
+     * octet-stream type (415) before reading a body, so the check has no
+     * side effects.
+     */
+    private async uploadCookie(target: RuntimeTarget): Promise<string> {
+        const cached = this.cookieJar.get(target.sandbox);
+        if (!cached) return this.cookie(target);
+        const status = await new Promise<number>((resolve, reject) => {
+            const check = http.request(
+                {
+                    host: target.host,
+                    port: this.config.sandboxPort,
+                    method: "POST",
+                    path: DSH_UPLOAD_PATH,
+                    headers: {
+                        host: this.config.externalAuthority,
+                        cookie: cached,
+                        "content-length": "0"
+                    }
+                },
+                (response) => {
+                    response.resume();
+                    resolve(response.statusCode || 0);
+                }
+            );
+            check.setTimeout(10_000, () =>
+                check.destroy(new Error("Agent runtime cookie check timed out"))
+            );
+            check.on("error", reject);
+            check.end();
+        });
+        return status === 401 ? this.cookie(target, true) : cached;
     }
 
     private touchActivity(userId: string): Promise<void> {
@@ -469,11 +532,144 @@ export class RuntimeProxy {
         upstream.end(body);
     }
 
+    /**
+     * Stream a DSH attachment upload with backpressure, so the Manager's
+     * memory doesn't grow with the file. Every answer is sent only after the
+     * body has been read to the end (see `readBody`).
+     */
+    private async forwardStreamedUpload(
+        req: IncomingMessage,
+        res: ServerResponse,
+        auth: Awaited<ReturnType<RuntimeProxy["authenticate"]>>
+    ) {
+        const limit =
+            this.config.runtimeMaxUploadBytes ??
+            DEFAULT_RUNTIME_MAX_UPLOAD_BYTES;
+        const tooLarge = `Agent runtime upload is larger than the ${limit}-byte limit`;
+        if (Number(req.headers["content-length"]) > limit) {
+            throw new AgentAuthorizationError(tooLarge, 413);
+        }
+        // An upload is an explicit user action. Persist the lease before DSH
+        // starts work, and renew it while a long upload streams.
+        await this.touchActivity(auth.user.id);
+        const cookie = await this.uploadCookie(auth.target);
+        const bodyDone = whenBodyDone(req);
+        let size = 0;
+        let lastTouch = Date.now();
+        let forwarding = true;
+        let answered = false;
+        const answer = async (status: number, message: string) => {
+            if (answered) return;
+            answered = true;
+            forwarding = false;
+            upstream.destroy();
+            req.resume();
+            await bodyDone;
+            sendJson(res, status, message);
+        };
+        // Don't pass the gateway's `Connection: close` on: DSH would then
+        // close the connection when it answers early (e.g. 401), and the rest
+        // of the upload would fail to write.
+        const headers = upstreamHeaders(
+            req.headers,
+            this.config.externalAuthority,
+            cookie
+        );
+        delete headers.connection;
+        delete headers["keep-alive"];
+        const upstream = http.request(
+            {
+                host: auth.target.host,
+                port: this.config.sandboxPort,
+                method: req.method,
+                path: auth.path,
+                headers
+            },
+            async (upstreamResponse) => {
+                if (answered) {
+                    upstreamResponse.resume();
+                    return;
+                }
+                // DSH normally answers after reading the whole body. If it
+                // answers early, discard the rest so the response still
+                // reaches the client.
+                answered = true;
+                forwarding = false;
+                req.resume();
+                await bodyDone;
+                void this.touchActivity(auth.user.id).catch(() => undefined);
+                if (upstreamResponse.statusCode === 401) {
+                    upstreamResponse.resume();
+                    upstream.destroy();
+                    this.cookieJar.delete(auth.target.sandbox);
+                    sendJson(
+                        res,
+                        503,
+                        "Agent runtime session was renewed; retry the upload"
+                    );
+                    return;
+                }
+                const responseHeaders = { ...upstreamResponse.headers };
+                delete responseHeaders["set-cookie"];
+                // The client's connection is its own (see above).
+                delete responseHeaders.connection;
+                delete responseHeaders["keep-alive"];
+                res.writeHead(
+                    upstreamResponse.statusCode || 502,
+                    responseHeaders
+                );
+                upstreamResponse.pipe(res);
+                upstreamResponse.on("error", () => res.destroy());
+                upstreamResponse.on("end", () => {
+                    if (!upstream.writableEnded) upstream.destroy();
+                });
+            }
+        );
+        upstream.setTimeout(120_000, () =>
+            upstream.destroy(new Error("Agent runtime upload timed out"))
+        );
+        upstream.on("error", (error) => {
+            if (answered) return;
+            if (!res.destroyed) {
+                console.error("Agent runtime upload proxy error", error);
+            }
+            void answer(502, "Agent runtime unavailable");
+        });
+        upstream.on("drain", () => {
+            if (forwarding) req.resume();
+        });
+        res.once("close", () => {
+            if (!res.writableEnded) upstream.destroy();
+        });
+        req.on("data", (chunk: Buffer) => {
+            if (!forwarding) return;
+            size += chunk.length;
+            if (size > limit) {
+                void answer(413, tooLarge);
+                return;
+            }
+            if (Date.now() - lastTouch > 60_000) {
+                lastTouch = Date.now();
+                void this.touchActivity(auth.user.id).catch(() => undefined);
+            }
+            if (!upstream.write(chunk)) req.pause();
+        });
+        req.on("end", () => {
+            if (forwarding) upstream.end();
+        });
+    }
+
     async handleHttp(req: IncomingMessage, res: ServerResponse) {
         let snapshotUserId: string | undefined;
         let snapshotToken: ActivitySnapshotToken | undefined;
+        let streamed = false;
         try {
             const auth = await this.authenticate(req);
+            if (isStreamedUpload(req.method, auth.path)) {
+                streamed = true;
+                await this.forwardStreamedUpload(req, res, auth);
+                return;
+            }
             const meaningful = isMeaningfulRuntimeRequest(
                 req.method,
                 auth.path
@@ -498,9 +694,12 @@ export class RuntimeProxy {
                 );
             }
             const proxyError = error as AgentAuthorizationError;
-            const status = proxyError.status || 502;
-            res.writeHead(status, { "content-type": "application/json" });
-            res.end(JSON.stringify({ message: proxyError.message }));
+            if (streamed) {
+                // Answer only after the body: see `readBody`.
+                req.resume();
+                await whenBodyDone(req);
+            }
+            sendJson(res, proxyError.status || 502, proxyError.message);
         }
     }
 

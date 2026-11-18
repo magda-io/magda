@@ -1,0 +1,42 @@
+{{- /*
+Agent Workspace attachment uploads (DSH's upload route) stream through the
+gateway and the Agent Manager, up to global.agentWorkspace.maxUploadBytes.
+This path gets its own body-size limit, with request buffering off so nginx
+streams the upload instead of writing it to disk first; every other path keeps
+proxyBodySize. GCE ingress doesn't use these annotations.
+*/ -}}
+{{- if and (dig "agentWorkspace" "enabled" false .Values.global) (ne (.Values.ingressClass | default "") "gce") }}
+{{- $domain := include "magda.getExternalDomain" . }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    {{- if .Values.ingressClass }}
+    kubernetes.io/ingress.class: {{ .Values.ingressClass }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ dig "agentWorkspace" "maxUploadBytes" 1073741824 .Values.global | int64 | quote }}
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: {{ .Values.proxyReadTimeout | default 3600 | quote }}
+    nginx.ingress.kubernetes.io/proxy-send-timeout: {{ .Values.proxySendTimeout | default 3600 | quote }}
+  name: ingress-agent-upload
+spec:
+  {{- if .Values.enableTls }}
+  tls:
+  - hosts:
+    - {{ .Values.hostname | default $domain | quote }}
+    {{- if not .Values.useDefaultCertificate}}
+    secretName: {{ .Values.tlsSecretName | default "magda-cert-tls" }}
+    {{- end }}
+  {{- end }}
+  rules:
+  - http:
+      paths:
+      - pathType: Exact
+        path: /api/v0/agent/runtime/api/session/uploadFileBinary
+        backend:
+          service:
+            name: {{ .Values.targetService | default "gateway" }}
+            port:
+              number: 80
+    host: {{ .Values.hostname | default $domain | quote }}
+{{- end }}
