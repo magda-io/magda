@@ -73,7 +73,7 @@ RUN apt-get update \
     bubblewrap ca-certificates curl file git jq less patch procps python3 \
     python3-lxml python3-pandas python3-pil python3-pip python3-venv \
     fonts-crosextra-caladea fonts-crosextra-carlito fonts-dejavu-core \
-    fonts-liberation2 tini unzip util-linux \
+    fonts-liberation2 fonts-wqy-microhei tini unzip util-linux \
   && rm -rf /var/lib/apt/lists/* \
   && /usr/local/lib/magda-agent/uv --version | grep -Eq "^uv ${UV_VERSION}( |$)" \
   && python3 -m pip --version \
@@ -81,7 +81,8 @@ RUN apt-get update \
 # Python payload for DSH's load_workspace_dependencies tool and Office skills:
 # a read-only venv over Debian's interpreter (no second Python). Native libs
 # come from Debian; the pure-Python Office libraries are DSH's locked wheels,
-# verified by hash. The fonts above let the installed LibreOffice Kit render.
+# verified by hash. The fonts above let the installed LibreOffice Kit render;
+# WenQuanYi Micro Hei covers Chinese, Japanese and Korean text.
 COPY component/office-runtime/ /tmp/office-runtime/
 RUN set -eu; \
   payload=/usr/local/lib/magda-agent/primary-runtime; \

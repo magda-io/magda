@@ -372,6 +372,20 @@ class RenderingTest(unittest.TestCase):
         with open(output, "rb") as handle:
             self.assertEqual(handle.read(5), b"%PDF-")
 
+    def test_cjk_text_renders_with_an_installed_cjk_font(self):
+        # Without a CJK font the kit falls back to a Latin font, drops or boxes
+        # the glyphs, and still reports no missing fonts.
+        import docx
+        source = os.path.join(self.work, "cjk.docx")
+        document = docx.Document()
+        document.add_paragraph("中文 日本語 한국어")
+        document.save(source)
+        output = os.path.join(self.work, "cjk.pdf")
+        kit("convert", "--input", source, "--output", output)
+        with open(output, "rb") as handle:
+            fonts = set(re.findall(rb"/BaseFont\s*/[A-Z]{6}\+([A-Za-z0-9-]+)", handle.read()))
+        self.assertIn(b"WenQuanYiMicroHei", fonts)
+
     def test_strict_workbook_needs_kit_conversion_before_openpyxl(self):
         """openpyxl cannot open ISO Strict workbooks; the checker and the kit can."""
         import openpyxl
