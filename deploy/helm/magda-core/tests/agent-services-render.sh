@@ -94,7 +94,8 @@ for expected in \
     'name: SKILL_ARCHIVE_MAX_ENTRIES, value: "256"' \
     'name: SKILL_ARCHIVE_MAX_PATH_LENGTH, value: "240"' \
     'name: SKILL_ARCHIVE_MAX_NESTING_DEPTH, value: "8"' \
-    'name: SKILL_ARCHIVE_MAX_MARKDOWN_BYTES, value: "1048576"'; do
+    'name: SKILL_ARCHIVE_MAX_MARKDOWN_BYTES, value: "1048576"' \
+    'name: RUNTIME_MAX_BODY_BYTES, value: "16777216"'; do
     grep -Fq "$expected" "$tmp/model-default.yaml"
 done
 if resource_document Deployment agent-manager "$tmp/model-default.yaml" | grep -q 'MINIO_'; then refuted $LINENO; fi

@@ -62,7 +62,7 @@ Kubernetes: `>= 1.24.0-0`
 | runtime.trustedCaSecret.name | string | `""` |  |
 | runtimeClasses.gvisor | string | `"gvisor"` |  |
 | runtimeClasses.kata | string | `"kata"` |  |
-| runtimeMaxBodyBytes | int | `16777216` |  |
+| runtimeMaxBodyBytes | int | `16777216` | Largest request body, in bytes, the Manager accepts for a Workspace's runtime. DSH Web uploads each attachment in one request, so this is the largest file a user can attach; a larger one is answered with 413. The Manager buffers each request in memory, so raise `manager.resources` with it, and keep the ingress `proxyBodySize` at least as large. |
 | runtimePrefix | string | `"/v0/runtime"` |  |
 | sandboxNamespace.annotations."helm.sh/resource-policy" | string | `"keep"` |  |
 | sandboxNamespace.create | bool | `true` |  |

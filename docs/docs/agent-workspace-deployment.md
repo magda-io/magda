@@ -168,6 +168,17 @@ command can still run together, which the 2560Mi default accommodates. See the
 [architecture reference](./architecture/agent-workspace.md#office-documents)
 for formats and limits.
 
+### Attachment size
+
+The Manager accepts a Workspace runtime request of up to
+`agent-services.runtimeMaxBodyBytes` bytes (default 16777216, 16 MiB). DSH Web
+uploads each attachment in one request, so this is the largest file a user can
+attach; a larger upload is answered with HTTP 413. The Manager buffers each
+request in memory, so raising the limit also needs a larger
+`agent-services.manager.resources` memory limit (default 384Mi) for concurrent
+uploads. The ingress `proxyBodySize` must be at least as large, or the ingress
+rejects the upload first.
+
 ### Mandatory migration from the split charts
 
 Upgrading from the earlier `agent-manager` + `agent-runtime` charts to
