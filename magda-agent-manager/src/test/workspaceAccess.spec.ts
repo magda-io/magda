@@ -314,6 +314,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     let uploadChecks: number;
     let uploads: number[];
     let rejectNextUpload: boolean;
+    let failExchanges: boolean;
     let holdUploads: boolean;
     let releaseUploads: () => void;
 
@@ -327,11 +328,17 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         issuedCookie = validCookie = "dsh=managed";
         tokenExchanges = uploadChecks = 0;
         uploads = [];
-        rejectNextUpload = holdUploads = false;
+        rejectNextUpload = holdUploads = failExchanges = false;
         releaseUploads = () => undefined;
         upstream = http.createServer((req, res) => {
             if (req.url?.startsWith("/?token=")) {
                 tokenExchanges += 1;
+                // Renewals (any exchange after the first) fail.
+                if (failExchanges && tokenExchanges > 1) {
+                    res.writeHead(500);
+                    res.end();
+                    return;
+                }
                 res.writeHead(303, { "set-cookie": `${issuedCookie}; Path=/` });
                 res.end();
                 return;
@@ -806,6 +813,90 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         expect(result.status).to.equal(401);
         expect(result.sentBytes).to.be.at.least(4 * 1024 * 1024);
         expect(result.sentBytes).to.be.below(256 * 32 * 1024);
+    });
+
+    it("never runs a request pipelined after an early answer", async () => {
+        auth.granted.add(bob);
+        const raw = await new Promise<string>((resolve) => {
+            const socket = new Socket();
+            let data = "";
+            socket.on("data", (chunk) => (data += chunk));
+            socket.on("error", () => undefined);
+            socket.on("close", () => resolve(data));
+            socket.connect(proxyPort, "127.0.0.1", async () => {
+                socket.write(
+                    `POST ${upload} HTTP/1.1\r\nHost: magda.test\r\n` +
+                        `X-Magda-Session: ${token(
+                            bob,
+                            "attacker-secret"
+                        )}\r\n` +
+                        "Content-Length: 2000\r\n\r\n" +
+                        "x".repeat(1000)
+                );
+                while (!data.includes("HTTP/1.1")) {
+                    await new Promise((r) => setTimeout(r, 10));
+                }
+                socket.write(
+                    "x".repeat(1000) +
+                        "POST /v0/runtime/api/session/prompt HTTP/1.1\r\n" +
+                        `Host: magda.test\r\nX-Magda-Session: ${token(
+                            bob
+                        )}\r\n` +
+                        "Content-Length: 2\r\n\r\n{}"
+                );
+            });
+        });
+        expect(raw.match(/HTTP\/1\.1 \d{3}/g)).to.deep.equal(["HTTP/1.1 401"]);
+        // Time for a pipelined request that did run to reach DSH.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        expect(upstreamBodyBytes).to.deep.equal([]);
+    });
+
+    it("leaves no connection behind when the client goes away during the drain", async () => {
+        await new Promise<void>((resolve) => {
+            const req = http.request({
+                host: "127.0.0.1",
+                port: proxyPort,
+                method: "POST",
+                path: upload,
+                headers: {
+                    "X-Magda-Session": token(bob, "attacker-secret"),
+                    "content-length": String(1024 * 1024)
+                }
+            });
+            req.on("error", () => undefined);
+            req.on("response", (res) => {
+                res.resume();
+                req.destroy();
+                resolve();
+            });
+            req.write(Buffer.alloc(16 * 1024, 1));
+        });
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        const open = await new Promise<number>((resolve, reject) =>
+            proxyServer.getConnections((error, count) =>
+                error ? reject(error) : resolve(count)
+            )
+        );
+        expect(open).to.equal(0);
+    });
+
+    it("logs a failed cookie renewal and still answers a retryable 503", async () => {
+        auth.granted.add(bob);
+        rejectNextUpload = failExchanges = true;
+        const logged: string[] = [];
+        const originalError = console.error;
+        console.error = (...args: unknown[]) => logged.push(String(args[0]));
+        try {
+            // The first exchange succeeds; the renewal after DSH's 401 fails.
+            const refused = await postInChunks(upload, token(bob), 4, 1024);
+            expect(refused.status).to.equal(503);
+        } finally {
+            console.error = originalError;
+        }
+        expect(logged).to.include(
+            "Agent runtime cookie renewal failed for sandbox-" + bob
+        );
     });
 
     it("answers a retryable 503 when DSH refuses the streamed upload's cookie", async () => {

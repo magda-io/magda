@@ -48,6 +48,9 @@ export interface LingerLimits {
     maxDiscardBytes: number;
 }
 
+// Connections closing after an early answer: see `lingerAfterResponse`.
+const closingSockets = new WeakSet<Duplex>();
+
 export const DEFAULT_LINGER_LIMITS: LingerLimits = {
     lingerSeconds: 5,
     maxDiscardBytes: 16 * 1024 * 1024
@@ -79,8 +82,15 @@ function lingerAfterResponse(
 ) {
     res.setHeader("connection", "close");
     const socket = req.socket;
+    closingSockets.add(socket);
+    // Node's HTTP server calls `socket.destroySoon()` as soon as a
+    // `Connection: close` response finishes; it ends the connection and stops
+    // reading, which would cut the Gateway off while it's still writing the
+    // rejected body. So the call is ignored on this one socket while the body
+    // is discarded, and the original is restored and called by `close`.
+    // Answering `keep-alive` instead isn't an option: clients would reuse a
+    // connection that is about to close.
     const destroySoon = socket.destroySoon;
-    // Node calls this when a `Connection: close` response finishes.
     socket.destroySoon = () => undefined;
     let discarded = 0;
     let bodyDone = false;
@@ -116,8 +126,10 @@ function lingerAfterResponse(
         close();
     });
     socket.once("close", () => {
+        // Closed early (e.g. the Gateway went away): nothing left to do.
         clearTimeout(timer);
         clearTimeout(forceClose);
+        socket.destroySoon = destroySoon;
     });
     req.resume();
 }
@@ -690,8 +702,14 @@ export class RuntimeProxy {
                 if (upstreamResponse.statusCode === 401) {
                     upstreamResponse.resume();
                     upstream.destroy();
-                    // Renew the cookie now, so a retry streams straight away.
-                    await this.cookie(auth.target, true).catch(() => undefined);
+                    // Renew the cookie now, so a retry streams straight away. If
+                    // that fails the retry tries again; log it for diagnosis.
+                    await this.cookie(auth.target, true).catch((error) =>
+                        console.error(
+                            `Agent runtime cookie renewal failed for ${auth.target.sandbox}`,
+                            error
+                        )
+                    );
                     rejectRequest(
                         req,
                         res,
@@ -755,6 +773,12 @@ export class RuntimeProxy {
     }
 
     async handleHttp(req: IncomingMessage, res: ServerResponse) {
+        if (closingSockets.has(req.socket)) {
+            // Pipelined behind a request answered early, whose connection
+            // closes: never run it.
+            req.socket.destroy();
+            return;
+        }
         let snapshotUserId: string | undefined;
         let snapshotToken: ActivitySnapshotToken | undefined;
         try {
