@@ -257,6 +257,27 @@ defaultCacheControl: "public, max-age=60"
 # @default -- nil (120 seconds default value will be used by upstream lib internally)
 proxyTimeout: 
 
+# -- (int) How long (in seconds) a client has to send a whole request, headers and body, before the gateway answers `408` and closes the connection.
+# It limits slow clients that hold connections open (Node's `server.requestTimeout`). `0` means no limit.
+# Override it for particular paths with `requestTimeoutPerPath`.
+requestTimeout: 300
+
+# -- (object) Per request path overrides of `requestTimeout`, in seconds, e.g. `{"/api/v0/storage": 900}`.
+# A path applies to itself and everything below it, and the longest matching path wins.
+# When `global.agentWorkspace.enabled` is true, the Agent Workspace upload route `/api/v0/agent/runtime/api/session/uploadFileBinary`
+# defaults to `3600`, so uploads of up to `global.agentWorkspace.maxUploadBytes` have an hour to arrive; set the path here to change it.
+# @default -- {}
+requestTimeoutPerPath: {}
+
+# -- (int) After an error response (4xx/5xx) sent before the request body has arrived, e.g. a rejected upload,
+# how long (in seconds) the gateway keeps reading and discarding the body before it closes the connection.
+# Closing straight away could stop the client (nginx, for a browser) receiving the response.
+earlyRejectionLingerSeconds: 5
+
+# -- (int) After an error response sent before the request body has arrived, the most bytes of the body
+# the gateway reads and discards before it closes the connection.
+earlyRejectionMaxDiscardBytes: 16777216
+
 # websocketHandshakeTimeout -- (int) How long (in seconds) the target of a `websocket: true` route has to answer a WebSocket handshake.
 # The client receives a `504` when the target doesn't answer in time.
 # It doesn't limit the lifetime of an established WebSocket connection.

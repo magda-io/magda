@@ -232,6 +232,30 @@ const argv = addJwtSecretFromEnvVar(
                 "A default value to put in the cache-control header of GET responses",
             type: "string"
         })
+        .option("requestTimeout", {
+            describe:
+                "How long (in seconds) a client has to send a whole request before it gets 408. 0 means no limit.",
+            type: "number",
+            default: 300
+        })
+        .option("requestTimeoutPerPathJson", {
+            describe:
+                "Path of the json that maps request paths to their own `requestTimeout` (in seconds), overriding the default for that path and anything below it.",
+            type: "string",
+            coerce: coerceJson
+        })
+        .option("earlyRejectionLingerSeconds", {
+            describe:
+                "After an error response sent before the request body has arrived (e.g. a rejected upload), how long (in seconds) to keep reading and discarding the body before closing the connection.",
+            type: "number",
+            default: 5
+        })
+        .option("earlyRejectionMaxDiscardBytes", {
+            describe:
+                "After an error response sent before the request body has arrived, the most bytes of the body to read and discard before closing the connection.",
+            type: "number",
+            default: 16 * 1024 * 1024
+        })
         .option("proxyTimeout", {
             describe:
                 "How long time (in seconds) before upstream service must complete request in order to avoid request timeout error.",
@@ -260,6 +284,9 @@ const argv = addJwtSecretFromEnvVar(
 const app = express();
 buildApp(app, argv as any);
 const server = app.listen(argv.listenPort);
+// The request timeout middleware (see buildApp) applies `requestTimeout` per
+// request path, so the server-wide limit is off.
+server.requestTimeout = 0;
 // WebSocket handshakes go through the same Express app; only routes with `websocket: true` forward them.
 const webSocketUpgradeHandler = new WebSocketUpgradeHandler(app);
 server.on("upgrade", webSocketUpgradeHandler.handleUpgrade);

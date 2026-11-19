@@ -40,6 +40,8 @@ Kubernetes: `>= 1.14.0-0`
 | defaultWebRouteConfig.redirectTrailingSlash | bool | `false` | make /xxx auto redirect to /xxxx/ |
 | defaultWebRouteConfig.to | string | `""` | the default web router proxy target. Optional. If set, the default web route set via `web` option will be ignored. |
 | disableGzip | bool | `false` | By default, response will be auto-gizpped depends on MIME type. Set this to true to disable it. |
+| earlyRejectionLingerSeconds | int | `5` | After an error response (4xx/5xx) sent before the request body has arrived, e.g. a rejected upload, how long (in seconds) the gateway keeps reading and discarding the body before it closes the connection. Closing straight away could stop the client (nginx, for a browser) receiving the response. |
+| earlyRejectionMaxDiscardBytes | int | `16777216` | After an error response sent before the request body has arrived, the most bytes of the body the gateway reads and discards before it closes the connection. |
 | enableAuthEndpoint | bool | `true` | whether or not enable auth endpoint. You can turn it off if you don't need to log into any account. |
 | enableCkanRedirection | bool | `false` | wether or not enable CKAN redirection. when it's on, any incoming ckan alike URL will be redirected to the CKAN instance URL  that is specified by config option `ckanRedirectionDomain` and `ckanRedirectionPath`. |
 | enableHttpsRedirection | bool | `false` | whether or not redirect incoming request using HTTP protocol to HTTPs |
@@ -50,6 +52,8 @@ Kubernetes: `>= 1.14.0-0`
 | proxyTimeout | int | nil (120 seconds default value will be used by upstream lib internally) | How long time (in seconds) before upstream service must complete request in order to avoid request timeout error. If not set, the request will time out after 120 seconds. |
 | registryQueryCacheMaxKeys | number | `nil` | Specifies a maximum amount of keys that can be stored in the registryQueryCache. By default, it will be set to 500 seconds if leave blank. |
 | registryQueryCacheStdTTL | number | `nil` | The standard ttl as number in seconds for every generated cache element in the registryQueryCache. To disable the cache, set this value to `0`. By default, it will be set to 600 seconds if leave blank. |
+| requestTimeout | int | `300` | How long (in seconds) a client has to send a whole request, headers and body, before the gateway answers `408` and closes the connection. It limits slow clients that hold connections open (Node's `server.requestTimeout`). `0` means no limit. Override it for particular paths with `requestTimeoutPerPath`. |
+| requestTimeoutPerPath | object | {} | Per request path overrides of `requestTimeout`, in seconds, e.g. `{"/api/v0/storage": 900}`. A path applies to itself and everything below it, and the longest matching path wins. When `global.agentWorkspace.enabled` is true, the Agent Workspace upload route `/api/v0/agent/runtime/api/session/uploadFileBinary` defaults to `3600`, so uploads of up to `global.agentWorkspace.maxUploadBytes` have an hour to arrive; set the path here to change it. |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"40Mi"` |  |

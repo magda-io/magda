@@ -575,7 +575,7 @@ gateway_config_json() {
         const doc = text.split(/^---$/m).find((d) =>
             /^kind: ConfigMap$/m.test(d) && /^  name: "?gateway-config"?$/m.test(d));
         const data = {};
-        for (const key of ["routes", "helmet", "helmetPerPath", "csp"]) {
+        for (const key of ["routes", "helmet", "helmetPerPath", "csp", "requestTimeoutPerPath"]) {
             const m = doc.match(new RegExp(`^  ${key}\\.json: (".*")$`, "m"));
             data[key] = JSON.parse(JSON.parse(m[1]));
         }
@@ -636,6 +636,44 @@ node -e '
     assert.deepStrictEqual(relaxed, ["/api/v0/agent/runtime"]);
     assert.deepStrictEqual(config.helmet.contentSecurityPolicy.directives.scriptSrc, ["\x27self\x27"]);
 ' "$tmp/gateway-enabled.json"
+
+# The gateway's request timeout, with an hour for Agent Workspace uploads only,
+# and its early rejection limits.
+request_timeouts() {
+    node -e '
+        const config = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+        process.stdout.write(JSON.stringify(config.requestTimeoutPerPath));
+    ' "$1"
+}
+upload_path=/api/v0/agent/runtime/api/session/uploadFileBinary
+[[ "$(request_timeouts "$tmp/gateway-enabled.json")" == "{\"$upload_path\":3600}" ]]
+for file in disabled llm-only; do
+    [[ "$(request_timeouts "$tmp/gateway-$file.json")" == '{}' ]]
+done
+gateway_deployment="$(resource_document Deployment gateway "$tmp/model-default.yaml")"
+for expected in \
+    '"--requestTimeout", "300",' \
+    '"--requestTimeoutPerPathJson", "/etc/config/requestTimeoutPerPath.json",' \
+    '"--earlyRejectionLingerSeconds", "5",' \
+    '"--earlyRejectionMaxDiscardBytes", "16777216",'; do
+    grep -Fq -- "$expected" <<<"$gateway_deployment"
+done
+cat >"$tmp/request-timeouts.yaml" <<EOF
+gateway:
+  requestTimeout: 0
+  requestTimeoutPerPath:
+    $upload_path: 7200
+    /api/v0/storage: 900
+  earlyRejectionLingerSeconds: 10
+EOF
+render "$tmp/request-timeouts-override.yaml" magda test \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    -f "$tmp/request-timeouts.yaml"
+gateway_config_json "$tmp/request-timeouts-override.yaml" >"$tmp/gateway-request-timeouts.json"
+[[ "$(request_timeouts "$tmp/gateway-request-timeouts.json")" == "{\"$upload_path\":7200,\"/api/v0/storage\":900}" ]]
+resource_document Deployment gateway "$tmp/request-timeouts-override.yaml" | grep -Fq '"--requestTimeout", "0",'
+resource_document Deployment gateway "$tmp/request-timeouts-override.yaml" | grep -Fq '"--earlyRejectionLingerSeconds", "10",'
 
 # #3847: ingress-nginx WebSocket timeouts.
 ingress_annotations() {
