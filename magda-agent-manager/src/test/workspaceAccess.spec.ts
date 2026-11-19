@@ -406,7 +406,11 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
             config({
                 sandboxPort,
                 runtimeAuthRecheckSeconds: 3600,
-                runtimeMaxUploadBytes: 2 * 1024 * 1024
+                runtimeMaxUploadBytes: 2 * 1024 * 1024,
+                runtimeLingerLimits: {
+                    lingerSeconds: 2,
+                    maxDiscardBytes: 4 * 1024 * 1024
+                }
             }),
             kubernetes
         );
@@ -488,9 +492,16 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                 let written = 0;
                 let sent = false;
                 let settled = false;
+                let closed = false;
+                // Settles with the response once it's complete and the
+                // request is done: fully sent, or its connection closed after
+                // the response (Node's client stops sending when a response
+                // says `Connection: close`). An error or a close before any
+                // response is reported as `error`.
                 const settle = (result?: { error: string }) => {
                     if (settled) return;
-                    if (!result && !(response && sent)) return;
+                    if (result && response) result = undefined;
+                    if (!result && !(response && (sent || closed))) return;
                     settled = true;
                     resolve(result || response!);
                 };
@@ -506,6 +517,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                     settle({ error: error.code || error.message })
                 );
                 req.on("close", () => {
+                    closed = true;
                     if (!sent) {
                         settle({
                             error: `closed after ${written} of ${chunks} chunks`
@@ -529,6 +541,65 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                 writeNext();
             }
         );
+    }
+
+    /**
+     * POST over a raw socket that keeps writing its whole body regardless of
+     * the response, as the Gateway's proxy did and as curl does. A proxy that
+     * answers early and closes makes those writes fail, which the Gateway
+     * turned into a 500.
+     */
+    function postIgnoringResponse(
+        path: string,
+        session: string,
+        chunks: number,
+        chunkBytes: number
+    ) {
+        return new Promise<{
+            status?: number;
+            body?: string;
+            sentBytes: number;
+            writeError?: string;
+        }>((resolve) => {
+            const socket = new Socket();
+            let received = "";
+            let sentBytes = 0;
+            let writeError: string | undefined;
+            const finish = () => {
+                const [head, ...rest] = received.split("\r\n\r\n");
+                const status = Number(head.split(" ")[1]) || undefined;
+                resolve({
+                    status,
+                    body: rest.join("\r\n\r\n"),
+                    sentBytes,
+                    writeError
+                });
+            };
+            socket.on("data", (chunk) => (received += chunk));
+            socket.on("error", (error: NodeJS.ErrnoException) => {
+                writeError = writeError || error.code || error.message;
+            });
+            socket.on("close", finish);
+            socket.connect(proxyPort, "127.0.0.1", () => {
+                socket.write(
+                    `POST ${path} HTTP/1.1\r\nHost: magda.test\r\n` +
+                        `X-Magda-Session: ${session}\r\nConnection: close\r\n` +
+                        "Content-Type: application/octet-stream\r\n" +
+                        `Content-Length: ${chunks * chunkBytes}\r\n\r\n`
+                );
+                let written = 0;
+                const next = () => {
+                    if (written === chunks) return;
+                    written += 1;
+                    socket.write(Buffer.alloc(chunkBytes, 1), (error) => {
+                        if (error) return;
+                        sentBytes += chunkBytes;
+                        setImmediate(next);
+                    });
+                };
+                next();
+            });
+        });
     }
 
     function upgrade(path: string, session?: string) {
@@ -701,6 +772,42 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         expect(uploads).to.deep.equal([4096, 4096, 4096]);
     });
 
+    for (const [label, session, status] of [
+        ["a forged session", () => token(bob, "attacker-secret"), 401],
+        ["revoked access", () => token(bob), 403],
+        ["an upload over the upload limit", () => token(bob), 413]
+    ] as const) {
+        it(`answers ${status} to ${label} and reads the rest of the body, while the client keeps sending`, async () => {
+            if (status !== 403) auth.granted.add(bob);
+            const chunks = status === 413 ? 128 : 64;
+            const result = await postIgnoringResponse(
+                upload,
+                session(),
+                chunks,
+                32 * 1024
+            );
+            expect(result.status).to.equal(status);
+            // The raw body may be chunk-encoded: take its JSON document.
+            const json = /\{.*\}/s.exec(result.body || "")?.[0] || "{}";
+            expect(JSON.parse(json).message).to.be.a("string");
+            expect(result.writeError).to.equal(undefined);
+            expect(result.sentBytes).to.equal(chunks * 32 * 1024);
+            expect(uploads).to.deep.equal([]);
+        });
+    }
+
+    it("stops reading a rejected upload at the discard limit and closes the connection", async () => {
+        const result = await postIgnoringResponse(
+            upload,
+            token(bob, "attacker-secret"),
+            256,
+            32 * 1024
+        );
+        expect(result.status).to.equal(401);
+        expect(result.sentBytes).to.be.at.least(4 * 1024 * 1024);
+        expect(result.sentBytes).to.be.below(256 * 32 * 1024);
+    });
+
     it("answers a retryable 503 when DSH refuses the streamed upload's cookie", async () => {
         auth.granted.add(bob);
         rejectNextUpload = true;
@@ -708,8 +815,10 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         expect(refused.error).to.equal(undefined);
         expect(refused.status).to.equal(503);
         expect(JSON.parse(refused.body!).message).to.equal(
-            "Agent runtime session was renewed; retry the upload"
+            "Agent runtime session expired; retry the upload"
         );
+        // The cookie was renewed before answering, so the retry needs none.
+        expect(tokenExchanges).to.equal(2);
         const retried = await postInChunks(upload, token(bob), 4, 1024);
         expect(retried.status).to.equal(200);
         expect(tokenExchanges).to.equal(2);

@@ -185,9 +185,13 @@ balancer, apply the same limit and streaming to that path.
 
 An upload has up to an hour to arrive, so a 1 GiB file needs about 2.4 Mbit/s.
 The gateway gives every request `gateway.requestTimeout` (default 300 seconds)
-to arrive, and `gateway.requestTimeoutPerPath` sets `/api/v0/agent` to 3600
+to arrive, and `gateway.requestTimeoutPerPath` sets the upload route to 3600
 when Agent Workspace is enabled; set that path there to change it. The upload
-Ingress and DSH's web server in the Workspace also allow an hour.
+Ingress and DSH's web server in the Workspace also allow an hour. A rejected
+upload (for example 413, or 401 after a session expires) gets its status
+straight away: the gateway discards the rest of the upload, for at most
+`gateway.earlyRejectionLingerSeconds` and
+`gateway.earlyRejectionMaxDiscardBytes`, and closes the connection.
 
 Uploaded files are stored on the user's Workspace PVC
 (`agent-services.runtime.storage.size`, default 10Gi) and stay there until the

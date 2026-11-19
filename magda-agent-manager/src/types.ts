@@ -94,6 +94,9 @@ export interface ManagerConfig {
     runtimeMaxBodyBytes: number;
     // Largest DSH attachment upload, streamed rather than buffered.
     runtimeMaxUploadBytes?: number;
+    // How long and how much of a rejected request body to read and discard
+    // after answering it early (default 5 seconds and 16 MiB).
+    runtimeLingerLimits?: { lingerSeconds: number; maxDiscardBytes: number };
     // How often open DSH WebSockets re-check `agentWorkspace/access`.
     runtimeAuthRecheckSeconds?: number;
     // How long a Retry request waits for its sync before answering 202.
