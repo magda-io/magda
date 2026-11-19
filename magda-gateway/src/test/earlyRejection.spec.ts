@@ -77,10 +77,15 @@ describe("early rejection of a request whose body hasn't arrived", function () {
     let gatewayPort: number;
     let upstreamBytes: number;
     let handler: Upstream;
+    let handled: string[];
+    let upstreamRequests: string[];
 
     beforeEach(async () => {
         upstreamBytes = 0;
+        handled = [];
+        upstreamRequests = [];
         upstream = http.createServer((req, res) => {
+            upstreamRequests.push(`${req.method} ${req.url}`);
             req.on("data", (chunk: Buffer) => (upstreamBytes += chunk.length));
             handler(req, res);
         });
@@ -98,6 +103,12 @@ describe("early rejection of a request whose body hasn't arrived", function () {
         // Shorter than the SSE test stream, which it must not limit.
         app.use(createRequestTimeoutMiddleware(1));
         // The Gateway itself rejecting, e.g. a failed access check.
+        // Records the requests that reach a handler.
+        app.all("/api/v0/record", (req, res) => {
+            handled.push(req.method);
+            req.resume();
+            req.on("end", () => res.end("recorded"));
+        });
         app.post("/api/v0/own-reject", (_req, res) => {
             res.status(401).json({ message: "rejected by the Gateway" });
         });
@@ -194,6 +205,101 @@ describe("early rejection of a request whose body hasn't arrived", function () {
             });
         });
     }
+
+    /**
+     * Write `parts` on one raw connection, waiting 30 ms between them, or,
+     * with `afterResponse`, until a response has started before the last
+     * part. Resolves with the raw responses.
+     */
+    function rawExchange(
+        parts: string[],
+        { afterResponse = false } = {}
+    ): Promise<string> {
+        return new Promise((resolve) => {
+            const socket = new Socket();
+            let data = "";
+            socket.on("data", (chunk) => (data += chunk));
+            socket.on("error", () => undefined);
+            socket.on("close", () => resolve(data));
+            socket.connect(gatewayPort, "127.0.0.1", async () => {
+                for (const [index, part] of parts.entries()) {
+                    if (afterResponse && index === parts.length - 1) {
+                        while (!data.includes("HTTP/1.1")) {
+                            await new Promise((r) => setTimeout(r, 10));
+                        }
+                    }
+                    if (!socket.destroyed) socket.write(part);
+                    await new Promise((r) => setTimeout(r, 30));
+                }
+            });
+        });
+    }
+
+    const statusLines = (raw: string) => raw.match(/HTTP\/1\.1 \d{3}/g) || [];
+
+    for (const [label, path] of [
+        ["the Gateway's own rejection", "/api/v0/own-reject"],
+        ["an upstream rejection", "/api/v0/up/upload"]
+    ]) {
+        // Only requests parsed after the rejection is known are guaranteed
+        // not to run: as with any server, one pipelined before it may.
+        it(`never runs a request pipelined after ${label}`, async () => {
+            handler = rejectAndLinger(413);
+            const raw = await rawExchange(
+                [
+                    `POST ${path} HTTP/1.1\r\nHost: x\r\nContent-Length: 2000\r\n\r\n` +
+                        "x".repeat(1000),
+                    "x".repeat(1000) +
+                        "POST /api/v0/record HTTP/1.1\r\nHost: x\r\nContent-Length: 0\r\n\r\n" +
+                        "POST /api/v0/up/record HTTP/1.1\r\nHost: x\r\nContent-Length: 0\r\n\r\n"
+                ],
+                { afterResponse: true }
+            );
+            expect(statusLines(raw)).to.deep.equal([
+                path.includes("own") ? "HTTP/1.1 401" : "HTTP/1.1 413"
+            ]);
+            expect(handled).to.deep.equal([]);
+            expect(
+                upstreamRequests.filter((r) => r.endsWith("/record"))
+            ).to.deep.equal([]);
+        });
+    }
+
+    it("leaves keep-alive requests alone when nothing is rejected, and serves a new connection after a rejection", async () => {
+        const raw = await rawExchange([
+            "POST /api/v0/record HTTP/1.1\r\nHost: x\r\nContent-Length: 2\r\n\r\nab",
+            "POST /api/v0/record HTTP/1.1\r\nHost: x\r\nContent-Length: 2\r\n\r\nab" +
+                "GET /api/v0/record HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n"
+        ]);
+        expect(statusLines(raw)).to.deep.equal([
+            "HTTP/1.1 200",
+            "HTTP/1.1 200",
+            "HTTP/1.1 200"
+        ]);
+        expect(handled).to.deep.equal(["POST", "POST", "GET"]);
+        const rejected = await post("/api/v0/own-reject", 4, 1024);
+        expect(rejected.status).to.equal(401);
+        const after = await rawExchange([
+            "GET /api/v0/record HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n"
+        ]);
+        expect(statusLines(after)).to.deep.equal(["HTTP/1.1 200"]);
+    });
+
+    it("closes a connection whose rejection response stalls within twice the linger time", async () => {
+        handler = (req, res) => {
+            res.writeHead(413, { "content-type": "text/plain" });
+            res.write("rejected, then stalled");
+            req.resume();
+        };
+        const result = await post("/api/v0/up/upload", 4096, 16 * 1024);
+        expect(result.status).to.equal(413);
+        // The body limit (1 MiB) or linger time ends the drain, then the
+        // stalled response gets one more linger period.
+        expect(result.closedAfterMs).to.be.within(
+            LINGER_SECONDS * 1000 * 0.8,
+            LINGER_SECONDS * 1000 * 2 + 500
+        );
+    });
 
     for (const chunked of [false, true]) {
         const shape = chunked ? "chunked" : "Content-Length";
@@ -324,7 +430,10 @@ describe("early rejection of a request whose body hasn't arrived", function () {
             req.write(Buffer.alloc(16 * 1024, 1));
         });
         await closed;
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Past both linger timers: they must not act on the closed socket.
+        await new Promise((resolve) =>
+            setTimeout(resolve, LINGER_SECONDS * 1000 * 2 + 200)
+        );
         const open = await new Promise<number>((resolve, reject) =>
             gateway.getConnections((error, count) =>
                 error ? reject(error) : resolve(count)

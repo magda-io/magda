@@ -1,5 +1,6 @@
 import express from "express";
 import { IncomingMessage, ServerResponse } from "node:http";
+import { Duplex } from "node:stream";
 
 export interface EarlyRejectionOptions {
     /** Longest time, in seconds, to keep reading a rejected request's body. */
@@ -9,6 +10,8 @@ export interface EarlyRejectionOptions {
 }
 
 const earlyRejected = new WeakSet<IncomingMessage>();
+// Connections closing after an early rejection: see `linger`.
+const closingSockets = new WeakSet<Duplex>();
 
 /** Whether `req` got an error response before its body had arrived. */
 export function isEarlyRejected(req: IncomingMessage) {
@@ -41,11 +44,23 @@ export function hasIncompleteBody(req: IncomingMessage) {
  * deferred until the body has been read or a limit is reached. Responses to
  * requests without a body, or whose body has arrived (e.g. SSE streams), are
  * unchanged.
+ *
+ * A connection can live at most 2 × `lingerSeconds` after the rejection
+ * starts: `lingerSeconds` to discard the body, then, if the response itself
+ * hasn't finished by then, `lingerSeconds` more for it before the connection
+ * is closed regardless. The request timeout may close it sooner.
  */
 export default function createEarlyRejectionMiddleware(
     options: EarlyRejectionOptions
 ): express.RequestHandler {
     return (req, res, next) => {
+        if (closingSockets.has(req.socket)) {
+            // A request pipelined behind a rejected one. The client was told
+            // the connection closes and won't expect an answer, so it must not
+            // run: drop it and close the connection.
+            req.socket.destroy();
+            return;
+        }
         const writeHead = res.writeHead;
         res.writeHead = function (
             this: ServerResponse,
@@ -85,8 +100,16 @@ function linger(
 ) {
     earlyRejected.add(req);
     const socket = req.socket;
+    closingSockets.add(socket);
+    // Node's HTTP server calls `socket.destroySoon()` as soon as a
+    // `Connection: close` response finishes; it ends the connection and stops
+    // reading. Here that would cut the client off while it's still sending the
+    // rejected body, and it could then lose the response (the reason for
+    // lingering). So the call is ignored on this one socket while the body is
+    // discarded, and the original is restored and called by `close` below.
+    // Answering `keep-alive` instead isn't an option: clients would reuse a
+    // connection that is about to close.
     const destroySoon = socket.destroySoon;
-    // Node calls this when a `Connection: close` response finishes.
     socket.destroySoon = () => undefined;
     let discarded = 0;
     let bodyDone = false;
@@ -125,8 +148,10 @@ function linger(
         close();
     });
     socket.once("close", () => {
+        // Closed early (e.g. the client went away): nothing left to do.
         clearTimeout(timer);
         clearTimeout(forceClose);
+        socket.destroySoon = destroySoon;
     });
     req.resume();
 }

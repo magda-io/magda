@@ -272,6 +272,7 @@ requestTimeoutPerPath: {}
 # -- (int) After an error response (4xx/5xx) sent before the request body has arrived, e.g. a rejected upload,
 # how long (in seconds) the gateway keeps reading and discarding the body before it closes the connection.
 # Closing straight away could stop the client (nginx, for a browser) receiving the response.
+# If the response itself stalls, the connection is closed at most twice this long after the rejection started.
 earlyRejectionLingerSeconds: 5
 
 # -- (int) After an error response sent before the request body has arrived, the most bytes of the body
