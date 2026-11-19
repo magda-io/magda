@@ -6,6 +6,7 @@ import request from "supertest";
 import buildApp from "../buildApp.js";
 import { AgentManager } from "../manager.js";
 import { RuntimeProxy } from "../runtimeProxy.js";
+import { createManagerServer } from "../server.js";
 import { AgentKubernetesClient } from "../kubernetes.js";
 import { ManagerConfig } from "../types.js";
 
@@ -307,6 +308,19 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     let upstreamUpgrades: number;
     let upgradedSockets: Socket[];
     let upstreamBodyBytes: number[];
+    // The fake DSH's session cookie and upload route.
+    let issuedCookie: string;
+    let validCookie: string;
+    let tokenExchanges: number;
+    let uploadChecks: number;
+    let uploads: number[];
+    let rejectNextUpload: boolean;
+    let failExchanges: boolean;
+    let appRequests: string[];
+    let sandboxPort: number;
+    let kubernetes: AgentKubernetesClient;
+    let holdUploads: boolean;
+    let releaseUploads: () => void;
 
     beforeEach(async () => {
         auth = new FakeAuthorizationApi();
@@ -315,10 +329,55 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         upstreamUpgrades = 0;
         upgradedSockets = [];
         upstreamBodyBytes = [];
+        issuedCookie = validCookie = "dsh=managed";
+        tokenExchanges = uploadChecks = 0;
+        uploads = [];
+        rejectNextUpload = holdUploads = failExchanges = false;
+        appRequests = [];
+        releaseUploads = () => undefined;
         upstream = http.createServer((req, res) => {
             if (req.url?.startsWith("/?token=")) {
-                res.writeHead(303, { "set-cookie": "dsh=managed; Path=/" });
+                tokenExchanges += 1;
+                // Renewals (any exchange after the first) fail.
+                if (failExchanges && tokenExchanges > 1) {
+                    res.writeHead(500);
+                    res.end();
+                    return;
+                }
+                res.writeHead(303, { "set-cookie": `${issuedCookie}; Path=/` });
                 res.end();
+                return;
+            }
+            if (req.url?.split("?", 1)[0] === "/api/session/uploadFileBinary") {
+                // As DSH: authenticate, then require the octet-stream type
+                // before reading the body.
+                const refuse = (status: number) => {
+                    req.resume();
+                    res.writeHead(status);
+                    res.end();
+                };
+                if (req.headers.cookie !== validCookie) return refuse(401);
+                if (
+                    req.headers["content-type"] !== "application/octet-stream"
+                ) {
+                    uploadChecks += 1;
+                    return refuse(415);
+                }
+                if (rejectNextUpload) {
+                    rejectNextUpload = false;
+                    return refuse(401);
+                }
+                if (holdUploads) {
+                    req.pause();
+                    releaseUploads = () => req.resume();
+                }
+                let bytes = 0;
+                req.on("data", (chunk: Buffer) => (bytes += chunk.length));
+                req.on("end", () => {
+                    uploads.push(bytes);
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ ok: true, bytes }));
+                });
                 return;
             }
             let bytes = 0;
@@ -341,8 +400,8 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         await new Promise<void>((resolve) =>
             upstream.listen(0, "127.0.0.1", resolve)
         );
-        const sandboxPort = (upstream.address() as AddressInfo).port;
-        const kubernetes = ({
+        sandboxPort = (upstream.address() as AddressInfo).port;
+        kubernetes = ({
             status: async (userId: string) => {
                 claimLookups.push(userId);
                 return { state: "READY" };
@@ -356,14 +415,26 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
             readLaunchToken: async () => "launch-token"
         } as unknown) as AgentKubernetesClient;
         proxy = new RuntimeProxy(
-            config({ sandboxPort, runtimeAuthRecheckSeconds: 3600 }),
+            config({
+                sandboxPort,
+                runtimeAuthRecheckSeconds: 3600,
+                runtimeMaxUploadBytes: 2 * 1024 * 1024,
+                runtimeLingerLimits: {
+                    lingerSeconds: 2,
+                    maxDiscardBytes: 4 * 1024 * 1024
+                }
+            }),
             kubernetes
         );
-        proxyServer = http.createServer((req, res) =>
-            proxy.handleHttp(req, res)
-        );
-        proxyServer.on("upgrade", (req, socket, head) =>
-            proxy.handleUpgrade(req, socket, head)
+        // The production dispatcher, with a stand-in for the Express app.
+        proxyServer = createManagerServer(
+            "/v0/runtime",
+            (req, res) => {
+                appRequests.push(`${req.method} ${req.url}`);
+                req.resume();
+                req.on("end", () => res.end("app"));
+            },
+            proxy
         );
         await new Promise<void>((resolve) =>
             proxyServer.listen(0, "127.0.0.1", resolve)
@@ -414,7 +485,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         session: string,
         chunks: number,
         chunkBytes: number,
-        { chunked = false } = {}
+        { chunked = false, progress = { written: 0 } } = {}
     ) {
         return new Promise<{ status?: number; body?: string; error?: string }>(
             (resolve) => {
@@ -437,9 +508,16 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                 let written = 0;
                 let sent = false;
                 let settled = false;
+                let closed = false;
+                // Settles with the response once it's complete and the
+                // request is done: fully sent, or its connection closed after
+                // the response (Node's client stops sending when a response
+                // says `Connection: close`). An error or a close before any
+                // response is reported as `error`.
                 const settle = (result?: { error: string }) => {
                     if (settled) return;
-                    if (!result && !(response && sent)) return;
+                    if (result && response) result = undefined;
+                    if (!result && !(response && (sent || closed))) return;
                     settled = true;
                     resolve(result || response!);
                 };
@@ -455,6 +533,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                     settle({ error: error.code || error.message })
                 );
                 req.on("close", () => {
+                    closed = true;
                     if (!sent) {
                         settle({
                             error: `closed after ${written} of ${chunks} chunks`
@@ -470,6 +549,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                         return;
                     }
                     written += 1;
+                    progress.written = written;
                     req.write(Buffer.alloc(chunkBytes, 1), (error) => {
                         if (!error) setImmediate(writeNext);
                     });
@@ -477,6 +557,65 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                 writeNext();
             }
         );
+    }
+
+    /**
+     * POST over a raw socket that keeps writing its whole body regardless of
+     * the response, as the Gateway's proxy did and as curl does. A proxy that
+     * answers early and closes makes those writes fail, which the Gateway
+     * turned into a 500.
+     */
+    function postIgnoringResponse(
+        path: string,
+        session: string,
+        chunks: number,
+        chunkBytes: number
+    ) {
+        return new Promise<{
+            status?: number;
+            body?: string;
+            sentBytes: number;
+            writeError?: string;
+        }>((resolve) => {
+            const socket = new Socket();
+            let received = "";
+            let sentBytes = 0;
+            let writeError: string | undefined;
+            const finish = () => {
+                const [head, ...rest] = received.split("\r\n\r\n");
+                const status = Number(head.split(" ")[1]) || undefined;
+                resolve({
+                    status,
+                    body: rest.join("\r\n\r\n"),
+                    sentBytes,
+                    writeError
+                });
+            };
+            socket.on("data", (chunk) => (received += chunk));
+            socket.on("error", (error: NodeJS.ErrnoException) => {
+                writeError = writeError || error.code || error.message;
+            });
+            socket.on("close", finish);
+            socket.connect(proxyPort, "127.0.0.1", () => {
+                socket.write(
+                    `POST ${path} HTTP/1.1\r\nHost: magda.test\r\n` +
+                        `X-Magda-Session: ${session}\r\nConnection: close\r\n` +
+                        "Content-Type: application/octet-stream\r\n" +
+                        `Content-Length: ${chunks * chunkBytes}\r\n\r\n`
+                );
+                let written = 0;
+                const next = () => {
+                    if (written === chunks) return;
+                    written += 1;
+                    socket.write(Buffer.alloc(chunkBytes, 1), (error) => {
+                        if (error) return;
+                        sentBytes += chunkBytes;
+                        setImmediate(next);
+                    });
+                };
+                next();
+            });
+        });
     }
 
     function upgrade(path: string, session?: string) {
@@ -552,10 +691,10 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         expect(upstreamUpgrades).to.equal(1);
     });
 
-    it("forwards a runtime request body within the size limit", async () => {
+    it("forwards a buffered runtime request body within the size limit", async () => {
         auth.granted.add(bob);
         const response = await postInChunks(
-            "/v0/runtime/api/session/uploadFileBinary?name=small.bin",
+            "/v0/runtime/api/session/prompt",
             token(bob),
             4,
             256
@@ -565,12 +704,12 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     });
 
     for (const chunked of [false, true]) {
-        it(`answers 413 to an oversized ${
+        it(`answers 413 to an oversized buffered ${
             chunked ? "chunked" : "Content-Length"
-        } upload without resetting the connection`, async () => {
+        } request without resetting the connection`, async () => {
             auth.granted.add(bob);
             const response = await postInChunks(
-                "/v0/runtime/api/session/uploadFileBinary?name=big.bin",
+                "/v0/runtime/api/session/prompt",
                 token(bob),
                 256,
                 16 * 1024,
@@ -584,6 +723,320 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
             expect(upstreamBodyBytes).to.deep.equal([]);
         });
     }
+
+    const upload =
+        "/v0/runtime/api/session/uploadFileBinary?sessionId=s&name=f";
+
+    it("streams an upload past the buffered limit, with backpressure", async () => {
+        // 64 MiB: far more than the TCP buffers on both hops can hold (Linux
+        // can absorb several MiB per socket), through a proxy whose upload
+        // limit allows it.
+        const chunks = 2048;
+        const chunkBytes = 32 * 1024;
+        const bigProxy = new RuntimeProxy(
+            config({
+                sandboxPort,
+                runtimeAuthRecheckSeconds: 3600,
+                runtimeMaxUploadBytes: 256 * 1024 * 1024
+            }),
+            kubernetes
+        );
+        const bigServer = createManagerServer(
+            "/v0/runtime",
+            (_req, res) => res.end(),
+            bigProxy
+        );
+        await new Promise<void>((resolve) =>
+            bigServer.listen(0, "127.0.0.1", resolve)
+        );
+        const defaultPort = proxyPort;
+        proxyPort = (bigServer.address() as AddressInfo).port;
+        try {
+            auth.granted.add(bob);
+            holdUploads = true;
+            const progress = { written: 0 };
+            const pending = postInChunks(
+                upload,
+                token(bob),
+                chunks,
+                chunkBytes,
+                {
+                    progress
+                }
+            );
+            // DSH isn't reading yet. A buffering proxy would accept the whole
+            // upload; a streaming one holds the client back.
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            expect(progress.written).to.be.below(chunks);
+            releaseUploads();
+            const response = await pending;
+            expect(response.status).to.equal(200);
+            expect(uploads).to.deep.equal([chunks * chunkBytes]);
+            expect(uploadChecks).to.equal(0);
+        } finally {
+            proxyPort = defaultPort;
+            bigProxy.closeAll();
+            bigServer.closeAllConnections();
+            await new Promise((resolve) => bigServer.close(resolve));
+        }
+    });
+
+    for (const chunked of [false, true]) {
+        it(`answers 413 to an upload over the upload limit (${
+            chunked ? "chunked" : "Content-Length"
+        }) without resetting the connection`, async () => {
+            auth.granted.add(bob);
+            const response = await postInChunks(
+                upload,
+                token(bob),
+                128,
+                32 * 1024,
+                {
+                    chunked
+                }
+            );
+            expect(response.error).to.equal(undefined);
+            expect(response.status).to.equal(413);
+            expect(JSON.parse(response.body!).message).to.equal(
+                "Agent runtime upload is larger than the 2097152-byte limit"
+            );
+            expect(uploads).to.deep.equal([]);
+        });
+    }
+
+    it("checks a cached DSH cookie before streaming and refreshes a stale one", async () => {
+        auth.granted.add(bob);
+        const first = await postInChunks(upload, token(bob), 4, 1024);
+        expect(first.status).to.equal(200);
+        // A freshly exchanged cookie isn't checked.
+        expect([tokenExchanges, uploadChecks]).to.deep.equal([1, 0]);
+
+        // DSH restarts with a new session secret: the cached cookie is stale.
+        issuedCookie = validCookie = "dsh=rotated";
+        const second = await postInChunks(upload, token(bob), 4, 1024);
+        expect(second.status).to.equal(200);
+        expect([tokenExchanges, uploadChecks]).to.deep.equal([2, 0]);
+
+        // A valid cached cookie passes the check without an exchange.
+        const third = await postInChunks(upload, token(bob), 4, 1024);
+        expect(third.status).to.equal(200);
+        expect([tokenExchanges, uploadChecks]).to.deep.equal([2, 1]);
+        expect(uploads).to.deep.equal([4096, 4096, 4096]);
+    });
+
+    for (const [label, session, status] of [
+        ["a forged session", () => token(bob, "attacker-secret"), 401],
+        ["revoked access", () => token(bob), 403],
+        ["an upload over the upload limit", () => token(bob), 413]
+    ] as const) {
+        it(`answers ${status} to ${label} and reads the rest of the body, while the client keeps sending`, async () => {
+            if (status !== 403) auth.granted.add(bob);
+            const chunks = status === 413 ? 128 : 64;
+            const result = await postIgnoringResponse(
+                upload,
+                session(),
+                chunks,
+                32 * 1024
+            );
+            expect(result.status).to.equal(status);
+            // The raw body may be chunk-encoded: take its JSON document.
+            const json = /\{.*\}/s.exec(result.body || "")?.[0] || "{}";
+            expect(JSON.parse(json).message).to.be.a("string");
+            expect(result.writeError).to.equal(undefined);
+            expect(result.sentBytes).to.equal(chunks * 32 * 1024);
+            expect(uploads).to.deep.equal([]);
+        });
+    }
+
+    it("stops reading a rejected upload at the discard limit and closes the connection", async () => {
+        const result = await postIgnoringResponse(
+            upload,
+            token(bob, "attacker-secret"),
+            256,
+            32 * 1024
+        );
+        expect(result.status).to.equal(401);
+        expect(result.sentBytes).to.be.at.least(4 * 1024 * 1024);
+        expect(result.sentBytes).to.be.below(256 * 32 * 1024);
+    });
+
+    it("never runs a request pipelined after an early answer", async () => {
+        auth.granted.add(bob);
+        const raw = await new Promise<string>((resolve) => {
+            const socket = new Socket();
+            let data = "";
+            socket.on("data", (chunk) => (data += chunk));
+            socket.on("error", () => undefined);
+            socket.on("close", () => resolve(data));
+            socket.connect(proxyPort, "127.0.0.1", async () => {
+                socket.write(
+                    `POST ${upload} HTTP/1.1\r\nHost: magda.test\r\n` +
+                        `X-Magda-Session: ${token(
+                            bob,
+                            "attacker-secret"
+                        )}\r\n` +
+                        "Content-Length: 2000\r\n\r\n" +
+                        "x".repeat(1000)
+                );
+                while (!data.includes("HTTP/1.1")) {
+                    await new Promise((r) => setTimeout(r, 10));
+                }
+                socket.write(
+                    "x".repeat(1000) +
+                        "POST /v0/runtime/api/session/prompt HTTP/1.1\r\n" +
+                        `Host: magda.test\r\nX-Magda-Session: ${token(
+                            bob
+                        )}\r\n` +
+                        "Content-Length: 2\r\n\r\n{}"
+                );
+            });
+        });
+        expect(raw.match(/HTTP\/1\.1 \d{3}/g)).to.deep.equal(["HTTP/1.1 401"]);
+        // Time for a pipelined request that did run to reach DSH.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        expect(upstreamBodyBytes).to.deep.equal([]);
+    });
+
+    /**
+     * Send an upload with a forged session (answered 401 early), wait for the
+     * answer, then send the rest of its body followed by `pipelined`.
+     */
+    function pipelineAfterRejection(pipelined: string) {
+        return new Promise<string>((resolve) => {
+            const socket = new Socket();
+            let data = "";
+            socket.on("data", (chunk) => (data += chunk));
+            socket.on("error", () => undefined);
+            socket.on("close", () => resolve(data));
+            socket.connect(proxyPort, "127.0.0.1", async () => {
+                socket.write(
+                    `POST ${upload} HTTP/1.1\r\nHost: magda.test\r\n` +
+                        `X-Magda-Session: ${token(
+                            bob,
+                            "attacker-secret"
+                        )}\r\n` +
+                        "Content-Length: 2000\r\n\r\n" +
+                        "x".repeat(1000)
+                );
+                while (!data.includes("HTTP/1.1")) {
+                    await new Promise((r) => setTimeout(r, 10));
+                }
+                socket.write("x".repeat(1000) + pipelined);
+            });
+        });
+    }
+
+    it("never runs an Express request or a WebSocket upgrade pipelined after an early answer", async () => {
+        auth.granted.add(bob);
+        const http1 = await pipelineAfterRejection(
+            `POST /v0/session/reset HTTP/1.1\r\nHost: magda.test\r\n` +
+                `X-Magda-Session: ${token(bob)}\r\nContent-Length: 0\r\n\r\n`
+        );
+        const upgraded = await pipelineAfterRejection(
+            `GET /v0/runtime/ws HTTP/1.1\r\nHost: magda.test\r\n` +
+                `X-Magda-Session: ${token(bob)}\r\n` +
+                "Connection: Upgrade\r\nUpgrade: websocket\r\n\r\n"
+        );
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        for (const raw of [http1, upgraded]) {
+            expect(raw.match(/HTTP\/1\.1 \d{3}/g)).to.deep.equal([
+                "HTTP/1.1 401"
+            ]);
+        }
+        expect(appRequests).to.deep.equal([]);
+        expect(upstreamUpgrades).to.equal(0);
+    });
+
+    it("serves Express and runtime requests in turn on a kept-alive connection", async () => {
+        auth.granted.add(bob);
+        const raw = await new Promise<string>((resolve) => {
+            const socket = new Socket();
+            let data = "";
+            socket.on("data", (chunk) => (data += chunk));
+            socket.on("close", () => resolve(data));
+            socket.connect(proxyPort, "127.0.0.1", () => {
+                socket.write(
+                    "GET /v0/session HTTP/1.1\r\nHost: magda.test\r\n\r\n" +
+                        "GET /v0/runtime/api/session/list HTTP/1.1\r\nHost: magda.test\r\n" +
+                        `X-Magda-Session: ${token(bob)}\r\n\r\n` +
+                        "GET /v0/session HTTP/1.1\r\nHost: magda.test\r\nConnection: close\r\n\r\n"
+                );
+            });
+        });
+        expect(raw.match(/HTTP\/1\.1 \d{3}/g)).to.deep.equal([
+            "HTTP/1.1 200",
+            "HTTP/1.1 200",
+            "HTTP/1.1 200"
+        ]);
+        expect(appRequests).to.deep.equal([
+            "GET /v0/session",
+            "GET /v0/session"
+        ]);
+    });
+
+    it("leaves no connection behind when the client goes away during the drain", async () => {
+        await new Promise<void>((resolve) => {
+            const req = http.request({
+                host: "127.0.0.1",
+                port: proxyPort,
+                method: "POST",
+                path: upload,
+                headers: {
+                    "X-Magda-Session": token(bob, "attacker-secret"),
+                    "content-length": String(1024 * 1024)
+                }
+            });
+            req.on("error", () => undefined);
+            req.on("response", (res) => {
+                res.resume();
+                req.destroy();
+                resolve();
+            });
+            req.write(Buffer.alloc(16 * 1024, 1));
+        });
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        const open = await new Promise<number>((resolve, reject) =>
+            proxyServer.getConnections((error, count) =>
+                error ? reject(error) : resolve(count)
+            )
+        );
+        expect(open).to.equal(0);
+    });
+
+    it("logs a failed cookie renewal and still answers a retryable 503", async () => {
+        auth.granted.add(bob);
+        rejectNextUpload = failExchanges = true;
+        const logged: string[] = [];
+        const originalError = console.error;
+        console.error = (...args: unknown[]) => logged.push(String(args[0]));
+        try {
+            // The first exchange succeeds; the renewal after DSH's 401 fails.
+            const refused = await postInChunks(upload, token(bob), 4, 1024);
+            expect(refused.status).to.equal(503);
+        } finally {
+            console.error = originalError;
+        }
+        expect(logged).to.include(
+            "Agent runtime cookie renewal failed for sandbox-" + bob
+        );
+    });
+
+    it("answers a retryable 503 when DSH refuses the streamed upload's cookie", async () => {
+        auth.granted.add(bob);
+        rejectNextUpload = true;
+        const refused = await postInChunks(upload, token(bob), 64, 16 * 1024);
+        expect(refused.error).to.equal(undefined);
+        expect(refused.status).to.equal(503);
+        expect(JSON.parse(refused.body!).message).to.equal(
+            "Agent runtime session expired; retry the upload"
+        );
+        // The cookie was renewed before answering, so the retry needs none.
+        expect(tokenExchanges).to.equal(2);
+        const retried = await postInChunks(upload, token(bob), 4, 1024);
+        expect(retried.status).to.equal(200);
+        expect(tokenExchanges).to.equal(2);
+        expect(uploads).to.deep.equal([4096]);
+    });
 
     it("closes an open WebSocket after revocation but survives a policy outage", async () => {
         auth.granted.add(bob);

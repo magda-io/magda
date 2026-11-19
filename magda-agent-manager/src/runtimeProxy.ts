@@ -25,6 +25,143 @@ const DROP_REQUEST_HEADERS = new Set([
     "proxy-authorization"
 ]);
 
+/** DSH Web's attachment upload route, streamed rather than buffered. */
+export const DSH_UPLOAD_PATH = "/api/session/uploadFileBinary";
+export const DEFAULT_RUNTIME_MAX_UPLOAD_BYTES = 1024 * 1024 * 1024;
+
+export function isStreamedUpload(method: string | undefined, path: string) {
+    return (
+        (method || "GET").toUpperCase() === "POST" &&
+        new URL(path, "http://runtime.invalid").pathname === DSH_UPLOAD_PATH
+    );
+}
+
+function sendJson(res: ServerResponse, status: number, message: string) {
+    if (res.headersSent || res.writableEnded) return;
+    res.writeHead(status, { "content-type": "application/json" });
+    res.end(JSON.stringify({ message }));
+}
+
+/** Limits for reading the rest of a request after answering it early. */
+export interface LingerLimits {
+    lingerSeconds: number;
+    maxDiscardBytes: number;
+}
+
+// Connections closing after an early answer: see `lingerAfterResponse`.
+const closingSockets = new WeakSet<Duplex>();
+
+/**
+ * Whether `socket` is closing after an early answer. The Manager's server
+ * drops any further request or upgrade on it (see server.ts).
+ */
+export function isClosingConnection(socket: Duplex) {
+    return closingSockets.has(socket);
+}
+
+export const DEFAULT_LINGER_LIMITS: LingerLimits = {
+    lingerSeconds: 5,
+    maxDiscardBytes: 16 * 1024 * 1024
+};
+
+/** Whether `req` has a body that hasn't fully arrived yet. */
+function hasIncompleteBody(req: IncomingMessage) {
+    if (req.complete || req.readableEnded) return false;
+    return (
+        Number(req.headers["content-length"]) > 0 ||
+        req.headers["transfer-encoding"] !== undefined
+    );
+}
+
+/**
+ * Lingering close after a response sent before the request body has arrived
+ * (e.g. 401 or 413 for an upload). The Gateway forwards the response and
+ * stops sending the body, but if this end closed the connection while body
+ * bytes were still arriving, the Gateway could lose the response. So the rest
+ * of the body is read and discarded within `limits` before the connection
+ * closes. The response says `Connection: close`, so the connection is never
+ * reused; Node would end it as soon as the response finished, so that is
+ * deferred here. Call before the response's headers are written.
+ */
+function lingerAfterResponse(
+    req: IncomingMessage,
+    res: ServerResponse,
+    { lingerSeconds, maxDiscardBytes }: LingerLimits
+) {
+    res.setHeader("connection", "close");
+    const socket = req.socket;
+    closingSockets.add(socket);
+    // Node's HTTP server calls `socket.destroySoon()` as soon as a
+    // `Connection: close` response finishes; it ends the connection and stops
+    // reading, which would cut the Gateway off while it's still writing the
+    // rejected body. So the call is ignored on this one socket while the body
+    // is discarded, and the original is restored and called by `close`.
+    // Answering `keep-alive` instead isn't an option: clients would reuse a
+    // connection that is about to close.
+    const destroySoon = socket.destroySoon;
+    socket.destroySoon = () => undefined;
+    let discarded = 0;
+    let bodyDone = false;
+    let responseDone = false;
+    let limitReached = false;
+    let forceClose: NodeJS.Timeout | undefined;
+    const close = () => {
+        if (!responseDone || !(bodyDone || limitReached)) return;
+        clearTimeout(timer);
+        clearTimeout(forceClose);
+        socket.destroySoon = destroySoon;
+        if (bodyDone) socket.destroySoon();
+        else socket.destroy();
+    };
+    const stop = () => {
+        if (limitReached) return;
+        limitReached = true;
+        req.pause();
+        forceClose = setTimeout(() => socket.destroy(), lingerSeconds * 1000);
+        close();
+    };
+    const timer = setTimeout(stop, lingerSeconds * 1000);
+    req.on("data", (chunk: Buffer) => {
+        discarded += chunk.length;
+        if (discarded > maxDiscardBytes) stop();
+    });
+    req.once("end", () => {
+        bodyDone = true;
+        close();
+    });
+    res.once("finish", () => {
+        responseDone = true;
+        close();
+    });
+    socket.once("close", () => {
+        // Closed early (e.g. the Gateway went away): nothing left to do.
+        clearTimeout(timer);
+        clearTimeout(forceClose);
+        socket.destroySoon = destroySoon;
+    });
+    req.resume();
+}
+
+/**
+ * Answer an error, lingering (see above) when the request body hasn't fully
+ * arrived. A response that has already started can't be replaced, so its
+ * connection is closed instead.
+ */
+function rejectRequest(
+    req: IncomingMessage,
+    res: ServerResponse,
+    status: number,
+    message: string,
+    limits: LingerLimits
+) {
+    if (res.headersSent) {
+        if (!res.writableEnded) res.destroy();
+        return;
+    }
+    if (hasIncompleteBody(req)) lingerAfterResponse(req, res, limits);
+    sendJson(res, status, message);
+}
+
 interface RuntimeTarget {
     sandbox: string;
     host: string;
@@ -243,6 +380,47 @@ export class RuntimeProxy {
         return exchange;
     }
 
+    private lingerLimits(): LingerLimits {
+        return this.config.runtimeLingerLimits || DEFAULT_LINGER_LIMITS;
+    }
+
+    /**
+     * The DSH cookie for a streamed upload. A stream can't be resent after a
+     * 401, so a cached cookie is checked first. DSH authenticates before
+     * routing, and its upload handler refuses a request without the
+     * octet-stream type (415) before reading a body, so the check has no
+     * side effects.
+     */
+    private async uploadCookie(target: RuntimeTarget): Promise<string> {
+        const cached = this.cookieJar.get(target.sandbox);
+        if (!cached) return this.cookie(target);
+        const status = await new Promise<number>((resolve, reject) => {
+            const check = http.request(
+                {
+                    host: target.host,
+                    port: this.config.sandboxPort,
+                    method: "POST",
+                    path: DSH_UPLOAD_PATH,
+                    headers: {
+                        host: this.config.externalAuthority,
+                        cookie: cached,
+                        "content-length": "0"
+                    }
+                },
+                (response) => {
+                    response.resume();
+                    resolve(response.statusCode || 0);
+                }
+            );
+            check.setTimeout(10_000, () =>
+                check.destroy(new Error("Agent runtime cookie check timed out"))
+            );
+            check.on("error", reject);
+            check.end();
+        });
+        return status === 401 ? this.cookie(target, true) : cached;
+    }
+
     private touchActivity(userId: string): Promise<void> {
         const now = Date.now();
         const existing = this.activityWrites.get(userId);
@@ -305,37 +483,35 @@ export class RuntimeProxy {
 
     /**
      * Buffer the request body up to `runtimeMaxBodyBytes`. An oversized body
-     * is read to the end and discarded before the 413 is sent. The gateway
-     * proxies with `Connection: close`, so Node closes the connection as soon
-     * as a response is sent; answering mid-upload makes the gateway's write
-     * fail (EPIPE) and the client gets a 500 instead of the 413. The ingress
-     * body-size limit bounds how much is discarded.
+     * is rejected with 413 as soon as it's known to be too large; the caller
+     * answers with `rejectRequest`, which discards the rest within bounds.
      */
     private readBody(req: IncomingMessage): Promise<Buffer> {
         const limit = this.config.runtimeMaxBodyBytes;
+        const tooLarge = () =>
+            new AgentAuthorizationError(
+                "Agent runtime request body is too large",
+                413
+            );
+        if (Number(req.headers["content-length"]) > limit) {
+            return Promise.reject(tooLarge());
+        }
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = [];
             let size = 0;
-            let tooLarge = Number(req.headers["content-length"]) > limit;
-            req.on("data", (chunk: Buffer) => {
-                if (tooLarge) return;
+            const onData = (chunk: Buffer) => {
                 size += chunk.length;
                 if (size > limit) {
-                    tooLarge = true;
                     chunks.length = 0;
+                    req.off("data", onData);
+                    req.pause();
+                    reject(tooLarge());
                     return;
                 }
                 chunks.push(chunk);
-            });
-            req.on("end", () => {
-                if (!tooLarge) return resolve(Buffer.concat(chunks));
-                reject(
-                    new AgentAuthorizationError(
-                        "Agent runtime request body is too large",
-                        413
-                    )
-                );
-            });
+            };
+            req.on("data", onData);
+            req.on("end", () => resolve(Buffer.concat(chunks)));
             req.on("error", reject);
         });
     }
@@ -469,11 +645,150 @@ export class RuntimeProxy {
         upstream.end(body);
     }
 
+    /**
+     * Stream a DSH attachment upload with backpressure, so the Manager's
+     * memory doesn't grow with the file. Every answer is sent only after the
+     * body has been read to the end (see `readBody`).
+     */
+    private async forwardStreamedUpload(
+        req: IncomingMessage,
+        res: ServerResponse,
+        auth: Awaited<ReturnType<RuntimeProxy["authenticate"]>>
+    ) {
+        const limit =
+            this.config.runtimeMaxUploadBytes ??
+            DEFAULT_RUNTIME_MAX_UPLOAD_BYTES;
+        const tooLarge = `Agent runtime upload is larger than the ${limit}-byte limit`;
+        if (Number(req.headers["content-length"]) > limit) {
+            throw new AgentAuthorizationError(tooLarge, 413);
+        }
+        // An upload is an explicit user action. Persist the lease before DSH
+        // starts work, and renew it while a long upload streams.
+        await this.touchActivity(auth.user.id);
+        const cookie = await this.uploadCookie(auth.target);
+        const limits = this.lingerLimits();
+        let size = 0;
+        let lastTouch = Date.now();
+        let forwarding = true;
+        let answered = false;
+        const answer = (status: number, message: string) => {
+            if (answered) return;
+            answered = true;
+            forwarding = false;
+            upstream.destroy();
+            rejectRequest(req, res, status, message, limits);
+        };
+        // Don't pass the gateway's `Connection: close` on: DSH would then
+        // close the connection when it answers early (e.g. 401), and the rest
+        // of the upload would fail to write.
+        const headers = upstreamHeaders(
+            req.headers,
+            this.config.externalAuthority,
+            cookie
+        );
+        delete headers.connection;
+        delete headers["keep-alive"];
+        const upstream = http.request(
+            {
+                host: auth.target.host,
+                port: this.config.sandboxPort,
+                method: req.method,
+                path: auth.path,
+                headers
+            },
+            async (upstreamResponse) => {
+                if (answered) {
+                    upstreamResponse.resume();
+                    return;
+                }
+                // DSH normally answers after reading the whole body. If it
+                // answers early, stop sending the rest; the answer goes out
+                // straight away and the rest is discarded within bounds.
+                answered = true;
+                forwarding = false;
+                void this.touchActivity(auth.user.id).catch(() => undefined);
+                if (upstreamResponse.statusCode === 401) {
+                    upstreamResponse.resume();
+                    upstream.destroy();
+                    // Renew the cookie now, so a retry streams straight away. If
+                    // that fails the retry tries again; log it for diagnosis.
+                    await this.cookie(auth.target, true).catch((error) =>
+                        console.error(
+                            `Agent runtime cookie renewal failed for ${auth.target.sandbox}`,
+                            error
+                        )
+                    );
+                    rejectRequest(
+                        req,
+                        res,
+                        503,
+                        "Agent runtime session expired; retry the upload",
+                        limits
+                    );
+                    return;
+                }
+                if (hasIncompleteBody(req)) {
+                    lingerAfterResponse(req, res, limits);
+                }
+                const responseHeaders = { ...upstreamResponse.headers };
+                delete responseHeaders["set-cookie"];
+                // The client's connection is its own (see above).
+                delete responseHeaders.connection;
+                delete responseHeaders["keep-alive"];
+                res.writeHead(
+                    upstreamResponse.statusCode || 502,
+                    responseHeaders
+                );
+                upstreamResponse.pipe(res);
+                upstreamResponse.on("error", () => res.destroy());
+                upstreamResponse.on("end", () => {
+                    if (!upstream.writableEnded) upstream.destroy();
+                });
+            }
+        );
+        upstream.setTimeout(120_000, () =>
+            upstream.destroy(new Error("Agent runtime upload timed out"))
+        );
+        upstream.on("error", (error) => {
+            if (answered) return;
+            if (!res.destroyed) {
+                console.error("Agent runtime upload proxy error", error);
+            }
+            answer(502, "Agent runtime unavailable");
+        });
+        upstream.on("drain", () => {
+            if (forwarding) req.resume();
+        });
+        res.once("close", () => {
+            if (!res.writableEnded) upstream.destroy();
+        });
+        req.on("data", (chunk: Buffer) => {
+            if (!forwarding) return;
+            size += chunk.length;
+            if (size > limit) {
+                answer(413, tooLarge);
+                return;
+            }
+            if (Date.now() - lastTouch > 60_000) {
+                lastTouch = Date.now();
+                void this.touchActivity(auth.user.id).catch(() => undefined);
+            }
+            if (!upstream.write(chunk)) req.pause();
+        });
+        req.on("end", () => {
+            if (forwarding) upstream.end();
+        });
+    }
+
     async handleHttp(req: IncomingMessage, res: ServerResponse) {
         let snapshotUserId: string | undefined;
         let snapshotToken: ActivitySnapshotToken | undefined;
         try {
             const auth = await this.authenticate(req);
+            if (isStreamedUpload(req.method, auth.path)) {
+                await this.forwardStreamedUpload(req, res, auth);
+                return;
+            }
             const meaningful = isMeaningfulRuntimeRequest(
                 req.method,
                 auth.path
@@ -497,10 +812,16 @@ export class RuntimeProxy {
                     snapshotToken
                 );
             }
+            // Answers any rejection straight away, including one sent before
+            // the body has arrived (authentication, Workspace state, size).
             const proxyError = error as AgentAuthorizationError;
-            const status = proxyError.status || 502;
-            res.writeHead(status, { "content-type": "application/json" });
-            res.end(JSON.stringify({ message: proxyError.message }));
+            rejectRequest(
+                req,
+                res,
+                proxyError.status || 502,
+                proxyError.message,
+                this.lingerLimits()
+            );
         }
     }
 

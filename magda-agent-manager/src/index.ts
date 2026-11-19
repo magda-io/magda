@@ -1,10 +1,13 @@
-import http from "node:http";
 import { URL } from "node:url";
 import buildApp from "./buildApp.js";
 import { ManagedApiKeyClient } from "./apiKeys.js";
 import { AgentKubernetesClient } from "./kubernetes.js";
 import { AgentManager } from "./manager.js";
-import { RuntimeProxy } from "./runtimeProxy.js";
+import {
+    DEFAULT_RUNTIME_MAX_UPLOAD_BYTES,
+    RuntimeProxy
+} from "./runtimeProxy.js";
+import { createManagerServer } from "./server.js";
 import { ManagerConfig, resolveLlmModel } from "./types.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
@@ -102,6 +105,9 @@ const config: ManagerConfig = {
     runtimeMaxBodyBytes: Number(
         process.env.RUNTIME_MAX_BODY_BYTES || 16 * 1024 * 1024
     ),
+    runtimeMaxUploadBytes: Number(
+        process.env.RUNTIME_MAX_UPLOAD_BYTES || DEFAULT_RUNTIME_MAX_UPLOAD_BYTES
+    ),
     runtimeAuthRecheckSeconds: Math.max(
         5,
         Number(process.env.RUNTIME_AUTH_RECHECK_SECONDS || 60)
@@ -170,29 +176,7 @@ const skillService = new AgentSkillService({
     }
 });
 const app = buildApp(config, manager, skillService);
-const server = http.createServer((req, res) => {
-    if (
-        req.url === config.runtimePrefix ||
-        req.url?.startsWith(`${config.runtimePrefix}/`) ||
-        req.url?.startsWith(`${config.runtimePrefix}?`)
-    ) {
-        proxy.handleHttp(req, res);
-        return;
-    }
-    app(req, res);
-});
-server.requestTimeout = 0;
-server.on("upgrade", (req, socket, head) => {
-    if (
-        req.url === config.runtimePrefix ||
-        req.url?.startsWith(`${config.runtimePrefix}/`) ||
-        req.url?.startsWith(`${config.runtimePrefix}?`)
-    ) {
-        proxy.handleUpgrade(req, socket, head);
-        return;
-    }
-    socket.destroy();
-});
+const server = createManagerServer(config.runtimePrefix, app, proxy);
 let reconciliation: Promise<void> | undefined;
 const reconcile = () => {
     if (reconciliation) return reconciliation;

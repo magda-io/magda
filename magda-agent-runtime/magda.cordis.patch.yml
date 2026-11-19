@@ -7,6 +7,9 @@
     compression: gzip
     compressionLevel: 1
     compressionThresholdBytes: 1024
+    # Attachment uploads stream through the Agent Manager for up to an hour
+    # (global.agentWorkspace.maxUploadBytes); Node's default is five minutes.
+    requestTimeoutMs: 3600000
 
 # Magda owns the single provider and model. The lifecycle bootstrap writes the
 # raw API-key credential to /data/config/magda-agent.env and restarts the

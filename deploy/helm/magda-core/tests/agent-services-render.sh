@@ -95,7 +95,8 @@ for expected in \
     'name: SKILL_ARCHIVE_MAX_PATH_LENGTH, value: "240"' \
     'name: SKILL_ARCHIVE_MAX_NESTING_DEPTH, value: "8"' \
     'name: SKILL_ARCHIVE_MAX_MARKDOWN_BYTES, value: "1048576"' \
-    'name: RUNTIME_MAX_BODY_BYTES, value: "16777216"'; do
+    'name: RUNTIME_MAX_BODY_BYTES, value: "16777216"' \
+    'name: RUNTIME_MAX_UPLOAD_BYTES, value: "1073741824"'; do
     grep -Fq "$expected" "$tmp/model-default.yaml"
 done
 if resource_document Deployment agent-manager "$tmp/model-default.yaml" | grep -q 'MINIO_'; then refuted $LINENO; fi
@@ -703,6 +704,39 @@ ingress_annotations "$tmp/ingress-override.yaml" | grep -qx '    nginx.ingress.k
 ingress_annotations "$tmp/ingress-override.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"'
 ingress_annotations "$tmp/ingress-disabled-explicit.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"'
 if ingress_annotations "$tmp/ingress-disabled-explicit.yaml" | grep -q 'proxy-send-timeout'; then refuted $LINENO; fi
+# #3928: the upload route streams up to global.agentWorkspace.maxUploadBytes.
+upload_ingress() {
+    resource_document Ingress ingress-agent-upload "$1"
+}
+for file in ingress-disabled ingress-llm-only; do
+    if upload_ingress "$tmp/$file.yaml" | grep -q .; then refuted $LINENO; fi
+done
+[[ "$(count_kind Ingress "$tmp/ingress-enabled.yaml")" == 2 ]]
+upload_ingress "$tmp/ingress-enabled.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-body-size: "1073741824"'
+upload_ingress "$tmp/ingress-enabled.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"'
+upload_ingress "$tmp/ingress-enabled.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"'
+upload_ingress "$tmp/ingress-enabled.yaml" | grep -qx '      - pathType: Exact'
+upload_ingress "$tmp/ingress-enabled.yaml" | grep -qx '        path: /api/v0/agent/runtime/api/session/uploadFileBinary'
+ingress_annotations "$tmp/ingress-enabled.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-body-size: "100M"'
+render "$tmp/ingress-upload-500m.yaml" magda test --set tags.ingress=true \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set global.agentWorkspace.maxUploadBytes=524288000
+upload_ingress "$tmp/ingress-upload-500m.yaml" | grep -qx '    nginx.ingress.kubernetes.io/proxy-body-size: "524288000"'
+grep -Fq 'name: RUNTIME_MAX_UPLOAD_BYTES, value: "524288000"' "$tmp/ingress-upload-500m.yaml"
+render "$tmp/ingress-gce.yaml" magda test --set tags.ingress=true \
+    --set global.agentWorkspace.enabled=true \
+    --set global.llmServices.enabled=true \
+    --set ingress.ingressClass=gce
+[[ "$(count_kind Ingress "$tmp/ingress-gce.yaml")" == 1 ]]
+for value in 0 -1 1.5 abc; do
+    expect_failure "global.agentWorkspace.maxUploadBytes must be a positive integer" \
+        render "$tmp/invalid-upload.yaml" magda test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set global.agentWorkspace.maxUploadBytes=$value
+done
+
 # Other annotations are unchanged by the Workspace flag.
 diff <(ingress_annotations "$tmp/ingress-disabled.yaml") \
     <(ingress_annotations "$tmp/ingress-enabled.yaml" | grep -v 'proxy-read-timeout\|proxy-send-timeout')

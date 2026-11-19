@@ -6,6 +6,11 @@ global:
     # -- Namespace containing per-user SandboxClaim, Sandbox and PVC resources.
     # Empty derives a collision-resistant name from the Helm release namespace.
     sandboxNamespace: ""
+    # -- Largest file, in bytes, a user can attach in the Agent Workspace
+    # (default 1 GiB). The Manager streams uploads, so this doesn't add to its
+    # memory; each file is stored on the user's Workspace PVC. The bundled
+    # ingress raises the body-size limit of the upload route to match.
+    maxUploadBytes: 1073741824
   llmServices:
     # -- Enable the authenticated Magda LLM facade independently of Agent Workspace.
     enabled: false

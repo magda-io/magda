@@ -81,11 +81,10 @@ skillArchive:
 hardDeleteSeconds: 28800
 idleSuspendSeconds: 1800
 reconcileIntervalSeconds: 30
-# -- Largest request body, in bytes, the Manager accepts for a Workspace's
-# runtime. DSH Web uploads each attachment in one request, so this is the
-# largest file a user can attach; a larger one is answered with 413. The
-# Manager buffers each request in memory, so raise `manager.resources` with
-# it, and keep the ingress `proxyBodySize` at least as large.
+# -- Largest buffered request body, in bytes, the Manager accepts for a
+# Workspace's runtime; a larger one is answered with 413. The Manager buffers
+# these requests in memory. Attachment uploads are streamed instead, up to
+# `global.agentWorkspace.maxUploadBytes`.
 runtimeMaxBodyBytes: 16777216
 # Optional chart-specific overrides. Empty values inherit
 # global.defaultAgentModel from the parent chart.

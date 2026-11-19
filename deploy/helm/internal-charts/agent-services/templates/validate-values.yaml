@@ -18,6 +18,14 @@
 {{- fail (printf "agent-services.runtimeClasses.%s is required when warmPool.type=%s" $runtimeType $runtimeType) -}}
 {{- end -}}
 
+{{- $maxUpload := dig "agentWorkspace" "maxUploadBytes" 1073741824 .Values.global -}}
+{{- if not (has (kindOf $maxUpload) (list "int" "int64" "float64")) -}}
+{{- fail (printf "global.agentWorkspace.maxUploadBytes must be a positive integer; got %v (%s)" $maxUpload (kindOf $maxUpload)) -}}
+{{- end -}}
+{{- if or (le (float64 $maxUpload) 0.0) (ne (float64 $maxUpload) (floor (float64 $maxUpload))) -}}
+{{- fail (printf "global.agentWorkspace.maxUploadBytes must be a positive integer; got %v" $maxUpload) -}}
+{{- end -}}
+
 {{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
 {{- $model := coalesce .Values.llm.model (get $globalModel "alias") -}}
 {{- if empty $model -}}
