@@ -108,7 +108,7 @@ describe("proxying", () => {
                         // http-node-proxy (proxyTimeout setting) or node request socket (timeout setting)
                         // here we tried to capture error from our proxy modules and throw an error similar to the error that would be thrown by node request socket
                         if (
-                            res.status === 500 &&
+                            res.status === 502 &&
                             res.text === "Something went wrong."
                         ) {
                             throw new Error("socket hang up");

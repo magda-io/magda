@@ -1,5 +1,6 @@
 import httpProxy from "http-proxy";
 import express from "express";
+import { hasIncompleteBody } from "./createEarlyRejectionMiddleware.js";
 import { ClientRequest, IncomingHttpHeaders, IncomingMessage } from "http";
 import { Duplex } from "stream";
 import getNoCacheHeaders from "magda-typescript-common/src/express/getNoCacheHeaders.js";
@@ -125,6 +126,11 @@ interface WebSocketProxyState {
 
 const webSocketProxyStates = new WeakMap<Duplex, WebSocketProxyState>();
 
+// The upstream request of each proxied HTTP request.
+const upstreamRequests = new WeakMap<IncomingMessage, ClientRequest>();
+// Requests whose upstream answered with an error before their body arrived.
+const upstreamRejected = new WeakSet<IncomingMessage>();
+
 export default function createBaseProxy(
     options: GenericProxyRouterOptions
 ): httpProxy {
@@ -180,22 +186,25 @@ export default function createBaseProxy(
             rejectWebSocketHandshake(res, 502);
             return;
         }
-        console.error(err);
-        try {
-            res.writeHead(500, {
-                "Content-Type": "text/plain"
-            });
-        } catch (e) {
-            // in case header already sent
-            console.log("Failed to set error repsonse header: " + e);
-            // -- we should not response anything here as header might be already sent
-            res.end();
+        if (upstreamRejected.has(req)) {
+            // The upstream rejected the request before its body arrived and
+            // may close its connection: writing the rest of the body there
+            // fails, but its response is still being forwarded.
             return;
         }
+        console.error(err);
+        if (res.headersSent) {
+            // Never write over a response that has started; a truncated one
+            // must end as a failed connection, not look complete.
+            if (!res.writableEnded) res.destroy();
+            return;
+        }
+        res.writeHead(502, { "Content-Type": "text/plain" });
         res.end("Something went wrong.");
     });
 
     proxy.on("proxyReq", function (proxyReq, req, res) {
+        upstreamRequests.set(req, proxyReq);
         appendRequestPath(proxyReq, req);
 
         if ((req as any).__expectHeader) {
@@ -213,6 +222,29 @@ export default function createBaseProxy(
     });
 
     proxy.on("proxyRes", function (proxyRes, req, res) {
+        const proxyReq = upstreamRequests.get(req);
+        if (
+            (proxyRes.statusCode || 0) >= 400 &&
+            hasIncompleteBody(req) &&
+            proxyReq
+        ) {
+            // An early rejection, e.g. 401/403/413 for an upload: stop sending
+            // the body upstream and forward the response as usual. The client
+            // side discards the rest (createEarlyRejectionMiddleware). Keep the
+            // upstream request until its response has arrived in full, so the
+            // rejection isn't cut short, then close it: its body is
+            // incomplete, so the connection can't be reused.
+            upstreamRejected.add(req);
+            req.unpipe(proxyReq);
+            const closeUpstream = () => proxyReq.destroy();
+            proxyRes.once("end", closeUpstream);
+            proxyRes.once("close", closeUpstream);
+        }
+        // An upstream response cut off mid-way (its connection dropped) would
+        // otherwise leave the client waiting: end it as a failed connection.
+        proxyRes.once("close", () => {
+            if (!proxyRes.complete && !res.writableEnded) res.destroy();
+        });
         const reqCacheControlHeaderVal = getHeaderValue(
             req.headers,
             "Cache-Control"

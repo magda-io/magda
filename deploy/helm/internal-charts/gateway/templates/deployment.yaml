@@ -115,6 +115,10 @@ spec:
 {{- if .Values.proxyTimeout }}
             "--proxyTimeout", {{ .Values.proxyTimeout | quote }},
 {{- end }}
+            "--requestTimeout", {{ ternary 300 .Values.requestTimeout (kindIs "invalid" .Values.requestTimeout) | int64 | quote }},
+            "--requestTimeoutPerPathJson", "/etc/config/requestTimeoutPerPath.json",
+            "--earlyRejectionLingerSeconds", {{ .Values.earlyRejectionLingerSeconds | default 5 | quote }},
+            "--earlyRejectionMaxDiscardBytes", {{ .Values.earlyRejectionMaxDiscardBytes | default 16777216 | int64 | quote }},
 {{- if .Values.websocketHandshakeTimeout }}
             "--websocketHandshakeTimeout", {{ .Values.websocketHandshakeTimeout | quote }},
 {{- end }}

@@ -16,6 +16,8 @@ import createGenericProxyRouter from "./createGenericProxyRouter.js";
 import createAuthRouter from "./createAuthRouter.js";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter.js";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware.js";
+import createRequestTimeoutMiddleware from "./createRequestTimeoutMiddleware.js";
+import createEarlyRejectionMiddleware from "./createEarlyRejectionMiddleware.js";
 import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy.js";
 import Authenticator, { SessionCookieOptions } from "./Authenticator.js";
 import defaultConfig from "./defaultConfig.js";
@@ -78,6 +80,10 @@ export type Config = {
     defaultCacheControl?: string;
     magdaAdminPortalName?: string;
     proxyTimeout?: string;
+    requestTimeout?: number;
+    requestTimeoutPerPathJson?: Record<string, number>;
+    earlyRejectionLingerSeconds?: number;
+    earlyRejectionMaxDiscardBytes?: number;
     websocketHandshakeTimeout?: number;
     skipAuth?: boolean;
     registryQueryCacheMaxKeys: number;
@@ -132,6 +138,22 @@ export default function buildApp(app: express.Application, config: Config) {
     );
 
     console.log(`SkipAuth: ${skipAuth}`);
+
+    // First, so they cover every response and request: see
+    // createEarlyRejectionMiddleware and createRequestTimeoutMiddleware.
+    app.use(
+        createEarlyRejectionMiddleware({
+            lingerSeconds: config.earlyRejectionLingerSeconds ?? 5,
+            maxDiscardBytes:
+                config.earlyRejectionMaxDiscardBytes ?? 16 * 1024 * 1024
+        })
+    );
+    app.use(
+        createRequestTimeoutMiddleware(
+            config.requestTimeout ?? 300,
+            config.requestTimeoutPerPathJson
+        )
+    );
 
     // Log everything
     app.use(require("morgan")("combined"));
