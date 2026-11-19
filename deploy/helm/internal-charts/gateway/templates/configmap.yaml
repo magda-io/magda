@@ -35,13 +35,6 @@ data:
   {{- $helmetPerPath = mergeOverwrite (deepCopy $helmetPerPath) (dict "/api/v0/agent/runtime" $agentCsp) }}
   {{- end }}
   helmetPerPath.json: {{ $helmetPerPath | mustToRawJson | quote }}
-  {{- $requestTimeoutPerPath := dict }}
-  {{- if dig "agentWorkspace" "enabled" false .Values.global }}
-  {{- /* Agent Workspace uploads stream for up to an hour; users can override it. */}}
-  {{- $requestTimeoutPerPath = dict "/api/v0/agent" 3600 }}
-  {{- end }}
-  {{- $requestTimeoutPerPath = mergeOverwrite $requestTimeoutPerPath (.Values.requestTimeoutPerPath | default dict) }}
-  requestTimeoutPerPath.json: {{ $requestTimeoutPerPath | mustToRawJson | quote }}
   cors.json: {{ .Values.cors | default dict | mustToRawJson | quote }}
   csp.json: {{ .Values.csp | default dict | mustToRawJson | quote }}
   cookie.json: {{ .Values.cookie | default dict | mustToRawJson | quote }}

@@ -576,7 +576,7 @@ gateway_config_json() {
         const doc = text.split(/^---$/m).find((d) =>
             /^kind: ConfigMap$/m.test(d) && /^  name: "?gateway-config"?$/m.test(d));
         const data = {};
-        for (const key of ["routes", "helmet", "helmetPerPath", "csp", "requestTimeoutPerPath"]) {
+        for (const key of ["routes", "helmet", "helmetPerPath", "csp"]) {
             const m = doc.match(new RegExp(`^  ${key}\\.json: (".*")$`, "m"));
             data[key] = JSON.parse(JSON.parse(m[1]));
         }
@@ -637,35 +637,6 @@ node -e '
     assert.deepStrictEqual(relaxed, ["/api/v0/agent/runtime"]);
     assert.deepStrictEqual(config.helmet.contentSecurityPolicy.directives.scriptSrc, ["\x27self\x27"]);
 ' "$tmp/gateway-enabled.json"
-
-# #3928: the gateway's request timeout, with an hour for Agent Workspace paths.
-request_timeouts() {
-    node -e '
-        const config = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-        process.stdout.write(JSON.stringify(config.requestTimeoutPerPath));
-    ' "$1"
-}
-[[ "$(request_timeouts "$tmp/gateway-enabled.json")" == '{"/api/v0/agent":3600}' ]]
-for file in disabled llm-only; do
-    [[ "$(request_timeouts "$tmp/gateway-$file.json")" == '{}' ]]
-done
-resource_document Deployment gateway "$tmp/model-default.yaml" | grep -Fq '"--requestTimeout", "300",'
-resource_document Deployment gateway "$tmp/model-default.yaml" |
-    grep -Fq '"--requestTimeoutPerPathJson", "/etc/config/requestTimeoutPerPath.json",'
-cat >"$tmp/request-timeouts.yaml" <<'EOF'
-gateway:
-  requestTimeout: 0
-  requestTimeoutPerPath:
-    /api/v0/agent: 7200
-    /api/v0/storage: 900
-EOF
-render "$tmp/request-timeouts-override.yaml" magda test \
-    --set global.agentWorkspace.enabled=true \
-    --set global.llmServices.enabled=true \
-    -f "$tmp/request-timeouts.yaml"
-gateway_config_json "$tmp/request-timeouts-override.yaml" >"$tmp/gateway-request-timeouts.json"
-[[ "$(request_timeouts "$tmp/gateway-request-timeouts.json")" == '{"/api/v0/agent":7200,"/api/v0/storage":900}' ]]
-resource_document Deployment gateway "$tmp/request-timeouts-override.yaml" | grep -Fq '"--requestTimeout", "0",'
 
 # #3847: ingress-nginx WebSocket timeouts.
 ingress_annotations() {
