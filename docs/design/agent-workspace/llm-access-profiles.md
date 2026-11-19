@@ -164,7 +164,7 @@ A lighter alternative is LiteLLM/Prometheus per-user telemetry, but it is not a 
 Source material reviewed (2026-11-19):
 - [LiteLLM budget database prerequisites](https://docs.litellm.ai/docs/proxy/users) and [request architecture](https://docs.litellm.ai/docs/proxy/architecture)
 - [LiteLLM spend tracking](https://docs.litellm.ai/docs/proxy/cost_tracking), [virtual keys](https://docs.litellm.ai/docs/proxy/virtual_keys), [Prometheus](https://docs.litellm.ai/docs/proxy/prometheus)
-- [LiteLLM streaming and Responses changes](https://docs.litellm.ai/release_notes/v1.109.0rc1/v1-109-0-rc-1) — newer than MAGDA's pinned image; **not** evidence of current pinned-version compatibility
+- [LiteLLM usage and streaming response metadata](https://docs.litellm.ai/docs/completion/usage) — documentation may be newer than MAGDA's pinned image; **not** evidence of current pinned-version compatibility
 - [MAGDA's bundled LiteLLM values](../../../deploy/helm/internal-charts/litellm/values.yaml), [config](../../../deploy/helm/internal-charts/litellm/templates/config.yaml) and [LLM facade](../../../magda-llm-services/src/createApp.ts)
 
 ## Acceptance / verification for the combined delivery
