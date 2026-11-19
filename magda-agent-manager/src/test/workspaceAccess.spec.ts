@@ -6,6 +6,7 @@ import request from "supertest";
 import buildApp from "../buildApp.js";
 import { AgentManager } from "../manager.js";
 import { RuntimeProxy } from "../runtimeProxy.js";
+import { createManagerServer } from "../server.js";
 import { AgentKubernetesClient } from "../kubernetes.js";
 import { ManagerConfig } from "../types.js";
 
@@ -315,6 +316,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     let uploads: number[];
     let rejectNextUpload: boolean;
     let failExchanges: boolean;
+    let appRequests: string[];
     let holdUploads: boolean;
     let releaseUploads: () => void;
 
@@ -329,6 +331,7 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         tokenExchanges = uploadChecks = 0;
         uploads = [];
         rejectNextUpload = holdUploads = failExchanges = false;
+        appRequests = [];
         releaseUploads = () => undefined;
         upstream = http.createServer((req, res) => {
             if (req.url?.startsWith("/?token=")) {
@@ -421,11 +424,15 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
             }),
             kubernetes
         );
-        proxyServer = http.createServer((req, res) =>
-            proxy.handleHttp(req, res)
-        );
-        proxyServer.on("upgrade", (req, socket, head) =>
-            proxy.handleUpgrade(req, socket, head)
+        // The production dispatcher, with a stand-in for the Express app.
+        proxyServer = createManagerServer(
+            "/v0/runtime",
+            (req, res) => {
+                appRequests.push(`${req.method} ${req.url}`);
+                req.resume();
+                req.on("end", () => res.end("app"));
+            },
+            proxy
         );
         await new Promise<void>((resolve) =>
             proxyServer.listen(0, "127.0.0.1", resolve)
@@ -850,6 +857,83 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         // Time for a pipelined request that did run to reach DSH.
         await new Promise((resolve) => setTimeout(resolve, 300));
         expect(upstreamBodyBytes).to.deep.equal([]);
+    });
+
+    /**
+     * Send an upload with a forged session (answered 401 early), wait for the
+     * answer, then send the rest of its body followed by `pipelined`.
+     */
+    function pipelineAfterRejection(pipelined: string) {
+        return new Promise<string>((resolve) => {
+            const socket = new Socket();
+            let data = "";
+            socket.on("data", (chunk) => (data += chunk));
+            socket.on("error", () => undefined);
+            socket.on("close", () => resolve(data));
+            socket.connect(proxyPort, "127.0.0.1", async () => {
+                socket.write(
+                    `POST ${upload} HTTP/1.1\r\nHost: magda.test\r\n` +
+                        `X-Magda-Session: ${token(
+                            bob,
+                            "attacker-secret"
+                        )}\r\n` +
+                        "Content-Length: 2000\r\n\r\n" +
+                        "x".repeat(1000)
+                );
+                while (!data.includes("HTTP/1.1")) {
+                    await new Promise((r) => setTimeout(r, 10));
+                }
+                socket.write("x".repeat(1000) + pipelined);
+            });
+        });
+    }
+
+    it("never runs an Express request or a WebSocket upgrade pipelined after an early answer", async () => {
+        auth.granted.add(bob);
+        const http1 = await pipelineAfterRejection(
+            `POST /v0/session/reset HTTP/1.1\r\nHost: magda.test\r\n` +
+                `X-Magda-Session: ${token(bob)}\r\nContent-Length: 0\r\n\r\n`
+        );
+        const upgraded = await pipelineAfterRejection(
+            `GET /v0/runtime/ws HTTP/1.1\r\nHost: magda.test\r\n` +
+                `X-Magda-Session: ${token(bob)}\r\n` +
+                "Connection: Upgrade\r\nUpgrade: websocket\r\n\r\n"
+        );
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        for (const raw of [http1, upgraded]) {
+            expect(raw.match(/HTTP\/1\.1 \d{3}/g)).to.deep.equal([
+                "HTTP/1.1 401"
+            ]);
+        }
+        expect(appRequests).to.deep.equal([]);
+        expect(upstreamUpgrades).to.equal(0);
+    });
+
+    it("serves Express and runtime requests in turn on a kept-alive connection", async () => {
+        auth.granted.add(bob);
+        const raw = await new Promise<string>((resolve) => {
+            const socket = new Socket();
+            let data = "";
+            socket.on("data", (chunk) => (data += chunk));
+            socket.on("close", () => resolve(data));
+            socket.connect(proxyPort, "127.0.0.1", () => {
+                socket.write(
+                    "GET /v0/session HTTP/1.1\r\nHost: magda.test\r\n\r\n" +
+                        "GET /v0/runtime/api/session/list HTTP/1.1\r\nHost: magda.test\r\n" +
+                        `X-Magda-Session: ${token(bob)}\r\n\r\n` +
+                        "GET /v0/session HTTP/1.1\r\nHost: magda.test\r\nConnection: close\r\n\r\n"
+                );
+            });
+        });
+        expect(raw.match(/HTTP\/1\.1 \d{3}/g)).to.deep.equal([
+            "HTTP/1.1 200",
+            "HTTP/1.1 200",
+            "HTTP/1.1 200"
+        ]);
+        expect(appRequests).to.deep.equal([
+            "GET /v0/session",
+            "GET /v0/session"
+        ]);
     });
 
     it("leaves no connection behind when the client goes away during the drain", async () => {

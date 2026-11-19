@@ -51,6 +51,14 @@ export interface LingerLimits {
 // Connections closing after an early answer: see `lingerAfterResponse`.
 const closingSockets = new WeakSet<Duplex>();
 
+/**
+ * Whether `socket` is closing after an early answer. The Manager's server
+ * drops any further request or upgrade on it (see server.ts).
+ */
+export function isClosingConnection(socket: Duplex) {
+    return closingSockets.has(socket);
+}
+
 export const DEFAULT_LINGER_LIMITS: LingerLimits = {
     lingerSeconds: 5,
     maxDiscardBytes: 16 * 1024 * 1024
@@ -773,12 +781,6 @@ export class RuntimeProxy {
     }
 
     async handleHttp(req: IncomingMessage, res: ServerResponse) {
-        if (closingSockets.has(req.socket)) {
-            // Pipelined behind a request answered early, whose connection
-            // closes: never run it.
-            req.socket.destroy();
-            return;
-        }
         let snapshotUserId: string | undefined;
         let snapshotToken: ActivitySnapshotToken | undefined;
         try {
