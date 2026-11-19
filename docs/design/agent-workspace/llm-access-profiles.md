@@ -70,7 +70,7 @@ Follow [Building Features on Registry Records](../../docs/architecture/Guide%20t
 
 Registry and Authorization DB cannot commit a profile change atomically. Design create/update/delete as idempotent operations with retries and an explicit **fail-closed** sequence:
 
-1. Allocate a service-generated non-reused ID; validate the proposed record and caller. Create the profile **disabled or pending**, then register its dynamic resource/operation. Enable only when the expected pair is confirmed.
+1. Allocate a service-generated non-reused ID; validate the proposed record and caller. Create the profile **disabled or pending**, then register its dynamic resource/operation. Enable only when the expected pair is confirmed **and the requested initial state was enabled**.
 2. Updates that remove a model or disable the profile must be reflected in the authoritative profile before acknowledging success. Every new request checks the current enabled record; stale grants alone are insufficient.
 3. Deletion first makes the profile non-invokable (disabled), then removes grants/resource/operation and finally the record. Retry partial cleanup. An orphan permission cannot authorize without an enabled matching profile.
 4. Never reuse a deleted ID. Reserve path components such as `*`, `create`, `read`, `update` and `delete` and validate IDs/URL encoding. Administrative out-of-band changes can still break consistency; provide explicit validation/repair guidance.
@@ -110,14 +110,20 @@ All accounting is for the **authenticated MAGDA user UUID and the public request
 
 ### Durable store with no additional Redis or LiteLLM database
 
-**Recommended:** reuse an existing MAGDA PostgreSQL deployment, with a narrowly authorized, LLM-owned logical database/schema and migration, **not** LiteLLM's own Prisma tables. The current MAGDA Helm stack uses separate PostgreSQL instances for several services; the implementation must select/document a supported co-location target and provision least-privilege access. Do not grant LLM Services a Registry/Authorization administrator database password or add an unowned table to an application schema. No *new PostgreSQL server/pod* or Redis cluster should be required just for usage. This is a concrete deployment design task, not proof that credentials/migrations already exist.
+**Recommended deployment target:** co-locate an LLM-owned `llm_usage` schema in MAGDA's existing **Authorization DB PostgreSQL instance**, with its own least-privilege database login/Secret. The existing Authorization DB migrator provisions the schema/table and narrowly scoped role/grants; LLM Services reads/writes only that schema. Authorization API and Registry do **not** read this usage table, and LLM Services does **not** receive the Authorization API's DB login or a database administrator password. This is a conscious co-location for low operations overhead, not a claim that the Authorization API owns LLM usage. It requires migration/Secret/connection wiring but **no additional PostgreSQL server/pod, separate LiteLLM database, or Redis**. Operators that bring external Postgres should use their normal Authorization DB host/connection mechanism. Verify existing DB permissions, backup, upgrade and teardown conventions before implementing the migration.
 
 A small aggregate table is sufficient, conceptually:
 
 ```sql
--- Within an LLM-owned schema/database; exact migration DDL TBD.
-PRIMARY KEY (user_id, model_alias, local_date)
-columns: consumed_total_tokens BIGINT NOT NULL DEFAULT 0
+-- Conceptual table; migration must also create the schema and grants.
+CREATE TABLE llm_usage.daily_model_tokens (
+    user_id UUID NOT NULL,
+    model_alias TEXT NOT NULL,
+    local_date DATE NOT NULL,
+    consumed_total_tokens BIGINT NOT NULL DEFAULT 0,
+    estimated_requests BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, model_alias, local_date)
+);
 ```
 
 On completion, atomically upsert/increment one row using `INSERT ... ON CONFLICT ... DO UPDATE`, never read-modify-write in application memory. Query daily usage by one date, weekly usage by summing the ISO Monday–Sunday dates, and monthly usage by summing dates in that calendar month. This persists through restart, coordinates multiple LLM Services replicas with ordinary PostgreSQL, and avoids separate daily/weekly/monthly ledgers. Counters are **not** stored as Registry aspects: high-frequency event-sourced record writes, access-control exposure and version conflicts would be a poor fit. They are also not ephemeral in-process counters or a Prometheus-based authority.
