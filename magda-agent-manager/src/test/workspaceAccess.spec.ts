@@ -317,6 +317,8 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
     let rejectNextUpload: boolean;
     let failExchanges: boolean;
     let appRequests: string[];
+    let sandboxPort: number;
+    let kubernetes: AgentKubernetesClient;
     let holdUploads: boolean;
     let releaseUploads: () => void;
 
@@ -398,8 +400,8 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         await new Promise<void>((resolve) =>
             upstream.listen(0, "127.0.0.1", resolve)
         );
-        const sandboxPort = (upstream.address() as AddressInfo).port;
-        const kubernetes = ({
+        sandboxPort = (upstream.address() as AddressInfo).port;
+        kubernetes = ({
             status: async (userId: string) => {
                 claimLookups.push(userId);
                 return { state: "READY" };
@@ -726,21 +728,57 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         "/v0/runtime/api/session/uploadFileBinary?sessionId=s&name=f";
 
     it("streams an upload past the buffered limit, with backpressure", async () => {
-        auth.granted.add(bob);
-        holdUploads = true;
-        const progress = { written: 0 };
-        const pending = postInChunks(upload, token(bob), 64, 32 * 1024, {
-            progress
-        });
-        // DSH isn't reading yet. A buffering proxy would accept the whole
-        // upload; a streaming one holds the client back.
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        expect(progress.written).to.be.below(64);
-        releaseUploads();
-        const response = await pending;
-        expect(response.status).to.equal(200);
-        expect(uploads).to.deep.equal([64 * 32 * 1024]);
-        expect(uploadChecks).to.equal(0);
+        // 64 MiB: far more than the TCP buffers on both hops can hold (Linux
+        // can absorb several MiB per socket), through a proxy whose upload
+        // limit allows it.
+        const chunks = 2048;
+        const chunkBytes = 32 * 1024;
+        const bigProxy = new RuntimeProxy(
+            config({
+                sandboxPort,
+                runtimeAuthRecheckSeconds: 3600,
+                runtimeMaxUploadBytes: 256 * 1024 * 1024
+            }),
+            kubernetes
+        );
+        const bigServer = createManagerServer(
+            "/v0/runtime",
+            (_req, res) => res.end(),
+            bigProxy
+        );
+        await new Promise<void>((resolve) =>
+            bigServer.listen(0, "127.0.0.1", resolve)
+        );
+        const defaultPort = proxyPort;
+        proxyPort = (bigServer.address() as AddressInfo).port;
+        try {
+            auth.granted.add(bob);
+            holdUploads = true;
+            const progress = { written: 0 };
+            const pending = postInChunks(
+                upload,
+                token(bob),
+                chunks,
+                chunkBytes,
+                {
+                    progress
+                }
+            );
+            // DSH isn't reading yet. A buffering proxy would accept the whole
+            // upload; a streaming one holds the client back.
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            expect(progress.written).to.be.below(chunks);
+            releaseUploads();
+            const response = await pending;
+            expect(response.status).to.equal(200);
+            expect(uploads).to.deep.equal([chunks * chunkBytes]);
+            expect(uploadChecks).to.equal(0);
+        } finally {
+            proxyPort = defaultPort;
+            bigProxy.closeAll();
+            bigServer.closeAllConnections();
+            await new Promise((resolve) => bigServer.close(resolve));
+        }
     });
 
     for (const chunked of [false, true]) {
