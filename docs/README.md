@@ -1,7 +1,3 @@
-<p class="center">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/Jqlu34eocVA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</p>
-
 # A Federated, AI-Enhanced Data Catalog for All Your Data
 
 **Discover. Understand. Govern.**  
