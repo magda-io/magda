@@ -19,7 +19,7 @@ An AI agent can write the code, but the rules that make the result useful often 
 
 The Workspace is a centrally hosted coding and data-analysis environment, opened in your browser — no local coding-agent or Python installation required. It connects the agent to Magda under the current user's permissions. People remain responsible for reviewing methods, assumptions and results.
 
-> **Magda v8 / `next` preview:** Agent Workspace and skill sharing are merged into the development branch, but are not included in the current stable release. Workspace access depends on deployment configuration and user permissions. This is separate from the browser-local LLM chatbot described below.
+> **Coming in Magda v8:** Agent Workspace and skill sharing are currently in development and are planned for the upcoming Magda v8 release. Workspace access depends on deployment configuration and user permissions. This is separate from the browser-local LLM chatbot described below.
 
 <div class="workspace-overview">
   <a class="workspace-video" href="https://www.youtube.com/watch?v=3fLZVofIs0s" aria-label="Watch the early Agent Workspace data-analysis demo on YouTube">
