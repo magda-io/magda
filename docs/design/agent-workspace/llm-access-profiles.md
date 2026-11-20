@@ -57,6 +57,7 @@ CREATE TABLE llm_services.access_profiles (
     owner_id UUID,                         -- null: no owner-constrained match
     org_unit_id UUID,                      -- null: no orgUnit-constrained match
     constraint_exemption BOOLEAN NOT NULL DEFAULT FALSE,
+    revision BIGINT NOT NULL DEFAULT 1 CHECK (revision > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CHECK (length(btrim(name)) > 0),
@@ -86,6 +87,7 @@ CREATE TABLE llm_services.daily_model_usage (
 - `owner_id`, `org_unit_id` and `constraint_exemption` represent the meaningful fields of the old `access-control` aspect, but **do not recreate that aspect as a JSONB column**.
 - `profile_pre_authorised_permissions` replaces `preAuthorisedPermissionIds` with a composite-key mapping table. `permission_id` identifies an Authorization API permission by **UUID**, not a user or role. This table does **not** grant permissions by itself. Validate relevant permission IDs against the Authorization API at management time; do not add a cross-service FK to the Auth API's internal permission table merely because the physical database server is shared. Missing/deleted permission IDs never grant access.
 - An LLM profile contains *administrative* scope metadata. **Model invocation entitlements** live separately as per-profile **Authorization API** resources/operations and regular roles/permissions; neither `owner_id` nor a pre-authorised mapping grants model use.
+- `revision` is an optimistic concurrency token. Every successful profile field/pre-authorised mapping update increments it atomically. A stale `PUT` (e.g. `If-Match` with the old revision) returns a conflict rather than silently overwriting another owner's/administrator's changes. The service re-evaluates authorization against the current locked row and proposed changes before committing.
 - `enabled` is the operator's requested flag; `state` is the service lifecycle/consistency marker. Invocation requires **both** `enabled=true` and `state='ready'`. Enabling a pending profile cannot bypass provisioning. The service owns `state` and never accepts it as a normal user-updatable field.
 - Token ceilings are per authenticated **user and model alias**, not shared across users and not per-profile balances. No ceilings means unlimited for that period *inside an otherwise granted profile*. Zero means no new non-admin request passes that period.
 - Both `measured_input_tokens + measured_output_tokens + estimated_tokens` determine quota consumption. Explicit columns make future cost diagnosis easier without claiming accurate billing. All values are nonnegative `BIGINT`; guard overflow and duplicate finalization in service logic.
@@ -131,7 +133,7 @@ These are aligned with `magda-opa/policies/common/verifyRecordPermission.rego`, 
 
 **Read** checks `llm/access/read` on each current SQL row. A caller who only holds a `llm/access/<id>/access` invocation entitlement does not automatically see the profile's owner, pre-authorised IDs or token configuration. The `/v1/models` endpoint separately uses invocation rights and returns only authorized aliases.
 
-**Update** checks `llm/access/update` against **both original and proposed** profile values; this includes changes to owner/orgUnit, exemption flag and pre-authorised IDs. To avoid a privilege escalation through modifying the authorization context itself, require **unconstrained `llm/access/update`** (or administrator) to set/clear `constraint_exemption` or change the pre-authorised mapping. Other field changes may use constrained update permissions when both before/after decisions allow them. Profile ID and `state` remain immutable to callers.
+**Update** checks `llm/access/update` against **both original and proposed** profile values; this includes changes to owner/orgUnit, exemption flag and pre-authorised IDs. The SQL transaction locks/re-reads the row and verifies the expected `revision` before committing, so an authorization decision cannot be reused against a concurrently changed record. To avoid a privilege escalation through modifying the authorization context itself, require **unconstrained `llm/access/update`** (or administrator) to set/clear `constraint_exemption` or change the pre-authorised mapping. Other field changes may use constrained update permissions when both before/after decisions allow them. Profile ID and `state` remain immutable to callers.
 
 **Delete** checks `llm/access/delete` against the current row and retires the profile using the lifecycle below. Callers cannot grant themselves arbitrary Auth API permissions merely by creating or updating a profile.
 
