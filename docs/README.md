@@ -7,9 +7,74 @@
 **Discover. Understand. Govern.**  
 From Excel to APIs, from legacy systems to LLM-powered interfaces.
 
+[Explore Agent Workspace stories and demos](#agent-workspace) · [Try the public catalogue](#try-magda)
+
 The better an organization understands and uses its data, the better it is able to make decisions and discover new opportunities. Many organizations hold massive quantities of data, but it often gets stuck inside organizational silos where its importance is invisible, origins untracked, and existence unknown to those elsewhere in the organization who could improve or derive further value from it.
 
 Magda is a data catalog system that provides a single place where all of your organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. With Magda, your data analysts, scientists and engineers can easily find useful data with powerful discovery features, properly understand what they're using thanks to metadata enhancement and authoring tools, and make data-informed decisions with confidence as a result of history tracking and duplication detection.
+
+<h2 id="agent-workspace">Agent Workspace: turn expertise into reusable skills</h2>
+
+An AI agent can write the code, but the rules that make the result useful often live in someone's head. Magda's Agent Workspace helps people solve data problems together with an agent, review what worked, and capture the procedure, exceptions and questions as reusable Agent Skills.
+
+The Workspace is a centrally hosted coding and data-analysis environment, opened in your browser — no local coding-agent or Python installation required. It connects the agent to Magda under the current user's permissions. People remain responsible for reviewing methods, assumptions and results.
+
+> **Magda v8 / `next` preview:** Agent Workspace and skill sharing are merged into the development branch, but are not included in the current stable release. Workspace access depends on deployment configuration and user permissions. This is separate from the browser-local LLM chatbot described below.
+
+<div class="workspace-overview">
+  <a class="workspace-video" href="https://www.youtube.com/watch?v=3fLZVofIs0s" aria-label="Watch the early Agent Workspace data-analysis demo on YouTube">
+    <img src="https://i.ytimg.com/vi/3fLZVofIs0s/mqdefault.jpg" alt="" width="320" height="180" loading="lazy">
+  </a>
+  <div>
+    <h3>Start here: a simple data-analysis demo</h3>
+    <p>New to Agent Workspace? This early-stage demonstration introduces working with a coding agent in the browser. The three stories below go further: capturing, reusing and sharing human expertise.</p>
+    <p><a href="https://www.youtube.com/watch?v=3fLZVofIs0s">Watch the early demo · 3:55 →</a></p>
+  </div>
+</div>
+
+### From one-off AI work to reusable expertise
+
+Three stories, each with a Medium article and a recorded demonstration. Follow the series in order, or start with the problem closest to your work.
+
+<div class="workspace-stories">
+  <article class="workspace-story" aria-labelledby="workspace-story-1">
+    <a class="workspace-video" href="https://www.youtube.com/watch?v=yDVEP6XwoNE" aria-label="Watch Part 1: grower reconciliation and reusable skills on YouTube">
+      <img src="https://i.ytimg.com/vi/yDVEP6XwoNE/mqdefault.jpg" alt="" width="320" height="180" loading="lazy">
+    </a>
+    <div class="workspace-story-body">
+      <p class="workspace-story-label">Part 1 · Data users</p>
+      <h4 id="workspace-story-1">Your AI Can Write the Code. But Does It Know How You Work?</h4>
+      <p>Correct plausible-but-wrong spreadsheet totals with human domain rules, then capture a reviewed skill and refine it across fresh Workspaces and changed data.</p>
+      <p class="workspace-story-links"><a href="https://medium.com/@jacky-jiang/your-ai-can-write-the-code-but-does-it-know-how-you-work-5141c922275f">Read Part 1 on Medium →</a><br><a href="https://www.youtube.com/watch?v=yDVEP6XwoNE">Watch the demo · 14:44 →</a></p>
+    </div>
+  </article>
+  <article class="workspace-story" aria-labelledby="workspace-story-2">
+    <a class="workspace-video" href="https://www.youtube.com/watch?v=sT99EUTOCck" aria-label="Watch Part 2: reusable crop-yield research on YouTube">
+      <img src="https://i.ytimg.com/vi/sT99EUTOCck/mqdefault.jpg" alt="" width="320" height="180" loading="lazy">
+    </a>
+    <div class="workspace-story-body">
+      <p class="workspace-story-label">Part 2 · Researchers</p>
+      <h4 id="workspace-story-2">The Model Is Not the Skill: Making AI-Assisted Research Reusable</h4>
+      <p>Keep versioned model resources alongside distinct maintenance and prediction skills. Reuse the research in a fresh Workspace, with assumptions and scientific decisions still reviewed by the researcher.</p>
+      <p class="workspace-story-links"><a href="https://medium.com/@jacky-jiang/the-model-is-not-the-skill-making-ai-assisted-research-reusable-c398cc2c4b20">Read Part 2 on Medium →</a><br><a href="https://www.youtube.com/watch?v=sT99EUTOCck">Watch the demo · 24:24 →</a></p>
+    </div>
+  </article>
+  <article class="workspace-story" aria-labelledby="workspace-story-3">
+    <a class="workspace-video" href="https://www.youtube.com/watch?v=gk081uom0KY" aria-label="Watch Part 3: sharing expertise with independent permissions on YouTube">
+      <img src="https://i.ytimg.com/vi/gk081uom0KY/mqdefault.jpg" alt="" width="320" height="180" loading="lazy">
+    </a>
+    <div class="workspace-story-body">
+      <p class="workspace-story-label">Part 3 · Research teams</p>
+      <h4 id="workspace-story-3">Share the Expertise, Not the Permissions</h4>
+      <p>A colleague explicitly installs a shared skill; their use reveals assumptions, prompting a publisher-reviewed update and recipient sync. Model access is granted separately, without transferring the publisher's private data permissions.</p>
+      <p class="workspace-story-links"><a href="https://jacky-jiang.medium.com/share-the-expertise-not-the-permissions-5c93e09a244c">Read Part 3 on Medium →</a><br><a href="https://www.youtube.com/watch?v=gk081uom0KY">Watch the demo · 11:15 →</a></p>
+    </div>
+  </article>
+</div>
+
+[Explore the Agent Workspace architecture (development branch)](https://github.com/magda-io/magda/blob/next/docs/docs/architecture/agent-workspace.md) · [Talk to us about evaluating it](mailto:contact@magda.io)
+
+## Discover data across silos
 
 ### Let your data mingle!
 
@@ -31,9 +96,9 @@ This results in squandered opportunities as small datasets go undiscovered by ot
 
 Magda is designed with the flexibility to work with _all_ of an organisation's data assets, big or small - it can be used as a catalog for big data in a data lake, an easily-searchable repository for an organization's small data files, an aggregator for multiple external data sources, or all at once.
 
-## ✨ What’s New in Magda 6
+## Catalogue tools and AI-assisted discovery
 
-Magda 6 makes the catalogue accessible not only to people through the browser, but to coding agents working on their behalf — while keeping people accountable for judgement and consequential decisions.
+Magda makes the catalogue accessible not only to people through the browser, but to coding agents working on their behalf — while keeping people accountable for judgement and consequential decisions.
 
 ### 🤖 `mgd` — the Magda command-line interface
 
@@ -101,9 +166,12 @@ To explore it from the terminal or with a coding agent, configure an anonymous [
 
 Start with a topic that matters to your own work, and see how far you can get from discovery to a first useful inspection.
 
+Agent Workspace is a separate, access-controlled development preview; anonymous catalogue access does not grant a Workspace. [See the Workspace stories and preview details](#agent-workspace).
+
 ### Where to go next
 
-- **Read the story:** [Data Is Available. Can Your AI Assistant Help You Actually Use It?](https://jacky-jiang.medium.com/data-is-available-can-your-ai-assistant-help-you-actually-use-it-464241e996ce)
+- **Explore Agent Workspace:** [three stories and demos about reusable expertise](#agent-workspace)
+- **Read the CLI story:** [Data Is Available. Can Your AI Assistant Help You Actually Use It?](https://jacky-jiang.medium.com/data-is-available-can-your-ai-assistant-help-you-actually-use-it-464241e996ce)
 - **Try it live:** [dev.magda.io](https://dev.magda.io/)
 - **Use `mgd`:** [the Magda command-line interface](https://github.com/magda-io/magda/blob/main/packages/mgd/README.md)
 - **Install Magda:** [run it locally on minikube](./docs/running-on-minikube-without-building.html)
