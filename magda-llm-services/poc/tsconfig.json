@@ -1,0 +1,10 @@
+{
+    "extends": "../../tsconfig-global.json",
+    "compilerOptions": {
+        "composite": false,
+        "noEmit": true,
+        "rootDir": "..",
+        "types": ["node", "mocha"]
+    },
+    "include": ["./*.ts", "../src/createApp.ts"]
+}
