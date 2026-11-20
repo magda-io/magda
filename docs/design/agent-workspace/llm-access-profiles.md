@@ -1,182 +1,202 @@
-# Registry-backed LLM Access Profiles and soft usage limits
+# PostgreSQL-backed LLM Access Profiles and soft usage limits
 
-**Status:** Proposed implementation-ready design for [#3838](https://github.com/magda-io/magda/issues/3838), **not yet implemented**. MAGDA v8 is unreleased; only local test deployments exist. This design supersedes the earlier October 2026 access-profile proposal and requires no released-user migration.
-**Maintained implementation:** [LLM Services](../../docs/architecture/llm-services.md), [Workspace security](../../docs/architecture/agent-workspace-security.md), and [deployment](../../docs/agent-workspace-deployment.md).
-**Owner:** MAGDA LLM Services, not Agent Manager, DSH, Registry API, or LiteLLM.
+**Status:** Proposed MAGDA v8 design for [#3838](https://github.com/magda-io/magda/issues/3838), **not implemented**. The prerequisite [LiteLLM/DSH metering PoC #3934](https://github.com/magda-io/magda/issues/3934) will validate the actual streaming/token contract before implementation. No v8 release or production deployment exists, so no released-user migration is required.
+**Existing implementation:** [LLM Services](../../docs/architecture/llm-services.md), [Workspace security](../../docs/architecture/agent-workspace-security.md) and [deployment](../../docs/agent-workspace-deployment.md).
+**Owner:** MAGDA LLM Services; neither Registry nor LiteLLM manages these profiles.
 
-## Purpose and boundaries
+## Decision and rationale: SQL, not Registry records
 
-The existing merged #3850 facade authenticates requests, checks `agentWorkspace/access`, enforces the deployment-wide `llm-services.allowedModels` list, and proxies `/v1/chat/completions` and `/v1/responses` to internal LiteLLM. The new contract makes the facade reusable for any authorized MAGDA client, without needing Workspace access.
+Store **both access profiles and usage aggregates** in an LLM Services-owned PostgreSQL schema, proposed `llm_services`, co-located with MAGDA's existing **Authorization PostgreSQL instance**. Use a separate least-privilege LLM database role/Secret, even though the physical database server is shared. The Authorization API retains ownership of its own resources, permissions, operations and roles and must be called through **its API**, not by manipulating its tables. No additional Postgres deployment or LiteLLM PostgreSQL/Redis stack is needed.
 
-- **Gateway:** normal MAGDA authentication/session and public `/api/v0/llm/...` routing.
-- **LLM Services:** the only public LLM policy and profile-management facade; resolves actual caller, owns validation, per-model entitlement checks, soft usage accounting and access-profile lifecycle.
-- **Registry:** stores `llm-access-profile` records; it is not the feature's public CRUD API.
-- **Authorization API / OPA:** owns grants/roles and the yes/no entitlement and management decisions. OPA is stateless and does not store usage.
-- **LiteLLM:** private, statically configured provider/router behind LLM Services. It keeps provider secrets, not MAGDA user grants. No LiteLLM PostgreSQL, Redis, virtual-key lifecycle, or Admin UI is required for this design.
-- **Workspace:** retains its separate self-only `agentWorkspace/access` permission for lifecycle/runtime access. When DSH invokes a model, that user also needs the applicable LLM entitlement. Direct non-Workspace clients only need their LLM entitlement.
+This supersedes the earlier proposed `llm-access-profile` Registry record and `llm-access-profile-details`/`access-control` aspects; **no Registry aspects or Registry CRUD implementation are introduced for this feature**. Reasons:
+- Access profiles are small policy/configuration objects and are not intended for catalogue discovery or federation; Registry event-sourcing, generic record authorization and per-record history add more integration work than value here.
+- One LLM-owned schema permits local transactions for profile fields, model aliases, pre-authorised-permission links and usage buckets, with ordinary SQL constraints/indexes and a small migration.
+- **Trade-off:** SQL does not automatically provide Registry's event history, record-level search or standard typed-Registry read filtering. The feature must own full API authorization, auditable administrative changes and DB lifecycle. Cross-service Auth API coordination is **still not transactional**. Do not assume database co-location makes Auth API calls part of an LLM Services transaction.
+- Do not store identical profile definitions in both systems. Profile management APIs are **always** LLM Services-owned, whether a client is administrative or a user.
 
-The deployment allowlist is always a separate outer bound and MUST be checked in LLM Services **even for administrators**. Bundled LiteLLM currently exposes one alias, whereas an explicitly configured external backend can expose more. Do not promise availability of a model that the backend cannot serve.
+MAGDA's [Building Features on Registry Records](../../docs/architecture/Guide%20to%20Magda%20Internals.md#building-features-on-registry-records) describes the right **application-service authority** principle, but its Registry-specific aspect and partial-evaluation machinery are **not applicable** here. SQL-backed profiles have no generic `object/record/*` grant or Registry fallback. Retain the typed MAGDA OPA operations and matching ownership, orgUnit, pre-authorised and exemption semantics at the LLM Services API boundary.
 
-## Authorization and administrator semantics
+### Boundaries
 
-**Preserve MAGDA's existing global administrator override:** the administrator role is allowed by the OPA entrypoint without a special `llm` exception. Internal services using an administrator identity continue to work. Administrators can call any deployment-allowed model without profile grants, and **are not subject to profile usage quotas**. This is an intentional system-wide privilege, not a separately granted model-access permission. Normal transport, authentication, deployment allowlist, and request-size safety checks still apply.
+```text
+Authenticated MAGDA client or user's Workspace/DSH
+ -> MAGDA Gateway: authenticate, supply trusted session
+ -> MAGDA LLM Services:
+      verify session; evaluate typed Auth API / OPA operations
+      read profile definitions + per-user/model soft usage ledger in SQL
+      enforce deployment-wide allowedModels + soft quotas
+      proxy OpenAI-compatible API, observe usage without changing SSE
+ -> Private LiteLLM (static provider routing and provider credentials)
+ -> Model provider
 
-Define built-in `llm/access/*/access` for an explicitly granted **non-admin** unrestricted-model entitlement; it bypasses *profile* quotas, not the deployment allowlist. The literal `*` is not a generic URI glob: match this exact operation in its own `magda-opa/policies/llm/access/allow.rego` rule and entrypoint delegation. Guard against collisions with generated profile IDs.
-
-Regular user invocation requires at least one granted, enabled profile for the requested model alias, with available soft quota according to the rules below. Profile ownership and permission to manage profiles **do not** implicitly grant model invocation, and invoking a model does not grant the ability to read a profile's administrative details. No MAGDA v8 release has occurred, so replacing the old LLM-route `agentWorkspace/access` check needs only local test-fixture and role configuration changes, **not a public migration or temporary compatibility bypass**.
-
-Authorization happens against the **real authenticated user**. A client-provided user ID, selected profile, usage total, model-permission assertion, or LiteLLM virtual-key identity is never authoritative. Do not forward any original MAGDA bearer credential to LiteLLM.
-
-## Registry record and management facade
-
-A profile has its own typed `llm-access-profile-details` aspect and ordinary `access-control` aspect. The ID is a stable, service-generated, opaque identifier (not a user's assignment). The name is a display label.
-
-```yaml
-id: <service-generated-profile-id>
-name: Standard LLM Access
-aspects:
-  llm-access-profile-details:
-    allowedModels: [magda-agent-default]
-    enabled: true
-    allowedDailyTokens: 1000000     # optional, per user AND model
-    allowedWeeklyTokens: 5000000    # optional, per user AND model
-    allowedMonthlyTokens: 15000000  # optional, per user AND model
-  access-control:
-    ownerId: "<admin-uuid>"
-    orgUnitId: "<optional-org-unit-uuid>"
-    preAuthorisedPermissionIds: []
+SQL (llm_services schema): profiles, per-profile pre-authorised IDs, daily usage
+Authorization API: grantable operations, roles, permissions (existing administrator override)
 ```
 
-- `allowedModels`: required, non-empty distinct array of bundled/external **model aliases**, never provider IDs or secrets. Any listed alias must be deployment-allowed at invocation time; optionally reject invalid aliases during management to catch mistakes early.
-- `enabled`: required boolean, defaults to true at creation. Disabling prevents new non-admin invocations; does not terminate an already-started stream.
-- `allowedDailyTokens`, `allowedWeeklyTokens`, `allowedMonthlyTokens`: optional non-negative **safe integers**. Absence means no limit for that period *within this particular profile*, not a standalone access grant. Zero means no new ordinary requests can pass that period's quota. Units are **total input plus output tokens**, counted separately per user and model alias. The same ceiling applies independently to each alias in `allowedModels`. JSON Schema and service-side validation must agree.
-- `access-control` governs **management/record visibility**, not model consumption. Immutable aspect identity and service-generated profile IDs must be validated, including updates to owner/orgUnit fields and changes to effective entitlement definitions.
-- Not in this scope: per-provider pricing, dollar billing, per-profile separate balances, shared team budgets, strict atomic reservations, RPM/TPM concurrency limits, expiry dates or per-model override objects. Do not add speculative schema fields.
+Workspace lifecycle/runtime retains the self-only `agentWorkspace/access` permission; direct LLM access does **not** require Workspace access. A DSH user needs both respective permissions for their distinct actions. Incoming MAGDA bearer credentials never become LiteLLM provider credentials. Provider/model Secrets remain outside Sandboxes.
 
-### Operations and consistency
+Retain the outer Helm `llm-services.allowedModels` restriction **even for administrators**. Bundled LiteLLM currently exposes one alias. Explicit external backend aliases are allowed only when configured and actually served.
 
-The LLM Services public API is the only **supported** non-admin management interface. Define the concrete REST routes under `/api/v0/llm` (suggestion below); OPA operation URIs are **permission identifiers**, not literal HTTP URL paths:
+## PostgreSQL schema (logical model)
 
-| HTTP endpoint | OPA management operation | Behaviour |
-| --- | --- | --- |
-| `POST /access-profiles` | `llm/access/create` | Validate proposed record, ownership/OrgUnit and caller grant; create profile and dynamic authorization resource |
-| `GET /access-profiles` and `GET /access-profiles/:id` | `llm/access/read` | Return only administrative records the caller can read; do not equate invocation with metadata visibility |
-| `PUT /access-profiles/:id` | `llm/access/update` | Authorize existing and proposed state, enforce immutable ID/typed aspect, retain entitlement identity |
-| `DELETE /access-profiles/:id` | `llm/access/delete` | Revoke/disable before removal; retriable cleanup of dynamic authorization objects |
-
-Seed base resource `llm/access` with `llm/access/create|read|update|delete` operations and the special unrestricted invocation operation in an Authorization DB migration. Each created profile registers a resource `llm/access/<profile-id>` and operation `llm/access/<profile-id>/access`, which are granted via ordinary Authorization API roles/permissions. **No automatic invocation grant** to the creator. Profile management uses trusted LLM Services authority for its *internal* Registry/Auth API writes, after evaluating the caller's typed operation and the relevant `access-control` context. Do not require regular callers to manually create both kinds of object.
-
-Follow [Building Features on Registry Records](../../docs/architecture/Guide%20to%20Magda%20Internals.md#building-features-on-registry-records): LLM Services is the only non-admin writer, aspect JSON Schema plus LLM Services validate data, typed OPA authorizes the caller, and privileged generic Registry/Authorization writers are explicitly trusted exceptions. For generic reads, apply typed `object/record/*` delegation/fallback exclusions and check typed read on each returned record. Preserve limited partial-evaluation-friendly OPA expressions for record queries; use full decisions for known object mutations.
-
-Registry and Authorization DB cannot commit a profile change atomically. Design create/update/delete as idempotent operations with retries and an explicit **fail-closed** sequence:
-
-1. Allocate a service-generated non-reused ID; validate the proposed record and caller. Create the profile **disabled or pending**, then register its dynamic resource/operation. Enable only when the expected pair is confirmed **and the requested initial state was enabled**.
-2. Updates that remove a model or disable the profile must be reflected in the authoritative profile before acknowledging success. Every new request checks the current enabled record; stale grants alone are insufficient.
-3. Deletion first makes the profile non-invokable (disabled), then removes grants/resource/operation and finally the record. Retry partial cleanup. An orphan permission cannot authorize without an enabled matching profile.
-4. Never reuse a deleted ID. Reserve path components such as `*`, `create`, `read`, `update` and `delete` and validate IDs/URL encoding. Administrative out-of-band changes can still break consistency; provide explicit validation/repair guidance.
-
-No public v8 data migration is necessary.
-
-## Invocation semantics: model-specific OR and non-stacking quotas
-
-For each request, LLM Services verifies the caller and exact requested model alias. After the deployment allowlist check:
-
-1. If the caller is a MAGDA administrator, allow without profile selection or quota checks.
-2. Otherwise, if the caller is explicitly granted `llm/access/*/access`, allow without profile quotas.
-3. Otherwise, find currently enabled profiles that include the **requested alias**, and authorize the caller against their corresponding dynamic `llm/access/<id>/access` operations.
-4. Read the server-maintained **usage for this user AND this requested alias**, not the user's aggregate across all models. A profile is eligible when this same usage is below **every configured** daily/weekly/monthly ceiling in that profile. Allow if **any** granted profile is eligible. If none is eligible, refuse the new request with a stable quota-exceeded error.
-
-Profile limits **do not add together** and usage does **not** reset or split when the applicable profile changes. Two grants for the same alias with comparable ceilings effectively permit the higher ceiling. If their daily/weekly/monthly ceilings differ, evaluate each profile independently as a whole: never take the maximum of each field from *different* profiles to construct a fictional combined entitlement. The service may select any deterministically ordered eligible profile for audit, but this choice never changes which counter is incremented.
-
-Example (per authenticated user):
-
-| Granted profile | Alias | Daily ceiling |
-| --- | --- | ---: |
-| Basic | model-A | 100,000 |
-| Premium | model-A | 300,000 |
-| Research | model-B | 200,000 |
-
-After consuming 250,000 tokens on `model-A`, Premium still grants `model-A`. After reaching 300,000 tokens on `model-A`, subsequent requests to it are denied, but `model-B` still has its independent 200,000-token allowance. An unbounded enabled profile for that alias makes the corresponding period unlimited.
-
-Use OPA to check **entitlement/management grants**. The LLM Service can perform the small, application-specific usage comparison after the OPA results: do **not** force mutable token counters or all profile candidate data into OPA unless integration makes that demonstrably simpler. Resolve granted profiles under trusted service authority, while keeping private profile metadata out of `/models` and ordinary invocation responses.
-
-## Lightweight usage metric and storage
-
-### Metric
-
-Use **provider/LiteLLM-reported total tokens** (`input_tokens + output_tokens`, equivalently `prompt_tokens + completion_tokens`), recorded once per accepted call. It is more useful for containing operational overuse than output-only tokens: repeated context/prompt submissions cost money even with short outputs. Reasoning tokens are normally part of output totals; cached input tokens are normally part of input totals. **Never add either category a second time.** Do not claim total tokens equal provider dollars: model pricing, cache discounts and input/output rates differ. For now administrators set a sensible allowance per model; cost-oriented caps may be considered later.
-
-All accounting is for the **authenticated MAGDA user UUID and the public requested model alias** (not provider model, API key, profile ID or arbitrary request `user`). Aliases are the stable isolation boundary. Treat a request to a differently named alias as separate usage even if two aliases route to the same provider deployment. Count each successful facade request once; do not assume LiteLLM's internal retries can be billed exactly.
-
-### Durable store with no additional Redis or LiteLLM database
-
-**Recommended deployment target:** co-locate an LLM-owned `llm_usage` schema in MAGDA's existing **Authorization DB PostgreSQL instance**, with its own least-privilege database login/Secret. The existing Authorization DB migrator provisions the schema/table and narrowly scoped role/grants; LLM Services reads/writes only that schema. Authorization API and Registry do **not** read this usage table, and LLM Services does **not** receive the Authorization API's DB login or a database administrator password. This is a conscious co-location for low operations overhead, not a claim that the Authorization API owns LLM usage. It requires migration/Secret/connection wiring but **no additional PostgreSQL server/pod, separate LiteLLM database, or Redis**. Operators that bring external Postgres should use their normal Authorization DB host/connection mechanism. Verify existing DB permissions, backup, upgrade and teardown conventions before implementing the migration.
-
-A small aggregate table is sufficient, conceptually:
+The following is **reference SQL shape**, not a committed migration. Make exact names, grants, indexes and default handling consistent with existing MAGDA PostgreSQL migration conventions.
 
 ```sql
--- Conceptual table; migration must also create the schema and grants.
-CREATE TABLE llm_usage.daily_model_tokens (
+CREATE SCHEMA llm_services;
+
+CREATE TABLE llm_services.access_profiles (
+    id UUID PRIMARY KEY,                   -- generated by LLM Services, never reused
+    name TEXT NOT NULL,
+    allowed_models TEXT[] NOT NULL,        -- unique, nonblank aliases validated by LLM Services
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    state TEXT NOT NULL DEFAULT 'pending'
+        CHECK (state IN ('pending', 'ready', 'deleting')),
+    allowed_daily_tokens BIGINT CHECK (allowed_daily_tokens >= 0),
+    allowed_weekly_tokens BIGINT CHECK (allowed_weekly_tokens >= 0),
+    allowed_monthly_tokens BIGINT CHECK (allowed_monthly_tokens >= 0),
+    owner_id UUID,                         -- null: no owner-constrained match
+    org_unit_id UUID,                      -- null: no orgUnit-constrained match
+    constraint_exemption BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CHECK (length(btrim(name)) > 0),
+    CHECK (cardinality(allowed_models) > 0)
+);
+
+CREATE TABLE llm_services.profile_pre_authorised_permissions (
+    profile_id UUID NOT NULL
+        REFERENCES llm_services.access_profiles(id) ON DELETE CASCADE,
+    permission_id UUID NOT NULL,
+    PRIMARY KEY (profile_id, permission_id)
+);
+
+CREATE TABLE llm_services.daily_model_usage (
     user_id UUID NOT NULL,
     model_alias TEXT NOT NULL,
     local_date DATE NOT NULL,
-    consumed_total_tokens BIGINT NOT NULL DEFAULT 0,
-    estimated_requests BIGINT NOT NULL DEFAULT 0,
+    measured_input_tokens BIGINT NOT NULL DEFAULT 0 CHECK (measured_input_tokens >= 0),
+    measured_output_tokens BIGINT NOT NULL DEFAULT 0 CHECK (measured_output_tokens >= 0),
+    estimated_tokens BIGINT NOT NULL DEFAULT 0 CHECK (estimated_tokens >= 0),
+    estimated_requests BIGINT NOT NULL DEFAULT 0 CHECK (estimated_requests >= 0),
     PRIMARY KEY (user_id, model_alias, local_date)
 );
 ```
 
-On completion, atomically upsert/increment one row using `INSERT ... ON CONFLICT ... DO UPDATE`, never read-modify-write in application memory. Query daily usage by one date, weekly usage by summing the ISO Monday–Sunday dates, and monthly usage by summing dates in that calendar month. This persists through restart, coordinates multiple LLM Services replicas with ordinary PostgreSQL, and avoids separate daily/weekly/monthly ledgers. Counters are **not** stored as Registry aspects: high-frequency event-sourced record writes, access-control exposure and version conflicts would be a poor fit. They are also not ephemeral in-process counters or a Prometheus-based authority.
+- `allowed_models` is one validated PostgreSQL `TEXT[]`, not a join table: the expected number of aliases is small (currently usually one), and the data is always replaced as a unit. Validate trimmed nonblank **distinct** aliases in LLM Services; treat exact case/canonical aliases consistently with LiteLLM and Helm. If future many-to-many queries demand it, a model join table can replace the array without changing the external API. A GIN index can be added if measured query load warrants it.
+- `owner_id`, `org_unit_id` and `constraint_exemption` represent the meaningful fields of the old `access-control` aspect, but **do not recreate that aspect as a JSONB column**.
+- `profile_pre_authorised_permissions` replaces `preAuthorisedPermissionIds` with a composite-key mapping table. `permission_id` identifies an Authorization API permission by **UUID**, not a user or role. This table does **not** grant permissions by itself. Validate relevant permission IDs against the Authorization API at management time; do not add a cross-service FK to the Auth API's internal permission table merely because the physical database server is shared. Missing/deleted permission IDs never grant access.
+- An LLM profile contains *administrative* scope metadata. **Model invocation entitlements** live separately as per-profile **Authorization API** resources/operations and regular roles/permissions; neither `owner_id` nor a pre-authorised mapping grants model use.
+- `enabled` is the operator's requested flag; `state` is the service lifecycle/consistency marker. Invocation requires **both** `enabled=true` and `state='ready'`. Enabling a pending profile cannot bypass provisioning. The service owns `state` and never accepts it as a normal user-updatable field.
+- Token ceilings are per authenticated **user and model alias**, not shared across users and not per-profile balances. No ceilings means unlimited for that period *inside an otherwise granted profile*. Zero means no new non-admin request passes that period.
+- Both `measured_input_tokens + measured_output_tokens + estimated_tokens` determine quota consumption. Explicit columns make future cost diagnosis easier without claiming accurate billing. All values are nonnegative `BIGINT`; guard overflow and duplicate finalization in service logic.
 
-Use one operator-configured IANA timezone (default `UTC`) for all users, derived from a UTC event timestamp; assign each completed/aborted request to the local **completion** day. An ISO week begins Monday, and a month begins on day 1. DST is resolved before deriving `local_date`. Changing the configured timezone makes existing date buckets incomparable; document a reset/rebucket migration rather than silently reinterpreting them. Store minimal metrics, not prompts, completions, provider keys or raw conversation logs.
+For profile read/list requests, LLM Services queries candidate SQL rows and uses **full typed Auth API / OPA decisions** for each returned profile. It MUST NOT silently return the entire table to anyone possessing an invocation entitlement. A small profile catalogue makes this viable; batch/optimise when necessary. Do not require Registry's OPA partial-evaluation/SQL AST transformation.
 
-Optional profiles with no ceilings still authorize access. Deployments with soft quota enforcement enabled require the small ledger to be configured; no separate LiteLLM database is necessary. When no quotas or tracking are enabled, keep the existing DB-free LiteLLM mode. The exact MAGDA Helm Secret/DB bootstrap wiring is implementation work and must be covered in deployment tests.
+The physical PostgreSQL instance is the existing Authorization DB, but LLM Services owns its `llm_services` schema, migrations and CRUD. Prefer using the existing Authorization DB migrator job mechanism **with an explicitly labelled LLM-owned migration** rather than adding a new database/migrator deployment solely for a few tables. The migration must create a dedicated login/Secret, privileges scoped to `llm_services`, backups/restore guidance and safe upgrades; the Auth API's application SQL login and the LLM login must not share privileges. If existing chart/bootstrap conventions preclude that safely, document and choose the smallest alternative without creating a new PostgreSQL server.
 
-### Soft enforcement, not billing
+### Profile data mapping
 
-- Check persisted totals **before** starting a new request; deny when all eligible profiles are exhausted. Do not attempt per-token admission/reservation or stream interruption at the exact limit.
-- Increment counters **after** the request returns provider usage; multiple in-flight requests may exceed ceilings temporarily. This is accepted. Next requests after the updated total is visible are refused.
-- Streaming cancellations or incomplete upstream responses can omit final usage. Charge one configurable approximate fallback (for example, the greater of a small fixed debit and a crude request-body-size-based input estimate) **when the provider may have processed the request**. Never treat a cancelled stream as reliably free. Label these entries as estimated and expose counts for operators, not as an invoice.
-- Prefer exact final usage when available; never apply both final usage and the fallback debit for the same facade request. Do not buffer full streamed responses merely to extract usage.
-- If a required usage ledger is unavailable, deny *quota-bounded, non-admin* new requests with `503` (rather than silently granting unlimited spending), while permitting administrator/unbounded paths according to their normal authorisation contract. Report the outage clearly. Ordinary missing usage metadata may use the documented approximation rather than fail the request.
-- Small overshoots, incomplete provider accounting, lost completion writes on process crashes and estimates are acknowledged limitations. Monitor them, but **do not present the quota as a financial hard stop**. Provider-side account budgets/alerts remain an independent safeguard.
+| Earlier Registry field | SQL representation | Meaning |
+| --- | --- | --- |
+| Record ID / name | `access_profiles.id` / `name` | Immutable UUID and human label |
+| `llm-access-profile-details.allowedModels` | `allowed_models TEXT[]` | Distinct public model aliases |
+| `enabled` | `enabled` + internal `state` | Operator setting plus safe provisioning |
+| `allowedDailyTokens` / `allowedWeeklyTokens` / `allowedMonthlyTokens` | `allowed_daily_tokens` / `allowed_weekly_tokens` / `allowed_monthly_tokens` | Optional per-model soft caps |
+| `access-control.ownerId` | `owner_id` | Ownership-scoped management |
+| `access-control.orgUnitId` | `org_unit_id` | Managing-orgUnit-scoped management |
+| `access-control.preAuthorisedPermissionIds` | `profile_pre_authorised_permissions` | Exact matching Auth API permission UUIDs |
+| `access-control.constraintExemption` | `constraint_exemption` | Exemption only with a matching `allowExemption` grant |
 
-For an operational budget issue, expose per-user/model/day totals and number of estimates to authorized administrators, with appropriate retention/cleanup (for example, configurable months of daily aggregates). A later dollar-based limit would require a reliable provider-specific cost normalization strategy and is explicitly out of scope.
+## Authorization contract and constraint equivalence
 
-## LiteLLM integration and streaming details
+Seed the base `llm/access` resource with management operations `llm/access/create`, `read`, `update`, `delete`; special explicit unrestricted invocation operation `llm/access/*/access`; and per-created-profile resource `llm/access/<uuid>` with operation `llm/access/<uuid>/access`. Per-profile operation IDs, resource identifiers, role/permission memberships and assignment remain inside the **Authorization API**, not duplicated as SQL ownership/grant tables. Create/delete those using LLM Services' internal trusted Auth API calls, **never direct writes to the authorization database tables**.
 
-Keep the current network-private static LiteLLM router: LiteLLM provides provider translation, model aliases and provider secrets, while MAGDA owns identities, profiles and limits. The existing bundled chart pins `ghcr.io/berriai/litellm:main-v1.81.12-stable`; **validate streaming usage against that pinned version** rather than assuming the newest documentation applies. Backend compatibility must also be tested for explicitly configured external LiteLLM-compatible endpoints.
+**Preserve MAGDA's existing global OPA administrator override** (`entrypoint/allow.rego`). Administrators may manage/access all profiles and invoke any deployment-allowed model without quotas. Internal services using their existing default administrator credentials are unaffected. This is not a new special-case OPA override. The explicit wildcard invocation grant exists for non-admin trusted callers and does not bypass the deployment model allowlist or basic request safety. Its literal `*` is matched by a custom rule, never treated as a general string glob.
 
-For non-streaming `/v1/chat/completions` and `/v1/responses`, inspect the returned `usage` object (normalizing `prompt_tokens`/`completion_tokens` and `input_tokens`/`output_tokens`). For streaming Chat Completions, ask the supported provider/router for a final usage event (`stream_options.include_usage` where supported); for Responses, inspect the terminal response usage event. Validate the actual frames emitted by the deployed LiteLLM version with DSH tool calls and reasoning output. If a provider or client combination cannot deliver usage, use the documented estimated fallback rather than pretending it has exact counts.
+OPA evaluates a **full, exact operation decision** using Auth API's trusted user permissions and server-fetched/proposed profile context, e.g. `input.object.llmAccessProfile` for management. LLM Services, not the client, constructs that input. For the normal management resource `llm/access`:
 
-The current Node.js facade pipes LiteLLM responses directly to clients. Implement metering as a **bounded, read-only streaming observer**: incrementally recognize usage-bearing SSE frames while passing original bytes, ordering, headers and backpressure through unchanged. Do not delay token delivery, collect prompt/response content in logs, rewrite client SSE framing, or accidentally treat ordinary text as usage metadata. Cancel/destroy upstream when the client disconnects, preserving existing SSE behaviour. Keep per-request memory bounded and avoid leaking credentials or raw provider errors.
+| Grant/constraint | Required behaviour |
+| --- | --- |
+| No constraint | Matching operation grants management of any profile |
+| Ownership | Profile `owner_id` equals the authenticated user ID |
+| OrgUnit | Non-null profile `org_unit_id` belongs to one of the user's **managed** orgUnit IDs; null never matches |
+| Owner AND OrgUnit | Both constraints must match on the **same** granted permission and profile |
+| Pre-authorised | A **single matching caller permission** must have the correct `resourceUri`, operation URI and `preAuthorisedConstraint=true`, and **its own ID** must be in `profile_pre_authorised_permissions` for that profile |
+| Constraint exemption | `constraint_exemption=true` AND caller holds a permission for the **same management operation** with `allowExemption=true`. This bypasses normal object scope for **that operation only**, not every operation or invocation right |
+| Admin | Existing global admin override, regardless of profile owner/orgUnit/flags; deployment model allowlist still applies to model calls |
 
-Continue to expose `GET /api/v0/llm/v1/models`, `POST /api/v0/llm/v1/chat/completions` and `POST /api/v0/llm/v1/responses`. Provider-native `/v1/messages` is not initially required. `/models` must list only deployment-allowed aliases the caller can actually use (including administrators and the unrestricted grant); do not leak administrative profile metadata or token balances through model discovery. Set `Cache-Control: private, no-store` on caller-specific discovery, profile APIs and sensitive responses to override Gateway's default GET caching. No data-sensitive API response should be shared-cacheable.
+These are aligned with `magda-opa/policies/common/verifyRecordPermission.rego`, `magda-opa/policies/object/agentSkill/allow.rego` and `object/accessGroup/allow.rego`, but are deliberately explicit about absent orgUnits (no implicit read fallback), matching **one permission ID** for pre-authorisation, and permission-scoped exemptions. Avoid reimplementing authorization in SQL. The operation-specific `allowExemption` behaviour applies to matching read/update/delete grants when configured. A record's exemption flag alone never grants a caller access.
 
-Continue to replace caller Authorization with an internal Secret-backed LiteLLM credential. Surface safe 401/403, quota-exceeded (recommend 429 plus stable machine-readable code), 503, backend error and optional `Retry-After` semantics. Do not confuse an exhausted soft budget with a provider's rate limit. Preserve ordinary streaming/tool-calling semantics and provider `retry-after` where possible.
+**Create** checks `llm/access/create` on the validated *proposed* row. An ownership-constrained create requires `owner_id` to be the caller; an orgUnit-constrained create requires an orgUnit they manage; combined constraints must both match. A pre-authorised create is not meaningful without an existing profile, so do not grant create through that constraint by default. The new profile does **not** automatically grant invocation or visibility to all users.
 
-## Why not LiteLLM's built-in budget system?
+**Read** checks `llm/access/read` on each current SQL row. A caller who only holds a `llm/access/<id>/access` invocation entitlement does not automatically see the profile's owner, pre-authorised IDs or token configuration. The `/v1/models` endpoint separately uses invocation rights and returns only authorized aliases.
 
-LiteLLM has mature [spend tracking](https://docs.litellm.ai/docs/proxy/cost_tracking), [budget management](https://docs.litellm.ai/docs/proxy/users) and [virtual key management](https://docs.litellm.ai/docs/proxy/virtual_keys). Their full budgets depend on its PostgreSQL-backed spend/key model, and Redis is used for distributed cache/coordination. Without a database, LiteLLM does **not** enforce its documented spending budgets. Using that path would require mapping MAGDA identities/grants to LiteLLM users or virtual keys and maintaining two policy systems, even though MAGDA wants only approximate per-model consumption. A master-key-only proxy cannot provide reliable MAGDA-user budgets simply by turning on a budget option.
+**Update** checks `llm/access/update` against **both original and proposed** profile values; this includes changes to owner/orgUnit, exemption flag and pre-authorised IDs. To avoid a privilege escalation through modifying the authorization context itself, require **unconstrained `llm/access/update`** (or administrator) to set/clear `constraint_exemption` or change the pre-authorised mapping. Other field changes may use constrained update permissions when both before/after decisions allow them. Profile ID and `state` remain immutable to callers.
 
-A lighter alternative is LiteLLM/Prometheus per-user telemetry, but it is not a durable authoritative per-user budget ledger: metric cardinality, process resets and scrape delays make quota admission fragile. Pure in-memory counters likewise reset/reconcile poorly. Using response usage plus a small MAGDA-owned daily table is the preferred trade-off; this is a design recommendation, **not yet a proven implementation**. The service should still record which provider/backend returns usable usage fields and keep a deliberate fallback.
+**Delete** checks `llm/access/delete` against the current row and retires the profile using the lifecycle below. Callers cannot grant themselves arbitrary Auth API permissions merely by creating or updating a profile.
 
-Source material reviewed (2026-11-19):
-- [LiteLLM budget database prerequisites](https://docs.litellm.ai/docs/proxy/users) and [request architecture](https://docs.litellm.ai/docs/proxy/architecture)
-- [LiteLLM spend tracking](https://docs.litellm.ai/docs/proxy/cost_tracking), [virtual keys](https://docs.litellm.ai/docs/proxy/virtual_keys), [Prometheus](https://docs.litellm.ai/docs/proxy/prometheus)
-- [LiteLLM usage and streaming response metadata](https://docs.litellm.ai/docs/completion/usage) — documentation may be newer than MAGDA's pinned image; **not** evidence of current pinned-version compatibility
-- [MAGDA's bundled LiteLLM values](../../../deploy/helm/internal-charts/litellm/values.yaml), [config](../../../deploy/helm/internal-charts/litellm/templates/config.yaml) and [LLM facade](../../../magda-llm-services/src/createApp.ts)
+OPA policy should explicitly test constraint combinations (owner-only, orgUnit-only, both, pre-authorised and exemption). Use the same *permission object* for checking matching operation and matched pre-authorised UUID; do not use unbound permission indices that could mix IDs from unrelated grants. Existing global admin role overrides decisions by design.
 
-## Acceptance / verification for the combined delivery
+### Non-admin model entitlement
 
-1. **No release migration:** test from a clean v8 `next` install; old `agentWorkspace/access` remains a Workspace permission and is no longer an LLM invocation requirement.
-2. **Admin consistency:** existing OPA administrator override permits any deployment-allowed alias without a profile or quota. Non-admin wildcard grants are explicit and cannot bypass the deployment allowlist. Anonymous/unauthenticated requests fail.
-3. **Profile lifecycle:** typed create/read/update/delete checks both existing and proposed `access-control`, OPA grants and service-managed Registry/Auth API writes. No auto-grants, ID reuse, wildcard path injection, stale profile resurrection or direct constrained generic Registry write bypass.
-4. **Model OR:** two granted profiles for one alias do not stack limits; a larger eligible profile can authorize it. Test distinct daily/weekly/monthly combinations with independent per-profile evaluation. `model-A` usage cannot spend or block `model-B`.
-5. **Metering:** both API endpoints, ordinary/streamed requests, tools, cancellations, incomplete usage, duplicate terminal chunks, missing usage, retries and client disconnects. Test pinned LiteLLM plus an external mock backend, checking that SSE byte delivery remains intact.
-6. **Durability:** PostgreSQL daily upserts across concurrent calls, multiple replicas, restarts, calendar/ISO weeks/months, DST and documented timezone changes. Monitor estimates and failures without storing prompts, bodies or secrets.
-7. **Soft quota:** a newly admitted request is refused once persisted totals reach every eligible profile's applicable ceiling; concurrent in-flight overshoot is explicitly accepted. Ledger outages return 503 for bounded ordinary callers; administrator/unbounded cases retain designed behavior.
-8. **Discovery/security:** list only callable aliases; no private profile information or public caching. Check provider credential isolation, safe error bodies and independent optional LiteLLM deployment.
-9. **Documentation:** after implementation, update maintained LLM architecture, Helm operator guide, security notes and E2E acceptance; keep this file classified as a proposal until code is merged.
+Model use checks the caller's exact `llm/access/<profile-id>/access` operation (or the explicit `llm/access/*/access` grant) via the Auth API. Only **unconstrained** per-profile invocation grants are supported initially; profile ownership/orgUnit/pre-authorised mappings describe **management**, not *who has an invocation entitlement*. This avoids accidentally giving profile owners the ability to consume the model or mixing two separate scopes.
 
-**Delivery decision:** implement access profiles **together with** practical per-user/per-model soft token limits in #3838; do not ship a separate model-only entitlement stage that merely moves the existing allowlist. No precise payment-grade limit, reservations, Redis, or mandatory LiteLLM PostgreSQL stack is part of this scope.
+For a normal caller, an invocation is permitted only when: (1) alias is deployment-allowed; (2) some `enabled=true, state='ready'` profile lists that alias; (3) the exact corresponding Auth API operation is granted; and (4) the **user's usage for this alias** satisfies all ceilings within that profile. At no point can a client select a more permissive profile by submitting its ID.
+
+For multiple granted profiles: **OR**, no stacking, and one user/model counter across profiles. The service evaluates each candidate profile's **whole combination** of day/week/month limits; never synthesize a fictional profile by taking independent maxima from different profiles. Profile A's usage does not exhaust profile B when they cover *different models*. Same-model eligible profiles effectively allow the largest suitable capacity without accumulating allowances. A disabled/deleted profile or orphan grant never authorizes a request.
+
+## Public LLM Services endpoints
+
+OPA operation URIs are **permission identifiers**, distinct from HTTP paths.
+
+| HTTP under `/api/v0/llm` | Required permission | Behaviour |
+| --- | --- | --- |
+| `POST /access-profiles` | `llm/access/create` | Validate proposed SQL profile, create pending entry and dynamic Auth API operation |
+| `GET /access-profiles` | Per-record `llm/access/read` | Return filtered administrative rows, excluding secrets and internal lifecycle details |
+| `GET /access-profiles/:id` | `llm/access/read` on actual row | Read profile; otherwise deny without metadata leak |
+| `PUT /access-profiles/:id` | `llm/access/update` on before+after | Atomically edit profile and pre-authorised mapping, protect restricted metadata changes |
+| `DELETE /access-profiles/:id` | `llm/access/delete` on current row | Disable first and complete revocation/cleanup safely |
+| `GET /v1/models` | Effective per-alias model access | Filter allowed models without exposing management metadata |
+| `POST /v1/chat/completions` and `POST /v1/responses` | Effective alias access | Proxy calls and soft usage tracking |
+
+Do not add `/v1/messages` just for completeness; implement it only if a supported consumer requires it. Set `Cache-Control: private, no-store` on caller-specific discovery and profile responses to override MAGDA Gateway's public GET default. Never include SQL credentials, provider keys or private administrative metadata in errors or logs.
+
+## Profile lifecycle: SQL transactions + cross-API recovery
+
+An LLM-owned SQL transaction can update profile fields and pre-authorised links together, **but cannot transactionally create/delete Auth API permissions**. Plan idempotent steps, fail-closed reads and a repair path:
+
+1. **Create:** LLM Services assigns a UUID (never reused), validates owner/orgUnit and the entire profile, checks caller's typed create permission, and inserts `state='pending'` in SQL. Register resource/operation through Auth API using trusted service authority and verify the expected URI/IDs. Change `state='ready'` in SQL only on success; preserve the user's requested `enabled` value. A failed registration leaves the row non-invokable for retry/repair. No automatic grant.
+2. **Update:** Full authorization on original and proposed row; atomically update profile fields and its permission-ID mapping. Restriction/disable must take effect for subsequent admission; an existing stream may complete. Authorization resource/operation URI does not change because ID is immutable.
+3. **Delete:** After typed delete authorization, mark `state='deleting', enabled=false` in SQL first. Revoke/remove Auth API resource/operation and related owned permissions/grants using ownership checks; then delete SQL row. Failures remain `deleting` for safe retry, never re-enable automatically.
+4. **Repair:** check pending/deleting rows and missing/mismatched Auth API resources. Ensure existing operations belong to the expected profile before deleting, and never automatically adopt unrelated permissions. An orphan entitlement never authorizes if a matching `ready` profile is missing.
+5. **No ID reuse:** UUID identifiers are minted for each creation and are not client-provided; never resurrect a deleted identifier. Validate operation URI/path encoding; reserved `*` is not a profile identifier. The rare theoretical UUID collision must fail creation rather than overwrite an existing row.
+
+A service-admin identity may be used for internal Auth API coordination, consistent with other MAGDA service integrations; the **external caller's** management rights must still be checked before acting. Avoid ever exposing that internal authority through a public API.
+
+## Soft usage ledger and model-based quota evaluation
+
+Use **total input + output tokens** for the operational budget guardrail. Treat provider reasoning tokens as part of output and cache-read input tokens as part of input; **never double count**. This is an approximate volume metric, not a currency bill (different models/input/output/cache have different pricing).
+
+The quota key is **authenticated MAGDA user UUID plus requested public model alias**. Same-model profiles look at the same ledger; different model aliases have independent ledgers even when routed to the same underlying provider. Never use the client-supplied `user` field, profile ID, DSH session, API key or provider ID as the counter identity.
+
+- Get usage from LiteLLM/OpenAI-compatible Chat Completions `prompt_tokens/completion_tokens` or Responses `input_tokens/output_tokens` metadata. Count once per facade call. For streamed requests, inspect usage-bearing SSE frames while forwarding original bytes and observing backpressure; never buffer whole responses or log prompt/response contents.
+- Prefer final reported total and components. When unavailable (cancellation, provider error, interrupted SSE), charge one documented **estimate** when the upstream may have processed the request. Increment `estimated_tokens`/`estimated_requests`; never also debit measured totals for the same request.
+- Perform one atomic daily `INSERT ... ON CONFLICT ... DO UPDATE` increment. Use one operator-configured IANA timezone (default UTC); `local_date` is the completion day in that timezone. Sum daily rows for weekly ISO Monday–Sunday windows and calendar months. Record times in UTC for operational logs and handle DST boundaries. Changing timezone requires an explicit reset/rebucket plan.
+- **Soft cutoff:** check persisted counters **before** a request, allow eligible profiles when usage is *below every configured limit*, and deny when exhausted. No reservations or midstream cutoff. Concurrent admitted requests may overshoot; this is accepted and not billing-grade.
+- If a **required** ledger read/write facility is unavailable, fail **bounded non-admin** requests with a safe `503` rather than silently allow unchecked spending; admins and explicitly unbounded access still follow their normal policy. An incomplete provider usage value is different: use the documented estimate. Monitor DB write failures so they don't become invisible loss of quota protection.
+- Expose aggregate totals/estimation counts to authorized operators, with a retention/cleanup policy. Do not store raw prompt text, output content or LiteLLM master/provider secrets. Consider provider-side budget alerts independently for financial safety.
+
+**PoC dependency:** [#3934](https://github.com/magda-io/magda/issues/3934) must verify actual usage format, DSH tool-call streaming, cancellation behaviour and upstream compatibility for pinned LiteLLM `main-v1.81.12-stable`. Results may require a small LiteLLM version/config change or bounded estimation fallback **before** implementation; do not treat untested documentation examples as proof of streaming support. LiteLLM remains network-private and stateless, without its own database, Redis, virtual-key management or budget enforcement subsystem.
+
+## Verification and delivery
+
+- [ ] Clean v8 deployment (no released-user migration); Workspace access and independent LLM invocation rights separated; unchanged global admin override and deployment model allowlist.
+- [ ] SQL schema migrations/bootstrap/least-privilege LLM connection co-located with existing Auth PostgreSQL deployment; backup and failure handling; no new Postgres server or Redis.
+- [ ] Ownership, managed-orgUnit, combined constraint, exact pre-authorised permission-ID mapping and `allowExemption` decisions match the table above. Include negative tests for wrong permission ID, non-manager, null orgUnit, fake caller context, exemption without matching grant, and restricted metadata edits.
+- [ ] Creation, updates (old+new context), deletion, retry/repair of SQL pending/deleting and Auth API partial failures; no stale grant resurrection, UUID reuse or unexpected cross-service DB writes.
+- [ ] Same-model OR without quota stacking or independent-limit mixing, independent model A/B counters, per-user rather than shared budgets, administrator/unbounded access.
+- [ ] Timezone day/week/month/DST and concurrent SQL upserts; observed and estimated streaming tokens counted once; exact pinned LiteLLM and DSH POC evidence.
+- [ ] Non-leaking model discovery, management-list filtering and `Cache-Control: private, no-store`; safe 401/403/429/503 errors.
+- [ ] After feature implementation, update maintained LLM architecture, operator guide, security/OPA and end-to-end tests; until then **do not describe profiles/limits as shipped**.
+
+**Delivery:** #3838 implements profile management, model entitlements and approximate **per-model usage limits together**, after #3934 establishes metering feasibility. No billing-grade reservations, user-facing dollar accounting, or LiteLLM Postgres/Redis integration is part of this scope.
