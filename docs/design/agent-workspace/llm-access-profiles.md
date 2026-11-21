@@ -4,71 +4,88 @@
 **Existing implementation:** [LLM Services](../../docs/architecture/llm-services.md), [Workspace security](../../docs/architecture/agent-workspace-security.md) and [deployment](../../docs/agent-workspace-deployment.md).
 **Owner:** MAGDA LLM Services; neither Registry nor LiteLLM manages these profiles.
 
+
 ## Decision and rationale: SQL, not Registry records
 
-Store **both access profiles and usage aggregates** in an LLM Services-owned PostgreSQL schema, proposed `llm_services`, co-located with MAGDA's existing **Authorization PostgreSQL instance**. Use a separate least-privilege LLM database role/Secret, even though the physical database server is shared. The Authorization API retains ownership of its own resources, permissions, operations and roles and must be called through **its API**, not by manipulating its tables. No additional Postgres deployment or LiteLLM PostgreSQL/Redis stack is needed.
+Store **both access profiles and usage aggregates** in an LLM Services-owned `llm_services` PostgreSQL schema on the **existing Authorization PostgreSQL instance**. Use a dedicated least-privilege login/Secret. The Authorization API, not this schema, owns resources, operations, roles, permissions and user-role assignments; LLM Services calls its **public/trusted service APIs**, never its SQL tables. No new PostgreSQL server, Redis or LiteLLM virtual-key/spend DB is required.
 
-This supersedes the earlier proposed `llm-access-profile` Registry record and `llm-access-profile-details`/`access-control` aspects; **no Registry aspects or Registry CRUD implementation are introduced for this feature**. Reasons:
-- Access profiles are small policy/configuration objects and are not intended for catalogue discovery or federation; Registry event-sourcing, generic record authorization and per-record history add more integration work than value here.
-- One LLM-owned schema permits local transactions for profile fields, model aliases, pre-authorised-permission links and usage buckets, with ordinary SQL constraints/indexes and a small migration.
-- **Trade-off:** SQL does not automatically provide Registry's event history, record-level search or standard typed-Registry read filtering. The feature must own full API authorization, auditable administrative changes and DB lifecycle. Cross-service Auth API coordination is **still not transactional**. Do not assume database co-location makes Auth API calls part of an LLM Services transaction.
-- Do not store identical profile definitions in both systems. Profile management APIs are **always** LLM Services-owned, whether a client is administrative or a user.
+A profile is a small administrative access policy, not a discoverable/federated Registry record. No `llm-access-profile-details` Registry aspect, Registry record or generic `object/record/*` grant is introduced. LLM Services is the only supported profile CRUD/validation surface. We lose Registry event sourcing/partial-evaluation filtering; LLM Services must provide authorization, operational logs and SQL migration/backup ownership. SQL updates and remote Authorization API calls are **not an atomic transaction**.
 
-MAGDA's [Building Features on Registry Records](../../docs/architecture/Guide%20to%20Magda%20Internals.md#building-features-on-registry-records) describes the right **application-service authority** principle, but its Registry-specific aspect and partial-evaluation machinery are **not applicable** here. SQL-backed profiles have no generic `object/record/*` grant or Registry fallback. Retain the typed MAGDA OPA operations and matching ownership, orgUnit, pre-authorised and exemption semantics at the LLM Services API boundary.
+### Simplification compared with the earlier proposal
+
+- **One shared authorization resource** `llm/access`, with seeded operations `create`, `read`, `update`, `delete` and `invoke`. Do **not** create `llm/access/<profile-id>` resources or per-profile operation URIs.
+- **Three automatically managed role/permission pairs per profile** (invoke, read, update), stored in one `profile_managed_roles` mapping table. All three permissions have `preAuthorisedConstraint=true` on resource `llm/access`; only the exact matching permission ID/operation applies to a given profile.
+- LLM Services constructs a Registry-style **`access-control` object in trusted OPA decision input**, despite storing owner/orgUnit/exemption as ordinary SQL columns. The three managed permission IDs become its `preAuthorisedPermissionIds` array; no second mapping table is needed.
+- **No special non-admin wildcard invocation operation** (`llm/access/*/access`). A normal profile with `allowed_models=['*']` and nullable/unlimited ceilings gives administrators a controlled way to grant unrestricted use to selected users. MAGDA's existing global OPA administrator override remains.
+- **Model routing stays operator-owned via Helm/Secrets**, not in a new database-backed model catalogue. The existing bundled LiteLLM chart currently configures one alias; multi-model Helm support can be a separate deployment improvement. Neither a SQL model list nor the profile `'*'` wildcard provisions credentials, endpoints or LiteLLM routes.
+- Retain the lightweight `revision` optimistic-concurrency column, `pending/ready/deleting` recovery state and **one daily usage aggregate table**. No request log, reservations, weekly/monthly tables or billing accounting is required.
+
+MAGDA's [Access Group architecture](../../docs/architecture/access-groups.md), [user guide](../../docs/access-groups.md) and [ADR 0012](../../docs/adrs/0012-typed-access-group-authorisation.md) establish the auto-managed role and typed ownership/pre-authorised pattern. The [Registry feature guide](../../docs/architecture/Guide%20to%20Magda%20Internals.md#building-features-on-registry-records) supports the feature-service ownership principle, not a requirement that these SQL-only profiles have Registry aspects.
 
 ### Boundaries
 
 ```text
-Authenticated MAGDA client or user's Workspace/DSH
- -> MAGDA Gateway: authenticate, supply trusted session
- -> MAGDA LLM Services:
-      verify session; evaluate typed Auth API / OPA operations
-      read profile definitions + per-user/model soft usage ledger in SQL
-      enforce deployment-wide allowedModels + soft quotas
-      proxy OpenAI-compatible API, observe usage without changing SSE
- -> Private LiteLLM (static provider routing and provider credentials)
- -> Model provider
+Authenticated MAGDA API client or Workspace/DSH
+ -> MAGDA Gateway (verified Magda session)
+ -> MAGDA LLM Services
+      - validates profile management and per-request model entitlement using Auth API/OPA
+      - reads LLM-owned profile SQL, managed-role IDs and daily usage counters
+      - applies deployment model allowlist and model-specific soft quotas
+      - forwards OpenAI-compatible requests through private LiteLLM
+      - observes response usage without changing stream bytes
+ -> private LiteLLM -> configured model provider
 
-SQL (llm_services schema): profiles, per-profile pre-authorised IDs, daily usage
-Authorization API: grantable operations, roles, permissions (existing administrator override)
+Existing Authorization API: shared llm/access resource and operations,
+    profile-owned role/permission records, all user-role assignments
+SQL llm_services schema: profile data, three role/permission ID pairs,
+    one row per (user, public model alias, local accounting date)
 ```
 
-Workspace lifecycle/runtime retains the self-only `agentWorkspace/access` permission; direct LLM access does **not** require Workspace access. A DSH user needs both respective permissions for their distinct actions. Incoming MAGDA bearer credentials never become LiteLLM provider credentials. Provider/model Secrets remain outside Sandboxes.
+Workspace lifecycle/runtime still requires self-only `agentWorkspace/access`; independent LLM clients need a model entitlement, **not** Workspace access. Provider Secrets stay private to LiteLLM. The operator-controlled Helm `llm-services.allowedModels` is an outer safety/availability restriction, including for administrators; model profile membership is an additional permission check for non-admins.
 
-Retain the outer Helm `llm-services.allowedModels` restriction **even for administrators**. Bundled LiteLLM currently exposes one alias. Explicit external backend aliases are allowed only when configured and actually served.
+### Profile model wildcard and deployment catalogue
+
+Accept either a list of distinct, nonblank exact public aliases such as `["model-a", "model-b"]` **or exactly** `["*"]`. Disallow mixing `"*"` with any other value, duplicates, unknown aliases (except `"*"`), empty strings or ambiguous whitespace. The model alias `"*"` in a profile is a **whole-element sentinel**, not prefix matching or an SQL wildcard. Literal model IDs must still be validated against configured deployment-allowed aliases at profile write time and checked again on invocation; profiles may become unavailable when operators remove an alias.
+
+`["*"]` means **all aliases currently both configured/served by the backend and allowed by the deployment**; it dynamically covers newly deployed aliases without expanding the SQL array. If a backend's `/models` list is unavailable or untrusted, fail closed to known explicitly configured/validated aliases. The wildcard does **not** mean arbitrary LiteLLM/provider-supported model names, and cannot bypass the deployment-wide allowlist.
+
+Every daily/weekly/monthly ceiling applies **separately to each requested public model alias**, including aliases matched through `"*";` limits do not create a shared pool across models. Updating an explicit model list to `["*"]`, adding aliases, raising/removing limits, enabling an unavailable profile or altering exemption/ACL grants are widening changes: require administrator or a deliberately **unconstrained** `llm/access/update` grant, not only an owner-scoped or per-profile editor permission.
+
+The Settings UI may display **read-only available system models** derived from the operator-managed configuration (and a verified backend list); model provider credentials and routing are not editable from the profile UI. An eventual system-model CRUD UI would require a separate dynamic provider configuration/Secrets/lifecycle design. Do not introduce a `system_models` SQL table in #3838.
+
 
 ## PostgreSQL schema (logical model)
 
-The following is **reference SQL shape**, not a committed migration. Make exact names, grants, indexes and default handling consistent with existing MAGDA PostgreSQL migration conventions.
+The following is a **reference SQL shape**, not a shipped migration. Actual names, migrations, indexes, roles and Secrets must follow MAGDA deployment conventions.
 
 ```sql
 CREATE SCHEMA llm_services;
 
 CREATE TABLE llm_services.access_profiles (
-    id UUID PRIMARY KEY,                   -- generated by LLM Services, never reused
-    name TEXT NOT NULL,
-    allowed_models TEXT[] NOT NULL,        -- unique, nonblank aliases validated by LLM Services
+    id UUID PRIMARY KEY,             -- generated once by LLM Services, never reused
+    name TEXT NOT NULL CHECK (length(btrim(name)) > 0),
+    allowed_models TEXT[] NOT NULL CHECK (cardinality(allowed_models) > 0),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     state TEXT NOT NULL DEFAULT 'pending'
         CHECK (state IN ('pending', 'ready', 'deleting')),
     allowed_daily_tokens BIGINT CHECK (allowed_daily_tokens >= 0),
     allowed_weekly_tokens BIGINT CHECK (allowed_weekly_tokens >= 0),
     allowed_monthly_tokens BIGINT CHECK (allowed_monthly_tokens >= 0),
-    owner_id UUID,                         -- null: no owner-constrained match
-    org_unit_id UUID,                      -- null: no orgUnit-constrained match
+    owner_id UUID,
+    org_unit_id UUID,
     constraint_exemption BOOLEAN NOT NULL DEFAULT FALSE,
     revision BIGINT NOT NULL DEFAULT 1 CHECK (revision > 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CHECK (length(btrim(name)) > 0),
-    CHECK (cardinality(allowed_models) > 0)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE llm_services.profile_pre_authorised_permissions (
+CREATE TABLE llm_services.profile_managed_roles (
     profile_id UUID NOT NULL
         REFERENCES llm_services.access_profiles(id) ON DELETE CASCADE,
-    permission_id UUID NOT NULL,
-    PRIMARY KEY (profile_id, permission_id)
+    access_level TEXT NOT NULL CHECK (access_level IN ('use', 'read', 'edit')),
+    role_id UUID NOT NULL UNIQUE,
+    permission_id UUID NOT NULL UNIQUE,
+    PRIMARY KEY (profile_id, access_level)
 );
 
 CREATE TABLE llm_services.daily_model_usage (
@@ -83,31 +100,32 @@ CREATE TABLE llm_services.daily_model_usage (
 );
 ```
 
-- `allowed_models` is one validated PostgreSQL `TEXT[]`, not a join table: the expected number of aliases is small (currently usually one), and the data is always replaced as a unit. Validate trimmed nonblank **distinct** aliases in LLM Services; treat exact case/canonical aliases consistently with LiteLLM and Helm. If future many-to-many queries demand it, a model join table can replace the array without changing the external API. A GIN index can be added if measured query load warrants it.
-- `owner_id`, `org_unit_id` and `constraint_exemption` represent the meaningful fields of the old `access-control` aspect, but **do not recreate that aspect as a JSONB column**.
-- `profile_pre_authorised_permissions` replaces `preAuthorisedPermissionIds` with a composite-key mapping table. `permission_id` identifies an Authorization API permission by **UUID**, not a user or role. This table does **not** grant permissions by itself. Validate relevant permission IDs against the Authorization API at management time; do not add a cross-service FK to the Auth API's internal permission table merely because the physical database server is shared. Missing/deleted permission IDs never grant access.
-- An LLM profile contains *administrative* scope metadata. **Model invocation entitlements** live separately as per-profile **Authorization API** resources/operations and regular roles/permissions; neither `owner_id` nor a pre-authorised mapping grants model use.
-- `revision` is an optimistic concurrency token. Every successful profile field/pre-authorised mapping update increments it atomically. A stale `PUT` (e.g. `If-Match` with the old revision) returns a conflict rather than silently overwriting another owner's/administrator's changes. The service re-evaluates authorization against the current locked row and proposed changes before committing.
-- `enabled` is the operator's requested flag; `state` is the service lifecycle/consistency marker. Invocation requires **both** `enabled=true` and `state='ready'`. Enabling a pending profile cannot bypass provisioning. The service owns `state` and never accepts it as a normal user-updatable field.
-- Token ceilings are per authenticated **user and model alias**, not shared across users and not per-profile balances. No ceilings means unlimited for that period *inside an otherwise granted profile*. Zero means no new non-admin request passes that period.
-- Both `measured_input_tokens + measured_output_tokens + estimated_tokens` determine quota consumption. Explicit columns make future cost diagnosis easier without claiming accurate billing. All values are nonnegative `BIGINT`; guard overflow and duplicate finalization in service logic.
+- The LLM-owned `allowed_models TEXT[]` is small, validated and replaced as a unit. `["*"]` is its only wildcard form; enforce exact aliases/uniqueness in the service. There is no model catalogue table in this proposal. An optional array index can be added if actual query volume justifies it.
+- `owner_id`, `org_unit_id` and `constraint_exemption` are SQL fields, **not a JSONB Registry `access-control` aspect**; LLM Services maps them to that familiar shape **only in trusted OPA input**.
+- The `profile_managed_roles` table replaces `profile_pre_authorised_permissions`. Exactly **three rows for each ready profile** store authoritative **UUID references**, one per access level, to the specific roles/permissions managed by LLM Services in the Authorization API. `role_id` and `permission_id` are not foreign keys to Auth API tables, even when the instance is shared. Actual role memberships, grants and permission constraints live **only in Authorization API**.
+- For each profile, create three permissions on **shared `llm/access`** with exact operation URIs: `use -> llm/access/invoke`, `read -> llm/access/read`, `edit -> llm/access/update`. Each has `preAuthorisedConstraint=true`, `userOwnershipConstraint=false`, `orgUnitOwnershipConstraint=false`. Create three managed roles; the **edit role** contains both the profile's `edit` and `read` permission IDs so editors can open the profile UI. The `use` role only invokes, and the `read` role only views. A user can hold more than one role. LLM Services checks exact role/permission ownership before any assignment or cleanup; names/descriptions are informational, not proof of ownership.
+- A `profile_managed_roles` row alone never grants access. The caller must be assigned its matching role (or another role explicitly carrying that **same** permission) by the Authorization API. No arbitrary client-supplied permission IDs or role IDs are accepted in profile CRUD. Requiring the **same permission** to appear in both OPA caller permissions and the trusted profile `preAuthorisedPermissionIds` prevents unrelated grants from being accepted.
+- `state` is service-owned: `enabled=true AND state='ready'` is necessary for invocation. `revision` is a cheap optimistic concurrency token; a stale `If-Match`/expected version gets `409`. Never hold a SQL lock across a slow external OPA/Auth API call; re-check the version and permission-sensitive before/after state at commit. There is **no** broad SQL transaction spanning the Authorization API.
+- Null token ceilings mean unlimited for that period **inside an otherwise entitled profile**; zero means no new bounded non-admin request is admitted for that period. `measured_input_tokens + measured_output_tokens + estimated_tokens` is the usage figure checked against each configured ceiling. Guard integer overflow and double settlement.
+- Ownership/exemption metadata controls **management**, never implicitly grants **model invocation**. The model-use grant always requires the matching `invoke` permission, except the existing global administrator override.
 
-For profile read/list requests, LLM Services queries candidate SQL rows and uses **full typed Auth API / OPA decisions** for each returned profile. It MUST NOT silently return the entire table to anyone possessing an invocation entitlement. A small profile catalogue makes this viable; batch/optimise when necessary. Do not require Registry's OPA partial-evaluation/SQL AST transformation.
+### Mapping to the former Registry-shaped contract
 
-The physical PostgreSQL instance is the existing Authorization DB, but LLM Services owns its `llm_services` schema, migrations and CRUD. Prefer using the existing Authorization DB migrator job mechanism **with an explicitly labelled LLM-owned migration** rather than adding a new database/migrator deployment solely for a few tables. The migration must create a dedicated login/Secret, privileges scoped to `llm_services`, backups/restore guidance and safe upgrades; the Auth API's application SQL login and the LLM login must not share privileges. If existing chart/bootstrap conventions preclude that safely, document and choose the smallest alternative without creating a new PostgreSQL server.
+| Former field/concept | SQL storage and decision representation |
+| --- | --- |
+| Profile ID, name, models, enabled, daily/weekly/monthly caps | Columns in `access_profiles` |
+| `access-control.ownerId` | `access_profiles.owner_id`, projected to OPA `access-control.ownerId` |
+| `access-control.orgUnitId` | `access_profiles.org_unit_id`, projected to OPA `access-control.orgUnitId` |
+| `access-control.constraintExemption` | `access_profiles.constraint_exemption`, projected to OPA `access-control.constraintExemption` |
+| `access-control.preAuthorisedPermissionIds` | Exactly the three `permission_id` UUIDs from `profile_managed_roles`, projected into OPA `access-control.preAuthorisedPermissionIds` |
+| Per-profile user grants | Three managed roles and their Authorization API `user_roles` assignments; **no duplicate user membership table** |
+| Model availability/routing | Existing Helm/private LiteLLM configuration, **not** the profile table |
 
-### Profile data mapping
+### Deployment and migration ownership
 
-| Earlier Registry field | SQL representation | Meaning |
-| --- | --- | --- |
-| Record ID / name | `access_profiles.id` / `name` | Immutable UUID and human label |
-| `llm-access-profile-details.allowedModels` | `allowed_models TEXT[]` | Distinct public model aliases |
-| `enabled` | `enabled` + internal `state` | Operator setting plus safe provisioning |
-| `allowedDailyTokens` / `allowedWeeklyTokens` / `allowedMonthlyTokens` | `allowed_daily_tokens` / `allowed_weekly_tokens` / `allowed_monthly_tokens` | Optional per-model soft caps |
-| `access-control.ownerId` | `owner_id` | Ownership-scoped management |
-| `access-control.orgUnitId` | `org_unit_id` | Managing-orgUnit-scoped management |
-| `access-control.preAuthorisedPermissionIds` | `profile_pre_authorised_permissions` | Exact matching Auth API permission UUIDs |
-| `access-control.constraintExemption` | `constraint_exemption` | Exemption only with a matching `allowExemption` grant |
+Co-locate the `llm_services` schema on the existing Authorization PostgreSQL instance with a separate least-privilege login and Secret. Prefer MAGDA's existing Authorization DB migrator mechanism with an **explicitly labelled LLM-owned migration** rather than new PostgreSQL infrastructure. Coordinate schema creation, backup/restore, upgrade safety and Secret wiring. Auth API application SQL credentials must not become the LLM SQL credentials and vice versa. Use Auth API service endpoints for its own objects, never cross-schema SQL writes.
+
+For read/list requests LLM Services selects SQL candidate rows and performs **full typed OPA decisions with each trusted profile object**; do not assume users with invoke grants may enumerate profiles or all user memberships. The Admin UI should paginate access-list/member results and fetch personal details via authorized, trusted Auth API endpoints rather than a direct SQL join into the Authorization tables.
 
 ## Authorization contract and constraint equivalence
 
