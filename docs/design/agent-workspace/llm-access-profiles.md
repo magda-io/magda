@@ -127,71 +127,135 @@ Co-locate the `llm_services` schema on the existing Authorization PostgreSQL ins
 
 For read/list requests LLM Services selects SQL candidate rows and performs **full typed OPA decisions with each trusted profile object**; do not assume users with invoke grants may enumerate profiles or all user memberships. The Admin UI should paginate access-list/member results and fetch personal details via authorized, trusted Auth API endpoints rather than a direct SQL join into the Authorization tables.
 
+
 ## Authorization contract and constraint equivalence
 
-Seed the base `llm/access` resource with management operations `llm/access/create`, `read`, `update`, `delete`; special explicit unrestricted invocation operation `llm/access/*/access`; and per-created-profile resource `llm/access/<uuid>` with operation `llm/access/<uuid>/access`. Per-profile operation IDs, resource identifiers, role/permission memberships and assignment remain inside the **Authorization API**, not duplicated as SQL ownership/grant tables. Create/delete those using LLM Services' internal trusted Auth API calls, **never direct writes to the authorization database tables**.
+### One typed resource and trusted OPA context
 
-**Preserve MAGDA's existing global OPA administrator override** (`entrypoint/allow.rego`). Administrators may manage/access all profiles and invoke any deployment-allowed model without quotas. Internal services using their existing default administrator credentials are unaffected. This is not a new special-case OPA override. The explicit wildcard invocation grant exists for non-admin trusted callers and does not bypass the deployment model allowlist or basic request safety. Its literal `*` is matched by a custom rule, never treated as a general string glob.
+Seed **one** Authorization API resource `llm/access` with operations `llm/access/create`, `llm/access/read`, `llm/access/update`, `llm/access/delete` and `llm/access/invoke`. Add a matching custom OPA delegate for `startswith(input.operationUri, "llm/access/")` in the entrypoint. Do **not** register one resource/operation per profile: the **trusted profile context plus exact pre-authorised permission UUID** scopes the shared operation to one profile.
 
-OPA evaluates a **full, exact operation decision** using Auth API's trusted user permissions and server-fetched/proposed profile context, e.g. `input.object.llmAccessProfile` for management. LLM Services, not the client, constructs that input. For the normal management resource `llm/access`:
+LLM Services obtains the authenticated caller's session and loads the profile from SQL. It constructs and POSTs the following **trusted decision context** through the Authorization API, which adds the real caller identity/roles/permissions. Clients must **never** supply/override the profile or `access-control` object, permission IDs or the caller user ID:
 
-| Grant/constraint | Required behaviour |
+```json
+{
+  "object": {
+    "llmAccessProfile": {
+      "id": "<profile UUID from SQL>",
+      "allowedModels": ["*"],
+      "enabled": true,
+      "access-control": {
+        "ownerId": "<owner UUID or null>",
+        "orgUnitId": "<orgUnit UUID or null>",
+        "preAuthorisedPermissionIds": [
+          "<use permission_id from profile_managed_roles>",
+          "<read permission_id from profile_managed_roles>",
+          "<edit permission_id from profile_managed_roles>"
+        ],
+        "constraintExemption": false
+      }
+    }
+  }
+}
+```
+
+`access-control` here is a **projected shape in OPA input**, **not** a Registry aspect or a fourth database table. Its pre-authorised list contains exactly the three profile-managed `permission_id` values (never role IDs or user IDs). Exclude absent/missing IDs rather than synthesizing them; incomplete provisioning must leave the profile non-ready. Treat the `state`, model aliases and requested operation as additional trusted inputs when necessary. The actual policy uses the **same permission object** for all checks below.
+
+For **non-admin** callers:
+
+| Operation | Authorization rule |
 | --- | --- |
-| No constraint | Matching operation grants management of any profile |
-| Ownership | Profile `owner_id` equals the authenticated user ID |
-| OrgUnit | Non-null profile `org_unit_id` belongs to one of the user's **managed** orgUnit IDs; null never matches |
-| Owner AND OrgUnit | Both constraints must match on the **same** granted permission and profile |
-| Pre-authorised | A **single matching caller permission** must have the correct `resourceUri`, operation URI and `preAuthorisedConstraint=true`, and **its own ID** must be in `profile_pre_authorised_permissions` for that profile |
-| Constraint exemption | `constraint_exemption=true` AND caller holds a permission for the **same management operation** with `allowExemption=true`. This bypasses normal object scope for **that operation only**, not every operation or invocation right |
-| Admin | Existing global admin override, regardless of profile owner/orgUnit/flags; deployment model allowlist still applies to model calls |
+| `llm/access/create` | The matching unconstrained/owner/orgUnit-constrained global create grant, evaluated on the validated proposed profile (owner defaults to the caller). No pre-authorised create |
+| `llm/access/read` | Global unconstrained, owner-scoped, managed-orgUnit-scoped or combined owner+orgUnit grant **OR** a matching pre-authorised profile `read` permission ID |
+| `llm/access/update` | Same global constraint alternatives **OR** a matching pre-authorised profile `edit` permission ID; only for permitted types of changes |
+| `llm/access/delete` | Global unconstrained, owner-scoped, managed-orgUnit-scoped or combined owner+orgUnit grant; **no auto-managed delete role** |
+| `llm/access/invoke` | **Only** an exact matching profile-managed `use` permission: shared `llm/access` resource, `preAuthorisedConstraint=true`, exact `invoke` operation URI and its own ID in the three-ID list. **No** generic owner/orgUnit/unconstrained non-admin fallback for model use |
 
-These are aligned with `magda-opa/policies/common/verifyRecordPermission.rego`, `magda-opa/policies/object/agentSkill/allow.rego` and `object/accessGroup/allow.rego`, but are deliberately explicit about absent orgUnits (no implicit read fallback), matching **one permission ID** for pre-authorisation, and permission-scoped exemptions. Avoid reimplementing authorization in SQL. The operation-specific `allowExemption` behaviour applies to matching read/update/delete grants when configured. A record's exemption flag alone never grants a caller access.
+All OPA checks use the existing global **administrator role override** before typed rules. Administrators can invoke deployment-allowed aliases without a profile or quota and manage everything. Internal service accounts already using administrator authority keep that behaviour.
 
-**Create** checks `llm/access/create` on the validated *proposed* row. An ownership-constrained create requires `owner_id` to be the caller; an orgUnit-constrained create requires an orgUnit they manage; combined constraints must both match. A pre-authorised create is not meaningful without an existing profile, so do not grant create through that constraint by default. The new profile does **not** automatically grant invocation or visibility to all users.
+Permission matching for profile-specific `invoke/read/update` requires **one caller permission** satisfying every applicable predicate: `resourceUri == "llm/access"`, `operations[_].uri == input.operationUri`, `preAuthorisedConstraint == true`, `userOwnershipConstraint == false`, `orgUnitOwnershipConstraint == false` and `id in input.object.llmAccessProfile["access-control"].preAuthorisedPermissionIds`. Merely holding an arbitrary pre-authorised permission for `llm/access` is not sufficient; in particular, a role's `use` permission must not authorize `read/update`, and a role's `read` permission must not invoke.
 
-**Read** checks `llm/access/read` on each current SQL row. A caller who only holds a `llm/access/<id>/access` invocation entitlement does not automatically see the profile's owner, pre-authorised IDs or token configuration. The `/v1/models` endpoint separately uses invocation rights and returns only authorized aliases.
+Global management grants preserve:
+- **Owner:** `ownerId == input.user.id`.
+- **OrgUnit:** the profile has a real non-null `orgUnitId` equal to one of `input.user.managingOrgUnitIds` (do not inherit generic Registry's null-orgUnit read fallback).
+- **Owner + orgUnit:** both predicates must match the **same caller permission**, not be combined from separate grants.
+- **Pre-authorised:** exact ID/operation match as above, not a user/role ID match.
+- **Exemption:** `constraintExemption=true` plus an `allowExemption=true` grant for the **matching management operation**. A profile's flag alone never authorizes anyone. An exemption does not grant model invocation or change a user's configured model quota.
+- **Unconstrained:** no ownership, orgUnit or pre-authorised constraint on a matching global *management* permission.
+- **Create:** evaluate the validated proposed owner/orgUnit; do not treat a profile's future pre-authorised mapping as permission to create it.
 
-**Update** checks `llm/access/update` against **both original and proposed** profile values; this includes changes to owner/orgUnit, exemption flag and pre-authorised IDs. The SQL transaction locks/re-reads the row and verifies the expected `revision` before committing, so an authorization decision cannot be reused against a concurrently changed record. To avoid a privilege escalation through modifying the authorization context itself, require **unconstrained `llm/access/update`** (or administrator) to set/clear `constraint_exemption` or change the pre-authorised mapping. Other field changes may use constrained update permissions when both before/after decisions allow them. Profile ID and `state` remain immutable to callers.
+The behavior follows [typed Access Group policies](../../docs/architecture/access-groups.md), including [ADR 0012](../../docs/adrs/0012-typed-access-group-authorisation.md), and MAGDA's existing OPA permission object schema. Unlike Registry access-group reads, this feature requires **full** OPA evaluations with server-provided data, not Registry partial-evaluation SQL rewriting.
 
-**Delete** checks `llm/access/delete` against the current row and retires the profile using the lifecycle below. Callers cannot grant themselves arbitrary Auth API permissions merely by creating or updating a profile.
+### Prevent privilege escalation through profile edits
 
-OPA policy should explicitly test constraint combinations (owner-only, orgUnit-only, both, pre-authorised and exemption). Use the same *permission object* for checking matching operation and matched pre-authorised UUID; do not use unbound permission indices that could mix IDs from unrelated grants. Existing global admin role overrides decisions by design.
+- Check `llm/access/update` on **both the current and proposed profile** for a metadata update, including owner/orgUnit and exemptions; prevent a scoped editor from giving their scope away. Re-read the current `revision` before committing, and return `409` if concurrently modified.
+- An admin or matching **unconstrained global** `llm/access/update` permission is needed for **widening model aliases** (including enabling `["*"]`), increasing/removing token ceilings, enabling or re-enabling a profile, changing `constraintExemption`, assigning/removing `edit` roles, or changing the SQL-managed role/permission mapping. A profile-scoped editor/owner can safely rename, narrow aliases/reduce caps and assign/revoke **use/read** roles within their own profile. Disabling a profile is a reduction in access.
+- The profile's `ownerId` can be changed by an admin or a manager whose **before and after** constrained OPA checks both allow it. This means a user with only an owner-scoped grant cannot hand ownership to another user, while a manager scoped to two orgUnits may move a profile within their managed scope. Validate the target user/orgUnit via trusted Auth API queries.
+- Client-submitted `permission_id`, `role_id`, `state` or other internal authority metadata are forbidden. LLM Services performs managed-role assignments only after authorization; no profile editor gets generic `authObject/role/update` or `authObject/user/update` from this feature.
 
-### Non-admin model entitlement
+### Managed-role ownership and user grants
 
-Model use checks the caller's exact `llm/access/<profile-id>/access` operation (or the explicit `llm/access/*/access` grant) via the Auth API. Only **unconstrained** per-profile invocation grants are supported initially; profile ownership/orgUnit/pre-authorised mappings describe **management**, not *who has an invocation entitlement*. This avoids accidentally giving profile owners the ability to consume the model or mixing two separate scopes.
+Following Access Group design, profile creation automatically creates three role/permission pairs in the Authorization API:
+- `use` role holds the profile's pre-authorised `llm/access/invoke` permission.
+- `read` role holds the profile's pre-authorised `llm/access/read` permission.
+- `edit` role holds the profile's pre-authorised **`llm/access/update` AND `llm/access/read` permissions** (the same read-permission UUID used by the read role). Editors can open the profile UI. The profile still has **exactly three distinct managed permission UUIDs**; the edit role references two of them.
 
-For a normal caller, an invocation is permitted only when: (1) alias is deployment-allowed; (2) some `enabled=true, state='ready'` profile lists that alias; (3) the exact corresponding Auth API operation is granted; and (4) the **user's usage for this alias** satisfies all ceilings within that profile. At no point can a client select a more permissive profile by submitting its ID.
+Each role belongs logically to one profile, and its UUID is stored under its `access_level` in `profile_managed_roles`. The SQL mapping lists which role and permission LLM Services **owns**; it does **not** duplicate user-role membership. Query and mutate actual memberships through the Authorization API (e.g. `/v0/auth/users/:userId/roles` and `/v0/auth/roles/:roleId/users`) using an internal trusted session, after checking the caller's typed rights.
 
-For multiple granted profiles: **OR**, no stacking, and one user/model counter across profiles. The service evaluates each candidate profile's **whole combination** of day/week/month limits; never synthesize a fictional profile by taking independent maxima from different profiles. Profile A's usage does not exhaust profile B when they cover *different models*. Same-model eligible profiles effectively allow the largest suitable capacity without accumulating allowances. A disabled/deleted profile or orphan grant never authorizes a request.
+Before granting/removing a role or deleting a profile, verify the role and each permission match the stored UUIDs, shared resource URI, operation URI(s), pre-authorised flag and expected role-permission assignments, and aren't unexpectedly shared with unrelated profiles. Do not rely solely on role/permission names or free-text descriptions, which the existing Access Group system partly uses as ownership heuristics. Mismatches fail closed for reconciliation. A future *generic* Authorization API managed-object metadata feature could add nullable `managed_by` + `managed_resource_id` with API-enforced immutability; **do not** introduce redundant `is_system_managed` or broaden #3838's Auth schema just to add these fields.
+
+### Settings → LLM Services → Access Profiles
+
+Introduce a MAGDA Settings section that follows the existing **Settings → Access Groups** UI pattern. It should have a list/create view and per-profile **General**, **Access** and **Usage** tabs. Show only profiles the caller is permitted to read; a use-only grantee may invoke an alias without seeing all profile administration/members.
+
+- **General:** name, enabled, model alias selectors or `All currently available models (*)`, per-model daily/weekly/monthly token limits; owner entered/validated by **user ID**; orgUnit selected from an **authorized orgUnit dropdown** backed by the existing Auth API. Only show editable fields if corresponding typed operations allow them. The UI must clearly warn that wildcard coverage grows automatically with the deployment's available aliases. A read-only system model list is fine; **no provider/model CRUD** in this feature.
+- **Access:** list **direct managed-role grants** by user ID, display name where the caller is allowed to view it, and effective `Use`, `View` and `Edit` columns. Support assigning/revoking those access levels to a validated user ID through LLM Services. **Edit implies View** because the managed edit role holds both permissions. A member may have separate Use and Edit roles. List effective access resulting from these **managed roles**; do **not** claim it enumerates all users who can manage through admin/owner/orgUnit/custom global permissions. Separate those categories visually if displayed.
+- **Usage:** display authorized aggregate measured + estimated token totals by user, selected model, day/week/month, and profile's limits; explain **usage is keyed by user and public model alias**, so usage is shared among all profiles granting that model, not attributable to a unique profile.
+- **Access management authorization:** manage users only when a caller has the effective `llm/access/update` on this profile. Scoped editors may assign/remove `use` and `read` roles. Assigning/removing the powerful `edit` role requires admin or **unconstrained global update** rights. The UI must not permit an editor to elevate their own grants by altering permission metadata or model quotas.
+
+Offer these **LLM Services-only** user-management endpoints (paths relative to `/api/v0/llm`), with server-side typed checks, paginated member results and no direct browser access to the Auth API's powerful role-mutation endpoints:
+
+```text
+GET    /access-profiles/:id/users
+POST   /access-profiles/:id/users/:userId    body: {"accessLevels":["use","read"]}
+PUT    /access-profiles/:id/users/:userId     body: {"accessLevels":["use","edit"]}
+DELETE /access-profiles/:id/users/:userId
+```
+
+POST adds specified managed grants idempotently, PUT replaces the user's **managed** grants for this profile (with authorization for both removals and additions), and DELETE removes only this profile's managed grants. GET includes the direct managed grants and pagination; it requires profile `update` rather than just `read` because member listing reveals other users. If a user has separately assigned unrelated roles or global permissions, these endpoints do not touch or enumerate those. A service-admin identity can perform the internal Auth API assignment, but never bypasses the **external caller's** profile-level and elevation checks. Use a targeted Auth API member-list capability or strictly bounded trusted lookup; do not give normal profile managers system-wide `authObject/user/read` permission merely to use this UI.
 
 ## Public LLM Services endpoints
 
-OPA operation URIs are **permission identifiers**, distinct from HTTP paths.
+OPA operation URIs are **typed authorization identifiers**, distinct from HTTP paths.
 
 | HTTP under `/api/v0/llm` | Required permission | Behaviour |
 | --- | --- | --- |
-| `POST /access-profiles` | `llm/access/create` | Validate proposed SQL profile, create pending entry and dynamic Auth API operation |
-| `GET /access-profiles` | Per-record `llm/access/read` | Return filtered administrative rows, excluding secrets and internal lifecycle details |
-| `GET /access-profiles/:id` | `llm/access/read` on actual row | Read profile; otherwise deny without metadata leak |
-| `PUT /access-profiles/:id` | `llm/access/update` on before+after | Atomically edit profile and pre-authorised mapping, protect restricted metadata changes |
-| `DELETE /access-profiles/:id` | `llm/access/delete` on current row | Disable first and complete revocation/cleanup safely |
-| `GET /v1/models` | Effective per-alias model access | Filter allowed models without exposing management metadata |
-| `POST /v1/chat/completions` and `POST /v1/responses` | Effective alias access | Proxy calls and soft usage tracking |
+| `POST /access-profiles` | `llm/access/create` on proposed SQL row | Validate and create pending profile with three managed roles and permissions |
+| `GET /access-profiles` | `llm/access/read` on each current row | Filter visible profile metadata |
+| `GET /access-profiles/:id` | `llm/access/read` on actual row | Read a permitted profile; no member list leakage |
+| `PUT /access-profiles/:id` | `llm/access/update` on old+new row | Edit metadata; wider grants/aliases/quotas restricted |
+| `DELETE /access-profiles/:id` | `llm/access/delete` on current row | Disable first, then remove only owned managed roles/permissions |
+| `GET /access-profiles/:id/users` | `llm/access/update` on row | List direct managed role assignments only |
+| `POST/PUT/DELETE /access-profiles/:id/users/:userId` | `llm/access/update` + elevation checks | Grant, replace or revoke **only** this profile's three managed roles |
+| `GET /v1/models` | Effective per-alias invoke access | Return only deployment-allowed, currently served aliases available through caller's enabled ready profiles |
+| `POST /v1/chat/completions` and `POST /v1/responses` | Effective `llm/access/invoke` on an eligible profile | Provider proxy with per-user/model soft accounting |
 
-Do not add `/v1/messages` just for completeness; implement it only if a supported consumer requires it. Set `Cache-Control: private, no-store` on caller-specific discovery and profile responses to override MAGDA Gateway's public GET default. Never include SQL credentials, provider keys or private administrative metadata in errors or logs.
+For a normal caller invocation requires: (1) requested public alias is deployment-allowed and backend-served; (2) at least one **enabled, ready** profile includes that alias explicitly or via `["*"]`; (3) caller has the **exact profile-managed invoke permission** confirmed by OPA with trusted context; (4) the user's **same-model** daily/weekly/monthly usage is below all configured ceilings of **at least one whole profile**. Do not allow the caller to select a more permissive profile by supplying an ID. Same-model profiles are **OR/non-stacking**: never aggregate allowances or combine separate profiles' best individual ceilings. Distinct model aliases have distinct counters. Admins bypass profiles/quotas but still obey deployment model allowlist.
+
+Caller-specific list/discovery/profile responses require `Cache-Control: private, no-store` to defeat public GET caching. Never expose model credentials, SQL Secrets, managed role IDs, internal exceptions, provider error bodies or unauthorized member identities to unprivileged clients. The user-management UI may show its own managed role IDs to authorized administrators for diagnostics, but never permit clients to mutate IDs directly.
 
 ## Profile lifecycle: SQL transactions + cross-API recovery
 
-An LLM-owned SQL transaction can update profile fields and pre-authorised links together, **but cannot transactionally create/delete Auth API permissions**. Plan idempotent steps, fail-closed reads and a repair path:
+SQL transactions cannot atomically modify Authorization API roles/permissions/assignments, even when sharing a physical PostgreSQL instance. Keep operations idempotent, scoped and fail-closed:
 
-1. **Create:** LLM Services assigns a UUID (never reused), validates owner/orgUnit and the entire profile, checks caller's typed create permission, and inserts `state='pending'` in SQL. Register resource/operation through Auth API using trusted service authority and verify the expected URI/IDs. Change `state='ready'` in SQL only on success; preserve the user's requested `enabled` value. A failed registration leaves the row non-invokable for retry/repair. No automatic grant.
-2. **Update:** Full authorization on original and proposed row; atomically update profile fields and its permission-ID mapping. Restriction/disable must take effect for subsequent admission; an existing stream may complete. Authorization resource/operation URI does not change because ID is immutable.
-3. **Delete:** After typed delete authorization, mark `state='deleting', enabled=false` in SQL first. Revoke/remove Auth API resource/operation and related owned permissions/grants using ownership checks; then delete SQL row. Failures remain `deleting` for safe retry, never re-enable automatically.
-4. **Repair:** check pending/deleting rows and missing/mismatched Auth API resources. Ensure existing operations belong to the expected profile before deleting, and never automatically adopt unrelated permissions. An orphan entitlement never authorizes if a matching `ready` profile is missing.
-5. **No ID reuse:** UUID identifiers are minted for each creation and are not client-provided; never resurrect a deleted identifier. Validate operation URI/path encoding; reserved `*` is not a profile identifier. The rare theoretical UUID collision must fail creation rather than overwrite an existing row.
+1. **Seed globally:** provision the shared `llm/access` resource, five stable operation URIs and custom OPA delegate/policy. No per-profile Authorization API resource/operation registration is needed.
+2. **Create profile:** server generates a UUID, validates proposed owner/orgUnit/model rules, checks `create` and inserts `state='pending'`. Create **three** pre-authorised permissions and three managed roles through trusted Auth API calls; link each role to the correct permission(s), and persist the three pairs in `profile_managed_roles` (safe staged commits are permitted). Mark `ready` only when all expected pairings exist and are verified. A failure leaves it pending/non-invokable for repair; no automatic grants to the creator except any global ownership-based management rights.
+3. **Assign/manage users:** authorize the caller's `update` and per-access-level elevation rules. Check exact profile-owned role/permission UUIDs and assignments first, then use trusted Auth API role-assignment endpoints. Only managed-role membership changes; no direct generic Auth role editor or blanket user privileges are exposed. Revoke before claiming success; if a remote call partially fails, return a truthful error and reconcile only this profile's managed grants.
+4. **Update profile:** check old and proposed OPA context, check `revision` via optimistic compare-and-swap and transactionally change metadata. A restrictive change (disable/narrow quotas/models) takes effect for subsequent admission; already running streams may finish. Do not hold a long SQL transaction across Auth API/OPA requests.
+5. **Delete profile:** check typed delete, first set `state='deleting', enabled=false` in SQL. Remove only verified owned user-role assignments, roles and permissions using Auth API, then delete SQL rows. Do not delete someone else's shared role/permission. An orphaned Auth permission alone cannot pass the OPA pre-authorised **ID-in-profile** check without a live ready profile; retain pending/deleting on failure.
+6. **Repair:** verify all three owned role/permission pairs, mapping IDs, allowed operations and membership links; resume pending/deleting operations idempotently, without adopting foreign objects or reusing deleted profile UUIDs. A missing pair or incorrect pre-authorised flag means the profile must not be `ready`. Provide operator diagnostics without exposing Secrets.
+7. **No ID reuse:** only LLM Services allocates profile UUIDs; reject collisions and malformed IDs. The profile ID and managed-role/permission identity may not be edited by clients.
 
-A service-admin identity may be used for internal Auth API coordination, consistent with other MAGDA service integrations; the **external caller's** management rights must still be checked before acting. Avoid ever exposing that internal authority through a public API.
+Use role/permission descriptions as useful labels only, **never the sole ownership proof**; compare persisted UUIDs and Auth API resource/operation/role membership invariants. Do not introduce `is_system_managed` or `managed_by` migration in this LLM-only feature; a future cross-platform Auth API managed-resource design could incorporate protected metadata for multiple services.
 
 ## Soft usage ledger and model-based quota evaluation
 
