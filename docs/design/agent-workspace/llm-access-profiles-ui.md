@@ -15,9 +15,19 @@ Support a simple user workflow ("create profile, add another person's user ID, g
 
 ## Navigation and access
 
-**Settings → LLM Services → Access Profiles**. Show navigation when the user may read or create a profile, or an admin has access; server-filter all listed rows. A use-only recipient can call the model through DSH/API even if they cannot see the Settings screen. Deep links always recheck read/update entitlement. Display read-only information as appropriate for permissions; never leak user lists to a read-only profile viewer.
+**Settings → LLM Services** has three **top-level tabs**, with independently evaluated visibility:
 
-Desktop page header: **LLM Access Profiles**, searchable table, **Create profile** action if allowed. A separate read-only "Available models" summary can show operator-configured aliases, but never provider Secrets or arbitrary provider names.
+| Tab | Visibility | Main purpose |
+| --- | --- | --- |
+| **Access Profiles** | Administrators, or users authorized to read/create/manage profiles | Search, create, and manage profiles; each profile has **General**, **Access** and **Pre-authorised permissions** tabs |
+| **My Usage** | **Any authenticated user holding any `llm/access/invoke` permission** (all constraint types), or a MAGDA administrator | Own total/today/week/month usage, per-model remaining quota, daily history, **even without profile-management visibility** |
+| **User Usage** | MAGDA administrators or users with an **unconstrained global `llm/access/update`** grant | Search other users and inspect their overall per-model usage history |
+
+For **My Usage**, a user who holds an Invoke permission but currently matches **no** ready profile still sees their usage history, with "No eligible model profile" instead of quota zero. Never conflate possessing an Invoke permission with being currently eligible to invoke a model.
+
+The Access Profiles page has a searchable table and Create Profile action. Profile detail provides General, Access, and advanced Pre-authorised permissions; **no per-profile Usage tab** because accounting is stored across all profiles on user + alias. Follow existing Settings → Access Groups navigation conventions. List/read/link visibility and counts are filtered through typed server authorization; no unauthorized deep-link access.
+
+A separate read-only model alias summary is optional. Never expose provider Secrets or dynamic model configuration.
 
 ### Access Profiles list
 
@@ -53,23 +63,24 @@ Only administrator/unconstrained global update may enable a disabled profile, ex
 
 ### Access tab — ordinary direct grants
 
-Show a paginated table of **users assigned one or more of this profile's three managed roles**:
+Show only users assigned at least one of this profile's **three managed roles**, in a paginated grid:
 
-| User | Use models | View profile | Edit profile | Action |
+| User ID / name | Use | View | Edit | Actions |
 | --- | --- | --- | --- | --- |
-| Resolved user ID/name | Checked if managed Use role assigned | Checked if managed Read OR Edit role assigned | Checked if managed Edit role assigned | Change/Remove where authorized |
+| Authorized user display | Managed Use role | Managed Read **or Edit** role | Managed Edit role | Modify/Remove managed grants |
 
-Add user: enter verified **MAGDA user ID**, optionally resolve display name; choose **Use**, **View**, **Edit** permissions. The UI makes **Edit implies View** clear and does not need to assign the separate View role when Edit is selected. The same person may have Use and Edit.
+**Search user and grant access:**
 
-- Scoped editors with effective `llm/access/update` may add/remove **Use/View** direct grants. Granting/removing managed **Edit** requires admin or unconstrained global profile update. Saving sends the chosen managed access levels and rechecks server permissions.
-- Show a confirmation on removal; distinguish "removed direct grant" from "user no longer has model access" — a user may still be authorized through another role, owner/orgUnit scoped policy, or a different eligible profile.
-- Required static note, rather than expensive policy-based access listing:
+1. Provide a searchable **user picker** for name, email or exact user ID. Use a server-mediated `GET /access-profiles/:id/user-search?q=...` lookup with minimum search length, pagination, rate limiting and minimum authorized identity fields. It must apply the caller's real Auth user-read/directory policy (or an explicitly approved limited lookup scope). Managing one profile must not silently confer unrestricted user-directory access.
+2. Select an existing user, display the verified name + UUID, choose Use/View/Edit levels, and confirm. A validated **user ID-only fallback** remains available when the caller lacks directory-search rights.
+3. The backend rechecks profile `llm/access/update`. Profile-scoped editors can add/remove Use/View, but assigning/revoking Edit requires admin/unconstrained global update. Edit implies View, while Use remains independent.
+4. The UI reports **direct grant removed**, never guarantees the user lost all effective LLM access: another profile, owned/orgUnit policy or custom role may still allow use.
 
-  > Users may also have access through profile ownership, the profile's orgUnit scope, or custom MAGDA roles and permissions. This table lists **direct user grants managed by LLM Services only**.
+**Required note:**
 
-Do **not** add a "Policy-based access" card claiming which Authenticated Users/orgUnit roles apply or enumerate all users with implied access. Do not claim the table represents every effective permission.
+> Users may also have access through profile ownership, its orgUnit scope, or custom roles and permissions configured in MAGDA Authorization. This list shows direct user grants only.
 
-The tab requires `llm/access/update` to list members. A user with only profile Read may see General but not this list. Use server-paginated `GET /access-profiles/:id/users` and targeted add/replace/revoke endpoints. Never silently change unrelated roles.
+Do **not** enumerate supposed effective Authenticated Users/orgUnit role memberships or imply direct users are all authorized users. Handle missing/ambiguous search matches, validation, paging, duplicate grants and removal confirmations.
 
 ### Pre-authorised permissions tab — advanced mode
 
