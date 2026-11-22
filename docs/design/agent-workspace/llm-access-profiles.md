@@ -143,9 +143,9 @@ For read/list requests LLM Services selects SQL candidate rows and performs **fu
 
 ### One typed resource and trusted OPA context
 
-Seed **one** Authorization API resource `llm/access` with operations `llm/access/create`, `llm/access/read`, `llm/access/update`, `llm/access/delete` and `llm/access/invoke`. Add a matching custom OPA delegate for `startswith(input.operationUri, "llm/access/")` in the entrypoint. Do **not** register one resource/operation per profile: the **trusted profile context plus exact pre-authorised permission UUID** scopes the shared operation to one profile.
+Seed **one** shared Authorization API resource `llm/access` with operations `llm/access/create`, `llm/access/read`, `llm/access/update`, `llm/access/delete` and `llm/access/invoke`. Add an LLM-specific OPA entrypoint delegate for `startswith(input.operationUri, "llm/access/")`. No per-profile Auth API resources/operations: typed decisions scope a shared operation using **trusted per-profile data**, caller permissions and the request operation.
 
-LLM Services obtains the authenticated caller's session and loads the profile from SQL. It constructs and POSTs the following **trusted decision context** through the Authorization API, which adds the real caller identity/roles/permissions. Clients must **never** supply/override the profile or `access-control` object, permission IDs or the caller user ID:
+LLM Services verifies the session and fetches the profile, managed-role permission IDs and custom pre-authorised links from SQL. It constructs the **Registry-like `access-control` shape only as trusted OPA input**; no Registry aspect or JSONB column is introduced. The Authorization API, not the caller-supplied payload, fills in the authenticated user, actual roles, orgUnit scope and permissions:
 
 ```json
 {
@@ -158,9 +158,10 @@ LLM Services obtains the authenticated caller's session and loads the profile fr
         "ownerId": "<owner UUID or null>",
         "orgUnitId": "<orgUnit UUID or null>",
         "preAuthorisedPermissionIds": [
-          "<use permission_id from profile_managed_roles>",
-          "<read permission_id from profile_managed_roles>",
-          "<edit permission_id from profile_managed_roles>"
+          "<managed use permission UUID>",
+          "<managed read permission UUID>",
+          "<managed edit permission UUID>",
+          "<optional advanced custom permission UUID>"
         ],
         "constraintExemption": false
       }
@@ -169,32 +170,44 @@ LLM Services obtains the authenticated caller's session and loads the profile fr
 }
 ```
 
-`access-control` here is a **projected shape in OPA input**, **not** a Registry aspect or a fourth database table. Its pre-authorised list contains exactly the three profile-managed `permission_id` values (never role IDs or user IDs). Exclude absent/missing IDs rather than synthesizing them; incomplete provisioning must leave the profile non-ready. Treat the `state`, model aliases and requested operation as additional trusted inputs when necessary. The actual policy uses the **same permission object** for all checks below.
+The array is projected from **all** rows of `profile_pre_authorised_permissions`, **not just three**. Exactly three links must point to the three pre-authorised permissions in `profile_managed_roles` for a ready profile; advanced custom links are optional. Every UUID must refer to a real Authorization API permission or be ignored/fail closed for its own match. Client input cannot override SQL fields, this array or the caller identity.
 
-For **non-admin** callers:
+### MAGDA-compatible scope semantics for all operations
 
-| Operation | Authorization rule |
+For each requested operation, assess a **single caller permission** for the exact shared `llm/access` resource and exact requested operation. Supported alternatives for non-admins are:
+
+| Grant type | Test against trusted profile context |
 | --- | --- |
-| `llm/access/create` | The matching unconstrained/owner/orgUnit-constrained global create grant, evaluated on the validated proposed profile (owner defaults to the caller). No pre-authorised create |
-| `llm/access/read` | Global unconstrained, owner-scoped, managed-orgUnit-scoped or combined owner+orgUnit grant **OR** a matching pre-authorised profile `read` permission ID |
-| `llm/access/update` | Same global constraint alternatives **OR** a matching pre-authorised profile `edit` permission ID; only for permitted types of changes |
-| `llm/access/delete` | Global unconstrained, owner-scoped, managed-orgUnit-scoped or combined owner+orgUnit grant; **no auto-managed delete role** |
-| `llm/access/invoke` | **Only** an exact matching profile-managed `use` permission: shared `llm/access` resource, `preAuthorisedConstraint=true`, exact `invoke` operation URI and its own ID in the three-ID list. **No** generic owner/orgUnit/unconstrained non-admin fallback for model use |
+| Unconstrained | Caller has the operation on `llm/access` with **no** owner, orgUnit or pre-authorised flags set. Applies to any existing eligible profile |
+| Owner-constrained | Matching permission has `userOwnershipConstraint=true` and `preAuthorisedConstraint=false`; profile `ownerId == input.user.id` |
+| OrgUnit-constrained | Matching permission has `orgUnitOwnershipConstraint=true` and `preAuthorisedConstraint=false`; profile `orgUnitId` is non-null **and** `orgUnitId in input.user.managingOrgUnitIds` |
+| Combined owner + orgUnit | Both flags on **the same permission**; both tests must pass |
+| Pre-authorised | Matching permission has `preAuthorisedConstraint=true`, no owner/orgUnit flags, and **its own permission UUID** is in the profile's `preAuthorisedPermissionIds`. The caller must hold the permission through an Auth API role/grant |
+| Exemption (management only) | Profile `constraintExemption=true` **and** a matching management-operation grant permits `allowExemption=true`. Never grant invocation solely because of exemption |
 
-All OPA checks use the existing global **administrator role override** before typed rules. Administrators can invoke deployment-allowed aliases without a profile or quota and manage everything. Internal service accounts already using administrator authority keep that behaviour.
+The **orgUnit rule is exactly the existing MAGDA resource-scope rule**, not a new "users in the profile's department" audience rule: `input.user.managingOrgUnitIds` is populated by the Auth API with the **caller's orgUnit and descendants**. A user assigned to a parent orgUnit can have a matching orgUnit-constrained permission over a profile assigned to its child orgUnit. A user assigned only to a child orgUnit does **not** thereby reach a profile assigned to its parent. An access profile with **`orgUnitId=null` never matches an orgUnit-constrained grant**; it can still match another authorized path (e.g. explicit pre-authorised user/role grant or administrator). Do not inherit generic Registry's null-orgUnit read fallback.
 
-Permission matching for profile-specific `invoke/read/update` requires **one caller permission** satisfying every applicable predicate: `resourceUri == "llm/access"`, `operations[_].uri == input.operationUri`, `preAuthorisedConstraint == true`, `userOwnershipConstraint == false`, `orgUnitOwnershipConstraint == false` and `id in input.object.llmAccessProfile["access-control"].preAuthorisedPermissionIds`. Merely holding an arbitrary pre-authorised permission for `llm/access` is not sufficient; in particular, a role's `use` permission must not authorize `read/update`, and a role's `read` permission must not invoke.
+`ownerId` and `orgUnitId` have the **same scope meaning for profile management and invocation**. No separate `audienceOrgUnitId` is needed. Assign pre-authorised permissions to a custom role to share a profile across unrelated orgUnit branches. **Belonging to an orgUnit or owning a profile is not sufficient without a matching operation permission**.
 
-Global management grants preserve:
-- **Owner:** `ownerId == input.user.id`.
-- **OrgUnit:** the profile has a real non-null `orgUnitId` equal to one of `input.user.managingOrgUnitIds` (do not inherit generic Registry's null-orgUnit read fallback).
-- **Owner + orgUnit:** both predicates must match the **same caller permission**, not be combined from separate grants.
-- **Pre-authorised:** exact ID/operation match as above, not a user/role ID match.
-- **Exemption:** `constraintExemption=true` plus an `allowExemption=true` grant for the **matching management operation**. A profile's flag alone never authorizes anyone. An exemption does not grant model invocation or change a user's configured model quota.
-- **Unconstrained:** no ownership, orgUnit or pre-authorised constraint on a matching global *management* permission.
-- **Create:** evaluate the validated proposed owner/orgUnit; do not treat a profile's future pre-authorised mapping as permission to create it.
+For clarity, the operation-specific contract is:
 
-The behavior follows [typed Access Group policies](../../docs/architecture/access-groups.md), including [ADR 0012](../../docs/adrs/0012-typed-access-group-authorisation.md), and MAGDA's existing OPA permission object schema. Unlike Registry access-group reads, this feature requires **full** OPA evaluations with server-provided data, not Registry partial-evaluation SQL rewriting.
+| Operation | Accepted non-admin grant types |
+| --- | --- |
+| `llm/access/create` | Global unconstrained, owner-constrained, orgUnit-constrained or combined constraint, evaluated on validated **proposed** profile. There is **no existing profile** whose pre-authorised ID list could authorize creation |
+| `llm/access/read` | Unconstrained, owner, orgUnit, combined, pre-authorised managed/custom `read`, or matching exemption |
+| `llm/access/update` | Unconstrained, owner, orgUnit, combined, pre-authorised managed/custom `update`, or matching exemption; additional field/grant elevation restrictions below |
+| `llm/access/delete` | Unconstrained, owner, orgUnit, combined, **advanced custom pre-authorised `delete`**, or matching exemption. There is no managed Delete role |
+| `llm/access/invoke` | **Unconstrained, owner, orgUnit, combined or managed/custom pre-authorised `invoke`**. Invocation is only considered for a **ready, enabled** profile that actually covers the requested deployment-allowed, backend-served alias and passes the full soft quota check |
+
+For instance, an authorized administrator may add an **orgUnit-constrained `llm/access/invoke` permission** to the existing **Authenticated Users** role. Each authenticated user then invokes only those ready profiles whose `orgUnitId` is within *that user's own* assigned orgUnit + descendant scope, without being manually added to each profile's Use role. An unconstrained `invoke` permission on that role is much broader and must be treated as an intentional administrator deployment-wide access choice; it **still** requires some enabled eligible profile with remaining quota for that user/model. A profile with `orgUnitId=null` does not become available merely because a caller has an orgUnit grant.
+
+**Global MAGDA administrators** retain the existing OPA administrator-role override and may invoke all **deployment-allowed** models without profile/quota checks. No non-admin special `llm/access/*/access` operation is introduced. The profile's `allowed_models=["*"]` sentinel controls model coverage, **not** authorization by itself.
+
+For pre-authorised permissions, the check is **atomic on the same permission object**: `resourceUri=="llm/access"`, matching requested `operations[_].uri`, `preAuthorisedConstraint==true`, no owner/orgUnit constraint flags, and `permission.id in trusted preAuthorisedPermissionIds`. Do not use a permission ID from one grant with operation flags from another. One advanced permission may list **multiple operation URIs** (e.g. `read`, `update`, `delete`, `invoke`) and satisfy each when it is linked to the profile and held by the caller's role.
+
+**Pre-authorised `create` is deliberately not offered.** A profile's pre-authorised array exists only *after* creation, so it cannot scope who may create that same profile. The advanced UI must exclude `create` from the pre-authorised operation picker, and validate that custom pre-authorised permissions linked to a profile have only `read/update/delete/invoke`. The administrator can grant global `llm/access/create` separately with an appropriate unconstrained, owner or orgUnit constraint. Do not silently interpret a pre-authorised `create` bit as global create authority.
+
+The typed rule should follow [MAGDA Access Group policy](../../docs/architecture/access-groups.md) and [ADR 0012](../../docs/adrs/0012-typed-access-group-authorisation.md), including exact ownership, orgUnit, pre-authorised, combined-constraint and `allowExemption` handling. Each OPA decision is a **full evaluation** with service-fetched SQL context rather than Registry partial-evaluation filtering.
 
 ### Prevent privilege escalation through profile edits
 
