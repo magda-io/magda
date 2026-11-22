@@ -107,13 +107,32 @@ The current Auth API refuses to delete a permission still assigned to roles. The
 
 When the owning profile itself is deleted, apply this same full Delete cleanup to each of its custom permissions; do not leave externally assigned orphan permissions. Unrelated Auth roles remain, only their association to the now-deleted permission is removed. Failure leaves the profile disabled/deleting and retains enough UUIDs for repair.
 
-### Usage tab
+### My Usage tab — personal quota and history
 
-Expose a personal usage summary where appropriate; only administrators or callers with **unconstrained global profile update** may see other users' per-alias usage rows. Ordinary scoped profile managers must not see other users' **cross-profile** activity merely because they manage one profile: the SQL usage ledger is keyed by **user + public model alias**, not profile.
+This is a **top-level Settings → LLM Services → My Usage** tab, **not** a profile-specific Usage tab. Show it to every authenticated user who has **any** `llm/access/invoke` permission (whether unconstrained, owner, orgUnit, combined or pre-authorised), plus MAGDA administrators. A permission need not currently match a ready profile for the tab to be visible. The endpoint derives the user UUID from the trusted authenticated session; no arbitrary user ID may be supplied.
 
-Show selected public model, date window (Today / ISO week / calendar month), measured input tokens, measured output tokens, estimated tokens/requests, displayed total, and this profile's applicable daily/weekly/monthly limit. Explain that a user may have accessed the same model via more than one profile and the usage is **shared across eligible profiles**; never label it "tokens consumed by this profile". Timezone label defaults to **Australia/Sydney** (Helm-configurable); a request is attributed to its **local start date**.
+Display:
 
-No dollar-cost estimate or billing-grade guarantee. For absent provider final usage, estimates remain marked, not exact zero. There is no quota reset/mid-stream cutoff button in this proposal.
+| Section | Content |
+| --- | --- |
+| **Total usage** | All tracked tokens since accounting began; if historical rows are purged, label the period explicitly as **Tracked since DATE** |
+| **Today** | Current local-day measured + estimated tokens |
+| **This week** | Current ISO Monday–Sunday token usage |
+| **This month** | Current calendar-month token usage |
+| **Remaining quota** | **Per public model alias**, eligible profile allowances and effective **approximate** amount remaining until soft cutoff; show Unlimited / Exhausted / No eligible model profile separately |
+| **Daily usage history** | Paginated daily rows, sortable by date and filterable by model/range: local date, model alias, measured input, measured output, estimated tokens, total |
+
+A profile gives a user/model independent daily/weekly/monthly quotas. To compute remaining for one profile: subtract consumed tokens in each period from that profile's applicable limit (negative values clamped to zero); **take the minimum of the non-null remaining limits**. A null limit is unlimited. When several **fully eligible** profiles grant this model, take the **maximum** across those complete-profile remaining results, not sums or mixing one profile's daily limit with another's monthly limit (OR/non-stacking). No eligible profile means **No eligible model profile**, even if an Invoke permission exists. Administrators may be **Unlimited**, subject to deployment model allowlist.
+
+Always show the configured IANA timezone (default `Australia/Sydney`) and mark measured versus estimated tokens. Usage is per **user + public alias across all profiles**, and remaining quota is only a **soft admission indication**: concurrent requests/overshoot, window reset and subsequent provider accounting can change it.
+
+### User Usage tab — other users' accounting
+
+This is a separate **top-level Settings → LLM Services → User Usage** tab, shown only to MAGDA administrators or operators with **unconstrained global `llm/access/update`**. It is not part of a profile's General/Access view. Ordinary profile-scoped editors cannot see other users' global per-alias accounting.
+
+Authorized operators may search/filter by user ID, permitted display name/email, public model alias and date range; select a user and see Total, Today, This week, This month, measured vs estimated, effective remaining quota where evaluable, and a **daily usage history** grid. Directory search must respect the caller's actual user-read policy. The table makes clear that the ledger **may include requests authorized through several different profiles**, not just the one the operator happens to manage.
+
+Both tabs use server-side pagination, non-cacheable session-bound responses and no leaked user identities. Provide loading/no-data/error states, per-alias selector and usage-history download only if separately authorized; no billing-grade dollar accounting or "reset quota" UI is proposed.
 
 ## API operations and consistency
 
