@@ -136,46 +136,60 @@ Both tabs use server-side pagination, non-cacheable session-bound responses and 
 
 ## API operations and consistency
 
-All calls below are **proposed**, relative to `/api/v0/llm`; the core specification defines server authorization. Use normal MAGDA session auth, not browser-held privileged Auth API credentials.
+All routes below are **proposed** and relative to `/api/v0/llm`. LLM Services is the browser-facing entry point; no privileged Authorization API credentials are exposed to the UI.
 
-| User action | HTTP API | Server checks |
+| UI action | Proposed HTTP API | Authorization and behaviour |
 | --- | --- | --- |
-| List/create/read/edit/delete profile | `GET/POST /access-profiles`, `GET/PUT/DELETE /access-profiles/:id` | Per-record typed OPA; proposed state for create/update; `revision` precondition |
-| List direct users | `GET /access-profiles/:id/users` | Typed `update`; paginated; only three managed-role memberships |
-| Add / replace / revoke user's managed access | `POST/PUT/DELETE /access-profiles/:id/users/:userId` | Typed `update`; Edit assignment/removal needs unconstrained/admin; only managed-role assignment changes |
-| List advanced permissions | `GET /access-profiles/:id/pre-authorised-permissions` | Admin/unconstrained profile `update`; exclude managed three |
-| Create and link advanced permission | `POST /access-profiles/:id/pre-authorised-permissions` | Advanced profile right **and** caller `authObject/permission/create`; validate ops/resource/constraint flags |
-| Add/remove custom permission to existing role | `POST/DELETE /access-profiles/:id/pre-authorised-permissions/:permissionId/roles/:roleId` | Advanced profile right **and** caller `authObject/role/update` on **target role**, verify mapping and no protected role |
-| Detach custom permission from profile | `DELETE /access-profiles/:id/pre-authorised-permissions/:permissionId` | Advanced profile right; can't detach three managed IDs; SQL-only removal |
-| Profile usage | `GET /access-profiles/:id/usage` | Personal or unrestricted administrative visibility; avoid leaking other users' cross-profile use |
-| Model discovery | `GET /v1/models` | Deployment allowlist + actual eligible profile `invoke`; no profile metadata in model response |
+| Access Profiles list/create/open/update/delete | `GET/POST /access-profiles`; `GET/PUT/DELETE /access-profiles/:id` | Typed per-profile OPA, owner/orgUnit constraints, revision/ETag; full managed/custom cleanup on profile delete |
+| Direct Access member list | `GET /access-profiles/:id/users` | Profile `update`; only managed role assignments, server paging |
+| **Search users** for Access tab | `GET /access-profiles/:id/user-search?q=...` | Profile `update` + real caller filtered user-read/directory permission; minimal data, limited/rate-limited search |
+| Add/modify/remove direct user's grants | `POST/PUT/DELETE /access-profiles/:id/users/:userId` | Profile `update`, unrestricted/admin if touching Edit; only three managed roles |
+| List tab-managed custom permissions | `GET /access-profiles/:id/pre-authorised-permissions` | Visibility gate: **unconstrained `authObject/permission/create`**, exclude managed three; selected profile page access |
+| Create custom permission | `POST /access-profiles/:id/pre-authorised-permissions` | Unconstrained Auth create **and** unrestricted profile update/admin; only `read/update/delete/invoke` |
+| **Edit** permission | `PUT /access-profiles/:id/pre-authorised-permissions/:permissionId` | Auth `permission/update` and unrestricted profile-update/admin; no role assignment mutation |
+| **Assign to Role** | `POST /access-profiles/:id/pre-authorised-permissions/:permissionId/roles` | Auth `role/update` on selected existing non-protected role; unrestricted profile-update/admin |
+| **View Assigned Roles** | `GET /access-profiles/:id/pre-authorised-permissions/:permissionId/roles` | Complete trusted reverse-role lookup, with displayed metadata filtered by caller's Auth role-read rights |
+| Remove from one role in modal | `DELETE /access-profiles/:id/pre-authorised-permissions/:permissionId/roles/:roleId` | Auth `role/update` on target role, unrestricted profile-update/admin; no permission delete |
+| **Delete** custom permission | `DELETE /access-profiles/:id/pre-authorised-permissions/:permissionId` | Unrestricted profile-update/admin + Auth `permission/delete` + Auth `role/update` on **every assigned role**, checked **before any side effect**; mark SQL mapping deleting, remove all role links, delete Auth permission, then delete mapping |
+| **My Usage** summary/history | `GET /usage/me`; `GET /usage/me/daily` | Authenticated global admin or **any caller held `llm/access/invoke` permission**; only current session user UUID |
+| **User Usage** summary/history | `GET /usage/users`; `GET /usage/users/:userId/daily` | Global admin or **unconstrained global `llm/access/update`**, plus caller-authorized directory lookup |
+| Effective available models | `GET /v1/models` | Deployment-available alias + eligible full OPA Invoke authorization |
 
-Every action may fail with `401`/`403`, `404` without disclosing hidden profiles, `409` stale revision, `422` invalid fields/unsupported operation combinations, or `503` unavailable Auth/ledger/reconciliation. Do not optimistically claim grants saved before cross-API operations confirm success.
+Only the four menu items **Edit**, **Assign to Role**, **View Assigned Roles**, **Delete** appear on custom rows. Creating a custom permission is a standalone page action. No Detach action exists. Never delete managed pre-authorised permission UUIDs from this tab, never delete roles or users, and never use an incomplete UI role list for a permission's global deletion.
 
-Use `Cache-Control: private, no-store` for user-specific profile, grant, advanced-permission, usage and model-discovery responses. List and search endpoints must not expose invisible rows through counts or pagination.
+The current Auth API refuses permission deletion while assigned to roles. For full and reliable deletion, add or reuse an authoritative **permission→roles** reverse-lookup and safe role-unassign facility behind the trusted Auth API boundary. The list shown to the operator must respect role visibility, but deletion preflight requires **every** actual assignment. Permission deletion may require a dedicated Auth API transactional/serialized operation to prevent concurrent assignments.
+
+Requests may return `401`/`403`, non-leaking `404`, `409` on revision or concurrent cleanup conflicts, `422` for unsupported operations/role selection, or `503` for unavailable Auth/usage/reconciliation. A partially completed delete must be shown as **Cleanup needed**, not success; SQL custom mapping `deleting` is excluded from OPA pre-authorised IDs until reconciliation. Enforce `Cache-Control: private, no-store` on user-specific or permission-specific results.
 
 ## Lifecycle and accessibility
 
-- **Pending provisioning:** show "Setting up permissions"; no Use/Advanced grant actions until all three managed roles and mandatory permission mappings are verified. Failed remote Auth API creation stays pending and needs repair, not silently marked ready.
-- **Disabled:** visible to authorized managers; no model invocation, but editable fields may still be shown. Enabling requires admin/unconstrained update.
-- **Deleting:** no new model use or role grants; show a non-sensitive cleanup status. Retry only after verifying the three owned managed Auth objects; custom permissions in user roles survive, with their SQL association revoked on profile removal.
-- **Partial advanced creation:** if a permission is created in Auth API but SQL association or role attachment fails, show truthful partial completion and retry guidance; prevent duplicate permission creation where possible by idempotent keys/returned UUIDs.
-- **Stale changes:** `409` conflict prompts reload and preserves unsaved form edits; never overwrite an unseen revision.
-- **Accessibility:** all form controls have labels; role/operation selections are keyboard-operable and have explicit checked state; status is not conveyed by color alone; confirmation dialogs explain the difference between deleting a profile link, detaching from a role, and deleting a permission in Authorization.
+- **Pending profile:** show "Setting up permissions"; no direct or custom grant mutation until mandatory three managed role/permission pairs and mappings are ready.
+- **Custom permission Deleting:** stop authorizing immediately by excluding its SQL mapping from trusted OPA context; preserve UUID and all cleanup progress until the last Auth role association and permission are removed. Show retry/reconcile status without exposing protected role names to unauthorized callers.
+- **Deleting profile:** disable invoke first; clean **all** three managed roles/permissions and **all tab-owned custom permissions** (including their role assignments) before deleting SQL records. If cleanup fails, keep profile Deleting, not a falsely successful deletion.
+- **Disabled profile:** managers can view status, but no Invoke; enabling requires admin/unconstrained update.
+- **Stale changes:** `409` on concurrent mutation prompts reload, preserves form edits and does not silently overwrite.
+- **Search users:** handle no search rights, no matches, multiple names, rate limits, and filtered results. Manual user ID entry remains possible where directory search is not permitted.
+- **Accessibility:** labeled search fields and controls, keyboard-operable selectable rows, visible modal headings, focus restoration after close, actionable error text, statuses not conveyed by color alone. Delete confirmation states it affects **every role assignment and the permission**, not just a profile link. The Roles modal Remove button acts on **one role only**.
 
 ## UI acceptance cases
 
-1. Create a profile with owner ID and an orgUnit; the service provisions exactly three managed permissions and roles, inserts all three mandatory pre-authorised mapping rows, and shows `ready` only after successful validation.
-2. Assign User A the managed Use role: that user may invoke an eligible model, but cannot enumerate all profile metadata or its members. Give User B Edit: it includes View, not Use.
-3. Attempt Edit-role assignment as a profile-scoped editor: **deny** even if the button was manipulated. Use/View assignment can succeed with typed update authority.
-4. Create a profile with **No orgUnit**. A user with only an orgUnit-constrained Invoke permission **cannot** use it. Matching managed/custom pre-authorised, owner or unconstrained grant still can, if otherwise eligible.
-5. Parent orgUnit user with an orgUnit-constrained Invoke grant can invoke an eligible profile in their orgUnit or its child; a user only in a child cannot invoke an otherwise inaccessible parent profile.
-6. With orgUnit-constrained Invoke on Authenticated Users, no per-profile direct membership is required. The Access tab still shows only managed direct grants plus the explanatory note, not a guessed orgUnit-wide user list.
-7. Advanced operator with required profile/Auth rights creates a custom `read+delete+invoke` pre-authorised permission, attaches to an authorized existing role, and grants exactly those operations on the linked profile. A role holding the same permission is **not** authorized on unrelated profiles without their own mapping.
-8. Advanced operator cannot choose pre-authorised Create, change the permission resource, or attach a permission to a role that they may read but **cannot update**. Calls using the LLM Services service-admin identity must not bypass this.
-9. Detaching a custom permission from one profile revokes its effect **only there**, leaves it in its existing roles and other linked profiles, and never touches the three managed IDs. Detaching from a role is separate and leaves its profile link intact.
-10. A user with only profile Read cannot enumerate members or see custom-role membership details. Ordinary profile editors cannot see the advanced tab. Unauthorized deep links fail server-side.
-11. Daily/weekly/monthly usage uses Australia/Sydney and the request-local start day; show measured versus estimated and avoid implying per-profile attribution for the user/model ledger.
-12. Missing Auth API permissions, pending/deleting states, stale revisions, failed permission creation, and an externally deleted custom permission produce safe, actionable errors without access escalation.
+1. Access Profiles list respects per-profile OPA read; direct user grant UI adds Use/View/Edit by user ID, with Edit implying View but not Use.
+2. **User search:** authorized profile manager can search a name/email/ID, select a unique verified user and grant Use; no ability to dump unrestricted user directory. Denied directory search still permits validated UUID entry where authorized.
+3. An ordinary scoped editor can grant/revoke Use or View, not Edit; bypassing disabled UI controls via direct HTTP is rejected.
+4. A user holding **any** real `llm/access/invoke` permission sees **My Usage** even if the permission does not currently match a ready profile; no profile management visibility is required. Page derives own ID from session and shows "No eligible model profile" instead of zero budget when none match.
+5. My Usage shows Total (or explicitly "Tracked since"), Today, ISO Week, Calendar Month, **per-alias effective remaining** and a paginated **daily usage history** with measured/estimated columns and Sydney timezone.
+6. Multiple eligible profiles use OR/non-stacking remaining: per-profile minimum of bounded daily/weekly/monthly remaining, then maximum across profiles; unlimited and exhausted are distinct. No exact-reservation/billing promises.
+7. **User Usage** is a separate top-level tab; admins/unconstrained global profile managers can find and inspect other users' totals/daily history. A scoped editor or use-only user cannot access it even by deep link.
+8. Advanced-tab visibility uses **unconstrained `authObject/permission/create` only** (plus profile page access). A tab-visible user lacking specific Auth permission-update/delete or target-role-update authority cannot carry out those actions.
+9. The custom permissions grid contains **UUID / Permission name / Operations / Actions**, excludes exact three system-managed IDs and shows only tab-owned custom permission IDs.
+10. **Edit** changes name/description/selected `read/update/delete/invoke` operations but does not allow changing role assignment; pre-authorised Create is absent.
+11. **Assign to Role** uses an authorized existing-role dropdown and confirms role UUID/operations; a role the operator can read but not update cannot be assigned, nor can a protected managed role.
+12. **View Assigned Roles** modal lists permitted role details with a per-row Remove button. Removing permission from Role A does not change its association with Role B or the owning profile.
+13. **Delete** preflights Auth permission-delete and update-on-**every** assigned role. If any role is blocked, nothing changes. Otherwise Delete marks mapping `deleting`, removes all role assignments, deletes Auth permission, then SQL mapping. User sees success only when both Auth object and link are gone; no detached permission survives.
+14. Deletion interrupted halfway remains non-authorizing, retains custom permission UUID and reports **Cleanup needed**; retries clean remaining role links before final deletion.
+15. The same custom permission UUID cannot be attached to another profile; assigning it to many authorized roles remains supported. Deleting its owner profile cleans custom permission and role links, without deleting the roles or users.
+16. Null profile orgUnit never matches orgUnit-constrained Invoke. A parent-orgUnit caller with matching grant can invoke a child profile, not the reverse; cross-orgUnit custom pre-authorised grants remain valid.
+17. A user with only profile Read cannot list direct users or advanced role memberships; no inferred "Policy-based access" users list is shown.
+18. Missing Auth API permissions, stale revisions, role changes during Delete, partial creation, invalid tab permissions and unsupported provider metering remain safe, logged and fail-closed.
 
-**Out of scope:** global role or permission editor replacement, arbitrary role creation, full effective-access enumeration, system/provider model CRUD, a new Auth DB ownership-metadata migration, billing-grade usage allocation, or a UI for creating pre-authorised **profile-create** grants.
+**Out of scope:** generic permission/role administrator replacement, new role creation in this tab, cross-profile custom permission sharing, effective-role/user enumeration, system-model CRUD, dollar billing, and pre-authorised Create.
