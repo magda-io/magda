@@ -84,35 +84,28 @@ Do **not** enumerate supposed effective Authenticated Users/orgUnit role members
 
 ### Pre-authorised permissions tab — advanced mode
 
-**Audience:** only administrators or callers holding an **unconstrained global `llm/access/update` grant**, plus the **appropriate Auth API permissions** for each underlying role/permission action. Hide the tab from ordinary owners/profile-scoped editors and enforce it again on every endpoint. Make the distinction between (a) a permission ID attached to this profile and (b) that permission being held by a role/user explicit.
+**Visibility:** The tab is shown to any user holding an **unconstrained `authObject/permission/create`** permission (or global MAGDA administrator role) who can navigate to the profile. No additional `llm/access/update` check is needed **to show the tab**. Each API action separately enforces its real profile-level, permission-object and role-specific authorization; a tab-visible user may have disabled actions.
 
-The tab displays **custom permissions currently linked to the profile**, excluding exactly the **three managed permission IDs** in `profile_managed_roles`. Custom permissions created here are immediately linked to this profile. If existing-permission linking is added in a future release, label origin explicitly rather than claiming every linked object was created in this tab.
+Only **tab-created, profile-owned custom permissions** appear, excluding exactly the three system-managed permission UUIDs from `profile_managed_roles`. A permission owned by this tab belongs **exclusively to this profile**, enforced by unique permission UUID mapping; it can be assigned to multiple existing Auth roles, but cannot be linked to another profile in this version.
 
-| Column | Meaning |
-| --- | --- |
-| Permission name / UUID | From Auth API (show full UUID for administration) |
-| Operations | Selected `read`, `update`, `delete`, `invoke`; a permission can cover more than one |
-| Linked to this profile | Yes (all listed rows); detach action affects only this association |
-| Assigned roles | List only roles the caller may inspect; otherwise say role details unavailable |
-| Actions | Add/remove permission from an authorized existing role; detach permission from this profile |
+The data grid columns are **exactly**:
 
-**Create custom permission flow**
+| UUID | Permission name | Operations | Actions |
+| --- | --- | --- | --- |
+| UUID from Auth API | Name | Read / Update / Delete / Invoke, as selected | Four-item menu |
 
-1. Choose a nonempty subset from **Read, Update, Delete, Invoke**. **Create is not offered**: profile creation has no existing permission-ID mapping and needs a separate global `llm/access/create` grant in Authorization settings.
-2. Enter a permission name/description. The service constructs the exact resource `llm/access`, `preAuthorisedConstraint=true`, `userOwnershipConstraint=false`, `orgUnitOwnershipConstraint=false`, `allowExemption=false` and selected operation URIs. The browser cannot edit these flags or request other resources.
-3. Check external caller can manage the profile's advanced ACL **and** holds `authObject/permission/create`. Have the Authorization API create the permission; verify its returned UUID and operation/constraint shape, then insert the `profile_pre_authorised_permissions` mapping.
-4. Optionally select an **existing role** by accessible role ID/search and attach the permission. Before each attach/remove, check external caller's `authObject/role/update` for **that specific role**, plus advanced profile rights. Exclude protected, unrelated system-managed roles (including managed Use/View/Edit roles).
-5. Confirm that attaching a permission to a role may immediately grant that role's **existing users** new profile Read/Update/Delete/Invoke rights. Show target profile, permission UUID, operations, role name and ID before confirmation.
+The row **Actions** menu has **only four options**:
 
-**Removal semantics**
+1. **Edit:** Show a name/description and operation picker for any nonempty subset of `read`, `update`, `delete`, `invoke`. **Do not permit changing role assignments from this view.** `create` is unavailable because a nonexistent profile cannot be matched through a pre-authorised permission ID. LLM Services checks actual caller `authObject/permission/update` on this permission plus admin/unconstrained profile update and confirms changes that widen operations already held by roles.
+2. **Assign to Role:** Open a modal with a **searchable existing-role dropdown**, showing role label and UUID. Search/list only roles the caller is authorized to inspect; before assignment, require effective `authObject/role/update` on the selected role, unrestricted profile-update/admin permission, and validate the custom permission belongs here. Exclude protected system-managed roles (including the profile's three managed roles). Confirm role identity and operations.
+3. **View Assigned Roles:** Open a new modal/dialog listing roles assigned this permission, with role UUID/name (subject to the caller's role-read permissions) and a **Remove** button on each row. Clicking Remove detaches this permission from **that role only** after caller-specific `authObject/role/update` authorization. It does not modify the permission definition or its profile association. A role visible but not editable gets a disabled Remove button.
+4. **Delete:** Show a strong confirmation listing the permission name/UUID, its operation set and **all roles to be affected** (without exposing restricted role details). This **single logical action** must revoke its profile association, remove it from **every assigned Auth role**, and delete the underlying Auth **permission itself**. There is **no Detach option** and no separate "remove from profile" row action. Require caller `authObject/permission/delete` and effective `authObject/role/update` on **every role** as well as unrestricted profile update/admin; if any check fails, reject before any mutation. Do not delete the roles or users.
 
-- **Remove from role:** detach its role-permission association via Auth API. The custom permission remains linked to the profile and may still authorize users in other roles.
-- **Detach from profile:** delete **only** its `profile_pre_authorised_permissions` row. This immediately prevents that custom permission from authorizing this profile; it remains in Auth API and any existing roles. Other profiles linked to the same custom permission are unaffected.
-- **Delete permission globally:** not a convenience side-effect in this tab. Use a separately authorized Auth API workflow with `authObject/permission/delete` after checking its role and profile links. Do not delete a permission merely because its profile mapping was removed.
+The current Auth API refuses to delete a permission still assigned to roles. The service therefore needs an **authoritative permission→all-roles reverse lookup**, potentially a focused new Auth API endpoint, rather than trusting a filtered UI list as complete. Validate rights over all role references, mark custom SQL mapping `state='deleting'` so it is immediately excluded from OPA, detach every Auth role association, recheck for remaining references, delete the permission through Auth API, verify absence and then delete the mapping. Prevent/revalidate races with concurrent role assignments. If an Auth call fails after mapping revocation, retain the permission UUID for idempotent **Cleanup needed** recovery and **never report success early**.
 
-A custom permission on `llm/access` may include `read/update/delete/invoke` simultaneously; it is still scoped to profiles **whose pre-authorised ID list contains that exact permission UUID**. No user receives rights by simply viewing or adding its ID to SQL: the user must hold the permission through a real Auth API role.
+**Create permission** is a standalone page action above the grid, not a row menu item: enter name/description and select `read`, `update`, `delete` or `invoke` operations. LLM Services creates the permission with `resourceUri="llm/access"`, `preAuthorisedConstraint=true`, no owner/orgUnit constraint and no exemption, and registers its exclusively owned SQL link. The actual caller must have the tab's unconstrained permission-create grant plus unrestricted profile-update/admin authority. **Role assignments are separate through Assign to Role**, never in the Edit dialog. No pre-authorised `create` operation is offered.
 
-If an Auth API permission has been removed or altered externally, show a non-sensitive **Needs repair** status and refuse role assignment until validated. Broken custom mappings must not make otherwise valid managed Use/View/Edit grants unavailable. For non-admin advanced operators, avoid disclosing protected role members/permissions beyond their Auth API read rights.
+When the owning profile itself is deleted, apply this same full Delete cleanup to each of its custom permissions; do not leave externally assigned orphan permissions. Unrelated Auth roles remain, only their association to the now-deleted permission is removed. Failure leaves the profile disabled/deleting and retains enough UUIDs for repair.
 
 ### Usage tab
 
