@@ -14,10 +14,11 @@ A profile is a small administrative access policy, not a discoverable/federated 
 ### Simplification compared with the earlier proposal
 
 - **One shared authorization resource** `llm/access`, with seeded operations `create`, `read`, `update`, `delete` and `invoke`. Do **not** create `llm/access/<profile-id>` resources or per-profile operation URIs.
-- **Three automatically managed role/permission pairs per profile** (invoke, read, update), stored in one `profile_managed_roles` mapping table. All three permissions have `preAuthorisedConstraint=true` on resource `llm/access`; only the exact matching permission ID/operation applies to a given profile.
-- LLM Services constructs a Registry-style **`access-control` object in trusted OPA decision input**, despite storing owner/orgUnit/exemption as ordinary SQL columns. The three managed permission IDs become its `preAuthorisedPermissionIds` array; no second mapping table is needed.
+- **Three automatically managed role/permission pairs per profile** (invoke, read, update), stored in `profile_managed_roles` for the ordinary user-grant workflow. All three permissions have `preAuthorisedConstraint=true` on resource `llm/access`.
+- **Retain a separate `profile_pre_authorised_permissions` mapping** for both the three automatically created permission IDs **and** optional custom pre-authorised IDs supplied through the advanced workflow. LLM Services constructs a Registry-style `access-control` object in trusted OPA input, projecting this table into `preAuthorisedPermissionIds`; all other scope fields remain ordinary SQL columns. This preserves MAGDA's exact-ID semantics without duplicating user-to-role membership.
 - **No special non-admin wildcard invocation operation** (`llm/access/*/access`). A normal profile with `allowed_models=['*']` and nullable/unlimited ceilings allows administrators to grant unrestricted *profile* use to selected users, always subject to the deployment allowlist. MAGDA's existing global OPA administrator override remains.
 - **Model routing stays operator-owned via Helm/Secrets**, not in a new database-backed model catalogue. The existing bundled LiteLLM chart currently configures one alias; multi-model Helm support can be a separate deployment improvement. Neither a SQL model list nor the profile `'*'` wildcard provisions credentials, endpoints or LiteLLM routes.
+- **Constrained invocation grants are supported:** owner/orgUnit/unconstrained grants can cover eligible profiles without direct user grants. The orgUnit test is MAGDA's existing `profile.orgUnitId in input.user.managingOrgUnitIds` (the caller's orgUnit plus its descendants); null profile orgUnit never matches. Cross-orgUnit access can use explicit pre-authorised mappings; no `audienceOrgUnitId` column.
 - Retain the lightweight `revision` optimistic-concurrency column, `pending/ready/deleting` recovery state and **one daily usage aggregate table**. No request log, reservations, weekly/monthly tables or billing accounting is required.
 
 MAGDA's [Access Group architecture](../../docs/architecture/access-groups.md), [user guide](../../docs/access-groups.md) and [ADR 0012](../../docs/adrs/0012-typed-access-group-authorisation.md) establish the auto-managed role and typed ownership/pre-authorised pattern. The [Registry feature guide](../../docs/architecture/Guide%20to%20Magda%20Internals.md#building-features-on-registry-records) supports the feature-service ownership principle, not a requirement that these SQL-only profiles have Registry aspects.
@@ -37,8 +38,9 @@ Authenticated MAGDA API client or Workspace/DSH
 
 Existing Authorization API: shared llm/access resource and operations,
     profile-owned role/permission records, all user-role assignments
-SQL llm_services schema: profile data, three role/permission ID pairs,
-    one row per (user, public model alias, local accounting date)
+SQL llm_services schema: profile data, three managed role/permission pairs,
+    profile-to-pre-authorised permission UUID links (managed + custom),
+    one daily usage row per (user, public model alias, local accounting date)
 ```
 
 Workspace lifecycle/runtime still requires self-only `agentWorkspace/access`; independent LLM clients need a model entitlement, **not** Workspace access. Provider Secrets stay private to LiteLLM. The operator-controlled Helm `llm-services.allowedModels` is an outer safety/availability restriction, including for administrators; model profile membership is an additional permission check for non-admins.
@@ -88,6 +90,15 @@ CREATE TABLE llm_services.profile_managed_roles (
     PRIMARY KEY (profile_id, access_level)
 );
 
+-- These links include the three mandatory system-managed permission IDs
+-- plus zero or more custom pre-authorised permission IDs.
+CREATE TABLE llm_services.profile_pre_authorised_permissions (
+    profile_id UUID NOT NULL
+        REFERENCES llm_services.access_profiles(id) ON DELETE CASCADE,
+    permission_id UUID NOT NULL,
+    PRIMARY KEY (profile_id, permission_id)
+);
+
 CREATE TABLE llm_services.daily_model_usage (
     user_id UUID NOT NULL,
     model_alias TEXT NOT NULL,
@@ -102,12 +113,12 @@ CREATE TABLE llm_services.daily_model_usage (
 
 - The LLM-owned `allowed_models TEXT[]` is small, validated and replaced as a unit. `["*"]` is its only wildcard form; enforce exact aliases/uniqueness in the service. There is no model catalogue table in this proposal. An optional array index can be added if actual query volume justifies it.
 - `owner_id`, `org_unit_id` and `constraint_exemption` are SQL fields, **not a JSONB Registry `access-control` aspect**; LLM Services maps them to that familiar shape **only in trusted OPA input**.
-- The `profile_managed_roles` table replaces `profile_pre_authorised_permissions`. Exactly **three rows for each ready profile** store authoritative **UUID references**, one per access level, to the specific roles/permissions managed by LLM Services in the Authorization API. `role_id` and `permission_id` are not foreign keys to Auth API tables, even when the instance is shared. Actual role memberships, grants and permission constraints live **only in Authorization API**.
+- `profile_managed_roles` has exactly **three rows per ready profile**, one per managed `use/read/edit` role and permission ID. `profile_pre_authorised_permissions` has **those same three permission IDs plus zero or more advanced custom permission IDs**. Keep the mandatory links in sync transactionally with the managed-role mapping; a missing/mismatched managed link makes a profile non-ready until repaired. A custom permission can link to multiple profiles, but no profile ID can be granted implicitly through the permission alone. No foreign keys cross into Authorization API tables; user/role assignments and permission constraints remain authoritative there.
 - For each profile, create three permissions on **shared `llm/access`** with exact operation URIs: `use -> llm/access/invoke`, `read -> llm/access/read`, `edit -> llm/access/update`. Each has `preAuthorisedConstraint=true`, `userOwnershipConstraint=false`, `orgUnitOwnershipConstraint=false`. Create three managed roles; the **edit role** contains both the profile's `edit` and `read` permission IDs so editors can open the profile UI. The `use` role only invokes, and the `read` role only views. A user can hold more than one role. LLM Services checks exact role/permission ownership before any assignment or cleanup; names/descriptions are informational, not proof of ownership.
-- A `profile_managed_roles` row alone never grants access. The caller must be assigned its matching role (or another role explicitly carrying that **same** permission) by the Authorization API. No arbitrary client-supplied permission IDs or role IDs are accepted in profile CRUD. Requiring the **same permission** to appear in both OPA caller permissions and the trusted profile `preAuthorisedPermissionIds` prevents unrelated grants from being accepted.
+- A `profile_managed_roles` row alone never grants access. The caller must hold a matching managed or custom permission through an Auth API role assignment. A mapped pre-authorised ID never grants access by itself: one of the caller's real permissions must match **the same ID, resource, requested operation and `preAuthorisedConstraint=true`**. Normal profile CRUD never accepts arbitrary client-supplied permission or role IDs; a distinct advanced permission endpoint validates and manages explicit custom mapping IDs. No user-role membership table is duplicated in LLM SQL.
 - `state` is service-owned: `enabled=true AND state='ready'` is necessary for invocation. `revision` is a cheap optimistic concurrency token; a stale `If-Match`/expected version gets `409`. Never hold a SQL lock across a slow external OPA/Auth API call; re-check the version and permission-sensitive before/after state at commit. There is **no** broad SQL transaction spanning the Authorization API.
 - Null token ceilings mean unlimited for that period **inside an otherwise entitled profile**; zero means no new bounded non-admin request is admitted for that period. `measured_input_tokens + measured_output_tokens + estimated_tokens` is the usage figure checked against each configured ceiling. Guard integer overflow and double settlement.
-- Ownership/exemption metadata controls **management**, never implicitly grants **model invocation**. The model-use grant always requires the matching `invoke` permission, except the existing global administrator override.
+- The profile `owner_id` and `org_unit_id` are scope attributes for **both management and invocation** when the caller separately holds a matching owner-/orgUnit-constrained operation permission. Owning or belonging to a profile's orgUnit **without the matching `invoke` grant does not** confer model access. A null `org_unit_id` does not match orgUnit-constrained grants. A pre-authorised permission can bridge unrelated orgUnit structures; no separate audience column is required. The existing global administrator override remains.
 
 ### Mapping to the former Registry-shaped contract
 
@@ -117,8 +128,8 @@ CREATE TABLE llm_services.daily_model_usage (
 | `access-control.ownerId` | `access_profiles.owner_id`, projected to OPA `access-control.ownerId` |
 | `access-control.orgUnitId` | `access_profiles.org_unit_id`, projected to OPA `access-control.orgUnitId` |
 | `access-control.constraintExemption` | `access_profiles.constraint_exemption`, projected to OPA `access-control.constraintExemption` |
-| `access-control.preAuthorisedPermissionIds` | Exactly the three `permission_id` UUIDs from `profile_managed_roles`, projected into OPA `access-control.preAuthorisedPermissionIds` |
-| Per-profile user grants | Three managed roles and their Authorization API `user_roles` assignments; **no duplicate user membership table** |
+| `access-control.preAuthorisedPermissionIds` | All permission IDs from `profile_pre_authorised_permissions` (three mandatory managed IDs plus custom advanced IDs), projected into trusted OPA `access-control.preAuthorisedPermissionIds` |
+| Per-profile user grants | Three managed roles and their Authorization API `user_roles` assignments; advanced permissions may also be attached to pre-existing authorized roles; **no duplicate user membership table** |
 | Model availability/routing | Existing Helm/private LiteLLM configuration, **not** the profile table |
 
 ### Deployment and migration ownership
