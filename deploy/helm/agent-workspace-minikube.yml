@@ -158,6 +158,13 @@ magda:
         tag: latest
         pullPolicy: Never
 
+    # LLM Services database migrator (#3838)
+    llm-services-db:
+      image:
+        repository: localhost:5000
+        tag: latest
+        pullPolicy: Never
+
     gateway:
       image:
         repository: localhost:5000

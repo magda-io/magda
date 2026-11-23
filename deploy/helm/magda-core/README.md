@@ -58,8 +58,8 @@ doc for how the CA is delivered to each workload.
 | file://../internal-charts/gateway | gateway | 7.1.0 |
 | file://../internal-charts/indexer | indexer | 7.1.0 |
 | file://../internal-charts/ingress | ingress | 7.1.0 |
-| file://../internal-charts/llm-services | llm-services | 7.1.0 |
 | file://../internal-charts/llm-services-db | llm-services-db | 7.1.0 |
+| file://../internal-charts/llm-services | llm-services | 7.1.0 |
 | file://../internal-charts/opensearch-dashboards | opensearch-dashboards | 7.1.0 |
 | file://../internal-charts/opensearch | opensearch | 7.1.0 |
 | file://../internal-charts/priorities | priorities | 7.1.0 |
