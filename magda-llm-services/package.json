@@ -19,7 +19,9 @@
   "dependencies": {
     "@magda/typescript-common": "^7.1.0",
     "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "sql-syntax": "^2.0.1"
   },
   "devDependencies": {
     "@magda/scripts": "^7.1.0",
@@ -27,6 +29,7 @@
     "@types/jsonwebtoken": "9.0.5",
     "@types/mocha": "^10.0.6",
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.6.5",
     "mocha": "^10.2.0",
     "typescript": "~5.3.3"
   },
@@ -46,7 +49,7 @@
     "language": "typescript",
     "categories": {
       "api": true,
-      "stateless": true
+      "uses-pg": true
     }
   },
   "_moduleMappings": {

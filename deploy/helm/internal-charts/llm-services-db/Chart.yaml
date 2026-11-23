@@ -1,0 +1,12 @@
+apiVersion: v2
+description: The LLM Services database (access profiles and token usage)
+name: llm-services-db
+version: 7.1.0
+kubeVersion: ">= 1.14.0-0"
+annotations:
+  magdaModuleType: "core"
+dependencies:
+  - name: magda-postgres
+    version: "7.1.0"
+    repository: "file://../magda-postgres"
+    condition: global.useInK8sDbInstance.llm-services-db
