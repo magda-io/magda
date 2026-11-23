@@ -491,12 +491,25 @@ Depends on the constraint setting, system supports 4 different type of permissio
   - Useful for implicit Access Control.
   - e.g. user can modify his own datasets.
 - Permission with Organisational Unit Constraint
-  - Grant access to users who belong to the organisational unit sub tree.
+  - Grant access to resources that belong to the user's organisational unit or any organisational unit below it.
   - Useful for implicit Access Control.
   - E.g. The user can access all records within his division.
 - Permission with Pre-authorized Constraint
   - Grant access to resource objects that are pre-configured to accept this “key” (permission).
   - Useful for fine-grained access controls cross organisational units & regardless its ownership.
+
+#### What Permission Constraints Are For
+
+Constraints let an administrator delegate the management of resources, instead of managing every resource centrally. One role holding constrained permissions works for many users, because each user only reaches the resources the constraint matches for them:
+
+- **Ownership constraint:** users manage what they own. e.g. a user can update and delete the datasets they created, without any access to other users' datasets.
+- **Organisational unit constraint:** an org unit manages its own resources. The permission covers resources whose `orgUnitId` is the user's org unit or any org unit below it (the user's `managingOrgUnitIds`). A user in a parent org unit reaches the resources of its child org units, but a user in a child org unit doesn't reach the parent's resources. e.g. one "Data Custodians" role can be granted to custodians in every department, and each custodian manages only their own department's datasets.
+- **Pre-authorised constraint:** share individual resources regardless of their owner or org unit. A resource lists the IDs of the permissions it accepts, and users holding one of those permissions get its operations on that resource only. e.g. access groups use it to share a set of datasets with the group's members.
+- **No constraint:** for central, trusted users who manage all resources of a type.
+
+For a `create` operation, the decision is made on the resource to be created. So an ownership constrained create permission only lets a user create resources they own, and an org unit constrained one only lets them create resources in the org units they manage.
+
+Each resource type's policy decides which constraints it honours, and for which operations. A resource that is only managed centrally can honour unconstrained permissions only: e.g. roles and permissions themselves (`authObject/role/*`, `authObject/permission/*`). Registry records have one extra rule: an org unit constrained `read` also covers records with no org unit.
 
 A `Role` can be simply considered as a container of `Permissions`. We can't assign `Permission` directly to a user. Instead, we need to assign a `Role` to a user. The access of a user depends on all `Permissions` that are associated with the user via all user's `Roles`.
 
