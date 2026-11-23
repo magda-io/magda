@@ -28,11 +28,12 @@ export type UsageSettlement = {
 export type EstimateReason =
     /** The response finished without a valid final usage snapshot. */
     | "missing_final_usage"
-    /** The client went away, or the upstream request failed or timed out, mid-response. */
+    /**
+     * The client went away, or the upstream request failed or timed out,
+     * mid-response or after the request was sent but before any response.
+     */
     | "interrupted"
-    /** The upstream responded with a server error. */
-    | "upstream_error"
-    /** The response format can't be observed (unexpected content type). */
+    /** A 2xx response whose format can't be observed (unexpected content type). */
     | "unobservable";
 
 export interface SettlementQuality {

@@ -293,24 +293,111 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
         );
     });
 
-    it("estimates an upstream server error (METER-4)", async () => {
+    for (const status of [500, 502, 503, 504]) {
+        it(`charges nothing for an upstream server error (${status})`, async () => {
+            await withApp(
+                async (req, res) => {
+                    await readBody(req);
+                    res.writeHead(status, {
+                        "content-type": "application/json"
+                    });
+                    res.end(JSON.stringify({ error: { message: "failed" } }));
+                },
+                async (appUrl, sink) => {
+                    const response = await post(
+                        appUrl,
+                        "/v1/responses",
+                        JSON.stringify({ model: MODEL })
+                    );
+                    assert.equal(response.status, status);
+                    await response.arrayBuffer();
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+                    assert.equal(sink.settlements.length, 0);
+                }
+            );
+        });
+    }
+
+    it("estimates a 2xx response it can't read usage from (METER-4)", async () => {
         const body = JSON.stringify({ model: MODEL, input: "x".repeat(100) });
         await withApp(
             async (req, res) => {
                 await readBody(req);
-                res.writeHead(502, { "content-type": "application/json" });
-                res.end("{}");
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("a model response in an unexpected format");
             },
             async (appUrl, sink) => {
                 await (await post(appUrl, "/v1/responses", body)).arrayBuffer();
                 const [settlement] = await sink.waitFor(1);
                 assert.equal(settlement.kind, "estimated");
                 if (settlement.kind !== "estimated") return;
-                assert.equal(settlement.reason, "upstream_error");
+                assert.equal(settlement.reason, "unobservable");
                 assert.equal(
                     settlement.estimatedTokens,
                     Math.ceil(Buffer.byteLength(body) / 4) + 4096
                 );
+            }
+        );
+    });
+
+    it("estimates a 2xx JSON response without valid usage", async () => {
+        for (const responseBody of [
+            JSON.stringify({ object: "chat.completion", choices: [] }),
+            JSON.stringify({
+                object: "chat.completion",
+                usage: { prompt_tokens: -1, completion_tokens: 2 }
+            }),
+            "{not json"
+        ]) {
+            await withApp(
+                async (req, res) => {
+                    await readBody(req);
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(responseBody);
+                },
+                async (appUrl, sink) => {
+                    await (
+                        await post(
+                            appUrl,
+                            "/v1/chat/completions",
+                            JSON.stringify({ model: MODEL, messages: [] })
+                        )
+                    ).arrayBuffer();
+                    const [settlement] = await sink.waitFor(1);
+                    assert.equal(settlement.kind, "estimated", responseBody);
+                    if (settlement.kind !== "estimated") return;
+                    assert.equal(settlement.reason, "missing_final_usage");
+                }
+            );
+        }
+    });
+
+    it("estimates once when the upstream drops the connection after the request was sent", async () => {
+        await withApp(
+            async (req) => {
+                await readBody(req);
+                req.socket.destroy();
+            },
+            async (appUrl, sink) => {
+                const originalError = console.error;
+                console.error = () => undefined;
+                try {
+                    const response = await post(
+                        appUrl,
+                        "/v1/responses",
+                        JSON.stringify({ model: MODEL })
+                    );
+                    assert.equal(response.status, 502);
+                    await response.arrayBuffer();
+                    const settlements = await sink.waitFor(1);
+                    assert.equal(settlements.length, 1);
+                    const [settlement] = settlements;
+                    assert.equal(settlement.kind, "estimated");
+                    if (settlement.kind !== "estimated") return;
+                    assert.equal(settlement.reason, "interrupted");
+                } finally {
+                    console.error = originalError;
+                }
             }
         );
     });
@@ -337,6 +424,39 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
                 if (settlement.kind !== "estimated") return;
                 assert.equal(settlement.reason, "missing_final_usage");
                 assert.equal(settlement.quality.terminalSeen, false);
+            }
+        );
+    });
+
+    it("estimates a completed stream whose terminal event has no usage (seen live on the pinned LiteLLM)", async () => {
+        await withApp(
+            async (req, res) => {
+                await readBody(req);
+                res.writeHead(200, { "content-type": "text/event-stream" });
+                res.write(
+                    sse({ type: "response.output_text.delta", delta: "OK" })
+                );
+                res.write(
+                    sse({
+                        type: "response.completed",
+                        response: { status: "completed" }
+                    })
+                );
+                res.end(DONE);
+            },
+            async (appUrl, sink) => {
+                await (
+                    await post(
+                        appUrl,
+                        "/v1/responses",
+                        JSON.stringify({ model: MODEL, stream: true })
+                    )
+                ).arrayBuffer();
+                const [settlement] = await sink.waitFor(1);
+                assert.equal(settlement.kind, "estimated");
+                if (settlement.kind !== "estimated") return;
+                assert.equal(settlement.reason, "missing_final_usage");
+                assert.equal(settlement.quality.terminalSeen, true);
             }
         );
     });
@@ -535,6 +655,7 @@ describe("metering helpers", () => {
         assert.equal(sink.settlements.length, 1);
         assert.equal(sink.settlements[0].kind, "measured");
 
+        let attempts = 0;
         const failing = new RequestMeter({
             userId,
             modelAlias: MODEL,
@@ -543,6 +664,7 @@ describe("metering helpers", () => {
             requestBodyBytes: 4,
             sink: {
                 settle: async () => {
+                    attempts++;
                     throw new Error("ledger down");
                 }
             },
@@ -551,10 +673,16 @@ describe("metering helpers", () => {
         const originalError = console.error;
         console.error = () => undefined;
         try {
-            failing.responseStarted(500, "application/json");
+            failing.responseStarted(200, "text/plain");
             await failing.responseEnded();
+            await failing.interrupted();
         } finally {
             console.error = originalError;
         }
+        assert.equal(
+            attempts,
+            1,
+            "a failed settlement isn't retried by the meter"
+        );
     });
 });

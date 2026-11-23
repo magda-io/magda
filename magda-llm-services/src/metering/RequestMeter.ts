@@ -34,8 +34,16 @@ export interface RequestMeterOptions {
  *   but before any response arrived.
  *
  * It settles exactly once, whichever of those calls arrive and in whatever
- * order. A request whose upstream answered with a client error (4xx) costs
- * nothing: LiteLLM or the provider refused it.
+ * order. Charging outcomes (METER-7):
+ * - an upstream error answer (any non-2xx status, e.g. 4xx or 5xx) costs
+ *   nothing: LiteLLM or the provider refused or failed the request, and there
+ *   is no model response to charge;
+ * - a 2xx response is measured from its final usage, or estimated when no
+ *   valid final usage can be read (missing, malformed, oversize, an
+ *   unreadable content type, or a response cut short);
+ * - a request sent upstream that then fails or times out before any response
+ *   is estimated: the model may still have processed it;
+ * - a request that never reached the upstream (`notForwarded`) costs nothing.
  */
 export default class RequestMeter {
     private observer: UsageObserver | null = null;
@@ -99,17 +107,13 @@ export default class RequestMeter {
         if (status === undefined) {
             return this.failedBeforeResponse();
         }
-        if (status >= 400 && status < 500) {
-            // refused by LiteLLM or the provider: nothing to charge
+        if (status < 200 || status >= 300) {
+            // an error answer from LiteLLM or the provider: no model response to charge
             this.settled = true;
             return Promise.resolve();
         }
-        if (status >= 500 || status < 200 || status >= 300) {
-            return this.settleWith(
-                this.estimated("upstream_error", { status })
-            );
-        }
         if (this.unobservable || !this.observer) {
+            // a model response we can't read usage from: estimate it
             return this.settleWith(this.estimated("unobservable", { status }));
         }
         const observation = this.observer.finish();
