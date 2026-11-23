@@ -33,6 +33,8 @@ export type PublicUser = Partial<
         roles?: Role[];
         permissions?: Permission[];
         managingOrgUnitIds?: string[];
+        // the user's org unit and all its ancestors (#3838 LLM profile audience)
+        orgUnitAncestorIds?: string[];
         orgUnit?: OrgUnit;
     };
 

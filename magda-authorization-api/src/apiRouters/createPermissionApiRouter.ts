@@ -280,12 +280,70 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth Permissions
-     * @api {delete} /v0/auth/permissions/:permissionId Delete a permission record
-     * @apiDescription Delete a permission record.
-     * If this permission has been assigned to any roles, an error will be thrown.
-     * You need `authObject/permission/delete` permission in order to access this API.
+     * @api {get} /v0/auth/permissions/:permissionId/roles Get the roles holding a permission
+     * @apiDescription Returns the roles that the permission is assigned to, ordered by name.
+     * You need `authObject/permission/read` permission in order to access this API.
      *
      * @apiParam (URL Path) {string} permissionId id of the permission record
+     * @apiParam (Query String) {number} [offset] The index of the first record in the result.
+     * @apiParam (Query String) {number} [limit] The maximum number of records of the result (default 100, at most 500).
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "id": "xxx-xxx-xxxx-xxxx-xx",
+     *        "name": "Data Custodians",
+     *        "description": "xxxxxx"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/:permissionId/roles",
+        requireObjectPermission(
+            authDecisionClient,
+            database,
+            "authObject/permission/read",
+            (req, res) => req.params.permissionId,
+            "permission"
+        ),
+        async function (req, res) {
+            try {
+                const offset = parseInt(req?.query?.offset as string) || 0;
+                const limit = Math.min(
+                    parseInt(req?.query?.limit as string) || 100,
+                    500
+                );
+                if (offset < 0 || limit < 1) {
+                    throw new ServerError("Invalid offset or limit.", 400);
+                }
+                res.json(
+                    await database.getPermissionRoles(
+                        req.params.permissionId,
+                        offset,
+                        limit
+                    )
+                );
+            } catch (e) {
+                respondWithError("Get the roles of a permission", res, e);
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth Permissions
+     * @api {delete} /v0/auth/permissions/:permissionId Delete a permission record
+     * @apiDescription Delete a permission record.
+     * If this permission has been assigned to any roles, an error will be thrown, unless `removeFromRoles=true` is supplied.
+     * You need `authObject/permission/delete` permission in order to access this API.
+     * With `removeFromRoles=true`, you also need `authObject/role/update` permission.
+     *
+     * @apiParam (URL Path) {string} permissionId id of the permission record
+     * @apiParam (Query String) {string} [removeFromRoles] When `true`, remove the permission from every role holding it and delete it, in one transaction. Roles and users are not deleted.
      *
      * @apiSuccess [Response Body] {boolean} result Indicates whether the deletion action is actually performed or the permission record doesn't exist.
      * @apiSuccessExample {json} 200
@@ -309,11 +367,27 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
             (req, res) => req.params.permissionId,
             "permission"
         ),
+        // removing the permission from roles is an update of those roles
+        (req, res, next) => {
+            if (req?.query?.removeFromRoles !== "true") {
+                return next();
+            }
+            requirePermission(authDecisionClient, "authObject/role/update")(
+                req,
+                res,
+                next
+            );
+        },
         async function (req, res) {
             try {
-                const result = await database.deletePermission(
-                    req?.params?.permissionId
-                );
+                const result =
+                    req?.query?.removeFromRoles === "true"
+                        ? await database.deletePermissionAndRoleLinks(
+                              req?.params?.permissionId
+                          )
+                        : await database.deletePermission(
+                              req?.params?.permissionId
+                          );
                 res.json({ result });
             } catch (e) {
                 respondWithError("Delete a permission record", res, e);

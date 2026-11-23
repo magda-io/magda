@@ -33,6 +33,18 @@ allow {
 }
 
 allow {
+    ## delegate LLM access profile decisions (#3838) to their typed rules
+    startswith(input.operationUri, "llm/access/")
+    data.llm.access.allow
+}
+
+allow {
+    ## delegate LLM usage decisions (#3838) to their typed rules
+    startswith(input.operationUri, "llm/usage/")
+    data.llm.usage.allow
+}
+
+allow {
     ## delegate dataset related decision to dataset_allow
     startswith(input.operationUri, "object/dataset/")
     data.object.dataset.allow

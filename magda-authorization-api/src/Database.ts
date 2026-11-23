@@ -63,7 +63,8 @@ export const defaultAnonymousUserInfo: User = {
     ],
     permissions: [],
     orgUnit: null,
-    managingOrgUnitIds: []
+    managingOrgUnitIds: [],
+    orgUnitAncestorIds: []
 };
 
 export interface CreatePermissionOptions {
@@ -787,6 +788,7 @@ export default class Database {
         user.permissions = await this.getUserPermissions(userId);
         if (!isUuid(user.orgUnitId)) {
             user.managingOrgUnitIds = [];
+            user.orgUnitAncestorIds = [];
             user.orgUnit = null;
         } else {
             user.orgUnit = (
@@ -804,6 +806,14 @@ export default class Database {
             ).valueOr(null);
             user.managingOrgUnitIds = (
                 await this.orgQueryer.getAllChildren(user.orgUnitId, true, [
+                    "id"
+                ])
+            ).map((item) => item.id);
+            // the user's org unit and its ancestors: LLM access profiles use
+            // them for the "audience" meaning of org unit constrained invoke
+            // permissions (#3838, `magda-opa/policies/llm/access/allow.rego`)
+            user.orgUnitAncestorIds = (
+                await this.orgQueryer.getAllParents(user.orgUnitId, true, [
                     "id"
                 ])
             ).map((item) => item.id);
@@ -1008,6 +1018,73 @@ export default class Database {
             } finally {
                 client.release();
             }
+        }
+    }
+
+    /**
+     * The roles holding a permission (#3838: LLM Services lists the roles an
+     * access profile's permission is granted to).
+     */
+    async getPermissionRoles(
+        permissionId: string,
+        offset: number = 0,
+        limit: number = 100
+    ): Promise<{ id: string; name: string; description: string }[]> {
+        if (!isUuid(permissionId)) {
+            throw new ServerError("permission id should be a valid uuid.", 400);
+        }
+        const result = await this.pool.query(
+            ...sqls`SELECT r.id, r.name, r.description
+                FROM role_permissions rp
+                JOIN roles r ON r.id = rp.role_id
+                WHERE rp.permission_id = ${permissionId}
+                ORDER BY r.name, r.id
+                OFFSET ${offset} LIMIT ${limit}`.toQuery()
+        );
+        return result.rows;
+    }
+
+    /**
+     * Delete a permission together with all its role links, in one
+     * transaction (#3838). Unlike `deletePermission`, a permission still held by
+     * roles is removed from them first. Roles and users are never deleted.
+     *
+     * @returns whether the permission existed.
+     */
+    async deletePermissionAndRoleLinks(
+        permissionId?: string
+    ): Promise<boolean> {
+        if (!isUuid(permissionId)) {
+            throw new ServerError("permission id should be a valid uuid.", 400);
+        }
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            // lock the permission, so a concurrent role assignment (which
+            // references it) waits for this transaction
+            const existing = await client.query(
+                ...sqls`SELECT id FROM permissions WHERE id = ${permissionId} FOR UPDATE`.toQuery()
+            );
+            if (!existing.rows.length) {
+                await client.query("ROLLBACK");
+                return false;
+            }
+            await client.query(
+                ...sqls`DELETE FROM role_permissions WHERE permission_id = ${permissionId}`.toQuery()
+            );
+            await client.query(
+                ...sqls`DELETE FROM permission_operations WHERE permission_id = ${permissionId}`.toQuery()
+            );
+            await client.query(
+                ...sqls`DELETE FROM permissions WHERE id = ${permissionId}`.toQuery()
+            );
+            await client.query("COMMIT");
+            return true;
+        } catch (e) {
+            await client.query("ROLLBACK");
+            throw e;
+        } finally {
+            client.release();
         }
     }
 
