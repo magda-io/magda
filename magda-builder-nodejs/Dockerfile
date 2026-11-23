@@ -1,5 +1,13 @@
 FROM ubuntu:20.04
 
+# Never prompt during the build (e.g. tzdata's time zone question, which
+# otherwise waits for input until the CI job times out). An ARG, so it doesn't
+# carry into containers run from the image.
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Retry transient apt download failures.
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+
 RUN apt-get update && apt-get install -y \
     haveged \
  && rm -rf /var/lib/apt/lists/*
@@ -17,10 +25,23 @@ RUN apt-get update && apt-get install -y \
     socat \
  && rm -rf /var/lib/apt/lists/*
 
-# Use NodeSource to install Node.js (current LTS v22)
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs && \
-    node -v && npm -v
+# Use NodeSource to install Node.js (current LTS v22).
+# NodeSource's setup script can exit 0 even when it fails (e.g. on a transient
+# apt download error), and apt would then silently install Ubuntu's Node.js 10.
+# So retry until the NodeSource repository is configured, and fail the build
+# unless the installed Node.js is v22.
+RUN for attempt in 1 2 3; do \
+      curl --retry 5 --retry-delay 10 -fsSL https://deb.nodesource.com/setup_22.x -o /tmp/nodesource_setup.sh \
+      && bash /tmp/nodesource_setup.sh \
+      && apt-cache policy nodejs | grep -q "deb.nodesource.com" \
+      && break; \
+      echo "NodeSource setup attempt ${attempt} failed" >&2; \
+      sleep 15; \
+    done \
+ && rm -f /tmp/nodesource_setup.sh \
+ && apt-get install -y nodejs \
+ && node -e 'process.exit(process.versions.node.split(".")[0] === "22" ? 0 : 1)' \
+ && node -v && npm -v
 
 RUN npm install -g npm@11.5.1 && npm install -g lerna@3.22.1 yarn@1.22.19
 
