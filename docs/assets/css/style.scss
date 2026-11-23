@@ -38,6 +38,18 @@ body {
 }
 .center {
     text-align: center;
+
+    iframe {
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+    }
+
+    video {
+        max-width: 100%;
+        height: auto;
+    }
+
     img {
         width: 100%;
         @media screen and (min-width: 500px) {
@@ -49,4 +61,106 @@ body {
 
 .project-tagline {
     margin-top: 0;
+}
+
+// Homepage stories use linked thumbnails, not additional embedded players.
+.workspace-overview {
+    display: grid;
+    gap: 1.25rem;
+    align-items: center;
+    margin: 1.5rem 0;
+    padding: 1.25rem;
+    background: #f0f0ff;
+    border-radius: 0.5rem;
+
+    h3 {
+        margin-top: 0;
+    }
+
+    p:last-child {
+        margin-bottom: 0;
+    }
+
+    @media screen and (min-width: 42em) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    }
+}
+
+.workspace-video {
+    display: block;
+    position: relative;
+
+    &::after {
+        content: "▶";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 0.25rem 0.9rem;
+        border-radius: 0.5rem;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.8);
+        pointer-events: none;
+    }
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 0.25rem;
+    }
+}
+
+.workspace-stories {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0;
+
+    @media screen and (min-width: 64em) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.workspace-story {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: break-word;
+    border: 1px solid #d6d6e7;
+    border-radius: 0.5rem;
+    background: #fff;
+
+    > .workspace-video img {
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+}
+
+.workspace-story-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 1rem;
+
+    h4 {
+        margin: 0 0 0.75rem;
+        font-size: 1.1rem;
+    }
+
+    .workspace-story-label {
+        margin: 0 0 0.5rem;
+        color: #555;
+        font-size: 0.85rem;
+        font-weight: bold;
+    }
+
+    .workspace-story-links {
+        margin: auto 0 0;
+        padding-top: 0.5rem;
+    }
+}
+
+.workspace-overview a:focus-visible,
+.workspace-stories a:focus-visible {
+    outline: 3px solid $magda-color;
+    outline-offset: 3px;
 }
