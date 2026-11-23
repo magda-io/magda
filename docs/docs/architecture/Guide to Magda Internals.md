@@ -489,12 +489,13 @@ Those three properties decide which kind of scope constraint that we can apply t
 ```json
 {
   "ownerId": "cd09249f-53ed-43b4-b7d4-39cf501293e7", // user id of the owner
-  "orgUnitOwnerId": "2d05fbe1-6d9a-4dfc-b64d-8924f880a393", // id of the root node of an org unit sub tree
+  "orgUnitId": "2d05fbe1-6d9a-4dfc-b64d-8924f880a393", // id of the org unit the record belongs to
   "preAuthorisedPermissionIds": [
     // a list of permission IDs that are authorised
     "ad9269e2-ac42-43a4-91c7-bd2cfa6c0c6e",
     "6d0a4130-4de1-4e13-a01b-da947ca13ab9"
-  ]
+  ],
+  "constraintExemption": false // see "Constraint Exemption" below
 }
 ```
 
@@ -533,12 +534,25 @@ Depends on the constraint setting, system supports 4 different type of permissio
   - Useful for implicit Access Control.
   - e.g. user can modify his own datasets.
 - Permission with Organisational Unit Constraint
-  - Grant access to users who belong to the organisational unit sub tree.
+  - Grant access to resources that belong to the user's organisational unit or any organisational unit below it.
   - Useful for implicit Access Control.
   - E.g. The user can access all records within his division.
 - Permission with Pre-authorized Constraint
   - Grant access to resource objects that are pre-configured to accept this “key” (permission).
   - Useful for fine-grained access controls cross organisational units & regardless its ownership.
+
+#### What Permission Constraints Are For
+
+Constraints let an administrator delegate the management of resources, instead of managing every resource centrally. One role holding constrained permissions works for many users, because each user only reaches the resources the constraint matches for them:
+
+- **Ownership constraint:** users manage what they own. e.g. a user can update and delete the datasets they created, without any access to other users' datasets.
+- **Organisational unit constraint:** an org unit manages its own resources. The permission covers resources whose `orgUnitId` is the user's org unit or any org unit below it (the user's `managingOrgUnitIds`). A user in a parent org unit reaches the resources of its child org units, but a user in a child org unit doesn't reach the parent's resources. e.g. one "Data Custodians" role can be granted to custodians in every department, and each custodian manages only their own department's datasets.
+- **Pre-authorised constraint:** share individual resources regardless of their owner or org unit. A resource lists the IDs of the permissions it accepts, and users holding one of those permissions get its operations on that resource only. e.g. access groups use it to share a set of datasets with the group's members.
+- **No constraint:** for central, trusted users who manage all resources of a type.
+
+For a `create` operation, the decision is made on the resource to be created. So an ownership constrained create permission only lets a user create resources they own, and an org unit constrained one only lets them create resources in the org units they manage.
+
+Each resource type's policy decides which constraints it honours, and for which operations. A resource that is only managed centrally can honour unconstrained permissions only: e.g. roles and permissions themselves (`authObject/role/*`, `authObject/permission/*`). Registry records have one extra rule: an org unit constrained `read` also covers records with no org unit.
 
 A `Role` can be simply considered as a container of `Permissions`. We can't assign `Permission` directly to a user. Instead, we need to assign a `Role` to a user. The access of a user depends on all `Permissions` that are associated with the user via all user's `Roles`.
 
@@ -549,6 +563,27 @@ Besides user created `Roles`, there are 3 special built-in roles:
 - `Anonymous Users`: Before a user is authenticated, all his requests will be considered from a default user with `Anonymous Users` role.
   - You can edit the permissions that this role contains in order to control the "public access" of your application.
 - `Authenticated Users`: All users by default will be assigned this role.
+
+#### Constraint Exemption
+
+Constraint exemption ([#3455](https://github.com/magda-io/magda/issues/3455)) lets a resource's custodian and the system administrator work together to make a resource "public", without the custodian changing the resource's ownership or org unit. It has two halves, each set by a different person:
+
+- **On the resource:** the custodian (resource manager) sets `access-control.constraintExemption` to `true`. This says the resource is suitable for public access. The dataset editor shows it as the "Public dataset" switch.
+- **On the permission:** the system administrator sets `allowExemption` to `true` on a permission. This says the users holding that permission count as "the public".
+
+A constrained permission (ownership, org unit or pre-authorised) with `allowExemption` set also grants its operations on any resource with `constraintExemption` set, even when its own constraint doesn't match. Exemption never adds operations or resource types: the permission must still cover the requested operation on that type of resource.
+
+Because the administrator decides which roles hold exemption-capable permissions, the administrator decides what "public" means. For example:
+
+- Allow exemption on a read permission held by `Anonymous Users`: exempt resources are visible to everyone.
+- Allow exemption only on the permissions held by `Authenticated Users`: exempt resources are visible to signed-in users only.
+- Allow exemption on a permission in a custom role: exempt resources are visible to that role's users only.
+
+Without exemption, a custodian who wanted to publish a dataset owned by their org unit would have to clear its `orgUnitId`, and users whose access depends on org unit constrained permissions for that org unit would lose access to it.
+
+By default, the stock org unit constrained read permissions for published datasets, distributions and organisations held by `Anonymous Users` and `Authenticated Users` allow exemption (`magda-migrator-authorization-db/sql/V2_1__constraint_examption.sql`). A dataset marked public is therefore visible to anyone, signed in or not. To restrict exempt datasets to signed-in users, set `allowExemption` to `false` on the `Anonymous Users` role's permissions.
+
+For Registry records, the rules are in [verifyRecordPermission.rego](https://github.com/magda-io/magda/blob/main/magda-opa/policies/common/verifyRecordPermission.rego) and [verifyRecordWithPublishingStatusPermission.rego](https://github.com/magda-io/magda/blob/main/magda-opa/policies/common/verifyRecordWithPublishingStatusPermission.rego). Other resource types decide in their own policies whether, and for which operations, they honour exemption.
 
 ### Authz Model Rego Policy Structure
 
