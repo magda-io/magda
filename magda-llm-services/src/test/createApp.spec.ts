@@ -112,6 +112,34 @@ describe("LLM Services", () => {
         }
     });
 
+    it("reports not ready while its database is unavailable", async () => {
+        let healthy = false;
+        const pool = {
+            query: async () => {
+                if (!healthy) throw new Error("connection refused");
+                return { rows: [{ "?column?": 1 }] };
+            }
+        } as any;
+        const running = await listen(createApp(config({ pool })));
+        const originalError = console.error;
+        console.error = () => undefined;
+        try {
+            const ready = new URL("/v0/status/ready", running.url);
+            assert.equal((await originalFetch(ready)).status, 503);
+            healthy = true;
+            assert.equal((await originalFetch(ready)).status, 200);
+            // liveness doesn't depend on the database
+            healthy = false;
+            const live = await originalFetch(
+                new URL("/v0/status/live", running.url)
+            );
+            assert.equal(live.status, 200);
+        } finally {
+            console.error = originalError;
+            await close(running.server);
+        }
+    });
+
     it("requires an authenticated user", async () => {
         const running = await listen(createApp(config()));
         try {

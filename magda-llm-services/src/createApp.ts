@@ -2,6 +2,15 @@ import express, { NextFunction, Request, Response } from "express";
 import http from "node:http";
 import https from "node:https";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import type pg from "pg";
+import RequestMeter from "./metering/RequestMeter.js";
+import { prepareRequestBody } from "./metering/requestBody.js";
+import {
+    DEFAULT_USAGE_ESTIMATE,
+    LoggingUsageSink,
+    UsageEstimateConfig,
+    UsageSink
+} from "./metering/settlement.js";
 
 // Agent Workspace model access uses the same grantable self-only operation as
 // the Workspace itself (#3858); administrators are allowed by the policy
@@ -49,7 +58,25 @@ export interface LlmServicesConfig {
     liteLlmUrl: URL;
     liteLlmKey: string;
     allowedModels: ReadonlySet<string>;
+    /** The LLM Services database (#3838); when set, readiness checks it. */
+    pool?: pg.Pool;
+    /** Receives one usage settlement per forwarded request (#3838 USE-7). */
+    usageSink?: UsageSink;
+    /** METER-4 estimate settings. */
+    usageEstimate?: UsageEstimateConfig;
+    /** METER-3 observer limits, in bytes. */
+    observerLimits?: { maxEventBytes?: number; maxJsonBytes?: number };
 }
+
+// Upstream connection errors where the request can't have reached the model
+// provider: nothing to charge.
+const NOT_FORWARDED_ERROR_CODES = new Set([
+    "ECONNREFUSED",
+    "ENOTFOUND",
+    "EAI_AGAIN",
+    "EHOSTUNREACH",
+    "ENETUNREACH"
+]);
 
 export default function createApp(config: LlmServicesConfig) {
     const {
@@ -57,7 +84,11 @@ export default function createApp(config: LlmServicesConfig) {
         authApiUrl,
         liteLlmUrl,
         liteLlmKey,
-        allowedModels
+        allowedModels,
+        pool,
+        usageSink = new LoggingUsageSink(),
+        usageEstimate = DEFAULT_USAGE_ESTIMATE,
+        observerLimits = {}
     } = config;
 
     async function requireWorkspaceAccess(
@@ -131,6 +162,8 @@ export default function createApp(config: LlmServicesConfig) {
                 });
                 return;
             }
+            // the verified session user: the only identity usage is counted against (USE-2)
+            res.locals.userId = payload.userId;
             next();
         } catch (error) {
             console.error("LLM authorization lookup failed", error);
@@ -144,7 +177,8 @@ export default function createApp(config: LlmServicesConfig) {
         req: Request,
         res: Response,
         path: string,
-        body?: Buffer
+        body: Buffer,
+        meter: RequestMeter
     ) {
         const transport = liteLlmUrl.protocol === "https:" ? https : http;
         const headers: http.OutgoingHttpHeaders = {
@@ -164,6 +198,24 @@ export default function createApp(config: LlmServicesConfig) {
                 headers
             },
             (upstreamResponse) => {
+                meter.responseStarted(
+                    upstreamResponse.statusCode || 502,
+                    upstreamResponse.headers["content-type"]
+                );
+                let ended = false;
+                // Observe with a synchronous data listener on the same source as
+                // pipe(): pipe's backpressure still governs reads, and the
+                // forwarded bytes are never changed (METER-3).
+                upstreamResponse.on("data", (chunk: Buffer) =>
+                    meter.write(chunk)
+                );
+                upstreamResponse.once("end", () => {
+                    ended = true;
+                    void meter.responseEnded();
+                });
+                upstreamResponse.once("close", () => {
+                    if (!ended) void meter.interrupted();
+                });
                 const responseHeaders: http.OutgoingHttpHeaders = {};
                 for (const header of [
                     "content-type",
@@ -185,10 +237,18 @@ export default function createApp(config: LlmServicesConfig) {
             upstream.destroy(new Error("LiteLLM request timed out"))
         );
         res.once("close", () => {
-            if (!res.writableEnded) upstream.destroy();
+            if (!res.writableEnded) {
+                upstream.destroy();
+                void meter.interrupted();
+            }
         });
-        upstream.on("error", (error) => {
+        upstream.on("error", (error: NodeJS.ErrnoException) => {
             console.error("LiteLLM request failed", error);
+            if (error.code && NOT_FORWARDED_ERROR_CODES.has(error.code)) {
+                meter.notForwarded();
+            } else {
+                void meter.failedBeforeResponse();
+            }
             if (!res.headersSent) {
                 res.status(502).json({
                     error: {
@@ -205,7 +265,18 @@ export default function createApp(config: LlmServicesConfig) {
     const app = express();
     app.disable("x-powered-by");
     app.get("/v0/status/live", (_req, res) => res.json({ status: "ok" }));
-    app.get("/v0/status/ready", (_req, res) => res.json({ status: "ok" }));
+    app.get("/v0/status/ready", async (_req, res) => {
+        if (pool) {
+            try {
+                await pool.query("SELECT 1");
+            } catch (error) {
+                console.error("LLM Services database is unavailable", error);
+                res.status(503).json({ status: "database unavailable" });
+                return;
+            }
+        }
+        res.json({ status: "ok" });
+    });
     app.use("/v0/v1", requireWorkspaceAccess);
 
     app.get("/v0/v1/models", (_req, res) => {
@@ -224,22 +295,43 @@ export default function createApp(config: LlmServicesConfig) {
             const body = Buffer.isBuffer(req.body)
                 ? req.body
                 : Buffer.from(JSON.stringify(req.body || {}));
-            let model: string | undefined;
+            let parsed: unknown;
             try {
-                model = JSON.parse(body.toString("utf8")).model;
+                parsed = JSON.parse(body.toString("utf8"));
             } catch {
+                parsed = undefined;
+            }
+            if (
+                !parsed ||
+                typeof parsed !== "object" ||
+                Array.isArray(parsed)
+            ) {
                 res.status(400).json({
                     error: { message: "Invalid JSON request" }
                 });
                 return;
             }
+            const request = parsed as Record<string, unknown>;
+            const model =
+                typeof request.model === "string" ? request.model : undefined;
             if (!model || !allowedModels.has(model)) {
                 res.status(403).json({
                     error: { message: "The requested model is not available" }
                 });
                 return;
             }
-            proxyToLiteLlm(req, res, path, body);
+            const prepared = prepareRequestBody(path, body, request);
+            const meter = new RequestMeter({
+                userId: res.locals.userId,
+                modelAlias: model,
+                endpoint: path,
+                requestStartedAt: new Date(),
+                requestBodyBytes: prepared.body.length,
+                sink: usageSink,
+                estimate: usageEstimate,
+                ...observerLimits
+            });
+            proxyToLiteLlm(req, res, path, prepared.body, meter);
         };
     }
 
