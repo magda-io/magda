@@ -364,13 +364,26 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - the tested limits are a 64 KiB SSE event buffer and a 1 MiB non-streaming JSON cap. Production limits are explicit configuration, and dropped, oversize or unknown events are counted.
 
   The observer sits inside the proxy path; the PoC's loopback tap isn't a production design.
-- **METER-4** **Estimate** when there is no valid final usage and the upstream may have processed the request (cancellation, timeout, provider error, malformed or oversize events, interruption):
+- **METER-4** **Estimate** when there is no valid final usage and the upstream may have processed the request (cancellation, timeout, malformed or oversize events, interruption). METER-7 lists exactly which outcomes are estimated:
 
   `estimated_tokens = ceil(request body bytes / bytesPerToken) + outputAllowance`
 
   It increments `estimated_tokens` and `estimated_requests`, never the measured columns. Defaults: `llm-services.usage.estimate.bytesPerToken: 4`, `llm-services.usage.estimate.outputTokens: 4096`, with optional per-alias overrides. These are initial values to tune with evidence. The estimate is never based only on visible output text, which misses reasoning, cached input and background generation.
 - **METER-5** Settle once per request (USE-7). Track `terminalSeen` separately from `usageFinal`: a terminal event with invalid usage isn't final metering. Repeated events, close/error callbacks and `[DONE]` must not cause a second upsert. A crash before settlement is an accepted limitation of a soft quota.
 - **METER-6** Meter **every** model request made for the user, independently against its own alias: tool-call requests and continuations, and auxiliary or background requests such as DSH titles. A background request cancelled at shutdown follows METER-4.
+- **METER-7** **Charging outcomes.** Only a model response can be charged:
+
+  | Outcome | Charge |
+  | --- | --- |
+  | Refused before forwarding (authorisation, quota, validation) | Nothing |
+  | Never reached LiteLLM (connection refused, DNS failure) | Nothing |
+  | Any non-2xx answer from LiteLLM or the provider (4xx or 5xx) | Nothing: there is no model response |
+  | 2xx with valid final usage | Measured (METER-1) |
+  | 2xx without valid final usage: a terminal event without usage, no terminal, malformed or oversize usage, or an unreadable content type | Estimated (METER-4) |
+  | 2xx cut short: the client disconnects, or the upstream connection fails or times out mid-response | Measured if final usage already arrived, otherwise estimated |
+  | Sent upstream, then the connection fails or times out before any response | Estimated: the model may still have processed it |
+
+  The PoC saw a real completed Responses stream from the pinned LiteLLM whose terminal event carried no usage. The estimate fallback is needed in practice, not only in theory.
 
 ## Deployment
 
@@ -415,7 +428,7 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - `429` versus `403`;
   - ledger outage `503`;
   - administrator requests recorded but not limited.
-- **TEST-7** Metering: everything in METER-1 to METER-6, against pinned LiteLLM and real DSH Responses streaming. Other providers need their own compatibility tests before their metering is claimed.
+- **TEST-7** Metering: everything in METER-1 to METER-7, against pinned LiteLLM and real DSH Responses streaming. Other providers need their own compatibility tests before their metering is claimed.
 - **TEST-8** API: personal endpoints ignore any supplied user ID; User Usage requires `llm/usage/read`; `Cache-Control: private, no-store` is sent; nothing leaks in errors.
 - **TEST-9** UI: the [UI acceptance cases](./llm-access-profiles-ui.md#acceptance-cases).
 
