@@ -1,7 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import http from "node:http";
 import https from "node:https";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import type pg from "pg";
 import RequestMeter from "./metering/RequestMeter.js";
 import { prepareRequestBody } from "./metering/requestBody.js";
@@ -11,13 +10,14 @@ import {
     UsageEstimateConfig,
     UsageSink
 } from "./metering/settlement.js";
+import CallerAccessResolver, {
+    Caller,
+    DEFAULT_DECISION_CACHE_SECONDS
+} from "./access/CallerAccess.js";
+import Admission from "./access/Admission.js";
+import ServedModels from "./access/ServedModels.js";
 import UsageLedger from "./usage/UsageLedger.js";
 import { DEFAULT_USAGE_TIME_ZONE } from "./usage/periods.js";
-
-// Agent Workspace model access uses the same grantable self-only operation as
-// the Workspace itself (#3858); administrators are allowed by the policy
-// engine's administrator override.
-const AGENT_WORKSPACE_ACCESS_OPERATION = "agentWorkspace/access";
 
 export function parseAllowedModels(value: string | undefined): Set<string> {
     if (value === undefined) {
@@ -70,6 +70,8 @@ export interface LlmServicesConfig {
     observerLimits?: { maxEventBytes?: number; maxJsonBytes?: number };
     /** USE-3: the IANA zone of accounting dates (DEP-3 `usage.timeZone`). */
     usageTimeZone?: string;
+    /** EVAL-3: per-user invoke decision cache TTL (DEP-3 `decisionCacheSeconds`). */
+    decisionCacheSeconds?: number;
     /** The usage ledger; by default built on `pool`. */
     ledger?: UsageLedger;
 }
@@ -94,7 +96,8 @@ export default function createApp(config: LlmServicesConfig) {
         pool,
         usageEstimate = DEFAULT_USAGE_ESTIMATE,
         observerLimits = {},
-        usageTimeZone = DEFAULT_USAGE_TIME_ZONE
+        usageTimeZone = DEFAULT_USAGE_TIME_ZONE,
+        decisionCacheSeconds = DEFAULT_DECISION_CACHE_SECONDS
     } = config;
     const ledger =
         config.ledger ??
@@ -103,87 +106,62 @@ export default function createApp(config: LlmServicesConfig) {
     // settlements are only logged.
     const usageSink: UsageSink =
         config.usageSink ?? ledger ?? new LoggingUsageSink();
+    const callers = new CallerAccessResolver({
+        jwtSecret,
+        authApiUrl,
+        decisionCacheSeconds
+    });
+    const admission = new Admission({
+        pool,
+        ledger,
+        allowedModels,
+        servedModels: new ServedModels({ liteLlmUrl, liteLlmKey })
+    });
 
-    async function requireWorkspaceAccess(
+    function sendError(
+        res: Response,
+        status: number,
+        message: string,
+        code?: string
+    ) {
+        res.status(status).json({
+            error: { message, ...(code ? { code } : {}) }
+        });
+    }
+
+    /**
+     * Verifies the MAGDA session and resolves which profiles the caller may
+     * invoke (EVAL-1, EVAL-3). LLM calls need an `llm/access/invoke` grant,
+     * not `agentWorkspace/access` (AUTH-4).
+     */
+    async function requireCaller(
         req: Request,
         res: Response,
         next: NextFunction
     ) {
-        const token = req.get("X-Magda-Session");
-        if (!token) {
-            res.status(401).json({
-                error: { message: "Magda authentication required" }
-            });
-            return;
-        }
-        let payload: JwtPayload;
+        // every response is user-specific (Public API)
+        res.setHeader("Cache-Control", "private, no-store");
+        let result;
         try {
-            payload = jwt.verify(token, jwtSecret, {
-                algorithms: ["HS256"]
-            }) as JwtPayload;
-        } catch {
-            res.status(401).json({
-                error: { message: "Invalid Magda session" }
-            });
-            return;
-        }
-        try {
-            const base = authApiUrl.replace(/\/$/, "");
-            const headers = { "X-Magda-Session": token };
-            const response = await fetch(`${base}/public/users/whoami`, {
-                headers,
-                signal: AbortSignal.timeout(10_000)
-            });
-            if (!response.ok && response.status !== 401) {
-                // Authorization API unavailable: not an access decision.
-                throw new Error(
-                    `Session verification failed with HTTP ${response.status}`
-                );
-            }
-            const user = response.ok
-                ? ((await response.json()) as { id?: string })
-                : undefined;
-            if (!user || user.id !== payload.userId) {
-                res.status(401).json({
-                    error: { message: "Invalid Magda session" }
-                });
-                return;
-            }
-            // `unknowns=` requests a full (not partial) policy evaluation.
-            const decisionResponse = await fetch(
-                `${base}/opa/decision/${AGENT_WORKSPACE_ACCESS_OPERATION}?unknowns=`,
-                { headers, signal: AbortSignal.timeout(10_000) }
-            );
-            if (!decisionResponse.ok) {
-                throw new Error(
-                    `Policy decision failed with HTTP ${decisionResponse.status}`
-                );
-            }
-            const decision = (await decisionResponse.json()) as {
-                hasResidualRules?: boolean;
-                result?: unknown;
-            };
-            if (
-                decision?.hasResidualRules !== false ||
-                decision.result !== true
-            ) {
-                res.status(403).json({
-                    error: {
-                        message:
-                            "Magda LLM access requires Agent Workspace access"
-                    }
-                });
-                return;
-            }
-            // the verified session user: the only identity usage is counted against (USE-2)
-            res.locals.userId = payload.userId;
-            next();
+            result = await callers.resolve(req.get("X-Magda-Session"));
         } catch (error) {
+            // Authorization API unavailable: not an access decision (API-11)
             console.error("LLM authorization lookup failed", error);
-            res.status(503).json({
-                error: { message: "Unable to verify Magda LLM access" }
-            });
+            sendError(res, 503, "Unable to verify Magda LLM access");
+            return;
         }
+        if (result.status === "unauthenticated") {
+            sendError(res, 401, "Magda authentication required");
+            return;
+        }
+        if (result.status === "invalid_session") {
+            sendError(res, 401, "Invalid Magda session");
+            return;
+        }
+        res.locals.caller = result.caller;
+        // the verified session user: the only identity usage is counted against (USE-2)
+        res.locals.userId = result.caller.userId;
+        next();
     }
 
     function proxyToLiteLlm(
@@ -298,12 +276,29 @@ export default function createApp(config: LlmServicesConfig) {
         }
         res.json({ status: "ok" });
     });
-    app.use("/v0/v1", requireWorkspaceAccess);
+    app.use("/v0/v1", requireCaller);
 
-    app.get("/v0/v1/models", (_req, res) => {
+    // API-9: the aliases the caller can invoke through at least one eligible
+    // profile, whether or not its quota is used up
+    app.get("/v0/v1/models", async (_req, res) => {
+        let models: string[];
+        try {
+            models = await admission.invocableModels(
+                res.locals.caller as Caller
+            );
+        } catch (error) {
+            console.error(
+                JSON.stringify({
+                    event: "llm-model-list-failed",
+                    error: error instanceof Error ? error.message : "unknown"
+                })
+            );
+            sendError(res, 503, "Unable to list the available models");
+            return;
+        }
         res.json({
             object: "list",
-            data: [...allowedModels].map((id) => ({
+            data: models.map((id) => ({
                 id,
                 object: "model",
                 owned_by: "magda"
@@ -312,7 +307,7 @@ export default function createApp(config: LlmServicesConfig) {
     });
 
     function proxyModelRequest(path: string) {
-        return (req: Request, res: Response) => {
+        return async (req: Request, res: Response) => {
             const body = Buffer.isBuffer(req.body)
                 ? req.body
                 : Buffer.from(JSON.stringify(req.body || {}));
@@ -336,17 +331,54 @@ export default function createApp(config: LlmServicesConfig) {
             const model =
                 typeof request.model === "string" ? request.model : undefined;
             if (!model || !allowedModels.has(model)) {
-                res.status(403).json({
-                    error: { message: "The requested model is not available" }
-                });
+                // MODEL-1: the deployment allowlist binds everyone
+                sendError(res, 403, "The requested model is not available");
                 return;
             }
+            // USE-3: the admission instant is the request's start, and decides
+            // its accounting date at settlement too
+            const requestStartedAt = new Date();
+            const decision = await admission.admit(
+                res.locals.caller as Caller,
+                model,
+                requestStartedAt
+            );
+            if (decision.status === "no_eligible_profile") {
+                sendError(
+                    res,
+                    403,
+                    "No LLM access profile available to you covers the requested model",
+                    "llm_no_eligible_profile"
+                );
+                return;
+            }
+            if (decision.status === "quota_exceeded") {
+                // OpenAI SDKs retry 429s unless told not to
+                res.setHeader("x-should-retry", "false");
+                sendError(
+                    res,
+                    429,
+                    "Your token usage limit for the requested model has been reached",
+                    "llm_quota_exceeded"
+                );
+                return;
+            }
+            if (decision.status === "ledger_unavailable") {
+                sendError(
+                    res,
+                    503,
+                    "LLM usage accounting is temporarily unavailable",
+                    "llm_usage_unavailable"
+                );
+                return;
+            }
+            if (res.destroyed) return; // the client left during admission
             const prepared = prepareRequestBody(path, body, request);
             const meter = new RequestMeter({
                 userId: res.locals.userId,
                 modelAlias: model,
                 endpoint: path,
-                requestStartedAt: new Date(),
+                requestStartedAt,
                 requestBodyBytes: prepared.body.length,
                 sink: usageSink,
                 estimate: usageEstimate,

@@ -7,6 +7,12 @@ import createApp, {
     LlmServicesConfig,
     parseAllowedModels
 } from "../createApp.js";
+import {
+    ADMIN_ROLE,
+    FakeAuthApi,
+    FakeAuthUser,
+    startFakeAuthApi
+} from "./fakeAuthApi.js";
 
 const jwtSecret = "llm-services-test-secret";
 const userId = "00000000-0000-4000-8000-000000000001";
@@ -28,10 +34,12 @@ async function close(server: http.Server) {
     await once(server, "close");
 }
 
+let authApi: FakeAuthApi;
+
 function config(overrides: Partial<LlmServicesConfig> = {}): LlmServicesConfig {
     return {
         jwtSecret,
-        authApiUrl: "http://authorization-api.test/v0",
+        authApiUrl: authApi.url,
         liteLlmUrl: new URL("http://127.0.0.1:1"),
         liteLlmKey: "master-key",
         allowedModels: new Set(["gpt-5.6-sol"]),
@@ -68,35 +76,16 @@ describe("LLM Services", () => {
     });
 
     const originalFetch = global.fetch;
-    // The current `agentWorkspace/access` decision for the test user.
-    let workspaceAccess: boolean | "unavailable";
-    let decisionUrls: string[];
 
-    beforeEach(() => {
-        workspaceAccess = true;
-        decisionUrls = [];
-        global.fetch = async (input) => {
-            const url = String(input);
-            if (url.includes("/opa/decision/")) {
-                decisionUrls.push(url);
-                if (workspaceAccess === "unavailable") {
-                    return new Response("unavailable", { status: 500 });
-                }
-                return Response.json({
-                    hasResidualRules: false,
-                    result: workspaceAccess
-                });
-            }
-            // An ordinary (non-admin) user; access comes only from the policy.
-            return Response.json({
-                id: userId,
-                roles: [{ id: "00000000-0000-0002-0000-000000000000" }]
-            });
-        };
+    beforeEach(async () => {
+        authApi = await startFakeAuthApi();
+        // An administrator by default: model access without a profile
+        // (AUTH-10). Profile-based access is tested in invocation.spec.ts.
+        authApi.users.set(userId, { roles: [ADMIN_ROLE] });
     });
 
-    afterEach(() => {
-        global.fetch = originalFetch;
+    afterEach(async () => {
+        await authApi.close();
     });
 
     it("serves health endpoints without authentication", async () => {
@@ -153,27 +142,47 @@ describe("LLM Services", () => {
         }
     });
 
-    it("requires agentWorkspace/access instead of the administrator role", async () => {
+    it("asks for an llm/access/invoke partial decision, not agentWorkspace/access", async () => {
         const running = await listen(createApp(config()));
         try {
-            workspaceAccess = false;
-            const denied = await originalFetch(
+            // an ordinary user without any invoke grant
+            authApi.users.set(userId, {
+                roles: [],
+                decision: { hasResidualRules: false, result: false }
+            });
+            const models = await originalFetch(
                 new URL("/v0/v1/models", running.url),
                 { headers: { "X-Magda-Session": session } }
+            );
+            assert.equal(models.status, 200);
+            assert.equal(
+                models.headers.get("cache-control"),
+                "private, no-store"
+            );
+            assert.deepEqual(await models.json(), { object: "list", data: [] });
+            assert.deepEqual(authApi.calls.decisions, [
+                {
+                    userId,
+                    path: "/v0/opa/decision/llm/access/invoke",
+                    body: { unknowns: ["input.object.llmAccessProfile"] }
+                }
+            ]);
+            const denied = await originalFetch(
+                new URL("/v0/v1/responses", running.url),
+                {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                        "X-Magda-Session": session
+                    },
+                    body: JSON.stringify({ model: "gpt-5.6-sol" })
+                }
             );
             assert.equal(denied.status, 403);
-            assert.match(await denied.text(), /Agent Workspace access/);
-
-            workspaceAccess = true;
-            const granted = await originalFetch(
-                new URL("/v0/v1/models", running.url),
-                { headers: { "X-Magda-Session": session } }
+            assert.equal(
+                (await denied.json()).error.code,
+                "llm_no_eligible_profile"
             );
-            assert.equal(granted.status, 200);
-            assert.deepEqual(decisionUrls, [
-                "http://authorization-api.test/v0/opa/decision/agentWorkspace/access?unknowns=",
-                "http://authorization-api.test/v0/opa/decision/agentWorkspace/access?unknowns="
-            ]);
         } finally {
             await close(running.server);
         }
@@ -184,7 +193,7 @@ describe("LLM Services", () => {
         const originalError = console.error;
         console.error = () => undefined;
         try {
-            workspaceAccess = "unavailable";
+            authApi.users.set(userId, { roles: [], decision: "unavailable" });
             const response = await originalFetch(
                 new URL("/v0/v1/models", running.url),
                 { headers: { "X-Magda-Session": session } }
@@ -200,10 +209,7 @@ describe("LLM Services", () => {
         const running = await listen(createApp(config()));
         const originalError = console.error;
         console.error = () => undefined;
-        global.fetch = async (input) =>
-            String(input).includes("/whoami")
-                ? new Response("unavailable", { status: 503 })
-                : Response.json({ hasResidualRules: false, result: true });
+        authApi.users.set(userId, { whoamiStatus: 503 });
         try {
             const response = await originalFetch(
                 new URL("/v0/v1/models", running.url),
@@ -220,20 +226,23 @@ describe("LLM Services", () => {
     it("rejects a session whoami cannot verify or that names another user", async () => {
         const running = await listen(createApp(config()));
         try {
-            for (const whoami of [
-                () => new Response("{}", { status: 401 }),
-                () => Response.json({ id: "someone-else" })
-            ]) {
-                global.fetch = async (input) =>
-                    String(input).includes("/whoami")
-                        ? whoami()
-                        : Response.json({
-                              hasResidualRules: false,
-                              result: true
-                          });
+            const otherUser = "00000000-0000-4000-8000-000000000002";
+            const otherSession = jwt.sign({ userId: otherUser }, jwtSecret, {
+                algorithm: "HS256"
+            });
+            for (const [token, user] of [
+                // whoami answers 401
+                [session, { whoamiStatus: 401 }],
+                // a session signed with another secret
+                [jwt.sign({ userId }, "another-secret"), { roles: [] }],
+                // the session is valid, but whoami doesn't know the user
+                [otherSession, undefined]
+            ] as Array<[string, FakeAuthUser | undefined]>) {
+                authApi.users.clear();
+                if (user) authApi.users.set(userId, user);
                 const response = await originalFetch(
                     new URL("/v0/v1/models", running.url),
-                    { headers: { "X-Magda-Session": session } }
+                    { headers: { "X-Magda-Session": token } }
                 );
                 assert.equal(response.status, 401);
                 assert.match(await response.text(), /Invalid Magda session/);
