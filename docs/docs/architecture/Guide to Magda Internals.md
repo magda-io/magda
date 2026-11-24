@@ -141,7 +141,7 @@ When the Gateway or a service rejects a request (4xx/5xx) before its body has ar
 
 ### Proxying HTTP responses
 
-Any Magda service that forwards an upstream HTTP response follows these rules, so that a failure upstream reaches the client as a failure. That includes the Gateway, Agent Manager's DSH runtime proxy and LLM Services' model proxy.
+Any Magda service that forwards an upstream HTTP response follows these rules, so that a failure upstream reaches the client as a failure. That includes the Gateway, Agent Manager's DSH runtime proxy and LLM Services' model proxy. The Gateway's handling was introduced with its early-rejection and request-timeout work in [#3930](https://github.com/magda-io/magda/pull/3930), which has the background and tests.
 
 1. **Before the response headers are sent**, answer an upstream failure with a status, normally `502`.
 2. **After the headers are sent**, never write to or `end()` the client response on a failure. A normal end makes a truncated response, such as a cut-off JSON body or SSE stream, look complete. Destroy it instead (`res.destroy()`), so the client sees a failed connection.
