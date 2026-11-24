@@ -182,3 +182,61 @@ describe("LLM access profiles authorization migration (V2_6)", function (this: M
         );
     });
 });
+
+describe("LLM access profiles authorization migration (V2_6) when Agent Workspace Users was deleted", function (this: Mocha.Suite) {
+    this.timeout(30000);
+    const dbConfig = getTestDBConfig();
+    const testDbName = `test_llm_access_auth_norole_${Date.now()}_${Math.floor(
+        Math.random() * 1e6
+    )}`;
+    let pool: pg.Pool;
+
+    before(async () => {
+        const adminPool = new pg.Pool({ ...dbConfig });
+        await adminPool.query(`CREATE DATABASE "${testDbName}"`);
+        await adminPool.end();
+        pool = new pg.Pool({ ...dbConfig, database: testDbName });
+        await runMigrationSql(pool, false, BASELINE_VERSION);
+        // An administrator may delete this non-system stock role before upgrading.
+        await pool.query(`DELETE FROM role_permissions WHERE role_id = $1`, [
+            WORKSPACE_USERS_ROLE_ID
+        ]);
+        await pool.query(`DELETE FROM roles WHERE id = $1`, [
+            WORKSPACE_USERS_ROLE_ID
+        ]);
+    });
+
+    after(async () => {
+        await pool.end();
+        const adminPool = new pg.Pool({ ...dbConfig });
+        try {
+            await adminPool.query(`DROP DATABASE IF EXISTS "${testDbName}"`);
+        } finally {
+            await adminPool.end();
+        }
+    });
+
+    it("applies, seeds the permission without granting it, and doesn't recreate the role", async () => {
+        await runMigrationSql(pool, false, 2.6, BASELINE_VERSION);
+        const permission = await pool.query(
+            `SELECT id FROM permissions WHERE id = $1`,
+            ["00000000-3838-4100-8000-000000000004"]
+        );
+        expect(permission.rows).to.have.lengthOf(1);
+        const grants = await pool.query(
+            `SELECT 1 FROM role_permissions WHERE permission_id = $1`,
+            ["00000000-3838-4100-8000-000000000004"]
+        );
+        expect(grants.rows).to.have.lengthOf(0);
+        const role = await pool.query(`SELECT 1 FROM roles WHERE id = $1`, [
+            WORKSPACE_USERS_ROLE_ID
+        ]);
+        expect(role.rows).to.have.lengthOf(0);
+        // the managers role is still created and granted
+        const managers = await pool.query(
+            `SELECT count(*)::int AS n FROM role_permissions WHERE role_id = $1`,
+            [MANAGERS_ROLE_ID]
+        );
+        expect(managers.rows[0].n).to.equal(3);
+    });
+});

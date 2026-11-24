@@ -13,8 +13,8 @@
 --
 -- The "LLM Profile Managers" stock role is unassigned. The stock "Use LLM
 -- Profiles" permission joins the existing (also unassigned) "Agent Workspace
--- Users" role: on its own it grants nothing until a profile has an org unit or
--- is public. Nothing is granted to Anonymous or Authenticated Users.
+-- Users" role, if it still exists: on its own it grants nothing until a
+-- profile has an org unit or is public. Nothing is granted to Anonymous or Authenticated Users.
 --
 -- IDs: resource and operation IDs are generated and referenced by `uri`, as in
 -- V2_4. Permission and role IDs are fixed: they are grantable,
@@ -76,6 +76,12 @@ INSERT INTO "public"."roles" ("id", "name", "description") VALUES
 INSERT INTO "public"."role_permissions" ("role_id", "permission_id") VALUES
 ('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000001'),
 ('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000002'),
-('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000003'),
--- Agent Workspace Users (V2_4): LLM access by org unit or public profile
-((SELECT id FROM "public"."roles" WHERE "id" = '00000000-3854-4200-8000-000000000001'), '00000000-3838-4100-8000-000000000004');
+('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000003');
+
+-- Agent Workspace Users (V2_4): LLM access by org unit or public profile.
+-- It isn't a protected system role, so an administrator may have deleted it:
+-- grant only if it still exists, and don't recreate it.
+INSERT INTO "public"."role_permissions" ("role_id", "permission_id")
+SELECT "id", '00000000-3838-4100-8000-000000000004'
+FROM "public"."roles"
+WHERE "id" = '00000000-3854-4200-8000-000000000001';
