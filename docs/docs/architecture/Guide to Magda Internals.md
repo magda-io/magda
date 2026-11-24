@@ -139,6 +139,20 @@ A client has `gateway.requestTimeout` (default 300 seconds) to send a whole requ
 
 When the Gateway or a service rejects a request (4xx/5xx) before its body has arrived, for example a 401 or 413 for an upload, the Gateway forwards that response and stops sending the body to the service. It then reads and discards the rest of the body for up to `gateway.earlyRejectionLingerSeconds` (5) and `gateway.earlyRejectionMaxDiscardBytes` (16 MiB) before it closes the connection, so the client receives the real status rather than a dropped connection. If the response itself stalls, the connection closes at most twice the linger time after the rejection started. The connection is never reused, and a request pipelined behind the rejected one isn't run. Services therefore don't need to read uploads they have already rejected. Requests without a body, and responses such as SSE streams that start after the body has arrived, are unaffected.
 
+### Proxying HTTP responses
+
+Any Magda service that forwards an upstream HTTP response follows these rules, so that a failure upstream reaches the client as a failure. That includes the Gateway, Agent Manager's DSH runtime proxy and LLM Services' model proxy.
+
+1. **Before the response headers are sent**, answer an upstream failure with a status, normally `502`.
+2. **After the headers are sent**, never write to or `end()` the client response on a failure. A normal end makes a truncated response, such as a cut-off JSON body or SSE stream, look complete. Destroy it instead (`res.destroy()`), so the client sees a failed connection.
+3. **Watch for an upstream response that is cut off mid-way.** `pipe()` doesn't end its destination when the source fails, and an upstream response that loses its connection doesn't always emit `error`. On the upstream response's `close`, if `upstreamResponse.complete` is false, destroy the client response.
+4. **When the client goes away** (the client response closes before it has finished), destroy the upstream request, so the upstream stops its work.
+5. **Anything that only observes the stream**, such as usage metering, logging or activity tracking, must never stop the response being forwarded. Catch its errors, and validate its configuration at startup rather than on the first request.
+
+These rules matter for services behind the Gateway too. The Gateway can only end the client's connection when the service's own response ends or fails, so a service that leaves its response open after its upstream failed leaves the browser waiting.
+
+To test them, use a fake upstream that starts a response and then destroys its socket. The client must see a failed connection: no hang, and no response that looks complete.
+
 ## Agent Workspace and LLM Services
 
 Magda's optional **Agent Workspace** integrates a browser-hosted coding/data
