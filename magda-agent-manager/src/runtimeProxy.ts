@@ -625,6 +625,15 @@ export class RuntimeProxy {
                 delete headers["set-cookie"];
                 res.writeHead(status, headers);
                 upstreamResponse.pipe(res);
+                // A response cut off mid-way (its connection dropped) would
+                // otherwise leave the client waiting: pipe() doesn't end the
+                // destination. End it as a failed connection, as the Gateway
+                // does (#3930).
+                upstreamResponse.once("close", () => {
+                    if (!upstreamResponse.complete && !res.writableEnded) {
+                        res.destroy();
+                    }
+                });
             }
         );
         upstream.setTimeout(120_000, () =>
@@ -639,7 +648,13 @@ export class RuntimeProxy {
         upstream.on("error", (error) => {
             cancelSnapshot();
             console.error("Agent runtime HTTP proxy error", error);
-            if (!res.headersSent) res.writeHead(502);
+            if (res.headersSent) {
+                // Never write over a response that has started; a truncated
+                // one must end as a failed connection, not look complete.
+                if (!res.writableEnded) res.destroy();
+                return;
+            }
+            res.writeHead(502);
             res.end("Agent runtime unavailable");
         });
         upstream.end(body);

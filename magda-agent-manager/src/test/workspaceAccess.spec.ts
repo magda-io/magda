@@ -348,7 +348,28 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
                 res.end();
                 return;
             }
+            if (req.url?.startsWith("/api/truncated")) {
+                // A response that starts, then loses its connection.
+                req.resume();
+                res.writeHead(200, { "content-type": "text/event-stream" });
+                res.write("data: started\n\n");
+                setTimeout(() => res.socket?.destroy(), 50);
+                return;
+            }
             if (req.url?.split("?", 1)[0] === "/api/session/uploadFileBinary") {
+                if (req.url.includes("truncate=1")) {
+                    // An upload response that starts, then loses its connection.
+                    req.resume();
+                    req.on("end", () => {
+                        res.writeHead(200, {
+                            "content-type": "application/json",
+                            "content-length": "100"
+                        });
+                        res.write('{"ok":');
+                        setTimeout(() => res.socket?.destroy(), 50);
+                    });
+                    return;
+                }
                 // As DSH: authenticate, then require the octet-stream type
                 // before reading the body.
                 const refuse = (status: number) => {
@@ -689,6 +710,78 @@ describe("agentWorkspace/access on the DSH runtime proxy", () => {
         ws.socket!.destroy();
         expect(claimLookups).to.deep.equal([bob, bob]);
         expect(upstreamUpgrades).to.equal(1);
+    });
+
+    /**
+     * Request `path` and report how its response ended: `complete`, `failed`
+     * (the connection ended mid-response) or `hung` (nothing after `waitMs`).
+     */
+    function responseOutcome(
+        path: string,
+        session: string,
+        { method = "GET", body }: { method?: string; body?: Buffer } = {},
+        waitMs = 1500
+    ) {
+        return new Promise<{ status?: number; outcome: string }>((resolve) => {
+            let status: number | undefined;
+            const timer = setTimeout(
+                () => resolve({ status, outcome: "hung" }),
+                waitMs
+            );
+            const done = (outcome: string) => {
+                clearTimeout(timer);
+                resolve({ status, outcome });
+            };
+            const req = http.request(
+                {
+                    host: "127.0.0.1",
+                    port: proxyPort,
+                    method,
+                    path,
+                    headers: {
+                        "X-Magda-Session": session,
+                        ...(body
+                            ? {
+                                  "content-type": "application/octet-stream",
+                                  "content-length": String(body.length)
+                              }
+                            : {})
+                    }
+                },
+                (res) => {
+                    status = res.statusCode;
+                    res.resume();
+                    res.on("end", () => done("complete"));
+                    res.on("error", () => done("failed"));
+                    res.on("close", () => {
+                        if (!res.complete) done("failed");
+                    });
+                }
+            );
+            req.on("error", () => done("failed"));
+            req.end(body);
+        });
+    }
+
+    it("ends a runtime response cut off mid-way as a failed connection, not a hang", async () => {
+        auth.granted.add(bob);
+        const result = await responseOutcome(
+            "/v0/runtime/api/truncated",
+            token(bob)
+        );
+        expect(result.status).to.equal(200);
+        expect(result.outcome).to.equal("failed");
+    });
+
+    it("ends an upload response cut off mid-way as a failed connection, not a hang", async () => {
+        auth.granted.add(bob);
+        const result = await responseOutcome(
+            "/v0/runtime/api/session/uploadFileBinary?truncate=1",
+            token(bob),
+            { method: "POST", body: Buffer.alloc(1024) }
+        );
+        expect(result.status).to.equal(200);
+        expect(result.outcome).to.equal("failed");
     });
 
     it("forwards a buffered runtime request body within the size limit", async () => {
