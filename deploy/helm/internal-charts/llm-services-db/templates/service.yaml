@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-services-db
+spec:
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+{{- include "magda.postgres-svc-mapping" . }}

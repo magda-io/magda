@@ -1,0 +1,44 @@
+# -- migrator docker image settings
+image: 
+  name: "magda-migrator-llm-services-db"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: "ghcr.io/magda-io"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+# -- whether auto-create secret for client account password.
+# After the migrator runs properly, a non-superuser DB account (named `client`) will be created.
+# Its password will loaded from secret `{{ .Chart.Name }}-password` (e.g. `authorization-db-passwor`) & key: `password`.
+# Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists.
+autoCreateSecret: true
+
+# -- No. of retries before the migrator job is considered as failed.
+# Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes.
+migratorBackoffLimit: 6
+
+magda-postgres:
+  postgresql:
+    fullnameOverride: "llm-services-db-postgresql-pg17"
+    nameOverride: "llm-services-db-postgresql-pg17"
+    primary:
+      # -- Must match `fullnameOverride` above. The postgresql subchart stopped running
+      # `primary.extraEnvVarsCM` through `tpl` in chart 12+, so this one name cannot be
+      # derived and has to be repeated here. `magda-postgres/templates/validate-names.yaml`
+      # fails the render if the two drift apart.
+      extraEnvVarsCM: "llm-services-db-postgresql-pg17-extra-env-vars"
+      persistence:
+        size: "5Gi"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+  majorUpgrade:
+    # -- The v6 (PostgreSQL 13) instance this chart's PG17 instance migrates from.
+    # Only read when `majorUpgrade.enabled` is true. Override if you customised
+    # `fullnameOverride` on v6.
+    sourceHost: "llm-services-db-postgresql"

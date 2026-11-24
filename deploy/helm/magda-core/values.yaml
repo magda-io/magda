@@ -194,6 +194,7 @@ global:
     registry-db: false
     session-db: false
     tenant-db: false
+    llm-services-db: false
 
   # -- whether to use Google Cloud SQL database. 
   # When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off.

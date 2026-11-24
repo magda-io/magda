@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: llm-services-db-migrator
+  labels:
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  backoffLimit: {{ .Values.migratorBackoffLimit | default 6 }}
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: "llm-services-db-migrator"
+    spec:
+      restartPolicy: OnFailure
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
+      containers:
+      - name: llm-services-db-migrator
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        env:
+        - name: DB_HOST
+          value: llm-services-db
+{{- include "magda.postgres-migrator-env" . | indent 8 }}
+{{- include "magda.db-client-ca-env-libpq" . | indent 8 }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+        volumeMounts:
+        {{- include "magda.postgres-client-ca-volumemount" . | nindent 8 }}
+{{- end }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+      volumes:
+      {{- include "magda.postgres-client-ca-volume" . | nindent 6 }}
+{{- end }}

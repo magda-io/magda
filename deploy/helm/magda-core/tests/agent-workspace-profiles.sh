@@ -94,6 +94,7 @@ magda/magda-core/gateway
 magda/magda-core/indexer
 magda/magda-core/ingress
 magda/magda-core/llm-services
+magda/magda-core/llm-services-db
 magda/magda-core/llm-services/litellm
 magda/magda-core/opensearch
 magda/magda-core/registry-api
@@ -113,6 +114,7 @@ grep -Fq 'authPlugins.json: "[{\"baseUrl\":\"http://magda-auth-internal\",\"key\
 # Nested component values reach their charts.
 for image in magda-agent-manager magda-agent-runtime magda-llm-services \
     magda-authorization-api magda-opa magda-migrator-authorization-db \
+    magda-migrator-llm-services-db \
     magda-gateway magda-storage-api magda-web-server; do
     grep -q "image: \"localhost:5000/$image:latest\"" "$tmp/minikube.yaml"
 done

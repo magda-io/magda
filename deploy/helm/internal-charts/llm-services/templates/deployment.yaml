@@ -42,6 +42,22 @@ spec:
                 secretKeyRef:
                   name: {{ $secretName }}
                   key: {{ $secretKey }}
+            # usage metering (#3838)
+            - {name: USAGE_ESTIMATE_BYTES_PER_TOKEN, value: {{ .Values.usage.estimate.bytesPerToken | int | quote }}}
+            - {name: USAGE_ESTIMATE_OUTPUT_TOKENS, value: {{ .Values.usage.estimate.outputTokens | int | quote }}}
+            - {name: USAGE_ESTIMATE_OUTPUT_TOKENS_BY_MODEL, value: {{ .Values.usage.estimate.outputTokensByModel | default dict | toJson | quote }}}
+            - {name: USAGE_OBSERVER_MAX_EVENT_BYTES, value: {{ .Values.usage.observer.maxEventBytes | int | quote }}}
+            - {name: USAGE_OBSERVER_MAX_JSON_BYTES, value: {{ .Values.usage.observer.maxJsonBytes | int | quote }}}
+            # LLM Services database: access profiles and token usage (#3838)
+            - {name: DB_HOST, value: "llm-services-db"}
+            - {name: DB_PORT, value: "5432"}
+            {{- include "magda.db-client-credential-env" (dict "dbName" "llm-services-db" "root" .) | indent 12 }}
+            {{- include "magda.db-client-sslmode-env" . | indent 12 }}
+            {{- include "magda.db-client-ca-env-node" . | indent 12 }}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+          volumeMounts:
+          {{- include "magda.postgres-client-ca-volumemount" . | nindent 12 }}
+{{- end }}
           readinessProbe:
             httpGet: {path: /v0/status/ready, port: http}
           livenessProbe:
@@ -54,3 +70,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             seccompProfile: {type: RuntimeDefault}
+{{- if eq (include "magda.postgres-client-ca-enabled" .) "true" }}
+      volumes:
+      {{- include "magda.postgres-client-ca-volume" . | nindent 8 }}
+{{- end }}

@@ -560,6 +560,7 @@ describe("Auth api router", function (this) {
                                 roles,
                                 permissions,
                                 managingOrgUnitIds,
+                                orgUnitAncestorIds,
                                 orgUnit,
                                 orgUnitId,
                                 ...bodyUserData

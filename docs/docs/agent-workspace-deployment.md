@@ -366,8 +366,9 @@ registry is listening on `localhost:5000`.
 
 Build the changed existing components using the repository's standard component
 builder, including `magda-authorization-api`, `magda-opa`, `magda-gateway`,
-`magda-storage-api`, `magda-web-server`, `magda-migrator-authorization-db`
-and `magda-migrator-registry-aspects` (its post-install/upgrade Job registers
+`magda-storage-api`, `magda-web-server`, `magda-migrator-authorization-db`,
+`magda-migrator-llm-services-db` (the LLM Services database, #3838) and
+`magda-migrator-registry-aspects` (its post-install/upgrade Job registers
 the Agent Skill aspect definitions). The Minikube profile expects each as
 `localhost:5000/<component>:latest`.
 
