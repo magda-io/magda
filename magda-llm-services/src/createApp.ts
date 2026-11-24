@@ -11,6 +11,8 @@ import {
     UsageEstimateConfig,
     UsageSink
 } from "./metering/settlement.js";
+import UsageLedger from "./usage/UsageLedger.js";
+import { DEFAULT_USAGE_TIME_ZONE } from "./usage/periods.js";
 
 // Agent Workspace model access uses the same grantable self-only operation as
 // the Workspace itself (#3858); administrators are allowed by the policy
@@ -66,6 +68,10 @@ export interface LlmServicesConfig {
     usageEstimate?: UsageEstimateConfig;
     /** METER-3 observer limits, in bytes. */
     observerLimits?: { maxEventBytes?: number; maxJsonBytes?: number };
+    /** USE-3: the IANA zone of accounting dates (DEP-3 `usage.timeZone`). */
+    usageTimeZone?: string;
+    /** The usage ledger; by default built on `pool`. */
+    ledger?: UsageLedger;
 }
 
 // Upstream connection errors where the request can't have reached the model
@@ -86,10 +92,17 @@ export default function createApp(config: LlmServicesConfig) {
         liteLlmKey,
         allowedModels,
         pool,
-        usageSink = new LoggingUsageSink(),
         usageEstimate = DEFAULT_USAGE_ESTIMATE,
-        observerLimits = {}
+        observerLimits = {},
+        usageTimeZone = DEFAULT_USAGE_TIME_ZONE
     } = config;
+    const ledger =
+        config.ledger ??
+        (pool ? new UsageLedger(pool, { timeZone: usageTimeZone }) : undefined);
+    // USE-7: settle into the ledger; without a database (local development),
+    // settlements are only logged.
+    const usageSink: UsageSink =
+        config.usageSink ?? ledger ?? new LoggingUsageSink();
 
     async function requireWorkspaceAccess(
         req: Request,

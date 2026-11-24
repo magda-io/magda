@@ -28,6 +28,10 @@ litellm:
 
 # Usage metering (#3838). Approximate token volume for soft limits, not billing.
 usage:
+  # -- IANA time zone of the usage ledger's days, ISO weeks and months. A
+  # request counts for the local date it started. Don't change it on a live
+  # deployment without a plan: existing dates aren't reinterpreted.
+  timeZone: Australia/Sydney
   estimate:
     # -- When a model response has no valid final usage (missing, unreadable, or
     # cut short by a disconnect or timeout), it's charged an estimate:

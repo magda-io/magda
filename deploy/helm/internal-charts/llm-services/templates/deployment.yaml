@@ -43,6 +43,7 @@ spec:
                   name: {{ $secretName }}
                   key: {{ $secretKey }}
             # usage metering (#3838)
+            - {name: USAGE_TIME_ZONE, value: {{ .Values.usage.timeZone | quote }}}
             - {name: USAGE_ESTIMATE_BYTES_PER_TOKEN, value: {{ .Values.usage.estimate.bytesPerToken | int | quote }}}
             - {name: USAGE_ESTIMATE_OUTPUT_TOKENS, value: {{ .Values.usage.estimate.outputTokens | int | quote }}}
             - {name: USAGE_ESTIMATE_OUTPUT_TOKENS_BY_MODEL, value: {{ .Values.usage.estimate.outputTokensByModel | default dict | toJson | quote }}}

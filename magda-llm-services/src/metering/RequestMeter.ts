@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { createUsageObserver, UsageObserver } from "./usageObserver.js";
 import {
     estimateTokens,
@@ -9,6 +10,8 @@ import {
 } from "./settlement.js";
 
 export interface RequestMeterOptions {
+    /** Defaults to a random UUID. */
+    requestId?: string;
     userId: string;
     modelAlias: string;
     endpoint: string;
@@ -51,8 +54,11 @@ export default class RequestMeter {
     private unobservable = false;
     private observerFailed = false;
     private settled = false;
+    readonly requestId: string;
 
-    constructor(private readonly options: RequestMeterOptions) {}
+    constructor(private readonly options: RequestMeterOptions) {
+        this.requestId = options.requestId ?? randomUUID();
+    }
 
     responseStarted(status: number, contentType: string | undefined): void {
         if (this.settled || this.status !== undefined) return;
@@ -185,6 +191,7 @@ export default class RequestMeter {
 
     private base(quality: SettlementQuality) {
         return {
+            requestId: this.requestId,
             userId: this.options.userId,
             modelAlias: this.options.modelAlias,
             requestStartedAt: this.options.requestStartedAt,
@@ -220,6 +227,7 @@ export default class RequestMeter {
             console.error(
                 JSON.stringify({
                     event: "llm-usage-settlement-failed",
+                    requestId: settlement.requestId,
                     userId: settlement.userId,
                     modelAlias: settlement.modelAlias,
                     kind: settlement.kind,
