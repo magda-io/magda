@@ -153,9 +153,12 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
     it("marks a profile deleting, disabling it, and only then deletes it (LIFE-4)", async () => {
         const profile = await createReady();
         assert.equal(await repo.delete(profile.id), false, "ready rows stay");
-        const deleting = await repo.markDeleting(profile.id);
-        assert.ok(deleting);
+        const result = await repo.markDeleting(profile.id);
+        assert.equal(result.status, "deleting");
+        if (result.status !== "deleting") return;
+        const deleting = result.profile;
         assert.equal(deleting.state, "deleting");
+        assert.equal(deleting.revision, profile.revision + 1);
         assert.equal(deleting.enabled, false);
         assert.equal(
             (await repo.update(profile.id, deleting.revision, FIELDS, MANAGER))
@@ -165,6 +168,33 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
         );
         assert.equal(await repo.delete(profile.id), true);
         assert.equal(await repo.get(profile.id), null);
+    });
+
+    it("repeats markDeleting idempotently, without bumping the revision again", async () => {
+        const profile = await createReady();
+        const first = await repo.markDeleting(profile.id);
+        const second = await repo.markDeleting(profile.id);
+        assert.equal(first.status, "deleting");
+        assert.equal(second.status, "deleting");
+        if (first.status !== "deleting" || second.status !== "deleting") return;
+        assert.equal(second.profile.revision, first.profile.revision);
+    });
+
+    it("doesn't move a pending profile to deleting: it is abandoned through reconcile instead", async () => {
+        const pending = await repo.createPending(FIELDS, MANAGER);
+        const result = await repo.markDeleting(pending.id);
+        assert.equal(result.status, "pending");
+        const stored = await repo.get(pending.id);
+        assert.equal(stored?.state, "pending");
+        assert.equal(stored?.revision, pending.revision);
+        assert.equal(await repo.delete(pending.id), true);
+    });
+
+    it("reports a missing profile for markDeleting", async () => {
+        assert.equal(
+            (await repo.markDeleting(randomUUID())).status,
+            "not_found"
+        );
     });
 
     it("abandons a pending profile and lists profiles to reconcile (LIFE-5)", async () => {

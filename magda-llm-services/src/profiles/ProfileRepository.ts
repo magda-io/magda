@@ -66,6 +66,11 @@ export interface ListProfilesOptions {
     limit?: number;
 }
 
+export type MarkDeletingResult =
+    | { status: "deleting"; profile: AccessProfile }
+    | { status: "pending"; profile: AccessProfile }
+    | { status: "not_found" };
+
 export type UpdateResult =
     | { status: "updated"; profile: AccessProfile }
     | { status: "stale"; profile: AccessProfile }
@@ -210,18 +215,41 @@ export default class ProfileRepository {
     }
 
     /**
-     * LIFE-4 step 1: stop the profile matching at once. Returns `null` when the
-     * profile doesn't exist.
+     * LIFE-4 step 1: stop a `ready` profile matching at once. The allowed
+     * transitions are explicit:
+     * - `ready` → `deleting` (disabled, revision bumped);
+     * - an already `deleting` profile is returned unchanged, so a retried
+     *   delete is idempotent;
+     * - a `pending` profile is not moved: it has no permission yet, and is
+     *   abandoned through reconcile (`delete`, LIFE-5) instead. The caller gets
+     *   `pending` back.
      */
-    async markDeleting(id: string): Promise<AccessProfile | null> {
+    async markDeleting(id: string): Promise<MarkDeletingResult> {
+        if (!isUuid(id)) {
+            return { status: "not_found" };
+        }
         const result = await this.pool.query(
             ...sqls`UPDATE access_profiles AS p
                 SET state = 'deleting', enabled = FALSE,
                     revision = p.revision + 1, updated_at = now()
-                WHERE p.id = ${id}
+                WHERE p.id = ${id} AND p.state = 'ready'
                 RETURNING ${COLUMNS}`.toQuery()
         );
-        return result.rows.length ? rowToProfile(result.rows[0]) : null;
+        if (result.rows.length) {
+            return {
+                status: "deleting",
+                profile: rowToProfile(result.rows[0])
+            };
+        }
+        const current = await this.get(id);
+        if (!current) {
+            return { status: "not_found" };
+        }
+        if (current.state === "ready") {
+            // it became ready between the two statements: try once more
+            return this.markDeleting(id);
+        }
+        return { status: current.state, profile: current };
     }
 
     /**
