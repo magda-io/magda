@@ -266,7 +266,9 @@ CREATE TABLE daily_model_usage (
   2. Delete the permission together with all its role links, in one Auth API transaction (AUTHAPI-2).
   3. Delete the row.
 
-  Retries are idempotent. Roles and users are never deleted. If step 2 fails, the profile stays `deleting`, keeps matching nothing, and reconciliation retries.
+  Retries are idempotent: marking an already `deleting` profile changes nothing, not even its revision. Roles and users are never deleted. If step 2 fails, the profile stays `deleting`, keeps matching nothing, and reconciliation retries.
+
+  Only a `ready` profile is marked `deleting`. A `pending` profile has no permission recorded yet, so deleting one means abandoning it through reconcile (LIFE-5), which also deals with a permission created before the failure.
 - **LIFE-5** **Reconcile**, at startup, periodically and on demand from the profile page:
   - finish or abandon `pending` profiles;
   - retry `deleting` profiles;
@@ -364,6 +366,9 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - the tested limits are a 64 KiB SSE event buffer and a 1 MiB non-streaming JSON cap. Production limits are explicit configuration, and dropped, oversize or unknown events are counted.
 
   The observer sits inside the proxy path; the PoC's loopback tap isn't a production design.
+
+  Metering must never stop a valid response being forwarded. Invalid observer limits stop the service at startup. An observer that fails at run time is dropped, the response is still forwarded, and the request is estimated (METER-4).
+- **METER-3a** A LiteLLM response cut off mid-way ends the client's response as a **failed connection**, never with a normal end that would make it look complete. This is the Gateway's rule since #3930. Once headers are sent, an upstream error destroys the client response; before then, the client gets `502`.
 - **METER-4** **Estimate** when there is no valid final usage and the upstream may have processed the request (cancellation, timeout, malformed or oversize events, interruption). METER-7 lists exactly which outcomes are estimated:
 
   `estimated_tokens = ceil(request body bytes / bytesPerToken) + outputAllowance`
