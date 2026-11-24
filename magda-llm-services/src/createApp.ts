@@ -214,7 +214,13 @@ export default function createApp(config: LlmServicesConfig) {
                     void meter.responseEnded();
                 });
                 upstreamResponse.once("close", () => {
-                    if (!ended) void meter.interrupted();
+                    if (ended) return;
+                    void meter.interrupted();
+                    // A response cut off mid-way (its connection dropped) would
+                    // otherwise leave the client waiting: pipe() doesn't end the
+                    // destination. End it as a failed connection, as the Gateway
+                    // does (#3930), so it never looks complete.
+                    if (!res.writableEnded) res.destroy();
                 });
                 const responseHeaders: http.OutgoingHttpHeaders = {};
                 for (const header of [
@@ -255,8 +261,10 @@ export default function createApp(config: LlmServicesConfig) {
                         message: "The configured model provider is unavailable"
                     }
                 });
-            } else {
-                res.end();
+            } else if (!res.writableEnded) {
+                // Never write over a response that has started; a truncated
+                // one must end as a failed connection, not look complete.
+                res.destroy();
             }
         });
         upstream.end(body);

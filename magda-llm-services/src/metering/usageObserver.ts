@@ -87,14 +87,22 @@ const tokenCount = (value: unknown): value is number =>
 const increment = (value: number, amount = 1) =>
     Math.min(Number.MAX_SAFE_INTEGER, value + amount);
 
+export const MAX_OBSERVER_LIMIT_BYTES = 16 * 1024 * 1024;
+
+/** Whether `value` is a valid observer buffer limit, in bytes. */
+export function isValidObserverLimit(value: unknown): value is number {
+    return (
+        typeof value === "number" &&
+        Number.isSafeInteger(value) &&
+        value >= 1 &&
+        value <= MAX_OBSERVER_LIMIT_BYTES
+    );
+}
+
 function limit(value: number | undefined, fallback: number): number {
     const result = value ?? fallback;
     // An accidental unbounded configuration should fail before reading anything.
-    if (
-        !Number.isSafeInteger(result) ||
-        result < 1 ||
-        result > 16 * 1024 * 1024
-    ) {
+    if (!isValidObserverLimit(result)) {
         throw new RangeError(
             "Observer limit must be an integer from 1 to 16777216"
         );

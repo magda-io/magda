@@ -1,6 +1,9 @@
 import createApp, { parseAllowedModels } from "./createApp.js";
 import createPgPool from "magda-typescript-common/src/createPgPool.js";
-import { parseUsageEstimateConfig } from "./metering/settlement.js";
+import {
+    parseUsageEstimateConfig,
+    parseUsageObserverLimits
+} from "./metering/settlement.js";
 
 const port = Number(process.env.PORT || 80);
 const jwtSecret = process.env.JWT_SECRET;
@@ -27,14 +30,7 @@ const app = createApp({
     allowedModels: parseAllowedModels(process.env.ALLOWED_MODELS),
     pool,
     usageEstimate: parseUsageEstimateConfig(process.env),
-    observerLimits: {
-        maxEventBytes: process.env.USAGE_OBSERVER_MAX_EVENT_BYTES
-            ? Number(process.env.USAGE_OBSERVER_MAX_EVENT_BYTES)
-            : undefined,
-        maxJsonBytes: process.env.USAGE_OBSERVER_MAX_JSON_BYTES
-            ? Number(process.env.USAGE_OBSERVER_MAX_JSON_BYTES)
-            : undefined
-    }
+    observerLimits: parseUsageObserverLimits(process.env)
 });
 
 const server = app.listen(port, () =>

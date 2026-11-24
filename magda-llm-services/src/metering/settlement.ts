@@ -1,5 +1,10 @@
 // Usage settlement for forwarded model requests (#3838 USE-7, METER-4, METER-5).
 
+import {
+    isValidObserverLimit,
+    MAX_OBSERVER_LIMIT_BYTES
+} from "./usageObserver.js";
+
 /** One settled forwarded request: measured, or estimated when no valid final usage exists. */
 export type UsageSettlement = {
     /** The authenticated MAGDA user (USE-2): never a client-supplied field. */
@@ -34,7 +39,9 @@ export type EstimateReason =
      */
     | "interrupted"
     /** A 2xx response whose format can't be observed (unexpected content type). */
-    | "unobservable";
+    | "unobservable"
+    /** The usage observer failed; the response was still forwarded. */
+    | "observer_error";
 
 export interface SettlementQuality {
     status?: number;
@@ -170,4 +177,36 @@ export function parseUsageEstimateConfig(
         config.outputTokensByModel = byModel;
     }
     return config;
+}
+
+/** METER-3 observer buffer limits, in bytes; unset means the observer's defaults. */
+export interface UsageObserverLimits {
+    maxEventBytes?: number;
+    maxJsonBytes?: number;
+}
+
+/**
+ * Parse and validate the observer limits from environment variables (DEP-3,
+ * set by Helm), at startup: an invalid limit must stop the service from
+ * starting, not fail the first model request.
+ */
+export function parseUsageObserverLimits(
+    env: NodeJS.ProcessEnv
+): UsageObserverLimits {
+    const limits: UsageObserverLimits = {};
+    for (const [name, key] of [
+        ["USAGE_OBSERVER_MAX_EVENT_BYTES", "maxEventBytes"],
+        ["USAGE_OBSERVER_MAX_JSON_BYTES", "maxJsonBytes"]
+    ] as const) {
+        const raw = env[name];
+        if (raw === undefined || raw === "") continue;
+        const value = Number(raw);
+        if (!isValidObserverLimit(value)) {
+            throw new Error(
+                `${name} must be an integer from 1 to ${MAX_OBSERVER_LIMIT_BYTES}`
+            );
+        }
+        limits[key] = value;
+    }
+    return limits;
 }

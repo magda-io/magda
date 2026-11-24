@@ -10,6 +10,7 @@ import {
     DEFAULT_USAGE_ESTIMATE,
     estimateTokens,
     parseUsageEstimateConfig,
+    parseUsageObserverLimits,
     UsageSettlement,
     UsageSink
 } from "../metering/settlement.js";
@@ -510,6 +511,54 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
         );
     });
 
+    for (const stage of ["mid-stream", "mid-JSON"] as const) {
+        it(`ends the client connection as failed when the upstream drops it ${stage}, and estimates once`, async () => {
+            await withApp(
+                async (req, res) => {
+                    await readBody(req);
+                    if (stage === "mid-stream") {
+                        res.writeHead(200, {
+                            "content-type": "text/event-stream"
+                        });
+                        res.write(
+                            sse({ type: "response.created", response: {} })
+                        );
+                    } else {
+                        res.writeHead(200, {
+                            "content-type": "application/json",
+                            "content-length": "1000"
+                        });
+                        res.write('{"object":"chat.completion",');
+                    }
+                    setTimeout(() => res.socket?.destroy(), 50);
+                },
+                async (appUrl, sink) => {
+                    const response = await post(
+                        appUrl,
+                        "/v1/responses",
+                        JSON.stringify({ model: MODEL, stream: true })
+                    );
+                    assert.equal(response.status, 200);
+                    // The truncated response must end as a failed connection,
+                    // not hang or look complete (as in the Gateway, #3930).
+                    const outcome = await Promise.race([
+                        response.arrayBuffer().then(
+                            () => "completed",
+                            () => "failed"
+                        ),
+                        new Promise((resolve) =>
+                            setTimeout(() => resolve("hung"), 3000)
+                        )
+                    ]);
+                    assert.equal(outcome, "failed");
+                    const settlements = await sink.waitFor(1);
+                    assert.equal(settlements.length, 1);
+                    assert.equal(settlements[0].kind, "estimated");
+                }
+            );
+        });
+    }
+
     it("charges nothing when the upstream can't be reached", async () => {
         const sink = new RecordingSink();
         const app = await listen(
@@ -537,6 +586,39 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
             console.error = originalError;
             await close(app.server);
         }
+    });
+
+    it("still forwards the response, and estimates it, when the usage observer can't be created", async () => {
+        const bytes = Buffer.from(responsesStream);
+        await withApp(
+            async (req, res) => {
+                await readBody(req);
+                res.writeHead(200, { "content-type": "text/event-stream" });
+                res.end(bytes);
+            },
+            async (appUrl, sink) => {
+                const originalError = console.error;
+                console.error = () => undefined;
+                try {
+                    const response = await post(
+                        appUrl,
+                        "/v1/responses",
+                        JSON.stringify({ model: MODEL, stream: true })
+                    );
+                    assert.equal(response.status, 200);
+                    const received = Buffer.from(await response.arrayBuffer());
+                    assert.ok(received.equals(bytes));
+                    const [settlement] = await sink.waitFor(1);
+                    assert.equal(settlement.kind, "estimated");
+                    if (settlement.kind !== "estimated") return;
+                    assert.equal(settlement.reason, "observer_error");
+                } finally {
+                    console.error = originalError;
+                }
+            },
+            // invalid limits bypassing startup validation
+            { observerLimits: { maxEventBytes: 0 } }
+        );
     });
 
     it("rejects a non-object JSON body before forwarding", async () => {
@@ -593,6 +675,29 @@ describe("metering helpers", () => {
         ]) {
             assert.throws(
                 () => parseUsageEstimateConfig(env),
+                JSON.stringify(env)
+            );
+        }
+    });
+
+    it("parses and validates observer limits from the environment at startup", () => {
+        assert.deepEqual(parseUsageObserverLimits({}), {});
+        assert.deepEqual(
+            parseUsageObserverLimits({
+                USAGE_OBSERVER_MAX_EVENT_BYTES: "1024",
+                USAGE_OBSERVER_MAX_JSON_BYTES: "2048"
+            }),
+            { maxEventBytes: 1024, maxJsonBytes: 2048 }
+        );
+        for (const env of [
+            { USAGE_OBSERVER_MAX_EVENT_BYTES: "0" },
+            { USAGE_OBSERVER_MAX_EVENT_BYTES: "abc" },
+            { USAGE_OBSERVER_MAX_EVENT_BYTES: "1.5" },
+            { USAGE_OBSERVER_MAX_JSON_BYTES: "-1" },
+            { USAGE_OBSERVER_MAX_JSON_BYTES: String(16 * 1024 * 1024 + 1) }
+        ]) {
+            assert.throws(
+                () => parseUsageObserverLimits(env),
                 JSON.stringify(env)
             );
         }

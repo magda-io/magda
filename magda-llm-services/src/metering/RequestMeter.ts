@@ -49,6 +49,7 @@ export default class RequestMeter {
     private observer: UsageObserver | null = null;
     private status: number | undefined;
     private unobservable = false;
+    private observerFailed = false;
     private settled = false;
 
     constructor(private readonly options: RequestMeterOptions) {}
@@ -68,16 +69,41 @@ export default class RequestMeter {
             this.unobservable = true;
             return;
         }
-        this.observer = createUsageObserver({
-            format,
-            maxEventBytes: this.options.maxEventBytes,
-            maxJsonBytes: this.options.maxJsonBytes
-        });
+        try {
+            this.observer = createUsageObserver({
+                format,
+                maxEventBytes: this.options.maxEventBytes,
+                maxJsonBytes: this.options.maxJsonBytes
+            });
+        } catch (error) {
+            this.observerFailure(error);
+        }
     }
 
     write(chunk: Buffer): void {
-        if (this.settled) return;
-        this.observer?.write(chunk);
+        if (this.settled || !this.observer) return;
+        try {
+            this.observer.write(chunk);
+        } catch (error) {
+            this.observerFailure(error);
+        }
+    }
+
+    /**
+     * Metering must never stop a valid model response being forwarded: a
+     * failed observer falls back to an estimated settlement (METER-4).
+     */
+    private observerFailure(error: unknown): void {
+        this.observer = null;
+        if (this.observerFailed) return;
+        this.observerFailed = true;
+        console.error(
+            JSON.stringify({
+                event: "llm-usage-observer-failed",
+                modelAlias: this.options.modelAlias,
+                error: error instanceof Error ? error.name : "unknown"
+            })
+        );
     }
 
     /** Upstream EOF. */
@@ -112,11 +138,24 @@ export default class RequestMeter {
             this.settled = true;
             return Promise.resolve();
         }
+        if (this.observerFailed) {
+            return this.settleWith(
+                this.estimated("observer_error", { status })
+            );
+        }
         if (this.unobservable || !this.observer) {
             // a model response we can't read usage from: estimate it
             return this.settleWith(this.estimated("unobservable", { status }));
         }
-        const observation = this.observer.finish();
+        let observation;
+        try {
+            observation = this.observer.finish();
+        } catch (error) {
+            this.observerFailure(error);
+            return this.settleWith(
+                this.estimated("observer_error", { status })
+            );
+        }
         const quality: SettlementQuality = {
             status,
             format: observation.format,
