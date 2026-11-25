@@ -31,6 +31,9 @@ import {
     requireAgentWorkspaceAccess,
     requireSharedSkillsAccess
 } from "./agentWorkspaceAccess";
+import AccessProfilesPage, { ACCESS_PROFILES_PATH } from "./AccessProfilesPage";
+import AccessProfilePage from "./AccessProfilePage";
+import { requireAccessProfilesRead } from "./llmServicesAccess";
 import { config } from "../../config";
 
 function SettingsRedirect() {
@@ -50,6 +53,7 @@ function redirectTo(path: string) {
 const ContentSettingsRedirect = redirectTo("/settings/content/header");
 const FooterSettingsRedirect = redirectTo("/settings/content/footer/medium");
 const HomeSettingsRedirect = redirectTo("/settings/content/home/taglines");
+const LlmServicesRedirect = redirectTo(ACCESS_PROFILES_PATH);
 
 const Routes = () => {
     return (
@@ -104,6 +108,38 @@ const Routes = () => {
                             path="/settings/agent-workspace"
                             component={requireAgentWorkspaceAccess(
                                 withHeader(AgentWorkspacePage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
+                    {config.featureFlags.llmServices && (
+                        <Route
+                            exact
+                            path="/settings/llm-services"
+                            component={LlmServicesRedirect}
+                        />
+                    )}
+                    {config.featureFlags.llmServices && (
+                        <Route
+                            exact
+                            path={ACCESS_PROFILES_PATH}
+                            component={requireAccessProfilesRead(
+                                withHeader(AccessProfilesPage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
+                    {config.featureFlags.llmServices && (
+                        <Route
+                            exact
+                            path={[
+                                `${ACCESS_PROFILES_PATH}/:profileId`,
+                                `${ACCESS_PROFILES_PATH}/:profileId/roles`
+                            ]}
+                            component={requireAccessProfilesRead(
+                                withHeader(AccessProfilePage, {
                                     noContainerClass: true
                                 })
                             )}
