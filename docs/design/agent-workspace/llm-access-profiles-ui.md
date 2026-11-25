@@ -37,7 +37,7 @@ The list is server-side paginated with name search. A **Create profile** button 
 | Name, description | Text | Name required |
 | Models | Multi-select of available aliases (API-6), or the exclusive option **All available models (\*)** | Help: "New models the operator adds become available under \*" |
 | Enabled | Switch | |
-| Org unit (audience) | Searchable org unit picker, or **No org unit** | See the help text below |
+| Org unit (audience) | Searchable org unit picker, or **No org unit** | Each unit is shown with its full path (e.g. *Corporate › Finance › Payroll*). Managers read org units through the stock role (AUTH-11); without that, the picker says no units are visible and offers only **No org unit**. See the help text below |
 | Public | Switch (`constraint_exemption`) | See the help text below |
 | Daily, weekly, monthly limit | Optional non-negative whole numbers (tokens) | Help: "Per user and per model. Blank means no limit; 0 blocks new requests." |
 
