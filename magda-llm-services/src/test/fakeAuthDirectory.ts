@@ -34,6 +34,11 @@ export async function startFakeAuthDirectory() {
     const calls: Array<{ method: string; path: string; userId: string }> = [];
     /** `"<METHOD> <path prefix>"` → status to answer instead, once. */
     const failures = new Map<string, number>();
+    /**
+     * `"<METHOD> <path prefix>"` → status to answer once, **after** applying
+     * the change: a lost response, as after a timeout.
+     */
+    const failuresAfterApply = new Map<string, number>();
 
     for (const [id, name] of [
         [ANONYMOUS_USERS_ROLE_ID, "Anonymous Users"],
@@ -70,7 +75,19 @@ export async function startFakeAuthDirectory() {
                     ? (jwt.decode(token) as any)?.userId ?? ""
                     : "";
             calls.push({ method, path: path + url.search, userId });
+            let lostResponse: number | undefined;
+            for (const [prefix, status] of failuresAfterApply) {
+                if (`${method} ${path}`.startsWith(prefix)) {
+                    failuresAfterApply.delete(prefix);
+                    lostResponse = status;
+                    break;
+                }
+            }
             const send = (status: number, body: unknown) => {
+                if (lostResponse !== undefined) {
+                    status = lostResponse;
+                    body = { error: "injected failure after the change" };
+                }
                 res.writeHead(status, { "content-type": "application/json" });
                 res.end(JSON.stringify(body));
             };
@@ -237,6 +254,7 @@ export async function startFakeAuthDirectory() {
         allowedOperations,
         calls,
         failures,
+        failuresAfterApply,
         holders,
         addRole(name: string, id: string = randomUUID()) {
             roles.set(id, { id, name, description: `${name} role` });

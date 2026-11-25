@@ -1,7 +1,6 @@
-import { randomUUID } from "node:crypto";
 import pg from "pg";
 import SQLSyntax, { sqls } from "sql-syntax";
-import { AccessProfile, ProfileFields, ProfileState } from "./types.js";
+import { AccessProfile, ProfileFields } from "./types.js";
 import { isUuid } from "./validation.js";
 
 /**
@@ -12,7 +11,7 @@ import { isUuid } from "./validation.js";
  */
 export const PROFILE_TABLE_ALIAS = "p";
 
-const COLUMNS = sqls`p.id, p.name, p.description, p.allowed_models, p.enabled, p.state,
+const COLUMNS = sqls`p.id, p.name, p.description, p.allowed_models, p.enabled,
     p.org_unit_id, p.constraint_exemption, p.use_permission_id,
     p.allowed_daily_tokens, p.allowed_weekly_tokens, p.allowed_monthly_tokens,
     p.revision, p.created_by, p.updated_by, p.created_at, p.updated_at`;
@@ -36,7 +35,6 @@ export function rowToProfile(row: any): AccessProfile {
         description: row.description,
         allowedModels: row.allowed_models,
         enabled: row.enabled,
-        state: row.state,
         orgUnitId: row.org_unit_id,
         constraintExemption: row.constraint_exemption,
         usePermissionId: row.use_permission_id,
@@ -54,7 +52,6 @@ export function rowToProfile(row: any): AccessProfile {
 export interface ListProfilesOptions {
     /** Case-insensitive substring of the profile name. */
     search?: string;
-    states?: ProfileState[];
     /** Only enabled profiles. */
     enabledOnly?: boolean;
     /**
@@ -66,15 +63,13 @@ export interface ListProfilesOptions {
     limit?: number;
 }
 
-export type MarkDeletingResult =
-    | { status: "deleting"; profile: AccessProfile }
-    | { status: "pending"; profile: AccessProfile }
-    | { status: "not_found" };
-
 export type UpdateResult =
     | { status: "updated"; profile: AccessProfile }
     | { status: "stale"; profile: AccessProfile }
     | { status: "not_found" };
+
+/** A pool, or a client holding a transaction. */
+type Queryable = Pick<pg.Pool, "query">;
 
 /**
  * SQL access to `access_profiles` (#3838). It stores profile rows only: the
@@ -82,28 +77,64 @@ export type UpdateResult =
  * profile API (#3940). Never touches Authorization DB tables (DATA-5).
  */
 export default class ProfileRepository {
-    constructor(private readonly pool: pg.Pool) {}
+    constructor(
+        private readonly pool: pg.Pool,
+        private readonly db: Queryable = pool
+    ) {}
 
     /**
-     * LIFE-1 step 1: insert a profile as `pending`, recording the ID its
-     * permission **will** have. The permission is then created with that ID
-     * (step 2), so a retry or reconcile finds it by ID, never by name, and a
-     * crash between the steps can't leave an unreferenced permission.
+     * Run `work` in one transaction, with a repository bound to it. Commits
+     * when `work` resolves, rolls back when it throws; a failed commit
+     * rejects. LIFE-1 and LIFE-4 hold the transaction across one Auth API call
+     * (DATA-4).
      */
-    async createPending(
+    async transaction<T>(
+        work: (tx: ProfileRepository) => Promise<T>
+    ): Promise<T> {
+        const client = await this.pool.connect();
+        // a connection whose transaction state is unknown is discarded, not reused
+        let discard = false;
+        try {
+            await client.query("BEGIN");
+            let result: T;
+            try {
+                result = await work(new ProfileRepository(this.pool, client));
+            } catch (error) {
+                await client.query("ROLLBACK").catch(() => {
+                    discard = true;
+                });
+                throw error;
+            }
+            try {
+                await client.query("COMMIT");
+            } catch (error) {
+                discard = true;
+                throw error;
+            }
+            return result;
+        } finally {
+            client.release(discard || undefined);
+        }
+    }
+
+    /**
+     * LIFE-1 step 1: insert a profile with the ID its permission will have.
+     * Called in the transaction that then creates the permission.
+     */
+    async insert(
+        id: string,
+        usePermissionId: string,
         fields: ProfileFields,
-        createdBy: string | null,
-        id: string = randomUUID(),
-        usePermissionId: string = randomUUID()
+        createdBy: string | null
     ): Promise<AccessProfile> {
-        const result = await this.pool.query(
+        const result = await this.db.query(
             ...sqls`INSERT INTO access_profiles AS p
-                (id, name, description, allowed_models, enabled, state,
+                (id, name, description, allowed_models, enabled,
                  org_unit_id, constraint_exemption, use_permission_id,
                  allowed_daily_tokens, allowed_weekly_tokens, allowed_monthly_tokens,
                  created_by, updated_by)
             VALUES (${id}, ${fields.name}, ${fields.description},
-                ${fields.allowedModels}, ${fields.enabled}, 'pending',
+                ${fields.allowedModels}, ${fields.enabled},
                 ${fields.orgUnitId}, ${fields.constraintExemption},
                 ${usePermissionId},
                 ${fields.allowedDailyTokens}, ${fields.allowedWeeklyTokens},
@@ -113,27 +144,11 @@ export default class ProfileRepository {
         return rowToProfile(result.rows[0]);
     }
 
-    /**
-     * LIFE-1 step 3: mark a `pending` profile `ready`, once its recorded
-     * permission exists. Returns `null` unless the profile is still `pending`
-     * with a recorded permission ID.
-     */
-    async markReady(id: string): Promise<AccessProfile | null> {
-        const result = await this.pool.query(
-            ...sqls`UPDATE access_profiles AS p
-                SET state = 'ready', revision = p.revision + 1, updated_at = now()
-                WHERE p.id = ${id} AND p.state = 'pending'
-                    AND p.use_permission_id IS NOT NULL
-                RETURNING ${COLUMNS}`.toQuery()
-        );
-        return result.rows.length ? rowToProfile(result.rows[0]) : null;
-    }
-
     async get(id: string): Promise<AccessProfile | null> {
         if (!isUuid(id)) {
             return null;
         }
-        const result = await this.pool.query(
+        const result = await this.db.query(
             ...sqls`SELECT ${COLUMNS} FROM access_profiles p WHERE p.id = ${id}`.toQuery()
         );
         return result.rows.length ? rowToProfile(result.rows[0]) : null;
@@ -146,9 +161,6 @@ export default class ProfileRepository {
                 .trim()
                 .replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
             conditions.push(sqls`p.name ILIKE ${pattern}`);
-        }
-        if (options.states?.length) {
-            conditions.push(sqls`p.state = ANY(${options.states})`);
         }
         if (options.enabledOnly) {
             conditions.push(sqls`p.enabled = TRUE`);
@@ -166,12 +178,12 @@ export default class ProfileRepository {
         const limit = Math.min(Math.max(1, options.limit ?? 100), 500);
         const where = this.listConditions(options);
         const [items, count] = await Promise.all([
-            this.pool.query(
+            this.db.query(
                 ...sqls`SELECT ${COLUMNS} FROM access_profiles p ${where}
                     ORDER BY lower(p.name), p.id
                     OFFSET ${offset} LIMIT ${limit}`.toQuery()
             ),
-            this.pool.query(
+            this.db.query(
                 ...sqls`SELECT count(*)::int AS total FROM access_profiles p ${where}`.toQuery()
             )
         ]);
@@ -184,7 +196,6 @@ export default class ProfileRepository {
     /**
      * LIFE-2 / DATA-4: update the manager-settable fields when the stored
      * revision equals `expectedRevision`, bumping the revision.
-     * Only `ready` profiles can be updated.
      */
     async update(
         id: string,
@@ -192,7 +203,7 @@ export default class ProfileRepository {
         fields: ProfileFields,
         updatedBy: string | null
     ): Promise<UpdateResult> {
-        const result = await this.pool.query(
+        const result = await this.db.query(
             ...sqls`UPDATE access_profiles AS p SET
                     name = ${fields.name},
                     description = ${fields.description},
@@ -207,7 +218,6 @@ export default class ProfileRepository {
                     revision = p.revision + 1,
                     updated_at = now()
                 WHERE p.id = ${id} AND p.revision = ${expectedRevision}
-                    AND p.state = 'ready'
                 RETURNING ${COLUMNS}`.toQuery()
         );
         if (result.rows.length) {
@@ -220,74 +230,18 @@ export default class ProfileRepository {
     }
 
     /**
-     * LIFE-4 step 1: stop a `ready` profile matching at once. The allowed
-     * transitions are explicit:
-     * - `ready` → `deleting` (disabled, revision bumped);
-     * - an already `deleting` profile is returned unchanged, so a retried
-     *   delete is idempotent;
-     * - a `pending` profile is not moved: its creation is still in progress,
-     *   and reconcile finishes it (LIFE-5). The caller gets `pending` back.
+     * LIFE-4 step 1: delete the row and return it, or `null` when it doesn't
+     * exist. Called in the transaction that then deletes the permission: the
+     * row stays locked, and comes back if that fails.
      */
-    async markDeleting(id: string): Promise<MarkDeletingResult> {
+    async delete(id: string): Promise<AccessProfile | null> {
         if (!isUuid(id)) {
-            return { status: "not_found" };
+            return null;
         }
-        const result = await this.pool.query(
-            ...sqls`UPDATE access_profiles AS p
-                SET state = 'deleting', enabled = FALSE,
-                    revision = p.revision + 1, updated_at = now()
-                WHERE p.id = ${id} AND p.state = 'ready'
+        const result = await this.db.query(
+            ...sqls`DELETE FROM access_profiles p WHERE p.id = ${id}
                 RETURNING ${COLUMNS}`.toQuery()
         );
-        if (result.rows.length) {
-            return {
-                status: "deleting",
-                profile: rowToProfile(result.rows[0])
-            };
-        }
-        const current = await this.get(id);
-        if (!current) {
-            return { status: "not_found" };
-        }
-        if (current.state === "ready") {
-            // it became ready between the two statements: try once more
-            return this.markDeleting(id);
-        }
-        return { status: current.state, profile: current };
-    }
-
-    /**
-     * LIFE-4 step 3 (or abandoning a pending profile whose permission was never
-     * recorded, LIFE-5): delete the row. A `ready` profile is never deleted
-     * directly: mark it deleting first.
-     */
-    async delete(id: string): Promise<boolean> {
-        const result = await this.pool.query(
-            ...sqls`DELETE FROM access_profiles p
-                WHERE p.id = ${id} AND p.state IN ('deleting', 'pending')`.toQuery()
-        );
-        return (result.rowCount ?? 0) > 0;
-    }
-
-    /**
-     * LIFE-5: profiles in the given states, oldest first, optionally only
-     * those last updated before `updatedBefore`.
-     */
-    async listByState(
-        states: ProfileState[],
-        limit: number = 100,
-        updatedBefore?: Date
-    ): Promise<AccessProfile[]> {
-        const result = await this.pool.query(
-            ...sqls`SELECT ${COLUMNS} FROM access_profiles p
-                WHERE p.state = ANY(${states})
-                    ${
-                        updatedBefore
-                            ? sqls`AND p.updated_at < ${updatedBefore}`
-                            : SQLSyntax.empty
-                    }
-                ORDER BY p.updated_at, p.id LIMIT ${limit}`.toQuery()
-        );
-        return result.rows.map(rowToProfile);
+        return result.rows.length ? rowToProfile(result.rows[0]) : null;
     }
 }

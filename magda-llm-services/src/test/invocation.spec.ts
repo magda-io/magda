@@ -60,9 +60,8 @@ interface ProfileSeed {
     id: string;
     allowedModels: string[];
     enabled?: boolean;
-    state?: "pending" | "ready" | "deleting";
     orgUnitId?: string | null;
-    usePermissionId?: string | null;
+    usePermissionId?: string;
     constraintExemption?: boolean;
     daily?: number | null;
     weekly?: number | null;
@@ -159,28 +158,23 @@ describe("profile-based model invocation (integration, #3838 #3941)", function (
 
     let permissionCounter = 0;
     async function seed(profile: ProfileSeed) {
-        const state = profile.state ?? "ready";
         await pool.query(
             `INSERT INTO access_profiles
-                (id, name, allowed_models, enabled, state, org_unit_id,
+                (id, name, allowed_models, enabled, org_unit_id,
                  constraint_exemption, use_permission_id,
                  allowed_daily_tokens, allowed_weekly_tokens, allowed_monthly_tokens)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
             [
                 profile.id,
                 `Profile ${profile.id.slice(-4)}`,
                 profile.allowedModels,
                 profile.enabled ?? true,
-                state,
                 profile.orgUnitId ?? null,
                 profile.constraintExemption ?? false,
-                profile.usePermissionId !== undefined
-                    ? profile.usePermissionId
-                    : state === "pending"
-                    ? null
-                    : `00000000-0000-4000-9000-${String(
-                          ++permissionCounter
-                      ).padStart(12, "0")}`,
+                profile.usePermissionId ??
+                    `00000000-0000-4000-9000-${String(
+                        ++permissionCounter
+                    ).padStart(12, "0")}`,
                 profile.daily ?? null,
                 profile.weekly ?? null,
                 profile.monthly ?? null
@@ -386,28 +380,11 @@ describe("profile-based model invocation (integration, #3838 #3941)", function (
     });
 
     describe("eligibility and model coverage (MODEL-1, MODEL-2)", () => {
-        it("ignores disabled, pending and deleting profiles", async () => {
+        it("ignores disabled profiles", async () => {
             await seed({
                 id: "00000000-0000-4000-8000-0000000000d1",
                 allowedModels: ["shared-model"],
                 enabled: false
-            });
-            await seed({
-                id: "00000000-0000-4000-8000-0000000000d2",
-                allowedModels: ["shared-model"],
-                state: "pending"
-            });
-            await seed({
-                id: "00000000-0000-4000-8000-0000000000d3",
-                allowedModels: ["shared-model"],
-                state: "deleting",
-                enabled: false
-            });
-            await seed({
-                id: "00000000-0000-4000-8000-0000000000d4",
-                allowedModels: ["shared-model"],
-                state: "deleting",
-                enabled: true
             });
             grant(USER, "unconstrained");
             await withApp(async (client) => {

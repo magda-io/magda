@@ -170,7 +170,6 @@ export default function createProfileRouter(options: ProfileRouterOptions) {
                 } else if (error instanceof ProfileLifecycleError) {
                     const status = {
                         not_found: 404,
-                        not_ready: 409,
                         role_not_found: 404,
                         role_not_allowed: 422
                     }[error.reason];
@@ -350,12 +349,6 @@ export default function createProfileRouter(options: ProfileRouterOptions) {
                 );
             }
             if (result.status === "stale") {
-                if (result.profile.state !== "ready") {
-                    throw new ProfileLifecycleError(
-                        "not_ready",
-                        `The profile is ${result.profile.state}; retry shortly`
-                    );
-                }
                 res.setHeader("ETag", `"${result.profile.revision}"`);
                 sendError(
                     res,
@@ -423,20 +416,6 @@ export default function createProfileRouter(options: ProfileRouterOptions) {
         handle("detach role", async (req, res) => {
             await profiles!.detachRole(profileId(req), req.params.roleId);
             res.status(204).end();
-        })
-    );
-
-    // LIFE-5 on demand, from the profile page
-    router.post(
-        "/access-profiles/:id/reconcile",
-        requireOperation("llm/access/update"),
-        handle("reconcile profile", async (req, res) => {
-            const profile = await profiles!.reconcileOne(profileId(req));
-            if (!profile) {
-                res.status(204).end();
-                return;
-            }
-            sendProfile(res, profile);
         })
     );
 

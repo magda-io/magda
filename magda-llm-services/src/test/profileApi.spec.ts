@@ -11,9 +11,7 @@ import {
 import createApp from "../createApp.js";
 import AuthApiClient from "../authApi/AuthApiClient.js";
 import ProfileRepository from "../profiles/ProfileRepository.js";
-import ProfileService, {
-    parseReconcileIntervalSeconds
-} from "../profiles/ProfileService.js";
+import ProfileService from "../profiles/ProfileService.js";
 import { parseIfMatch } from "../profiles/createProfileRouter.js";
 import { createTestDatabase } from "./testDb.js";
 import {
@@ -95,8 +93,7 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
                 authApiUrl: auth.url,
                 jwtSecret,
                 adminUserId: INTERNAL_ADMIN
-            }),
-            pendingGraceMs: 0
+            })
         });
         const app = createApp({
             jwtSecret,
@@ -175,12 +172,48 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
         console.error = () => undefined;
     }
 
+    /** A service whose database transactions fail at COMMIT. */
+    function serviceWithFailingCommit() {
+        const failing = ({
+            query: pool.query.bind(pool),
+            connect: async () => {
+                const client = await pool.connect();
+                return new Proxy(client, {
+                    get(target, property) {
+                        if (property === "query") {
+                            return (text: any, ...rest: any[]) =>
+                                text === "COMMIT"
+                                    ? Promise.reject(new Error("commit failed"))
+                                    : (target.query as any)(text, ...rest);
+                        }
+                        const value = (target as any)[property];
+                        return typeof value === "function"
+                            ? value.bind(target)
+                            : value;
+                    }
+                });
+            }
+        } as unknown) as pg.Pool;
+        return new ProfileService({
+            repository: new ProfileRepository(failing),
+            authApi: new AuthApiClient({
+                authApiUrl: auth.url,
+                jwtSecret,
+                adminUserId: INTERNAL_ADMIN
+            })
+        });
+    }
+
+    async function profileRows() {
+        return (await pool.query("SELECT id FROM access_profiles")).rows;
+    }
+
     describe("lifecycle (TEST-3)", () => {
         it("create provisions exactly one correctly flagged permission, with the internal session", async () => {
             const profile = await createProfile();
-            assert.equal(profile.state, "ready");
-            assert.equal(profile.revision, 2);
+            assert.equal(profile.revision, 1);
             assert.equal(profile.createdBy, MANAGER);
+            assert.equal(profile.state, undefined);
             assert.equal(auth.permissions.size, 1);
             const permission = auth.permissions.get(profile.usePermissionId)!;
             assert.ok(permission, "the permission has the recorded ID");
@@ -210,82 +243,109 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
             );
         });
 
-        it("recovers from a failure before the permission was created", async () => {
+        it("rolls back the row when the permission can't be created", async () => {
             quietErrors();
             auth.failures.set("POST /v0/public/permissions", 503);
             const failed = await call("POST", "/access-profiles", {
                 body: PROFILE
             });
             assert.equal(failed.status, 503);
-            const [pending] = (
-                await pool.query(
-                    "SELECT id, state, use_permission_id FROM access_profiles"
-                )
-            ).rows;
-            assert.equal(pending.state, "pending");
-            assert.ok(pending.use_permission_id);
+            assert.deepEqual(await profileRows(), []);
             assert.equal(auth.permissions.size, 0);
-
-            const counts = await service.sweep();
-            assert.equal(counts.finished, 1);
-            assert.equal(auth.permissions.size, 1);
-            assert.ok(auth.permissions.has(pending.use_permission_id));
-            const read = await call("GET", `/access-profiles/${pending.id}`);
-            assert.equal(read.body.state, "ready");
         });
 
-        it("recovers from a crash after the permission was created, without a second permission", async () => {
-            // step 2 done, step 3 never ran
-            const pending = await service.repository.createPending(
-                PROFILE,
-                MANAGER
-            );
-            await new AuthApiClient({
-                authApiUrl: auth.url,
-                jwtSecret,
-                adminUserId: INTERNAL_ADMIN
-            }).createProfilePermission(
-                pending.usePermissionId!,
-                "LLM access profile",
-                ""
-            );
-            const counts = await service.sweep();
-            assert.equal(counts.finished, 1);
-            assert.equal(auth.permissions.size, 1);
-            assert.equal(
-                (await service.repository.get(pending.id))!.state,
-                "ready"
-            );
-        });
-
-        it("never adopts a permission that isn't a profile permission", async () => {
+        it("deletes the permission when its creation's outcome was lost (a timeout)", async () => {
             quietErrors();
-            const pending = await service.repository.createPending(
-                PROFILE,
-                MANAGER
-            );
-            auth.permissions.set(pending.usePermissionId!, {
-                id: pending.usePermissionId,
-                name: "someone else's",
-                resource_uri: "llm/access",
-                user_ownership_constraint: false,
-                org_unit_ownership_constraint: false,
-                pre_authorised_constraint: false,
-                allow_exemption: false,
-                operations: [{ uri: "llm/access/invoke" }]
+            // the permission is created, but the response is lost
+            auth.failuresAfterApply.set("POST /v0/public/permissions", 503);
+            const failed = await call("POST", "/access-profiles", {
+                body: PROFILE
             });
-            const counts = await service.sweep();
-            assert.equal(counts.finished, 0);
-            assert.equal(counts.failures, 1);
-            assert.equal(
-                (await service.repository.get(pending.id))!.state,
-                "pending"
+            assert.equal(failed.status, 503);
+            assert.deepEqual(await profileRows(), []);
+            assert.equal(auth.permissions.size, 0, "the compensating delete");
+            assert.ok(
+                auth.calls.some(
+                    (c) =>
+                        c.method === "DELETE" &&
+                        c.path.includes("?removeFromRoles=true") &&
+                        c.userId === INTERNAL_ADMIN
+                )
             );
         });
 
-        it("a failed delete leaves the profile deleting, and reconcile finishes it", async () => {
+        it("deletes the permission when the commit fails after it was created", async () => {
+            const logged: string[] = [];
+            console.error = (line: string) => logged.push(String(line));
+            const failing = serviceWithFailingCommit();
+            await assert.rejects(
+                failing.create(PROFILE, MANAGER),
+                /commit failed/
+            );
+            assert.deepEqual(await profileRows(), []);
+            assert.equal(auth.permissions.size, 0);
+            assert.ok(
+                !logged.some((l) => l.includes("cleanup-failed")),
+                "the cleanup succeeded"
+            );
+        });
+
+        it("reports the error, without retrying, when the compensating delete fails too", async () => {
+            const logged: string[] = [];
+            console.error = (line: string) => logged.push(String(line));
+            auth.failuresAfterApply.set("POST /v0/public/permissions", 503);
+            auth.failures.set("DELETE /v0/public/permissions/", 503);
+            const failed = await call("POST", "/access-profiles", {
+                body: PROFILE
+            });
+            assert.equal(failed.status, 503);
+            assert.deepEqual(await profileRows(), []);
+            // left behind: held by no role, referenced by no profile
+            assert.equal(auth.permissions.size, 1);
+            const [leftover] = [...auth.permissions.keys()];
+            assert.deepEqual(auth.holders(leftover), []);
+            const cleanup = logged
+                .map((l) => {
+                    try {
+                        return JSON.parse(l);
+                    } catch {
+                        return {};
+                    }
+                })
+                .find(
+                    (e) => e.event === "llm-profile-permission-cleanup-failed"
+                );
+            assert.equal(cleanup?.permissionId, leftover);
+            assert.equal(
+                auth.calls.filter((c) => c.method === "DELETE").length,
+                1,
+                "one compensating attempt"
+            );
+        });
+
+        it("never deletes a permission whose ID turned out to be in use", async () => {
+            quietErrors();
+            const failing = new ProfileService({
+                repository: new ProfileRepository(pool),
+                authApi: Object.assign(
+                    new AuthApiClient({
+                        authApiUrl: auth.url,
+                        jwtSecret,
+                        adminUserId: INTERNAL_ADMIN
+                    }),
+                    { createProfilePermission: async () => "exists" as const }
+                )
+            });
+            await assert.rejects(failing.create(PROFILE, MANAGER), /in use/);
+            assert.deepEqual(await profileRows(), []);
+            assert.ok(!auth.calls.some((c) => c.method === "DELETE"));
+        });
+
+        it("a failed delete keeps the profile and its permission unchanged", async () => {
             quietErrors();
             const profile = await createProfile();
+            const role = auth.addRole("Analysts");
+            await call("PUT", `/access-profiles/${profile.id}/roles/${role}`);
             auth.failures.set(
                 `DELETE /v0/public/permissions/${profile.usePermissionId}`,
                 503
@@ -295,14 +355,38 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
                 `/access-profiles/${profile.id}`
             );
             assert.equal(failed.status, 503);
-            const stored = await service.repository.get(profile.id);
-            assert.equal(stored!.state, "deleting");
-            assert.equal(stored!.enabled, false);
-
-            const counts = await service.sweep();
-            assert.equal(counts.deleted, 1);
-            assert.equal(await service.repository.get(profile.id), null);
+            const read = await call("GET", `/access-profiles/${profile.id}`);
+            assert.equal(read.status, 200);
+            assert.equal(read.body.enabled, true);
+            assert.deepEqual(auth.holders(profile.usePermissionId), [role]);
+            // a retry succeeds
+            assert.equal(
+                (await call("DELETE", `/access-profiles/${profile.id}`)).status,
+                204
+            );
             assert.equal(auth.permissions.size, 0);
+        });
+
+        it("a delete whose commit failed after the permission went is finished by a retry", async () => {
+            quietErrors();
+            const profile = await createProfile();
+            await assert.rejects(
+                serviceWithFailingCommit().delete(profile.id),
+                /commit failed/
+            );
+            assert.equal(auth.permissions.size, 0, "the permission went");
+            const read = await call("GET", `/access-profiles/${profile.id}`);
+            assert.equal(read.status, 200, "the row stayed");
+            assert.deepEqual(
+                (await call("GET", `/access-profiles/${profile.id}/roles`)).body
+                    .items,
+                []
+            );
+            assert.equal(
+                (await call("DELETE", `/access-profiles/${profile.id}`)).status,
+                204
+            );
+            assert.deepEqual(await profileRows(), []);
         });
 
         it("delete removes the permission from every role and never deletes a role", async () => {
@@ -329,26 +413,61 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
             assert.equal(auth.permissions.size, 0);
             assert.equal(auth.links.size, 0);
             assert.ok(auth.roles.has(roleA) && auth.roles.has(roleB));
-            // a retry is a 404, not an error
+            // a repeat is a 404, not an error
             assert.equal(
                 (await call("DELETE", `/access-profiles/${profile.id}`)).status,
                 404
             );
         });
 
-        it("re-creates the permission, with the same ID, after its only holder role is deleted", async () => {
+        it("re-creates the permission, with the same ID, when a role is attached after its only holder role was deleted", async () => {
+            const log: string[] = [];
+            console.log = (line: string) => log.push(String(line));
             const profile = await createProfile();
-            const role = auth.addRole("Temporary");
-            await call("PUT", `/access-profiles/${profile.id}/roles/${role}`);
-            auth.deleteRole(role);
+            const temporary = auth.addRole("Temporary");
+            await call(
+                "PUT",
+                `/access-profiles/${profile.id}/roles/${temporary}`
+            );
+            auth.deleteRole(temporary);
             assert.equal(auth.permissions.size, 0);
+            assert.deepEqual(
+                (await call("GET", `/access-profiles/${profile.id}/roles`)).body
+                    .items,
+                []
+            );
 
-            const counts = await service.sweep();
-            assert.equal(counts.recreated, 1);
+            const role = auth.addRole("Analysts");
+            const attached = await call(
+                "PUT",
+                `/access-profiles/${profile.id}/roles/${role}`
+            );
+            assert.equal(attached.status, 204);
             assert.ok(auth.permissions.has(profile.usePermissionId));
+            assert.deepEqual(auth.holders(profile.usePermissionId), [role]);
             const read = await call("GET", `/access-profiles/${profile.id}`);
-            assert.equal(read.body.usePermissionId, profile.usePermissionId);
             assert.equal(read.body.revision, profile.revision);
+            assert.ok(
+                log.some((l) => l.includes("llm-profile-permission-recreated"))
+            );
+            console.log = () => undefined;
+        });
+
+        it("never adopts a permission with the recorded ID that isn't a profile permission", async () => {
+            quietErrors();
+            const profile = await createProfile();
+            auth.permissions.set(profile.usePermissionId, {
+                ...auth.permissions.get(profile.usePermissionId),
+                pre_authorised_constraint: false,
+                org_unit_ownership_constraint: true
+            });
+            const role = auth.addRole("Analysts");
+            const result = await call(
+                "PUT",
+                `/access-profiles/${profile.id}/roles/${role}`
+            );
+            assert.equal(result.status, 500);
+            assert.deepEqual(auth.holders(profile.usePermissionId), []);
         });
 
         it("detaching the last role keeps the permission", async () => {
@@ -409,27 +528,6 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
             assert.equal(
                 stale.body.error.currentRevision,
                 profile.revision + 1
-            );
-        });
-
-        it("refuses to delete or change a profile that is still being created", async () => {
-            const pending = await service.repository.createPending(
-                PROFILE,
-                MANAGER
-            );
-            assert.equal(
-                (await call("DELETE", `/access-profiles/${pending.id}`)).status,
-                409
-            );
-            const role = auth.addRole("Analysts");
-            assert.equal(
-                (
-                    await call(
-                        "PUT",
-                        `/access-profiles/${pending.id}/roles/${role}`
-                    )
-                ).status,
-                409
             );
         });
     });
@@ -668,17 +766,6 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
             );
         });
 
-        it("reconciles one profile on demand", async () => {
-            const profile = await createProfile();
-            auth.permissions.clear();
-            const result = await call(
-                "POST",
-                `/access-profiles/${profile.id}/reconcile`
-            );
-            assert.equal(result.status, 200);
-            assert.ok(auth.permissions.has(profile.usePermissionId));
-        });
-
         it("answers 503 when the Auth API is down, and changes nothing", async () => {
             quietErrors();
             const profile = await createProfile();
@@ -693,17 +780,12 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
         });
     });
 
-    it("parses If-Match and the reconcile interval", () => {
+    it("parses If-Match", () => {
         assert.equal(parseIfMatch('"3"'), 3);
         assert.equal(parseIfMatch("3"), 3);
         assert.equal(parseIfMatch('W/"12"'), 12);
         for (const value of [undefined, "", "abc", '"0"', '"-1"', "*"]) {
             assert.equal(parseIfMatch(value), undefined, String(value));
         }
-        assert.equal(parseReconcileIntervalSeconds(undefined), 300);
-        assert.equal(parseReconcileIntervalSeconds("0"), 0);
-        assert.throws(() => parseReconcileIntervalSeconds("-1"));
-        assert.throws(() => parseReconcileIntervalSeconds("1.5"));
-        assert.throws(() => parseReconcileIntervalSeconds("100000"));
     });
 });
