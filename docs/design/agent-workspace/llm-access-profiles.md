@@ -102,7 +102,7 @@ What changes compared with today: LLM invocation no longer depends on `agentWork
 ### Stock roles and permissions
 
 - **AUTH-11** The Authorization DB migration seeds the following, with fixed UUIDs in the style of `V2_4__agent_workspace_and_skills.sql`:
-  - **Unconstrained permissions** for `llm/access/{create,read,update,delete,invoke}` and `llm/usage/read`. They are held by a new, unassigned stock role **"LLM Profile Managers"**, so managers can also view and test every profile, and see usage when tuning limits. The role's only `authObject/*` permission is an unconstrained, read-only `authObject/orgUnit/read`, so managers can choose a profile's org unit and see the names of the units profiles use (a later migration, `V2_7`). Without it, a manager who isn't an administrator sees no org units at all.
+  - **Unconstrained permissions** for `llm/access/{create,read,update,delete,invoke}` and `llm/usage/read`. They are held by a new, unassigned stock role **"LLM Profile Managers"**, so managers can also view and test every profile, and see usage when tuning limits. The role's only `authObject/*` permission is an unconstrained, read-only `authObject/orgUnit/read`, so managers can choose a profile's org unit and see the names of the units profiles use. Without it, a manager who isn't an administrator sees no org units at all.
   - **A stock permission "Use LLM profiles":** `llm/access/invoke`, org unit constrained (audience, AUTH-5), `allowExemption=true`. It is added to the existing unassigned **"Agent Workspace Users"** stock role. On its own it grants nothing until a profile exists. With it, setup is one step: create a profile and either mark it Public or give it an org unit.
 
 ### Credentials
