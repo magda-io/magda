@@ -97,6 +97,8 @@ What changes compared with today: LLM invocation no longer depends on `agentWork
 - **AUTH-9** `llm/usage/read` lets a caller read **other users'** usage (User Usage). In v8 it is allowed only for unconstrained permissions. A caller always reads their own usage without any permission (API-7).
 - **AUTH-10** Administrators keep the OPA override. They may invoke any deployment-allowed alias without a profile and without quota checks. Their usage is still recorded (USE-9). Administrators are still bound by the deployment allowlist (MODEL-1).
 
+  The override makes an administrator's invoke decision an unconditional `true`, and so does an unconstrained invoke grant (AUTH-4 (1)), which selects every profile but keeps quotas. LLM Services tells them apart by the Admin Users role in the session user's `whoami` result, as the entrypoint policy does. Moving quotas into the policy, or adding a dedicated bypass operation, was evaluated in #3941 and rejected as more cost than benefit.
+
 ### Stock roles and permissions
 
 - **AUTH-11** The Authorization DB migration seeds the following, with fixed UUIDs in the style of `V2_4__agent_workspace_and_skills.sql`:
@@ -192,6 +194,8 @@ allow {
   - the eligible models and remaining quota in My Usage (API-7).
 - **EVAL-3** The residual depends only on the caller (roles, permissions, org unit). LLM Services may cache it per user for up to **30 seconds** (`llm-services.decisionCacheSeconds`, default `30`). That TTL is the documented delay before a revoked grant stops working. This is acceptable because the limits control a budget; they aren't billing.
 
+  The session user's `whoami` result (the session check and the Admin Users role, AUTH-10) is cached with the residual, for the same TTL; a TTL of `0` disables the cache.
+
   Profile changes take effect immediately, because the profile attributes are read from SQL on every request.
 - **EVAL-4** Management operations (AUTH-3) need no profile attributes. They are a plain decision on the operation. List and read responses need no per-row filtering: a caller who may read one profile may read all of them.
 
@@ -286,7 +290,7 @@ CREATE TABLE daily_model_usage (
 
 ## Public API
 
-All paths are relative to `/api/v0/llm`. They are proposed. Every response is user-specific and sends `Cache-Control: private, no-store`.
+All paths are relative to `/api/v0/llm`. They are proposed. Every response is user-specific and sends `Cache-Control: private, no-store`, including proxied model responses: the backend's `Cache-Control` is never forwarded.
 
 | | HTTP | Authorization | Result |
 | --- | --- | --- | --- |
@@ -303,12 +307,12 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 
 - **API-11** Errors are safe and don't leak identities or Secrets:
   - `401` unauthenticated;
-  - `403` no eligible profile, or the alias isn't allowed;
+  - `403` the alias isn't allowed, or no eligible profile covers it (error code `llm_no_eligible_profile`);
   - `404` for a missing profile;
   - `409` stale revision;
   - `422` validation;
-  - `429` with error code `llm_quota_exceeded` when every eligible profile's limit is used up;
-  - `503` when the Auth API or a required ledger read is unavailable (USE-10).
+  - `429` with error code `llm_quota_exceeded` when every eligible profile's limit is used up. It also sends `x-should-retry: false`, because OpenAI SDKs otherwise retry a `429` automatically;
+  - `503` when the Auth API is unavailable, or a required ledger read is unavailable or gated (USE-10, error code `llm_usage_unavailable`).
 - **API-12** User Usage finds users by ID. Search by name or email, and display names on result rows, use the **caller's** session against the Auth API users endpoints. A caller without user read rights sees IDs only.
 
 ## Soft usage ledger and quota
@@ -335,8 +339,8 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 
   If a settlement write fails after the response headers have been sent:
   - log a critical accounting error, with no prompts or content;
-  - stop admitting bounded requests until a ledger health check passes;
-  - retry only when that can't count the request twice.
+  - stop admitting bounded requests until a ledger health check passes (a write probe that is always rolled back). Profiles without limits and administrators keep their normal path;
+  - don't retry the write: a write whose commit acknowledgement was lost would count the request twice. A repeated settlement of the same request ID is dropped.
 
   Never report an uncommitted count as recorded.
 
