@@ -49,6 +49,12 @@ const EXPECTED_PERMISSIONS: Record<
         operations: ["llm/access/invoke"],
         orgUnit: true,
         allowExemption: true
+    },
+    "00000000-3838-4100-8000-000000000005": {
+        resource: "authObject/orgUnit",
+        operations: ["authObject/orgUnit/read"],
+        orgUnit: false,
+        allowExemption: false
     }
 };
 
@@ -140,7 +146,7 @@ describe("LLM access profiles authorization migration (V2_6)", function (this: M
         }
     });
 
-    it("grants the unassigned LLM Profile Managers role management, invoke and usage read, and nothing in authObject", async () => {
+    it("grants the unassigned LLM Profile Managers role management, invoke, usage read and org unit read", async () => {
         const role = (
             await pool.query(`SELECT * FROM roles WHERE id = $1`, [
                 MANAGERS_ROLE_ID
@@ -156,8 +162,20 @@ describe("LLM access profiles authorization migration (V2_6)", function (this: M
         expect(grants).to.deep.equal([
             "00000000-3838-4100-8000-000000000001",
             "00000000-3838-4100-8000-000000000002",
-            "00000000-3838-4100-8000-000000000003"
+            "00000000-3838-4100-8000-000000000003",
+            "00000000-3838-4100-8000-000000000005"
         ]);
+        // its only authObject operation: managers choose a profile's org unit
+        const authObjectOperations = (
+            await pool.query(
+                `SELECT DISTINCT o.uri FROM role_permissions rp
+                   JOIN permission_operations po ON po.permission_id = rp.permission_id
+                   JOIN operations o ON o.id = po.operation_id
+                  WHERE rp.role_id = $1 AND o.uri LIKE 'authObject/%'`,
+                [MANAGERS_ROLE_ID]
+            )
+        ).rows.map((r) => r.uri);
+        expect(authObjectOperations).to.deep.equal(["authObject/orgUnit/read"]);
         const users = await pool.query(
             `SELECT 1 FROM user_roles WHERE role_id = $1`,
             [MANAGERS_ROLE_ID]
@@ -237,6 +255,6 @@ describe("LLM access profiles authorization migration (V2_6) when Agent Workspac
             `SELECT count(*)::int AS n FROM role_permissions WHERE role_id = $1`,
             [MANAGERS_ROLE_ID]
         );
-        expect(managers.rows[0].n).to.equal(3);
+        expect(managers.rows[0].n).to.equal(4);
     });
 });

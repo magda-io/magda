@@ -12,7 +12,7 @@ jest.mock("react", () =>
 );
 
 jest.mock("../../config", () => ({
-    config: { featureFlags: { agentWorkspace: true } }
+    config: { featureFlags: { agentWorkspace: true, llmServices: true } }
 }));
 
 jest.mock("../../helpers/popupUtils", () => ({
@@ -123,6 +123,19 @@ describe("isMenuItemAllowed", () => {
         expect(isMenuItemAllowed(item, [ADMIN_ROLE_ID], [])).toBe(true);
     });
 
+    it("applies requireUser", () => {
+        const checked = {
+            ...item,
+            requireAnyOperationUris: undefined,
+            requireUser: (u: any) => u?.id === "me"
+        };
+        expect(isMenuItemAllowed(checked, [], [], { id: "me" } as any)).toBe(
+            true
+        );
+        expect(isMenuItemAllowed(checked, [], [], undefined)).toBe(false);
+        expect(isMenuItemAllowed(checked, [ADMIN_ROLE_ID], [])).toBe(true);
+    });
+
     it("still requires every requireOperationUris entry", () => {
         const allOf = { ...item, requireAnyOperationUris: undefined };
         allOf.requireOperationUris = ["a/read", "b/read"];
@@ -205,5 +218,53 @@ describe("Agent Workspace Settings navigation", () => {
             container.querySelectorAll("a.active")
         ).map((item) => item.getAttribute("href"));
         expect(active).toEqual(["/settings/agent-workspace/skills"]);
+    });
+});
+
+describe("LLM Services Settings navigation", () => {
+    function expandLlmServices() {
+        const title = Array.from(
+            container.querySelectorAll<HTMLElement>(".sidenav-group-title")
+        ).find((item) => item.textContent === "LLM Services");
+        act(() => title?.click());
+    }
+
+    it("shows Access Profiles for an unconstrained llm/access/read holder", () => {
+        render(user(["llm/access/read"]));
+        expect(groupTitles()).toContain("LLM Services");
+        expandLlmServices();
+        expect(links()).toContain("/settings/llm-services/access-profiles");
+    });
+
+    it("shows it to administrators", () => {
+        render(user([], [ADMIN_ROLE_ID]));
+        expect(groupTitles()).toContain("LLM Services");
+    });
+
+    it("is hidden with only constrained or invoke permissions (AUTH-3)", () => {
+        const constrained = {
+            ...user([]),
+            permissions: [
+                {
+                    id: "p1",
+                    orgUnitOwnershipConstraint: true,
+                    operations: [{ id: "o1", uri: "llm/access/read" }]
+                },
+                {
+                    id: "p2",
+                    preAuthorisedConstraint: true,
+                    operations: [{ id: "o2", uri: "llm/access/read" }]
+                },
+                {
+                    id: "p3",
+                    userOwnershipConstraint: true,
+                    operations: [{ id: "o3", uri: "llm/access/read" }]
+                }
+            ]
+        };
+        render(constrained);
+        expect(groupTitles()).not.toContain("LLM Services");
+        render(user(["llm/access/invoke"]));
+        expect(groupTitles()).not.toContain("LLM Services");
     });
 });

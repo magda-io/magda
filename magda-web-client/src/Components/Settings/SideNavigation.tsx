@@ -22,7 +22,9 @@ import {
     MdSmartToy,
     MdOpenInBrowser,
     MdOutlineLibraryBooks,
-    MdPeopleOutline
+    MdPeopleOutline,
+    MdOutlineAutoAwesome,
+    MdOutlineVpnKey
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -37,6 +39,7 @@ import {
     AGENT_WORKSPACE_ACCESS_OPERATION,
     SHARED_SKILL_OPERATIONS
 } from "./agentWorkspaceAccess";
+import { canReadAccessProfiles } from "./llmServicesAccess";
 import {
     getUrlWithPopUpQueryString,
     showSideNav
@@ -61,6 +64,9 @@ export type MenuItem = {
     requireOperationUris?: string[];
     // at least one of these operations is required
     requireAnyOperationUris?: string[];
+    // a check that operation URIs alone can't express, e.g. that a
+    // permission must be unconstrained
+    requireUser?: (user?: User) => boolean;
     // second level menu items. A menu item with children is a group and is not a link itself.
     // A group is hidden when none of its children is available (e.g. due to access).
     children?: MenuItem[];
@@ -124,6 +130,25 @@ const defaultMenuItems: MenuItem[] = [
                           path: "/settings/agent-workspace/shared-skills",
                           icon: <MdPeopleOutline />,
                           requireAnyOperationUris: SHARED_SKILL_OPERATIONS
+                      }
+                  ]
+              }
+          ]
+        : []),
+    ...(config.featureFlags.llmServices
+        ? [
+              {
+                  // A non-clickable group; more pages join it later (#3838).
+                  title: "LLM Services",
+                  path: "/settings/llm-services-group",
+                  icon: <MdOutlineAutoAwesome />,
+                  children: [
+                      {
+                          title: "Access Profiles",
+                          path: "/settings/llm-services/access-profiles",
+                          icon: <MdOutlineVpnKey />,
+                          // AUTH-3: only unconstrained `llm/access/read`
+                          requireUser: canReadAccessProfiles
                       }
                   ]
               }
@@ -236,7 +261,8 @@ const defaultMenuItems: MenuItem[] = [
 export function isMenuItemAllowed(
     item: MenuItem,
     userRoleIds: string[],
-    userOpUris: string[]
+    userOpUris: string[],
+    user?: User
 ): boolean {
     if (userRoleIds.indexOf(ADMIN_USERS_ROLE_ID) !== -1) {
         // admin user will see all menu items
@@ -262,6 +288,9 @@ export function isMenuItemAllowed(
             (opUri) => userOpUris.indexOf(opUri) !== -1
         )
     ) {
+        return false;
+    }
+    if (item?.requireUser && !item.requireUser(user)) {
         return false;
     }
     return true;
@@ -318,13 +347,14 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
         if (
             (item?.requireRoleIds?.length ||
                 item?.requireOperationUris?.length ||
-                item?.requireAnyOperationUris?.length) &&
+                item?.requireAnyOperationUris?.length ||
+                item?.requireUser) &&
             (isUserLoading || userLoadingError)
         ) {
             // any require access check items will not will be shown until user data is available
             return false;
         }
-        return isMenuItemAllowed(item, userRoleIds, userOpUris);
+        return isMenuItemAllowed(item, userRoleIds, userOpUris, user);
     }
 
     return (

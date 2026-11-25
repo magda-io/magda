@@ -69,7 +69,9 @@ export type FeatureFlagType =
     | "useStorageApi"
     | "datasetLikeButton"
     | "enableAutoMetadataFetchButton"
-    | "agentWorkspace";
+    | "agentWorkspace"
+    // set from the Helm value `global.llmServices.enabled`
+    | "llmServices";
 
 export type FeatureFlagsConfigType = Partial<Record<FeatureFlagType, boolean>>;
 

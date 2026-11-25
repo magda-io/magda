@@ -59,6 +59,7 @@ Kubernetes: `>= 1.14.0-0`
 | featureFlags.datasetApprovalWorkflowOn | bool | `false` | turn on / off dataset approval note step |
 | featureFlags.datasetLikeButton | bool | `false` | turn on / off like / Dislike button.  At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component. |
 | featureFlags.enableAutoMetadataFetchButton | bool | `true` | turn on / off the auto metadata fetch button. Users are still able to add an "API / dataset URL" via "Manually enter metadata" button |
+| featureFlags.llmServices | bool | `false` | show the Settings → LLM Services pages (access profiles). Always set from `global.llmServices.enabled`; the value here is ignored. |
 | featureFlags.previewAddDataset | bool | `false` | turn on / off the preview mode of metadata creation tool. Under preview mode, user can play with the metadata creation tool without requiring admin permission. No data will be saved under this mode. |
 | featureFlags.publishToDga | bool | `false` | turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance. this is an experimental feature and requires the deployment of [magda-minion-ckan-exporter](https://github.com/magda-io/magda-minion-ckan-exporter) |
 | featureFlags.useStorageApi | bool | `true` | turn on / off the UI option to use Magda internal storage for file storage. |
