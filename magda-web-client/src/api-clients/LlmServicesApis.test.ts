@@ -173,7 +173,7 @@ describe("LlmServicesApis", () => {
         expect(error.status).toBe(503);
         expect(isStaleRevisionError(error)).toBe(false);
         expect(describeLlmServicesError(error)).toMatch(
-            /unavailable. Nothing was changed; retry shortly/
+            /unavailable\. Retry shortly\.$/
         );
     });
 

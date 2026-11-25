@@ -61,9 +61,12 @@ export const Loader = ({ content }: any) => <span>{content}</span>;
 
 export const Panel = ({ children }: any) => <div>{children}</div>;
 
-export const Pagination = ({ total, activePage }: any) => (
+export const Pagination = ({ total, activePage, onChangePage }: any) => (
     <div data-testid="pagination">
         page {activePage} of {total}
+        <button type="button" onClick={() => onChangePage(activePage + 1)}>
+            Next page
+        </button>
     </div>
 );
 

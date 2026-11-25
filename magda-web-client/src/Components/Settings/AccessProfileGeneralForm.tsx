@@ -20,7 +20,6 @@ import {
     describeLlmServicesError,
     getAvailableModels,
     isStaleRevisionError,
-    listAccessProfileRoles,
     updateAccessProfile
 } from "api-clients/LlmServicesApis";
 
@@ -140,18 +139,8 @@ export function validateForm(
     };
 }
 
-export function deleteConfirmMessage(
-    name: string,
-    roleCount: number | undefined
-): string {
-    const roles =
-        roleCount === undefined
-            ? "every role that holds it"
-            : roleCount === 1
-            ? "1 role"
-            : `${roleCount} roles`;
-    return `Delete profile "${name}"? Users will lose the access this profile gives, and it will be removed from ${roles}. Their usage history is kept.`;
-}
+export const deleteConfirmMessage = (name: string) =>
+    `Delete profile "${name}"? Users will lose the access this profile gives, and it will be removed from every role that holds it. Their usage history is kept.`;
 
 type PropsType = {
     /** `undefined` to create a profile. */
@@ -164,8 +153,6 @@ type PropsType = {
     onReload: () => void;
     onCancel?: () => void;
 };
-
-const ROLE_COUNT_LIMIT = 500;
 
 const AccessProfileGeneralForm: FunctionComponent<PropsType> = (props) => {
     const { profile, canEdit, canDelete } = props;
@@ -224,32 +211,24 @@ const AccessProfileGeneralForm: FunctionComponent<PropsType> = (props) => {
         }
     });
 
-    const confirmDelete = async () => {
+    const confirmDelete = () => {
         if (!profile) {
             return;
         }
-        let roleCount: number | undefined;
-        try {
-            const roles = await listAccessProfileRoles(profile.id, {
-                limit: ROLE_COUNT_LIMIT
-            });
-            roleCount = roles.length;
-        } catch (_) {
-            roleCount = undefined;
-        }
         ConfirmDialog.open({
             headingText: "Delete profile?",
-            confirmMsg: deleteConfirmMessage(profile.name, roleCount),
+            confirmMsg: deleteConfirmMessage(profile.name),
             loadingText: "Deleting the profile...",
             confirmHandler: async () => {
                 try {
                     await deleteAccessProfile(profile.id);
                 } catch (e) {
-                    // LIFE-4: a failed delete leaves the profile unchanged
+                    // the dialog stays open, so the delete can be retried; the
+                    // description says when retrying helps
                     throw new Error(
-                        `The profile wasn't deleted and is unchanged. ${describeLlmServicesError(
+                        `Failed to delete the access profile: ${describeLlmServicesError(
                             e
-                        )} You can retry.`
+                        )}`
                     );
                 }
                 props.onDeleted(profile);

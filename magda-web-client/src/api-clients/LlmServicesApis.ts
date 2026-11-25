@@ -116,7 +116,7 @@ export function describeLlmServicesError(error: unknown): string {
         case 502:
             return "The Authorization API refused the change. Retry, and contact your administrator if it keeps failing.";
         case 503:
-            return "LLM Services or the Authorization API is unavailable. Nothing was changed; retry shortly.";
+            return "LLM Services or the Authorization API is unavailable. Retry shortly.";
         default:
             return `The request failed (${error.status}): ${error.message}`;
     }
@@ -238,7 +238,7 @@ export async function updateAccessProfile(
     return response.json();
 }
 
-/** API-2 / LIFE-4. A failure leaves the profile unchanged. */
+/** API-2 / LIFE-4. */
 export async function deleteAccessProfile(id: string): Promise<void> {
     await request("DELETE", profilePath(id));
 }

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { useAsync } from "react-async-hook";
 import { Link } from "react-router-dom";
 import Button from "rsuite/Button";
@@ -51,6 +51,13 @@ const AccessProfileRolesPanel: FunctionComponent<PropsType> = (props) => {
     );
     const roles = result || [];
 
+    // a later page emptied (e.g. by another manager's removals): step back
+    useEffect(() => {
+        if (!loading && !error && result && !result.length && offset > 0) {
+            setOffset((current) => Math.max(0, current - PAGE_SIZE));
+        }
+    }, [loading, error, result, offset]);
+
     const removeRole = (role: AccessProfileRole) =>
         ConfirmDialog.open({
             headingText: "Remove role?",
@@ -61,7 +68,7 @@ const AccessProfileRolesPanel: FunctionComponent<PropsType> = (props) => {
                     await detachAccessProfileRole(profileId, role.id);
                 } catch (e) {
                     throw new Error(
-                        `The role's access wasn't removed. ${describeLlmServicesError(
+                        `Failed to remove the role's access: ${describeLlmServicesError(
                             e
                         )}`
                     );
@@ -70,11 +77,7 @@ const AccessProfileRolesPanel: FunctionComponent<PropsType> = (props) => {
                     `Role "${role.name}" no longer gives access to this profile.`,
                     { type: "success", header: "Role removed" }
                 );
-                if (roles.length === 1 && offset > 0) {
-                    setOffset(Math.max(0, offset - PAGE_SIZE));
-                } else {
-                    reload();
-                }
+                reload();
             }
         });
 

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useAsync } from "react-async-hook";
@@ -109,6 +109,18 @@ const AccessProfilesPage: FunctionComponent = () => {
 
     const profiles = result?.items || [];
     const total = result?.total || 0;
+
+    // Past the last page (e.g. another manager deleted the profiles on it):
+    // go to the last page that has profiles.
+    useEffect(() => {
+        if (loading || !result || result.items.length || !result.total) {
+            return;
+        }
+        const lastPage = Math.max(1, Math.ceil(result.total / limit));
+        if (lastPage < page) {
+            setPage(lastPage);
+        }
+    }, [loading, result, page, limit]);
 
     return (
         <div className="flex-main-container setting-page-main-container access-profiles-page">

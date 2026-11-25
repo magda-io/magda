@@ -180,6 +180,27 @@ describe("AccessProfileRolesPanel", () => {
         expect(button("Add role")).toBeTruthy();
     });
 
+    it("steps back when a later page was emptied meanwhile", async () => {
+        const page1 = Array.from({ length: 20 }, (_, i) => ({
+            id: `00000000-0000-4000-8000-0000000001${10 + i}`,
+            name: `Role ${i}`,
+            description: null
+        }));
+        mockRoles
+            .mockResolvedValueOnce(page1)
+            .mockResolvedValueOnce([])
+            .mockResolvedValue(page1);
+        await render();
+        await click(button("Next page"));
+        await flush();
+        expect(mockRoles.mock.calls.map((call) => call[1].offset)).toEqual([
+            0,
+            20,
+            0
+        ]);
+        expect(container.textContent).toContain("Role 19");
+    });
+
     it("hides Add and Remove without update permission", async () => {
         mockRoles.mockResolvedValue([analysts]);
         await render(false);
@@ -191,7 +212,7 @@ describe("AccessProfileRolesPanel", () => {
         mockRoles.mockRejectedValue(new LlmServicesApiError("down", 503));
         await render();
         expect(container.textContent).toContain(
-            "LLM Services or the Authorization API is unavailable. Nothing was changed; retry shortly."
+            "LLM Services or the Authorization API is unavailable. Retry shortly."
         );
         mockRoles.mockResolvedValue([analysts]);
         await click(button("Retry"));
@@ -311,7 +332,7 @@ describe("AccessProfileRolesPanel", () => {
         await click(button("Remove role Data Analysts"));
         const confirm = mockConfirmOpen.mock.calls[0][0];
         await expect(confirm.confirmHandler()).rejects.toThrow(
-            /The role's access wasn't removed\. LLM Services or the Authorization API is unavailable/
+            "Failed to remove the role's access: LLM Services or the Authorization API is unavailable. Retry shortly."
         );
     });
 });

@@ -294,13 +294,9 @@ describe("validateForm", () => {
 });
 
 describe("deleteConfirmMessage", () => {
-    it("names the profile and the number of roles", () => {
-        expect(deleteConfirmMessage("X", 2)).toBe(
-            'Delete profile "X"? Users will lose the access this profile gives, and it will be removed from 2 roles. Their usage history is kept.'
-        );
-        expect(deleteConfirmMessage("X", 1)).toMatch(/from 1 role\./);
-        expect(deleteConfirmMessage("X", undefined)).toMatch(
-            /from every role that holds it\./
+    it("names the profile, without counting roles", () => {
+        expect(deleteConfirmMessage("X")).toBe(
+            'Delete profile "X"? Users will lose the access this profile gives, and it will be removed from every role that holds it. Their usage history is kept.'
         );
     });
 });
@@ -465,22 +461,20 @@ describe("AccessProfileGeneralForm", () => {
         );
     });
 
-    it("confirms a delete with the role count, and says a failed delete changed nothing", async () => {
-        mockRoles.mockResolvedValue([
-            { id: "r1", name: "A", description: null },
-            { id: "r2", name: "B", description: null }
-        ]);
+    it("confirms a delete, and reports a failed delete so it can be retried", async () => {
         await render({ profile });
         await click(button("Delete profile"));
 
         const dialog = mockConfirmOpen.mock.calls[0][0];
         expect(dialog.confirmMsg).toBe(
-            deleteConfirmMessage("Finance analysts", 2)
+            deleteConfirmMessage("Finance analysts")
         );
+        // no role lookup just to word the confirmation
+        expect(mockRoles).not.toHaveBeenCalled();
 
         mockDelete.mockRejectedValueOnce(new LlmServicesApiError("down", 503));
         await expect(dialog.confirmHandler()).rejects.toThrow(
-            /The profile wasn't deleted and is unchanged\..*retry/
+            "Failed to delete the access profile: LLM Services or the Authorization API is unavailable. Retry shortly."
         );
         expect(onDeleted).not.toHaveBeenCalled();
 

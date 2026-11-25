@@ -333,6 +333,33 @@ describe("AccessProfilesPage", () => {
         });
     });
 
+    it("goes back to the last page when its profiles were deleted meanwhile", async () => {
+        const page1 = Array.from({ length: 10 }, (_, i) =>
+            profile({
+                id: `3b1eceed-603e-4173-91ff-a3475c75b2${10 + i}`,
+                name: `Profile ${i}`
+            })
+        );
+        mockList
+            .mockResolvedValueOnce({ items: page1, total: 12 })
+            // another manager deleted the 2 profiles on page 2
+            .mockResolvedValueOnce({ items: [], total: 10 })
+            .mockResolvedValue({ items: page1, total: 10 });
+        await render(ACCESS_PROFILES_PATH);
+        await click(button("Next page"));
+        await flush();
+        expect(mockList.mock.calls.map((call) => call[0].offset)).toEqual([
+            0,
+            10,
+            0
+        ]);
+        expect(container.textContent).not.toContain("no access profiles");
+        expect(container.textContent).toContain("Profile 9");
+        expect(
+            container.querySelector('[data-testid="pagination"]')?.textContent
+        ).toContain("page 1 of 10");
+    });
+
     it("shows Create profile only with llm/access/create", async () => {
         mockList.mockResolvedValue({ items: [profile()], total: 1 });
         await render(ACCESS_PROFILES_PATH);
