@@ -240,3 +240,141 @@ describe("LLM access profiles authorization migration (V2_6) when Agent Workspac
         expect(managers.rows[0].n).to.equal(3);
     });
 });
+
+const ORG_UNIT_READ_PERMISSION_ID = "00000000-3838-4100-8000-000000000005";
+
+async function createTestDb(prefix: string) {
+    const dbConfig = getTestDBConfig();
+    const name = `${prefix}_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+    const adminPool = new pg.Pool({ ...dbConfig });
+    await adminPool.query(`CREATE DATABASE "${name}"`);
+    await adminPool.end();
+    return { name, pool: new pg.Pool({ ...dbConfig, database: name }) };
+}
+
+async function dropTestDb(name: string, pool: pg.Pool) {
+    await pool.end();
+    const adminPool = new pg.Pool({ ...getTestDBConfig() });
+    try {
+        await adminPool.query(`DROP DATABASE IF EXISTS "${name}"`);
+    } finally {
+        await adminPool.end();
+    }
+}
+
+describe("LLM Profile Managers org unit read migration (V2_7)", function (this: Mocha.Suite) {
+    this.timeout(30000);
+    let db: { name: string; pool: pg.Pool };
+    let before26: any[];
+
+    before(async () => {
+        db = await createTestDb("test_llm_org_unit_read");
+        await runMigrationSql(db.pool, false, 2.6);
+        before26 = (
+            await db.pool.query(
+                `SELECT role_id, permission_id FROM role_permissions
+                  WHERE role_id <> $1 ORDER BY role_id, permission_id`,
+                [MANAGERS_ROLE_ID]
+            )
+        ).rows;
+        await runMigrationSql(db.pool, false, 2.7, 2.6);
+    });
+
+    after(async () => dropTestDb(db.name, db.pool));
+
+    it("seeds an unconstrained, read-only org unit permission", async () => {
+        const permission = (
+            await db.pool.query(
+                `SELECT p.*, r.uri AS resource FROM permissions p
+                   JOIN resources r ON r.id = p.resource_id WHERE p.id = $1`,
+                [ORG_UNIT_READ_PERMISSION_ID]
+            )
+        ).rows[0];
+        expect(permission.resource).to.equal("authObject/orgUnit");
+        expect(permission.user_ownership_constraint).to.equal(false);
+        expect(permission.org_unit_ownership_constraint).to.equal(false);
+        expect(permission.pre_authorised_constraint).to.equal(false);
+        expect(permission.allow_exemption).to.equal(false);
+        const operations = (
+            await db.pool.query(
+                `SELECT o.uri FROM permission_operations po
+                   JOIN operations o ON o.id = po.operation_id
+                  WHERE po.permission_id = $1`,
+                [ORG_UNIT_READ_PERMISSION_ID]
+            )
+        ).rows.map((r) => r.uri);
+        expect(operations).to.deep.equal(["authObject/orgUnit/read"]);
+    });
+
+    it("grants it to LLM Profile Managers, whose only authObject operation is org unit read", async () => {
+        const grants = (
+            await db.pool.query(
+                `SELECT permission_id FROM role_permissions WHERE role_id = $1 ORDER BY permission_id`,
+                [MANAGERS_ROLE_ID]
+            )
+        ).rows.map((r) => r.permission_id);
+        expect(grants).to.deep.equal([
+            "00000000-3838-4100-8000-000000000001",
+            "00000000-3838-4100-8000-000000000002",
+            "00000000-3838-4100-8000-000000000003",
+            ORG_UNIT_READ_PERMISSION_ID
+        ]);
+        const authObjectOperations = (
+            await db.pool.query(
+                `SELECT DISTINCT o.uri FROM role_permissions rp
+                   JOIN permission_operations po ON po.permission_id = rp.permission_id
+                   JOIN operations o ON o.id = po.operation_id
+                  WHERE rp.role_id = $1 AND o.uri LIKE 'authObject/%'`,
+                [MANAGERS_ROLE_ID]
+            )
+        ).rows.map((r) => r.uri);
+        expect(authObjectOperations).to.deep.equal(["authObject/orgUnit/read"]);
+    });
+
+    it("leaves every other role unchanged", async () => {
+        const after = (
+            await db.pool.query(
+                `SELECT role_id, permission_id FROM role_permissions
+                  WHERE role_id <> $1 ORDER BY role_id, permission_id`,
+                [MANAGERS_ROLE_ID]
+            )
+        ).rows;
+        expect(after).to.deep.equal(before26);
+    });
+});
+
+describe("LLM Profile Managers org unit read migration (V2_7) when the role was deleted", function (this: Mocha.Suite) {
+    this.timeout(30000);
+    let db: { name: string; pool: pg.Pool };
+
+    before(async () => {
+        db = await createTestDb("test_llm_org_unit_read_norole");
+        await runMigrationSql(db.pool, false, 2.6);
+        await db.pool.query(`DELETE FROM role_permissions WHERE role_id = $1`, [
+            MANAGERS_ROLE_ID
+        ]);
+        await db.pool.query(`DELETE FROM roles WHERE id = $1`, [
+            MANAGERS_ROLE_ID
+        ]);
+    });
+
+    after(async () => dropTestDb(db.name, db.pool));
+
+    it("applies, seeds the permission without granting it, and doesn't recreate the role", async () => {
+        await runMigrationSql(db.pool, false, 2.7, 2.6);
+        const permission = await db.pool.query(
+            `SELECT 1 FROM permissions WHERE id = $1`,
+            [ORG_UNIT_READ_PERMISSION_ID]
+        );
+        expect(permission.rows).to.have.lengthOf(1);
+        const grants = await db.pool.query(
+            `SELECT 1 FROM role_permissions WHERE permission_id = $1`,
+            [ORG_UNIT_READ_PERMISSION_ID]
+        );
+        expect(grants.rows).to.have.lengthOf(0);
+        const role = await db.pool.query(`SELECT 1 FROM roles WHERE id = $1`, [
+            MANAGERS_ROLE_ID
+        ]);
+        expect(role.rows).to.have.lengthOf(0);
+    });
+});
