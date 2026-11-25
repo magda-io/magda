@@ -1,0 +1,242 @@
+{
+    "comment": "Recorded llm/access/invoke partial decisions (unknown input.object.llmAccessProfile) from magda-authorization-api/src/test/LlmAccessPartialDecision.spec.ts, for a user in org unit FINANCE (ancestor CORPORATE). Regenerate with UPDATE_LLM_INVOKE_DECISIONS=1.",
+    "orgUnits": {
+        "FINANCE": "00000000-0000-4000-8000-00000000f000",
+        "CORPORATE": "00000000-0000-4000-8000-00000000c000",
+        "SALES": "00000000-0000-4000-8000-00000000e000"
+    },
+    "profiles": [
+        {
+            "id": "00000000-0000-4000-8000-000000000001",
+            "org_unit_id": "00000000-0000-4000-8000-00000000f000",
+            "use_permission_id": "00000000-0000-4000-8000-0000000000aa",
+            "constraint_exemption": false
+        },
+        {
+            "id": "00000000-0000-4000-8000-000000000002",
+            "org_unit_id": "00000000-0000-4000-8000-00000000c000",
+            "use_permission_id": "00000000-0000-4000-8000-0000000000bb",
+            "constraint_exemption": false
+        },
+        {
+            "id": "00000000-0000-4000-8000-000000000003",
+            "org_unit_id": "00000000-0000-4000-8000-00000000e000",
+            "use_permission_id": "00000000-0000-4000-8000-0000000000c1",
+            "constraint_exemption": false
+        },
+        {
+            "id": "00000000-0000-4000-8000-000000000004",
+            "org_unit_id": null,
+            "use_permission_id": "00000000-0000-4000-8000-0000000000c2",
+            "constraint_exemption": true
+        },
+        {
+            "id": "00000000-0000-4000-8000-000000000005",
+            "org_unit_id": null,
+            "use_permission_id": "00000000-0000-4000-8000-0000000000c3",
+            "constraint_exemption": false
+        }
+    ],
+    "expectedProfileIds": {
+        "unconstrained": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000003",
+            "00000000-0000-4000-8000-000000000004",
+            "00000000-0000-4000-8000-000000000005"
+        ],
+        "audience org unit (user in Finance)": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002"
+        ],
+        "profile pre-authorised permission": [
+            "00000000-0000-4000-8000-000000000001"
+        ],
+        "exemption-capable audience permission": [
+            "00000000-0000-4000-8000-000000000001",
+            "00000000-0000-4000-8000-000000000002",
+            "00000000-0000-4000-8000-000000000004"
+        ],
+        "owner constrained": [],
+        "no permission": []
+    },
+    "decisions": {
+        "unconstrained": {
+            "hasResidualRules": false,
+            "unknowns": ["input.object.llmAccessProfile"],
+            "result": true,
+            "hasWarns": false
+        },
+        "audience org unit (user in Finance)": {
+            "hasResidualRules": true,
+            "unknowns": ["input.object.llmAccessProfile"],
+            "residualRules": [
+                {
+                    "default": false,
+                    "value": true,
+                    "fullName": "data.partial.llm.access.allow",
+                    "name": "allow",
+                    "expressions": [
+                        {
+                            "negated": false,
+                            "operator": "=",
+                            "operands": [
+                                {
+                                    "isRef": false,
+                                    "value": "00000000-0000-4000-8000-00000000c000"
+                                },
+                                {
+                                    "isRef": true,
+                                    "value": "input.object.llmAccessProfile.org_unit_id"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "default": false,
+                    "value": true,
+                    "fullName": "data.partial.llm.access.allow",
+                    "name": "allow",
+                    "expressions": [
+                        {
+                            "negated": false,
+                            "operator": "=",
+                            "operands": [
+                                {
+                                    "isRef": false,
+                                    "value": "00000000-0000-4000-8000-00000000f000"
+                                },
+                                {
+                                    "isRef": true,
+                                    "value": "input.object.llmAccessProfile.org_unit_id"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "hasWarns": false
+        },
+        "profile pre-authorised permission": {
+            "hasResidualRules": true,
+            "unknowns": ["input.object.llmAccessProfile"],
+            "residualRules": [
+                {
+                    "default": false,
+                    "value": true,
+                    "fullName": "data.partial.llm.access.allow",
+                    "name": "allow",
+                    "expressions": [
+                        {
+                            "negated": false,
+                            "operator": "=",
+                            "operands": [
+                                {
+                                    "isRef": false,
+                                    "value": "00000000-0000-4000-8000-0000000000aa"
+                                },
+                                {
+                                    "isRef": true,
+                                    "value": "input.object.llmAccessProfile.use_permission_id"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "hasWarns": false
+        },
+        "exemption-capable audience permission": {
+            "hasResidualRules": true,
+            "unknowns": ["input.object.llmAccessProfile"],
+            "residualRules": [
+                {
+                    "default": false,
+                    "value": true,
+                    "fullName": "data.partial.llm.access.allow",
+                    "name": "allow",
+                    "expressions": [
+                        {
+                            "negated": false,
+                            "operator": "=",
+                            "operands": [
+                                {
+                                    "isRef": false,
+                                    "value": "00000000-0000-4000-8000-00000000c000"
+                                },
+                                {
+                                    "isRef": true,
+                                    "value": "input.object.llmAccessProfile.org_unit_id"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "default": false,
+                    "value": true,
+                    "fullName": "data.partial.llm.access.allow",
+                    "name": "allow",
+                    "expressions": [
+                        {
+                            "negated": false,
+                            "operator": "=",
+                            "operands": [
+                                {
+                                    "isRef": false,
+                                    "value": "00000000-0000-4000-8000-00000000f000"
+                                },
+                                {
+                                    "isRef": true,
+                                    "value": "input.object.llmAccessProfile.org_unit_id"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "default": false,
+                    "value": true,
+                    "fullName": "data.partial.llm.access.allow",
+                    "name": "allow",
+                    "expressions": [
+                        {
+                            "negated": false,
+                            "operator": "=",
+                            "operands": [
+                                {
+                                    "isRef": true,
+                                    "value": "input.object.llmAccessProfile.constraint_exemption"
+                                },
+                                {
+                                    "isRef": false,
+                                    "value": true
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "hasWarns": false
+        },
+        "owner constrained": {
+            "hasResidualRules": false,
+            "unknowns": ["input.object.llmAccessProfile"],
+            "result": false,
+            "hasWarns": false
+        },
+        "no permission": {
+            "hasResidualRules": false,
+            "unknowns": ["input.object.llmAccessProfile"],
+            "result": false,
+            "hasWarns": false
+        },
+        "administrator": {
+            "hasResidualRules": false,
+            "unknowns": ["input.object.llmAccessProfile"],
+            "result": true,
+            "hasWarns": false
+        }
+    }
+}

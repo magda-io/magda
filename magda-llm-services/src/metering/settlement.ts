@@ -7,6 +7,11 @@ import {
 
 /** One settled forwarded request: measured, or estimated when no valid final usage exists. */
 export type UsageSettlement = {
+    /**
+     * A random ID per forwarded request, so a sink can drop a repeated
+     * settlement of the same request (METER-5, USE-7).
+     */
+    requestId: string;
     /** The authenticated MAGDA user (USE-2): never a client-supplied field. */
     userId: string;
     /** The requested public model alias (USE-2). */
@@ -54,8 +59,8 @@ export interface SettlementQuality {
 }
 
 /**
- * Receives settlements. The daily ledger (#3942) implements it; until then a
- * logging sink records them. A sink must not throw for an accounting failure
+ * Receives settlements. The daily ledger (`UsageLedger`, #3942) implements
+ * it; without a database, a logging sink records them. A sink must not throw for an accounting failure
  * it can handle itself; the meter catches and logs anything it does throw.
  */
 export interface UsageSink {

@@ -4,6 +4,8 @@ import {
     parseUsageEstimateConfig,
     parseUsageObserverLimits
 } from "./metering/settlement.js";
+import { parseUsageTimeZone } from "./usage/periods.js";
+import { parseDecisionCacheSeconds } from "./access/CallerAccess.js";
 
 const port = Number(process.env.PORT || 80);
 const jwtSecret = process.env.JWT_SECRET;
@@ -30,7 +32,11 @@ const app = createApp({
     allowedModels: parseAllowedModels(process.env.ALLOWED_MODELS),
     pool,
     usageEstimate: parseUsageEstimateConfig(process.env),
-    observerLimits: parseUsageObserverLimits(process.env)
+    observerLimits: parseUsageObserverLimits(process.env),
+    usageTimeZone: parseUsageTimeZone(process.env.USAGE_TIME_ZONE),
+    decisionCacheSeconds: parseDecisionCacheSeconds(
+        process.env.DECISION_CACHE_SECONDS
+    )
 });
 
 const server = app.listen(port, () =>

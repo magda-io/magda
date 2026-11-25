@@ -1,4 +1,7 @@
 import "mocha";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import pg from "pg";
 import express from "express";
 import request from "supertest";
@@ -17,6 +20,16 @@ import getTestDBConfig from "./getTestDBConfig.js";
 // `SQLSyntax.where(SQLSyntax.joinWithAnd([...]))`). Needs a real OPA loaded with
 // `magda-opa/policies` at OPA_URL (CI starts one) and the test Postgres.
 const opaUrl = process.env["OPA_URL"] || "http://localhost:8181/";
+
+// LLM Services' invocation tests (TEST-2 at the service level) replay these
+// recorded decisions against the same profile fixtures. The last test below
+// checks the recording still matches what the policy returns; regenerate it
+// with UPDATE_LLM_INVOKE_DECISIONS=1.
+const RECORDED_DECISIONS_FILE = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../../magda-llm-services/src/test/fixtures/llmInvokeDecisions.json"
+);
+const updateRecordedDecisions = !!process.env["UPDATE_LLM_INVOKE_DECISIONS"];
 
 const FINANCE = "00000000-0000-4000-8000-00000000f000";
 const CORPORATE = "00000000-0000-4000-8000-00000000c000";
@@ -66,6 +79,21 @@ const SCENARIOS: Record<string, any[]> = {
     "no permission": []
 };
 
+// The profiles each scenario selects (full decisions agree, above).
+const EXPECTED_PROFILE_IDS: Record<string, string[]> = {
+    unconstrained: PROFILES.map((p) => p.id),
+    // Finance and its ancestor Corporate, not Sales or no org unit
+    "audience org unit (user in Finance)": [PROFILES[0].id, PROFILES[1].id],
+    "profile pre-authorised permission": [PROFILES[0].id],
+    "exemption-capable audience permission": [
+        PROFILES[0].id,
+        PROFILES[1].id,
+        PROFILES[3].id
+    ],
+    "owner constrained": [],
+    "no permission": []
+};
+
 describe("llm/access/invoke partial decisions translate to SQL (integration, real OPA)", function (this: Mocha.Suite) {
     this.timeout(30000);
     const dbConfig = getTestDBConfig();
@@ -74,6 +102,7 @@ describe("llm/access/invoke partial decisions translate to SQL (integration, rea
     )}`;
     let pool: pg.Pool;
     let currentUser: any;
+    const recorded: Record<string, any> = {};
 
     before(async function () {
         try {
@@ -132,8 +161,10 @@ describe("llm/access/invoke partial decisions translate to SQL (integration, rea
             .post("/decision/llm/access/invoke")
             .send({ unknowns: ["input.object.llmAccessProfile"] });
         expect(res.status).to.equal(200);
+        recordedBody = res.body;
         return AuthDecision.fromJson(res.body);
     }
+    let recordedBody: any;
 
     async function fullDecision(profile: any) {
         const res = await request(buildApp())
@@ -153,6 +184,7 @@ describe("llm/access/invoke partial decisions translate to SQL (integration, rea
                 orgUnitAncestorIds: [FINANCE, CORPORATE]
             };
             const decision = await partialDecision();
+            recorded[name] = recordedBody;
             const condition = decision.toSql({
                 prefixes: ["input.object.llmAccessProfile"],
                 tableRef: "p"
@@ -171,22 +203,6 @@ describe("llm/access/invoke partial decisions translate to SQL (integration, rea
     }
 
     it("selects the expected profiles for each grant type", async () => {
-        const expectations: Record<string, string[]> = {
-            unconstrained: PROFILES.map((p) => p.id),
-            // Finance and its ancestor Corporate, not Sales or no org unit
-            "audience org unit (user in Finance)": [
-                PROFILES[0].id,
-                PROFILES[1].id
-            ],
-            "profile pre-authorised permission": [PROFILES[0].id],
-            "exemption-capable audience permission": [
-                PROFILES[0].id,
-                PROFILES[1].id,
-                PROFILES[3].id
-            ],
-            "owner constrained": [],
-            "no permission": []
-        };
         for (const [name, permissions] of Object.entries(SCENARIOS)) {
             currentUser = {
                 id: "00000000-0000-4000-8000-000000000123",
@@ -207,7 +223,7 @@ describe("llm/access/invoke partial decisions translate to SQL (integration, rea
                     )} ORDER BY p.id`.toQuery()
                 )
             ).rows.map((r) => r.id);
-            expect(rows, name).to.deep.equal(expectations[name]);
+            expect(rows, name).to.deep.equal(EXPECTED_PROFILE_IDS[name]);
         }
     });
 
@@ -220,7 +236,30 @@ describe("llm/access/invoke partial decisions translate to SQL (integration, rea
             orgUnitAncestorIds: []
         };
         const decision = await partialDecision();
+        recorded["administrator"] = recordedBody;
         expect(decision.hasResidualRules).to.equal(false);
         expect(decision.result).to.equal(true);
+    });
+
+    it("matches the decisions recorded for LLM Services' invocation tests", () => {
+        const fixture = {
+            comment:
+                "Recorded llm/access/invoke partial decisions (unknown input.object.llmAccessProfile) from magda-authorization-api/src/test/LlmAccessPartialDecision.spec.ts, for a user in org unit FINANCE (ancestor CORPORATE). Regenerate with UPDATE_LLM_INVOKE_DECISIONS=1.",
+            orgUnits: { FINANCE, CORPORATE, SALES },
+            profiles: PROFILES,
+            expectedProfileIds: EXPECTED_PROFILE_IDS,
+            decisions: recorded
+        };
+        if (updateRecordedDecisions) {
+            fs.writeFileSync(
+                RECORDED_DECISIONS_FILE,
+                JSON.stringify(fixture, null, 4) + "\n"
+            );
+            return;
+        }
+        const stored = JSON.parse(
+            fs.readFileSync(RECORDED_DECISIONS_FILE, "utf8")
+        );
+        expect(stored).to.deep.equal(fixture);
     });
 });

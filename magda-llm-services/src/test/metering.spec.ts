@@ -4,6 +4,7 @@ import { AddressInfo } from "node:net";
 import { once } from "node:events";
 import jwt from "jsonwebtoken";
 import createApp, { LlmServicesConfig } from "../createApp.js";
+import { ADMIN_ROLE } from "./fakeAuthApi.js";
 import RequestMeter from "../metering/RequestMeter.js";
 import { prepareRequestBody } from "../metering/requestBody.js";
 import {
@@ -82,14 +83,10 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
     const originalFetch = global.fetch;
 
     beforeEach(() => {
-        // whoami + an allowing decision
-        global.fetch = async (input) => {
-            const url = String(input);
-            if (url.includes("/opa/decision/")) {
-                return Response.json({ hasResidualRules: false, result: true });
-            }
-            return Response.json({ id: userId, roles: [] });
-        };
+        // whoami: an administrator, so admission needs no profile or database
+        // (AUTH-10); usage is still settled (USE-9)
+        global.fetch = async () =>
+            Response.json({ id: userId, roles: [ADMIN_ROLE] });
     });
 
     afterEach(() => {
