@@ -47,7 +47,9 @@ The list is server-side paginated with name search. A **Create profile** button 
 
 Saving sends the revision. A stale save shows "This profile was changed by someone else. Reload to see the changes." and keeps the unsaved form contents (DATA-4).
 
-**Delete** asks for confirmation: "Delete profile *X*? Users will lose the access this profile gives, and it will be removed from N roles. Their usage history is kept." If the deletion fails, the profile is unchanged and an error says to retry (LIFE-4).
+**Delete** asks for confirmation: "Delete profile *X*? Users will lose the access this profile gives, and it will be removed from every role that holds it. Their usage history is kept." It doesn't count the roles: the exact list is on **Roles with access**. If the deletion fails, the dialog stays open with the error, so the user can retry.
+
+Error messages say what failed and whether retrying helps, but never promise that nothing changed. A `503` can come from the Gateway, and an Auth API change can be applied even when its response is lost (LIFE-1, LIFE-3, LIFE-4).
 
 ### Profile page: Roles with access
 
