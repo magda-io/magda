@@ -453,6 +453,92 @@ describe("profile management API (integration, #3838 #3940)", function (this: Mo
             console.log = () => undefined;
         });
 
+        /** Wait until the fake Auth API has seen a request matching `match`. */
+        async function seen(
+            match: (c: { method: string; path: string }) => boolean
+        ) {
+            for (let i = 0; i < 200; i++) {
+                if (auth.calls.some(match)) return;
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+            assert.fail("the request never arrived");
+        }
+
+        function deferred() {
+            let release!: () => void;
+            const promise = new Promise<void>((resolve) => (release = resolve));
+            return { promise, release };
+        }
+
+        it("serialises an attach that re-creates the permission with a concurrent delete", async () => {
+            const profile = await createProfile();
+            auth.permissions.delete(profile.usePermissionId); // its only role was deleted
+            const role = auth.addRole("Analysts");
+            const hold = deferred();
+            auth.holds.set(
+                `GET /v0/public/permissions/${profile.usePermissionId}`,
+                hold.promise
+            );
+            // attach: locks the row, then waits in the Auth API
+            const attaching = call(
+                "PUT",
+                `/access-profiles/${profile.id}/roles/${role}`
+            );
+            await seen(
+                (c) =>
+                    c.method === "GET" &&
+                    c.path ===
+                        `/v0/public/permissions/${profile.usePermissionId}`
+            );
+            let deleteDone = false;
+            const deleting = call(
+                "DELETE",
+                `/access-profiles/${profile.id}`
+            ).then((result) => {
+                deleteDone = true;
+                return result;
+            });
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            assert.equal(deleteDone, false, "the delete waits for the attach");
+            hold.release();
+            assert.equal((await attaching).status, 204);
+            assert.equal((await deleting).status, 204);
+            // the delete ran last: nothing is left on the role
+            assert.deepEqual(await profileRows(), []);
+            assert.equal(auth.permissions.size, 0);
+            assert.equal(auth.links.size, 0);
+        });
+
+        it("an attach that arrives during a delete answers 404 and re-creates nothing", async () => {
+            const profile = await createProfile();
+            auth.permissions.delete(profile.usePermissionId);
+            const role = auth.addRole("Analysts");
+            const hold = deferred();
+            auth.holds.set(
+                `DELETE /v0/public/permissions/${profile.usePermissionId}`,
+                hold.promise
+            );
+            // delete: deletes the row (locking it), then waits in the Auth API
+            const deleting = call("DELETE", `/access-profiles/${profile.id}`);
+            await seen(
+                (c) =>
+                    c.method === "DELETE" &&
+                    c.path.startsWith(
+                        `/v0/public/permissions/${profile.usePermissionId}`
+                    )
+            );
+            const attaching = call(
+                "PUT",
+                `/access-profiles/${profile.id}/roles/${role}`
+            );
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            hold.release();
+            assert.equal((await deleting).status, 204);
+            assert.equal((await attaching).status, 404);
+            assert.equal(auth.permissions.size, 0);
+            assert.equal(auth.links.size, 0);
+        });
+
         it("never adopts a permission with the recorded ID that isn't a profile permission", async () => {
             quietErrors();
             const profile = await createProfile();

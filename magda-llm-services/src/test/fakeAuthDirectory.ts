@@ -39,6 +39,8 @@ export async function startFakeAuthDirectory() {
      * the change: a lost response, as after a timeout.
      */
     const failuresAfterApply = new Map<string, number>();
+    /** `"<METHOD> <path prefix>"` → a promise the request waits for, once. */
+    const holds = new Map<string, Promise<void>>();
 
     for (const [id, name] of [
         [ANONYMOUS_USERS_ROLE_ID, "Anonymous Users"],
@@ -65,7 +67,7 @@ export async function startFakeAuthDirectory() {
     const server = http.createServer((req, res) => {
         const chunks: Buffer[] = [];
         req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-        req.on("end", () => {
+        req.on("end", async () => {
             const url = new URL(req.url || "/", "http://fake");
             const path = url.pathname;
             const method = req.method || "GET";
@@ -75,6 +77,13 @@ export async function startFakeAuthDirectory() {
                     ? (jwt.decode(token) as any)?.userId ?? ""
                     : "";
             calls.push({ method, path: path + url.search, userId });
+            for (const [prefix, hold] of holds) {
+                if (`${method} ${path}`.startsWith(prefix)) {
+                    holds.delete(prefix);
+                    await hold;
+                    break;
+                }
+            }
             let lostResponse: number | undefined;
             for (const [prefix, status] of failuresAfterApply) {
                 if (`${method} ${path}`.startsWith(prefix)) {
@@ -255,6 +264,7 @@ export async function startFakeAuthDirectory() {
         calls,
         failures,
         failuresAfterApply,
+        holds,
         holders,
         addRole(name: string, id: string = randomUUID()) {
             roles.set(id, { id, name, description: `${name} role` });

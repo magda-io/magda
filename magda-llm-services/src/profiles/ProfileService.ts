@@ -253,9 +253,18 @@ export default class ProfileService {
         return candidates;
     }
 
-    /** LIFE-3 / AUTH-8: attach the profile's own permission to a role. */
+    /**
+     * LIFE-3 / AUTH-8: attach the profile's own permission to a role,
+     * re-creating the permission first if it's missing (LIFE-5).
+     *
+     * The profile row is locked for the whole attach (DATA-4), so it can't
+     * interleave with a delete: a delete in progress makes this wait and then
+     * answer "not found"; an attach in progress makes the delete wait, and
+     * the delete then removes the permission with its new role link.
+     * Without the lock, an attach could re-create the permission of a profile
+     * deleted meanwhile, and leave it on the role.
+     */
     async attachRole(id: string, roleId: string): Promise<void> {
-        const profile = await this.existingProfile(id);
         if (!isUuid(roleId)) {
             throw new ProfileLifecycleError("role_not_found", "Role not found");
         }
@@ -265,14 +274,26 @@ export default class ProfileService {
                 "LLM access profiles can't be attached to this role"
             );
         }
-        if (!(await this.authApi.getRole(roleId))) {
-            throw new ProfileLifecycleError("role_not_found", "Role not found");
-        }
-        await this.ensurePermission(profile);
-        await this.authApi.attachPermissionToRole(
-            roleId,
-            profile.usePermissionId
-        );
+        await this.repository.transaction(async (tx) => {
+            const profile = await tx.getForUpdate(id);
+            if (!profile) {
+                throw new ProfileLifecycleError(
+                    "not_found",
+                    "Profile not found"
+                );
+            }
+            if (!(await this.authApi.getRole(roleId))) {
+                throw new ProfileLifecycleError(
+                    "role_not_found",
+                    "Role not found"
+                );
+            }
+            await this.ensurePermission(profile);
+            await this.authApi.attachPermissionToRole(
+                roleId,
+                profile.usePermissionId
+            );
+        });
     }
 
     /** LIFE-3: detach, keeping the permission even when it leaves its last role. */

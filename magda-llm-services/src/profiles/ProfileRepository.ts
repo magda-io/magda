@@ -154,6 +154,21 @@ export default class ProfileRepository {
         return result.rows.length ? rowToProfile(result.rows[0]) : null;
     }
 
+    /**
+     * Read and lock a profile row for the rest of the transaction, so a
+     * concurrent delete (LIFE-4) waits for it, across replicas too.
+     */
+    async getForUpdate(id: string): Promise<AccessProfile | null> {
+        if (!isUuid(id)) {
+            return null;
+        }
+        const result = await this.db.query(
+            ...sqls`SELECT ${COLUMNS} FROM access_profiles p WHERE p.id = ${id}
+                FOR UPDATE`.toQuery()
+        );
+        return result.rows.length ? rowToProfile(result.rows[0]) : null;
+    }
+
     private listConditions(options: ListProfilesOptions): SQLSyntax {
         const conditions: SQLSyntax[] = [];
         if (options.search?.trim()) {
