@@ -40,13 +40,19 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
             { ...FIELDS, ...fields },
             MANAGER
         );
-        return (await repo.markReady(pending.id, randomUUID()))!;
+        return (await repo.markReady(pending.id))!;
     }
 
-    it("creates a pending profile without a permission, then marks it ready", async () => {
-        const pending = await repo.createPending(FIELDS, MANAGER);
+    it("creates a pending profile that records its permission ID, then marks it ready (LIFE-1)", async () => {
+        const permissionId = randomUUID();
+        const pending = await repo.createPending(
+            FIELDS,
+            MANAGER,
+            randomUUID(),
+            permissionId
+        );
         assert.equal(pending.state, "pending");
-        assert.equal(pending.usePermissionId, null);
+        assert.equal(pending.usePermissionId, permissionId);
         assert.equal(pending.revision, 1);
         assert.deepEqual(pending.allowedModels, ["model-a", "model-b"]);
         assert.equal(pending.allowedDailyTokens, 100000);
@@ -54,15 +60,22 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
         assert.equal(pending.allowedMonthlyTokens, Number.MAX_SAFE_INTEGER);
         assert.equal(pending.createdBy, MANAGER);
 
-        const permissionId = randomUUID();
-        const ready = await repo.markReady(pending.id, permissionId);
+        const ready = await repo.markReady(pending.id);
         assert.ok(ready);
         assert.equal(ready.state, "ready");
         assert.equal(ready.usePermissionId, permissionId);
         assert.equal(ready.revision, 2);
 
         // only a pending profile can be marked ready
-        assert.equal(await repo.markReady(pending.id, randomUUID()), null);
+        assert.equal(await repo.markReady(pending.id), null);
+
+        // a pending profile without a recorded permission can't become ready
+        const legacy = randomUUID();
+        await pool.query(
+            `INSERT INTO access_profiles (id, name, allowed_models) VALUES ($1, 'legacy', ARRAY['m'])`,
+            [legacy]
+        );
+        assert.equal(await repo.markReady(legacy), null);
     });
 
     it("enforces the schema constraints", async () => {
@@ -100,9 +113,13 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
             "allowed models can't be empty"
         );
         const a = await createReady();
-        const b = await repo.createPending(FIELDS, MANAGER);
         await assert.rejects(
-            repo.markReady(b.id, a.usePermissionId!),
+            repo.createPending(
+                FIELDS,
+                MANAGER,
+                randomUUID(),
+                a.usePermissionId!
+            ),
             /unique/i,
             "a permission belongs to one profile"
         );
@@ -180,7 +197,7 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
         assert.equal(second.profile.revision, first.profile.revision);
     });
 
-    it("doesn't move a pending profile to deleting: it is abandoned through reconcile instead", async () => {
+    it("doesn't move a pending profile to deleting: reconcile finishes it instead", async () => {
         const pending = await repo.createPending(FIELDS, MANAGER);
         const result = await repo.markDeleting(pending.id);
         assert.equal(result.status, "pending");
@@ -197,28 +214,27 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
         );
     });
 
-    it("abandons a pending profile and lists profiles to reconcile (LIFE-5)", async () => {
+    it("lists profiles to reconcile, optionally only those not updated recently (LIFE-5)", async () => {
         const pending = await repo.createPending(FIELDS, MANAGER);
         const states = (await repo.listByState(["pending"])).map((p) => p.id);
         assert.ok(states.includes(pending.id));
+        const stale = (
+            await repo.listByState(
+                ["pending"],
+                100,
+                new Date(Date.now() - 60_000)
+            )
+        ).map((p) => p.id);
+        assert.ok(!stale.includes(pending.id));
+        const settled = (
+            await repo.listByState(
+                ["pending"],
+                100,
+                new Date(Date.now() + 60_000)
+            )
+        ).map((p) => p.id);
+        assert.ok(settled.includes(pending.id));
         assert.equal(await repo.delete(pending.id), true);
-    });
-
-    it("replaces a missing permission only when it is still the recorded one", async () => {
-        const profile = await createReady();
-        const replacement = randomUUID();
-        assert.equal(
-            await repo.replacePermission(profile.id, randomUUID(), replacement),
-            null
-        );
-        const repaired = await repo.replacePermission(
-            profile.id,
-            profile.usePermissionId!,
-            replacement
-        );
-        assert.ok(repaired);
-        assert.equal(repaired.usePermissionId, replacement);
-        assert.equal(repaired.revision, profile.revision + 1);
     });
 
     it("lists with search, paging, states and an injected condition over alias p", async () => {
@@ -234,7 +250,7 @@ describe("ProfileRepository (integration)", function (this: Mocha.Suite) {
                     { ...FIELDS, name },
                     MANAGER
                 );
-                await listRepo.markReady(p.id, randomUUID());
+                await listRepo.markReady(p.id);
                 created[name] = p.id;
             }
             await listRepo.markDeleting(created["Delta"]);

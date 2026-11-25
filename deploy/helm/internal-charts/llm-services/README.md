@@ -26,6 +26,7 @@ Kubernetes: `>= 1.24.0-0`
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `""` |  |
 | litellm.enabled | bool | `true` |  |
+| profiles.reconcileIntervalSeconds | int | `300` | How often, in seconds, LLM Services reconciles access profiles with their Authorization API permissions: it finishes interrupted creates, retries failed deletes and re-creates missing permissions (0 to 86400; 0 runs it only at startup and on demand). |
 | replicas | int | `1` |  |
 | resources.limits.cpu | string | `"500m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |

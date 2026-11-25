@@ -43,6 +43,9 @@ spec:
                   name: {{ $secretName }}
                   key: {{ $secretKey }}
             # usage metering (#3838)
+            # Auth API changes for access profiles use an internal session for this user (#3838 AUTH-12)
+            - {name: DEFAULT_ADMIN_USER_ID, value: {{ .Values.global.defaultAdminUserId | quote }}}
+            - {name: PROFILE_RECONCILE_INTERVAL_SECONDS, value: {{ .Values.profiles.reconcileIntervalSeconds | int | quote }}}
             - {name: DECISION_CACHE_SECONDS, value: {{ .Values.decisionCacheSeconds | int | quote }}}
             - {name: USAGE_TIME_ZONE, value: {{ .Values.usage.timeZone | quote }}}
             - {name: USAGE_ESTIMATE_BYTES_PER_TOKEN, value: {{ .Values.usage.estimate.bytesPerToken | int | quote }}}

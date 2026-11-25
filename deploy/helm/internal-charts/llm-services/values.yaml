@@ -26,6 +26,13 @@ backend:
 litellm:
   enabled: true
 
+profiles:
+  # -- How often, in seconds, LLM Services reconciles access profiles with
+  # their Authorization API permissions: it finishes interrupted creates,
+  # retries failed deletes and re-creates missing permissions (0 to 86400; 0
+  # runs it only at startup and on demand).
+  reconcileIntervalSeconds: 300
+
 # Usage metering (#3838). Approximate token volume for soft limits, not billing.
 # -- How long, in seconds, a caller's `llm/access/invoke` decision is cached
 # (0 to 300; 0 disables the cache). This is the delay before a revoked grant

@@ -84,21 +84,28 @@ export type UpdateResult =
 export default class ProfileRepository {
     constructor(private readonly pool: pg.Pool) {}
 
-    /** LIFE-1 step 1: insert a profile as `pending`. */
+    /**
+     * LIFE-1 step 1: insert a profile as `pending`, recording the ID its
+     * permission **will** have. The permission is then created with that ID
+     * (step 2), so a retry or reconcile finds it by ID, never by name, and a
+     * crash between the steps can't leave an unreferenced permission.
+     */
     async createPending(
         fields: ProfileFields,
         createdBy: string | null,
-        id: string = randomUUID()
+        id: string = randomUUID(),
+        usePermissionId: string = randomUUID()
     ): Promise<AccessProfile> {
         const result = await this.pool.query(
             ...sqls`INSERT INTO access_profiles AS p
                 (id, name, description, allowed_models, enabled, state,
-                 org_unit_id, constraint_exemption,
+                 org_unit_id, constraint_exemption, use_permission_id,
                  allowed_daily_tokens, allowed_weekly_tokens, allowed_monthly_tokens,
                  created_by, updated_by)
             VALUES (${id}, ${fields.name}, ${fields.description},
                 ${fields.allowedModels}, ${fields.enabled}, 'pending',
                 ${fields.orgUnitId}, ${fields.constraintExemption},
+                ${usePermissionId},
                 ${fields.allowedDailyTokens}, ${fields.allowedWeeklyTokens},
                 ${fields.allowedMonthlyTokens}, ${createdBy}, ${createdBy})
             RETURNING ${COLUMNS}`.toQuery()
@@ -107,18 +114,16 @@ export default class ProfileRepository {
     }
 
     /**
-     * LIFE-1 step 3: store the profile's permission and mark it `ready`.
-     * Returns `null` unless the profile is still `pending`.
+     * LIFE-1 step 3: mark a `pending` profile `ready`, once its recorded
+     * permission exists. Returns `null` unless the profile is still `pending`
+     * with a recorded permission ID.
      */
-    async markReady(
-        id: string,
-        usePermissionId: string
-    ): Promise<AccessProfile | null> {
+    async markReady(id: string): Promise<AccessProfile | null> {
         const result = await this.pool.query(
             ...sqls`UPDATE access_profiles AS p
-                SET state = 'ready', use_permission_id = ${usePermissionId},
-                    revision = p.revision + 1, updated_at = now()
+                SET state = 'ready', revision = p.revision + 1, updated_at = now()
                 WHERE p.id = ${id} AND p.state = 'pending'
+                    AND p.use_permission_id IS NOT NULL
                 RETURNING ${COLUMNS}`.toQuery()
         );
         return result.rows.length ? rowToProfile(result.rows[0]) : null;
@@ -220,9 +225,8 @@ export default class ProfileRepository {
      * - `ready` → `deleting` (disabled, revision bumped);
      * - an already `deleting` profile is returned unchanged, so a retried
      *   delete is idempotent;
-     * - a `pending` profile is not moved: it has no permission yet, and is
-     *   abandoned through reconcile (`delete`, LIFE-5) instead. The caller gets
-     *   `pending` back.
+     * - a `pending` profile is not moved: its creation is still in progress,
+     *   and reconcile finishes it (LIFE-5). The caller gets `pending` back.
      */
     async markDeleting(id: string): Promise<MarkDeletingResult> {
         if (!isUuid(id)) {
@@ -253,8 +257,9 @@ export default class ProfileRepository {
     }
 
     /**
-     * LIFE-4 step 3 (or abandoning a pending profile, LIFE-5): delete the row.
-     * A `ready` profile is never deleted directly: mark it deleting first.
+     * LIFE-4 step 3 (or abandoning a pending profile whose permission was never
+     * recorded, LIFE-5): delete the row. A `ready` profile is never deleted
+     * directly: mark it deleting first.
      */
     async delete(id: string): Promise<boolean> {
         const result = await this.pool.query(
@@ -265,33 +270,22 @@ export default class ProfileRepository {
     }
 
     /**
-     * LIFE-5 repair: replace a missing permission of a `ready` profile, when the
-     * stored one is still `previousPermissionId`.
+     * LIFE-5: profiles in the given states, oldest first, optionally only
+     * those last updated before `updatedBefore`.
      */
-    async replacePermission(
-        id: string,
-        previousPermissionId: string,
-        usePermissionId: string
-    ): Promise<AccessProfile | null> {
-        const result = await this.pool.query(
-            ...sqls`UPDATE access_profiles AS p
-                SET use_permission_id = ${usePermissionId},
-                    revision = p.revision + 1, updated_at = now()
-                WHERE p.id = ${id} AND p.state = 'ready'
-                    AND p.use_permission_id = ${previousPermissionId}
-                RETURNING ${COLUMNS}`.toQuery()
-        );
-        return result.rows.length ? rowToProfile(result.rows[0]) : null;
-    }
-
-    /** LIFE-5: profiles in the given states, oldest first. */
     async listByState(
         states: ProfileState[],
-        limit: number = 100
+        limit: number = 100,
+        updatedBefore?: Date
     ): Promise<AccessProfile[]> {
         const result = await this.pool.query(
             ...sqls`SELECT ${COLUMNS} FROM access_profiles p
                 WHERE p.state = ANY(${states})
+                    ${
+                        updatedBefore
+                            ? sqls`AND p.updated_at < ${updatedBefore}`
+                            : SQLSyntax.empty
+                    }
                 ORDER BY p.updated_at, p.id LIMIT ${limit}`.toQuery()
         );
         return result.rows.map(rowToProfile);
