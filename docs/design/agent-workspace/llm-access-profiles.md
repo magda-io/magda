@@ -408,7 +408,6 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - `profiles.reconcileIntervalSeconds` (`300`; LIFE-5);
   - `global.defaultAdminUserId`, for the internal session (AUTH-12);
   - an optional `noAccessHelp` text or link, shown by the Workspace when a user has no eligible model (UI);
-  - optionally `bootstrap.defaultProfile`, off by default. When enabled, LLM Services creates one profile with a fixed ID at startup if it doesn't exist, with configured aliases, limits and Public flag.
 - **DEP-4** MAGDA v8 is unreleased, so there is no released-user migration. Release notes must say that LLM access is no longer implied by `agentWorkspace/access`. A Workspace user needs the "Agent Workspace Users" stock role (which now includes "Use LLM profiles", AUTH-11) **and** a Public or audience profile, or another invoke grant.
 
 ## Acceptance tests
