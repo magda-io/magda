@@ -23,6 +23,11 @@
         apiKeyEnv: MAGDA_LLM_API_KEY
         api: openai-responses
         baseURL: !!js process.env.MAGDA_LLM_BASE_URL
+        # The effort for requests that name none, such as session titles and
+        # other auxiliary requests: the deployment's default
+        # (global.defaultAgentModel.reasoningEffort). Unset, they send no
+        # reasoning option and the provider uses its own default.
+        reasoning: !!js process.env.MAGDA_LLM_REASONING_EFFORT || undefined
         models:
           - id: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'
             name: Magda Agent Default
@@ -32,13 +37,29 @@
             # (global.defaultAgentModel.imageInput); DSH then attaches images.
             # Quoted: unquoted, YAML reads the expression's ': ' as a mapping.
             input: !!js "process.env.MAGDA_LLM_IMAGE_INPUT === 'true' ? ['text', 'image'] : ['text']"
+            # No `off`: the default model can't turn reasoning off. A declared
+            # `off` makes requests without an effort send `effort: "none"`,
+            # which the provider rejects; undeclared, the Workspace doesn't
+            # offer Off, and an explicit Off fails before any request.
             reasoningEfforts:
-              off:
               low: low
               medium: medium
               high: high
               xhigh: xhigh
               max: max
+
+# Session titles run at the default effort (#3963). Reasoning tokens count
+# toward the output cap, so DSH's 64-token cap often ended a title request
+# before any title text, and the session kept its fallback title. Usage is
+# billed by tokens used, not by this cap. Patching a row replaces its whole
+# config, so the other fields repeat DSH's defaults.
+- id: session-title-llm
+  config:
+    targetWords: 5
+    targetCjkCharacters: 10
+    maxInputBytes: 4096
+    maxOutputTokens: 1024
+    timeoutMs: 60000
 
 - id: agent-default-model
   config:

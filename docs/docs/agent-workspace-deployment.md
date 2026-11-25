@@ -264,7 +264,9 @@ without changing DSH or LLM Services clients. The default explicitly selects
 `medium` reasoning, with a 1,050,000-token context window and 128,000-token
 maximum output. Set `global.defaultAgentModel.reasoningEffort: ""` to omit the
 reasoning setting from both DSH and LiteLLM and let the provider choose its model
-default. This is distinct from the explicit `off` effort. When selecting another
+default. The Workspace's own requests that name no effort, such as session
+titles, use the same setting. `off` isn't accepted: the default model can't turn
+reasoning off, and the Workspace doesn't offer an Off level. When selecting another
 model, update `providerModel`, `reasoningEffort`, `contextWindow`, and `maxTokens`
 to its capabilities. See the
 [GPT-6.1 Sol model specification](https://developers.openai.com/api/docs/models/gpt-6.1-sol).

@@ -633,6 +633,43 @@ assert.doesNotMatch(
     /MAGDA_LLM_REASONING_EFFORT \|\| ['\"]medium['\"]/,
     "The runtime must not restore an omitted reasoning effort"
 );
+// #3963: requests that name no effort (session titles and other auxiliary
+// requests) use the deployment's default effort, not pi-ai's "off" path.
+assert.match(
+    cordisPatch,
+    /\n {8}reasoning: !!js process\.env\.MAGDA_LLM_REASONING_EFFORT \|\| undefined\n/,
+    "The managed provider must default requests without an effort to the deployment's effort"
+);
+// The default model can't turn reasoning off: a declared `off` sends
+// `effort: "none"`, which the provider rejects, and would offer Off.
+// Reasoning counts toward the title request's output cap: leave room for it.
+const titleConfig = /- id: session-title-llm\n {2}config:\n((?: {4}\S.*\n)+)/.exec(
+    cordisPatch
+);
+assert.ok(titleConfig, "The managed profile must configure session titles");
+assert.deepEqual(
+    titleConfig[1].trim().split(/\n\s*/),
+    [
+        "targetWords: 5",
+        "targetCjkCharacters: 10",
+        "maxInputBytes: 4096",
+        "maxOutputTokens: 1024",
+        "timeoutMs: 60000"
+    ],
+    "Session titles must keep DSH's limits with room for reasoning tokens"
+);
+const reasoningEfforts = /reasoningEfforts:\n((?: {14}\S.*\n)+)/.exec(
+    cordisPatch
+);
+assert.ok(
+    reasoningEfforts,
+    "The managed model must declare its reasoning efforts"
+);
+assert.deepEqual(
+    reasoningEfforts[1].trim().split(/\n\s*/),
+    ["low: low", "medium: medium", "high: high", "xhigh: xhigh", "max: max"],
+    "The managed model must not offer an Off reasoning level"
+);
 for (const managedLimit of [
     "MAGDA_LLM_CONTEXT_WINDOW",
     "MAGDA_LLM_MAX_TOKENS"
