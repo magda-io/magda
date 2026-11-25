@@ -6,10 +6,15 @@ import {
 } from "./metering/settlement.js";
 import { parseUsageTimeZone } from "./usage/periods.js";
 import { parseDecisionCacheSeconds } from "./access/CallerAccess.js";
+import AuthApiClient from "./authApi/AuthApiClient.js";
+import ProfileRepository from "./profiles/ProfileRepository.js";
+import ProfileService from "./profiles/ProfileService.js";
+import { isUuid } from "./profiles/validation.js";
 
 const port = Number(process.env.PORT || 80);
 const jwtSecret = process.env.JWT_SECRET;
 const liteLlmKey = process.env.LITELLM_MASTER_KEY;
+const authApiUrl = process.env.AUTH_API_URL || "http://authorization-api/v0";
 
 if (!jwtSecret) throw new Error("JWT_SECRET is required");
 if (!liteLlmKey) throw new Error("LITELLM_MASTER_KEY is required");
@@ -24,9 +29,25 @@ const pool = process.env.DB_HOST
       })
     : undefined;
 
+// AUTH-12: Auth API changes are made with an internal session for
+// `global.defaultAdminUserId`.
+const adminUserId = process.env.DEFAULT_ADMIN_USER_ID;
+if (pool && !isUuid(adminUserId)) {
+    throw new Error(
+        "DEFAULT_ADMIN_USER_ID must be a UUID when the database is configured"
+    );
+}
+const profiles =
+    pool && adminUserId
+        ? new ProfileService({
+              repository: new ProfileRepository(pool),
+              authApi: new AuthApiClient({ authApiUrl, jwtSecret, adminUserId })
+          })
+        : undefined;
+
 const app = createApp({
     jwtSecret,
-    authApiUrl: process.env.AUTH_API_URL || "http://authorization-api/v0",
+    authApiUrl,
     liteLlmUrl: new URL(process.env.LITELLM_URL || "http://litellm:4000"),
     liteLlmKey,
     allowedModels: parseAllowedModels(process.env.ALLOWED_MODELS),
@@ -36,7 +57,8 @@ const app = createApp({
     usageTimeZone: parseUsageTimeZone(process.env.USAGE_TIME_ZONE),
     decisionCacheSeconds: parseDecisionCacheSeconds(
         process.env.DECISION_CACHE_SECONDS
-    )
+    ),
+    profiles
 });
 
 const server = app.listen(port, () =>

@@ -57,7 +57,6 @@ function toLimit(value: unknown): number | null {
 function eligibilityConditions(condition: SQLSyntax): SQLSyntax[] {
     return [
         sqls`p.enabled = TRUE`,
-        sqls`p.state = 'ready'`,
         // the translated partial decision (EVAL-1); empty = every profile
         ...(condition.isEmpty ? [] : [sqls`(${condition})`])
     ];
@@ -67,7 +66,7 @@ function eligibilityConditions(condition: SQLSyntax): SQLSyntax[] {
  * Decides whether a caller may send a model request, and which aliases they
  * may discover.
  *
- * Eligible profiles are `enabled`, `state = 'ready'`, cover the alias (an
+ * Eligible profiles are `enabled`, cover the alias (an
  * explicit alias, or `["*"]` over aliases that are both allowed and served,
  * MODEL-2) and satisfy the caller's translated partial decision (EVAL-1).
  */

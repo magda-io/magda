@@ -12,10 +12,12 @@ CREATE TABLE "public"."access_profiles" (
     "description" text,
     "allowed_models" text[] NOT NULL CHECK (cardinality("allowed_models") > 0),
     "enabled" boolean NOT NULL DEFAULT true,
-    "state" text NOT NULL DEFAULT 'pending' CHECK ("state" IN ('pending', 'ready', 'deleting')),
     "org_unit_id" uuid,
     "constraint_exemption" boolean NOT NULL DEFAULT false,
-    "use_permission_id" uuid UNIQUE,
+    -- The profile's one managed permission (AUTH-7). LLM Services chooses the
+    -- ID, inserts the row and creates the permission in one transaction
+    -- (LIFE-1), so every row has one.
+    "use_permission_id" uuid NOT NULL UNIQUE,
     "allowed_daily_tokens" bigint CHECK ("allowed_daily_tokens" >= 0),
     "allowed_weekly_tokens" bigint CHECK ("allowed_weekly_tokens" >= 0),
     "allowed_monthly_tokens" bigint CHECK ("allowed_monthly_tokens" >= 0),
@@ -23,11 +25,9 @@ CREATE TABLE "public"."access_profiles" (
     "created_by" uuid,
     "updated_by" uuid,
     "created_at" timestamptz NOT NULL DEFAULT now(),
-    "updated_at" timestamptz NOT NULL DEFAULT now(),
-    CHECK ("state" = 'pending' OR "use_permission_id" IS NOT NULL)
+    "updated_at" timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX "access_profiles_state_idx" ON "public"."access_profiles" ("state");
 CREATE INDEX "access_profiles_name_idx" ON "public"."access_profiles" (lower("name"));
 
 CREATE TABLE "public"."daily_model_usage" (

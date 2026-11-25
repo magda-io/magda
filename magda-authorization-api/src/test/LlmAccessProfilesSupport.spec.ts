@@ -357,6 +357,95 @@ describe("Auth API support for LLM access profiles (integration)", function (thi
             ).to.have.lengthOf(1);
         });
 
+        describe("POST / with a caller-chosen id (#3838 LIFE-1)", () => {
+            const adminSession = () =>
+                jwt.sign(
+                    { userId: "00000000-0000-4000-8000-000000000000" },
+                    jwtSecret
+                );
+            const body = (extra: Record<string, any>) => ({
+                name: "chosen id",
+                description: "",
+                resourceUri: "llm/access",
+                operationUris: ["llm/access/invoke"],
+                user_ownership_constraint: false,
+                org_unit_ownership_constraint: false,
+                pre_authorised_constraint: true,
+                allow_exemption: false,
+                ...extra
+            });
+
+            it("creates the permission with that id", async () => {
+                const id = "4c6a5d0e-8f3b-4a59-9d2e-3a1f0b6c7d8e";
+                const res = await request(buildApp())
+                    .post("/v0/auth/permissions")
+                    .set("X-Magda-Session", adminSession())
+                    .send(body({ id }));
+                expect(res.status).to.equal(200);
+                expect(res.body.id).to.equal(id);
+                const read = await request(buildApp()).get(
+                    `/v0/auth/permissions/${id}`
+                );
+                expect(read.status).to.equal(200);
+                expect(read.body.pre_authorised_constraint).to.equal(true);
+                expect(
+                    read.body.operations.map((op: any) => op.uri)
+                ).to.deep.equal(["llm/access/invoke"]);
+            });
+
+            it("answers 409 for an id in use, and changes nothing", async () => {
+                const id = "5d7b6e1f-9a4c-4b6a-8e3f-4b2a1c7d8e9f";
+                const first = await request(buildApp())
+                    .post("/v0/auth/permissions")
+                    .set("X-Magda-Session", adminSession())
+                    .send(body({ id, name: "first" }));
+                expect(first.status).to.equal(200);
+                const second = await request(buildApp())
+                    .post("/v0/auth/permissions")
+                    .set("X-Magda-Session", adminSession())
+                    .send(
+                        body({
+                            id,
+                            name: "second",
+                            operationUris: ["llm/access/read"],
+                            pre_authorised_constraint: false
+                        })
+                    );
+                expect(second.status).to.equal(409);
+                const rows = await pool.query(
+                    `SELECT name, pre_authorised_constraint FROM permissions WHERE id = $1`,
+                    [id]
+                );
+                expect(rows.rows).to.deep.equal([
+                    { name: "first", pre_authorised_constraint: true }
+                ]);
+                const ops = await pool.query(
+                    `SELECT o.uri FROM permission_operations po JOIN operations o ON o.id = po.operation_id
+                    WHERE po.permission_id = $1`,
+                    [id]
+                );
+                expect(ops.rows.map((r) => r.uri)).to.deep.equal([
+                    "llm/access/invoke"
+                ]);
+            });
+
+            it("rejects an id that isn't a uuid, and still generates one when omitted", async () => {
+                const invalid = await request(buildApp())
+                    .post("/v0/auth/permissions")
+                    .set("X-Magda-Session", adminSession())
+                    .send(body({ id: "not-a-uuid" }));
+                expect(invalid.status).to.equal(400);
+                const generated = await request(buildApp())
+                    .post("/v0/auth/permissions")
+                    .set("X-Magda-Session", adminSession())
+                    .send(body({ name: "generated id" }));
+                expect(generated.status).to.equal(200);
+                expect(generated.body.id).to.match(
+                    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+                );
+            });
+        });
+
         it("DELETE without removeFromRoles still refuses a held permission", async () => {
             const permission = await createPermission("route delete plain");
             await createRole("route delete plain role", [permission]);

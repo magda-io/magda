@@ -109,8 +109,13 @@ export default function createPermissionApiRouter(options: ApiRouterOptions) {
      * Returns the newly created permission record.
      * Required `authObject/permission/create` permission to access this API.
      *
+     * The optional `id` lets the caller choose the new permission's ID (a UUID), so it can record
+     * the ID before creating the permission and safely retry the creation. If a permission with
+     * that ID already exists, the API answers 409 and creates nothing.
+     *
      * @apiParamExample (Body) {json}:
      *     {
+     *       "id": "4c6a5d0e-8f3b-4a59-9d2e-3a1f0b6c7d8e",
      *       "name": "a test permission",
      *       "user_ownership_constraint": false,
      *       "org_unit_ownership_constraint": true,

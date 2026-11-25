@@ -1,8 +1,6 @@
 // LLM access profiles (#3838). See
 // docs/design/agent-workspace/llm-access-profiles.md, "Data model".
 
-export type ProfileState = "pending" | "ready" | "deleting";
-
 export interface AccessProfile {
     id: string;
     name: string;
@@ -10,13 +8,12 @@ export interface AccessProfile {
     /** Exact public model aliases, or exactly `["*"]` (DATA-2, MODEL-2). */
     allowedModels: string[];
     enabled: boolean;
-    state: ProfileState;
     /** Audience org unit (AUTH-5); `null` means no org unit. */
     orgUnitId: string | null;
     /** A "public" profile (AUTH-6). */
     constraintExemption: boolean;
-    /** The profile's one managed invoke permission (AUTH-7); `null` only while pending. */
-    usePermissionId: string | null;
+    /** The profile's one managed invoke permission (AUTH-7). */
+    usePermissionId: string;
     /** Per user and per model; `null` means unlimited (DATA-3). */
     allowedDailyTokens: number | null;
     allowedWeeklyTokens: number | null;

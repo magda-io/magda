@@ -17,6 +17,8 @@ import CallerAccessResolver, {
 import Admission from "./access/Admission.js";
 import ServedModels from "./access/ServedModels.js";
 import UsageLedger from "./usage/UsageLedger.js";
+import ProfileService from "./profiles/ProfileService.js";
+import createProfileRouter from "./profiles/createProfileRouter.js";
 import { DEFAULT_USAGE_TIME_ZONE } from "./usage/periods.js";
 
 export function parseAllowedModels(value: string | undefined): Set<string> {
@@ -74,6 +76,10 @@ export interface LlmServicesConfig {
     decisionCacheSeconds?: number;
     /** The usage ledger; by default built on `pool`. */
     ledger?: UsageLedger;
+    /** Profile lifecycle for the management API (#3940); needs the database. */
+    profiles?: ProfileService;
+    /** MODEL-2: LiteLLM's served aliases; by default built from `liteLlmUrl`. */
+    servedModels?: ServedModels;
 }
 
 // Upstream connection errors where the request can't have reached the model
@@ -111,11 +117,13 @@ export default function createApp(config: LlmServicesConfig) {
         authApiUrl,
         decisionCacheSeconds
     });
+    const servedModels =
+        config.servedModels ?? new ServedModels({ liteLlmUrl, liteLlmKey });
     const admission = new Admission({
         pool,
         ledger,
         allowedModels,
-        servedModels: new ServedModels({ liteLlmUrl, liteLlmKey })
+        servedModels
     });
 
     function sendError(
@@ -278,6 +286,18 @@ export default function createApp(config: LlmServicesConfig) {
         }
         res.json({ status: "ok" });
     });
+    // profile management (API-1 to API-6, #3940)
+    app.use(
+        "/v0",
+        createProfileRouter({
+            jwtSecret,
+            authApiUrl,
+            allowedModels,
+            servedModels,
+            profiles: config.profiles
+        })
+    );
+
     app.use("/v0/v1", requireCaller);
 
     // API-9: the aliases the caller can invoke through at least one eligible
