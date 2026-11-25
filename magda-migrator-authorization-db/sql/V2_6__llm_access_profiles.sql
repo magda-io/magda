@@ -11,7 +11,11 @@
 -- `llm/usage`: other users' LLM usage. `read` honours unconstrained
 -- permissions only; users always read their own usage without a permission.
 --
--- The "LLM Profile Managers" stock role is unassigned. The stock "Use LLM
+-- The "LLM Profile Managers" stock role is unassigned. Besides the LLM
+-- permissions, it can read org units (an unconstrained, read-only
+-- `authObject/orgUnit/read`): a profile's audience is an org unit, so managers
+-- must be able to choose one and see the names of the units profiles use. It
+-- holds no other `authObject/*` operation. The stock "Use LLM
 -- Profiles" permission joins the existing (also unassigned) "Agent Workspace
 -- Users" role, if it still exists: on its own it grants nothing until a
 -- profile has an org unit or is public. Nothing is granted to Anonymous or Authenticated Users.
@@ -53,7 +57,8 @@ INSERT INTO "public"."permissions"
 ('00000000-3838-4100-8000-000000000001', 'Manage LLM Access Profiles', (SELECT id FROM "public"."resources" WHERE "uri" = 'llm/access'), false, false, false, false, 'Create, read, update and delete every LLM access profile.'),
 ('00000000-3838-4100-8000-000000000002', 'Use All LLM Access Profiles', (SELECT id FROM "public"."resources" WHERE "uri" = 'llm/access'), false, false, false, false, 'Use the models of every LLM access profile, within its token limits.'),
 ('00000000-3838-4100-8000-000000000003', 'Read All LLM Usage', (SELECT id FROM "public"."resources" WHERE "uri" = 'llm/usage'), false, false, false, false, 'Read every user''s LLM token usage.'),
-('00000000-3838-4100-8000-000000000004', 'Use LLM Profiles by Org Unit or Public', (SELECT id FROM "public"."resources" WHERE "uri" = 'llm/access'), false, true, false, true, 'Use LLM access profiles of the user''s own org unit or an org unit above it, and public profiles.');
+('00000000-3838-4100-8000-000000000004', 'Use LLM Profiles by Org Unit or Public', (SELECT id FROM "public"."resources" WHERE "uri" = 'llm/access'), false, true, false, true, 'Use LLM access profiles of the user''s own org unit or an org unit above it, and public profiles.'),
+('00000000-3838-4100-8000-000000000005', 'Read All Org Units for LLM Access Profiles', (SELECT id FROM "public"."resources" WHERE "uri" = 'authObject/orgUnit'), false, false, false, false, 'Read every org unit, to choose and show the audience of LLM access profiles.');
 
 INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") VALUES
 -- Manage LLM Access Profiles
@@ -66,17 +71,20 @@ INSERT INTO "public"."permission_operations" ("permission_id", "operation_id") V
 -- Read All LLM Usage
 ('00000000-3838-4100-8000-000000000003', (SELECT id FROM "public"."operations" WHERE "uri" = 'llm/usage/read')),
 -- Use LLM Profiles by Org Unit or Public
-('00000000-3838-4100-8000-000000000004', (SELECT id FROM "public"."operations" WHERE "uri" = 'llm/access/invoke'));
+('00000000-3838-4100-8000-000000000004', (SELECT id FROM "public"."operations" WHERE "uri" = 'llm/access/invoke')),
+-- Read All Org Units for LLM Access Profiles
+('00000000-3838-4100-8000-000000000005', (SELECT id FROM "public"."operations" WHERE "uri" = 'authObject/orgUnit/read'));
 
 -- Stock role (fixed ID, unassigned)
 
 INSERT INTO "public"."roles" ("id", "name", "description") VALUES
-('00000000-3838-4200-8000-000000000001', 'LLM Profile Managers', 'Unassigned stock role for central LLM access profile management: manage and use every profile, and read all LLM usage.');
+('00000000-3838-4200-8000-000000000001', 'LLM Profile Managers', 'Unassigned stock role for central LLM access profile management: manage and use every profile, read all LLM usage, and read org units.');
 
 INSERT INTO "public"."role_permissions" ("role_id", "permission_id") VALUES
 ('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000001'),
 ('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000002'),
-('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000003');
+('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000003'),
+('00000000-3838-4200-8000-000000000001', '00000000-3838-4100-8000-000000000005');
 
 -- Agent Workspace Users (V2_4): LLM access by org unit or public profile.
 -- It isn't a protected system role, so an administrator may have deleted it:
