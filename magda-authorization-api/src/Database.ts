@@ -68,6 +68,12 @@ export const defaultAnonymousUserInfo: User = {
 };
 
 export interface CreatePermissionOptions {
+    /**
+     * Optional caller-chosen ID (a UUID), so a caller can make creation
+     * retryable: it records the ID first, then creates the permission, and a
+     * retry finds it by that ID (#3838 LIFE-1). An ID already in use is a 409.
+     */
+    id?: string;
     name: string;
     description: string;
     userOwnershipConstraint?: boolean;
@@ -1298,6 +1304,7 @@ export default class Database {
                 );
             }
             let {
+                id,
                 name,
                 description,
                 userOwnershipConstraint,
@@ -1309,6 +1316,10 @@ export default class Database {
                 ownerId,
                 createBy
             } = options;
+
+            if (typeof id !== "undefined" && id !== null && !isUuid(id)) {
+                throw new ServerError("`id` field must be a valid uuid.", 400);
+            }
 
             if (!name || typeof name !== "string") {
                 throw new ServerError(
@@ -1454,6 +1465,10 @@ export default class Database {
                 permissionData["edit_by"] = createBy;
             }
 
+            if (id) {
+                permissionData["id"] = id;
+            }
+
             try {
                 await client.query("BEGIN");
                 const permission = await createTableRecord(
@@ -1461,6 +1476,7 @@ export default class Database {
                     "permissions",
                     permissionData,
                     [
+                        "id",
                         "name",
                         "resource_id",
                         "user_ownership_constraint",
@@ -1471,7 +1487,8 @@ export default class Database {
                         "create_by",
                         "owner_id",
                         "edit_by"
-                    ]
+                    ],
+                    !id
                 );
 
                 const values = (operationIds as string[]).map(
@@ -1487,6 +1504,12 @@ export default class Database {
                 return permission;
             } catch (e) {
                 await client.query("ROLLBACK");
+                if (id && (e as any)?.code === "23505") {
+                    throw new ServerError(
+                        `A permission with id ${id} already exists.`,
+                        409
+                    );
+                }
                 throw e;
             }
         } finally {
