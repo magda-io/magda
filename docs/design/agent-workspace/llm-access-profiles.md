@@ -73,7 +73,7 @@ What changes compared with today: LLM invocation no longer depends on `agentWork
 
   Owner-constrained and combined owner + org unit invoke permissions match nothing: profiles have no owner.
 
-  A decision is only made for **eligible** profiles: enabled, in state `ready`, and covering the requested alias (MODEL-2). Passing it is necessary but not sufficient: the request must also pass the quota check (USE-6).
+  A decision is only made for **eligible** profiles: enabled, and covering the requested alias (MODEL-2). Passing it is necessary but not sufficient: the request must also pass the quota check (USE-6).
 - **AUTH-5** **Audience meaning of the org unit constraint, for invoke only.** A profile in org unit X is available to every user in X's subtree, i.e. to users whose org unit is X or below X.
 
   This is the reverse of MAGDA's management scope (`managingOrgUnitIds`). It is deliberate and resource-specific:
@@ -210,10 +210,9 @@ CREATE TABLE access_profiles (
     description TEXT,
     allowed_models TEXT[] NOT NULL CHECK (cardinality(allowed_models) > 0),
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    state TEXT NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'ready', 'deleting')),
     org_unit_id UUID,                        -- audience (AUTH-5); NULL = no org unit
     constraint_exemption BOOLEAN NOT NULL DEFAULT FALSE,  -- public profile (AUTH-6)
-    use_permission_id UUID UNIQUE,           -- AUTH-7; NULL only while pending
+    use_permission_id UUID NOT NULL UNIQUE,  -- AUTH-7; chosen by LLM Services (LIFE-1)
     allowed_daily_tokens BIGINT CHECK (allowed_daily_tokens >= 0),
     allowed_weekly_tokens BIGINT CHECK (allowed_weekly_tokens >= 0),
     allowed_monthly_tokens BIGINT CHECK (allowed_monthly_tokens >= 0),
@@ -221,8 +220,7 @@ CREATE TABLE access_profiles (
     created_by UUID,
     updated_by UUID,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CHECK (state = 'pending' OR use_permission_id IS NOT NULL)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE daily_model_usage (
@@ -240,7 +238,7 @@ CREATE TABLE daily_model_usage (
 - **DATA-1** The OPA object field names (`org_unit_id`, `use_permission_id`, `constraint_exemption`) are the column names, so that the translation in EVAL-1 works. Renaming one requires changing the policy too.
 - **DATA-2** `allowed_models` is either a list of distinct, trimmed, non-empty exact aliases, or exactly `["*"]` (MODEL-2).
 - **DATA-3** For each limit, NULL means unlimited for that period and `0` admits no new non-administrator request.
-- **DATA-4** `revision` provides optimistic concurrency. Updates send it as `If-Match`; a stale value gets `409`. Never hold a SQL lock across an Auth API call.
+- **DATA-4** `revision` provides optimistic concurrency. Updates send it as `If-Match`; a stale value gets `409`. A transaction may be held across an Auth API call only for create and delete (LIFE-1, LIFE-4): one call each, bounded by its timeout. These are rare administrator actions.
 - **DATA-5** LLM Services never reads or writes Auth DB tables. Auth objects are reached only through the Auth API.
 - **DATA-6** No pruning in v8. "Total" usage is the sum of all of a user's rows. The volume is one row per active user, per alias, per local day: about 730k rows a year for 1,000 daily users × 2 aliases. Add pruning, together with a rollup, only if it's ever needed.
 
@@ -254,40 +252,37 @@ CREATE TABLE daily_model_usage (
 
 ## Profile lifecycle
 
-- **LIFE-1** **Create:**
-  1. Insert the profile as `pending`, with a newly generated `use_permission_id`: the ID its permission **will** have.
+- **LIFE-1** **Create**, in one database transaction:
+  1. Insert the profile, with a newly generated `use_permission_id`: the ID its permission will have.
   2. Create its permission through the Auth API with that ID (AUTHAPI-4; pre-authorised invoke, `allowExemption=false`). Give it a name that includes the profile name and ID, for administrators; the name is never used as proof of ownership.
-  3. Set the profile to `ready`.
+  3. Commit.
 
-  Because the ID is recorded before the permission exists, a failure at any step is recovered by ID (LIFE-5), and can't leave an unreferenced permission. A retry that finds the ID already in use (`409`) checks that permission is a profile permission; it never adopts anything else.
+  If anything fails once step 2 was attempted (the Auth API call, an unknown outcome such as a timeout, or the commit), roll back and make **one** compensating delete of the permission by its ID. If that delete fails too, log it and return the error, without retrying. An ID that turns out to be in use (`409`) is never ours, and is never deleted.
+
+  Only a crash between steps 2 and 3 leaves a permission that no profile refers to. No role holds it and no profile matches it, so it grants nothing; this is accepted.
 - **LIFE-2** **Update:** managers may change every field (AUTH-3) with an `If-Match` revision. Validate any new `org_unit_id` through the Auth API. Changes apply to later requests; streams already in progress settle normally.
 - **LIFE-3** **Attach or detach a role** (AUTH-8):
   - Attach with `POST /v0/auth/roles/:roleId/permissions/:permissionId`.
   - Detach with `DELETE /v0/auth/roles/:roleId/permissions/:permissionId?deletePermission=false`. Always pass `false`: the default deletes the permission when it leaves its last role.
   - Both calls are idempotent from the UI's point of view.
-- **LIFE-4** **Delete:**
-  1. Set `state='deleting'` and `enabled=false`. The profile stops being eligible at once.
-  2. Delete the permission together with all its role links, in one Auth API transaction (AUTHAPI-2).
-  3. Delete the row.
+- **LIFE-4** **Delete**, in one database transaction:
+  1. Delete the row.
+  2. Delete the permission together with all its role links, in one Auth API call (AUTHAPI-2). A permission that is already gone counts as deleted.
+  3. Commit.
 
-  Retries are idempotent: marking an already `deleting` profile changes nothing, not even its revision. Roles and users are never deleted. If step 2 fails, the profile stays `deleting`, keeps matching nothing, and reconciliation retries.
+  If step 2 fails, roll back: the profile and its permission are unchanged, and the user can retry. If the commit fails after step 2, the profile remains without a permission, and a retry finishes the delete. Roles and users are never deleted.
+- **LIFE-5** **A missing permission** is re-created, with the **same** ID, when a role is next attached to the profile. There is no background reconcile.
 
-  Only a `ready` profile is marked `deleting`. Deleting a `pending` profile answers `409`: its creation is still in progress, and reconcile (LIFE-5) finishes it.
-- **LIFE-5** **Reconcile**, at startup, periodically (`llm-services.profiles.reconcileIntervalSeconds`, default 300) and on demand from the profile page (`POST /access-profiles/:id/reconcile`):
-  - finish `pending` profiles older than a short grace period: create the recorded permission if it's missing, then set `ready`. A pending row without a recorded permission ID (only an older version could write one) is abandoned;
-  - retry `deleting` profiles;
-  - re-create a missing permission for a `ready` profile **with the same ID**, so the profile needs no change.
+  A permission can go missing because `deleteRole` also deletes permissions that only that role holds. If an administrator deletes the only role holding a profile's permission (the Auth API first requires removing the role from all its users), the permission disappears. Its holders are gone with that role, so re-creating it loses nothing. Until then, the profile simply has no roles: audience, Public and unconstrained access don't use the permission.
 
-  A permission can go missing because `deleteRole` also deletes permissions that only that role holds. If an administrator deletes the only role holding a profile's permission, the permission disappears. Its holders are gone with that role, so re-creating it loses nothing.
-
-  Never adopt an existing permission by its name or description. A permission found by the recorded ID that isn't a profile permission is logged and left alone. A sweep that fails (e.g. during an Auth API rollout) is retried after 30 seconds.
+  Never adopt an existing permission by its name or description. A permission found by the recorded ID that isn't a profile permission is logged and left alone.
 
 ### Auth API additions
 
 - **AUTHAPI-1** `GET /v0/auth/permissions/:id/roles`: the roles holding a permission (ID, name, description), paginated. It requires unconstrained `authObject/permission/read`.
 - **AUTHAPI-2** Delete a permission and all its role links in one transaction, e.g. `DELETE /v0/auth/permissions/:id?removeFromRoles=true`. It requires unconstrained `authObject/permission/delete` and `authObject/role/update`. Today `deletePermission` refuses while any role holds the permission.
 - **AUTHAPI-3** `input.user.orgUnitAncestorIds` in the OPA input (AUTH-5).
-- **AUTHAPI-4** `POST /v0/auth/permissions` accepts an optional caller-chosen `id` (a UUID). An ID already in use answers `409` and creates nothing. This makes LIFE-1's creation retryable by ID.
+- **AUTHAPI-4** `POST /v0/auth/permissions` accepts an optional caller-chosen `id` (a UUID). An ID already in use answers `409` and creates nothing. LIFE-1 uses it so a permission whose creation outcome was lost can be deleted by ID.
 
 ## Public API
 
@@ -301,7 +296,6 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 | API-4 | `GET /access-profiles/:id/role-candidates?q=` | `llm/access/update` | Role picker: ID, name and description only; excludes Anonymous Users, Admin Users and roles already attached |
 | API-5 | `PUT`/`DELETE /access-profiles/:id/roles/:roleId` | `llm/access/update` | Attach or detach (LIFE-3) |
 | API-6 | `GET /available-models` | `llm/access/read` | Deployment-allowed, served aliases, for the profile form |
-| API-6a | `POST /access-profiles/:id/reconcile` | `llm/access/update` | Reconcile one profile on demand (LIFE-5) |
 | API-7 | `GET /usage/me`, `GET /usage/me/daily` | Any authenticated user; always the session's own user ID | Totals, eligible aliases with remaining quota (USE-8), daily history |
 | API-8 | `GET /usage/users`, `GET /usage/users/:userId`, `GET /usage/users/:userId/daily` | `llm/usage/read` | Other users' totals, remaining quota and history |
 | API-9 | `GET /v1/models` | Invoke (EVAL-2) | Aliases covered by at least one eligible profile the caller can invoke; administrators see every allowed alias |
@@ -311,7 +305,7 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
   - `401` unauthenticated;
   - `403` the alias isn't allowed, or no eligible profile covers it (error code `llm_no_eligible_profile`);
   - `404` for a missing profile or role;
-  - `409` stale revision (error code `llm_profile_stale_revision`, with the current revision), or a profile still being created or deleted;
+  - `409` stale revision (error code `llm_profile_stale_revision`, with the current revision);
   - `422` validation (error code `llm_profile_invalid`), including attaching Anonymous Users or Admin Users;
   - `428` an update without `If-Match`;
   - `429` with error code `llm_quota_exceeded` when every eligible profile's limit is used up. It also sends `x-should-retry: false`, because OpenAI SDKs otherwise retry a `429` automatically;
@@ -405,7 +399,6 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - `usage.timeZone` (`Australia/Sydney`);
   - `usage.estimate.*` (METER-4);
   - `decisionCacheSeconds` (`30`);
-  - `profiles.reconcileIntervalSeconds` (`300`; LIFE-5);
   - `global.defaultAdminUserId`, for the internal session (AUTH-12);
   - an optional `noAccessHelp` text or link, shown by the Workspace when a user has no eligible model (UI);
 - **DEP-4** MAGDA v8 is unreleased, so there is no released-user migration. Release notes must say that LLM access is no longer implied by `agentWorkspace/access`. A Workspace user needs the "Agent Workspace Users" stock role (which now includes "Use LLM profiles", AUTH-11) **and** a Public or audience profile, or another invoke grant.
@@ -416,9 +409,9 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
 - **TEST-2** Partial evaluation: residuals for each grant type translate into SQL. The SQL selects exactly the profiles a full decision would allow, for the same fixtures. The admin and no-grant results short-circuit.
 - **TEST-3** Lifecycle:
   - create provisions exactly one correctly flagged permission;
-  - interrupted create and delete recover through reconcile;
+  - a failed create leaves no profile, and its permission is deleted by ID (including after a lost response or a failed commit); a failed delete leaves the profile unchanged;
   - delete removes the permission from every role and never deletes a role or user;
-  - a deleted holder role leads to re-creation;
+  - after the only holder role is deleted, attaching a role re-creates the permission with the same ID;
   - detaching the last role keeps the permission;
   - a stale revision gets `409`.
 - **TEST-4** Role grants:

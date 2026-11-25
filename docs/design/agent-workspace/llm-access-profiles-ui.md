@@ -26,7 +26,7 @@ The LLM Services menu entry is shown when at least one tab is.
 | Models | Aliases, or **All available models (\*)** |
 | Audience | Org unit name, **Public**, both, or **Roles only** |
 | Daily / weekly / monthly limit | Compact; per user and per model (MODEL-3). Blank means unlimited |
-| Status | Enabled / Disabled; **Setting up**, **Deleting** or **Needs repair** when not `ready` |
+| Status | Enabled / Disabled |
 
 The list is server-side paginated with name search. A **Create profile** button is shown to holders of `llm/access/create`.
 
@@ -47,7 +47,7 @@ The list is server-side paginated with name search. A **Create profile** button 
 
 Saving sends the revision. A stale save shows "This profile was changed by someone else. Reload to see the changes." and keeps the unsaved form contents (DATA-4).
 
-**Delete** asks for confirmation: "Delete profile *X*? Users will lose the access this profile gives, and it will be removed from N roles. Their usage history is kept." While the deletion is still finishing, the profile shows **Deleting** (LIFE-4).
+**Delete** asks for confirmation: "Delete profile *X*? Users will lose the access this profile gives, and it will be removed from N roles. Their usage history is kept." If the deletion fails, the profile is unchanged and an error says to retry (LIFE-4).
 
 ### Profile page: Roles with access
 
@@ -61,7 +61,7 @@ A grid of the roles that hold the profile's Use permission (API-3):
 - **Remove** asks for confirmation, then removes only this profile's access from that role. The role and its users are not changed.
 - Note above the grid: "To give individual people access, add them to one of these roles in **Settings → Users**. People may also have access through the profile's org unit or the Public setting."
 - The grid doesn't list users, and doesn't try to work out who effectively has access.
-- If the profile needs repair (LIFE-5), show "This profile's access permission is missing. **Repair**" instead of the grid.
+- If the profile's permission went missing (LIFE-5: its only role was deleted), the grid is simply empty; adding a role re-creates it. No repair action is needed.
 
 ## My Usage
 
@@ -90,7 +90,7 @@ When the Workspace user has no eligible model (`GET /api/v0/llm/v1/models` retur
 
 ## States and accessibility
 
-- **Setting up**, **Deleting** and **Needs repair** are shown as text, not colour alone. Role changes are disabled until the profile is `ready`.
+- Enabled and Disabled are shown as text, not colour alone.
 - Loading, empty, `403`, `409`, `429` and `503` each have actionable text.
 - Pop-ups have headings, keyboard access and focus return when they close. Search fields have labels.
 
