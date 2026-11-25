@@ -255,11 +255,11 @@ CREATE TABLE daily_model_usage (
 ## Profile lifecycle
 
 - **LIFE-1** **Create:**
-  1. Insert the profile as `pending`.
-  2. Create its permission through the Auth API (pre-authorised invoke, `allowExemption=false`). Give it a name that includes the profile name and ID, for administrators; the name is never used as proof of ownership.
-  3. Store `use_permission_id` and set the profile to `ready`.
+  1. Insert the profile as `pending`, with a newly generated `use_permission_id`: the ID its permission **will** have.
+  2. Create its permission through the Auth API with that ID (AUTHAPI-4; pre-authorised invoke, `allowExemption=false`). Give it a name that includes the profile name and ID, for administrators; the name is never used as proof of ownership.
+  3. Set the profile to `ready`.
 
-  If the service fails between steps 2 and 3, the orphan permission is held by no role and referenced by no profile, so it grants nothing. Reconciliation (LIFE-5) finishes or abandons pending profiles.
+  Because the ID is recorded before the permission exists, a failure at any step is recovered by ID (LIFE-5), and can't leave an unreferenced permission. A retry that finds the ID already in use (`409`) checks that permission is a profile permission; it never adopts anything else.
 - **LIFE-2** **Update:** managers may change every field (AUTH-3) with an `If-Match` revision. Validate any new `org_unit_id` through the Auth API. Changes apply to later requests; streams already in progress settle normally.
 - **LIFE-3** **Attach or detach a role** (AUTH-8):
   - Attach with `POST /v0/auth/roles/:roleId/permissions/:permissionId`.
@@ -272,21 +272,22 @@ CREATE TABLE daily_model_usage (
 
   Retries are idempotent: marking an already `deleting` profile changes nothing, not even its revision. Roles and users are never deleted. If step 2 fails, the profile stays `deleting`, keeps matching nothing, and reconciliation retries.
 
-  Only a `ready` profile is marked `deleting`. A `pending` profile has no permission recorded yet, so deleting one means abandoning it through reconcile (LIFE-5), which also deals with a permission created before the failure.
-- **LIFE-5** **Reconcile**, at startup, periodically and on demand from the profile page:
-  - finish or abandon `pending` profiles;
+  Only a `ready` profile is marked `deleting`. Deleting a `pending` profile answers `409`: its creation is still in progress, and reconcile (LIFE-5) finishes it.
+- **LIFE-5** **Reconcile**, at startup, periodically (`llm-services.profiles.reconcileIntervalSeconds`, default 300) and on demand from the profile page (`POST /access-profiles/:id/reconcile`):
+  - finish `pending` profiles older than a short grace period: create the recorded permission if it's missing, then set `ready`. A pending row without a recorded permission ID (only an older version could write one) is abandoned;
   - retry `deleting` profiles;
-  - re-create a missing permission for a `ready` profile, storing the new ID and bumping `revision`.
+  - re-create a missing permission for a `ready` profile **with the same ID**, so the profile needs no change.
 
   A permission can go missing because `deleteRole` also deletes permissions that only that role holds. If an administrator deletes the only role holding a profile's permission, the permission disappears. Its holders are gone with that role, so re-creating it loses nothing.
 
-  Never adopt an existing permission by its name or description.
+  Never adopt an existing permission by its name or description. A permission found by the recorded ID that isn't a profile permission is logged and left alone. A sweep that fails (e.g. during an Auth API rollout) is retried after 30 seconds.
 
 ### Auth API additions
 
 - **AUTHAPI-1** `GET /v0/auth/permissions/:id/roles`: the roles holding a permission (ID, name, description), paginated. It requires unconstrained `authObject/permission/read`.
 - **AUTHAPI-2** Delete a permission and all its role links in one transaction, e.g. `DELETE /v0/auth/permissions/:id?removeFromRoles=true`. It requires unconstrained `authObject/permission/delete` and `authObject/role/update`. Today `deletePermission` refuses while any role holds the permission.
 - **AUTHAPI-3** `input.user.orgUnitAncestorIds` in the OPA input (AUTH-5).
+- **AUTHAPI-4** `POST /v0/auth/permissions` accepts an optional caller-chosen `id` (a UUID). An ID already in use answers `409` and creates nothing. This makes LIFE-1's creation retryable by ID.
 
 ## Public API
 
@@ -295,11 +296,12 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 | | HTTP | Authorization | Result |
 | --- | --- | --- | --- |
 | API-1 | `GET /access-profiles`, `GET /access-profiles/:id` | `llm/access/read` | List (paginated, searchable) or read profiles |
-| API-2 | `POST /access-profiles`; `PUT`/`DELETE /access-profiles/:id` | `llm/access/create` / `update` / `delete` | LIFE-1, LIFE-2 (`If-Match`), LIFE-4 |
+| API-2 | `POST /access-profiles`; `PUT`/`DELETE /access-profiles/:id` | `llm/access/create` / `update` / `delete` | LIFE-1, LIFE-2 (`If-Match`; reads send the revision as `ETag`), LIFE-4 |
 | API-3 | `GET /access-profiles/:id/roles` | `llm/access/read` | Roles holding the profile's permission (AUTHAPI-1) |
 | API-4 | `GET /access-profiles/:id/role-candidates?q=` | `llm/access/update` | Role picker: ID, name and description only; excludes Anonymous Users, Admin Users and roles already attached |
 | API-5 | `PUT`/`DELETE /access-profiles/:id/roles/:roleId` | `llm/access/update` | Attach or detach (LIFE-3) |
 | API-6 | `GET /available-models` | `llm/access/read` | Deployment-allowed, served aliases, for the profile form |
+| API-6a | `POST /access-profiles/:id/reconcile` | `llm/access/update` | Reconcile one profile on demand (LIFE-5) |
 | API-7 | `GET /usage/me`, `GET /usage/me/daily` | Any authenticated user; always the session's own user ID | Totals, eligible aliases with remaining quota (USE-8), daily history |
 | API-8 | `GET /usage/users`, `GET /usage/users/:userId`, `GET /usage/users/:userId/daily` | `llm/usage/read` | Other users' totals, remaining quota and history |
 | API-9 | `GET /v1/models` | Invoke (EVAL-2) | Aliases covered by at least one eligible profile the caller can invoke; administrators see every allowed alias |
@@ -308,9 +310,10 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 - **API-11** Errors are safe and don't leak identities or Secrets:
   - `401` unauthenticated;
   - `403` the alias isn't allowed, or no eligible profile covers it (error code `llm_no_eligible_profile`);
-  - `404` for a missing profile;
-  - `409` stale revision;
-  - `422` validation;
+  - `404` for a missing profile or role;
+  - `409` stale revision (error code `llm_profile_stale_revision`, with the current revision), or a profile still being created or deleted;
+  - `422` validation (error code `llm_profile_invalid`), including attaching Anonymous Users or Admin Users;
+  - `428` an update without `If-Match`;
   - `429` with error code `llm_quota_exceeded` when every eligible profile's limit is used up. It also sends `x-should-retry: false`, because OpenAI SDKs otherwise retry a `429` automatically;
   - `503` when the Auth API is unavailable, or a required ledger read is unavailable or gated (USE-10, error code `llm_usage_unavailable`).
 - **API-12** User Usage finds users by ID. Search by name or email, and display names on result rows, use the **caller's** session against the Auth API users endpoints. A caller without user read rights sees IDs only.
@@ -402,6 +405,8 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - `usage.timeZone` (`Australia/Sydney`);
   - `usage.estimate.*` (METER-4);
   - `decisionCacheSeconds` (`30`);
+  - `profiles.reconcileIntervalSeconds` (`300`; LIFE-5);
+  - `global.defaultAdminUserId`, for the internal session (AUTH-12);
   - an optional `noAccessHelp` text or link, shown by the Workspace when a user has no eligible model (UI);
   - optionally `bootstrap.defaultProfile`, off by default. When enabled, LLM Services creates one profile with a fixed ID at startup if it doesn't exist, with configured aliases, limits and Public flag.
 - **DEP-4** MAGDA v8 is unreleased, so there is no released-user migration. Release notes must say that LLM access is no longer implied by `agentWorkspace/access`. A Workspace user needs the "Agent Workspace Users" stock role (which now includes "Use LLM profiles", AUTH-11) **and** a Public or audience profile, or another invoke grant.
