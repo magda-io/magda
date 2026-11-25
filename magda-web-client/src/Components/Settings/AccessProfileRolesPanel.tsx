@@ -132,6 +132,8 @@ const AccessProfileRolesPanel: FunctionComponent<PropsType> = (props) => {
                         data={roles}
                         loading={loading}
                         rowKey="id"
+                        // two lines: the role name and its ID
+                        rowHeight={64}
                     >
                         <Column width={300} resizable>
                             <HeaderCell>Role</HeaderCell>
