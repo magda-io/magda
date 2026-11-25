@@ -88,6 +88,9 @@ featureFlags:
   enableAutoMetadataFetchButton: true
   # featureFlags.agentWorkspace -- expose the administrator-only integrated Agent Workspace settings page.
   agentWorkspace: false
+  # featureFlags.llmServices -- show the Settings → LLM Services pages (access profiles).
+  # Always set from `global.llmServices.enabled`; the value here is ignored.
+  llmServices: false
 
 # -- Whether use Magda to store dataset data files by default
 # When use Magda's metadata creation tool to create a dataset, user can choose to upload data files to Magda's storage (via storage API).
