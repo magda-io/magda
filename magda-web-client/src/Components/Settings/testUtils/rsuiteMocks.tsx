@@ -144,17 +144,30 @@ export const RadioGroup = ({ children, value, onChange, name }: any) => (
     </RadioContext.Provider>
 );
 
-export const Radio = ({ children, value, disabled }: any) => {
+/** In a `RadioGroup`, or standalone with `checked` and `onChange`. */
+export const Radio = ({
+    children,
+    value,
+    disabled,
+    checked,
+    onChange,
+    name,
+    ...rest
+}: any) => {
     const group = React.useContext(RadioContext);
+    const inGroup = group.onChange !== undefined;
     return (
         <label>
             <input
                 type="radio"
-                name={group.name}
+                name={inGroup ? group.name : name}
                 value={value}
                 disabled={disabled}
-                checked={group.value === value}
-                onChange={() => group.onChange?.(value)}
+                aria-label={rest["aria-label"]}
+                checked={inGroup ? group.value === value : !!checked}
+                onChange={() =>
+                    inGroup ? group.onChange(value) : onChange?.(value)
+                }
             />
             {children}
         </label>

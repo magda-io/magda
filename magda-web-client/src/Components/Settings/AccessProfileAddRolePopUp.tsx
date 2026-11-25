@@ -4,8 +4,10 @@ import Modal from "rsuite/Modal";
 import Button from "rsuite/Button";
 import Input from "rsuite/Input";
 import InputGroup from "rsuite/InputGroup";
-import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
+import Panel from "rsuite/Panel";
+import Radio from "rsuite/Radio";
+import Table from "rsuite/Table";
 import { MdSearch } from "react-icons/md";
 import {
     AccessProfileRole,
@@ -13,6 +15,10 @@ import {
     describeLlmServicesError,
     listAccessProfileRoleCandidates
 } from "api-clients/LlmServicesApis";
+
+const Column = Table.Column;
+const HeaderCell = Table.HeaderCell;
+const Cell = Table.Cell;
 
 export const addRoleConfirmText = (roleName: string) =>
     `Everyone with role "${roleName}" will be able to use this profile.`;
@@ -100,29 +106,29 @@ const AccessProfileAddRolePopUp: FunctionComponent<PropsType> = (props) => {
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <label htmlFor="access-profile-role-search">
-                    Search roles by name
-                </label>
-                <InputGroup inside>
-                    <Input
-                        id="access-profile-role-search"
-                        value={searchText}
-                        placeholder="Role name..."
-                        onChange={setSearchText}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                e.preventDefault();
-                                search();
-                            }
-                        }}
-                    />
-                    <InputGroup.Button aria-label="Search" onClick={search}>
-                        <MdSearch />
-                    </InputGroup.Button>
-                </InputGroup>
-                {candidates.loading ? (
-                    <Loader content="Loading roles..." />
-                ) : candidates.error ? (
+                <div className="access-profile-role-search">
+                    <label htmlFor="access-profile-role-search">
+                        Search roles by name
+                    </label>
+                    <InputGroup inside>
+                        <Input
+                            id="access-profile-role-search"
+                            value={searchText}
+                            placeholder="Role name..."
+                            onChange={setSearchText}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    search();
+                                }
+                            }}
+                        />
+                        <InputGroup.Button aria-label="Search" onClick={search}>
+                            <MdSearch />
+                        </InputGroup.Button>
+                    </InputGroup>
+                </div>
+                {candidates.error ? (
                     <Message showIcon type="error" role="alert">
                         {describeLlmServicesError(candidates.error)}{" "}
                         <Button
@@ -134,49 +140,80 @@ const AccessProfileAddRolePopUp: FunctionComponent<PropsType> = (props) => {
                             Retry
                         </Button>
                     </Message>
-                ) : !items.length ? (
-                    <p>
+                ) : !candidates.loading && !items.length ? (
+                    <Message showIcon type="info">
                         {keyword
                             ? `No roles match "${keyword}" that can be added.`
                             : "There are no other roles that can be added."}
-                    </p>
+                    </Message>
                 ) : (
-                    <fieldset>
-                        <legend className="sr-only">Roles</legend>
-                        <ul className="access-profile-role-candidates">
-                            {items.map((role) => (
-                                <li key={role.id}>
-                                    <label>
-                                        <input
-                                            type="radio"
+                    <Panel
+                        bordered
+                        bodyFill
+                        className="access-profile-role-candidates"
+                    >
+                        <Table
+                            data={items}
+                            loading={candidates.loading}
+                            rowKey="id"
+                            autoHeight={true}
+                            maxHeight={360}
+                            rowHeight={64}
+                            onRowClick={(role) =>
+                                setSelected(role as AccessProfileRole)
+                            }
+                            rowClassName={(role) =>
+                                role && selected?.id === role.id
+                                    ? "access-profile-role-selected"
+                                    : ""
+                            }
+                        >
+                            <Column width={56} align="center">
+                                <HeaderCell>
+                                    <span className="sr-only">Select</span>
+                                </HeaderCell>
+                                <Cell style={{ padding: "10px 0" }}>
+                                    {(role: AccessProfileRole) => (
+                                        <Radio
                                             name="access-profile-role-candidate"
                                             value={role.id}
                                             checked={selected?.id === role.id}
                                             onChange={() => setSelected(role)}
+                                            aria-label={`Select role ${role.name}`}
                                         />
-                                        <span className="access-profile-role-candidate-text">
+                                    )}
+                                </Cell>
+                            </Column>
+                            <Column flexGrow={1} minWidth={240}>
+                                <HeaderCell>Role</HeaderCell>
+                                <Cell>
+                                    {(role: AccessProfileRole) => (
+                                        <>
                                             <span>{role.name}</span>
-                                            {role.description ? (
-                                                <span className="access-profile-role-description">
-                                                    {role.description}
-                                                </span>
-                                            ) : null}
                                             <span className="access-profile-role-id">
-                                                ID: {role.id}
+                                                {role.id}
                                             </span>
-                                        </span>
-                                    </label>
-                                </li>
-                            ))}
-                        </ul>
-                        {items.length >= CANDIDATE_LIMIT ? (
-                            <p className="access-profile-help">
-                                Showing the first {CANDIDATE_LIMIT} roles.
-                                Search to narrow the list.
-                            </p>
-                        ) : null}
-                    </fieldset>
+                                        </>
+                                    )}
+                                </Cell>
+                            </Column>
+                            <Column flexGrow={1} minWidth={200}>
+                                <HeaderCell>Description</HeaderCell>
+                                <Cell>
+                                    {(role: AccessProfileRole) =>
+                                        role.description || ""
+                                    }
+                                </Cell>
+                            </Column>
+                        </Table>
+                    </Panel>
                 )}
+                {items.length >= CANDIDATE_LIMIT ? (
+                    <p className="access-profile-help">
+                        Showing the first {CANDIDATE_LIMIT} roles. Search to
+                        narrow the list.
+                    </p>
+                ) : null}
                 {selected ? (
                     <p
                         className="access-profile-add-role-confirm"

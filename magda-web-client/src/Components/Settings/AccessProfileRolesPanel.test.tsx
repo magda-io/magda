@@ -22,6 +22,8 @@ jest.mock("rsuite/Message", () => require("./testUtils/rsuiteMocks").Message);
 jest.mock("rsuite/Loader", () => require("./testUtils/rsuiteMocks").Loader);
 jest.mock("rsuite/Modal", () => require("./testUtils/rsuiteMocks").Modal);
 jest.mock("rsuite/Table", () => require("./testUtils/rsuiteMocks").Table);
+jest.mock("rsuite/Panel", () => require("./testUtils/rsuiteMocks").Panel);
+jest.mock("rsuite/Radio", () => require("./testUtils/rsuiteMocks").Radio);
 
 const mockConfirmOpen = jest.fn();
 jest.mock("./ConfirmDialog", () => ({
@@ -213,7 +215,12 @@ describe("AccessProfileRolesPanel", () => {
             limit: 20
         });
         expect(dialog()!.textContent).toContain(analysts.description);
-        expect(dialog()!.textContent).toContain(`ID: ${analysts.id}`);
+        expect(dialog()!.textContent).toContain(analysts.id);
+        expect(
+            dialog()!.querySelector(
+                `input[aria-label="Select role ${analysts.name}"]`
+            )
+        ).not.toBeNull();
         expect(button("Add role").textContent).toBe("Add role");
 
         const search = container.querySelector<HTMLInputElement>(

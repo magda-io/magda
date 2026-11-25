@@ -121,35 +121,37 @@
 }
 
 .access-profile-add-role-popup {
-    .access-profile-role-candidates {
-        list-style: none;
-        margin: 10px 0;
-        padding: 0;
-        max-height: 320px;
-        overflow-y: auto;
-        li {
-            border-bottom: 1px solid #e5e5ea;
-        }
+    .access-profile-role-search {
+        margin-bottom: 15px;
         label {
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
-            padding: 8px 4px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+    .access-profile-role-candidates {
+        .rs-table-row {
             cursor: pointer;
-            margin: 0;
-            font-weight: normal;
         }
-        .access-profile-role-candidate-text {
-            display: flex;
-            flex-direction: column;
+        .access-profile-role-selected .rs-table-cell {
+            background-color: #edf5ff;
         }
-        .access-profile-role-id,
-        .access-profile-role-description {
+        .access-profile-role-id {
+            display: block;
             color: #575757;
             font-size: 0.8rem;
         }
     }
+    .access-profile-help {
+        color: #575757;
+        font-size: 0.875rem;
+        margin-top: 8px;
+    }
     .access-profile-add-role-confirm {
         font-weight: bold;
+        margin-top: 15px;
     }
 }
