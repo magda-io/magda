@@ -238,7 +238,7 @@ CREATE TABLE daily_model_usage (
 - **DATA-1** The OPA object field names (`org_unit_id`, `use_permission_id`, `constraint_exemption`) are the column names, so that the translation in EVAL-1 works. Renaming one requires changing the policy too.
 - **DATA-2** `allowed_models` is either a list of distinct, trimmed, non-empty exact aliases, or exactly `["*"]` (MODEL-2).
 - **DATA-3** For each limit, NULL means unlimited for that period and `0` admits no new non-administrator request.
-- **DATA-4** `revision` provides optimistic concurrency. Updates send it as `If-Match`; a stale value gets `409`. A transaction may be held across an Auth API call only for create and delete (LIFE-1, LIFE-4): one call each, bounded by its timeout. These are rare administrator actions.
+- **DATA-4** `revision` provides optimistic concurrency. Updates send it as `If-Match`; a stale value gets `409`. A transaction may be held across Auth API calls only for create, delete and attach (LIFE-1, LIFE-3, LIFE-4), each bounded by the call timeouts. These are rare administrator actions.
 - **DATA-5** LLM Services never reads or writes Auth DB tables. Auth objects are reached only through the Auth API.
 - **DATA-6** No pruning in v8. "Total" usage is the sum of all of a user's rows. The volume is one row per active user, per alias, per local day: about 730k rows a year for 1,000 daily users × 2 aliases. Add pruning, together with a rollup, only if it's ever needed.
 
@@ -265,6 +265,7 @@ CREATE TABLE daily_model_usage (
   - Attach with `POST /v0/auth/roles/:roleId/permissions/:permissionId`.
   - Detach with `DELETE /v0/auth/roles/:roleId/permissions/:permissionId?deletePermission=false`. Always pass `false`: the default deletes the permission when it leaves its last role.
   - Both calls are idempotent from the UI's point of view.
+  - Attach locks the profile row (`SELECT … FOR UPDATE`) in a transaction while it re-creates a missing permission (LIFE-5) and attaches it. A concurrent delete then waits for it, or it waits for the delete and answers `404`, so an attach can never leave a permission on a role after its profile was deleted.
 - **LIFE-4** **Delete**, in one database transaction:
   1. Delete the row.
   2. Delete the permission together with all its role links, in one Auth API call (AUTHAPI-2). A permission that is already gone counts as deleted.
