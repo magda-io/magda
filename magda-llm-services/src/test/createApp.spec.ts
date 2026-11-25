@@ -310,7 +310,12 @@ describe("LLM Services", () => {
                         authorization: req.headers.authorization,
                         body: Buffer.concat(chunks).toString("utf8")
                     };
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                        // must not override LLM Services' caching policy
+                        "cache-control": "public, max-age=3600",
+                        "x-request-id": "upstream-request-1"
+                    });
                     res.end(JSON.stringify({ ok: true }));
                 });
             });
@@ -330,6 +335,14 @@ describe("LLM Services", () => {
                     }
                 );
                 assert.equal(response.status, 200);
+                assert.equal(
+                    response.headers.get("cache-control"),
+                    "private, no-store"
+                );
+                assert.equal(
+                    response.headers.get("x-request-id"),
+                    "upstream-request-1"
+                );
                 assert.deepEqual(await response.json(), { ok: true });
                 assert.equal(received?.path, path);
                 assert.equal(received?.authorization, "Bearer master-key");

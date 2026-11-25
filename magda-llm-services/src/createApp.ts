@@ -213,10 +213,12 @@ export default function createApp(config: LlmServicesConfig) {
                     // does (#3930), so it never looks complete.
                     if (!res.writableEnded) res.destroy();
                 });
+                // Not `cache-control`: model responses are user-specific, and
+                // LLM Services' own `private, no-store` (set in requireCaller)
+                // must not be overridden by the upstream's.
                 const responseHeaders: http.OutgoingHttpHeaders = {};
                 for (const header of [
                     "content-type",
-                    "cache-control",
                     "retry-after",
                     "x-request-id"
                 ]) {
