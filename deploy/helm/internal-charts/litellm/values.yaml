@@ -1,5 +1,4 @@
-global:
-  defaultAgentModel: {}
+global: {}
 
 image:
   # -- Magda's copy of the upstream LiteLLM image (`ghcr.io/berriai/litellm`,
@@ -11,14 +10,10 @@ image:
   # `response.completed` or usage on 1.81.12 (#3945).
   tag: v1.83.14-stable.patch.3
   pullPolicy: IfNotPresent
-# Optional chart-specific overrides. Empty values inherit
-# global.defaultAgentModel from the parent chart. Reasoning effort is global-only
-# so DSH and bundled LiteLLM cannot diverge.
-model:
-  # -- Public LiteLLM model alias override.
-  alias: ""
-  # -- Provider-specific LiteLLM model override.
-  providerModel: ""
+# The models (one route each: alias, provider model and reasoning effort) come
+# only from global.llmServices.defaultModel and additionalModels, so LiteLLM,
+# LLM Services and the Agent Workspace can't disagree. Every route uses the one
+# provider Secret below.
 providerSecret:
   # -- Provider API-key Secret name. Leave name and key empty for providers that do not need a key.
   name: litellm-provider

@@ -46,6 +46,12 @@ done
 # Bootstrap-owned values are PVC-backed and are never placed in the Pod spec.
 # shellcheck disable=SC1091
 if [[ -f /data/config/magda-agent.env ]]; then source /data/config/magda-agent.env; fi
+# The model config is deployment-owned Pod env, refreshed by the Agent Manager
+# on resume.
+if ! node -e 'const c = JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG); if (!c || typeof c.alias !== "string" || !c.alias) process.exit(1)' 2>/dev/null; then
+  echo "magda-agent: MAGDA_LLM_MODEL_CONFIG must be the deployment's model config JSON (agent-services.model)" >&2
+  exit 1
+fi
 if [[ ! -f /data/.created-at ]]; then
   date -u +%Y-%m-%dT%H:%M:%SZ > /data/.created-at
 fi

@@ -1,6 +1,6 @@
 # -- Global values are owned and defaulted by the parent `magda-core` chart.
 # This chart requires `global.externalUrl`, `global.defaultAdminUserId`,
-# `global.defaultDatasetBucket`, `global.defaultAgentModel` and
+# `global.defaultDatasetBucket`, `global.llmServices` (the models) and
 # `global.image` from its parent and fails rendering when a required value is
 # absent.
 global: {}
@@ -86,18 +86,28 @@ reconcileIntervalSeconds: 30
 # these requests in memory. Attachment uploads are streamed instead, up to
 # `global.agentWorkspace.maxUploadBytes`.
 runtimeMaxBodyBytes: 16777216
-# Optional chart-specific overrides. Empty values inherit
-# global.defaultAgentModel from the parent chart.
-llm:
-  # -- Stable public model alias override.
-  model: ""
-  # -- Model context-window override.
-  contextWindow: null
-  # -- Model maximum-output-token override.
-  maxTokens: null
-  # -- Model image-input override (`true` or `false`). See
-  # `global.defaultAgentModel.imageInput`.
-  imageInput: null
+# The Workspace's model: one of the models LLM Services serves
+# (global.llmServices.defaultModel or additionalModels), selected by alias.
+# What the model can do (its limits and reasoning levels) comes only from that
+# entry; only the efforts can be chosen here. Running Workspaces pick up a
+# change the next time they're resumed.
+model:
+  # -- Alias of the Workspace's model. Empty: the default model
+  # (`global.llmServices.defaultModel`).
+  alias: ""
+  # -- (string) The model's reasoning effort for the Workspace's main turns: a
+  # level the model declares. Empty or unset (`null`): the model entry's
+  # `reasoningEffort`.
+  # @default -- `null` (the model entry's)
+  reasoningEffort: null
+  # -- (string) The model's reasoning effort for the Workspace's session
+  # titles and context compaction: a level the model declares. Empty: the
+  # model entry's `reasoningEffort`. Unset (`null`): the model entry's
+  # `auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort.
+  # Must be empty or unset when the Workspace's main-turn effort is the
+  # provider's default.
+  # @default -- `null` (the model entry's, else the main-turn effort)
+  auxiliaryReasoningEffort: null
 # ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox
 # Pods use a separate installation-scoped, no-RBAC ServiceAccount created in the
 # Sandbox namespace; its name is generated to avoid shared-namespace collisions.

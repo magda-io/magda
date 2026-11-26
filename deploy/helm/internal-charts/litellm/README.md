@@ -12,7 +12,7 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| global.defaultAgentModel | object | `{}` |  |
+| global | object | `{}` |  |
 | image.name | string | `"litellm"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/magda-io"` | Magda's copy of the upstream LiteLLM image (`ghcr.io/berriai/litellm`, same tag and digest), so a deployment doesn't depend on the upstream registry. |
@@ -20,8 +20,6 @@ Kubernetes: `>= 1.24.0-0`
 | masterKeySecret.create | bool | `true` |  |
 | masterKeySecret.key | string | `"master-key"` |  |
 | masterKeySecret.name | string | `"magda-litellm-master-key"` |  |
-| model.alias | string | `""` | Public LiteLLM model alias override. |
-| model.providerModel | string | `""` | Provider-specific LiteLLM model override. |
 | providerSecret.key | string | `"api-key"` | Provider API-key Secret key. Leave name and key empty for providers that do not need a key. |
 | providerSecret.name | string | `"litellm-provider"` | Provider API-key Secret name. Leave name and key empty for providers that do not need a key. |
 | resources.limits.cpu | string | `"1"` |  |

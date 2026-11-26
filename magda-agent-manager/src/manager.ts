@@ -331,6 +331,11 @@ export class AgentManager {
         };
     }
 
+    /** Deployment-owned Pod env a resumed Workspace must pick up. */
+    private workspaceEnv(): Record<string, string> {
+        return { MAGDA_LLM_MODEL_CONFIG: this.config.llmModelConfig };
+    }
+
     private bootstrapPayload(userId: string, key: { id: string; key: string }) {
         return {
             version: 1,
@@ -341,14 +346,10 @@ export class AgentManager {
                 apiKey: key.key,
                 profile: "magda-agent-workspace"
             },
+            // Only per-user values: the model config reaches the Workspace
+            // through its Pod env (MAGDA_LLM_MODEL_CONFIG), refreshed on resume.
             llm: {
                 baseUrl: this.config.llmApiUrl,
-                model: this.config.llmModel,
-                ...(this.config.llmReasoningEffort
-                    ? { reasoningEffort: this.config.llmReasoningEffort }
-                    : {}),
-                contextWindow: this.config.llmContextWindow,
-                maxTokens: this.config.llmMaxTokens,
                 // pi-ai adds the HTTP Authorization scheme. Supplying `Bearer `
                 // here makes the value fail its raw API-key validation.
                 authorization: `${key.id}:${key.key}`
@@ -715,9 +716,9 @@ export class AgentManager {
                         [ERROR_ANNOTATION]: null
                     });
                 } else {
-                    await this.kubernetes.setSandboxOperatingMode(
+                    await this.kubernetes.resumeSandbox(
                         sandbox,
-                        "Running"
+                        this.workspaceEnv()
                     );
                     await this.kubernetes.waitForPodReady(sandbox);
                     await this.kubernetes.patchClaimAnnotations(userId, {
@@ -874,9 +875,10 @@ export class AgentManager {
                 [ERROR_ANNOTATION]: null
             });
             try {
-                await this.kubernetes.setSandboxOperatingMode(
+                // The resumed Pod uses the current model config (#3965).
+                await this.kubernetes.resumeSandbox(
                     sandbox,
-                    "Running"
+                    this.workspaceEnv()
                 );
                 await this.kubernetes.waitForPodReady(sandbox);
                 await this.kubernetes.patchClaimAnnotations(userId, {

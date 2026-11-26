@@ -20,16 +20,24 @@ global:
     sandboxNamespace: ""
   llmServices:
     enabled: true
-  defaultAgentModel:
-    # Stable MAGDA/DSH-facing alias; provider upgrades do not change it.
-    alias: magda-agent-default
-    providerModel: openai/gpt-6.1-sol
-    # Set to "" to omit the setting and use the provider default.
-    reasoningEffort: medium
-    contextWindow: 1050000
-    maxTokens: 128000
-    # true only for a vision-capable model; text-only models fail on images.
-    imageInput: false
+    # The models LLM Services serves; see "Models" below.
+    defaultModel:
+      # Stable MAGDA/DSH-facing alias; provider upgrades do not change it.
+      alias: magda-agent-default
+      providerModel: openai/gpt-6.1-sol
+      displayName: Magda Agent Default
+      contextWindow: 1050000
+      maxTokens: 128000
+      # true only for a vision-capable model; text-only models fail on images.
+      imageInput: false
+      # Unset: low to max, each sent as its own name. false: doesn't reason.
+      reasoningEfforts: null
+      # Main turns; "" sends no effort.
+      reasoningEffort: medium
+      # Titles and compaction; unset is the same as the main-turn effort.
+      auxiliaryReasoningEffort: null
+    # More models, each an entry like defaultModel.
+    additionalModels: []
 
 agent-services:
   warmPool:
@@ -40,25 +48,16 @@ agent-services:
     kata: kata
   hardDeleteSeconds: 28800
   idleSuspendSeconds: 1800
-  # Optional overrides inherit global.defaultAgentModel when omitted.
-  llm:
-    model: ""
-    contextWindow: null
-    maxTokens: null
-    imageInput: null
+  # The Workspace's model, by alias; empty: the default model.
+  model:
+    alias: ""
   runtime:
     storage:
       size: 10Gi
 
 llm-services:
-  # An empty list inherits global.defaultAgentModel.alias.
-  allowedModels: []
   litellm:
     enabled: true
-    # Optional overrides; empty values inherit global.defaultAgentModel.
-    model:
-      alias: ""
-      providerModel: ""
 ```
 
 The merged `agent-services` chart owns the Manager Deployment, Service, RBAC,
@@ -235,15 +234,23 @@ Provider credentials remain confined to LiteLLM. The bundled chart reads an
 optional provider credential from `providerSecret.name`/`providerSecret.key`
 through the fixed internal environment name `LITELLM_PROVIDER_API_KEY`; leave
 both Secret fields empty for a workload-identity or credential-free provider.
-The bundled LiteLLM configuration exposes exactly one model, so its effective
-allowlist must contain exactly one matching alias. An external
-LiteLLM-compatible backend may expose multiple aliases:
+Bundled LiteLLM renders one route per served model, each with its own
+`providerModel`; every route uses the one provider Secret, so all models must
+be reachable with that credential (per-model credentials aren't supported yet).
+With an external LiteLLM-compatible backend, list its aliases as models; an
+entry then needs no `providerModel`:
 
 ```yaml
+global:
+  llmServices:
+    defaultModel:
+      alias: magda-agent-default
+      providerModel: ""
+    additionalModels:
+      - alias: another-model
+        contextWindow: 200000
+        maxTokens: 32000
 llm-services:
-  allowedModels:
-    - magda-agent-default
-    - another-model
   litellm:
     enabled: false
   backend:
@@ -254,35 +261,176 @@ llm-services:
 ```
 
 MAGDA cannot inspect an external backend's model catalog. The operator is
-responsible for ensuring every allowlisted alias exists there, and the Agent
-Workspace model is included in the list. This deployment-wide allowlist remains
-an independent restriction even when per-user OPA model authorization is added.
+responsible for ensuring every served alias exists there. This deployment-wide
+allowlist remains an independent restriction even when per-user OPA model
+authorization is added.
+
+### Models
+
+The models Magda serves are `global.llmServices.defaultModel` followed by
+`global.llmServices.additionalModels`, each one entry of the same shape. The
+default model is the Agent Workspace's model unless `agent-services.model`
+selects another, and the deployment's default for other applications. API
+clients name the model they call by its alias: LLM Services' OpenAI-compatible
+endpoints require `model`. The list lives in
+`global` because a Helm subchart sees only its own values and `global`: each
+model is described once, and LLM Services, bundled LiteLLM and Agent Services
+all render from it through shared helpers, so they can't disagree.
+`defaultModel` is a map rather than the first item of one list, because Helm
+merges maps but replaces lists whole: a single field of the default can be
+overridden (`--set global.llmServices.defaultModel.reasoningEffort=high`), and
+adding a model doesn't mean restating the default.
+
+| Field | LLM Services | Bundled LiteLLM | Workspace (DSH), when selected |
+| --- | --- | --- | --- |
+| `alias` (unique) | allowlist entry | `model_name` | model id and default selection |
+| `providerModel` | — | `litellm_params.model` | — |
+| `displayName` (empty: the alias) | — | — | model name in the Workspace |
+| `contextWindow`, `maxTokens` | — | — | model limits; `maxTokens` must not exceed `contextWindow` |
+| `imageInput` | — | — | model input (`text`, or `text` and `image`) |
+| `reasoningEfforts` | — | maps `reasoningEffort` to its API value | the levels the model accepts, or `false` |
+| `reasoningEffort` | — | `reasoning_effort`: the **mapped** value, omitted for `""` or a model that doesn't reason | effort for main turns |
+| `auxiliaryReasoningEffort` | — | — | effort for session titles and context compaction |
 
 The stable public alias is `magda-agent-default`; changing only
-`global.defaultAgentModel.providerModel` changes the bundled backend route
-without changing DSH or LLM Services clients. The default explicitly selects
-`medium` reasoning, with a 1,050,000-token context window and 128,000-token
-maximum output. Set `global.defaultAgentModel.reasoningEffort: ""` to omit the
-reasoning setting from both DSH and LiteLLM and let the provider choose its model
-default. The Workspace's own requests that name no effort, such as session
-titles, use the same setting. `off` isn't accepted: the default model can't turn
-reasoning off, and the Workspace doesn't offer an Off level. When selecting another
-model, update `providerModel`, `reasoningEffort`, `contextWindow`, and `maxTokens`
-to its capabilities. See the
+`providerModel` changes the bundled backend route without changing DSH or LLM
+Services clients. The default is GPT-6.1 Sol with a 1,050,000-token context
+window, 128,000-token maximum output and `medium` reasoning. When selecting
+another model, update `providerModel`, `contextWindow`, `maxTokens`,
+`imageInput` and the reasoning fields to its capabilities. See the
 [GPT-6.1 Sol model specification](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
-`global.defaultAgentModel.imageInput` declares whether the model accepts
-images. It is `false` by default, so the agent sends text only and a text-only
-`providerModel` needs no other change. With `true`, the agent can attach images,
-including its own renders of the Office files it creates, and check their
-layout. Set it only for a vision-capable model such as the default GPT-6.1 Sol: a
-text-only model rejects a request with an image and the turn fails. The setting
-reaches new Workspaces; reset existing ones to pick it up.
+**Reasoning: what the model can do, and what the deployment wants.**
 
-Model settings are written into a workspace during provisioning. Existing
-PVC-backed workspaces are intentionally not rebootstraped during a Helm upgrade;
-reset development or pre-release workspaces after changing these settings so a
-stale alias or reasoning effort is not retained.
+- `reasoningEfforts` is the model's capability: a map from a level (`off`,
+  `minimal`, `low`, `medium`, `high`, `xhigh`, `max`) to the value sent to the
+  API as `reasoning.effort`, or `false` for a model that doesn't reason. Unset,
+  it's the default model's levels, `low` to `max`, each sent as its own name.
+  A map you set replaces the default whole, so list every level the model
+  accepts. The Workspace offers only the declared levels, labelled by level
+  name, and refuses any other before sending a request.
+- `off` needs an explicit value, such as `none`, and only works if the provider
+  accepts a value that means off: some OpenAI models take `none`, some only
+  `minimal`, and the default model takes neither.
+- `reasoningEffort` is the model's default reasoning effort, also used for the
+  Workspace agent's turns: a declared level, or `""` for the provider's
+  default.
+- `auxiliaryReasoningEffort` is the model's reasoning effort for the
+  Workspace's session titles and context compaction: a declared level. `""`:
+  the model's `reasoningEffort`. Unset (`null`): the Workspace's main-turn
+  effort. When the Workspace's main-turn effort is the provider's default
+  (`reasoningEffort: ""`), this must be empty or unset too: titles and
+  compaction then also use the provider's default.
+- There's no separate on/off switch: a model that doesn't reason is
+  `reasoningEfforts: false`, and turning reasoning off for cost is
+  `reasoningEffort: off` on a model that declares `off`.
+
+| Situation | Config | Main turns | Titles and compaction |
+| --- | --- | --- | --- |
+| Reasoning model that can't turn reasoning off (default) | defaults | `medium` | `medium` |
+| …with cheaper, faster titles | `auxiliaryReasoningEffort: low` | `medium` | `low` |
+| Reasoning model that can turn reasoning off | add `off: none` to `reasoningEfforts`; set `reasoningEffort: off`, or `auxiliaryReasoningEffort: off` | as set (`none` for off) | as set |
+| Leave it to the provider | `reasoningEffort: ""` | the provider's default | the provider's default |
+| Model that doesn't reason | `reasoningEfforts: false`, `reasoningEffort: ""` | no reasoning, no levels offered | no reasoning |
+
+Examples, as `global.llmServices.defaultModel` overrides (an entry in
+`additionalModels` takes the same fields):
+
+```yaml
+# Cheaper, faster session titles and compaction.
+auxiliaryReasoningEffort: low
+```
+
+```yaml
+# A model that accepts `none`, with reasoning off for titles and compaction.
+providerModel: openai/<model>
+reasoningEfforts:
+  off: none
+  low: low
+  medium: medium
+  high: high
+reasoningEffort: medium
+auxiliaryReasoningEffort: off
+```
+
+```yaml
+# Let the provider choose the effort.
+reasoningEffort: ""
+```
+
+```yaml
+# A model that doesn't reason.
+providerModel: openai/<model>
+reasoningEfforts: false
+reasoningEffort: ""
+```
+
+```yaml
+# A provider that spells a level differently: the Workspace shows "Low", the
+# API receives "minimal".
+reasoningEfforts:
+  low: minimal
+  high: high
+reasoningEffort: low
+```
+
+Invalid combinations fail the render with a message naming the field: an
+unknown field or level, a level without a value (including `off`), a map with
+no level other than `off`, an effort the model doesn't declare, and an effort
+on a model that doesn't reason.
+
+`imageInput` declares whether the model accepts images. It is `false` by
+default, so the agent sends text only and a text-only `providerModel` needs no
+other change. With `true`, the agent can attach images, including its own
+renders of the Office files it creates, and check their layout. Set it only for
+a vision-capable model such as the default GPT-6.1 Sol: a text-only model
+rejects a request with an image and the turn fails.
+
+**The Workspace's model.** `agent-services.model` selects one of the served
+models by `alias` (empty: the default model). It can also choose the
+Workspace's efforts, but not what the model can do, which comes only from the
+model's entry:
+
+```yaml
+global:
+  llmServices:
+    additionalModels:
+      - alias: magda-coder
+        providerModel: openai/<model>
+        displayName: Magda Coder
+        contextWindow: 400000
+        maxTokens: 64000
+        imageInput: true
+        reasoningEfforts: {low: low, medium: medium, high: high}
+        reasoningEffort: medium      # the model's default effort
+agent-services:
+  model:
+    alias: magda-coder
+    reasoningEffort: high            # empty or unset (null): the entry's reasoningEffort
+    auxiliaryReasoningEffort: low    # unset (null): the entry's, else the line above
+```
+
+Other applications keep using the default model. The Workspace's title and
+compaction effort is `agent-services.model.auxiliaryReasoningEffort` if set
+(empty: the entry's `reasoningEffort`), else the entry's
+`auxiliaryReasoningEffort` if set (not `null`; empty: the entry's
+`reasoningEffort`), else the Workspace's main-turn effort. An alias that isn't served, an effort the model doesn't
+declare, or any other field fails the render.
+
+**When a change applies.** The model config reaches each Workspace as one
+non-secret Pod env value, `MAGDA_LLM_MODEL_CONFIG`; the per-user bootstrap on
+the PVC holds only credentials and base URLs.
+
+- LLM Services and bundled LiteLLM pick up a change on the next rollout.
+- Unclaimed warm Sandboxes are replaced as soon as the SandboxTemplate changes
+  (the warm pool's `Recreate` update strategy), so new Workspaces start with
+  the current config.
+- A claimed Sandbox keeps its own copy of the Pod template. The Agent Manager
+  writes the current config into it each time the Workspace resumes, so a
+  running Workspace picks up a change after it next suspends and resumes
+  (`idleSuspendSeconds` after the user leaves). No reset is needed.
+- A claimed Sandbox also keeps its runtime image: a Workspace moves to a new
+  runtime image when it's reset.
 
 ## Scoped DSH Content Security Policy
 

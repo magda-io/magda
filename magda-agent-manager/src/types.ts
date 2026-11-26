@@ -1,7 +1,31 @@
-export const DEFAULT_AGENT_MODEL = "magda-agent-default";
+import type { V1Container } from "@kubernetes/client-node";
 
-export function resolveLlmModel(value: string | undefined): string {
-    return value || DEFAULT_AGENT_MODEL;
+/**
+ * Read the Workspace model config (`MAGDA_LLM_MODEL_CONFIG`): the JSON that
+ * the Helm helper `agent-services.workspaceModelJson` validated and rendered. It's passed
+ * on unchanged, re-serialised, to the Sandbox Pods, whose DSH overlay reads
+ * it; only its shape is checked here.
+ */
+export function parseModelConfig(value: string | undefined): string {
+    if (!value) throw new Error("MAGDA_LLM_MODEL_CONFIG is required");
+    let config: unknown;
+    try {
+        config = JSON.parse(value);
+    } catch {
+        throw new Error("MAGDA_LLM_MODEL_CONFIG must be JSON");
+    }
+    if (
+        typeof config !== "object" ||
+        config === null ||
+        Array.isArray(config) ||
+        typeof (config as { alias?: unknown }).alias !== "string" ||
+        !(config as { alias: string }).alias.trim()
+    ) {
+        throw new Error(
+            "MAGDA_LLM_MODEL_CONFIG must be an object with a non-empty alias"
+        );
+    }
+    return JSON.stringify(config);
 }
 
 export type AgentWorkspaceState =
@@ -84,10 +108,9 @@ export interface ManagerConfig {
     bootstrapCommand: string;
     magdaApiUrl: string;
     llmApiUrl: string;
-    llmModel: string;
-    llmReasoningEffort?: string;
-    llmContextWindow: number;
-    llmMaxTokens: number;
+    // The Workspace model config JSON (MAGDA_LLM_MODEL_CONFIG), written into
+    // a claimed Sandbox's Pod template each time it resumes.
+    llmModelConfig: string;
     hardDeleteSeconds: number;
     idleSuspendSeconds: number;
     reconcileIntervalSeconds: number;
@@ -139,8 +162,11 @@ export interface SandboxClaim {
 }
 
 export interface Sandbox {
-    metadata?: { name?: string };
-    spec?: { operatingMode?: "Running" | "Suspended" };
+    metadata?: { name?: string; resourceVersion?: string };
+    spec?: {
+        operatingMode?: "Running" | "Suspended";
+        podTemplate?: { spec?: { containers?: V1Container[] } };
+    };
     status?: {
         serviceFQDN?: string;
         conditions?: Array<{

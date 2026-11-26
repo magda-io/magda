@@ -36,7 +36,7 @@ import { setTimeout as delay } from "node:timers/promises";
 const ASSEMBLY = "/usr/local/lib/magda-agent/dsh/node_modules";
 const ENTRYPOINT = "/usr/local/bin/magda-agent-entrypoint";
 const BOOTSTRAP = "/usr/local/bin/magda-agent-bootstrap";
-const TIMEOUT = 180_000;
+const TIMEOUT = 360_000;
 const secrets = new Set();
 const children = new Set();
 const servers = new Set();
@@ -231,7 +231,7 @@ async function fixture(handler) {
     });
     return `http://127.0.0.1:${server.address().port}`;
 }
-function responseEvents(text) {
+function responseEvents(text, inputTokens = 10) {
     const message = {
         id: "msg_image_fixture",
         type: "message",
@@ -248,9 +248,9 @@ function responseEvents(text) {
         output: [message],
         error: null,
         usage: {
-            input_tokens: 10,
+            input_tokens: inputTokens,
             output_tokens: 2,
-            total_tokens: 12,
+            total_tokens: inputTokens + 2,
             input_tokens_details: { cached_tokens: 0 },
             output_tokens_details: { reasoning_tokens: 0 }
         }
@@ -533,6 +533,8 @@ try {
         PIP_REQUIRE_VIRTUALENV: "true"
     };
     const assistantMarker = `image-web-assistant-${randomUUID()}`;
+    const inflateMarker = `image-web-overflow-${randomUUID()}`;
+    let overflowed = false;
     const userMarker = `image-web-user-${randomUUID()}`;
     const llmRequests = [];
     const llm = await fixture(async (req, res) => {
@@ -554,7 +556,13 @@ try {
             "content-type": "text/event-stream",
             "cache-control": "no-store"
         });
-        res.end(responseEvents(assistantMarker));
+        // Usage above the context window is a context overflow: DSH compacts
+        // the session and retries, as it would for a long session. Once only,
+        // so the retry succeeds.
+        const latestInput = JSON.stringify(body.input?.slice?.(-1) ?? "");
+        const overflow = !overflowed && latestInput.includes(inflateMarker);
+        if (overflow) overflowed = true;
+        res.end(responseEvents(assistantMarker, overflow ? 200_000 : 10));
     });
     const magda = await fixture((req, res) => {
         // Empty catalog/skills fixture; no real MAGDA endpoint is contacted.
@@ -571,15 +579,35 @@ try {
             apiKeyId: "image-fixture-key-id",
             apiKey: "image-fixture-magda-key"
         },
+        // Only per-user values: the model config is Pod env (#3965).
         llm: {
             baseUrl: `${llm}/v1`,
-            model: "image-test-model",
-            contextWindow: 128000,
-            maxTokens: 2048,
-            authorization: "image-fixture-llm-key",
-            reasoningEffort: "medium"
+            authorization: "image-fixture-llm-key"
         }
     };
+    // MAGDA_LLM_MODEL_CONFIG, as the Helm helper agent-services.workspaceModelJson
+    // renders it (without the provider model, which stays out of the
+    // Workspace). Each stage below restarts the runtime with another config.
+    const MODEL = "image-test-model";
+    const defaultEfforts = {
+        low: "low",
+        medium: "medium",
+        high: "high",
+        xhigh: "xhigh",
+        max: "max"
+    };
+    const modelConfig = (overrides) =>
+        JSON.stringify({
+            alias: MODEL,
+            displayName: "Image Test Model",
+            contextWindow: 128000,
+            maxTokens: 2048,
+            imageInput: false,
+            reasoningEfforts: defaultEfforts,
+            reasoningEffort: "medium",
+            auxiliaryReasoningEffort: "medium",
+            ...overrides
+        });
     const bootstrap = async (value) => {
         const running = launch(process.execPath, [BOOTSTRAP], {
             ...env,
@@ -592,22 +620,14 @@ try {
         check(result.code === 0 && !running.error, "bootstrap failed");
         await stop(running);
     };
-    stage("bootstrap credentials and remove stale reasoning setting");
+    stage("bootstrap per-user credentials, without the model config");
     await bootstrap(payload);
     const envFile = path.join(root, "config/magda-agent.env");
     check(
-        (await readFile(envFile, "utf8")).includes(
-            "MAGDA_LLM_REASONING_EFFORT='medium'"
+        !/MAGDA_LLM_(?:MODEL|REASONING|CONTEXT|MAX_TOKENS)/.test(
+            await readFile(envFile, "utf8")
         ),
-        "bootstrap omitted requested reasoning effort"
-    );
-    const { reasoningEffort: _omitted, ...withoutReasoning } = payload.llm;
-    await bootstrap({ ...payload, llm: withoutReasoning });
-    check(
-        !(await readFile(envFile, "utf8")).includes(
-            "MAGDA_LLM_REASONING_EFFORT"
-        ),
-        "repeated bootstrap retained stale reasoning effort"
+        "bootstrap persisted a model value"
     );
     for (const relative of [
         "config/mgd/config.json",
@@ -673,7 +693,30 @@ try {
         );
         return ready;
     };
+    stage("refuse to start without the model config");
+    {
+        const running = launch(
+            ENTRYPOINT,
+            ["--host", "127.0.0.1", "--port", "0"],
+            env
+        );
+        running.child.stdin.end();
+        await until(() => running.closed, 30_000, "entrypoint refusal");
+        const result = await running.done;
+        check(
+            result.code !== 0 &&
+                running.output.includes(
+                    "MAGDA_LLM_MODEL_CONFIG must be the deployment's model config JSON"
+                ),
+            "entrypoint started without MAGDA_LLM_MODEL_CONFIG"
+        );
+        await stop(running);
+    }
     stage("stock entrypoint startup and anonymous HTTP/WS rejection");
+    // Stage A: the default model, with cheaper titles and compaction.
+    env.MAGDA_LLM_MODEL_CONFIG = modelConfig({
+        auxiliaryReasoningEffort: "low"
+    });
     const first = await start();
     check(
         (await request(`${first.origin}/`)).status === 401,
@@ -815,6 +858,14 @@ try {
         JSON.stringify(body).includes(
             "Create a concise title for an AI coding-assistant session"
         );
+    const isCompactionRequest = ({ body }) =>
+        JSON.stringify(body).includes(
+            "Do NOT mention this summarization request"
+        );
+    const isTurnRequest = (sent) =>
+        sent.body.tools?.length > 0 &&
+        !isTitleRequest(sent) &&
+        !isCompactionRequest(sent);
     // DSH asks for a title once a session's first prompt is answered.
     const titleRequestsAfter = async (from) => {
         await until(
@@ -824,40 +875,71 @@ try {
         );
         return llmRequests.slice(from).filter(isTitleRequest);
     };
-    // A declared-empty `off` level made pi-ai send `effort: "none"`, which the
-    // provider rejects (#3963).
-    const checkNoDisabledReasoning = () =>
+    const effortOf = (sent) => sent.body.reasoning?.effort;
+    // Requests may send `effort: "none"` only where the model declares
+    // `off: none` and the deployment chose it (#3963).
+    const checkNoDisabledReasoning = (requests) =>
         check(
-            !llmRequests.some(({ body }) => body.reasoning?.effort === "none"),
+            !requests.some((sent) => effortOf(sent) === "none"),
             "a provider request disabled reasoning (effort none)"
         );
-    stage("authenticated remote.mux session/follow and local mock LLM turn");
-    // #3963: the model offers no Off level; the default model can't disable
-    // reasoning. This is what DSH's reasoning selector would offer.
-    const modelCatalog = await rpc(
-        first.origin,
-        cookie,
-        "session/modelCatalog",
-        {}
-    );
-    // Other providers' catalog models are listed too; check Magda's model.
-    const offeredEfforts = [];
-    JSON.stringify(modelCatalog, (key, value) => {
-        if (
-            value?.id === payload.llm.model &&
-            Array.isArray(value?.reasoning?.efforts)
-        )
-            offeredEfforts.push(
-                ...value.reasoning.efforts.map((effort) => effort.id)
+    // The levels DSH's reasoning selector would offer for Magda's model; other
+    // providers' catalog models are listed too.
+    const offeredEfforts = async (origin) => {
+        const catalog = await rpc(origin, cookie, "session/modelCatalog", {});
+        const efforts = [];
+        let found = false;
+        JSON.stringify(catalog, (key, value) => {
+            if (value?.id === MODEL && typeof value === "object") {
+                found = true;
+                if (Array.isArray(value.reasoning?.efforts))
+                    efforts.push(
+                        ...value.reasoning.efforts.map((effort) => effort.id)
+                    );
+            }
+            return value;
+        });
+        check(found, `model catalog omitted ${MODEL}`);
+        return efforts;
+    };
+    // One new session and prompt: its first turn request and title request.
+    const promptNewSession = async (origin, text) => {
+        const from = llmRequests.length;
+        const session = await rpc(origin, cookie, "session/create", {
+            request: {}
+        });
+        const prompted = await rpc(origin, cookie, "session/prompt", {
+            request: {
+                requestId: randomUUID(),
+                sessionId: session.sessionId,
+                mode: "queue",
+                content: [{ type: "text", text }]
+            }
+        });
+        check(prompted.accepted === true, "session prompt was not accepted");
+        const [title] = await titleRequestsAfter(from);
+        const turn = llmRequests.slice(from).find(isTurnRequest);
+        check(turn, "no turn request for the prompt");
+        return { turn, title, requests: llmRequests.slice(from) };
+    };
+    const checkEfforts = (situation, sent, expected) => {
+        for (const [name, request] of Object.entries(sent))
+            check(
+                expected[name] === undefined
+                    ? request.body.reasoning === undefined
+                    : effortOf(request) === expected[name],
+                `${situation}: ${name} sent ${JSON.stringify(
+                    request.body.reasoning
+                )}, expected ${expected[name] ?? "no reasoning option"}`
             );
-        return value;
-    });
+    };
+    stage("authenticated remote.mux session/follow and local mock LLM turn");
+    // The model's own levels; #3963: no Off level, which the default model
+    // can't use.
+    const efforts = await offeredEfforts(first.origin);
     check(
-        JSON.stringify(offeredEfforts) ===
-            JSON.stringify(["low", "medium", "high", "xhigh", "max"]),
-        `model catalog offered reasoning efforts ${JSON.stringify(
-            offeredEfforts
-        )}`
+        JSON.stringify(efforts) === JSON.stringify(Object.keys(defaultEfforts)),
+        `model catalog offered reasoning efforts ${JSON.stringify(efforts)}`
     );
     const created = await rpc(first.origin, cookie, "session/create", {
         request: {}
@@ -916,30 +998,55 @@ try {
         "managed workflow guidance absent from real provider request"
     );
     check(
-        requestWithTools.body.model === payload.llm.model,
-        "provider did not use bootstrap model"
+        requestWithTools.body.model === MODEL,
+        "provider did not use the configured model alias"
     );
-    // #3963: no effort is configured here (the second bootstrap above removed
-    // it, as with an empty global.defaultAgentModel.reasoningEffort). Neither
-    // the turn nor the session title request, which names no effort of its
-    // own, may disable reasoning: they send no reasoning option at all.
+    // Stage A: turns at reasoningEffort, the title at auxiliaryReasoningEffort.
     const titleRequests = await titleRequestsAfter(0);
     // Room for reasoning tokens as well as the title text (#3963).
     check(
         titleRequests[0].body.max_output_tokens === 1024,
         `title request output cap was ${titleRequests[0].body.max_output_tokens}`
     );
-    for (const [name, sent] of [
-        ["turn", requestWithTools],
-        ["title request", titleRequests[0]]
-    ])
-        check(
-            sent.body.reasoning === undefined,
-            `${name} without a configured effort sent ${JSON.stringify(
-                sent.body.reasoning
-            )}`
-        );
-    checkNoDisabledReasoning();
+    checkEfforts(
+        "auxiliary effort low",
+        {
+            turn: requestWithTools,
+            title: titleRequests[0]
+        },
+        { turn: "medium", title: "low" }
+    );
+    stage("context compaction at the auxiliary effort");
+    // A follow-up prompt that overflows the context: DSH compacts the session
+    // and retries, at the provider default effort.
+    check(
+        (
+            await rpc(first.origin, cookie, "session/prompt", {
+                request: {
+                    requestId: randomUUID(),
+                    sessionId: created.sessionId,
+                    mode: "queue",
+                    content: [
+                        { type: "text", text: `${inflateMarker} ${userMarker}` }
+                    ]
+                }
+            })
+        ).accepted === true,
+        "follow-up prompt was not accepted"
+    );
+    await until(
+        () => llmRequests.some(isCompactionRequest),
+        60_000,
+        "context compaction request"
+    );
+    checkEfforts(
+        "auxiliary effort low",
+        {
+            compaction: llmRequests.find(isCompactionRequest)
+        },
+        { compaction: "low" }
+    );
+    checkNoDisabledReasoning(llmRequests);
     // DSH's Office skills and their interpreter tool reach the real provider
     // request by default, without any user, mgd or project skill setup.
     check(
@@ -968,8 +1075,13 @@ try {
     const createdAt = await readFile("/data/.created-at", "utf8");
     stage("stop/start persistence, cookie survival and old-token rejection");
     await stop(first.running);
-    // Re-provision with an effort, so the restarted runtime uses it (#3963).
-    await bootstrap(payload);
+    // Stage B: the restarted runtime uses the model config it's started with,
+    // as a resumed Workspace does after the Manager refreshes it (#3965).
+    // Efforts left to the provider: no reasoning option at all.
+    env.MAGDA_LLM_MODEL_CONFIG = modelConfig({
+        reasoningEffort: "",
+        auxiliaryReasoningEffort: ""
+    });
     // Cookies are authority-bound: retain the first port across the restart.
     env.DSH_PUBLIC_URL = first.origin;
     const second = await start(new URL(first.origin).port);
@@ -1008,36 +1120,66 @@ try {
             0o600,
         "persistent browser credential mode is not 0600"
     );
-    stage("configured reasoning effort on a turn and its session title");
-    const beforeSecond = llmRequests.length;
-    const createdAgain = await rpc(second.origin, cookie, "session/create", {
-        request: {}
+    stage("efforts left to the provider");
+    const leftToProvider = await promptNewSession(
+        second.origin,
+        `${userMarker}-provider`
+    );
+    checkEfforts(
+        'reasoningEffort ""',
+        { turn: leftToProvider.turn, title: leftToProvider.title },
+        {}
+    );
+    checkNoDisabledReasoning(llmRequests);
+    await stop(second.running);
+
+    stage("reasoning off, declared as off: none and chosen");
+    const offEfforts = { off: "none", ...defaultEfforts };
+    env.MAGDA_LLM_MODEL_CONFIG = modelConfig({
+        reasoningEfforts: offEfforts,
+        reasoningEffort: "off",
+        auxiliaryReasoningEffort: "off"
     });
-    const promptedAgain = await rpc(second.origin, cookie, "session/prompt", {
-        request: {
-            requestId: randomUUID(),
-            sessionId: createdAgain.sessionId,
-            mode: "queue",
-            content: [{ type: "text", text: `${userMarker}-effort` }]
-        }
+    const third = await start(new URL(first.origin).port);
+    const offeredWithOff = await offeredEfforts(third.origin);
+    check(
+        JSON.stringify(offeredWithOff) ===
+            JSON.stringify(["off", ...Object.keys(defaultEfforts)]),
+        `model catalog offered reasoning efforts ${JSON.stringify(
+            offeredWithOff
+        )}`
+    );
+    const off = await promptNewSession(third.origin, `${userMarker}-off`);
+    checkEfforts(
+        "reasoningEffort off",
+        { turn: off.turn, title: off.title },
+        { turn: "none", title: "none" }
+    );
+    const beforeNonReasoning = llmRequests.length;
+    await stop(third.running);
+
+    stage("a model that doesn't reason");
+    env.MAGDA_LLM_MODEL_CONFIG = modelConfig({
+        reasoningEfforts: false,
+        reasoningEffort: "",
+        auxiliaryReasoningEffort: ""
     });
-    check(promptedAgain.accepted === true, "second prompt was not accepted");
-    const [titleWithEffort] = await titleRequestsAfter(beforeSecond);
-    const turnWithEffort = llmRequests
-        .slice(beforeSecond)
-        .find(({ body }) => body.tools?.length);
-    check(turnWithEffort, "no turn request after the restart");
-    for (const [name, sent] of [
-        ["turn", turnWithEffort],
-        ["title request", titleWithEffort]
-    ])
-        check(
-            sent.body.reasoning?.effort === payload.llm.reasoningEffort,
-            `${name} did not use the configured effort: ${JSON.stringify(
-                sent.body.reasoning
-            )}`
-        );
-    checkNoDisabledReasoning();
+    const fourth = await start(new URL(first.origin).port);
+    const offeredNone = await offeredEfforts(fourth.origin);
+    check(
+        offeredNone.length === 0,
+        `model that doesn't reason offered ${JSON.stringify(offeredNone)}`
+    );
+    const nonReasoning = await promptNewSession(
+        fourth.origin,
+        `${userMarker}-plain`
+    );
+    checkEfforts(
+        "reasoningEfforts false",
+        { turn: nonReasoning.turn, title: nonReasoning.title },
+        {}
+    );
+    checkNoDisabledReasoning(llmRequests.slice(beforeNonReasoning));
     for (const running of children)
         for (const token of secrets)
             check(
@@ -1045,7 +1187,7 @@ try {
                 "child output leaked an authentication secret"
             );
     console.log(
-        `image-web: PASS source=${provenance.sha}; bootstrap, auth, assets, managed plugins, WS, mock LLM, restart/history, reasoning effort`
+        `image-web: PASS source=${provenance.sha}; bootstrap, auth, assets, managed plugins, WS, mock LLM, restart/history, model config and reasoning efforts (turn, title, compaction)`
     );
     console.log(
         "image-web: caveat: stock launch token is process-scoped/reusable, not consumed by exchange; no browser rendering or Manager/KAS/ingress validation"

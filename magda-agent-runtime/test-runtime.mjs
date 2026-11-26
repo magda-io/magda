@@ -598,50 +598,142 @@ assert.doesNotMatch(
     /migrate-data-paths|patch-dsh-workspace-path/,
     "The local-only path rename must not ship upgrade migration helpers"
 );
-assert.match(
+// #3965: the model comes only from MAGDA_LLM_MODEL_CONFIG, the JSON that the
+// Helm helper agent-services.workspaceModelJson renders. Evaluate the overlay's model
+// expressions against it, for each kind of model.
+assert.doesNotMatch(
     cordisPatch,
-    /process\.env\.MAGDA_LLM_MODEL \|\| 'magda-agent-default'/,
-    "The managed provider and default selection must use the stable public alias"
+    /MAGDA_LLM_(?:MODEL|CONTEXT_WINDOW|MAX_TOKENS|REASONING_EFFORT|IMAGE_INPUT)\b(?!_CONFIG)/,
+    "The overlay must read the model only from MAGDA_LLM_MODEL_CONFIG"
 );
 assert.doesNotMatch(
     cordisPatch,
-    /gpt-5\.6-sol/,
+    /gpt-5\.6-sol|gpt-6\.1-sol/,
     "DSH configuration must not expose the provider-specific model identifier"
 );
+const overlayExpressions = {};
+for (const [, key, quoted, bare] of cordisPatch.matchAll(
+    /^ +(?:- )?(\w+): !!js (?:"(.*)"|(.*))$/gm
+)) {
+    if (/MAGDA_LLM_MODEL_CONFIG/.test(quoted ?? bare)) {
+        // `id` and the default selection's `model` are the same expression.
+        assert.ok(
+            !(key in overlayExpressions) ||
+                overlayExpressions[key] === (quoted ?? bare),
+            `Overlay field ${key} must have one model expression`
+        );
+        overlayExpressions[key] = quoted ?? bare;
+    }
+}
+assert.deepEqual(
+    Object.keys(overlayExpressions).sort(),
+    [
+        "contextWindow",
+        "id",
+        "input",
+        "maxTokens",
+        "model",
+        "name",
+        "reasoning",
+        "reasoningEffort",
+        "reasoningEfforts"
+    ],
+    "The overlay must take every model field from MAGDA_LLM_MODEL_CONFIG"
+);
+const evaluateOverlay = (modelConfig) => {
+    const env = { MAGDA_LLM_MODEL_CONFIG: JSON.stringify(modelConfig) };
+    return Object.fromEntries(
+        Object.entries(overlayExpressions).map(([key, expression]) => [
+            key,
+            new Function("process", `return (${expression})`)({ env })
+        ])
+    );
+};
+const defaultEfforts = {
+    low: "low",
+    medium: "medium",
+    high: "high",
+    xhigh: "xhigh",
+    max: "max"
+};
+const baseModel = {
+    alias: "magda-agent-default",
+    displayName: "Magda Agent Default",
+    contextWindow: 1050000,
+    maxTokens: 128000,
+    imageInput: false,
+    reasoningEfforts: defaultEfforts,
+    reasoningEffort: "medium",
+    auxiliaryReasoningEffort: "medium"
+};
+assert.deepEqual(
+    evaluateOverlay(baseModel),
+    {
+        id: "magda-agent-default",
+        model: "magda-agent-default",
+        name: "Magda Agent Default",
+        contextWindow: 1050000,
+        maxTokens: 128000,
+        input: ["text"],
+        reasoningEfforts: defaultEfforts,
+        // Main turns, and the provider default that titles and compaction use.
+        reasoningEffort: "medium",
+        reasoning: "medium"
+    },
+    "The default model must reach DSH unchanged"
+);
+for (const [situation, modelConfig, expected] of [
+    [
+        "cheaper titles and compaction",
+        { auxiliaryReasoningEffort: "low" },
+        { reasoningEffort: "medium", reasoning: "low" }
+    ],
+    [
+        "reasoning off for cost",
+        {
+            reasoningEfforts: { off: "none", ...defaultEfforts },
+            reasoningEffort: "off",
+            auxiliaryReasoningEffort: "off"
+        },
+        {
+            reasoningEfforts: { off: "none", ...defaultEfforts },
+            reasoningEffort: "off",
+            reasoning: "off"
+        }
+    ],
+    [
+        "efforts left to the provider",
+        { reasoningEffort: "", auxiliaryReasoningEffort: "" },
+        { reasoningEffort: undefined, reasoning: undefined }
+    ],
+    [
+        "a model that doesn't reason",
+        {
+            reasoningEfforts: false,
+            reasoningEffort: "",
+            auxiliaryReasoningEffort: ""
+        },
+        {
+            reasoningEfforts: false,
+            reasoningEffort: undefined,
+            reasoning: undefined
+        }
+    ],
+    [
+        "a vision-capable model",
+        { imageInput: true, displayName: "Vision" },
+        { input: ["text", "image"], name: "Vision" }
+    ]
+]) {
+    const evaluated = evaluateOverlay({ ...baseModel, ...modelConfig });
+    for (const [key, value] of Object.entries(expected))
+        assert.deepEqual(evaluated[key], value, `${situation}: ${key}`);
+}
 assert.match(
-    cordisPatch,
-    /contextWindow: !!js Number\(process\.env\.MAGDA_LLM_CONTEXT_WINDOW \|\| 1050000\)/,
-    "The model context window must come from managed bootstrap configuration"
+    entrypoint,
+    /MAGDA_LLM_MODEL_CONFIG must be the deployment's model config JSON/,
+    "The runtime must refuse to start without the model config"
 );
-assert.match(
-    cordisPatch,
-    /maxTokens: !!js Number\(process\.env\.MAGDA_LLM_MAX_TOKENS \|\| 128000\)/,
-    "The model output limit must come from managed bootstrap configuration"
-);
-assert.match(
-    cordisPatch,
-    /input: !!js "process\.env\.MAGDA_LLM_IMAGE_INPUT === 'true' \? \['text', 'image'\] : \['text'\]"/,
-    "The model accepts images only when the deployment declares image input"
-);
-assert.match(
-    cordisPatch,
-    /reasoningEffort: !!js process\.env\.MAGDA_LLM_REASONING_EFFORT \|\| undefined/,
-    "Reasoning effort must remain optional with no runtime default"
-);
-assert.doesNotMatch(
-    cordisPatch,
-    /MAGDA_LLM_REASONING_EFFORT \|\| ['\"]medium['\"]/,
-    "The runtime must not restore an omitted reasoning effort"
-);
-// #3963: requests that name no effort (session titles and other auxiliary
-// requests) use the deployment's default effort, not pi-ai's "off" path.
-assert.match(
-    cordisPatch,
-    /\n {8}reasoning: !!js process\.env\.MAGDA_LLM_REASONING_EFFORT \|\| undefined\n/,
-    "The managed provider must default requests without an effort to the deployment's effort"
-);
-// The default model can't turn reasoning off: a declared `off` sends
-// `effort: "none"`, which the provider rejects, and would offer Off.
 // Reasoning counts toward the title request's output cap: leave room for it.
 const titleConfig = /- id: session-title-llm\n {2}config:\n((?: {4}\S.*\n)+)/.exec(
     cordisPatch
@@ -658,28 +750,6 @@ assert.deepEqual(
     ],
     "Session titles must keep DSH's limits with room for reasoning tokens"
 );
-const reasoningEfforts = /reasoningEfforts:\n((?: {14}\S.*\n)+)/.exec(
-    cordisPatch
-);
-assert.ok(
-    reasoningEfforts,
-    "The managed model must declare its reasoning efforts"
-);
-assert.deepEqual(
-    reasoningEfforts[1].trim().split(/\n\s*/),
-    ["low: low", "medium: medium", "high: high", "xhigh: xhigh", "max: max"],
-    "The managed model must not offer an Off reasoning level"
-);
-for (const managedLimit of [
-    "MAGDA_LLM_CONTEXT_WINDOW",
-    "MAGDA_LLM_MAX_TOKENS"
-]) {
-    assert.match(
-        bootstrap,
-        new RegExp(`export ${managedLimit}=`),
-        `Bootstrap must persist ${managedLimit}`
-    );
-}
 
 const bootstrapRoot = await mkdtemp(
     path.join(tmpdir(), "magda-agent-bootstrap-test-")
@@ -696,11 +766,7 @@ try {
         },
         llm: {
             baseUrl: "https://magda.example/api/v0/llm/v1",
-            authorization: "runtime-test-authorization",
-            model: "magda-agent-default",
-            reasoningEffort: "medium",
-            contextWindow: 1050000,
-            maxTokens: 128000
+            authorization: "runtime-test-authorization"
         }
     };
     const runBootstrap = (payload) => {
@@ -742,21 +808,30 @@ try {
         );
     }
     const envFile = path.join(bootstrapRoot, "config/magda-agent.env");
-    assert.match(
-        await readFile(envFile, "utf8"),
-        /MAGDA_LLM_REASONING_EFFORT='medium'/
+    const envNames = (text) =>
+        [...text.matchAll(/^export (\w+)=/gm)].map(([, name]) => name);
+    assert.deepEqual(
+        envNames(await readFile(envFile, "utf8")),
+        ["MAGDA_LLM_BASE_URL", "MAGDA_LLM_API_KEY"],
+        "Bootstrap must persist only per-user values"
     );
-
-    const {
-        reasoningEffort: _removed,
-        ...withoutReasoning
-    } = bootstrapPayload.llm;
-    runBootstrap({ ...bootstrapPayload, llm: withoutReasoning });
-    assert.doesNotMatch(
-        await readFile(envFile, "utf8"),
-        /MAGDA_LLM_REASONING_EFFORT/,
-        "Re-provisioning without reasoning effort must remove a stale value"
-    );
+    for (const missing of ["baseUrl", "authorization"]) {
+        const { [missing]: _missing, ...llm } = bootstrapPayload.llm;
+        const result = spawnSync(
+            process.execPath,
+            [fileURLToPath(new URL("bootstrap.mjs", import.meta.url))],
+            {
+                input: JSON.stringify({ ...bootstrapPayload, llm }),
+                encoding: "utf8",
+                env: {
+                    ...process.env,
+                    MAGDA_AGENT_BOOTSTRAP_DATA_ROOT: bootstrapRoot,
+                    MAGDA_AGENT_BOOTSTRAP_SKIP_RESTART: "1"
+                }
+            }
+        );
+        assert.equal(result.status, 64, `bootstrap accepted no llm.${missing}`);
+    }
 } finally {
     await rm(bootstrapRoot, { recursive: true, force: true });
 }

@@ -15,6 +15,12 @@
 # raw API-key credential to /data/config/magda-agent.env and restarts the
 # container; the credential is the user's lifecycle-bound Magda API key, never a
 # provider secret. DSH's adapter adds the HTTP authorization scheme.
+#
+# The model itself is the one agent-services.model selects from the models in
+# global.llmServices, validated by Helm and delivered as one JSON Pod env
+# value, MAGDA_LLM_MODEL_CONFIG. The
+# entrypoint refuses to start without it, and the Agent Manager refreshes it
+# each time the Workspace resumes.
 - id: llm-pi-ai
   config:
     providers:
@@ -23,32 +29,28 @@
         apiKeyEnv: MAGDA_LLM_API_KEY
         api: openai-responses
         baseURL: !!js process.env.MAGDA_LLM_BASE_URL
-        # The effort for requests that name none, such as session titles and
-        # other auxiliary requests: the deployment's default
-        # (global.defaultAgentModel.reasoningEffort). Unset, they send no
-        # reasoning option and the provider uses its own default.
-        reasoning: !!js process.env.MAGDA_LLM_REASONING_EFFORT || undefined
+        # The effort for requests that name none: session titles and context
+        # compaction (auxiliaryReasoningEffort, which defaults to the main-turn
+        # effort). Unset, they send no reasoning option and the provider uses
+        # its own default.
+        reasoning: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).auxiliaryReasoningEffort || undefined
         models:
-          - id: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'
-            name: Magda Agent Default
-            contextWindow: !!js Number(process.env.MAGDA_LLM_CONTEXT_WINDOW || 1050000)
-            maxTokens: !!js Number(process.env.MAGDA_LLM_MAX_TOKENS || 128000)
+          - id: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).alias
+            name: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).displayName
+            contextWindow: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).contextWindow
+            maxTokens: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).maxTokens
             # Text only unless the deployment declares a vision-capable model
-            # (global.defaultAgentModel.imageInput); DSH then attaches images.
+            # (imageInput); DSH then attaches images.
             # Quoted: unquoted, YAML reads the expression's ': ' as a mapping.
-            input: !!js "process.env.MAGDA_LLM_IMAGE_INPUT === 'true' ? ['text', 'image'] : ['text']"
-            # No `off`: the default model can't turn reasoning off. A declared
-            # `off` makes requests without an effort send `effort: "none"`,
-            # which the provider rejects; undeclared, the Workspace doesn't
-            # offer Off, and an explicit Off fails before any request.
-            reasoningEfforts:
-              low: low
-              medium: medium
-              high: high
-              xhigh: xhigh
-              max: max
+            input: !!js "JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).imageInput ? ['text', 'image'] : ['text']"
+            # The levels the model accepts, each mapped to the value sent to
+            # the API, or false for a model that doesn't reason. Helm requires
+            # a value for `off`: a valueless `off` makes requests without an
+            # effort send `effort: "none"` (#3963). An undeclared level isn't
+            # offered, and an explicit one fails before any request.
+            reasoningEfforts: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).reasoningEfforts
 
-# Session titles run at the default effort (#3963). Reasoning tokens count
+# Session titles run at the auxiliary effort (#3963). Reasoning tokens count
 # toward the output cap, so DSH's 64-token cap often ended a title request
 # before any title text, and the session kept its fallback title. Usage is
 # billed by tokens used, not by this cap. Patching a row replaces its whole
@@ -64,8 +66,9 @@
 - id: agent-default-model
   config:
     provider: magda
-    model: !!js process.env.MAGDA_LLM_MODEL || 'magda-agent-default'
-    reasoningEffort: !!js process.env.MAGDA_LLM_REASONING_EFFORT || undefined
+    model: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).alias
+    # The main-turn effort (reasoningEffort).
+    reasoningEffort: !!js JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG).reasoningEffort || undefined
 
 # The managed deployment exposes only confined presets. Per-action approval is
 # retained and defaults to ask.

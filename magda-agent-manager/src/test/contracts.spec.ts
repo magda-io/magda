@@ -3,14 +3,15 @@ import {
     claimName,
     INSTALLATION_LABEL,
     shutdownTimeForActivity,
-    USER_LABEL
+    USER_LABEL,
+    withEnv
 } from "../kubernetes.js";
 import {
     isMeaningfulRuntimeRequest,
     RuntimeProxy,
     upstreamHeaders
 } from "../runtimeProxy.js";
-import { ManagerConfig, resolveLlmModel } from "../types.js";
+import { ManagerConfig, parseModelConfig } from "../types.js";
 
 function proxyConfig(): ManagerConfig {
     return {
@@ -41,9 +42,7 @@ function proxyConfig(): ManagerConfig {
         bootstrapCommand: "/bootstrap",
         magdaApiUrl: "https://magda.test/api",
         llmApiUrl: "https://magda.test/api/v0/llm/v1",
-        llmModel: "model",
-        llmContextWindow: 1_050_000,
-        llmMaxTokens: 128_000,
+        llmModelConfig: JSON.stringify({ alias: "model" }),
         hardDeleteSeconds: 8 * 60 * 60,
         idleSuspendSeconds: 30 * 60,
         reconcileIntervalSeconds: 30,
@@ -53,9 +52,47 @@ function proxyConfig(): ManagerConfig {
 }
 
 describe("Agent Manager contracts", () => {
-    it("defaults DSH to the stable MAGDA model alias", () => {
-        expect(resolveLlmModel(undefined)).to.equal("magda-agent-default");
-        expect(resolveLlmModel("private-model")).to.equal("private-model");
+    it("requires the Workspace model config as a JSON object with an alias", () => {
+        expect(parseModelConfig('{ "alias": "magda-agent-default" }')).to.equal(
+            '{"alias":"magda-agent-default"}'
+        );
+        for (const invalid of [
+            undefined,
+            "",
+            "not json",
+            "[]",
+            "null",
+            '{"alias":""}',
+            '{"alias":1}'
+        ]) {
+            expect(() => parseModelConfig(invalid)).to.throw(
+                /MAGDA_LLM_MODEL_CONFIG/
+            );
+        }
+    });
+
+    it("sets Workspace env in place, keeping the other variables", () => {
+        expect(
+            withEnv(
+                [
+                    { name: "A", value: "1" },
+                    { name: "MAGDA_LLM_MODEL_CONFIG", value: "old" },
+                    {
+                        name: "B",
+                        valueFrom: { fieldRef: { fieldPath: "x" } }
+                    }
+                ],
+                { MAGDA_LLM_MODEL_CONFIG: "new", C: "3" }
+            )
+        ).to.deep.equal([
+            { name: "A", value: "1" },
+            { name: "MAGDA_LLM_MODEL_CONFIG", value: "new" },
+            { name: "B", valueFrom: { fieldRef: { fieldPath: "x" } } },
+            { name: "C", value: "3" }
+        ]);
+        expect(withEnv(undefined, { A: "1" })).to.deep.equal([
+            { name: "A", value: "1" }
+        ]);
     });
 
     it("uses the accepted deterministic claim identity", () => {

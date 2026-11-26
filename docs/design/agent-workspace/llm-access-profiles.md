@@ -10,7 +10,7 @@ Magda LLM Services is the user-facing, authenticated facade and policy decision/
 
 Retain a **deployment-wide model allowlist** even after OPA becomes available: this constrains which model aliases the installation exposes at all. OPA then narrows which listed models a specific user is permitted to invoke. The MVP uses a simple allowlist plus a grantable `agentWorkspace/access` OPA decision (initially administrator-granted), not model-specific entitlement; **none of the profile/usage/OPA design below is claimed as shipped by #3850**.
 
-For #3850's current single-model bundled LiteLLM chart, `llm-services.allowedModels` is implemented as a YAML **string array**, not a comma-delimited string. An empty list defaults to `global.defaultAgentModel.alias`. When bundled LiteLLM configures only one alias, the resolved allowlist must be **exactly that alias**, rather than advertising models which the bundled router cannot serve. External LiteLLM deployments may allow multiple aliases; actual model availability still comes from the external router.
+The allowlist is the aliases of the models the deployment serves: `global.llmServices.defaultModel` followed by `global.llmServices.additionalModels` (#3965; this replaced the `llm-services.allowedModels` string array). Bundled LiteLLM renders one route per served model, so it never advertises a model it can't serve. With an external LiteLLM backend, actual model availability still comes from the external router.
 
 ## Registry record: `llm-access-profile`
 

@@ -1,16 +1,5 @@
 {{- $namespace := include "agent-services.sandboxNamespace" . -}}
 {{- $installationId := include "agent-services.installationId" . -}}
-{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
-{{- $model := coalesce .Values.llm.model (get $globalModel "alias") -}}
-{{- $contextWindow := get $globalModel "contextWindow" -}}
-{{- if and (hasKey .Values.llm "contextWindow") (ne (kindOf .Values.llm.contextWindow) "invalid") -}}
-{{- $contextWindow = .Values.llm.contextWindow -}}
-{{- end -}}
-{{- $maxTokens := get $globalModel "maxTokens" -}}
-{{- if and (hasKey .Values.llm "maxTokens") (ne (kindOf .Values.llm.maxTokens) "invalid") -}}
-{{- $maxTokens = .Values.llm.maxTokens -}}
-{{- end -}}
-{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
 {{- if ne (int .Values.manager.replicas) 1 -}}
 {{- fail "agent-services.manager.replicas must be 1 because lifecycle reconciliation is single-writer" -}}
 {{- end -}}
@@ -84,12 +73,10 @@ spec:
             - {name: RECONCILE_INTERVAL_SECONDS, value: {{ .Values.reconcileIntervalSeconds | quote }}}
             - {name: RUNTIME_MAX_BODY_BYTES, value: {{ .Values.runtimeMaxBodyBytes | int64 | quote }}}
             - {name: RUNTIME_MAX_UPLOAD_BYTES, value: {{ dig "agentWorkspace" "maxUploadBytes" 1073741824 .Values.global | int64 | quote }}}
-            - {name: MAGDA_LLM_MODEL, value: {{ required "agent-services: llm.model or global.defaultAgentModel.alias is required" $model | quote }}}
-            - {name: MAGDA_LLM_CONTEXT_WINDOW, value: {{ printf "%.0f" (float64 (required "agent-services: llm.contextWindow or global.defaultAgentModel.contextWindow is required" $contextWindow)) | quote }}}
-            - {name: MAGDA_LLM_MAX_TOKENS, value: {{ printf "%.0f" (float64 (required "agent-services: llm.maxTokens or global.defaultAgentModel.maxTokens is required" $maxTokens)) | quote }}}
-{{- with $reasoningEffort }}
-            - {name: MAGDA_LLM_REASONING_EFFORT, value: {{ . | quote }}}
-{{- end }}
+            # The Workspace model config (agent-services.model). The Manager
+            # writes it into a claimed Sandbox's Pod template on resume, so a
+            # running Workspace picks up a change when it next resumes.
+            - {name: MAGDA_LLM_MODEL_CONFIG, value: {{ include "agent-services.workspaceModelJson" . | quote }}}
           readinessProbe:
             httpGet: {path: /v0/status/ready, port: http}
           livenessProbe:

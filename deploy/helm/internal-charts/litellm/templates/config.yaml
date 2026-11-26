@@ -1,7 +1,4 @@
-{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
-{{- $alias := coalesce .Values.model.alias (get $globalModel "alias") -}}
-{{- $providerModel := coalesce .Values.model.providerModel (get $globalModel "providerModel") -}}
-{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
+{{- $models := include "magda.llmModels" . | fromJsonArray -}}
 {{- $providerSecretConfigured := and .Values.providerSecret.name .Values.providerSecret.key -}}
 apiVersion: v1
 kind: ConfigMap
@@ -10,14 +7,24 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: {{ required "litellm: model.alias or global.defaultAgentModel.alias is required" $alias | quote }}
+{{- range $models }}
+{{- /* LiteLLM sees API values, not levels: send the mapped value of the
+  model's reasoningEffort, and nothing for "" or a model that doesn't reason.
+  A request that names its own effort (the Workspace always does when it has
+  one) overrides this. */ -}}
+{{- $reasoningEffort := "" -}}
+{{- if and .reasoningEffort (kindIs "map" .reasoningEfforts) -}}
+{{- $reasoningEffort = get .reasoningEfforts .reasoningEffort -}}
+{{- end }}
+      - model_name: {{ .alias | quote }}
         litellm_params:
-          model: {{ required "litellm: model.providerModel or global.defaultAgentModel.providerModel is required" $providerModel | quote }}
+          model: {{ .providerModel | quote }}
 {{- if $providerSecretConfigured }}
           api_key: "os.environ/LITELLM_PROVIDER_API_KEY"
 {{- end }}
 {{- with $reasoningEffort }}
           reasoning_effort: {{ . | quote }}
+{{- end }}
 {{- end }}
     general_settings:
       master_key: "os.environ/LITELLM_MASTER_KEY"
