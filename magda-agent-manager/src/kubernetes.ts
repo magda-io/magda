@@ -62,6 +62,22 @@ const jsonPatchOptions = {
     ]
 };
 
+/** `env` with each of `values` set, in place when present, else appended. */
+export function withEnv(
+    env: k8s.V1EnvVar[] | undefined,
+    values: Record<string, string>
+): k8s.V1EnvVar[] {
+    const pending = new Map(Object.entries(values));
+    const updated = (env || []).map((entry) => {
+        if (!pending.has(entry.name)) return entry;
+        const value = pending.get(entry.name)!;
+        pending.delete(entry.name);
+        return { name: entry.name, value };
+    });
+    for (const [name, value] of pending) updated.push({ name, value });
+    return updated;
+}
+
 function isNotFound(error: unknown) {
     return error instanceof ApiException && error.code === 404;
 }
@@ -499,6 +515,71 @@ export class AgentKubernetesClient {
             },
             mergePatchOptions
         );
+    }
+
+    /**
+     * Resume a suspended Sandbox with the current values of `env` in its agent
+     * container. A claimed Sandbox keeps its own copy of the Pod template, and
+     * the controller reads it only when it creates the Pod, so writing the
+     * values in the same patch as `Running` makes the resumed Pod use them.
+     * The patch carries the read resourceVersion, so a concurrent change is
+     * re-read rather than overwritten.
+     */
+    async resumeSandbox(name: string, env: Record<string, string>) {
+        for (let attempt = 1; ; attempt += 1) {
+            const sandbox = await this.getSandbox(name);
+            if (!sandbox) throw new Error("Agent Workspace runtime is missing");
+            const containers = sandbox.spec?.podTemplate?.spec?.containers;
+            const agent = containers?.find(
+                (container) => container.name === this.options.agentContainer
+            );
+            const body = agent
+                ? {
+                      metadata: {
+                          resourceVersion: sandbox.metadata?.resourceVersion
+                      },
+                      spec: {
+                          operatingMode: "Running",
+                          // A merge patch replaces a list whole: send them all.
+                          podTemplate: {
+                              spec: {
+                                  containers: containers!.map((container) =>
+                                      container === agent
+                                          ? {
+                                                ...container,
+                                                env: withEnv(container.env, env)
+                                            }
+                                          : container
+                                  )
+                              }
+                          }
+                      }
+                  }
+                : { spec: { operatingMode: "Running" } };
+            try {
+                await this.customApi.patchNamespacedCustomObject(
+                    {
+                        group: SANDBOX_GROUP,
+                        version: VERSION,
+                        namespace: this.options.namespace,
+                        plural: SANDBOXES,
+                        name,
+                        body
+                    },
+                    mergePatchOptions
+                );
+                return;
+            } catch (error) {
+                if (
+                    error instanceof ApiException &&
+                    error.code === 409 &&
+                    attempt < 5
+                ) {
+                    continue;
+                }
+                throw error;
+            }
+        }
     }
 
     private async readPod(name: string) {

@@ -118,8 +118,9 @@ spec:
             - name: DSH_TRUSTED_HOSTS
               value: {{ (urlParse (include "agent-services.externalUrl" .)).host | quote }}
             - {name: DSH_BROWSER_AUTH, value: "true"}
-            # Declares image input for the managed model (magda.cordis.patch.yml).
-            - {name: MAGDA_LLM_IMAGE_INPUT, value: {{ include "agent-services.imageInput" . | quote }}}
+            # The model config the DSH overlay reads (magda.cordis.patch.yml).
+            # The Agent Manager refreshes it on resume (MAGDA_LLM_MODEL_CONFIG).
+            - {name: MAGDA_LLM_MODEL_CONFIG, value: {{ include "magda.defaultAgentModel.workspaceJson" . | quote }}}
             - name: MAGDA_LLM_BASE_URL
               value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}
             # Human-readable configured limits for agent guidance. CPU and memory
@@ -175,3 +176,8 @@ spec:
   replicas: {{ .Values.warmPool.size }}
   sandboxTemplateRef:
     name: {{ $name }}
+  # Replace unclaimed warm Sandboxes as soon as the template changes (a new
+  # model config or runtime image), so a new Workspace never starts from a
+  # stale copy. Claimed Sandboxes are never touched by the pool.
+  updateStrategy:
+    type: Recreate

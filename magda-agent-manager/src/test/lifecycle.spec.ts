@@ -50,10 +50,7 @@ function config(overrides: Partial<ManagerConfig> = {}): ManagerConfig {
         bootstrapCommand: "/bootstrap",
         magdaApiUrl: "https://magda.test/api",
         llmApiUrl: "https://magda.test/api/v0/llm/v1",
-        llmModel: "model",
-        llmReasoningEffort: "medium",
-        llmContextWindow: 1_050_000,
-        llmMaxTokens: 128_000,
+        llmModelConfig: JSON.stringify({ alias: "model" }),
         hardDeleteSeconds: 8 * 60 * 60,
         idleSuspendSeconds: 30 * 60,
         reconcileIntervalSeconds: 30,
@@ -122,6 +119,7 @@ function claim(
 class FakeKubernetes {
     claims: SandboxClaim[] = [];
     modes: string[] = [];
+    resumes: Array<{ name: string; env: Record<string, string> }> = [];
     activity: Array<{ userId: string; at: Date }> = [];
     activityAttempts = 0;
     activityFailures = 0;
@@ -213,6 +211,10 @@ class FakeKubernetes {
             };
         }
         return this.claims[0];
+    }
+    async resumeSandbox(name: string, env: Record<string, string>) {
+        this.modes.push("Running");
+        this.resumes.push({ name, env });
     }
     async setSandboxOperatingMode(_name: string, mode: string) {
         this.modes.push(mode);
@@ -319,29 +321,9 @@ function manager(
 }
 
 describe("Agent Workspace inactivity lifecycle", () => {
-    it("bootstraps the deployment-owned model capabilities", async () => {
+    it("bootstraps only per-user values, not the model config", async () => {
         const kubernetes = new FakeKubernetes();
         const instance = manager(kubernetes).manager;
-
-        await instance.start(userId);
-        for (let i = 0; i < 20 && !kubernetes.bootstraps.length; i += 1) {
-            await new Promise((resolve) => setImmediate(resolve));
-        }
-
-        expect(kubernetes.bootstraps).to.have.length(1);
-        expect(kubernetes.bootstraps[0]).to.have.nested.include({
-            "llm.model": "model",
-            "llm.reasoningEffort": "medium",
-            "llm.contextWindow": 1_050_000,
-            "llm.maxTokens": 128_000
-        });
-    });
-
-    it("omits an explicitly empty reasoning effort from bootstrap", async () => {
-        const kubernetes = new FakeKubernetes();
-        const instance = manager(kubernetes, new FakeApiKeys(), {
-            llmReasoningEffort: ""
-        }).manager;
 
         await instance.start(userId);
         for (let i = 0; i < 20 && !kubernetes.bootstraps.length; i += 1) {
@@ -352,7 +334,11 @@ describe("Agent Workspace inactivity lifecycle", () => {
         const payload = kubernetes.bootstraps[0] as {
             llm: Record<string, unknown>;
         };
-        expect(payload.llm).not.to.have.property("reasoningEffort");
+        // The model config reaches the Workspace through its Pod env.
+        expect(Object.keys(payload.llm).sort()).to.deep.equal([
+            "authorization",
+            "baseUrl"
+        ]);
     });
 
     it("becomes READY before a blocked Agent Skill sync completes", async () => {
@@ -1009,6 +995,33 @@ describe("Agent Workspace inactivity lifecycle", () => {
         expect(keys.extended).to.have.length(1);
     });
 
+    it("resumes with the current model config (#3965)", async () => {
+        const kubernetes = new FakeKubernetes();
+        kubernetes.claims = [
+            claim(new Date(Date.now() - 60 * 60 * 1000), "SUSPENDED")
+        ];
+        const modelConfig = JSON.stringify({
+            alias: "model",
+            reasoningEffort: "medium",
+            auxiliaryReasoningEffort: "low"
+        });
+        const instance = manager(kubernetes, new FakeApiKeys(), {
+            llmModelConfig: modelConfig
+        }).manager;
+
+        await instance.resume(userId);
+        for (let i = 0; i < 20 && !kubernetes.activity.length; i += 1) {
+            await new Promise((resolve) => setImmediate(resolve));
+        }
+
+        expect(kubernetes.resumes).to.deep.equal([
+            {
+                name: "sandbox-1",
+                env: { MAGDA_LLM_MODEL_CONFIG: modelConfig }
+            }
+        ]);
+    });
+
     it("recovers persisted suspend and resume transitions after restart", async () => {
         for (const [state, expectedMode, expectedState] of [
             ["SUSPENDING", "Suspended", "SUSPENDED"],
@@ -1021,6 +1034,9 @@ describe("Agent Workspace inactivity lifecycle", () => {
             await instance.reconcileIdleWorkspaces();
 
             expect(kubernetes.modes).to.deep.equal([expectedMode]);
+            expect(kubernetes.resumes).to.have.length(
+                expectedMode === "Running" ? 1 : 0
+            );
             expect(
                 kubernetes.claims[0].metadata.annotations?.[STATE_ANNOTATION]
             ).to.equal(expectedState);

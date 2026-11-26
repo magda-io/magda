@@ -1,8 +1,12 @@
-{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
-{{- $alias := coalesce .Values.model.alias (get $globalModel "alias") -}}
-{{- $providerModel := coalesce .Values.model.providerModel (get $globalModel "providerModel") -}}
-{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
+{{- $model := include "magda.defaultAgentModel" . | fromJson -}}
 {{- $providerSecretConfigured := and .Values.providerSecret.name .Values.providerSecret.key -}}
+{{- /* LiteLLM sees API values, not levels: send the mapped value of the main-turn
+  effort, and nothing for "" or a model that doesn't reason. A request that
+  names its own effort (DSH always does when it has one) overrides this. */ -}}
+{{- $reasoningEffort := "" -}}
+{{- if and $model.reasoningEffort (kindIs "map" $model.reasoningEfforts) -}}
+{{- $reasoningEffort = get $model.reasoningEfforts $model.reasoningEffort -}}
+{{- end -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,9 +14,9 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: {{ required "litellm: model.alias or global.defaultAgentModel.alias is required" $alias | quote }}
+      - model_name: {{ $model.alias | quote }}
         litellm_params:
-          model: {{ required "litellm: model.providerModel or global.defaultAgentModel.providerModel is required" $providerModel | quote }}
+          model: {{ required "global.defaultAgentModel.providerModel is required when bundled LiteLLM is enabled" $model.providerModel | quote }}
 {{- if $providerSecretConfigured }}
           api_key: "os.environ/LITELLM_PROVIDER_API_KEY"
 {{- end }}

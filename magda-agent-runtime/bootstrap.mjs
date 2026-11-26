@@ -11,21 +11,15 @@ try {
     console.error("magda-agent-bootstrap: invalid JSON payload");
     process.exit(64);
 }
+// Only per-user values arrive here. The model config is deployment-owned Pod
+// env (MAGDA_LLM_MODEL_CONFIG); model fields an older Manager still sends are
+// ignored.
 if (
     payload?.version !== 1 ||
     !payload?.magda?.baseUrl ||
     !payload?.magda?.apiKeyId ||
     !payload?.magda?.apiKey ||
     !payload?.llm?.baseUrl ||
-    !payload?.llm?.model ||
-    (payload.llm.reasoningEffort != null &&
-        (typeof payload.llm.reasoningEffort !== "string" ||
-            !payload.llm.reasoningEffort.trim())) ||
-    !Number.isSafeInteger(payload?.llm?.contextWindow) ||
-    payload.llm.contextWindow <= 0 ||
-    !Number.isSafeInteger(payload?.llm?.maxTokens) ||
-    payload.llm.maxTokens <= 0 ||
-    payload.llm.maxTokens > payload.llm.contextWindow ||
     !payload?.llm?.authorization
 ) {
     console.error("magda-agent-bootstrap: incomplete payload");
@@ -100,18 +94,6 @@ fs.writeFileSync(
     [
         `export MAGDA_LLM_BASE_URL=${shellQuote(payload.llm.baseUrl)}`,
         `export MAGDA_LLM_API_KEY=${shellQuote(payload.llm.authorization)}`,
-        `export MAGDA_LLM_MODEL=${shellQuote(payload.llm.model)}`,
-        `export MAGDA_LLM_CONTEXT_WINDOW=${shellQuote(
-            payload.llm.contextWindow
-        )}`,
-        `export MAGDA_LLM_MAX_TOKENS=${shellQuote(payload.llm.maxTokens)}`,
-        ...(payload.llm.reasoningEffort
-            ? [
-                  `export MAGDA_LLM_REASONING_EFFORT=${shellQuote(
-                      payload.llm.reasoningEffort
-                  )}`
-              ]
-            : []),
         ""
     ].join("\n"),
     { mode: 0o600 }

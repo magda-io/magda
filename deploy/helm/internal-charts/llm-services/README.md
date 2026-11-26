@@ -16,7 +16,7 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| allowedModels | list | `[]` | Deployment-wide model allowlist. An empty array inherits global.defaultAgentModel.alias from the parent chart. Bundled LiteLLM requires exactly one matching alias; external backends may use multiple aliases. |
+| allowedModels | list | `[]` | Deployment-wide model allowlist. An empty array allows only global.defaultAgentModel.alias. With bundled LiteLLM, leave it empty (or set exactly that alias); an external backend may serve several aliases. With the Agent Workspace enabled, the list must include the alias. |
 | backend.masterKeySecret.key | string | `""` |  |
 | backend.masterKeySecret.name | string | `""` |  |
 | backend.url | string | `""` |  |

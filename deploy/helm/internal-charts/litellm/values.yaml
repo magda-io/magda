@@ -6,14 +6,9 @@ image:
   name: litellm
   tag: main-v1.81.12-stable
   pullPolicy: IfNotPresent
-# Optional chart-specific overrides. Empty values inherit
-# global.defaultAgentModel from the parent chart. Reasoning effort is global-only
-# so DSH and bundled LiteLLM cannot diverge.
-model:
-  # -- Public LiteLLM model alias override.
-  alias: ""
-  # -- Provider-specific LiteLLM model override.
-  providerModel: ""
+# The model (alias, provider model and reasoning effort) comes only from
+# global.defaultAgentModel, so LiteLLM, LLM Services and the Agent Workspace
+# can't disagree.
 providerSecret:
   # -- Provider API-key Secret name. Leave name and key empty for providers that do not need a key.
   name: litellm-provider

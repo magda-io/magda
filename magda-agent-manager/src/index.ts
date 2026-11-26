@@ -8,7 +8,7 @@ import {
     RuntimeProxy
 } from "./runtimeProxy.js";
 import { createManagerServer } from "./server.js";
-import { ManagerConfig, resolveLlmModel } from "./types.js";
+import { ManagerConfig, parseModelConfig } from "./types.js";
 import AuthDecisionQueryClient from "magda-typescript-common/src/opa/AuthDecisionQueryClient.js";
 import {
     HttpAgentSkillRegistry,
@@ -93,10 +93,7 @@ const config: ManagerConfig = {
     llmApiUrl:
         process.env.MAGDA_LLM_API_URL ||
         `${externalUrl.replace(/\/$/, "")}/api/v0/llm/v1`,
-    llmModel: resolveLlmModel(process.env.MAGDA_LLM_MODEL),
-    llmReasoningEffort: process.env.MAGDA_LLM_REASONING_EFFORT || undefined,
-    llmContextWindow: positiveInteger("MAGDA_LLM_CONTEXT_WINDOW", 1_050_000),
-    llmMaxTokens: positiveInteger("MAGDA_LLM_MAX_TOKENS", 128_000),
+    llmModelConfig: parseModelConfig(process.env.MAGDA_LLM_MODEL_CONFIG),
     hardDeleteSeconds: Number(process.env.HARD_DELETE_SECONDS || 8 * 60 * 60),
     idleSuspendSeconds: Number(process.env.IDLE_SUSPEND_SECONDS || 30 * 60),
     reconcileIntervalSeconds: Number(
@@ -114,11 +111,6 @@ const config: ManagerConfig = {
     ),
     controlPlaneSecret: process.env.CONTROL_PLANE_SECRET || ""
 };
-if (config.llmMaxTokens > config.llmContextWindow) {
-    throw new Error(
-        "MAGDA_LLM_MAX_TOKENS must not exceed MAGDA_LLM_CONTEXT_WINDOW"
-    );
-}
 if (
     config.skillArchiveMaxMarkdownBytes >
     config.skillArchiveMaxUncompressedBytes

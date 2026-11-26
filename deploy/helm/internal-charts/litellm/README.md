@@ -20,8 +20,6 @@ Kubernetes: `>= 1.24.0-0`
 | masterKeySecret.create | bool | `true` |  |
 | masterKeySecret.key | string | `"master-key"` |  |
 | masterKeySecret.name | string | `"magda-litellm-master-key"` |  |
-| model.alias | string | `""` | Public LiteLLM model alias override. |
-| model.providerModel | string | `""` | Provider-specific LiteLLM model override. |
 | providerSecret.key | string | `"api-key"` | Provider API-key Secret key. Leave name and key empty for providers that do not need a key. |
 | providerSecret.name | string | `"litellm-provider"` | Provider API-key Secret name. Leave name and key empty for providers that do not need a key. |
 | resources.limits.cpu | string | `"1"` |  |

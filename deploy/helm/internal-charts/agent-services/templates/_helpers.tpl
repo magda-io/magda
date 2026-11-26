@@ -61,13 +61,3 @@ agent.magda.io/installation-id: {{ include "agent-services.installationId" . | q
 {{- end -}}
 {{- $url -}}
 {{- end -}}
-
-{{/* Effective model image input: the chart override, else the global default, else false. */}}
-{{- define "agent-services.imageInput" -}}
-{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
-{{- $imageInput := get $globalModel "imageInput" -}}
-{{- if and (hasKey .Values.llm "imageInput") (ne (kindOf .Values.llm.imageInput) "invalid") -}}
-{{- $imageInput = .Values.llm.imageInput -}}
-{{- end -}}
-{{- if eq (kindOf $imageInput) "invalid" -}}false{{- else -}}{{- $imageInput -}}{{- end -}}
-{{- end -}}

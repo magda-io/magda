@@ -26,64 +26,10 @@
 {{- fail (printf "global.agentWorkspace.maxUploadBytes must be a positive integer; got %v" $maxUpload) -}}
 {{- end -}}
 
-{{- $globalModel := get .Values.global "defaultAgentModel" | default dict -}}
-{{- $model := coalesce .Values.llm.model (get $globalModel "alias") -}}
-{{- if empty $model -}}
-{{- fail "agent-services: llm.model or global.defaultAgentModel.alias is required" -}}
-{{- end -}}
-{{- if ne (kindOf $model) "string" -}}
-{{- fail (printf "agent-services: llm.model or global.defaultAgentModel.alias must be a non-empty string; got %s" (kindOf $model)) -}}
-{{- end -}}
-{{- if empty (trim $model) -}}
-{{- fail "agent-services: llm.model or global.defaultAgentModel.alias is required" -}}
-{{- end -}}
-{{- if ne $model (trim $model) -}}
-{{- fail "agent-services: llm.model or global.defaultAgentModel.alias must not have leading or trailing whitespace" -}}
-{{- end -}}
-
-{{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
-{{- if and (ne (kindOf $reasoningEffort) "invalid") (ne (kindOf $reasoningEffort) "string") -}}
-{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, low, medium, high, xhigh, or max; got %v (%s)" $reasoningEffort (kindOf $reasoningEffort)) -}}
-{{- end -}}
-{{- if and (eq (kindOf $reasoningEffort) "string") (not (has $reasoningEffort (list "" "low" "medium" "high" "xhigh" "max"))) -}}
-{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, low, medium, high, xhigh, or max; got %q" $reasoningEffort) -}}
-{{- end -}}
-
-{{- $imageInput := get $globalModel "imageInput" -}}
-{{- if and (hasKey .Values.llm "imageInput") (ne (kindOf .Values.llm.imageInput) "invalid") -}}
-{{- $imageInput = .Values.llm.imageInput -}}
-{{- end -}}
-{{- if not (has (kindOf $imageInput) (list "bool" "invalid")) -}}
-{{- fail (printf "agent-services: llm.imageInput or global.defaultAgentModel.imageInput must be true or false; got %v (%s)" $imageInput (kindOf $imageInput)) -}}
-{{- end -}}
-
-{{- $contextWindow := get $globalModel "contextWindow" -}}
-{{- if and (hasKey .Values.llm "contextWindow") (ne (kindOf .Values.llm.contextWindow) "invalid") -}}
-{{- $contextWindow = .Values.llm.contextWindow -}}
-{{- end -}}
-{{- $contextWindowKind := kindOf $contextWindow -}}
-{{- if not (has $contextWindowKind (list "int" "int64" "float64")) -}}
-{{- fail (printf "agent-services: llm.contextWindow or global.defaultAgentModel.contextWindow must be a positive integer; got %v (%s)" $contextWindow $contextWindowKind) -}}
-{{- end -}}
-{{- $contextWindowFloat := float64 $contextWindow -}}
-{{- if or (le $contextWindowFloat 0.0) (ne $contextWindowFloat (floor $contextWindowFloat)) -}}
-{{- fail (printf "agent-services effective contextWindow must be a positive integer; got %v" $contextWindow) -}}
-{{- end -}}
-
-{{- $maxTokens := get $globalModel "maxTokens" -}}
-{{- if and (hasKey .Values.llm "maxTokens") (ne (kindOf .Values.llm.maxTokens) "invalid") -}}
-{{- $maxTokens = .Values.llm.maxTokens -}}
-{{- end -}}
-{{- $maxTokensKind := kindOf $maxTokens -}}
-{{- if not (has $maxTokensKind (list "int" "int64" "float64")) -}}
-{{- fail (printf "agent-services: llm.maxTokens or global.defaultAgentModel.maxTokens must be a positive integer; got %v (%s)" $maxTokens $maxTokensKind) -}}
-{{- end -}}
-{{- $maxTokensFloat := float64 $maxTokens -}}
-{{- if or (le $maxTokensFloat 0.0) (ne $maxTokensFloat (floor $maxTokensFloat)) -}}
-{{- fail (printf "agent-services effective maxTokens must be a positive integer; got %v" $maxTokens) -}}
-{{- end -}}
-{{- if gt $maxTokensFloat $contextWindowFloat -}}
-{{- fail (printf "agent-services effective maxTokens (%v) must not exceed contextWindow (%v)" $maxTokens $contextWindow) -}}
+{{- /* The model config is validated by the shared magda.defaultAgentModel helper. */ -}}
+{{- $_ := include "magda.defaultAgentModel" . -}}
+{{- if hasKey .Values "llm" -}}
+{{- fail "agent-services.llm.* was removed (#3965): set the Workspace model in global.defaultAgentModel" -}}
 {{- end -}}
 
 {{- range $name, $value := dict

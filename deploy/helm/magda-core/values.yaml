@@ -14,17 +14,21 @@ global:
   llmServices:
     # -- Enable the authenticated Magda LLM facade independently of Agent Workspace.
     enabled: false
+  # The Agent Workspace model: one entry shared by LLM Services (the model
+  # allowlist), bundled LiteLLM (the route) and the Agent Workspace (DSH). It
+  # describes what the model can do (`reasoningEfforts`) separately from what
+  # the deployment wants (`reasoningEffort`, `auxiliaryReasoningEffort`). Every
+  # field is validated once, at render time. Running Workspaces pick up a change
+  # the next time they're resumed. See the Agent Workspace deployment guide for
+  # an example of each kind of model.
   defaultAgentModel:
-    # -- Stable model alias exposed by MAGDA LLM Services and managed DSH.
+    # -- Public model alias: the LLM Services allowlist entry, the bundled
+    # LiteLLM `model_name` and the Workspace's DSH model id.
     alias: magda-agent-default
-    # -- LiteLLM provider model routed behind the stable MAGDA alias.
+    # -- Bundled LiteLLM only: the provider model routed behind the alias.
     providerModel: openai/gpt-6.1-sol
-    # -- Provider reasoning effort, also used by the Workspace's own requests
-    # that name none (e.g. session titles). Supported values: low, medium, high,
-    # xhigh, and max. Set to an empty string to omit the setting and let the
-    # provider choose its model default. `off` isn't supported: the default
-    # model can't turn reasoning off.
-    reasoningEffort: medium
+    # -- Name shown for the model in the Workspace. Empty: the alias.
+    displayName: Magda Agent Default
     # -- Model context-window capability.
     contextWindow: 1050000
     # -- Model maximum output tokens, including reasoning tokens.
@@ -34,9 +38,28 @@ global:
     # their layout. Set it to true only for a vision-capable model, such as the
     # default `openai/gpt-6.1-sol`: a text-only model given an image rejects the
     # request, and the turn fails. Off by default, so changing `providerModel`
-    # to a text-only model needs no other change. New Workspaces pick up a
-    # change; existing ones keep their setting until reset.
+    # to a text-only model needs no other change.
     imageInput: false
+    # -- (map or false) Capability: the reasoning levels the model accepts, as
+    # a map from a level (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`,
+    # `max`) to the value sent to the API (`reasoning.effort`), or `false` for
+    # a model that doesn't reason. Unset (`null`): the default model's levels,
+    # `low` to `max`, each sent as its own name. A map you set replaces the
+    # default whole, so list every level the model accepts. `off` needs an
+    # explicit value, such as `none`, and only works if the provider accepts
+    # it: the default model can't turn reasoning off.
+    # @default -- `null` (`{low: low, medium: medium, high: high, xhigh: xhigh, max: max}`)
+    reasoningEfforts: null
+    # -- Effort for the agent's main turns: a level declared in
+    # `reasoningEfforts`, or an empty string to send none and let the provider
+    # use its default. Bundled LiteLLM also sends its mapped value for clients
+    # that name no effort.
+    reasoningEffort: medium
+    # -- Effort for session titles and context compaction: a level declared in
+    # `reasoningEfforts`, or an empty string to send none. Unset (`null`): the
+    # same as `reasoningEffort`. A lower level makes titles cheaper and faster.
+    # @default -- `null` (same as `reasoningEffort`)
+    auxiliaryReasoningEffort: null
   searchEngine:
     semanticIndexer:
       indexName: "semantic-index"

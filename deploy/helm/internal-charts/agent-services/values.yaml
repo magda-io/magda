@@ -88,16 +88,6 @@ reconcileIntervalSeconds: 30
 runtimeMaxBodyBytes: 16777216
 # Optional chart-specific overrides. Empty values inherit
 # global.defaultAgentModel from the parent chart.
-llm:
-  # -- Stable public model alias override.
-  model: ""
-  # -- Model context-window override.
-  contextWindow: null
-  # -- Model maximum-output-token override.
-  maxTokens: null
-  # -- Model image-input override (`true` or `false`). See
-  # `global.defaultAgentModel.imageInput`.
-  imageInput: null
 # ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox
 # Pods use a separate installation-scoped, no-RBAC ServiceAccount created in the
 # Sandbox namespace; its name is generated to avoid shared-namespace collisions.
