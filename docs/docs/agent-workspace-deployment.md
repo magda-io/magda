@@ -269,8 +269,10 @@ authorization is added.
 
 The models Magda serves are `global.llmServices.defaultModel` followed by
 `global.llmServices.additionalModels`, each one entry of the same shape. The
-default model is what clients that name no model use, including the Agent
-Workspace unless `agent-services.model` selects another. The list lives in
+default model is the Agent Workspace's model unless `agent-services.model`
+selects another, and the deployment's default for other applications. API
+clients name the model they call by its alias: LLM Services' OpenAI-compatible
+endpoints require `model`. The list lives in
 `global` because a Helm subchart sees only its own values and `global`: each
 model is described once, and LLM Services, bundled LiteLLM and Agent Services
 all render from it through shared helpers, so they can't disagree.
@@ -278,10 +280,6 @@ all render from it through shared helpers, so they can't disagree.
 merges maps but replaces lists whole: a single field of the default can be
 overridden (`--set global.llmServices.defaultModel.reasoningEffort=high`), and
 adding a model doesn't mean restating the default.
-
-The keys this replaced fail the render with a pointer to the new ones:
-`global.defaultAgentModel`, `llm-services.allowedModels`, and the per-chart
-overrides `agent-services.llm.*` and `litellm.model.*`.
 
 | Field | LLM Services | Bundled LiteLLM | Workspace (DSH), when selected |
 | --- | --- | --- | --- |
@@ -320,7 +318,9 @@ another model, update `providerModel`, `contextWindow`, `maxTokens`,
 - `auxiliaryReasoningEffort` is the model's reasoning effort for the
   Workspace's session titles and context compaction: a declared level. `""`:
   the model's `reasoningEffort`. Unset (`null`): the Workspace's main-turn
-  effort.
+  effort. When the Workspace's main-turn effort is the provider's default
+  (`reasoningEffort: ""`), this must be empty or unset too: titles and
+  compaction then also use the provider's default.
 - There's no separate on/off switch: a model that doesn't reason is
   `reasoningEfforts: false`, and turning reasoning off for cost is
   `reasoningEffort: off` on a model that declares `off`.
@@ -413,8 +413,8 @@ agent-services:
 Other applications keep using the default model. The Workspace's title and
 compaction effort is `agent-services.model.auxiliaryReasoningEffort` if set
 (empty: the entry's `reasoningEffort`), else the entry's
-`auxiliaryReasoningEffort` if set (not `null`), else the Workspace's main-turn
-effort. An alias that isn't served, an effort the model doesn't
+`auxiliaryReasoningEffort` if set (not `null`; empty: the entry's
+`reasoningEffort`), else the Workspace's main-turn effort. An alias that isn't served, an effort the model doesn't
 declare, or any other field fails the render.
 
 **When a change applies.** The model config reaches each Workspace as one
@@ -429,9 +429,8 @@ the PVC holds only credentials and base URLs.
   writes the current config into it each time the Workspace resumes, so a
   running Workspace picks up a change after it next suspends and resumes
   (`idleSuspendSeconds` after the user leaves). No reset is needed.
-- Workspaces created before this change keep their runtime image, which reads
-  the older per-field model values from the PVC; reset them once to move to the
-  current runtime.
+- A claimed Sandbox also keeps its runtime image: a Workspace moves to a new
+  runtime image when it's reset.
 
 ## Scoped DSH Content Security Policy
 

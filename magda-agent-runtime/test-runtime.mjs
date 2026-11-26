@@ -734,11 +734,6 @@ assert.match(
     /MAGDA_LLM_MODEL_CONFIG must be the deployment's model config JSON/,
     "The runtime must refuse to start without the model config"
 );
-assert.match(
-    entrypoint,
-    /unset MAGDA_LLM_MODEL MAGDA_LLM_CONTEXT_WINDOW MAGDA_LLM_MAX_TOKENS \\\n\s+MAGDA_LLM_REASONING_EFFORT MAGDA_LLM_IMAGE_INPUT/,
-    "The runtime must ignore model values in env files from older bootstraps"
-);
 // Reasoning counts toward the title request's output cap: leave room for it.
 const titleConfig = /- id: session-title-llm\n {2}config:\n((?: {4}\S.*\n)+)/.exec(
     cordisPatch
@@ -819,29 +814,6 @@ try {
         envNames(await readFile(envFile, "utf8")),
         ["MAGDA_LLM_BASE_URL", "MAGDA_LLM_API_KEY"],
         "Bootstrap must persist only per-user values"
-    );
-
-    // An older Manager still sends model fields, and an older bootstrap left
-    // them in the env file: both are replaced by the per-user values only.
-    await writeFile(
-        envFile,
-        "export MAGDA_LLM_MODEL='old'\nexport MAGDA_LLM_REASONING_EFFORT='medium'\n",
-        { mode: 0o600 }
-    );
-    runBootstrap({
-        ...bootstrapPayload,
-        llm: {
-            ...bootstrapPayload.llm,
-            model: "magda-agent-default",
-            reasoningEffort: "medium",
-            contextWindow: 1050000,
-            maxTokens: 128000
-        }
-    });
-    assert.deepEqual(
-        envNames(await readFile(envFile, "utf8")),
-        ["MAGDA_LLM_BASE_URL", "MAGDA_LLM_API_KEY"],
-        "Bootstrap must ignore model fields from an older Manager"
     );
     for (const missing of ["baseUrl", "authorization"]) {
         const { [missing]: _missing, ...llm } = bootstrapPayload.llm;

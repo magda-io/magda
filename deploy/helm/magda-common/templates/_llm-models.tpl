@@ -187,9 +187,6 @@
   Usage: {{- $models := include "magda.llmModels" . | fromJsonArray -}}
 */}}
 {{- define "magda.llmModels" -}}
-{{- if hasKey .Values.global "defaultAgentModel" -}}
-{{- fail "global.defaultAgentModel was replaced by global.llmServices.defaultModel (#3965): move its fields there" -}}
-{{- end -}}
 {{- $llmServices := get .Values.global "llmServices" | default dict -}}
 {{- $models := list (include "magda.llmModel.entry" (dict "entry" (index $llmServices "defaultModel") "path" "global.llmServices.defaultModel") | fromJson) -}}
 {{- $additional := index $llmServices "additionalModels" -}}

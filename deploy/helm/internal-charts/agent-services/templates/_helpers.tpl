@@ -104,19 +104,33 @@ agent.magda.io/installation-id: {{ include "agent-services.installationId" . | q
 {{- fail (printf "agent-services.model.alias %q isn't a model LLM Services serves; the served aliases (global.llmServices.defaultModel and additionalModels) are %s" $alias (join ", " $aliases)) -}}
 {{- end -}}
 {{- end -}}
+{{- /* Efforts resolve here to the level the Workspace sends, so the result
+  doesn't depend on what the LLM backend does with a request that has none:
+  an empty Workspace effort is the model entry's reasoningEffort. */ -}}
 {{- $reasoningEffort := $model.reasoningEffort -}}
-{{- if ne (kindOf (index $selection "reasoningEffort")) "invalid" -}}
-{{- $reasoningEffort = index $selection "reasoningEffort" -}}
-{{- include "magda.llmModel.checkEffort" (dict "value" $reasoningEffort "path" "agent-services.model.reasoningEffort" "efforts" $model.reasoningEfforts) -}}
+{{- $selected := index $selection "reasoningEffort" -}}
+{{- if ne (kindOf $selected) "invalid" -}}
+{{- include "magda.llmModel.checkEffort" (dict "value" $selected "path" "agent-services.model.reasoningEffort" "efforts" $model.reasoningEfforts) -}}
+{{- if ne $selected "" -}}
+{{- $reasoningEffort = $selected -}}
+{{- end -}}
 {{- end -}}
 {{- /* Titles and compaction: the Workspace's own choice, else the model
-  entry's, else the Workspace's main-turn effort. */ -}}
+  entry's, else the Workspace's main-turn effort. Empty: the entry's
+  reasoningEffort. */ -}}
 {{- $auxiliary := $reasoningEffort -}}
-{{- if ne (kindOf (index $selection "auxiliaryReasoningEffort")) "invalid" -}}
-{{- $auxiliary = index $selection "auxiliaryReasoningEffort" -}}
-{{- include "magda.llmModel.checkEffort" (dict "value" $auxiliary "path" "agent-services.model.auxiliaryReasoningEffort" "efforts" $model.reasoningEfforts) -}}
+{{- $selectedAuxiliary := index $selection "auxiliaryReasoningEffort" -}}
+{{- if ne (kindOf $selectedAuxiliary) "invalid" -}}
+{{- include "magda.llmModel.checkEffort" (dict "value" $selectedAuxiliary "path" "agent-services.model.auxiliaryReasoningEffort" "efforts" $model.reasoningEfforts) -}}
+{{- $auxiliary = $selectedAuxiliary | default $model.reasoningEffort -}}
 {{- else if ne (kindOf $model.auxiliaryReasoningEffort) "invalid" -}}
-{{- $auxiliary = $model.auxiliaryReasoningEffort -}}
+{{- $auxiliary = $model.auxiliaryReasoningEffort | default $model.reasoningEffort -}}
+{{- end -}}
+{{- /* DSH applies the title and compaction effort to main turns that have
+  none, so main turns can't use the provider's default while those have a
+  level. */ -}}
+{{- if and (eq $reasoningEffort "") (ne $auxiliary "") -}}
+{{- fail (printf "agent-services: the Workspace's main-turn effort is the provider's default (model %q has reasoningEffort \"\"), so its title and compaction effort can't be %q: set a main-turn effort (agent-services.model.reasoningEffort), or leave the title and compaction effort empty or unset" $model.alias $auxiliary) -}}
 {{- end -}}
 {{- $_ := set $model "reasoningEffort" $reasoningEffort -}}
 {{- $_ := set $model "auxiliaryReasoningEffort" $auxiliary -}}

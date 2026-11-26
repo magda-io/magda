@@ -14,9 +14,10 @@ global:
   llmServices:
     # -- Enable the authenticated Magda LLM facade independently of Agent Workspace.
     enabled: false
-    # The default model: used by LLM Services clients that name no model,
-    # including the Agent Workspace unless `agent-services.model` selects
-    # another. One entry describes what the model can do (`reasoningEfforts`)
+    # The default model: the Agent Workspace's model unless
+    # `agent-services.model` selects another, and the deployment's default
+    # for other applications. API clients name the model they call by its
+    # alias. One entry describes what the model can do (`reasoningEfforts`)
     # separately from what the deployment wants (`reasoningEffort`,
     # `auxiliaryReasoningEffort`). Every entry is validated once, at render
     # time. See the Agent Workspace deployment guide for an example of each
@@ -57,8 +58,9 @@ global:
       reasoningEffort: medium
       # -- The model's reasoning effort for the Workspace's session titles and
       # context compaction: a level declared in `reasoningEfforts`. Empty:
-      # `reasoningEffort`. Unset (`null`): the Workspace's main-turn effort. A
-      # lower level makes titles cheaper and faster.
+      # `reasoningEffort`. Unset (`null`): the Workspace's main-turn effort.
+      # Must be empty or unset when the Workspace's main-turn effort is the
+      # provider's default. A lower level makes titles cheaper and faster.
       # @default -- `null` (the Workspace's main-turn effort)
       auxiliaryReasoningEffort: null
     # -- More models LLM Services serves, each an entry with the same fields

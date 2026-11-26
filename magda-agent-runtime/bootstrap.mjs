@@ -12,8 +12,7 @@ try {
     process.exit(64);
 }
 // Only per-user values arrive here. The model config is deployment-owned Pod
-// env (MAGDA_LLM_MODEL_CONFIG); model fields an older Manager still sends are
-// ignored.
+// env (MAGDA_LLM_MODEL_CONFIG).
 if (
     payload?.version !== 1 ||
     !payload?.magda?.baseUrl ||

@@ -40,13 +40,16 @@ resources_of_kind() {
 }
 
 # The Workspace model config JSON (MAGDA_LLM_MODEL_CONFIG) in a render. The
-# Agent Manager and the SandboxTemplate must carry the same value.
+# Agent Manager and the SandboxTemplate must carry the same value. Node, not
+# jq: the CI builder image has no jq.
+model_config_of() {
+    sed -n 's/.*name: MAGDA_LLM_MODEL_CONFIG, value: \(".*"\)}$/\1/p' |
+        node -e 'const t = require("fs").readFileSync(0, "utf8").trim(); if (t) process.stdout.write(JSON.parse(t))'
+}
 model_config() {
     local file="$1" manager runtime
-    manager="$(resource_document Deployment agent-manager "$file" |
-        sed -n 's/.*name: MAGDA_LLM_MODEL_CONFIG, value: \(".*"\)}$/\1/p' | jq -r .)"
-    runtime="$(resources_of_kind SandboxTemplate "$file" |
-        sed -n 's/.*name: MAGDA_LLM_MODEL_CONFIG, value: \(".*"\)}$/\1/p' | jq -r .)"
+    manager="$(resource_document Deployment agent-manager "$file" | model_config_of)"
+    runtime="$(resources_of_kind SandboxTemplate "$file" | model_config_of)"
     if [[ -z "$manager" || "$manager" != "$runtime" ]]; then
         echo "Model config differs: manager=$manager runtime=$runtime" >&2
         exit 1
@@ -54,10 +57,15 @@ model_config() {
     printf '%s' "$manager"
 }
 
-# Assert a jq expression on a render's model config.
+# Assert a JavaScript expression on a render's model config, `m`; `eq(a, b)`
+# compares deeply.
 expect_model() {
     local file="$1" expression="$2"
-    if ! model_config "$file" | jq -e "$expression" >/dev/null; then
+    if ! model_config "$file" | EXPRESSION="$expression" node -e '
+        const { isDeepStrictEqual: eq } = require("util");
+        const m = JSON.parse(require("fs").readFileSync(0, "utf8"));
+        process.exit(new Function("m", "eq", `return (${process.env.EXPRESSION})`)(m, eq) ? 0 : 1);
+    '; then
         echo "Model config $(model_config "$file") fails: $expression" >&2
         exit 1
     fi
@@ -98,7 +106,7 @@ if grep -q '\\"agent\\"' "$tmp/llm-only.yaml"; then refuted $LINENO; fi
 render "$tmp/model-default.yaml" magda test \
     --set global.agentWorkspace.enabled=true \
     --set global.llmServices.enabled=true
-expect_model "$tmp/model-default.yaml" '. == {
+expect_model "$tmp/model-default.yaml" 'eq(m, {
     alias: "magda-agent-default",
     displayName: "Magda Agent Default",
     contextWindow: 1050000,
@@ -107,7 +115,7 @@ expect_model "$tmp/model-default.yaml" '. == {
     reasoningEfforts: {low: "low", medium: "medium", high: "high", xhigh: "xhigh", max: "max"},
     reasoningEffort: "medium",
     auxiliaryReasoningEffort: "medium"
-}'
+})'
 for expected in \
     'name: ALLOWED_MODELS, value: "[\"magda-agent-default\"]"' \
     'model_name: "magda-agent-default"' \
@@ -154,37 +162,37 @@ model_args=(--set global.agentWorkspace.enabled=true --set global.llmServices.en
 # Cheaper, faster titles and compaction.
 render "$tmp/aux-low.yaml" magda test "${model_args[@]}" \
     --set global.llmServices.defaultModel.auxiliaryReasoningEffort=low
-expect_model "$tmp/aux-low.yaml" '.reasoningEffort == "medium" and .auxiliaryReasoningEffort == "low"'
+expect_model "$tmp/aux-low.yaml" 'm.reasoningEffort === "medium" && m.auxiliaryReasoningEffort === "low"'
 [[ "$(litellm_effort "$tmp/aux-low.yaml")" == '"medium"' ]]
 # A model that can turn reasoning off, with off chosen to save cost.
 render "$tmp/reasoning-off.yaml" magda test "${model_args[@]}" \
     --set-json 'global.llmServices.defaultModel.reasoningEfforts={"off":"none","low":"low","medium":"medium","high":"high","xhigh":"xhigh","max":"max"}' \
     --set global.llmServices.defaultModel.reasoningEffort=off
-expect_model "$tmp/reasoning-off.yaml" '.reasoningEfforts.off == "none" and .reasoningEffort == "off" and .auxiliaryReasoningEffort == "off"'
+expect_model "$tmp/reasoning-off.yaml" 'm.reasoningEfforts.off === "none" && m.reasoningEffort === "off" && m.auxiliaryReasoningEffort === "off"'
 [[ "$(litellm_effort "$tmp/reasoning-off.yaml")" == '"none"' ]]
 # ...or with off for titles and compaction only.
 render "$tmp/aux-off.yaml" magda test "${model_args[@]}" \
     --set-json 'global.llmServices.defaultModel.reasoningEfforts={"off":"none","low":"low","high":"high"}' \
     --set global.llmServices.defaultModel.reasoningEffort=high \
     --set global.llmServices.defaultModel.auxiliaryReasoningEffort=off
-expect_model "$tmp/aux-off.yaml" '.reasoningEfforts == {off: "none", low: "low", high: "high"} and .reasoningEffort == "high" and .auxiliaryReasoningEffort == "off"'
+expect_model "$tmp/aux-off.yaml" 'eq(m.reasoningEfforts, {off: "none", low: "low", high: "high"}) && m.reasoningEffort === "high" && m.auxiliaryReasoningEffort === "off"'
 [[ "$(litellm_effort "$tmp/aux-off.yaml")" == '"high"' ]]
 # LiteLLM gets the value sent to the API, not the level name.
 render "$tmp/mapped.yaml" magda test "${model_args[@]}" \
     --set-json 'global.llmServices.defaultModel.reasoningEfforts={"low":"minimal","high":"high"}' \
     --set global.llmServices.defaultModel.reasoningEffort=low
-expect_model "$tmp/mapped.yaml" '.reasoningEffort == "low" and .auxiliaryReasoningEffort == "low"'
+expect_model "$tmp/mapped.yaml" 'm.reasoningEffort === "low" && m.auxiliaryReasoningEffort === "low"'
 [[ "$(litellm_effort "$tmp/mapped.yaml")" == '"minimal"' ]]
 # Efforts left to the provider.
 render "$tmp/no-reasoning.yaml" magda test "${model_args[@]}" \
     --set-string global.llmServices.defaultModel.reasoningEffort=
-expect_model "$tmp/no-reasoning.yaml" '.reasoningEffort == "" and .auxiliaryReasoningEffort == ""'
+expect_model "$tmp/no-reasoning.yaml" 'm.reasoningEffort === "" && m.auxiliaryReasoningEffort === ""'
 [[ -z "$(litellm_effort "$tmp/no-reasoning.yaml")" ]]
 # A model that doesn't reason.
 render "$tmp/non-reasoning.yaml" magda test "${model_args[@]}" \
     --set global.llmServices.defaultModel.reasoningEfforts=false \
     --set-string global.llmServices.defaultModel.reasoningEffort=
-expect_model "$tmp/non-reasoning.yaml" '.reasoningEfforts == false and .reasoningEffort == "" and .auxiliaryReasoningEffort == ""'
+expect_model "$tmp/non-reasoning.yaml" 'm.reasoningEfforts === false && m.reasoningEffort === "" && m.auxiliaryReasoningEffort === ""'
 [[ -z "$(litellm_effort "$tmp/non-reasoning.yaml")" ]]
 
 render "$tmp/capabilities.yaml" magda test "${model_args[@]}" \
@@ -192,15 +200,15 @@ render "$tmp/capabilities.yaml" magda test "${model_args[@]}" \
     --set global.llmServices.defaultModel.maxTokens=50000 \
     --set global.llmServices.defaultModel.imageInput=true \
     --set global.llmServices.defaultModel.displayName=Vision
-expect_model "$tmp/capabilities.yaml" '.contextWindow == 200000 and .maxTokens == 50000 and .imageInput == true and .displayName == "Vision"'
+expect_model "$tmp/capabilities.yaml" 'm.contextWindow === 200000 && m.maxTokens === 50000 && m.imageInput === true && m.displayName === "Vision"'
 render "$tmp/display-name.yaml" magda test "${model_args[@]}" \
     --set-string global.llmServices.defaultModel.displayName=
-expect_model "$tmp/display-name.yaml" '.displayName == "magda-agent-default"'
+expect_model "$tmp/display-name.yaml" 'm.displayName === "magda-agent-default"'
 
 render "$tmp/alias.yaml" magda test "${model_args[@]}" \
     --set global.llmServices.defaultModel.alias=private-alias \
     --set global.llmServices.defaultModel.providerModel=openai/private-model
-expect_model "$tmp/alias.yaml" '.alias == "private-alias"'
+expect_model "$tmp/alias.yaml" 'm.alias === "private-alias"'
 grep -Fq 'name: ALLOWED_MODELS, value: "[\"private-alias\"]"' "$tmp/alias.yaml"
 grep -q 'model_name: "private-alias"' "$tmp/alias.yaml"
 grep -q 'model: "openai/private-model"' "$tmp/alias.yaml"
@@ -213,7 +221,7 @@ helm template magda "$helm_root/magda" --namespace test \
     --set global.llmServices.defaultModel.providerModel=openai/top-level-model \
     --set global.llmServices.defaultModel.auxiliaryReasoningEffort=low \
     >"$tmp/top-level.yaml"
-expect_model "$tmp/top-level.yaml" '.alias == "top-level-alias" and .reasoningEffort == "medium" and .auxiliaryReasoningEffort == "low"'
+expect_model "$tmp/top-level.yaml" 'm.alias === "top-level-alias" && m.reasoningEffort === "medium" && m.auxiliaryReasoningEffort === "low"'
 grep -Fq 'name: ALLOWED_MODELS, value: "[\"top-level-alias\"]"' "$tmp/top-level.yaml"
 grep -q 'model_name: "top-level-alias"' "$tmp/top-level.yaml"
 grep -q 'model: "openai/top-level-model"' "$tmp/top-level.yaml"
@@ -224,7 +232,7 @@ helm template magda "$helm_root/magda" --namespace test \
     --set global.llmServices.enabled=true \
     --set-string global.llmServices.defaultModel.reasoningEffort= \
     >"$tmp/top-level-no-reasoning.yaml"
-expect_model "$tmp/top-level-no-reasoning.yaml" '.reasoningEffort == "" and .auxiliaryReasoningEffort == ""'
+expect_model "$tmp/top-level-no-reasoning.yaml" 'm.reasoningEffort === "" && m.auxiliaryReasoningEffort === ""'
 [[ -z "$(litellm_effort "$tmp/top-level-no-reasoning.yaml")" ]]
 
 for runtime in runc gvisor kata; do
@@ -489,15 +497,6 @@ expect_model_failure 'global.llmServices.defaultModel.auxiliaryReasoningEffort m
     --set global.llmServices.defaultModel.reasoningEfforts=false \
     --set-string global.llmServices.defaultModel.reasoningEffort= \
     --set global.llmServices.defaultModel.auxiliaryReasoningEffort=low
-# The removed per-chart overrides fail rather than being ignored.
-expect_model_failure 'agent-services.llm.* was removed (#3965): select the Workspace model with agent-services.model, from the models in global.llmServices' \
-    --set agent-services.llm.model=private-alias
-expect_model_failure 'litellm.model.* was removed (#3965): set the models in global.llmServices.defaultModel and additionalModels' \
-    --set llm-services.litellm.model.alias=private-alias
-expect_model_failure 'llm-services.allowedModels was removed (#3965): list the models in global.llmServices.defaultModel and additionalModels' \
-    --set-json 'llm-services.allowedModels=["magda-agent-default"]'
-expect_model_failure 'global.defaultAgentModel was replaced by global.llmServices.defaultModel (#3965): move its fields there' \
-    --set global.defaultAgentModel.alias=old-alias
 
 expect_failure 'litellm.enabled=false requires backend.url' \
     helm template magda "$chart" --namespace test \
@@ -540,11 +539,11 @@ resource_document ConfigMap litellm-config "$tmp/additional.yaml" | grep -A2 'mo
 resource_document ConfigMap litellm-config "$tmp/additional.yaml" | grep -A2 'model_name: "magda-coder"' | grep -q 'model: "anthropic/claude-coder"'
 [[ "$(litellm_effort "$tmp/additional.yaml" | tr '\n' ' ')" == '"medium" "medium" ' ]]
 # Unselected, the Workspace keeps the default model.
-expect_model "$tmp/additional.yaml" '.alias == "magda-agent-default"'
+expect_model "$tmp/additional.yaml" 'm.alias === "magda-agent-default"'
 render "$tmp/selected.yaml" magda test "${model_args[@]}" \
     --set-json "global.llmServices.additionalModels=[$coder]" \
     --set agent-services.model.alias=magda-coder
-expect_model "$tmp/selected.yaml" '. == {
+expect_model "$tmp/selected.yaml" 'eq(m, {
     alias: "magda-coder",
     displayName: "Magda Coder",
     contextWindow: 400000,
@@ -553,7 +552,7 @@ expect_model "$tmp/selected.yaml" '. == {
     reasoningEfforts: {low: "low", medium: "medium", high: "high"},
     reasoningEffort: "medium",
     auxiliaryReasoningEffort: "medium"
-}'
+})'
 if model_config "$tmp/selected.yaml" | grep -q 'claude-coder'; then refuted $LINENO; fi
 # The Workspace's own efforts; titles and compaction follow its main-turn
 # effort unless one of them sets an auxiliary effort.
@@ -561,16 +560,40 @@ render "$tmp/selected-efforts.yaml" magda test "${model_args[@]}" \
     --set-json "global.llmServices.additionalModels=[$coder]" \
     --set agent-services.model.alias=magda-coder \
     --set agent-services.model.reasoningEffort=high
-expect_model "$tmp/selected-efforts.yaml" '.reasoningEffort == "high" and .auxiliaryReasoningEffort == "high"'
+expect_model "$tmp/selected-efforts.yaml" 'm.reasoningEffort === "high" && m.auxiliaryReasoningEffort === "high"'
 [[ "$(litellm_effort "$tmp/selected-efforts.yaml" | tr '\n' ' ')" == '"medium" "medium" ' ]]
 render "$tmp/selected-aux.yaml" magda test "${model_args[@]}" \
     --set global.llmServices.defaultModel.auxiliaryReasoningEffort=low \
     --set agent-services.model.reasoningEffort=high
-expect_model "$tmp/selected-aux.yaml" '.reasoningEffort == "high" and .auxiliaryReasoningEffort == "low"'
+expect_model "$tmp/selected-aux.yaml" 'm.reasoningEffort === "high" && m.auxiliaryReasoningEffort === "low"'
 render "$tmp/selected-own-aux.yaml" magda test "${model_args[@]}" \
     --set global.llmServices.defaultModel.auxiliaryReasoningEffort=low \
     --set-string agent-services.model.auxiliaryReasoningEffort=
-expect_model "$tmp/selected-own-aux.yaml" '.reasoningEffort == "medium" and .auxiliaryReasoningEffort == ""'
+# An empty Workspace effort is the model entry's reasoningEffort.
+expect_model "$tmp/selected-own-aux.yaml" 'm.reasoningEffort === "medium" && m.auxiliaryReasoningEffort === "medium"'
+render "$tmp/selected-empty-main.yaml" magda test "${model_args[@]}" \
+    --set global.llmServices.defaultModel.auxiliaryReasoningEffort=low \
+    --set-string agent-services.model.reasoningEffort=
+expect_model "$tmp/selected-empty-main.yaml" 'm.reasoningEffort === "medium" && m.auxiliaryReasoningEffort === "low"'
+render "$tmp/entry-empty-aux.yaml" magda test "${model_args[@]}" \
+    --set global.llmServices.defaultModel.reasoningEffort=high \
+    --set-string global.llmServices.defaultModel.auxiliaryReasoningEffort=
+expect_model "$tmp/entry-empty-aux.yaml" 'm.reasoningEffort === "high" && m.auxiliaryReasoningEffort === "high"'
+# Main turns on the provider's default with a title effort can't be expressed
+# (DSH applies the title effort to main turns that have none), so it fails;
+# a main-turn level of the Workspace's own makes it valid.
+for aux_args in \
+    "--set global.llmServices.defaultModel.auxiliaryReasoningEffort=low" \
+    "--set agent-services.model.auxiliaryReasoningEffort=low"; do
+    # shellcheck disable=SC2086
+    expect_model_failure 'agent-services: the Workspace'"'"'s main-turn effort is the provider'"'"'s default (model "magda-agent-default" has reasoningEffort ""), so its title and compaction effort can'"'"'t be "low"' \
+        --set-string global.llmServices.defaultModel.reasoningEffort= $aux_args
+done
+render "$tmp/provider-main-own-level.yaml" magda test "${model_args[@]}" \
+    --set-string global.llmServices.defaultModel.reasoningEffort= \
+    --set global.llmServices.defaultModel.auxiliaryReasoningEffort=low \
+    --set agent-services.model.reasoningEffort=high
+expect_model "$tmp/provider-main-own-level.yaml" 'm.reasoningEffort === "high" && m.auxiliaryReasoningEffort === "low"'
 expect_model_failure 'agent-services.model.alias "missing" isn'"'"'t a model LLM Services serves; the served aliases (global.llmServices.defaultModel and additionalModels) are magda-agent-default, magda-coder' \
     --set-json "global.llmServices.additionalModels=[$coder]" \
     --set agent-services.model.alias=missing
@@ -605,14 +628,14 @@ render "$tmp/external-multi-model.yaml" magda test \
     --set llm-services.backend.masterKeySecret.name=external-key \
     --set llm-services.backend.masterKeySecret.key=key
 if grep -q 'Source: magda-core/charts/llm-services/charts/litellm/' "$tmp/external-multi-model.yaml"; then refuted $LINENO; fi
-expect_model "$tmp/external-multi-model.yaml" '.alias == "external-agent"'
+expect_model "$tmp/external-multi-model.yaml" 'm.alias === "external-agent"'
 grep -Fq 'name: ALLOWED_MODELS, value: "[\"external-agent\",\"other-model\"]"' "$tmp/external-multi-model.yaml"
 # A minimal entry gets the defaults: text only, the default levels, and no
 # effort for main turns, titles or compaction.
 render "$tmp/minimal-entry.yaml" magda test "${model_args[@]}" \
     --set-json 'global.llmServices.additionalModels=[{"alias":"plain","providerModel":"openai/plain","contextWindow":10,"maxTokens":1}]' \
     --set agent-services.model.alias=plain
-expect_model "$tmp/minimal-entry.yaml" '. == {
+expect_model "$tmp/minimal-entry.yaml" 'eq(m, {
     alias: "plain",
     displayName: "plain",
     contextWindow: 10,
@@ -621,7 +644,7 @@ expect_model "$tmp/minimal-entry.yaml" '. == {
     reasoningEfforts: {low: "low", medium: "medium", high: "high", xhigh: "xhigh", max: "max"},
     reasoningEffort: "",
     auxiliaryReasoningEffort: ""
-}'
+})'
 
 render "$tmp/credentialless.yaml" magda test \
     --set global.llmServices.enabled=true \

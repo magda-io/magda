@@ -47,10 +47,7 @@ done
 # shellcheck disable=SC1091
 if [[ -f /data/config/magda-agent.env ]]; then source /data/config/magda-agent.env; fi
 # The model config is deployment-owned Pod env, refreshed by the Agent Manager
-# on resume. Env files written by older bootstraps still carry model values:
-# drop them so nothing can read a stale copy.
-unset MAGDA_LLM_MODEL MAGDA_LLM_CONTEXT_WINDOW MAGDA_LLM_MAX_TOKENS \
-  MAGDA_LLM_REASONING_EFFORT MAGDA_LLM_IMAGE_INPUT
+# on resume.
 if ! node -e 'const c = JSON.parse(process.env.MAGDA_LLM_MODEL_CONFIG); if (!c || typeof c.alias !== "string" || !c.alias) process.exit(1)' 2>/dev/null; then
   echo "magda-agent: MAGDA_LLM_MODEL_CONFIG must be the deployment's model config JSON (agent-services.model)" >&2
   exit 1

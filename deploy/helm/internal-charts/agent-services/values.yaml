@@ -104,6 +104,8 @@ model:
   # titles and context compaction: a level the model declares. Empty: the
   # model entry's `reasoningEffort`. Unset (`null`): the model entry's
   # `auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort.
+  # Must be empty or unset when the Workspace's main-turn effort is the
+  # provider's default.
   # @default -- `null` (the model entry's, else the main-turn effort)
   auxiliaryReasoningEffort: null
 # ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox

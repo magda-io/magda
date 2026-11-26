@@ -1,8 +1,5 @@
 {{- /* Render-time model and credential validation; emits no manifest. The models
   themselves are validated by the shared magda.llmModels helper. */ -}}
-{{- if hasKey .Values "model" -}}
-{{- fail "litellm.model.* was removed (#3965): set the models in global.llmServices.defaultModel and additionalModels" -}}
-{{- end -}}
 {{- $models := include "magda.llmModels" . | fromJsonArray -}}
 {{- range $index, $model := $models -}}
 {{- if empty $model.providerModel -}}

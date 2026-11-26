@@ -629,16 +629,6 @@ try {
         ),
         "bootstrap persisted a model value"
     );
-    // A Workspace bootstrapped by an older runtime keeps model values in its
-    // env file; they must not override the deployment's current model config.
-    await writeFile(
-        envFile,
-        `${await readFile(
-            envFile,
-            "utf8"
-        )}export MAGDA_LLM_MODEL='stale-model'\nexport MAGDA_LLM_REASONING_EFFORT='max'\n`,
-        { mode: 0o600 }
-    );
     for (const relative of [
         "config/mgd/config.json",
         "config/magda-agent.env",
@@ -1011,8 +1001,7 @@ try {
         requestWithTools.body.model === MODEL,
         "provider did not use the configured model alias"
     );
-    // Stage A: turns at reasoningEffort, the title at auxiliaryReasoningEffort,
-    // despite the stale values in the env file.
+    // Stage A: turns at reasoningEffort, the title at auxiliaryReasoningEffort.
     const titleRequests = await titleRequestsAfter(0);
     // Room for reasoning tokens as well as the title text (#3963).
     check(
