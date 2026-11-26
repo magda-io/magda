@@ -313,36 +313,24 @@ another model, update `providerModel`, `contextWindow`, `maxTokens`,
   name, and refuses any other before sending a request.
 - `off` needs an explicit value, such as `none`, and only works if the provider
   accepts a value that means off: some OpenAI models take `none`, some only
-  `minimal`, and the default model takes neither. (A valueless `off` made the
-  Workspace send `effort: "none"` on requests that named no effort, #3963.)
-- `reasoningEffort` is the effort for the agent's main turns: a declared level,
-  or `""` for none. With `""`, neither the Workspace nor bundled LiteLLM sends
-  an effort, so the provider uses its default.
-- `auxiliaryReasoningEffort` is the effort for the Workspace's own lightweight
-  requests, session titles and context compaction: a declared level, or `""`.
-  Unset, it's the same as `reasoningEffort`. Titles and compaction share it.
-  With `""`, the Workspace sends no effort for them, so with bundled LiteLLM
-  they get the model's `reasoningEffort` (see below). For no effort anywhere,
-  set `reasoningEffort: ""`.
+  `minimal`, and the default model takes neither.
+- `reasoningEffort` is the effort for requests to the model, including the
+  Workspace agent's turns: a declared level, or `""` for the provider's
+  default. A request that sets its own effort uses that instead.
+- `auxiliaryReasoningEffort` is the effort for the Workspace's session titles
+  and context compaction: a declared level. `""`: the model's
+  `reasoningEffort`. Unset: the Workspace's main-turn effort.
 - There's no separate on/off switch: a model that doesn't reason is
   `reasoningEfforts: false`, and turning reasoning off for cost is
   `reasoningEffort: off` on a model that declares `off`.
-- Bundled LiteLLM sends the mapped value of a model's `reasoningEffort` for
-  every request to that model that names no effort of its own (no
-  `reasoning.effort` in the request): requests from other clients of
-  `/api/v0/llm/v1`, and Workspace requests whose effort is `""`, such as
-  titles and compaction with `auxiliaryReasoningEffort: ""`. A request's own
-  effort takes precedence. This needs LiteLLM 1.83.14 or later: 1.81.12 didn't
-  send the configured effort on `/v1/responses`, so those requests got the
-  provider's default.
 
 | Situation | Config | Main turns | Titles and compaction |
 | --- | --- | --- | --- |
 | Reasoning model that can't turn reasoning off (default) | defaults | `medium` | `medium` |
 | …with cheaper, faster titles | `auxiliaryReasoningEffort: low` | `medium` | `low` |
 | Reasoning model that can turn reasoning off | add `off: none` to `reasoningEfforts`; set `reasoningEffort: off`, or `auxiliaryReasoningEffort: off` | as set (`none` for off) | as set |
-| Leave it to the provider | `reasoningEffort: ""` | no reasoning option | no reasoning option |
-| Model that doesn't reason | `reasoningEfforts: false`, `reasoningEffort: ""` | no reasoning option, no levels offered | no reasoning option |
+| Leave it to the provider | `reasoningEffort: ""` | the provider's default | the provider's default |
+| Model that doesn't reason | `reasoningEfforts: false`, `reasoningEffort: ""` | no reasoning, no levels offered | no reasoning |
 
 Examples, as `global.llmServices.defaultModel` overrides (an entry in
 `additionalModels` takes the same fields):
@@ -365,7 +353,7 @@ auxiliaryReasoningEffort: off
 ```
 
 ```yaml
-# Let the provider choose: send no effort anywhere.
+# Let the provider choose the effort.
 reasoningEffort: ""
 ```
 
@@ -413,18 +401,18 @@ global:
         maxTokens: 64000
         imageInput: true
         reasoningEfforts: {low: low, medium: medium, high: high}
-        reasoningEffort: medium      # what LiteLLM sends for requests naming none
+        reasoningEffort: medium      # for requests that don't set an effort
 agent-services:
   model:
     alias: magda-coder
-    reasoningEffort: high            # unset: the entry's reasoningEffort
+    reasoningEffort: high            # empty or unset: the entry's reasoningEffort
     auxiliaryReasoningEffort: low    # unset: the entry's, else the line above
 ```
 
 Other applications keep using the default model. The Workspace's title and
-compaction effort is `agent-services.model.auxiliaryReasoningEffort` if set,
-else the entry's `auxiliaryReasoningEffort` if set, else the Workspace's
-main-turn effort. An alias that isn't served, an effort the model doesn't
+compaction effort is `agent-services.model.auxiliaryReasoningEffort` if set
+(empty: the entry's `reasoningEffort`), else the entry's
+`auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort. An alias that isn't served, an effort the model doesn't
 declare, or any other field fails the render.
 
 **When a change applies.** The model config reaches each Workspace as one
