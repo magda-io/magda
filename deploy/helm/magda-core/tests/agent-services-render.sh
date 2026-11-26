@@ -60,6 +60,8 @@ render "$tmp/llm-only.yaml" magda test \
 
 grep -q 'Source: magda-core/charts/llm-services/templates/deployment.yaml' "$tmp/llm-only.yaml"
 grep -q 'Source: magda-core/charts/llm-services/charts/litellm/templates/deployment.yaml' "$tmp/llm-only.yaml"
+# Bundled LiteLLM runs Magda's copy of the upstream image (#3945).
+grep -q 'image: "ghcr.io/magda-io/litellm:v1.83.14-stable.patch.3"' "$tmp/llm-only.yaml"
 if grep -q 'Source: magda-core/charts/agent-services/' "$tmp/llm-only.yaml"; then refuted $LINENO; fi
 grep -q '\\"llm\\"' "$tmp/llm-only.yaml"
 if grep -q '\\"agent\\"' "$tmp/llm-only.yaml"; then refuted $LINENO; fi

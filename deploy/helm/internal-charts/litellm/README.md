@@ -15,8 +15,8 @@ Kubernetes: `>= 1.24.0-0`
 | global.defaultAgentModel | object | `{}` |  |
 | image.name | string | `"litellm"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"ghcr.io/berriai"` |  |
-| image.tag | string | `"main-v1.81.12-stable"` |  |
+| image.repository | string | `"ghcr.io/magda-io"` | Magda's copy of the upstream LiteLLM image (`ghcr.io/berriai/litellm`, same tag and digest), so a deployment doesn't depend on the upstream registry. |
+| image.tag | string | `"v1.83.14-stable.patch.3"` | 1.83.14 fixes the first streams after a LiteLLM start ending without `response.completed` or usage on 1.81.12 (#3945). |
 | masterKeySecret.create | bool | `true` |  |
 | masterKeySecret.key | string | `"master-key"` |  |
 | masterKeySecret.name | string | `"magda-litellm-master-key"` |  |

@@ -2,9 +2,14 @@ global:
   defaultAgentModel: {}
 
 image:
-  repository: ghcr.io/berriai
+  # -- Magda's copy of the upstream LiteLLM image (`ghcr.io/berriai/litellm`,
+  # same tag and digest), so a deployment doesn't depend on the upstream
+  # registry.
+  repository: ghcr.io/magda-io
   name: litellm
-  tag: main-v1.81.12-stable
+  # -- 1.83.14 fixes the first streams after a LiteLLM start ending without
+  # `response.completed` or usage on 1.81.12 (#3945).
+  tag: v1.83.14-stable.patch.3
   pullPolicy: IfNotPresent
 # Optional chart-specific overrides. Empty values inherit
 # global.defaultAgentModel from the parent chart. Reasoning effort is global-only
