@@ -316,17 +316,25 @@ another model, update `providerModel`, `contextWindow`, `maxTokens`,
   `minimal`, and the default model takes neither. (A valueless `off` made the
   Workspace send `effort: "none"` on requests that named no effort, #3963.)
 - `reasoningEffort` is the effort for the agent's main turns: a declared level,
-  or `""` to send none and let the provider use its default.
+  or `""` for none. With `""`, neither the Workspace nor bundled LiteLLM sends
+  an effort, so the provider uses its default.
 - `auxiliaryReasoningEffort` is the effort for the Workspace's own lightweight
   requests, session titles and context compaction: a declared level, or `""`.
   Unset, it's the same as `reasoningEffort`. Titles and compaction share it.
+  With `""`, the Workspace sends no effort for them, so with bundled LiteLLM
+  they get the model's `reasoningEffort` (see below). For no effort anywhere,
+  set `reasoningEffort: ""`.
 - There's no separate on/off switch: a model that doesn't reason is
   `reasoningEfforts: false`, and turning reasoning off for cost is
   `reasoningEffort: off` on a model that declares `off`.
-- Bundled LiteLLM sends the mapped value of `reasoningEffort` only for
-  requests that name no effort of their own (other clients of
-  `/api/v0/llm/v1`); a request's own effort, as the Workspace sends, takes
-  precedence.
+- Bundled LiteLLM sends the mapped value of a model's `reasoningEffort` for
+  every request to that model that names no effort of its own (no
+  `reasoning.effort` in the request): requests from other clients of
+  `/api/v0/llm/v1`, and Workspace requests whose effort is `""`, such as
+  titles and compaction with `auxiliaryReasoningEffort: ""`. A request's own
+  effort takes precedence. This needs LiteLLM 1.83.14 or later: 1.81.12 didn't
+  send the configured effort on `/v1/responses`, so those requests got the
+  provider's default.
 
 | Situation | Config | Main turns | Titles and compaction |
 | --- | --- | --- | --- |
@@ -405,7 +413,7 @@ global:
         maxTokens: 64000
         imageInput: true
         reasoningEfforts: {low: low, medium: medium, high: high}
-        reasoningEffort: medium      # what LiteLLM fills in for other clients
+        reasoningEffort: medium      # what LiteLLM sends for requests naming none
 agent-services:
   model:
     alias: magda-coder

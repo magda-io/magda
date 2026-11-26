@@ -52,14 +52,17 @@ global:
       # @default -- `null` (`{low: low, medium: medium, high: high, xhigh: xhigh, max: max}`)
       reasoningEfforts: null
       # -- Effort for main requests (the Workspace agent's turns): a level
-      # declared in `reasoningEfforts`, or an empty string to send none and let
+      # declared in `reasoningEfforts`, or an empty string for none, which lets
       # the provider use its default. Bundled LiteLLM sends its mapped value for
-      # clients that name no effort. `agent-services.model` can choose another.
+      # every request to this model that names no effort of its own: other
+      # clients' requests, and Workspace requests whose effort is an empty
+      # string. `agent-services.model` can choose another effort.
       reasoningEffort: medium
       # -- Effort for the Workspace's session titles and context compaction: a
-      # level declared in `reasoningEfforts`, or an empty string to send none.
-      # Unset (`null`): the same as the main-turn effort. A lower level makes
-      # titles cheaper and faster.
+      # level declared in `reasoningEfforts`, or an empty string for the
+      # Workspace to send none (bundled LiteLLM then applies `reasoningEffort`,
+      # if set). Unset (`null`): the same as the main-turn effort. A lower level
+      # makes titles cheaper and faster.
       # @default -- `null` (same as `reasoningEffort`)
       auxiliaryReasoningEffort: null
     # -- More models LLM Services serves, each an entry with the same fields
