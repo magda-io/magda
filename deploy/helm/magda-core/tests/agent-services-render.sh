@@ -293,6 +293,12 @@ expect_failure \
     'global.agentWorkspace.enabled=true requires global.llmServices.enabled=true' \
     helm template magda "$chart" --namespace test \
         --set global.agentWorkspace.enabled=true
+# #3963: the default model can't turn reasoning off, so `off` is refused.
+expect_failure 'global.defaultAgentModel.reasoningEffort must be one of empty string, low, medium, high, xhigh, or max; got "off"' \
+    helm template magda "$chart" --namespace test \
+        --set global.agentWorkspace.enabled=true \
+        --set global.llmServices.enabled=true \
+        --set global.defaultAgentModel.reasoningEffort=off
 expect_failure 'agent-services.manager.replicas must be 1' \
     helm template magda "$chart" --namespace test \
         --set global.agentWorkspace.enabled=true \
@@ -417,16 +423,16 @@ for invalid_image_input in '"true"' '1' '[]'; do
             --set-json "global.defaultAgentModel.imageInput=$invalid_image_input"
 done
 for invalid_reasoning_type in '1' 'true' '[]' '{}'; do
-    expect_failure 'reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max' \
+    expect_failure 'reasoningEffort must be one of empty string, low, medium, high, xhigh, or max' \
         helm template magda "$chart" --namespace test \
             --set global.llmServices.enabled=true \
             --set-json "global.defaultAgentModel.reasoningEffort=$invalid_reasoning_type"
 done
-expect_failure 'reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max' \
+expect_failure 'reasoningEffort must be one of empty string, low, medium, high, xhigh, or max' \
     helm template magda "$chart" --namespace test \
         --set global.llmServices.enabled=true \
         --set-string global.defaultAgentModel.reasoningEffort=turbo
-expect_failure 'reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max' \
+expect_failure 'reasoningEffort must be one of empty string, low, medium, high, xhigh, or max' \
     helm template magda "$chart" --namespace test \
         --set global.llmServices.enabled=true \
         --set-string 'global.defaultAgentModel.reasoningEffort=   '

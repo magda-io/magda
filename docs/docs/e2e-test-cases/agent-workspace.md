@@ -160,6 +160,8 @@ continues to use the **direct magda-core** values shape and is not a
    Verify the default `reasoningEffort: medium` reaches both DSH and LiteLLM.
    Repeat with `reasoningEffort: ""` and verify neither configures a reasoning
    effort while the provider request still succeeds.
+   In both cases, a new session gets a model-generated title (no `400` from the
+   title request), and the reasoning selector doesn't offer Off.
 
 ## On-demand Python dependency checks
 

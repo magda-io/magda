@@ -19,10 +19,10 @@
 {{- end -}}
 {{- $reasoningEffort := get $globalModel "reasoningEffort" -}}
 {{- if and (ne (kindOf $reasoningEffort) "invalid") (ne (kindOf $reasoningEffort) "string") -}}
-{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %v (%s)" $reasoningEffort (kindOf $reasoningEffort)) -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, low, medium, high, xhigh, or max; got %v (%s)" $reasoningEffort (kindOf $reasoningEffort)) -}}
 {{- end -}}
-{{- if and (eq (kindOf $reasoningEffort) "string") (not (has $reasoningEffort (list "" "off" "low" "medium" "high" "xhigh" "max"))) -}}
-{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, off, low, medium, high, xhigh, or max; got %q" $reasoningEffort) -}}
+{{- if and (eq (kindOf $reasoningEffort) "string") (not (has $reasoningEffort (list "" "low" "medium" "high" "xhigh" "max"))) -}}
+{{- fail (printf "global.defaultAgentModel.reasoningEffort must be one of empty string, low, medium, high, xhigh, or max; got %q" $reasoningEffort) -}}
 {{- end -}}
 {{- $secretName := .Values.providerSecret.name | default "" -}}
 {{- $secretKey := .Values.providerSecret.key | default "" -}}

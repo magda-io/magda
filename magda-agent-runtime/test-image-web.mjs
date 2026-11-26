@@ -811,7 +811,54 @@ try {
             );
     }
     await rpc(first.origin, cookie, "settings/describe", {});
+    const isTitleRequest = ({ body }) =>
+        JSON.stringify(body).includes(
+            "Create a concise title for an AI coding-assistant session"
+        );
+    // DSH asks for a title once a session's first prompt is answered.
+    const titleRequestsAfter = async (from) => {
+        await until(
+            () => llmRequests.slice(from).some(isTitleRequest),
+            30_000,
+            "session title request"
+        );
+        return llmRequests.slice(from).filter(isTitleRequest);
+    };
+    // A declared-empty `off` level made pi-ai send `effort: "none"`, which the
+    // provider rejects (#3963).
+    const checkNoDisabledReasoning = () =>
+        check(
+            !llmRequests.some(({ body }) => body.reasoning?.effort === "none"),
+            "a provider request disabled reasoning (effort none)"
+        );
     stage("authenticated remote.mux session/follow and local mock LLM turn");
+    // #3963: the model offers no Off level; the default model can't disable
+    // reasoning. This is what DSH's reasoning selector would offer.
+    const modelCatalog = await rpc(
+        first.origin,
+        cookie,
+        "session/modelCatalog",
+        {}
+    );
+    // Other providers' catalog models are listed too; check Magda's model.
+    const offeredEfforts = [];
+    JSON.stringify(modelCatalog, (key, value) => {
+        if (
+            value?.id === payload.llm.model &&
+            Array.isArray(value?.reasoning?.efforts)
+        )
+            offeredEfforts.push(
+                ...value.reasoning.efforts.map((effort) => effort.id)
+            );
+        return value;
+    });
+    check(
+        JSON.stringify(offeredEfforts) ===
+            JSON.stringify(["low", "medium", "high", "xhigh", "max"]),
+        `model catalog offered reasoning efforts ${JSON.stringify(
+            offeredEfforts
+        )}`
+    );
     const created = await rpc(first.origin, cookie, "session/create", {
         request: {}
     });
@@ -872,6 +919,27 @@ try {
         requestWithTools.body.model === payload.llm.model,
         "provider did not use bootstrap model"
     );
+    // #3963: no effort is configured here (the second bootstrap above removed
+    // it, as with an empty global.defaultAgentModel.reasoningEffort). Neither
+    // the turn nor the session title request, which names no effort of its
+    // own, may disable reasoning: they send no reasoning option at all.
+    const titleRequests = await titleRequestsAfter(0);
+    // Room for reasoning tokens as well as the title text (#3963).
+    check(
+        titleRequests[0].body.max_output_tokens === 1024,
+        `title request output cap was ${titleRequests[0].body.max_output_tokens}`
+    );
+    for (const [name, sent] of [
+        ["turn", requestWithTools],
+        ["title request", titleRequests[0]]
+    ])
+        check(
+            sent.body.reasoning === undefined,
+            `${name} without a configured effort sent ${JSON.stringify(
+                sent.body.reasoning
+            )}`
+        );
+    checkNoDisabledReasoning();
     // DSH's Office skills and their interpreter tool reach the real provider
     // request by default, without any user, mgd or project skill setup.
     check(
@@ -900,6 +968,8 @@ try {
     const createdAt = await readFile("/data/.created-at", "utf8");
     stage("stop/start persistence, cookie survival and old-token rejection");
     await stop(first.running);
+    // Re-provision with an effort, so the restarted runtime uses it (#3963).
+    await bootstrap(payload);
     // Cookies are authority-bound: retain the first port across the restart.
     env.DSH_PUBLIC_URL = first.origin;
     const second = await start(new URL(first.origin).port);
@@ -938,6 +1008,36 @@ try {
             0o600,
         "persistent browser credential mode is not 0600"
     );
+    stage("configured reasoning effort on a turn and its session title");
+    const beforeSecond = llmRequests.length;
+    const createdAgain = await rpc(second.origin, cookie, "session/create", {
+        request: {}
+    });
+    const promptedAgain = await rpc(second.origin, cookie, "session/prompt", {
+        request: {
+            requestId: randomUUID(),
+            sessionId: createdAgain.sessionId,
+            mode: "queue",
+            content: [{ type: "text", text: `${userMarker}-effort` }]
+        }
+    });
+    check(promptedAgain.accepted === true, "second prompt was not accepted");
+    const [titleWithEffort] = await titleRequestsAfter(beforeSecond);
+    const turnWithEffort = llmRequests
+        .slice(beforeSecond)
+        .find(({ body }) => body.tools?.length);
+    check(turnWithEffort, "no turn request after the restart");
+    for (const [name, sent] of [
+        ["turn", turnWithEffort],
+        ["title request", titleWithEffort]
+    ])
+        check(
+            sent.body.reasoning?.effort === payload.llm.reasoningEffort,
+            `${name} did not use the configured effort: ${JSON.stringify(
+                sent.body.reasoning
+            )}`
+        );
+    checkNoDisabledReasoning();
     for (const running of children)
         for (const token of secrets)
             check(
@@ -945,7 +1045,7 @@ try {
                 "child output leaked an authentication secret"
             );
     console.log(
-        `image-web: PASS source=${provenance.sha}; bootstrap, auth, assets, managed plugins, WS, mock LLM, restart/history`
+        `image-web: PASS source=${provenance.sha}; bootstrap, auth, assets, managed plugins, WS, mock LLM, restart/history, reasoning effort`
     );
     console.log(
         "image-web: caveat: stock launch token is process-scoped/reusable, not consumed by exchange; no browser rendering or Manager/KAS/ingress validation"

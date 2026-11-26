@@ -19,9 +19,11 @@ global:
     alias: magda-agent-default
     # -- LiteLLM provider model routed behind the stable MAGDA alias.
     providerModel: openai/gpt-6.1-sol
-    # -- Provider reasoning effort. Supported values: off, low, medium, high,
+    # -- Provider reasoning effort, also used by the Workspace's own requests
+    # that name none (e.g. session titles). Supported values: low, medium, high,
     # xhigh, and max. Set to an empty string to omit the setting and let the
-    # provider choose its model default.
+    # provider choose its model default. `off` isn't supported: the default
+    # model can't turn reasoning off.
     reasoningEffort: medium
     # -- Model context-window capability.
     contextWindow: 1050000
