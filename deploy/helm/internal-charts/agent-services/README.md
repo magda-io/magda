@@ -36,8 +36,8 @@ Kubernetes: `>= 1.24.0-0`
 | manager.resources.requests.cpu | string | `"50m"` |  |
 | manager.resources.requests.memory | string | `"96Mi"` |  |
 | model.alias | string | `""` | Alias of the Workspace's model. Empty: the default model (`global.llmServices.defaultModel`). |
-| model.auxiliaryReasoningEffort | string | `null` (the model entry's, else the main-turn effort) | Effort for session titles and context compaction: a level the model declares. Empty: the model entry's `reasoningEffort`. Unset: the model entry's `auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort. |
-| model.reasoningEffort | string | `null` (the model entry's) | Effort for the Workspace's main turns: a level the model declares. Empty or unset: the model entry's `reasoningEffort`. |
+| model.auxiliaryReasoningEffort | string | `null` (the model entry's, else the main-turn effort) | The model's reasoning effort for the Workspace's session titles and context compaction: a level the model declares. Empty: the model entry's `reasoningEffort`. Unset (`null`): the model entry's `auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort. |
+| model.reasoningEffort | string | `null` (the model entry's) | The model's reasoning effort for the Workspace's main turns: a level the model declares. Empty or unset (`null`): the model entry's `reasoningEffort`. |
 | reconcileIntervalSeconds | int | `30` |  |
 | registryApiUrl | string | `"http://registry-api/v0"` |  |
 | runtime.deniedCidrs | list | `[]` | Additional public destinations denied by the broad public egress rule, such as a GKE public control-plane endpoint (/32). |

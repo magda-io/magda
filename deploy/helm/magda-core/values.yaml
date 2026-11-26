@@ -51,14 +51,14 @@ global:
       # it: the default model can't turn reasoning off.
       # @default -- `null` (`{low: low, medium: medium, high: high, xhigh: xhigh, max: max}`)
       reasoningEfforts: null
-      # -- Effort for requests to this model, including the Workspace agent's
-      # turns: a level declared in `reasoningEfforts`. Empty: the provider's
-      # default. A request that sets its own effort uses that instead.
+      # -- The model's default reasoning effort, also used for the Workspace
+      # agent's turns: a level declared in `reasoningEfforts`. Empty: the
+      # provider's default.
       reasoningEffort: medium
-      # -- Effort for the Workspace's session titles and context compaction: a
-      # level declared in `reasoningEfforts`. Empty: `reasoningEffort`. Unset:
-      # the Workspace's main-turn effort. A lower level makes titles cheaper
-      # and faster.
+      # -- The model's reasoning effort for the Workspace's session titles and
+      # context compaction: a level declared in `reasoningEfforts`. Empty:
+      # `reasoningEffort`. Unset (`null`): the Workspace's main-turn effort. A
+      # lower level makes titles cheaper and faster.
       # @default -- `null` (the Workspace's main-turn effort)
       auxiliaryReasoningEffort: null
     # -- More models LLM Services serves, each an entry with the same fields

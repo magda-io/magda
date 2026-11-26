@@ -314,12 +314,13 @@ another model, update `providerModel`, `contextWindow`, `maxTokens`,
 - `off` needs an explicit value, such as `none`, and only works if the provider
   accepts a value that means off: some OpenAI models take `none`, some only
   `minimal`, and the default model takes neither.
-- `reasoningEffort` is the effort for requests to the model, including the
+- `reasoningEffort` is the model's default reasoning effort, also used for the
   Workspace agent's turns: a declared level, or `""` for the provider's
-  default. A request that sets its own effort uses that instead.
-- `auxiliaryReasoningEffort` is the effort for the Workspace's session titles
-  and context compaction: a declared level. `""`: the model's
-  `reasoningEffort`. Unset: the Workspace's main-turn effort.
+  default.
+- `auxiliaryReasoningEffort` is the model's reasoning effort for the
+  Workspace's session titles and context compaction: a declared level. `""`:
+  the model's `reasoningEffort`. Unset (`null`): the Workspace's main-turn
+  effort.
 - There's no separate on/off switch: a model that doesn't reason is
   `reasoningEfforts: false`, and turning reasoning off for cost is
   `reasoningEffort: off` on a model that declares `off`.
@@ -401,18 +402,19 @@ global:
         maxTokens: 64000
         imageInput: true
         reasoningEfforts: {low: low, medium: medium, high: high}
-        reasoningEffort: medium      # for requests that don't set an effort
+        reasoningEffort: medium      # the model's default effort
 agent-services:
   model:
     alias: magda-coder
-    reasoningEffort: high            # empty or unset: the entry's reasoningEffort
-    auxiliaryReasoningEffort: low    # unset: the entry's, else the line above
+    reasoningEffort: high            # empty or unset (null): the entry's reasoningEffort
+    auxiliaryReasoningEffort: low    # unset (null): the entry's, else the line above
 ```
 
 Other applications keep using the default model. The Workspace's title and
 compaction effort is `agent-services.model.auxiliaryReasoningEffort` if set
 (empty: the entry's `reasoningEffort`), else the entry's
-`auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort. An alias that isn't served, an effort the model doesn't
+`auxiliaryReasoningEffort` if set (not `null`), else the Workspace's main-turn
+effort. An alias that isn't served, an effort the model doesn't
 declare, or any other field fails the render.
 
 **When a change applies.** The model config reaches each Workspace as one

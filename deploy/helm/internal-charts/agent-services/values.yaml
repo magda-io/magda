@@ -95,14 +95,15 @@ model:
   # -- Alias of the Workspace's model. Empty: the default model
   # (`global.llmServices.defaultModel`).
   alias: ""
-  # -- (string) Effort for the Workspace's main turns: a level the model
-  # declares. Empty or unset: the model entry's `reasoningEffort`.
+  # -- (string) The model's reasoning effort for the Workspace's main turns: a
+  # level the model declares. Empty or unset (`null`): the model entry's
+  # `reasoningEffort`.
   # @default -- `null` (the model entry's)
   reasoningEffort: null
-  # -- (string) Effort for session titles and context compaction: a level the
-  # model declares. Empty: the model entry's `reasoningEffort`. Unset: the
-  # model entry's `auxiliaryReasoningEffort` if set, else the Workspace's
-  # main-turn effort.
+  # -- (string) The model's reasoning effort for the Workspace's session
+  # titles and context compaction: a level the model declares. Empty: the
+  # model entry's `reasoningEffort`. Unset (`null`): the model entry's
+  # `auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort.
   # @default -- `null` (the model entry's, else the main-turn effort)
   auxiliaryReasoningEffort: null
 # ServiceAccount used by Agent Manager in the Magda release namespace. Sandbox
