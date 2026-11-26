@@ -12,7 +12,7 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| global.defaultAgentModel | object | `{}` |  |
+| global | object | `{}` |  |
 | image.name | string | `"litellm"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/berriai"` |  |

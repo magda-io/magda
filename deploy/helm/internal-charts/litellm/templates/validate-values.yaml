@@ -1,11 +1,13 @@
-{{- /* Render-time model and credential validation; emits no manifest. The model
-  itself is validated by the shared magda.defaultAgentModel helper. */ -}}
-{{- $model := include "magda.defaultAgentModel" . | fromJson -}}
+{{- /* Render-time model and credential validation; emits no manifest. The models
+  themselves are validated by the shared magda.llmModels helper. */ -}}
 {{- if hasKey .Values "model" -}}
-{{- fail "litellm.model.* was removed (#3965): set the alias and provider model in global.defaultAgentModel" -}}
+{{- fail "litellm.model.* was removed (#3965): set the models in global.llmServices.defaultModel and additionalModels" -}}
 {{- end -}}
+{{- $models := include "magda.llmModels" . | fromJsonArray -}}
+{{- range $index, $model := $models -}}
 {{- if empty $model.providerModel -}}
-{{- fail "global.defaultAgentModel.providerModel is required when bundled LiteLLM is enabled" -}}
+{{- fail (printf "%s.providerModel is required when bundled LiteLLM is enabled" (ternary "global.llmServices.defaultModel" (printf "global.llmServices.additionalModels[%d]" (sub $index 1)) (eq $index 0))) -}}
+{{- end -}}
 {{- end -}}
 {{- $secretName := .Values.providerSecret.name | default "" -}}
 {{- $secretKey := .Values.providerSecret.key | default "" -}}

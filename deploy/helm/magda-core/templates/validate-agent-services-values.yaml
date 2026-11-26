@@ -5,6 +5,6 @@
 {{- fail "global.agentWorkspace.enabled=true requires global.llmServices.enabled=true because the managed runtime uses the authenticated Magda LLM facade" -}}
 {{- end -}}
 
-{{- /* The model and its allowlist are validated where they're rendered: the
-  shared magda.defaultAgentModel helper, and llm-services (the alias must be
-  allowed, and bundled LiteLLM routes only the alias). */ -}}
+{{- /* The models (global.llmServices) are validated where they're rendered, by
+  the shared magda.llmModels helper; the Workspace's selection
+  (agent-services.model) by agent-services.workspaceModelJson. */ -}}

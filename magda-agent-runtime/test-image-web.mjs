@@ -585,7 +585,7 @@ try {
             authorization: "image-fixture-llm-key"
         }
     };
-    // MAGDA_LLM_MODEL_CONFIG, as the Helm helper magda.defaultAgentModel
+    // MAGDA_LLM_MODEL_CONFIG, as the Helm helper agent-services.workspaceModelJson
     // renders it (without the provider model, which stays out of the
     // Workspace). Each stage below restarts the runtime with another config.
     const MODEL = "image-test-model";

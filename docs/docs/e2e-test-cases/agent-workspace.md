@@ -158,7 +158,7 @@ continues to use the **direct magda-core** values shape and is not a
    available for compatible models), the DSH model catalog reports the Helm-set alias, `contextWindow`, and
    `maxTokens`, and no provider credential appears in the browser or Sandbox.
    Verify the default `reasoningEffort: medium` reaches both DSH and LiteLLM.
-   Set `global.defaultAgentModel.auxiliaryReasoningEffort: low` and verify a
+   Set `global.llmServices.defaultModel.auxiliaryReasoningEffort: low` and verify a
    new session's turn requests carry `reasoning.effort: medium` and its title
    request (`max_output_tokens: 1024`) carries `low`. Observe the effort on the
    wire between LLM Services and LiteLLM (plain HTTP on port 4000), for example
@@ -170,7 +170,8 @@ continues to use the **direct magda-core** values shape and is not a
    model-generated title (no `400` from the title request), and the reasoning
    selector doesn't offer Off.
 9. Verify a running Workspace picks up a model config change on resume
-   (#3965): change `global.defaultAgentModel` (e.g. `reasoningEffort: ""`),
+   (#3965): change the Workspace's model config (e.g.
+   `agent-services.model.reasoningEffort: ""`, or select another served model),
    roll out the Agent Manager, and let the claimed Workspace idle-suspend.
    Resume it, and verify its claimed Sandbox's `spec.podTemplate` and the
    running container both have the new `MAGDA_LLM_MODEL_CONFIG`, and that its

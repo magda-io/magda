@@ -120,7 +120,7 @@ spec:
             - {name: DSH_BROWSER_AUTH, value: "true"}
             # The model config the DSH overlay reads (magda.cordis.patch.yml).
             # The Agent Manager refreshes it on resume (MAGDA_LLM_MODEL_CONFIG).
-            - {name: MAGDA_LLM_MODEL_CONFIG, value: {{ include "magda.defaultAgentModel.workspaceJson" . | quote }}}
+            - {name: MAGDA_LLM_MODEL_CONFIG, value: {{ include "agent-services.workspaceModelJson" . | quote }}}
             - name: MAGDA_LLM_BASE_URL
               value: {{ .Values.llmApiUrl | default (printf "%s/api/v0/llm/v1" (include "agent-services.externalUrl" . | trimSuffix "/")) | quote }}
             # Human-readable configured limits for agent guidance. CPU and memory

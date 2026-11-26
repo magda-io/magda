@@ -1,14 +1,14 @@
-global:
-  defaultAgentModel: {}
+global: {}
 
 image:
   repository: ghcr.io/berriai
   name: litellm
   tag: main-v1.81.12-stable
   pullPolicy: IfNotPresent
-# The model (alias, provider model and reasoning effort) comes only from
-# global.defaultAgentModel, so LiteLLM, LLM Services and the Agent Workspace
-# can't disagree.
+# The models (one route each: alias, provider model and reasoning effort) come
+# only from global.llmServices.defaultModel and additionalModels, so LiteLLM,
+# LLM Services and the Agent Workspace can't disagree. Every route uses the one
+# provider Secret below.
 providerSecret:
   # -- Provider API-key Secret name. Leave name and key empty for providers that do not need a key.
   name: litellm-provider

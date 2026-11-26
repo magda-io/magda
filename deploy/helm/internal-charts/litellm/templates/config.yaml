@@ -1,12 +1,5 @@
-{{- $model := include "magda.defaultAgentModel" . | fromJson -}}
+{{- $models := include "magda.llmModels" . | fromJsonArray -}}
 {{- $providerSecretConfigured := and .Values.providerSecret.name .Values.providerSecret.key -}}
-{{- /* LiteLLM sees API values, not levels: send the mapped value of the main-turn
-  effort, and nothing for "" or a model that doesn't reason. A request that
-  names its own effort (DSH always does when it has one) overrides this. */ -}}
-{{- $reasoningEffort := "" -}}
-{{- if and $model.reasoningEffort (kindIs "map" $model.reasoningEfforts) -}}
-{{- $reasoningEffort = get $model.reasoningEfforts $model.reasoningEffort -}}
-{{- end -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,14 +7,24 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: {{ $model.alias | quote }}
+{{- range $models }}
+{{- /* LiteLLM sees API values, not levels: send the mapped value of the
+  model's reasoningEffort, and nothing for "" or a model that doesn't reason.
+  A request that names its own effort (the Workspace always does when it has
+  one) overrides this. */ -}}
+{{- $reasoningEffort := "" -}}
+{{- if and .reasoningEffort (kindIs "map" .reasoningEfforts) -}}
+{{- $reasoningEffort = get .reasoningEfforts .reasoningEffort -}}
+{{- end }}
+      - model_name: {{ .alias | quote }}
         litellm_params:
-          model: {{ required "global.defaultAgentModel.providerModel is required when bundled LiteLLM is enabled" $model.providerModel | quote }}
+          model: {{ .providerModel | quote }}
 {{- if $providerSecretConfigured }}
           api_key: "os.environ/LITELLM_PROVIDER_API_KEY"
 {{- end }}
 {{- with $reasoningEffort }}
           reasoning_effort: {{ . | quote }}
+{{- end }}
 {{- end }}
     general_settings:
       master_key: "os.environ/LITELLM_MASTER_KEY"

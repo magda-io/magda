@@ -1,20 +1,16 @@
-global:
-  defaultAgentModel: {}
+global: {}
 
 image:
   name: magda-llm-services
   tag: ""
   pullPolicy: IfNotPresent
 replicas: 1
-# -- Deployment-wide model allowlist. An empty array allows only
-# global.defaultAgentModel.alias. With bundled LiteLLM, leave it empty (or set
-# exactly that alias); an external backend may serve several aliases. With the
-# Agent Workspace enabled, the list must include the alias.
-allowedModels: []
+# The served models, and so the deployment-wide model allowlist, are
+# global.llmServices.defaultModel and global.llmServices.additionalModels.
 
 # External LiteLLM-compatible backend. Leave empty when the bundled LiteLLM
 # subchart is enabled. When bundled LiteLLM is disabled all three fields are
-# required, and the operator must ensure every allowed model alias exists on the
+# required, and the operator must ensure every served model alias exists on the
 # external backend.
 backend:
   url: ""

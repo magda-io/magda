@@ -14,52 +14,60 @@ global:
   llmServices:
     # -- Enable the authenticated Magda LLM facade independently of Agent Workspace.
     enabled: false
-  # The Agent Workspace model: one entry shared by LLM Services (the model
-  # allowlist), bundled LiteLLM (the route) and the Agent Workspace (DSH). It
-  # describes what the model can do (`reasoningEfforts`) separately from what
-  # the deployment wants (`reasoningEffort`, `auxiliaryReasoningEffort`). Every
-  # field is validated once, at render time. Running Workspaces pick up a change
-  # the next time they're resumed. See the Agent Workspace deployment guide for
-  # an example of each kind of model.
-  defaultAgentModel:
-    # -- Public model alias: the LLM Services allowlist entry, the bundled
-    # LiteLLM `model_name` and the Workspace's DSH model id.
-    alias: magda-agent-default
-    # -- Bundled LiteLLM only: the provider model routed behind the alias.
-    providerModel: openai/gpt-6.1-sol
-    # -- Name shown for the model in the Workspace. Empty: the alias.
-    displayName: Magda Agent Default
-    # -- Model context-window capability.
-    contextWindow: 1050000
-    # -- Model maximum output tokens, including reasoning tokens.
-    maxTokens: 128000
-    # -- Whether the model accepts image input. When true, the agent can look at
-    # images, including its own renders of the Office files it creates, to check
-    # their layout. Set it to true only for a vision-capable model, such as the
-    # default `openai/gpt-6.1-sol`: a text-only model given an image rejects the
-    # request, and the turn fails. Off by default, so changing `providerModel`
-    # to a text-only model needs no other change.
-    imageInput: false
-    # -- (map or false) Capability: the reasoning levels the model accepts, as
-    # a map from a level (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`,
-    # `max`) to the value sent to the API (`reasoning.effort`), or `false` for
-    # a model that doesn't reason. Unset (`null`): the default model's levels,
-    # `low` to `max`, each sent as its own name. A map you set replaces the
-    # default whole, so list every level the model accepts. `off` needs an
-    # explicit value, such as `none`, and only works if the provider accepts
-    # it: the default model can't turn reasoning off.
-    # @default -- `null` (`{low: low, medium: medium, high: high, xhigh: xhigh, max: max}`)
-    reasoningEfforts: null
-    # -- Effort for the agent's main turns: a level declared in
-    # `reasoningEfforts`, or an empty string to send none and let the provider
-    # use its default. Bundled LiteLLM also sends its mapped value for clients
-    # that name no effort.
-    reasoningEffort: medium
-    # -- Effort for session titles and context compaction: a level declared in
-    # `reasoningEfforts`, or an empty string to send none. Unset (`null`): the
-    # same as `reasoningEffort`. A lower level makes titles cheaper and faster.
-    # @default -- `null` (same as `reasoningEffort`)
-    auxiliaryReasoningEffort: null
+    # The default model: used by LLM Services clients that name no model,
+    # including the Agent Workspace unless `agent-services.model` selects
+    # another. One entry describes what the model can do (`reasoningEfforts`)
+    # separately from what the deployment wants (`reasoningEffort`,
+    # `auxiliaryReasoningEffort`). Every entry is validated once, at render
+    # time. See the Agent Workspace deployment guide for an example of each
+    # kind of model.
+    defaultModel:
+      # -- Public model alias: the LLM Services allowlist entry, the bundled
+      # LiteLLM `model_name` and, when the Workspace uses it, its DSH model id.
+      alias: magda-agent-default
+      # -- Bundled LiteLLM only: the provider model routed behind the alias.
+      providerModel: openai/gpt-6.1-sol
+      # -- Name shown for the model in the Workspace. Empty: the alias.
+      displayName: Magda Agent Default
+      # -- Model context-window capability.
+      contextWindow: 1050000
+      # -- Model maximum output tokens, including reasoning tokens.
+      maxTokens: 128000
+      # -- Whether the model accepts image input. When true, the Workspace agent
+      # can look at images, including its own renders of the Office files it
+      # creates, to check their layout. Set it to true only for a
+      # vision-capable model, such as the default `openai/gpt-6.1-sol`: a
+      # text-only model given an image rejects the request, and the turn
+      # fails. Off by default, so changing `providerModel` to a text-only model
+      # needs no other change.
+      imageInput: false
+      # -- (map or false) Capability: the reasoning levels the model accepts, as
+      # a map from a level (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`,
+      # `max`) to the value sent to the API (`reasoning.effort`), or `false` for
+      # a model that doesn't reason. Unset (`null`): the default model's levels,
+      # `low` to `max`, each sent as its own name. A map you set replaces the
+      # default whole, so list every level the model accepts. `off` needs an
+      # explicit value, such as `none`, and only works if the provider accepts
+      # it: the default model can't turn reasoning off.
+      # @default -- `null` (`{low: low, medium: medium, high: high, xhigh: xhigh, max: max}`)
+      reasoningEfforts: null
+      # -- Effort for main requests (the Workspace agent's turns): a level
+      # declared in `reasoningEfforts`, or an empty string to send none and let
+      # the provider use its default. Bundled LiteLLM sends its mapped value for
+      # clients that name no effort. `agent-services.model` can choose another.
+      reasoningEffort: medium
+      # -- Effort for the Workspace's session titles and context compaction: a
+      # level declared in `reasoningEfforts`, or an empty string to send none.
+      # Unset (`null`): the same as the main-turn effort. A lower level makes
+      # titles cheaper and faster.
+      # @default -- `null` (same as `reasoningEffort`)
+      auxiliaryReasoningEffort: null
+    # -- More models LLM Services serves, each an entry with the same fields
+    # as `defaultModel`. The served models (the allowlist, and bundled
+    # LiteLLM's routes) are `defaultModel` followed by these; aliases must be
+    # unique. With bundled LiteLLM, each needs a `providerModel`, and every
+    # route uses the one provider Secret (`llm-services.litellm.providerSecret`).
+    additionalModels: []
   searchEngine:
     semanticIndexer:
       indexName: "semantic-index"

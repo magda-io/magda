@@ -16,12 +16,11 @@ Kubernetes: `>= 1.24.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| allowedModels | list | `[]` | Deployment-wide model allowlist. An empty array allows only global.defaultAgentModel.alias. With bundled LiteLLM, leave it empty (or set exactly that alias); an external backend may serve several aliases. With the Agent Workspace enabled, the list must include the alias. |
 | backend.masterKeySecret.key | string | `""` |  |
 | backend.masterKeySecret.name | string | `""` |  |
 | backend.url | string | `""` |  |
 | decisionCacheSeconds | int | `30` | How long, in seconds, a caller's `llm/access/invoke` decision is cached (0 to 300; 0 disables the cache). This is the delay before a revoked grant stops working. Profile changes apply at once. |
-| global.defaultAgentModel | object | `{}` |  |
+| global | object | `{}` |  |
 | image.name | string | `"magda-llm-services"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `""` |  |

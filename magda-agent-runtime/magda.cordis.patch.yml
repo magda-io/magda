@@ -16,8 +16,9 @@
 # container; the credential is the user's lifecycle-bound Magda API key, never a
 # provider secret. DSH's adapter adds the HTTP authorization scheme.
 #
-# The model itself is the deployment's global.defaultAgentModel, validated by
-# Helm and delivered as one JSON Pod env value, MAGDA_LLM_MODEL_CONFIG. The
+# The model itself is the one agent-services.model selects from the models in
+# global.llmServices, validated by Helm and delivered as one JSON Pod env
+# value, MAGDA_LLM_MODEL_CONFIG. The
 # entrypoint refuses to start without it, and the Agent Manager refreshes it
 # each time the Workspace resumes.
 - id: llm-pi-ai

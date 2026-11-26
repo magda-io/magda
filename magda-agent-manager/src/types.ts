@@ -2,7 +2,7 @@ import type { V1Container } from "@kubernetes/client-node";
 
 /**
  * Read the Workspace model config (`MAGDA_LLM_MODEL_CONFIG`): the JSON that
- * the Helm helper `magda.defaultAgentModel` validated and rendered. It's passed
+ * the Helm helper `agent-services.workspaceModelJson` validated and rendered. It's passed
  * on unchanged, re-serialised, to the Sandbox Pods, whose DSH overlay reads
  * it; only its shape is checked here.
  */

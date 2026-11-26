@@ -599,7 +599,7 @@ assert.doesNotMatch(
     "The local-only path rename must not ship upgrade migration helpers"
 );
 // #3965: the model comes only from MAGDA_LLM_MODEL_CONFIG, the JSON that the
-// Helm helper magda.defaultAgentModel renders. Evaluate the overlay's model
+// Helm helper agent-services.workspaceModelJson renders. Evaluate the overlay's model
 // expressions against it, for each kind of model.
 assert.doesNotMatch(
     cordisPatch,

@@ -15,7 +15,7 @@ Kubernetes: `>= 1.24.0-0`
 | controlPlaneSecret.create | bool | `true` |  |
 | controlPlaneSecret.key | string | `"token"` |  |
 | controlPlaneSecret.name | string | `"magda-agent-control"` |  |
-| global | object | `{}` | Global values are owned and defaulted by the parent `magda-core` chart. This chart requires `global.externalUrl`, `global.defaultAdminUserId`, `global.defaultDatasetBucket`, `global.defaultAgentModel` and `global.image` from its parent and fails rendering when a required value is absent. |
+| global | object | `{}` | Global values are owned and defaulted by the parent `magda-core` chart. This chart requires `global.externalUrl`, `global.defaultAdminUserId`, `global.defaultDatasetBucket`, `global.llmServices` (the models) and `global.image` from its parent and fails rendering when a required value is absent. |
 | hardDeleteSeconds | int | `28800` |  |
 | idleSuspendSeconds | int | `1800` |  |
 | ingressController.namespace | string | `"ingress-nginx"` |  |
@@ -35,6 +35,9 @@ Kubernetes: `>= 1.24.0-0`
 | manager.resources.limits.memory | string | `"384Mi"` |  |
 | manager.resources.requests.cpu | string | `"50m"` |  |
 | manager.resources.requests.memory | string | `"96Mi"` |  |
+| model.alias | string | `""` | Alias of the Workspace's model. Empty: the default model (`global.llmServices.defaultModel`). |
+| model.auxiliaryReasoningEffort | string | `null` (the model entry's, else the main-turn effort) | Effort for session titles and context compaction: a level the model declares, or an empty string to send none. Unset (`null`): the model entry's `auxiliaryReasoningEffort` if set, else the Workspace's main-turn effort. |
+| model.reasoningEffort | string | `null` (the model entry's) | Effort for the Workspace's main turns: a level the model declares, or an empty string to send none. Unset (`null`): the model entry's `reasoningEffort`. |
 | reconcileIntervalSeconds | int | `30` |  |
 | registryApiUrl | string | `"http://registry-api/v0"` |  |
 | runtime.deniedCidrs | list | `[]` | Additional public destinations denied by the broad public egress rule, such as a GKE public control-plane endpoint (/32). |

@@ -61,3 +61,64 @@ agent.magda.io/installation-id: {{ include "agent-services.installationId" . | q
 {{- end -}}
 {{- $url -}}
 {{- end -}}
+
+{{/*
+  The Workspace's model config, as compact JSON: the served model that
+  `agent-services.model.alias` selects (empty: the default model), with the
+  Workspace's efforts resolved, and without the provider model. The Agent
+  Manager and the Sandbox Pods receive it as MAGDA_LLM_MODEL_CONFIG, and the
+  DSH overlay (magda-agent-runtime/magda.cordis.patch.yml) reads it.
+*/}}
+{{- define "agent-services.workspaceModelJson" -}}
+{{- $selection := .Values.model -}}
+{{- if eq (kindOf $selection) "invalid" -}}
+{{- $selection = dict -}}
+{{- end -}}
+{{- if not (kindIs "map" $selection) -}}
+{{- fail (printf "agent-services.model must be a map; got %s" (kindOf $selection)) -}}
+{{- end -}}
+{{- range $key := keys $selection | sortAlpha -}}
+{{- if not (has $key (list "alias" "reasoningEffort" "auxiliaryReasoningEffort")) -}}
+{{- fail (printf "agent-services.model has an unknown field %q; it selects a model by alias and may set reasoningEffort and auxiliaryReasoningEffort. What a model can do is set in its global.llmServices entry" $key) -}}
+{{- end -}}
+{{- end -}}
+{{- $models := include "magda.llmModels" . | fromJsonArray -}}
+{{- $alias := index $selection "alias" -}}
+{{- if eq (kindOf $alias) "invalid" -}}
+{{- $alias = "" -}}
+{{- end -}}
+{{- if ne (kindOf $alias) "string" -}}
+{{- fail (printf "agent-services.model.alias must be a string; got %s" (kindOf $alias)) -}}
+{{- end -}}
+{{- $model := first $models -}}
+{{- if ne $alias "" -}}
+{{- $model = dict -}}
+{{- $aliases := list -}}
+{{- range $models -}}
+{{- $aliases = append $aliases .alias -}}
+{{- if eq .alias $alias -}}
+{{- $model = . -}}
+{{- end -}}
+{{- end -}}
+{{- if not $model -}}
+{{- fail (printf "agent-services.model.alias %q isn't a model LLM Services serves; the served aliases (global.llmServices.defaultModel and additionalModels) are %s" $alias (join ", " $aliases)) -}}
+{{- end -}}
+{{- end -}}
+{{- $reasoningEffort := $model.reasoningEffort -}}
+{{- if ne (kindOf (index $selection "reasoningEffort")) "invalid" -}}
+{{- $reasoningEffort = index $selection "reasoningEffort" -}}
+{{- include "magda.llmModel.checkEffort" (dict "value" $reasoningEffort "path" "agent-services.model.reasoningEffort" "efforts" $model.reasoningEfforts) -}}
+{{- end -}}
+{{- /* Titles and compaction: the Workspace's own choice, else the model
+  entry's, else the Workspace's main-turn effort. */ -}}
+{{- $auxiliary := $reasoningEffort -}}
+{{- if ne (kindOf (index $selection "auxiliaryReasoningEffort")) "invalid" -}}
+{{- $auxiliary = index $selection "auxiliaryReasoningEffort" -}}
+{{- include "magda.llmModel.checkEffort" (dict "value" $auxiliary "path" "agent-services.model.auxiliaryReasoningEffort" "efforts" $model.reasoningEfforts) -}}
+{{- else if ne (kindOf $model.auxiliaryReasoningEffort) "invalid" -}}
+{{- $auxiliary = $model.auxiliaryReasoningEffort -}}
+{{- end -}}
+{{- $_ := set $model "reasoningEffort" $reasoningEffort -}}
+{{- $_ := set $model "auxiliaryReasoningEffort" $auxiliary -}}
+{{- omit $model "providerModel" | toJson -}}
+{{- end -}}

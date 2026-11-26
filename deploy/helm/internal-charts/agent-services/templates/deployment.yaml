@@ -73,10 +73,10 @@ spec:
             - {name: RECONCILE_INTERVAL_SECONDS, value: {{ .Values.reconcileIntervalSeconds | quote }}}
             - {name: RUNTIME_MAX_BODY_BYTES, value: {{ .Values.runtimeMaxBodyBytes | int64 | quote }}}
             - {name: RUNTIME_MAX_UPLOAD_BYTES, value: {{ dig "agentWorkspace" "maxUploadBytes" 1073741824 .Values.global | int64 | quote }}}
-            # The Workspace model config (global.defaultAgentModel). The Manager
+            # The Workspace model config (agent-services.model). The Manager
             # writes it into a claimed Sandbox's Pod template on resume, so a
             # running Workspace picks up a change when it next resumes.
-            - {name: MAGDA_LLM_MODEL_CONFIG, value: {{ include "magda.defaultAgentModel.workspaceJson" . | quote }}}
+            - {name: MAGDA_LLM_MODEL_CONFIG, value: {{ include "agent-services.workspaceModelJson" . | quote }}}
           readinessProbe:
             httpGet: {path: /v0/status/ready, port: http}
           livenessProbe:

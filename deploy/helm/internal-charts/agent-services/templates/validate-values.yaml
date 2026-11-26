@@ -26,11 +26,11 @@
 {{- fail (printf "global.agentWorkspace.maxUploadBytes must be a positive integer; got %v" $maxUpload) -}}
 {{- end -}}
 
-{{- /* The model config is validated by the shared magda.defaultAgentModel helper. */ -}}
-{{- $_ := include "magda.defaultAgentModel" . -}}
 {{- if hasKey .Values "llm" -}}
-{{- fail "agent-services.llm.* was removed (#3965): set the Workspace model in global.defaultAgentModel" -}}
+{{- fail "agent-services.llm.* was removed (#3965): select the Workspace model with agent-services.model, from the models in global.llmServices" -}}
 {{- end -}}
+{{- /* The selected model; the models themselves are validated by magda.llmModels. */ -}}
+{{- $_ := include "agent-services.workspaceModelJson" . -}}
 
 {{- range $name, $value := dict
     "skillArchive.maxCompressedBytes" .Values.skillArchive.maxCompressedBytes
