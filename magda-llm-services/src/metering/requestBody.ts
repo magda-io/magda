@@ -9,9 +9,10 @@ export interface PreparedRequest {
 /**
  * Make sure a streaming Chat Completions request asks for usage, so a quota
  * bounded caller can't make a free call with `include_usage: false` (on the
- * tested LiteLLM 1.81.12 route, `false` suppressed usage). Every other request,
- * including every Responses request, is forwarded byte for byte: the tested
- * Responses route returned HTTP 400 for Chat `stream_options`.
+ * tested LiteLLM 1.81.12 and 1.83.14 routes, `false` suppressed usage). Every
+ * other request, including every Responses request, is forwarded byte for
+ * byte: the tested Responses route returned HTTP 400 for Chat
+ * `stream_options`.
  */
 export function prepareRequestBody(
     endpoint: string,
