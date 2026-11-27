@@ -304,10 +304,12 @@ the browser or Workspace. A local process without `DB_HOST` has only logging
 settlement, unavailable profile/usage APIs, and is **not** a deployed quota setup.
 
 The bundled backend is pinned to
-`ghcr.io/magda-io/litellm:v1.83.14-stable.patch.3` (LiteLLM 1.83.14). Do not
-carry forward 1.81.12-specific metering claims as current qualification evidence.
-An external backend and every new provider/model need separate compatibility
-checks, including terminal usage, incomplete/cancelled streams and tools.
+`ghcr.io/magda-io/litellm:v1.83.14-stable.patch.3` (LiteLLM 1.83.14). The
+provider-qualified route is the tested OpenAI Responses streaming route through
+that backend. Do not infer support for Chat or another provider/backend from
+synthetic fixture tests or LiteLLM routing capability. Each additional route
+needs separate compatibility checks, including terminal usage,
+incomplete/cancelled streams and tools.
 
 #### Set up access deliberately
 
@@ -331,11 +333,14 @@ checks, including terminal usage, incomplete/cancelled streams and tools.
      permission to an existing role. Individual users join that role through
      the normal Users administration UI. No managed role per profile or direct
      user grant is created.
-4. **Authenticated Users is intentionally selectable (AUTH-8): attaching it
-   makes this profile available to everyone signed in.** It does not expose the
-   profile anonymously or grant profile-management rights. Anonymous Users and
-   Admin Users are excluded. Consider cost and audience before confirming this
-   broad grant; the migration never makes it automatically.
+4. **Authenticated Users is selectable (AUTH-8): attaching it makes this profile
+   available to everyone who can sign in**, including accounts created later. It
+   does not grant profile-management rights. Anonymous Users is excluded because
+   there is no individual authenticated identity to meter. Admin Users is
+   excluded because attachment is pointless: administrators already have every
+   deployment-allowed model without a profile or quota. Consider cost and
+   audience before confirming this broad grant; the migration never makes it
+   automatically.
 5. Verify with an ordinary user, not only an administrator: eligible model list,
    one normal request, own usage, an unrelated/no-grant user, and exhausted-limit
    refusal. Administrators bypass profiles/quotas and cannot prove ordinary
@@ -362,8 +367,7 @@ llm-services:
   usage:
     timeZone: Australia/Sydney
     estimate:
-      bytesPerToken: 6
-      outputAllowanceTokens: 256
+      bytesPerToken: 5
       incompleteFactor: 0.25
       outputTokens: 4096
       outputTokensByModel: {}
@@ -385,22 +389,25 @@ URL must be absolute HTTP(S). Both are checked at service startup and served by
 LLM Services, not read by the web-server chart. The browser supplies the default
 contact-administrator message when no additional help is configured.
 
-Metering has measured and estimated counters. The current calibrated fallback
-settings live in the [LLM Services chart values](../../deploy/helm/internal-charts/llm-services/values.yaml)
+Metering has measured and estimated counters. The fallback settings live in the
+[LLM Services chart values](../../deploy/helm/internal-charts/llm-services/values.yaml)
 and [settlement implementation](../../magda-llm-services/src/metering/settlement.ts).
-These example settings are the current defaults: estimated input uses forwarded
-request bytes / 6; observed text/tool delta bytes use the same ratio plus a
-256-token hidden allowance. Only when no output delta is observed does the
-4096-token output fallback (or per-alias override) apply. Incomplete attempts
-multiply estimated input plus hidden/fallback allowance by 0.25; observed visible
-output is never discounted. Valid final usage is always measured unchanged,
-including incomplete/failed terminals. See the [exact formula](./architecture/llm-services.md#metering-boundary).
+These example settings are the current **provisional budget-policy defaults**,
+not measured token ratios or calibrated billing values. Estimated input uses
+forwarded request bytes / 5; observed nonempty text/tool output bytes use the
+same ratio, with no extra output amount added. Only when no nonempty visible
+output is observed does the 4096-token output fallback (or per-alias override)
+apply. Incomplete attempts multiply estimated input plus any fallback output by
+0.25; observed visible output is never discounted. Valid final usage is always
+measured unchanged, including incomplete/failed terminals. See the
+[exact formula](./architecture/llm-services.md#metering-boundary).
 
-Treat them as approximate soft-budget controls, not provider billing or a hard
-cut-off; evaluate calibration on representative requests before changing them.
-A missing final usage snapshot is not zero usage. Visible text/tool deltas do not
-account for hidden reasoning. Observer caps bound memory; oversize events are
-still forwarded unchanged but can require estimated settlement.
+Treat these as approximate soft-budget controls, not provider billing or a hard
+cut-off. Validate their suitability for the deployment's request mix before
+tuning them. A missing final usage snapshot is not zero usage. Visible text/tool
+output does not account for all reasoning or background generation. Observer
+caps bound memory; oversize events are still forwarded unchanged but can require
+estimated settlement.
 
 Monitor `llm-usage-settled` and critical `llm-usage-ledger-write-failed` events,
 measured/estimated proportions, unknown/oversize observer outcomes and
@@ -414,7 +421,9 @@ requests may overshoot. A settlement failure gates bounded calls in the affected
 process until a rolled-back write probe succeeds; the gate is not a shared
 multi-replica control, and writes are not retried after uncertain commits.
 Unbounded profiles can bypass that write gate after a successful eligibility
-read, but a database/read outage can still fail their eligibility query.
+read. Profiles and usage share the same `llm` database, so admission fails closed
+on an unavailable eligibility/usage read even for an unbounded profile; an
+unlimited budget does not bypass the database authority needed to prove access.
 Administrators bypass quota admission and are still metered. Process crashes
 before settlement can lose counts; there is no durable settlement queue or
 repair/replay API. Do not zero daily rows as a workaround: usage is shared across

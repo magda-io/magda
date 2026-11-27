@@ -32,10 +32,9 @@ Kubernetes: `>= 1.24.0-0`
 | resources.limits.memory | string | `"256Mi"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"64Mi"` |  |
-| usage.estimate.bytesPerToken | int | `6` | When a model response has no valid final usage (missing, unreadable, or cut short by a disconnect or timeout), it's charged an estimate: Input is ceil(request body bytes / bytesPerToken). Visible text/tool output uses the same ratio plus outputAllowanceTokens; otherwise use outputTokens. Incomplete attempts discount input and allowance only. Error answers (any non-2xx status) cost nothing. |
-| usage.estimate.incompleteFactor | float | `0.25` | Factor (0 to 1) on unobserved input and allowance for incomplete attempts. |
-| usage.estimate.outputAllowanceTokens | int | `256` | Hidden/reasoning token allowance added when visible output is observed. |
-| usage.estimate.outputTokens | int | `4096` | Fallback output tokens when visible output cannot be observed. |
+| usage.estimate.bytesPerToken | int | `5` | Provisional bytes-per-token policy for soft budget control, not a measured tokenizer or billing value. Used for both request and visible text/tool output bytes. With visible output, no extra allowance is added. Otherwise outputTokens (or its per-model override) is the fallback. Estimate = visible + ceil((input + fallbackIfNoVisibleOutput) * factor). Valid final usage is measured unchanged; non-2xx answers cost nothing. |
+| usage.estimate.incompleteFactor | float | `0.25` | Provisional factor (0 to 1) on input plus fallback for incomplete attempts. Visible output is never discounted. Normally completed responses use 1. |
+| usage.estimate.outputTokens | int | `4096` | Provisional fallback tokens only when no visible output was observed. |
 | usage.estimate.outputTokensByModel | object | `{}` | Optional per-model-alias override of `outputTokens`, e.g. `{"my-alias": 8192}`. |
 | usage.observer.maxEventBytes | int | `65536` | Largest server-sent event, in bytes, the usage observer buffers. A larger event is skipped for metering (still forwarded unchanged). |
 | usage.observer.maxJsonBytes | int | `1048576` | Largest non-streaming JSON response, in bytes, the observer buffers. |

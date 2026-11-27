@@ -12,7 +12,6 @@ render() {
 render >"$tmp/default.yaml"
 render --set llm-services.usage.estimate.bytesPerToken=8 \
     --set llm-services.usage.estimate.outputTokens=0 \
-    --set llm-services.usage.estimate.outputAllowanceTokens=0 \
     --set llm-services.usage.estimate.incompleteFactor=0 \
     --set llm-services.decisionCacheSeconds=0 >"$tmp/override.yaml"
 node - "$tmp/default.yaml" "$tmp/override.yaml" <<'NODE'
@@ -26,9 +25,8 @@ function env(file) {
 const defaults = env(process.argv[2]);
 const overrides = env(process.argv[3]);
 for (const [name, expected, override] of [
-    ["USAGE_ESTIMATE_BYTES_PER_TOKEN", "6", "8"],
+    ["USAGE_ESTIMATE_BYTES_PER_TOKEN", "5", "8"],
     ["USAGE_ESTIMATE_OUTPUT_TOKENS", "4096", "0"],
-    ["USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS", "256", "0"],
     ["USAGE_ESTIMATE_INCOMPLETE_FACTOR", "0.25", "0"],
     ["DECISION_CACHE_SECONDS", "30", "0"]
 ]) {

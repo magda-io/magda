@@ -1,6 +1,6 @@
 # MAGDA LLM Services architecture
 
-**Status:** Implemented PoC on the v8 development line through [#3937](https://github.com/magda-io/magda/issues/3937), with qualification tracked by [#3950](https://github.com/magda-io/magda/issues/3950). Profiles, invocation admission, metering and usage pages are implemented; that does **not** make them billing-grade, universally provider-qualified or production-ready. v8 is unreleased. This page describes the implementation, not the older working design's implementation status.
+This page describes the v8 implementation of access profiles, invocation admission, soft token limits and usage reporting. The provider-qualified route is OpenAI Responses streaming through the bundled LiteLLM; other provider routes need separate compatibility checks. Token accounting is approximate, not billing-grade.
 
 ## Component and routing boundary
 
@@ -35,7 +35,7 @@ For a non-administrator, an enabled profile covering the requested alias must ma
 
 Org-unit invoke has **audience**, not management-scope, semantics (AUTH-5): a Finance profile is available to Finance and Finance's descendants, not to users above Finance or in siblings. A profile without an org unit cannot match this grant; a user without an org unit needs another grant. Public means users with an exemption-capable invoke grant, **not** anonymous users and **not automatically everyone signed in** (AUTH-6).
 
-Each profile owns exactly one pre-authorised invoke permission, not a role or direct-user grant (AUTH-7). Managers attach that permission to existing roles through LLM Services. **Authenticated Users is intentionally allowed: attaching it grants this profile to everyone signed in** (AUTH-8). Anonymous Users and Admin Users are excluded; administrators already bypass profiles. A manager does not receive general `authObject/role/update`, which would permit unrelated privilege changes. See [ADR 0013](../adrs/0013-central-llm-profile-management-and-invoke-grants.md).
+Each profile owns exactly one pre-authorised invoke permission, not a role or direct-user grant (AUTH-7). Managers attach that permission to existing roles through LLM Services. **Authenticated Users is allowed: attaching it grants this profile to everyone who can sign in**, including accounts created later (AUTH-8). Anonymous Users is excluded because there is no individual authenticated identity to meter. Admin Users is excluded because attachment is pointless: administrators already have every deployment-allowed model without a profile or quota. A manager does not receive general `authObject/role/update`, which would permit unrelated privilege changes. See [ADR 0013](../adrs/0013-central-llm-profile-management-and-invoke-grants.md).
 
 The migration adds the unassigned **LLM Profile Managers** role (central management, invoke, all-user usage, read-only org-unit access), and adds the audience/exemption invoke permission to **Agent Workspace Users** if that role still exists. It neither assigns these roles to users nor grants default LLM access to Authenticated Users or Anonymous Users. Managers with unconstrained invoke can test all existing profiles but are still limited by them; only Admin Users bypass profile/quota requirements. Administrators remain bound by the deployment model allowlist and are metered.
 
@@ -73,21 +73,33 @@ Remaining quota chooses the profile with the greatest minimum remaining across i
 
 After forwarding, settlement atomically increments the daily row once with measured or estimated usage. In-process duplicate suppression is not durable exactly-once processing. A process crash before settlement can lose usage; there is no durable request journal, reservation or replay. Rows are not pruned in this implementation, and deleting a profile or user does not clear usage history.
 
-A failed settlement write logs a critical accounting event, is **not retried** (its commit may be uncertain), and gates bounded admissions **in that service process** until a rolled-back write probe passes. This gate is not shared across replicas. Administrators bypass it; unbounded eligible profiles may continue after a successful eligibility read. However, the current eligibility query joins the ledger: a database/read outage can return `503` even for an unbounded non-administrator profile. `/status/ready` checks `SELECT 1`, not accounting completeness or the write gate. See [admission](../../../magda-llm-services/src/access/Admission.ts) and [ledger](../../../magda-llm-services/src/usage/UsageLedger.ts).
+Profiles and usage share the same `llm` database. Non-administrator admission **fails closed** with `503` when its eligibility/usage query cannot be read, including for an unbounded profile; an unlimited budget does not bypass the database authority needed to prove access. This is the accepted read-failure behavior, not a promise of unlimited-profile availability during an outage.
+
+A failed settlement write logs a critical accounting event, is **not retried** (its commit may be uncertain), and gates bounded admissions **in that service process** until a rolled-back write probe passes. This gate is not shared across replicas. Administrators bypass quota admission; an unbounded eligible profile may bypass the write-failure gate only after a successful eligibility read. `/status/ready` checks `SELECT 1`, not accounting completeness or the write gate. See [admission](../../../magda-llm-services/src/access/Admission.ts) and [ledger](../../../magda-llm-services/src/usage/UsageLedger.ts).
 
 ### Metering boundary
 
-The [request meter](../../../magda-llm-services/src/metering/RequestMeter.ts), [usage observer](../../../magda-llm-services/src/metering/usageObserver.ts) and [settlement configuration](../../../magda-llm-services/src/metering/settlement.ts) define the executable metering contract. The #3950 calibrated fallback replaces the older design's fixed input-plus-output formula; its qualification remains route-specific.
+The [request meter](../../../magda-llm-services/src/metering/RequestMeter.ts), [usage observer](../../../magda-llm-services/src/metering/usageObserver.ts) and [settlement configuration](../../../magda-llm-services/src/metering/settlement.ts) define the executable metering contract.
 
-When valid final usage is absent, let `input = ceil(forwarded request body bytes / bytesPerToken)`. If text/tool output deltas were observed, `visible = ceil(observed output bytes / bytesPerToken)` and `allowance = outputAllowanceTokens`; otherwise `visible = 0` and `allowance = outputTokensByModel[alias]` or `outputTokens`. Then:
+When valid final usage is absent:
 
 ```text
-estimated_tokens = visible + ceil((input + allowance) * factor)
+input = ceil(forwarded request body bytes / bytesPerToken)
+if nonempty visible text/tool output was observed:
+    visible = ceil(observed output bytes / bytesPerToken)
+    fallback = 0
+else:
+    visible = 0
+    fallback = outputTokensByModel[alias] or outputTokens
+factor = 1 for normal completion, otherwise incompleteFactor
+estimated_tokens = visible + ceil((input + fallback) * factor)
 ```
 
-`factor` is `1` for a normally completed response and `incompleteFactor` otherwise. A failed/incomplete terminal, missing terminal, interruption, unobservable format or observer failure is not normal completion. Visible output is **never discounted**. Valid final usage remains measured and unchanged, including failed/incomplete terminals; the factor applies only to estimates.
+The same configurable byte ratio is used for request input and visible output. No extra output amount is added when visible output has been observed. The `outputTokens` fallback, or its per-alias override, applies **only when no nonempty visible output was observed**.
 
-Current defaults in the [chart values](../../../deploy/helm/internal-charts/llm-services/values.yaml) are `bytesPerToken: 6`, `outputAllowanceTokens: 256`, `incompleteFactor: 0.25`, `outputTokens: 4096` and `outputTokensByModel: {}`. The last two are fallback output only when no output delta was observed, not an amount added on every response. Byte ratios, hidden allowance and discount are configurable PoC heuristics, not a tokenizer, actual hidden-token measurement or billing reconciliation. Safe quality metadata includes byte counts, observation flags, terminal type/status, completion flag and done-marker count—never the content itself.
+A failed/incomplete terminal, missing terminal, interruption, unobservable format or observer failure is not normal completion. Visible output is **never discounted**; the incomplete factor applies to estimated input and any fallback output only. Valid final usage remains measured and unchanged, including failed/incomplete terminals; the formula applies only to estimates.
+
+Defaults in the [chart values](../../../deploy/helm/internal-charts/llm-services/values.yaml) are `bytesPerToken: 5`, `incompleteFactor: 0.25`, `outputTokens: 4096` and `outputTokensByModel: {}`. These are **provisional budget-policy defaults**, not measured token ratios, statistically calibrated values or provider billing reconciliation. Generated text, JSON-heavy requests, language and model behavior can have different byte/token relationships, and visible output does not account for all reasoning or background generation. Safe quality metadata includes byte counts, observation flags, terminal type/status, completion flag and done-marker count—never the content itself.
 
 - Chat uses one validated final `usage.prompt_tokens` / `completion_tokens` snapshot. Streaming Chat requests ask for usage; Responses requests must not be given Chat `stream_options`.
 - Responses uses `input_tokens` / `output_tokens`, including valid terminal usage on completed, incomplete or failed events. Terminal detection and valid final usage are separate. `[DONE]` and repeated events do not cause additional settlement.
@@ -120,8 +132,8 @@ User-specific responses send `Cache-Control: private, no-store`, including proxi
 
 Caller authentication is not a provider credential. LLM Services supplies its Secret-backed backend credential instead of forwarding caller authorization. Its internal administrator session is used only after the caller's `llm/*` decision for the narrowly implemented Auth API changes and lookups. Provider Secrets stay in private LiteLLM; keep it unreachable directly from Sandboxes and external clients.
 
-The initial observer experiment used LiteLLM 1.81.12, a single OpenAI Responses route and headless DSH. It did not qualify every provider, browser flow, failure race or billing accuracy. That historical experiment is not evidence for the current pin or for the full profile UI. #3950 qualification must record actual environment, pin, checks run and remaining gaps separately. This architecture update does not claim that any test was run, that all acceptance gates passed, or that a production release occurred.
+Only the tested OpenAI Responses streaming route through the bundled LiteLLM is provider-qualified here. Chat and other provider/backend routes must not inherit support claims from synthetic fixture tests. Record the actual provider/model, backend version and route for each compatibility check; neither byte estimates nor successful routing demonstrate provider billing accuracy.
 
-For actual commands, PASS/FAIL/SKIPPED evidence and open gates, see the [LLM Services local qualification report](../e2e-test-cases/llm-services.md).
+Use the [LLM Services test procedure](../e2e-test-cases/llm-services.md) to reproduce checks and record results with the PR or release evidence, separately from these maintained docs.
 
-See [Workspace architecture](./agent-workspace.md), [Workspace security](./agent-workspace-security.md), [deployment](../agent-workspace-deployment.md), [Workspace E2E](../e2e-test-cases/agent-workspace.md) and the [design reconciliation proposal](../../investigations/3950-llm-design-reconciliation-proposal.md).
+See [Workspace architecture](./agent-workspace.md), [Workspace security](./agent-workspace-security.md), [deployment](../agent-workspace-deployment.md) and [Workspace E2E](../e2e-test-cases/agent-workspace.md).

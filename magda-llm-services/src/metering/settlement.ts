@@ -97,30 +97,27 @@ export class LoggingUsageSink implements UsageSink {
 }
 
 export interface UsageEstimateConfig {
-    /** Request body bytes per estimated input token (default 6; JSON-heavy DSH evidence). */
+    /** Provisional bytes/token policy for both request and visible output bytes (default 5). */
     bytesPerToken: number;
     /** Fallback output tokens when visible output could not be observed. */
     outputTokens: number;
     /** Optional per-alias override of the fallback output tokens. */
     outputTokensByModel: Readonly<Record<string, number>>;
-    /** Hidden/reasoning allowance added to observed output (default 256). */
-    outputAllowanceTokens: number;
-    /** Discount on unobserved input + allowance for incomplete attempts (default 0.25). */
+    /** Provisional factor on input + fallback for incomplete attempts (default 0.25). */
     incompleteFactor: number;
 }
 
 export const DEFAULT_USAGE_ESTIMATE: UsageEstimateConfig = {
-    bytesPerToken: 6,
+    bytesPerToken: 5,
     outputTokens: 4096,
     outputTokensByModel: {},
-    outputAllowanceTokens: 256,
     incompleteFactor: 0.25
 };
 
 /**
- * METER-4: observed output is never discounted. Input and hidden/fallback
- * output are discounted for incomplete attempts. This is a configurable PoC
- * heuristic, not a tokenizer or provider billing reconciliation.
+ * METER-4: visible output is never discounted and has no extra allowance.
+ * Only when no visible output was seen is the output fallback added to input.
+ * These provisional policy defaults control soft budgets, not provider billing.
  */
 export function estimateTokens(
     requestBodyBytes: number,
@@ -141,9 +138,7 @@ export function estimateTokens(
     const visible = observation.outputObserved
         ? Math.ceil((observation.outputBytes ?? 0) / config.bytesPerToken)
         : 0;
-    const allowance = observation.outputObserved
-        ? config.outputAllowanceTokens
-        : output;
+    const fallback = observation.outputObserved ? 0 : output;
     const factor =
         observation.completedNormally === false ? config.incompleteFactor : 1;
     return Math.min(
@@ -151,7 +146,7 @@ export function estimateTokens(
         visible +
             Math.ceil(
                 (Math.ceil(requestBodyBytes / config.bytesPerToken) +
-                    allowance) *
+                    fallback) *
                     factor
             )
     );
@@ -187,7 +182,6 @@ export function parseUsageEstimateConfig(
         bytesPerToken: DEFAULT_USAGE_ESTIMATE.bytesPerToken,
         outputTokens: DEFAULT_USAGE_ESTIMATE.outputTokens,
         outputTokensByModel: {},
-        outputAllowanceTokens: DEFAULT_USAGE_ESTIMATE.outputAllowanceTokens,
         incompleteFactor: DEFAULT_USAGE_ESTIMATE.incompleteFactor
     };
     if (env.USAGE_ESTIMATE_BYTES_PER_TOKEN) {
@@ -200,12 +194,6 @@ export function parseUsageEstimateConfig(
         config.outputTokens = nonNegativeInteger(
             Number(env.USAGE_ESTIMATE_OUTPUT_TOKENS),
             "USAGE_ESTIMATE_OUTPUT_TOKENS"
-        );
-    }
-    if (env.USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS) {
-        config.outputAllowanceTokens = nonNegativeInteger(
-            Number(env.USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS),
-            "USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS"
         );
     }
     if (env.USAGE_ESTIMATE_INCOMPLETE_FACTOR) {

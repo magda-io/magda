@@ -4,7 +4,7 @@ This **opt-in API integration harness** connects the real current-source Authori
 
 It complements, rather than replaces, the focused service/policy suites. It does not qualify browser/UI/Gateway/DSH integration or real provider compatibility.
 
-The separate, optional [live browser smoke](./live-browser-smoke.cjs) **does** access a deployment and sends one billable provider request. Its environment setup, recorded live metadata and the combined PASS/FAIL/SKIPPED matrix are in the [local qualification report](../../../docs/docs/e2e-test-cases/llm-services.md). The safety/isolation guarantees below apply to `run.mjs`, not that separate operator-invoked live check.
+The separate, optional [live browser smoke](./live-browser-smoke.cjs) **does** access a deployment and sends one billable provider request. Its setup and the fresh-install smoke are in the reusable [LLM Services test procedure](../../../docs/docs/e2e-test-cases/llm-services.md). Keep dated results and generated evidence outside tracked source, with the PR or release evidence. The safety/isolation guarantees below apply to `run.mjs`, not that separate operator-invoked live check.
 
 ## Run
 
@@ -35,7 +35,7 @@ HARNESS_EXISTING_EVIDENCE_FILE=/tmp/magda-3945-existing.json \
   node magda-llm-services/test/integration/run.mjs --existing-tests
 ```
 
-The companion uses a programmatic Mocha file list (no package-config spec expansion) and a metadata-only reporter; raw service logs and assertion payloads are suppressed. Pending/skipped tests make this command fail rather than inflate a pass claim. Existing service tests often deliberately fake Auth/provider behavior, whereas the new 17-group qualification suite always uses the real local Auth API/OPA.
+The companion uses a programmatic Mocha file list (no package-config spec expansion) and a metadata-only reporter; raw service logs and assertion payloads are suppressed. Pending/skipped tests make this command fail rather than inflate a pass claim. Existing service tests often deliberately fake Auth/provider behavior, whereas the integration suite uses the real local Auth API/OPA.
 
 A nonzero exit means setup, an assertion, or cleanup failed; no unavailable-service skip is counted as a pass. A `harness-summary` contains each named assertion group, durations, pass/fail counts, revision, topology, image IDs, and limitations. The optional existing-test evidence also records pass/fail/pending counts per file. The last `harness-cleanup` verifies container removal separately from the summary.
 
@@ -79,6 +79,6 @@ The 4-second TTL keeps the suite practical and exercises the actual clock/cache,
 - No outage injection, commit-acknowledgement loss, create/delete compensation races, concurrent attach/delete, lost permission re-creation, concurrent ledger upserts, midnight/DST/month/week transitions, SDK retry integration or all usage-report variants. Existing focused tests remain important; run them separately with their documented dependency setup.
 - No newly seeded or inherited constraints are assumed: API permission fixtures use **snake_case** flags and verify the flags returned by Auth API, because camelCase request flags can silently create unconstrained permissions.
 
-The broader qualification work is tracked separately: [fresh v8 install/full browser and recovery #3972](https://github.com/magda-io/magda/issues/3972), [provider-specific qualification #3971](https://github.com/magda-io/magda/issues/3971), [unbounded-profile ledger-read behavior / USE-10 #3969](https://github.com/magda-io/magda/issues/3969), [multi-replica/durable settlement #3970](https://github.com/magda-io/magda/issues/3970), and [DSH bounded title retries/shutdown cancellation #38](https://github.com/magda-io/dsh-fork/issues/38). This harness does not close those follow-ups.
+For deployment validation, follow the [fresh-install smoke](../../../docs/docs/e2e-test-cases/llm-services.md#3-fresh-install-smoke): it checks actual migration/database-login packaging, stock grants and one authorized invocation without expanding into an exhaustive new browser/accessibility/recovery campaign. Only the tested OpenAI Responses streaming route is provider-qualified; fixture checks here do not establish other provider support.
 
-Latest design reviewed from `git show origin/design/3838-llm-profiles-soft-usage-limits:docs/design/agent-workspace/llm-access-profiles.md` (branch tip e1ce44ba4a3915f22ca8015661c7c49a77b9cf61 at implementation time). Requirements in that design, not the older root handoff examples' particular cluster IDs or credentials, define the intended assertions.
+The [maintained architecture](../../../docs/docs/architecture/llm-services.md) describes the accepted fail-closed read behavior and process-local duplicate/write-gate limits. Record actual outcomes separately rather than committing run-specific reports or metadata JSON.

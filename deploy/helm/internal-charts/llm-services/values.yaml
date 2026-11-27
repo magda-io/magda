@@ -45,18 +45,17 @@ usage:
   # deployment without a plan: existing dates aren't reinterpreted.
   timeZone: Australia/Sydney
   estimate:
-    # -- When a model response has no valid final usage (missing, unreadable, or
-    # cut short by a disconnect or timeout), it's charged an estimate:
-    # Input is ceil(request body bytes / bytesPerToken). Visible text/tool
-    # output uses the same ratio plus outputAllowanceTokens; otherwise use
-    # outputTokens. Incomplete attempts discount input and allowance only.
-    # Error answers (any non-2xx status) cost nothing.
-    bytesPerToken: 6
-    # -- Fallback output tokens when visible output cannot be observed.
+    # -- Provisional bytes-per-token policy for soft budget control, not a
+    # measured tokenizer or billing value. Used for both request and visible
+    # text/tool output bytes. With visible output, no extra allowance is added.
+    # Otherwise outputTokens (or its per-model override) is the fallback.
+    # Estimate = visible + ceil((input + fallbackIfNoVisibleOutput) * factor).
+    # Valid final usage is measured unchanged; non-2xx answers cost nothing.
+    bytesPerToken: 5
+    # -- Provisional fallback tokens only when no visible output was observed.
     outputTokens: 4096
-    # -- Hidden/reasoning token allowance added when visible output is observed.
-    outputAllowanceTokens: 256
-    # -- Factor (0 to 1) on unobserved input and allowance for incomplete attempts.
+    # -- Provisional factor (0 to 1) on input plus fallback for incomplete attempts.
+    # Visible output is never discounted. Normally completed responses use 1.
     incompleteFactor: 0.25
     # -- Optional per-model-alias override of `outputTokens`, e.g. `{"my-alias": 8192}`.
     outputTokensByModel: {}
