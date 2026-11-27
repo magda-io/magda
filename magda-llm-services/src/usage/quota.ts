@@ -2,6 +2,7 @@
 // DATA-3). Pure functions: the admission query (#3941) and the usage pages
 // (#3949) both use them on rows read from SQL.
 
+import { addDays, LocalDate, UsagePeriods } from "./periods.js";
 /** A profile's per-user, per-alias token limits. `null` means unlimited. */
 export interface ProfileLimits {
     allowedDailyTokens: number | null;
@@ -102,41 +103,63 @@ const PERIOD_LIMIT: Record<PeriodName, keyof ProfileLimits> = {
     month: "allowedMonthlyTokens"
 };
 
+/** Later than any real date: a profile that never admits again. */
+const NEVER = "9999-12-31";
+
+/**
+ * The first local date on which a profile admits again (USE-5), given the
+ * periods `usage` was summed over: the latest end of its used-up periods,
+ * since each must reset. `""` when it admits now, and `NEVER` when a limit
+ * is `0` (DATA-3), which blocks every period.
+ */
+export function admitsAgainOn(
+    profile: ProfileLimits,
+    usage: PeriodUsage,
+    periods: UsagePeriods
+): LocalDate {
+    const ends: Record<PeriodName, LocalDate> = {
+        day: addDays(periods.day, 1),
+        week: periods.weekEnd,
+        month: periods.monthEnd
+    };
+    let date = "";
+    for (const period of PERIODS) {
+        const limit = profile[PERIOD_LIMIT[period]];
+        if (limit === null) continue;
+        if (limit === 0) return NEVER;
+        if (usage[period] >= limit && ends[period] > date) {
+            date = ends[period];
+        }
+    }
+    return date;
+}
+
 /**
  * The profile that gives the overall remaining quota (USE-8): the most
- * remaining, unlimited first. When every profile is used up, the one whose
- * longest used-up period is shortest, i.e. the first to admit again.
+ * remaining, unlimited first. When every profile is used up, the one that
+ * admits again first, by its actual reset dates (`admitsAgainOn`).
  */
 export function bestProfile<T extends ProfileLimits>(
     profiles: T[],
-    usage: PeriodUsage
+    usage: PeriodUsage,
+    periods: UsagePeriods
 ): T | undefined {
-    const rank = (profile: T) => {
-        const remaining = profileRemaining(profile, usage);
-        const exhausted = PERIODS.filter((period) => {
-            const limit = profile[PERIOD_LIMIT[period]];
-            return limit !== null && usage[period] >= limit;
-        });
-        return {
-            remaining: remaining === null ? Infinity : remaining,
-            // 0 = day, 1 = week, 2 = month; -1 when nothing is used up
-            blockedUntil: exhausted.length
-                ? PERIODS.indexOf(exhausted[exhausted.length - 1])
-                : -1
-        };
-    };
     let best: T | undefined;
-    let bestRank: ReturnType<typeof rank> | undefined;
+    let bestRemaining = -1;
+    let bestDate = NEVER;
     for (const profile of profiles) {
-        const current = rank(profile);
+        const limit = profileRemaining(profile, usage);
+        const remaining = limit === null ? Infinity : limit;
+        const date =
+            remaining > 0 ? "" : admitsAgainOn(profile, usage, periods);
         if (
-            !bestRank ||
-            current.remaining > bestRank.remaining ||
-            (current.remaining === bestRank.remaining &&
-                current.blockedUntil < bestRank.blockedUntil)
+            !best ||
+            remaining > bestRemaining ||
+            (remaining === bestRemaining && date < bestDate)
         ) {
             best = profile;
-            bestRank = current;
+            bestRemaining = remaining;
+            bestDate = date;
         }
     }
     return best;
@@ -152,9 +175,10 @@ export function bestProfile<T extends ProfileLimits>(
  */
 export function periodRemainingQuota(
     profiles: ProfileLimits[],
-    usage: PeriodUsage
+    usage: PeriodUsage,
+    periods: UsagePeriods
 ): Record<PeriodName, RemainingQuota> {
-    const best = bestProfile(profiles, usage);
+    const best = bestProfile(profiles, usage, periods);
     const result = {} as Record<PeriodName, RemainingQuota>;
     for (const period of PERIODS) {
         if (!best) {

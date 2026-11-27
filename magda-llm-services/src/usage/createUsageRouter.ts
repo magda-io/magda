@@ -26,7 +26,10 @@ import {
     RemainingQuota
 } from "./quota.js";
 import { addDays, isLocalDate } from "./periods.js";
-import UserDirectory, { UserDetails } from "./UserDirectory.js";
+import UserDirectory, {
+    MAX_USER_SEARCH_MATCHES,
+    UserDetails
+} from "./UserDirectory.js";
 
 export const USAGE_READ_OPERATION = "llm/usage/read";
 
@@ -274,7 +277,10 @@ export default function createUsageRouter(options: UsageRouterOptions) {
             sendError(res, 401, "Magda authentication required");
             return;
         }
-        if (result.status === "invalid_session") {
+        if (
+            result.status === "invalid_session" ||
+            result.status === "unknown_user"
+        ) {
             sendError(res, 401, "Invalid Magda session");
             return;
         }
@@ -328,11 +334,17 @@ export default function createUsageRouter(options: UsageRouterOptions) {
      * is made with an internal session **for that user**: it's only read,
      * after the caller passed `llm/usage/read`. An unknown user has no access.
      */
-    async function resolveUser(userId: string): Promise<Caller> {
+    async function resolveUser(
+        userId: string
+    ): Promise<{ subject: Caller; deleted: boolean }> {
         const result = await callers.resolve(buildJwt(jwtSecret, userId));
         return result.status === "ok"
-            ? result.caller
-            : { userId, access: { kind: "none" } };
+            ? { subject: result.caller, deleted: false }
+            : {
+                  // a deleted user keeps their usage history, without access
+                  subject: { userId, access: { kind: "none" } },
+                  deleted: result.status === "unknown_user"
+              };
     }
 
     /** API-7 / API-8 report: totals, per-alias remaining quota (USE-8). */
@@ -396,7 +408,8 @@ export default function createUsageRouter(options: UsageRouterOptions) {
                     ),
                     periodRemaining: periodRemainingQuota(
                         eligibility.profiles,
-                        eligibility.usage
+                        eligibility.usage,
+                        summary.periods
                     ),
                     usage
                 });
@@ -478,12 +491,14 @@ export default function createUsageRouter(options: UsageRouterOptions) {
             const { offset, limit } = pagination(req, 20, 100);
             let userIds: string[] | undefined;
             let userSearch: "id" | "name" | undefined;
+            let searchTruncated = false;
             if (q !== undefined && isUuid(q)) {
                 userIds = [q.toLowerCase()];
                 userSearch = "id";
             } else if (q !== undefined) {
                 const found = await directory.search(q, token);
                 userIds = found.users.map((user) => user.id);
+                searchTruncated = found.truncated;
                 userSearch = "name";
             }
             const page = await ledger!.usersWithUsage({
@@ -514,7 +529,14 @@ export default function createUsageRouter(options: UsageRouterOptions) {
                     ...item,
                     user: names.get(item.userId) ?? { id: item.userId }
                 })),
-                total
+                total,
+                // more users match the name or email than were checked
+                ...(searchTruncated
+                    ? {
+                          searchTruncated,
+                          searchMaxMatches: MAX_USER_SEARCH_MATCHES
+                      }
+                    : {})
             });
         })
     );
@@ -534,11 +556,14 @@ export default function createUsageRouter(options: UsageRouterOptions) {
         handle("usage-user", async (req, res) => {
             const userId = targetUserId(req);
             const token = res.locals.callerToken as string;
-            const [subject, names] = await Promise.all([
+            const [{ subject, deleted }, names] = await Promise.all([
                 resolveUser(userId),
                 directory.describe([userId], token)
             ]);
-            const user: UserDetails = names.get(userId) ?? { id: userId };
+            const user: UserDetails & { deleted?: true } = {
+                ...(names.get(userId) ?? { id: userId }),
+                ...(deleted ? { deleted: true as const } : {})
+            };
             res.json({ user, ...(await usageReport(subject)) });
         })
     );

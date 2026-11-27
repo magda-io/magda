@@ -39,7 +39,12 @@ export interface Caller {
 export type ResolveResult =
     | { status: "ok"; caller: Caller }
     | { status: "unauthenticated" }
-    | { status: "invalid_session" };
+    | { status: "invalid_session" }
+    /**
+     * A valid session for a user who no longer exists (the Auth API's
+     * `whoami` answers `404`): not an outage.
+     */
+    | { status: "unknown_user" };
 
 /** The Auth API couldn't answer: not an access decision (API-11: 503). */
 export class AuthApiUnavailableError extends Error {}
@@ -118,6 +123,7 @@ export default class CallerAccessResolver {
         }
         const access = await this.lookup(userId, token);
         if (access === "invalid_session") return { status: "invalid_session" };
+        if (access === "unknown_user") return { status: "unknown_user" };
         if (this.cacheMs > 0) this.store(userId, access, now);
         return { status: "ok", caller: { userId, access } };
     }
@@ -140,15 +146,18 @@ export default class CallerAccessResolver {
     private async lookup(
         userId: string,
         token: string
-    ): Promise<InvokeAccess | "invalid_session"> {
+    ): Promise<InvokeAccess | "invalid_session" | "unknown_user"> {
         const base = this.options.authApiUrl.replace(/\/$/, "");
         let user: { id?: string; roles?: Array<{ id?: string }> } | undefined;
+        let missing = false;
         try {
             const response = await fetch(`${base}/public/users/whoami`, {
                 headers: { "X-Magda-Session": token },
                 signal: AbortSignal.timeout(10_000)
             });
-            if (!response.ok && response.status !== 401) {
+            // 404: the session names a user who has been deleted
+            missing = response.status === 404;
+            if (!response.ok && response.status !== 401 && !missing) {
                 throw new Error(
                     `Session verification failed with HTTP ${response.status}`
                 );
@@ -159,6 +168,7 @@ export default class CallerAccessResolver {
                 error instanceof Error ? error.message : String(error)
             );
         }
+        if (missing) return "unknown_user";
         if (!user || user.id !== userId) return "invalid_session";
         // AUTH-10: administrators hold the OPA override; an unconstrained
         // invoke grant also gives an unconditional `true`, so tell them apart

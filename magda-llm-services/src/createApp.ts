@@ -168,7 +168,10 @@ export default function createApp(config: LlmServicesConfig) {
             sendError(res, 401, "Magda authentication required");
             return;
         }
-        if (result.status === "invalid_session") {
+        if (
+            result.status === "invalid_session" ||
+            result.status === "unknown_user"
+        ) {
             sendError(res, 401, "Invalid Magda session");
             return;
         }

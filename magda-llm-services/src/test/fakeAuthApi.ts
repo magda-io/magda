@@ -58,7 +58,12 @@ export async function startFakeAuthApi() {
                 if (user?.whoamiStatus) {
                     send(user.whoamiStatus, {});
                 } else if (!user) {
-                    send(401, {});
+                    // as the real Auth API does for a deleted user
+                    send(404, {
+                        isError: true,
+                        errorCode: 404,
+                        errorMessage: "Not Found User"
+                    });
                 } else {
                     send(200, { id: userId, roles: user.roles ?? [] });
                 }
@@ -95,8 +100,16 @@ export async function startFakeAuthApi() {
                         id: candidateId,
                         displayName: candidate.displayName,
                         email: candidate.email
-                    }));
-                send(200, found);
+                    }))
+                    // as the Auth API: by display name, paged
+                    .sort((a, b) =>
+                        (a.displayName as string).localeCompare(
+                            b.displayName as string
+                        )
+                    );
+                const offset = Number(query.get("offset") || 0);
+                const limit = Number(query.get("limit") || 500);
+                send(200, found.slice(offset, offset + limit));
                 return;
             }
             if (req.url?.startsWith("/v0/opa/decision/")) {

@@ -12,6 +12,7 @@ import {
     profileAdmits,
     profileRemaining,
     ProfileLimits,
+    admitsAgainOn,
     bestProfile,
     periodRemainingQuota,
     remainingQuota
@@ -179,13 +180,18 @@ describe("quota maths (#3838 USE-5, USE-8, DATA-3)", () => {
         });
     });
 
+    // Monday 30 November 2026: the day ends 1 Dec, the month 1 Dec, the ISO
+    // week 7 Dec.
+    const NOV30 = periodsOfLocalDate("2026-11-30");
+
     it("gives per-period remaining under the profile that gives the overall remaining", () => {
         const usage = { day: 60, week: 200, month: 900 };
         // A: min(40, 100) = 40; B: 50 → B gives the overall 50
         assert.deepEqual(
             periodRemainingQuota(
                 [limits(100, null, 1000), limits(null, 250, null)],
-                usage
+                usage,
+                NOV30
             ),
             {
                 day: { status: "unlimited" },
@@ -195,37 +201,51 @@ describe("quota maths (#3838 USE-5, USE-8, DATA-3)", () => {
         );
         // an unlimited profile wins: every period is unlimited
         assert.deepEqual(
-            periodRemainingQuota([limits(100), limits(null)], usage),
+            periodRemainingQuota([limits(100), limits(null)], usage, NOV30),
             {
                 day: { status: "unlimited" },
                 week: { status: "unlimited" },
                 month: { status: "unlimited" }
             }
         );
-        assert.deepEqual(periodRemainingQuota([], usage).day, {
+        assert.deepEqual(periodRemainingQuota([], usage, NOV30).day, {
             status: "no_eligible_profile"
         });
     });
 
-    it("when every profile is used up, shows the one that admits again first", () => {
+    it("when every profile is used up, shows the one that admits again first, by reset date", () => {
         const usage = { day: 60, week: 200, month: 900 };
-        const monthly = limits(null, null, 500);
-        const daily = limits(50, 1000, null);
+        const weekly = limits(null, 150, null); // resets 7 Dec
+        const monthly = limits(null, null, 500); // resets 1 Dec
+        const zero = limits(0, null, null); // never admits
+        assert.equal(admitsAgainOn(weekly, usage, NOV30), "2026-12-07");
+        assert.equal(admitsAgainOn(monthly, usage, NOV30), "2026-12-01");
+        assert.equal(admitsAgainOn(zero, usage, NOV30), "9999-12-31");
+        // both a weekly and a monthly limit used up: the later reset
+        assert.equal(
+            admitsAgainOn(limits(null, 150, 500), usage, NOV30),
+            "2026-12-07"
+        );
         for (const profiles of [
-            [monthly, daily],
-            [daily, monthly]
+            [weekly, monthly, zero],
+            [zero, monthly, weekly]
         ]) {
-            assert.equal(bestProfile(profiles, usage), daily);
-            assert.deepEqual(periodRemainingQuota(profiles, usage), {
-                day: { status: "exhausted", remainingTokens: 0 },
-                week: { status: "limited", remainingTokens: 800 },
-                month: { status: "unlimited" }
+            assert.equal(bestProfile(profiles, usage, NOV30), monthly);
+            assert.deepEqual(periodRemainingQuota(profiles, usage, NOV30), {
+                day: { status: "unlimited" },
+                week: { status: "unlimited" },
+                month: { status: "exhausted", remainingTokens: 0 }
             });
         }
-        assert.deepEqual(periodRemainingQuota([limits(0, 0, 0)], usage), {
+        // mid-month, the weekly reset comes first
+        const nov18 = periodsOfLocalDate("2026-11-18");
+        assert.equal(bestProfile([monthly, weekly], usage, nov18), weekly);
+        // a 0 limit loses even to a profile used up for the whole month
+        assert.equal(bestProfile([zero, monthly], usage, nov18), monthly);
+        assert.deepEqual(periodRemainingQuota([zero], usage, NOV30), {
             day: { status: "exhausted", remainingTokens: 0 },
-            week: { status: "exhausted", remainingTokens: 0 },
-            month: { status: "exhausted", remainingTokens: 0 }
+            week: { status: "unlimited" },
+            month: { status: "unlimited" }
         });
     });
 });

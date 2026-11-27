@@ -11,6 +11,7 @@ import createApp, { LlmServicesConfig } from "../createApp.js";
 import ServedModels from "../access/ServedModels.js";
 import { addDays, periodsAt } from "../usage/periods.js";
 import { parseNoAccessHelp } from "../usage/createUsageRouter.js";
+import UserDirectory from "../usage/UserDirectory.js";
 import { createTestDatabase } from "./testDb.js";
 import { ADMIN_ROLE, FakeAuthApi, startFakeAuthApi } from "./fakeAuthApi.js";
 
@@ -613,6 +614,7 @@ describe("usage API (integration, #3838 #3949)", function (this: Mocha.Suite) {
                 assert.equal(unknown.status, 200);
                 assert.equal(unknown.body.access, "none");
                 assert.equal(unknown.body.totals.allTime.tokens, 0);
+                assert.equal(unknown.body.user.deleted, true);
                 const bad = await get("/v0/usage/users/not-a-uuid", VIEWER);
                 assert.equal(bad.status, 400);
             });
@@ -625,6 +627,52 @@ describe("usage API (integration, #3838 #3949)", function (this: Mocha.Suite) {
                         )
                 )
             );
+        });
+
+        it("reports a deleted user's history, without current access (whoami 404)", async () => {
+            const DELETED = "00000000-0000-4000-8000-0000000000de";
+            await seed({
+                id: PROFILE_A,
+                allowedModels: ["shared-model"],
+                daily: 100
+            });
+            await useTokens(DELETED, "shared-model", today().day, {
+                input: 40,
+                estimated: 2
+            });
+            await useTokens(
+                DELETED,
+                "shared-model",
+                addDays(today().monthStart, -1),
+                { input: 500 }
+            );
+            authApi.users.get(VIEWER)!.canReadUsers = true;
+            await withApp(async (get) => {
+                const res = await get(`/v0/usage/users/${DELETED}`, VIEWER);
+                assert.equal(res.status, 200, res.text);
+                assert.deepEqual(res.body.user, { id: DELETED, deleted: true });
+                assert.equal(res.body.access, "none");
+                assert.equal(res.body.totals.allTime.tokens, 542);
+                assert.equal(res.body.totals.day.estimatedTokens, 2);
+                assert.deepEqual(res.body.models[0].remaining, {
+                    status: "no_eligible_profile"
+                });
+                const daily = await get(
+                    `/v0/usage/users/${DELETED}/daily`,
+                    VIEWER
+                );
+                assert.equal(daily.body.total, 2);
+                // still listed with the other users with usage
+                const list = await get("/v0/usage/users", VIEWER);
+                assert.ok(
+                    list.body.items.some((i: any) => i.userId === DELETED)
+                );
+                // the deleted user's own old session is refused, not an outage
+                for (const path of ["/v0/usage/me", "/v0/v1/models"]) {
+                    const own = await get(path, DELETED);
+                    assert.equal(own.status, 401, path);
+                }
+            });
         });
 
         it("lists users with usage, most tokens first, with names only for viewers who may read users", async () => {
@@ -682,6 +730,29 @@ describe("usage API (integration, #3838 #3949)", function (this: Mocha.Suite) {
             assert.ok(
                 authApi.calls.users.every((call) => call.userId === VIEWER)
             );
+        });
+
+        it("finds a matching user with usage however far down the name order (API-12)", async () => {
+            // 150 matching users without usage sort before the one with usage
+            for (let i = 0; i < 150; i++) {
+                authApi.users.set(
+                    `00000000-0000-4000-8000-1${String(i).padStart(11, "0")}`,
+                    { displayName: `Analyst ${String(i).padStart(3, "0")}` }
+                );
+            }
+            const LAST = "00000000-0000-4000-8000-0000000000aa";
+            authApi.users.set(LAST, { displayName: "Analyst zz" });
+            await useTokens(LAST, "shared-model", today().day, { input: 5 });
+            authApi.users.get(VIEWER)!.canReadUsers = true;
+            await withApp(async (get) => {
+                const res = await get("/v0/usage/users?q=analyst", VIEWER);
+                assert.equal(res.status, 200, res.text);
+                assert.deepEqual(
+                    res.body.items.map((i: any) => i.userId),
+                    [LAST]
+                );
+                assert.equal(res.body.searchTruncated, undefined);
+            });
         });
 
         it("still answers with IDs when the user lookup fails", async () => {
@@ -797,5 +868,40 @@ describe("parseNoAccessHelp (DEP-3)", () => {
         assert.throws(() =>
             parseNoAccessHelp({ NO_ACCESS_HELP_TEXT: "x".repeat(1001) })
         );
+    });
+});
+
+describe("UserDirectory search (API-12)", () => {
+    let authApi: FakeAuthApi;
+    const VIEWER = "00000000-0000-4000-8000-0000000000ee";
+    const token = jwt.sign({ userId: VIEWER }, "any", { algorithm: "HS256" });
+
+    beforeEach(async () => {
+        authApi = await startFakeAuthApi();
+        authApi.users.set(VIEWER, { canReadUsers: true });
+        for (const name of ["Ann", "Bob", "Cat"]) {
+            authApi.users.set(`00000000-0000-4000-8000-00000000${name}`, {
+                displayName: `${name} Analyst`
+            });
+        }
+    });
+
+    afterEach(async () => {
+        await authApi.close();
+    });
+
+    it("reads every match up to the cap, and says when more match", async () => {
+        const directory = new UserDirectory({ authApiUrl: authApi.url });
+        let found = await directory.search("analyst", token, 3);
+        assert.deepEqual(
+            found.users.map((u) => u.displayName),
+            ["Ann Analyst", "Bob Analyst", "Cat Analyst"]
+        );
+        assert.equal(found.truncated, false);
+        found = await directory.search("analyst", token, 2);
+        assert.equal(found.users.length, 2);
+        assert.equal(found.truncated, true);
+        // every request is made with the caller's session
+        assert.ok(authApi.calls.users.every((c) => c.userId === VIEWER));
     });
 });

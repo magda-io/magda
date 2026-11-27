@@ -14,7 +14,14 @@ export interface UserSearchResult {
     /** `false` when the caller may not read or search users (API-12). */
     available: boolean;
     users: UserDetails[];
+    /** More users match than `maxMatches`: only the first were returned. */
+    truncated: boolean;
 }
+
+/** The Auth API's largest page (`MAX_PAGE_RECORD_NUMBER`). */
+const SEARCH_PAGE_SIZE = 500;
+/** How many name or email matches a User Usage search reads at most. */
+export const MAX_USER_SEARCH_MATCHES = 2000;
 
 export interface UserDirectoryOptions {
     /** The Auth API base URL, e.g. `http://authorization-api/v0`. */
@@ -122,14 +129,36 @@ export default class UserDirectory {
     async search(
         keyword: string,
         callerToken: string,
-        limit = 100
+        maxMatches = MAX_USER_SEARCH_MATCHES
     ): Promise<UserSearchResult> {
-        const users = await this.fetchUsers(
-            { keyword, limit: String(limit) },
+        // Every match the caller may read, page by page, up to `maxMatches`:
+        // the caller then keeps only the matches with usage, so a cap applied
+        // here first would silently miss users (the Auth API orders by name,
+        // not usage).
+        const users: UserDetails[] = [];
+        while (users.length < maxMatches) {
+            const limit = Math.min(SEARCH_PAGE_SIZE, maxMatches - users.length);
+            const page = await this.fetchUsers(
+                {
+                    keyword,
+                    offset: String(users.length),
+                    limit: String(limit)
+                },
+                callerToken
+            );
+            if (page === null) {
+                return { available: false, users: [], truncated: false };
+            }
+            users.push(...page);
+            if (page.length < limit) {
+                return { available: true, users, truncated: false };
+            }
+        }
+        // a full last page: see whether anything is left
+        const more = await this.fetchUsers(
+            { keyword, offset: String(users.length), limit: "1" },
             callerToken
         );
-        return users === null
-            ? { available: false, users: [] }
-            : { available: true, users };
+        return { available: true, users, truncated: !!more?.length };
     }
 }
