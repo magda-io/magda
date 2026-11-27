@@ -3,7 +3,15 @@ import {
     createAccessProfile,
     deleteAccessProfile,
     describeLlmServicesError,
+    describeUsageError,
     detachAccessProfileRole,
+    getMyDailyUsage,
+    getMyUsage,
+    getNoAccessHelp,
+    getUserDailyUsage,
+    getUserUsage,
+    listInvocableModels,
+    listUserUsage,
     getAccessProfile,
     getAvailableModels,
     isStaleRevisionError,
@@ -190,5 +198,65 @@ describe("LlmServicesApis", () => {
         expect(describeLlmServicesError(new TypeError("offline"))).toMatch(
             /Unable to reach LLM Services/
         );
+    });
+
+    it("calls the usage endpoints (API-7, API-8) and never sends a user ID for My Usage", async () => {
+        (global.fetch as jest.Mock).mockResolvedValue(
+            response(200, { items: [], total: 0 })
+        );
+        await getMyUsage();
+        await getMyDailyUsage({
+            model: "magda-agent-default",
+            from: "2026-11-01",
+            to: "",
+            offset: 10,
+            limit: 10
+        });
+        await listUserUsage({ q: " una ", offset: 0, limit: 20 });
+        await getUserUsage(id);
+        await getUserDailyUsage(id, { from: "2026-11-01" });
+        expect(
+            (global.fetch as jest.Mock).mock.calls.map((_, index) => {
+                const { url, method } = call(index);
+                return `${method} ${url.pathname}${url.search}`;
+            })
+        ).toEqual([
+            "GET /api/v0/llm/usage/me",
+            "GET /api/v0/llm/usage/me/daily?model=magda-agent-default&from=2026-11-01&offset=10&limit=10",
+            "GET /api/v0/llm/usage/users?q=una&offset=0&limit=20",
+            `GET /api/v0/llm/usage/users/${id}`,
+            `GET /api/v0/llm/usage/users/${id}/daily?from=2026-11-01`
+        ]);
+        expect(call().cache).toBe("no-store");
+    });
+
+    it("reads the invocable models and the no-access help", async () => {
+        (global.fetch as jest.Mock).mockResolvedValueOnce(
+            response(200, {
+                object: "list",
+                data: [{ id: "magda-agent-default" }, { id: 3 }]
+            })
+        );
+        expect(await listInvocableModels()).toEqual(["magda-agent-default"]);
+        expect(call().url.pathname).toBe("/api/v0/llm/v1/models");
+        (global.fetch as jest.Mock).mockResolvedValueOnce(
+            response(200, { noAccessHelp: { text: "Ask" } })
+        );
+        expect(await getNoAccessHelp()).toEqual({ text: "Ask" });
+        expect(call(1).url.pathname).toBe("/api/v0/llm/access-help");
+    });
+
+    it("explains usage errors", () => {
+        expect(
+            describeUsageError(new LlmServicesApiError("denied", 403))
+        ).toMatch(/permission to see other users/);
+        expect(
+            describeUsageError(
+                new LlmServicesApiError("x", 503, "llm_usage_unavailable")
+            )
+        ).toMatch(/accounting is temporarily unavailable/);
+        expect(
+            describeUsageError(new LlmServicesApiError("bad date", 400))
+        ).toMatch(/bad date/);
     });
 });

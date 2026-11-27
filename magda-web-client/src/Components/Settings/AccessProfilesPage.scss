@@ -38,6 +38,11 @@
         padding: 20px 0;
     }
 
+    .access-profiles-actions-cell .rs-table-cell-content {
+        display: flex;
+        align-items: center;
+    }
+
     .access-profile-tabs {
         margin-bottom: 15px;
     }

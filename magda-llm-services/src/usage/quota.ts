@@ -2,6 +2,7 @@
 // DATA-3). Pure functions: the admission query (#3941) and the usage pages
 // (#3949) both use them on rows read from SQL.
 
+import { addDays, LocalDate, UsagePeriods } from "./periods.js";
 /** A profile's per-user, per-alias token limits. `null` means unlimited. */
 export interface ProfileLimits {
     allowedDailyTokens: number | null;
@@ -90,4 +91,110 @@ export function remainingQuota(
     return best > 0
         ? { status: "limited", remainingTokens: best }
         : { status: "exhausted", remainingTokens: 0 };
+}
+
+export type PeriodName = keyof PeriodUsage;
+
+const PERIODS: PeriodName[] = ["day", "week", "month"];
+
+const PERIOD_LIMIT: Record<PeriodName, keyof ProfileLimits> = {
+    day: "allowedDailyTokens",
+    week: "allowedWeeklyTokens",
+    month: "allowedMonthlyTokens"
+};
+
+/** Later than any real date: a profile that never admits again. */
+const NEVER = "9999-12-31";
+
+/**
+ * The first local date on which a profile admits again (USE-5), given the
+ * periods `usage` was summed over: the latest end of its used-up periods,
+ * since each must reset. `""` when it admits now, and `NEVER` when a limit
+ * is `0` (DATA-3), which blocks every period.
+ */
+export function admitsAgainOn(
+    profile: ProfileLimits,
+    usage: PeriodUsage,
+    periods: UsagePeriods
+): LocalDate {
+    const ends: Record<PeriodName, LocalDate> = {
+        day: addDays(periods.day, 1),
+        week: periods.weekEnd,
+        month: periods.monthEnd
+    };
+    let date = "";
+    for (const period of PERIODS) {
+        const limit = profile[PERIOD_LIMIT[period]];
+        if (limit === null) continue;
+        if (limit === 0) return NEVER;
+        if (usage[period] >= limit && ends[period] > date) {
+            date = ends[period];
+        }
+    }
+    return date;
+}
+
+/**
+ * The profile that gives the overall remaining quota (USE-8): the most
+ * remaining, unlimited first. When every profile is used up, the one that
+ * admits again first, by its actual reset dates (`admitsAgainOn`).
+ */
+export function bestProfile<T extends ProfileLimits>(
+    profiles: T[],
+    usage: PeriodUsage,
+    periods: UsagePeriods
+): T | undefined {
+    let best: T | undefined;
+    let bestRemaining = -1;
+    let bestDate = NEVER;
+    for (const profile of profiles) {
+        const limit = profileRemaining(profile, usage);
+        const remaining = limit === null ? Infinity : limit;
+        const date =
+            remaining > 0 ? "" : admitsAgainOn(profile, usage, periods);
+        if (
+            !best ||
+            remaining > bestRemaining ||
+            (remaining === bestRemaining && date < bestDate)
+        ) {
+            best = profile;
+            bestRemaining = remaining;
+            bestDate = date;
+        }
+    }
+    return best;
+}
+
+/**
+ * USE-8 per period, for the usage pages: each period's remaining under the
+ * profile that gives the overall remaining (`bestProfile`), so the figures
+ * explain the overall number and show which limit binds. A period that
+ * profile doesn't limit is unlimited. Profiles combine as OR, so a
+ * period-by-period maximum across profiles would not describe any limit
+ * admission applies.
+ */
+export function periodRemainingQuota(
+    profiles: ProfileLimits[],
+    usage: PeriodUsage,
+    periods: UsagePeriods
+): Record<PeriodName, RemainingQuota> {
+    const best = bestProfile(profiles, usage, periods);
+    const result = {} as Record<PeriodName, RemainingQuota>;
+    for (const period of PERIODS) {
+        if (!best) {
+            result[period] = { status: "no_eligible_profile" };
+            continue;
+        }
+        const limit = best[PERIOD_LIMIT[period]];
+        if (limit === null) {
+            result[period] = { status: "unlimited" };
+            continue;
+        }
+        const remaining = Math.max(0, limit - usage[period]);
+        result[period] =
+            remaining > 0
+                ? { status: "limited", remainingTokens: remaining }
+                : { status: "exhausted", remainingTokens: 0 };
+    }
+    return result;
 }

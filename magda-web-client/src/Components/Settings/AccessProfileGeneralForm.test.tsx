@@ -76,12 +76,14 @@ jest.mock("api-clients/LlmServicesApis", () => {
 // eslint-disable-next-line import/first
 import AccessProfileGeneralForm, {
     deleteConfirmMessage,
+    formatLimit,
     LIMITS_HELP,
     ORG_UNIT_EXAMPLE,
     ORG_UNIT_HELP,
     PUBLIC_HELP,
     STALE_MESSAGE,
     toFormState,
+    unformatLimit,
     validateForm
 } from "./AccessProfileGeneralForm";
 // eslint-disable-next-line import/first
@@ -235,6 +237,59 @@ function labelled(text: string) {
     return label.querySelector("input") as HTMLInputElement;
 }
 
+describe("limit formatting", () => {
+    it("groups digits for reading, strips them for editing, and accepts them when saving", () => {
+        expect(formatLimit("32343232")).toBe("32,343,232");
+        expect(formatLimit(" 300,000,000 ")).toBe("300,000,000");
+        expect(formatLimit("0")).toBe("0");
+        expect(formatLimit("")).toBe("");
+        expect(formatLimit("1.5")).toBe("1.5");
+        expect(unformatLimit("32,343,232")).toBe("32343232");
+        expect(
+            toFormState({ ...profile, allowedMonthlyTokens: 300000000 } as any)
+                .allowedMonthlyTokens
+        ).toBe("300,000,000");
+        const save = (allowedMonthlyTokens: string) =>
+            validateForm({
+                ...toFormState(),
+                name: "Finance",
+                allowedMonthlyTokens
+            });
+        expect(save("300,000,000").fields?.allowedMonthlyTokens).toBe(
+            300000000
+        );
+        expect(save("  ").fields?.allowedMonthlyTokens).toBeNull();
+    });
+
+    it("never silently changes a malformed limit: it's invalid, and only blank is unlimited", () => {
+        for (const typed of [
+            "1,5",
+            ",",
+            "1,,000",
+            ",100",
+            "100,",
+            "1,0000",
+            "12,34,567",
+            "1 000",
+            "1_000",
+            "-1"
+        ]) {
+            const result = validateForm({
+                ...toFormState(),
+                name: "Finance",
+                allowedDailyTokens: typed
+            });
+            expect([typed, result.fields]).toEqual([typed, undefined]);
+            expect(result.errors.allowedDailyTokens).toBe(
+                "Enter a whole number of tokens, or leave it blank."
+            );
+            // left as typed, so the error is visible
+            expect(formatLimit(typed)).toBe(typed);
+            expect(unformatLimit(typed)).toBe(typed);
+        }
+    });
+});
+
 describe("validateForm", () => {
     it("maps blank limits to unlimited and keeps 0 as blocking", () => {
         const form = {
@@ -312,6 +367,21 @@ describe("AccessProfileGeneralForm", () => {
         expect(text).toContain(
             "New models the operator adds become available under *."
         );
+    });
+
+    it("shows limits with digit groups, and plain digits while editing", async () => {
+        await render({ profile });
+        const daily = field("access-profile-allowedDailyTokens");
+        expect(daily.value).toBe("100,000");
+        act(() => {
+            daily.focus();
+        });
+        expect(daily.value).toBe("100000");
+        type(daily, "300000000");
+        act(() => {
+            daily.blur();
+        });
+        expect(daily.value).toBe("300,000,000");
     });
 
     it("creates a profile with * and limits", async () => {

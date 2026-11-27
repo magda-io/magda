@@ -65,7 +65,7 @@ export function toFormState(profile?: AccessProfile): FormState {
         (profile.allowedModels.length === 1 &&
             profile.allowedModels[0] === ALL_MODELS);
     const limit = (value?: number | null) =>
-        value === null || value === undefined ? "" : String(value);
+        value === null || value === undefined ? "" : value.toLocaleString("en");
     return {
         name: profile?.name || "",
         description: profile?.description || "",
@@ -82,15 +82,45 @@ export function toFormState(profile?: AccessProfile): FormState {
 
 export type FormErrors = Partial<Record<keyof FormState, string>>;
 
-function parseLimit(value: string): number | null | undefined {
+/**
+ * A limit's digits: plain (`32343232`) or grouped in threes with commas
+ * (`32,343,232`). Anything else, e.g. `1,5`, a lone comma or a misplaced
+ * separator, is `undefined`: invalid, never silently changed. Blank is `""`.
+ */
+function limitDigits(value: string): string | undefined {
     const text = value.trim();
-    if (!text) {
-        return null;
+    if (/^\d*$/.test(text)) {
+        return text;
     }
-    if (!/^\d+$/.test(text)) {
+    return /^\d{1,3}(,\d{3})+$/.test(text) ? text.replace(/,/g, "") : undefined;
+}
+
+/** A limit for editing: plain digits, or the text as typed if invalid. */
+export function unformatLimit(value: string): string {
+    return limitDigits(value) ?? value;
+}
+
+/**
+ * A limit with digit groups (`32,343,232`), for reading big numbers. Text
+ * that isn't a valid limit is left as typed, so its error stays visible.
+ */
+export function formatLimit(value: string): string {
+    const digits = limitDigits(value);
+    return digits && Number.isSafeInteger(Number(digits))
+        ? Number(digits).toLocaleString("en")
+        : value;
+}
+
+/** Only a blank field is unlimited (`null`); `undefined` is invalid. */
+function parseLimit(value: string): number | null | undefined {
+    const digits = limitDigits(value);
+    if (digits === undefined) {
         return undefined;
     }
-    const number = Number(text);
+    if (!digits) {
+        return null;
+    }
+    const number = Number(digits);
     return Number.isSafeInteger(number) ? number : undefined;
 }
 
@@ -164,6 +194,8 @@ const AccessProfileGeneralForm: FunctionComponent<PropsType> = (props) => {
 
     const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
         setForm((current) => ({ ...current, [key]: value }));
+    const reformat = (key: LimitKey, format: (value: string) => string) =>
+        setForm((current) => ({ ...current, [key]: format(current[key]) }));
 
     const availableModels = useAsync(async () => getAvailableModels(), []);
 
@@ -475,6 +507,10 @@ const AccessProfileGeneralForm: FunctionComponent<PropsType> = (props) => {
                                     "access-profile-limits-help"
                                 )}
                                 onChange={(value) => update(key, value)}
+                                // grouped digits are easier to read; plain
+                                // digits are easier to edit
+                                onFocus={() => reformat(key, unformatLimit)}
+                                onBlur={() => reformat(key, formatLimit)}
                             />
                             {fieldError(key)}
                         </div>

@@ -33,7 +33,23 @@ import {
 } from "./agentWorkspaceAccess";
 import AccessProfilesPage, { ACCESS_PROFILES_PATH } from "./AccessProfilesPage";
 import AccessProfilePage from "./AccessProfilePage";
-import { requireAccessProfilesRead } from "./llmServicesAccess";
+import MyUsagePage, { MY_USAGE_PATH } from "./MyUsagePage";
+import {
+    UserUsageDetailPage,
+    UserUsageListPage,
+    USER_USAGE_PATH
+} from "./UserUsagePage";
+import {
+    canReadAccessProfiles,
+    canReadUserUsage,
+    canViewMyUsage,
+    requireAccessProfilesRead,
+    requireMyUsageAccess,
+    requireUserUsageRead
+} from "./llmServicesAccess";
+import { useSelector } from "react-redux";
+import { StateType } from "reducers/reducer";
+import { User } from "reducers/userManagementReducer";
 import { config } from "../../config";
 
 function SettingsRedirect() {
@@ -53,7 +69,21 @@ function redirectTo(path: string) {
 const ContentSettingsRedirect = redirectTo("/settings/content/header");
 const FooterSettingsRedirect = redirectTo("/settings/content/footer/medium");
 const HomeSettingsRedirect = redirectTo("/settings/content/home/taglines");
-const LlmServicesRedirect = redirectTo(ACCESS_PROFILES_PATH);
+/** The first LLM Services tab the user may see (UI doc, Navigation). */
+function LlmServicesRedirect() {
+    const location = useLocation();
+    const user = useSelector<StateType, User>(
+        (state) => state?.userManagement?.user
+    );
+    const path = canReadAccessProfiles(user)
+        ? ACCESS_PROFILES_PATH
+        : canViewMyUsage(user)
+        ? MY_USAGE_PATH
+        : canReadUserUsage(user)
+        ? USER_USAGE_PATH
+        : ACCESS_PROFILES_PATH;
+    return <Redirect to={`${path}${location.search}`} />;
+}
 
 const Routes = () => {
     return (
@@ -140,6 +170,39 @@ const Routes = () => {
                             ]}
                             component={requireAccessProfilesRead(
                                 withHeader(AccessProfilePage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
+                    {config.featureFlags.llmServices && (
+                        <Route
+                            exact
+                            path={MY_USAGE_PATH}
+                            component={requireMyUsageAccess(
+                                withHeader(MyUsagePage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
+                    {config.featureFlags.llmServices && (
+                        <Route
+                            exact
+                            path={USER_USAGE_PATH}
+                            component={requireUserUsageRead(
+                                withHeader(UserUsageListPage, {
+                                    noContainerClass: true
+                                })
+                            )}
+                        />
+                    )}
+                    {config.featureFlags.llmServices && (
+                        <Route
+                            exact
+                            path={`${USER_USAGE_PATH}/:userId`}
+                            component={requireUserUsageRead(
+                                withHeader(UserUsageDetailPage, {
                                     noContainerClass: true
                                 })
                             )}

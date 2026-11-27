@@ -302,6 +302,19 @@ h4 {
     clear: both;
 }
 
+// rsuite buttons rendered as links (`<Button as={Link}>`) are still
+// buttons: don't let `.au-body a` underline their text...
+.au-body a.rs-btn,
+.au-body a.rs-btn:hover,
+.au-body a.rs-btn:focus {
+    text-decoration: none;
+}
+
+// ... nor colour a default-appearance one as a link.
+.au-body a.rs-btn[data-appearance="default"] {
+    color: var(--rs-btn-default-text);
+}
+
 .tab-collections-container {
     width: 100%;
 

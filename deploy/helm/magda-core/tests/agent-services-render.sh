@@ -101,6 +101,16 @@ if grep -q 'Source: magda-core/charts/agent-services/' "$tmp/llm-only.yaml"; the
 grep -q '\\"llm\\"' "$tmp/llm-only.yaml"
 if grep -q '\\"agent\\"' "$tmp/llm-only.yaml"; then refuted $LINENO; fi
 
+# DEP-3 noAccessHelp: empty by default, passed through when set
+grep -q '{name: NO_ACCESS_HELP_TEXT, value: ""}' "$tmp/llm-only.yaml"
+grep -q '{name: NO_ACCESS_HELP_URL, value: ""}' "$tmp/llm-only.yaml"
+render "$tmp/llm-help.yaml" magda test \
+    --set global.llmServices.enabled=true \
+    --set-string 'llm-services.noAccessHelp.text=Ask the service desk.' \
+    --set-string 'llm-services.noAccessHelp.url=https://help.example.test/llm'
+grep -q '{name: NO_ACCESS_HELP_TEXT, value: "Ask the service desk."}' "$tmp/llm-help.yaml"
+grep -q '{name: NO_ACCESS_HELP_URL, value: "https://help.example.test/llm"}' "$tmp/llm-help.yaml"
+
 # One model entry, global.llmServices.defaultModel, drives Agent Manager, the Sandbox
 # Pods (DSH), LLM Services and nested LiteLLM (#3965).
 render "$tmp/model-default.yaml" magda test \

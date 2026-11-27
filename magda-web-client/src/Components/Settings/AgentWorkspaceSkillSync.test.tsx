@@ -42,6 +42,7 @@ jest.mock("rsuite/Modal", () => {
 });
 jest.mock("./Breadcrumb", () => () => null);
 jest.mock("./SideNavigation", () => () => null);
+jest.mock("./NoModelAccessNotice", () => () => null);
 
 const mockStatus = jest.fn();
 const mockRetry = jest.fn();

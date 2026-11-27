@@ -18,6 +18,7 @@ jest.mock("rsuite/Modal", () => "div");
 jest.mock("rsuite/Panel", () => "div");
 jest.mock("./Breadcrumb", () => () => null);
 jest.mock("./SideNavigation", () => () => null);
+jest.mock("./NoModelAccessNotice", () => () => null);
 jest.mock("../../api-clients/AgentWorkspaceApis", () => ({
     AGENT_WORKSPACE_RUNTIME_URL: "/api/v0/agent/runtime/",
     deleteAgentWorkspace: jest.fn(),

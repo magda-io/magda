@@ -29,6 +29,16 @@ litellm:
 # stops working. Profile changes apply at once.
 decisionCacheSeconds: 30
 
+noAccessHelp:
+  # -- Optional text shown, after "No AI model access. Contact your
+  # administrator.", to users who can open the Agent Workspace (or My Usage)
+  # but have no eligible model profile, e.g. how to request access. Plain text,
+  # at most 1000 characters.
+  text: ""
+  # -- Optional absolute `http` or `https` link shown with that message, e.g.
+  # an access request form.
+  url: ""
+
 usage:
   # -- IANA time zone of the usage ledger's days, ISO weeks and months. A
   # request counts for the local date it started. Don't change it on a live

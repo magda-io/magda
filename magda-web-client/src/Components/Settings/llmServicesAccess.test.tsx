@@ -1,8 +1,12 @@
 import {
     canManageLlmAccess,
     canReadAccessProfiles,
+    canReadUserUsage,
+    canViewMyUsage,
+    LLM_ACCESS_INVOKE_OPERATION,
     LLM_ACCESS_READ_OPERATION,
-    LLM_ACCESS_UPDATE_OPERATION
+    LLM_ACCESS_UPDATE_OPERATION,
+    LLM_USAGE_READ_OPERATION
 } from "./llmServicesAccess";
 
 jest.mock("Components/ValidateUser", () => () => null);
@@ -81,5 +85,46 @@ describe("canManageLlmAccess (AUTH-3 navigation hint)", () => {
             })
         ).toBe(false);
         expect(canReadAccessProfiles(undefined)).toBe(false);
+    });
+});
+
+describe("usage pages (UI doc, Navigation)", () => {
+    it("shows My Usage for any invoke permission, of any constraint (UI case 6)", () => {
+        for (const constraint of [
+            {},
+            { orgUnitOwnershipConstraint: true, allowExemption: true },
+            { preAuthorisedConstraint: true },
+            { userOwnershipConstraint: true }
+        ]) {
+            expect(
+                canViewMyUsage(
+                    user([permission(LLM_ACCESS_INVOKE_OPERATION, constraint)])
+                )
+            ).toBe(true);
+        }
+        expect(canViewMyUsage(user([], [ADMIN_ROLE_ID]))).toBe(true);
+        expect(
+            canViewMyUsage(user([permission("agentWorkspace/access")]))
+        ).toBe(false);
+        expect(canViewMyUsage(undefined)).toBe(false);
+    });
+
+    it("shows User Usage only for unconstrained llm/usage/read (UI case 8)", () => {
+        expect(
+            canReadUserUsage(user([permission(LLM_USAGE_READ_OPERATION)]))
+        ).toBe(true);
+        expect(canReadUserUsage(user([], [ADMIN_ROLE_ID]))).toBe(true);
+        expect(
+            canReadUserUsage(
+                user([
+                    permission(LLM_USAGE_READ_OPERATION, {
+                        orgUnitOwnershipConstraint: true
+                    })
+                ])
+            )
+        ).toBe(false);
+        expect(
+            canReadUserUsage(user([permission(LLM_ACCESS_INVOKE_OPERATION)]))
+        ).toBe(false);
     });
 });

@@ -14,6 +14,19 @@ export interface FakeAuthUser {
     decision?: any;
     /** whoami answers this status instead of the user. */
     whoamiStatus?: number;
+    /**
+     * Full decisions for other operations, by operation URI (e.g.
+     * `llm/usage/read`): `true`, `false` or `"unavailable"`. An operation
+     * not listed is denied.
+     */
+    operations?: Record<string, boolean | "unavailable">;
+    /** Name and email, returned by the users endpoint. */
+    displayName?: string;
+    email?: string;
+    /** May this user read other users (`authObject/user/read`)? */
+    canReadUsers?: boolean;
+    /** The users endpoint answers this status to this caller. */
+    usersStatus?: number;
 }
 
 /**
@@ -24,7 +37,8 @@ export async function startFakeAuthApi() {
     const users = new Map<string, FakeAuthUser>();
     const calls = {
         whoami: [] as string[],
-        decisions: [] as Array<{ userId: string; path: string; body: any }>
+        decisions: [] as Array<{ userId: string; path: string; body: any }>,
+        users: [] as Array<{ userId: string; query: string }>
     };
     const server = http.createServer((req, res) => {
         const chunks: Buffer[] = [];
@@ -44,10 +58,58 @@ export async function startFakeAuthApi() {
                 if (user?.whoamiStatus) {
                     send(user.whoamiStatus, {});
                 } else if (!user) {
-                    send(401, {});
+                    // as the real Auth API does for a deleted user
+                    send(404, {
+                        isError: true,
+                        errorCode: 404,
+                        errorMessage: "Not Found User"
+                    });
                 } else {
                     send(200, { id: userId, roles: user.roles ?? [] });
                 }
+                return;
+            }
+            if (req.url?.startsWith("/v0/public/users?")) {
+                const query = new URL(req.url, "http://fake").searchParams;
+                calls.users.push({ userId, query: query.toString() });
+                if (user?.usersStatus) {
+                    send(user.usersStatus, {});
+                    return;
+                }
+                if (!user?.canReadUsers) {
+                    // the Auth API filters by the caller's decision: nobody
+                    send(200, []);
+                    return;
+                }
+                const id = query.get("id");
+                const keyword = query.get("keyword")?.toLowerCase();
+                const found = [...users.entries()]
+                    .filter(
+                        ([candidateId, candidate]) =>
+                            candidate.displayName &&
+                            (!id || candidateId === id) &&
+                            (!keyword ||
+                                candidate.displayName
+                                    .toLowerCase()
+                                    .includes(keyword) ||
+                                candidate.email
+                                    ?.toLowerCase()
+                                    .includes(keyword))
+                    )
+                    .map(([candidateId, candidate]) => ({
+                        id: candidateId,
+                        displayName: candidate.displayName,
+                        email: candidate.email
+                    }))
+                    // as the Auth API: by display name, paged
+                    .sort((a, b) =>
+                        (a.displayName as string).localeCompare(
+                            b.displayName as string
+                        )
+                    );
+                const offset = Number(query.get("offset") || 0);
+                const limit = Number(query.get("limit") || 500);
+                send(200, found.slice(offset, offset + limit));
                 return;
             }
             if (req.url?.startsWith("/v0/opa/decision/")) {
@@ -57,6 +119,21 @@ export async function startFakeAuthApi() {
                     path: req.url,
                     body: raw ? JSON.parse(raw) : undefined
                 });
+                const operation = req.url
+                    .slice("/v0/opa/decision/".length)
+                    .split("?")[0];
+                if (operation !== "llm/access/invoke") {
+                    const allowed = user?.operations?.[operation];
+                    if (allowed === "unavailable") {
+                        send(500, { error: "unavailable" });
+                    } else {
+                        send(200, {
+                            hasResidualRules: false,
+                            result: allowed === true
+                        });
+                    }
+                    return;
+                }
                 if (!user || user.decision === "unavailable") {
                     send(500, { error: "unavailable" });
                 } else {

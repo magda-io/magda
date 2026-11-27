@@ -111,21 +111,106 @@ export interface DailyHistoryOptions {
     limit?: number;
 }
 
-const AMOUNT_COLUMNS = sqls`
-    COALESCE(SUM(${USED_TOKENS}), 0) AS tokens,
-    COALESCE(SUM(u.measured_input_tokens), 0) AS measured_input_tokens,
-    COALESCE(SUM(u.measured_output_tokens), 0) AS measured_output_tokens,
-    COALESCE(SUM(u.estimated_tokens), 0) AS estimated_tokens,
-    COALESCE(SUM(u.estimated_requests), 0) AS estimated_requests`;
+/** Sums for the all-time and the current day, ISO week and month. */
+export interface PeriodAmounts {
+    allTime: UsageAmounts;
+    day: UsageAmounts;
+    week: UsageAmounts;
+    month: UsageAmounts;
+}
 
-function rowToAmounts(row: any): UsageAmounts {
+export interface UsageSummary {
+    /** The periods `day`, `week` and `month` are summed over (USE-4). */
+    periods: UsagePeriods;
+    /** Over every alias. */
+    totals: PeriodAmounts;
+    /** Per alias with any usage, by alias name. */
+    byModel: Array<{ modelAlias: string } & PeriodAmounts>;
+}
+
+/** The filters the history and user list share (API-7, API-8). */
+export interface UsageFilter {
+    modelAlias?: string;
+    /** Inclusive. */
+    fromDate?: LocalDate;
+    /** Exclusive. */
+    toDate?: LocalDate;
+}
+
+export interface UserUsageListOptions extends UsageFilter {
+    userIds?: string[];
+    offset?: number;
+    limit?: number;
+}
+
+export interface UserUsageRow extends UsageAmounts {
+    userId: string;
+    /** The latest local date with usage in the filter; `null` without usage. */
+    lastUsageDate: LocalDate | null;
+}
+
+function amountColumns(prefix: string, filter?: SQLSyntax): SQLSyntax {
+    const sum = (expression: SQLSyntax) =>
+        filter
+            ? sqls`COALESCE(SUM(${expression}) FILTER (WHERE ${filter}), 0)`
+            : sqls`COALESCE(SUM(${expression}), 0)`;
+    const as = (name: string) => SQLSyntax.createUnsafely(prefix + name);
+    return sqls`${sum(USED_TOKENS)} AS ${as("tokens")},
+        ${sum(sqls`u.measured_input_tokens`)} AS ${as("measured_input_tokens")},
+        ${sum(sqls`u.measured_output_tokens`)} AS ${as(
+        "measured_output_tokens"
+    )},
+        ${sum(sqls`u.estimated_tokens`)} AS ${as("estimated_tokens")},
+        ${sum(sqls`u.estimated_requests`)} AS ${as("estimated_requests")}`;
+}
+
+const AMOUNT_COLUMNS = amountColumns("");
+
+function rowToAmounts(row: any, prefix = ""): UsageAmounts {
     return {
-        tokens: toSafeInteger(row.tokens),
-        measuredInputTokens: toSafeInteger(row.measured_input_tokens),
-        measuredOutputTokens: toSafeInteger(row.measured_output_tokens),
-        estimatedTokens: toSafeInteger(row.estimated_tokens),
-        estimatedRequests: toSafeInteger(row.estimated_requests)
+        tokens: toSafeInteger(row[`${prefix}tokens`]),
+        measuredInputTokens: toSafeInteger(
+            row[`${prefix}measured_input_tokens`]
+        ),
+        measuredOutputTokens: toSafeInteger(
+            row[`${prefix}measured_output_tokens`]
+        ),
+        estimatedTokens: toSafeInteger(row[`${prefix}estimated_tokens`]),
+        estimatedRequests: toSafeInteger(row[`${prefix}estimated_requests`])
     };
+}
+
+export function zeroAmounts(): UsageAmounts {
+    return {
+        tokens: 0,
+        measuredInputTokens: 0,
+        measuredOutputTokens: 0,
+        estimatedTokens: 0,
+        estimatedRequests: 0
+    };
+}
+
+function addAmounts(target: UsageAmounts, amounts: UsageAmounts) {
+    for (const key of Object.keys(target) as Array<keyof UsageAmounts>) {
+        target[key] += amounts[key];
+        if (!Number.isSafeInteger(target[key])) {
+            throw new Error("Usage total is not a safe integer");
+        }
+    }
+}
+
+function filterConditions(filter: UsageFilter): SQLSyntax[] {
+    const conditions: SQLSyntax[] = [];
+    if (filter.modelAlias !== undefined) {
+        conditions.push(sqls`u.model_alias = ${filter.modelAlias}`);
+    }
+    if (filter.fromDate !== undefined) {
+        conditions.push(sqls`u.local_date >= ${filter.fromDate}::date`);
+    }
+    if (filter.toDate !== undefined) {
+        conditions.push(sqls`u.local_date < ${filter.toDate}::date`);
+    }
+    return conditions;
 }
 
 function isTokenCount(value: unknown): value is number {
@@ -409,16 +494,10 @@ export default class UsageLedger implements UsageSink {
             Math.max(1, Math.floor(options.limit ?? 50)),
             500
         );
-        const conditions = [sqls`u.user_id = ${userId}::uuid`];
-        if (options.modelAlias !== undefined) {
-            conditions.push(sqls`u.model_alias = ${options.modelAlias}`);
-        }
-        if (options.fromDate !== undefined) {
-            conditions.push(sqls`u.local_date >= ${options.fromDate}::date`);
-        }
-        if (options.toDate !== undefined) {
-            conditions.push(sqls`u.local_date < ${options.toDate}::date`);
-        }
+        const conditions = [
+            sqls`u.user_id = ${userId}::uuid`,
+            ...filterConditions(options)
+        ];
         const where = SQLSyntax.where(SQLSyntax.joinWithAnd(conditions));
         const [items, count] = await Promise.all([
             this.pool.query(
@@ -440,6 +519,101 @@ export default class UsageLedger implements UsageSink {
             items: items.rows.map((row) => ({
                 localDate: row.local_date,
                 modelAlias: row.model_alias,
+                ...rowToAmounts(row)
+            })),
+            total: count.rows[0].total
+        };
+    }
+
+    /**
+     * A user's usage summary as of `at` (API-7, API-8): per alias, the
+     * all-time sums and the sums for the day, ISO week and calendar month of
+     * `at` (USE-4), plus the same totals over every alias. One query.
+     */
+    async summary(userId: string, at: Date): Promise<UsageSummary> {
+        const periods = this.periodsAt(at);
+        const result = await this.pool.query(
+            ...sqls`SELECT u.model_alias,
+                    ${amountColumns("all_")},
+                    ${amountColumns(
+                        "day_",
+                        sqls`u.local_date = ${periods.day}::date`
+                    )},
+                    ${amountColumns(
+                        "week_",
+                        sqls`u.local_date >= ${periods.weekStart}::date
+                            AND u.local_date < ${periods.weekEnd}::date`
+                    )},
+                    ${amountColumns(
+                        "month_",
+                        sqls`u.local_date >= ${periods.monthStart}::date
+                            AND u.local_date < ${periods.monthEnd}::date`
+                    )}
+                FROM daily_model_usage u
+                WHERE u.user_id = ${userId}::uuid
+                GROUP BY u.model_alias
+                ORDER BY u.model_alias`.toQuery()
+        );
+        const byModel = result.rows.map((row) => ({
+            modelAlias: row.model_alias as string,
+            allTime: rowToAmounts(row, "all_"),
+            day: rowToAmounts(row, "day_"),
+            week: rowToAmounts(row, "week_"),
+            month: rowToAmounts(row, "month_")
+        }));
+        const totals: PeriodAmounts = {
+            allTime: zeroAmounts(),
+            day: zeroAmounts(),
+            week: zeroAmounts(),
+            month: zeroAmounts()
+        };
+        for (const model of byModel) {
+            for (const period of Object.keys(totals) as Array<
+                keyof PeriodAmounts
+            >) {
+                addAmounts(totals[period], model[period]);
+            }
+        }
+        return { periods, totals, byModel };
+    }
+
+    /**
+     * Users with usage (API-8), with their sums over the filter, most tokens
+     * first, paginated. `userIds` limits the result to those users (a user
+     * search); `[]` matches nobody.
+     */
+    async usersWithUsage(
+        options: UserUsageListOptions = {}
+    ): Promise<{ items: UserUsageRow[]; total: number }> {
+        const offset = Math.max(0, Math.floor(options.offset ?? 0));
+        const limit = Math.min(
+            Math.max(1, Math.floor(options.limit ?? 20)),
+            100
+        );
+        const conditions = filterConditions(options);
+        if (options.userIds !== undefined) {
+            if (!options.userIds.length) return { items: [], total: 0 };
+            conditions.push(sqls`u.user_id = ANY(${options.userIds}::uuid[])`);
+        }
+        const where = SQLSyntax.where(SQLSyntax.joinWithAnd(conditions));
+        const [items, count] = await Promise.all([
+            this.pool.query(
+                ...sqls`SELECT u.user_id, ${AMOUNT_COLUMNS},
+                        to_char(MAX(u.local_date), 'YYYY-MM-DD') AS last_date
+                    FROM daily_model_usage u ${where}
+                    GROUP BY u.user_id
+                    ORDER BY tokens DESC, u.user_id
+                    OFFSET ${offset} LIMIT ${limit}`.toQuery()
+            ),
+            this.pool.query(
+                ...sqls`SELECT count(DISTINCT u.user_id)::int AS total
+                    FROM daily_model_usage u ${where}`.toQuery()
+            )
+        ]);
+        return {
+            items: items.rows.map((row) => ({
+                userId: row.user_id,
+                lastUsageDate: row.last_date,
                 ...rowToAmounts(row)
             })),
             total: count.rows[0].total

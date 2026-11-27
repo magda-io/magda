@@ -10,6 +10,7 @@ import AuthApiClient from "./authApi/AuthApiClient.js";
 import ProfileRepository from "./profiles/ProfileRepository.js";
 import ProfileService from "./profiles/ProfileService.js";
 import { isUuid } from "./profiles/validation.js";
+import { parseNoAccessHelp } from "./usage/createUsageRouter.js";
 
 const port = Number(process.env.PORT || 80);
 const jwtSecret = process.env.JWT_SECRET;
@@ -58,7 +59,8 @@ const app = createApp({
     decisionCacheSeconds: parseDecisionCacheSeconds(
         process.env.DECISION_CACHE_SECONDS
     ),
-    profiles
+    profiles,
+    noAccessHelp: parseNoAccessHelp(process.env)
 });
 
 const server = app.listen(port, () =>

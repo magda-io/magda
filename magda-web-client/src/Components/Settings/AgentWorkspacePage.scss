@@ -11,7 +11,8 @@
         padding-bottom: 25px;
     }
 
-    .agent-workspace-request-error {
+    .agent-workspace-request-error,
+    .agent-workspace-no-model-access {
         margin: 0 0 16px;
     }
 }
