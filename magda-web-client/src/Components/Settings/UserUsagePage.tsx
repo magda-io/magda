@@ -8,7 +8,7 @@ import Loader from "rsuite/Loader";
 import Message from "rsuite/Message";
 import Pagination from "rsuite/Pagination";
 import Table from "rsuite/Table";
-import { MdSearch } from "react-icons/md";
+import { MdArrowBack, MdSearch } from "react-icons/md";
 import SideNavigation from "./SideNavigation";
 import Breadcrumb from "./Breadcrumb";
 import {
@@ -335,9 +335,15 @@ export const UserUsageDetailPage: FunctionComponent = () => {
                         />
                     </>
                 )}
-                <p>
-                    <Link to={USER_USAGE_PATH}>Back to User LLM Usage</Link>
-                </p>
+                <div className="llm-usage-back">
+                    <Button
+                        as={Link}
+                        to={USER_USAGE_PATH}
+                        startIcon={<MdArrowBack />}
+                    >
+                        Back to User LLM Usage
+                    </Button>
+                </div>
             </div>
         </div>
     );

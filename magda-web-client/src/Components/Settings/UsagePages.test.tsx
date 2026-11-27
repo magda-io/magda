@@ -526,6 +526,10 @@ describe("User Usage pages", () => {
             container.querySelector(".llm-usage-user-details")?.textContent
         ).toBe(`NameOtto OtherEmailNot availableID${OTHER_ID}`);
         expect(text()).toContain("This usage may come from several profiles.");
+        const back = Array.from(container.querySelectorAll("a")).find(
+            (a) => a.textContent === "Back to User LLM Usage"
+        );
+        expect(back?.getAttribute("href")).toBe(USER_USAGE_PATH);
         expect(modelRow("shared-model")).toContain("240 tokens");
     });
 

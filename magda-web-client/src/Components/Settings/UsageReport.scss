@@ -150,11 +150,10 @@
 .llm-usage-report-cell .rs-table-cell-content {
     display: flex;
     align-items: center;
-    a.rs-btn,
-    a.rs-btn:hover,
-    a.rs-btn:focus {
-        text-decoration: none;
-    }
+}
+
+.llm-usage-back {
+    margin-top: 24px;
 }
 
 h1.llm-usage-user-heading {
