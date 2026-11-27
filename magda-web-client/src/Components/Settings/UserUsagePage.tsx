@@ -44,19 +44,42 @@ export const userUsagePath = (userId: string) =>
 
 const userUsageBreadcrumb = { to: USER_USAGE_PATH, title: "User LLM Usage" };
 
-/** A name and email when the viewer may read users; otherwise the ID (API-12). */
-export const UserLabel: FunctionComponent<{ user: UsageUser }> = ({ user }) =>
-    user.displayName || user.email ? (
-        <span className="llm-usage-user">
-            <span>{user.displayName || user.email}</span>
-            {user.displayName && user.email ? (
-                <small> {user.email}</small>
-            ) : null}
-            <small className="llm-usage-user-id"> {user.id}</small>
-        </span>
-    ) : (
-        <code>{user.id}</code>
+/** Shown for a name or email the viewer may not read (API-12). */
+export const NOT_VISIBLE = "Not available";
+
+/**
+ * The user's name for the list. A viewer who may not read users sees
+ * neither name nor email (API-12): the ID is shown instead, so rows can
+ * still be told apart.
+ */
+export const UserName: FunctionComponent<{ user: UsageUser }> = ({ user }) =>
+    user.displayName ? (
+        <>{user.displayName}</>
+    ) : user.email ? null : (
+        <code className="llm-usage-user-id">{user.id}</code>
     );
+
+/** The report page's user details: name, email and ID. */
+export const UserDetails: FunctionComponent<{ user: UsageUser }> = ({
+    user
+}) => (
+    <dl className="llm-usage-user-details">
+        <div>
+            <dt>Name</dt>
+            <dd>{user.displayName || NOT_VISIBLE}</dd>
+        </div>
+        <div>
+            <dt>Email</dt>
+            <dd>{user.email || NOT_VISIBLE}</dd>
+        </div>
+        <div>
+            <dt>ID</dt>
+            <dd>
+                <code>{user.id}</code>
+            </dd>
+        </div>
+    </dl>
+);
 
 /** User Usage (UI doc): find users with usage, by ID, name or email. */
 export const UserUsageListPage: FunctionComponent = () => {
@@ -158,17 +181,23 @@ export const UserUsageListPage: FunctionComponent = () => {
                             loading={loading}
                             rowKey="id"
                         >
-                            <Column width={320} flexGrow={1}>
-                                <HeaderCell>User</HeaderCell>
-                                <Cell>
+                            <Column width={200} flexGrow={2}>
+                                <HeaderCell>Name</HeaderCell>
+                                <Cell fullText>
                                     {(row: UserUsageRow) => (
-                                        <Link to={userUsagePath(row.userId)}>
-                                            <UserLabel user={row.user} />
-                                        </Link>
+                                        <UserName user={row.user} />
                                     )}
                                 </Cell>
                             </Column>
-                            <Column width={130} align="right">
+                            <Column width={240} flexGrow={3}>
+                                <HeaderCell>Email</HeaderCell>
+                                <Cell fullText>
+                                    {(row: UserUsageRow) =>
+                                        row.user.email || ""
+                                    }
+                                </Cell>
+                            </Column>
+                            <Column width={110} align="right">
                                 <HeaderCell>Total tokens</HeaderCell>
                                 <Cell>
                                     {(row: UserUsageRow) => (
@@ -176,7 +205,7 @@ export const UserUsageListPage: FunctionComponent = () => {
                                     )}
                                 </Cell>
                             </Column>
-                            <Column width={130} align="right">
+                            <Column width={110} align="right">
                                 <HeaderCell>Measured</HeaderCell>
                                 <Cell>
                                     {(row: UserUsageRow) => (
@@ -189,7 +218,7 @@ export const UserUsageListPage: FunctionComponent = () => {
                                     )}
                                 </Cell>
                             </Column>
-                            <Column width={120} align="right">
+                            <Column width={100} align="right">
                                 <HeaderCell>Estimated</HeaderCell>
                                 <Cell>
                                     {(row: UserUsageRow) => (
@@ -199,12 +228,32 @@ export const UserUsageListPage: FunctionComponent = () => {
                                     )}
                                 </Cell>
                             </Column>
-                            <Column width={130}>
+                            <Column width={110}>
                                 <HeaderCell>Last usage</HeaderCell>
                                 <Cell>
                                     {(row: UserUsageRow) =>
                                         row.lastUsageDate || "None"
                                     }
+                                </Cell>
+                            </Column>
+                            <Column width={170}>
+                                <HeaderCell>Report</HeaderCell>
+                                <Cell className="llm-usage-report-cell">
+                                    {(row: UserUsageRow) => (
+                                        <Button
+                                            as={Link}
+                                            to={userUsagePath(row.userId)}
+                                            size="sm"
+                                            appearance="ghost"
+                                            aria-label={`Open usage report for ${
+                                                row.user.displayName ||
+                                                row.user.email ||
+                                                row.userId
+                                            }`}
+                                        >
+                                            Open usage report
+                                        </Button>
+                                    )}
                                 </Cell>
                             </Column>
                         </Table>
@@ -254,11 +303,10 @@ export const UserUsageDetailPage: FunctionComponent = () => {
             <SideNavigation />
             <div className="main-content-container">
                 <Breadcrumb
-                    items={[userUsageBreadcrumb, { title: "User usage" }]}
+                    items={[userUsageBreadcrumb, { title: "Usage report" }]}
                 />
-                <h1 className="llm-usage-user-heading">
-                    {report ? <UserLabel user={report.user} /> : userId}
-                </h1>
+                <h1 className="llm-usage-user-heading">User usage report</h1>
+                <UserDetails user={report?.user ?? { id: userId }} />
                 <p className="llm-usage-note">
                     This usage may come from several profiles.
                 </p>

@@ -7,6 +7,7 @@ import {
     NoAccessHelp
 } from "api-clients/LlmServicesApis";
 import { config } from "../../config";
+import "./UsageReport.scss";
 
 /** Only absolute `http:` / `https:` links are shown (DEP-3). */
 export function safeHelpUrl(url?: string): string | undefined {
@@ -81,7 +82,8 @@ export async function checkModelAccess(): Promise<{
 }
 
 /**
- * Agent Workspace: no model access (UI doc, acceptance case 10). Shown
+ * Agent Workspace: no model access (UI doc, acceptance case 10), worded
+ * "No LLM model access". Shown
  * alongside the Workspace when the user has no eligible model, so the agent
  * doesn't fail without explanation.
  */
@@ -95,11 +97,12 @@ const NoModelAccessNotice: FunctionComponent = () => {
             showIcon
             type="warning"
             role="alert"
-            className="agent-workspace-no-model-access"
+            header="No LLM model access"
+            className="agent-workspace-no-model-access llm-no-access-message"
         >
             <p>
-                <strong>No AI model access.</strong> Your account can open the
-                Agent Workspace but has no LLM access yet.
+                Your account can open the Agent Workspace but has no LLM access
+                yet.
             </p>
             <NoAccessHelpContent help={result.help} />
         </Message>

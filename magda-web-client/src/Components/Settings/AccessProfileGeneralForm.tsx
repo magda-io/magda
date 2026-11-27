@@ -65,7 +65,7 @@ export function toFormState(profile?: AccessProfile): FormState {
         (profile.allowedModels.length === 1 &&
             profile.allowedModels[0] === ALL_MODELS);
     const limit = (value?: number | null) =>
-        value === null || value === undefined ? "" : String(value);
+        value === null || value === undefined ? "" : value.toLocaleString("en");
     return {
         name: profile?.name || "",
         description: profile?.description || "",
@@ -82,8 +82,24 @@ export function toFormState(profile?: AccessProfile): FormState {
 
 export type FormErrors = Partial<Record<keyof FormState, string>>;
 
+/** A limit as typed, without digit group separators (`,`, `_`, spaces). */
+export function unformatLimit(value: string): string {
+    return value.replace(/[,_\s]/g, "");
+}
+
+/**
+ * A limit with digit group separators (`32,343,232`), for reading big
+ * numbers; text that isn't a whole number is left as typed.
+ */
+export function formatLimit(value: string): string {
+    const text = unformatLimit(value);
+    return /^\d+$/.test(text) && Number.isSafeInteger(Number(text))
+        ? Number(text).toLocaleString("en")
+        : value;
+}
+
 function parseLimit(value: string): number | null | undefined {
-    const text = value.trim();
+    const text = unformatLimit(value);
     if (!text) {
         return null;
     }
@@ -164,6 +180,8 @@ const AccessProfileGeneralForm: FunctionComponent<PropsType> = (props) => {
 
     const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
         setForm((current) => ({ ...current, [key]: value }));
+    const reformat = (key: LimitKey, format: (value: string) => string) =>
+        setForm((current) => ({ ...current, [key]: format(current[key]) }));
 
     const availableModels = useAsync(async () => getAvailableModels(), []);
 
@@ -475,6 +493,10 @@ const AccessProfileGeneralForm: FunctionComponent<PropsType> = (props) => {
                                     "access-profile-limits-help"
                                 )}
                                 onChange={(value) => update(key, value)}
+                                // grouped digits are easier to read; plain
+                                // digits are easier to edit
+                                onFocus={() => reformat(key, unformatLimit)}
+                                onBlur={() => reformat(key, formatLimit)}
                             />
                             {fieldError(key)}
                         </div>

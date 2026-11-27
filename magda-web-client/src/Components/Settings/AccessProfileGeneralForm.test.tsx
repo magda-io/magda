@@ -76,12 +76,14 @@ jest.mock("api-clients/LlmServicesApis", () => {
 // eslint-disable-next-line import/first
 import AccessProfileGeneralForm, {
     deleteConfirmMessage,
+    formatLimit,
     LIMITS_HELP,
     ORG_UNIT_EXAMPLE,
     ORG_UNIT_HELP,
     PUBLIC_HELP,
     STALE_MESSAGE,
     toFormState,
+    unformatLimit,
     validateForm
 } from "./AccessProfileGeneralForm";
 // eslint-disable-next-line import/first
@@ -235,6 +237,28 @@ function labelled(text: string) {
     return label.querySelector("input") as HTMLInputElement;
 }
 
+describe("limit formatting", () => {
+    it("groups digits for reading, strips them for editing, and accepts them when saving", () => {
+        expect(formatLimit("32343232")).toBe("32,343,232");
+        expect(formatLimit(" 300_000_000 ")).toBe("300,000,000");
+        expect(formatLimit("0")).toBe("0");
+        expect(formatLimit("")).toBe("");
+        expect(formatLimit("1.5")).toBe("1.5");
+        expect(unformatLimit("32,343,232")).toBe("32343232");
+        expect(
+            toFormState({ ...profile, allowedMonthlyTokens: 300000000 } as any)
+                .allowedMonthlyTokens
+        ).toBe("300,000,000");
+        expect(
+            validateForm({
+                ...toFormState(),
+                name: "Finance",
+                allowedMonthlyTokens: "300,000,000"
+            }).fields?.allowedMonthlyTokens
+        ).toBe(300000000);
+    });
+});
+
 describe("validateForm", () => {
     it("maps blank limits to unlimited and keeps 0 as blocking", () => {
         const form = {
@@ -312,6 +336,21 @@ describe("AccessProfileGeneralForm", () => {
         expect(text).toContain(
             "New models the operator adds become available under *."
         );
+    });
+
+    it("shows limits with digit groups, and plain digits while editing", async () => {
+        await render({ profile });
+        const daily = field("access-profile-allowedDailyTokens");
+        expect(daily.value).toBe("100,000");
+        act(() => {
+            daily.focus();
+        });
+        expect(daily.value).toBe("100000");
+        type(daily, "300000000");
+        act(() => {
+            daily.blur();
+        });
+        expect(daily.value).toBe("300,000,000");
     });
 
     it("creates a profile with * and limits", async () => {

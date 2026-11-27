@@ -232,17 +232,14 @@ export const UsageReportView: FunctionComponent<{
                     <Message
                         showIcon
                         type="warning"
-                        className="llm-no-eligible-profile"
+                        header="No eligible model profile"
+                        className="llm-no-eligible-profile llm-no-access-message"
                     >
-                        <p>
-                            <strong>No eligible model profile.</strong>
-                            {subject === "self"
-                                ? null
-                                : " This user can't use any model now."}
-                        </p>
                         {subject === "self" ? (
                             <NoAccessHelpContent help={report.noAccessHelp} />
-                        ) : null}
+                        ) : (
+                            <p>This user can&apos;t use any model now.</p>
+                        )}
                     </Message>
                 ) : null}
                 {report.access === "administrator" ? (

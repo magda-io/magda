@@ -308,7 +308,7 @@ describe("My Usage page", () => {
         mockGetMyUsage.mockResolvedValue(report(NO_ACCESS));
         await render(MY_USAGE_PATH);
         expect(text()).toContain(
-            "No eligible model profile.Request access from the service desk. Request access"
+            "No eligible model profileRequest access from the service desk. Request access"
         );
         const link = container.querySelector<HTMLAnchorElement>(
             ".llm-no-access-help a"
@@ -327,7 +327,7 @@ describe("My Usage page", () => {
             report({ ...NO_ACCESS, noAccessHelp: null })
         );
         await render(MY_USAGE_PATH);
-        expect(text()).toContain("No eligible model profile.");
+        expect(text()).toContain("No eligible model profile");
         expect(help()).toBe("Please contact system admin for access.");
         expect(link()).toBeNull();
 
@@ -466,12 +466,29 @@ describe("User Usage pages", () => {
             total: 2
         });
         await render(USER_USAGE_PATH);
-        expect(text()).toContain("Otto Other otto@example.test");
-        expect(text()).toContain(USER_ID);
-        const links = Array.from(container.querySelectorAll("a")).map((a) =>
+        const cells = (index: number) =>
+            Array.from(
+                container
+                    .querySelectorAll("tbody tr")
+                    [index].querySelectorAll("td")
+            ).map((td) => td.textContent);
+        // name and email in their own columns, no ID when the name is known
+        expect(cells(0).slice(0, 2)).toEqual([
+            "Otto Other",
+            "otto@example.test"
+        ]);
+        expect(text()).not.toContain(OTHER_ID);
+        // without user read rights: the ID, so rows can be told apart
+        expect(cells(1).slice(0, 2)).toEqual([USER_ID, ""]);
+        // the name isn't a link; the button opens the report
+        const links = Array.from(container.querySelectorAll("a")).map((a) => [
+            a.textContent,
             a.getAttribute("href")
-        );
-        expect(links).toContain(`${USER_USAGE_PATH}/${OTHER_ID}`);
+        ]);
+        expect(links).toEqual([
+            ["Open usage report", `${USER_USAGE_PATH}/${OTHER_ID}`],
+            ["Open usage report", `${USER_USAGE_PATH}/${USER_ID}`]
+        ]);
         expect(text()).toContain("None");
 
         change(
@@ -505,7 +522,9 @@ describe("User Usage pages", () => {
             OTHER_ID,
             expect.objectContaining({ offset: 0 })
         );
-        expect(text()).toContain("Otto Other");
+        expect(
+            container.querySelector(".llm-usage-user-details")?.textContent
+        ).toBe(`NameOtto OtherEmailNot availableID${OTHER_ID}`);
         expect(text()).toContain("This usage may come from several profiles.");
         expect(modelRow("shared-model")).toContain("240 tokens");
     });
@@ -516,7 +535,7 @@ describe("User Usage pages", () => {
         );
         await render(`${USER_USAGE_PATH}/${OTHER_ID}`);
         expect(text()).toContain(
-            "No eligible model profile. This user can't use any model now."
+            "No eligible model profileThis user can't use any model now."
         );
         expect(container.querySelector(".llm-no-access-help")).toBeNull();
     });
@@ -541,7 +560,7 @@ describe("Agent Workspace no model access (UI case 10)", () => {
         });
         await render("/workspace");
         expect(text()).toContain(
-            "No AI model access. Your account can open the Agent Workspace but has no LLM access yet."
+            "No LLM model accessYour account can open the Agent Workspace but has no LLM access yet."
         );
         expect(text()).toContain("Request access from the service desk.");
         expect(
@@ -559,7 +578,7 @@ describe("Agent Workspace no model access (UI case 10)", () => {
             outcome();
             await render("/workspace");
             expect(text()).toContain(
-                "No AI model access. Your account can open the Agent Workspace but has no LLM access yet.Please contact system admin for access."
+                "No LLM model accessYour account can open the Agent Workspace but has no LLM access yet.Please contact system admin for access."
             );
             expect(container.querySelector(".llm-no-access-help a")).toBeNull();
         }
