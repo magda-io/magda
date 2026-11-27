@@ -301,6 +301,7 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 | API-8 | `GET /usage/users`, `GET /usage/users/:userId`, `GET /usage/users/:userId/daily` | `llm/usage/read` | Other users' totals, remaining quota and history |
 | API-9 | `GET /v1/models` | Invoke (EVAL-2) | Aliases covered by at least one eligible profile the caller can invoke; administrators see every allowed alias |
 | API-10 | `POST /v1/chat/completions`, `POST /v1/responses` | Invoke + quota (USE-6) | Forward to LiteLLM and meter (METER-*) |
+| API-13 | `GET /access-help` | Any authenticated user | The operator's `noAccessHelp` (DEP-3), for the Workspace's no-access message |
 
 - **API-11** Errors are safe and don't leak identities or Secrets:
   - `401` unauthenticated;
@@ -311,7 +312,12 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
   - `428` an update without `If-Match`;
   - `429` with error code `llm_quota_exceeded` when every eligible profile's limit is used up. It also sends `x-should-retry: false`, because OpenAI SDKs otherwise retry a `429` automatically;
   - `503` when the Auth API is unavailable, or a required ledger read is unavailable or gated (USE-10, error code `llm_usage_unavailable`).
-- **API-12** User Usage finds users by ID. Search by name or email, and display names on result rows, use the **caller's** session against the Auth API users endpoints. A caller without user read rights sees IDs only.
+- **API-12** User Usage finds users by ID. `GET /usage/users` lists users with usage, most tokens first, filtered by model and date range. A user ID always returns that user, including a deleted one with usage. Search by name or email, and display names on result rows, use the **caller's** session against the Auth API users endpoints. A caller without user read rights sees IDs only.
+
+  A name or email search reads every match the caller may read, up to 2,000, and only then keeps those with usage, so a user isn't missed because of where their name sorts. When more match, the response says so and the page asks for a narrower search.
+- **API-14** Another user's eligible aliases and remaining quota (API-8) come from **their** grants. After the caller's `llm/usage/read` decision, LLM Services makes that user's partial `llm/access/invoke` decision with an internal session for them, and only reads with it.
+
+  A user who no longer exists (`whoami` answers `404`) has no eligible profile; their usage history is kept, and the report marks them as deleted. Their own leftover session gets `401`, not `503`.
 
 ## Soft usage ledger and quota
 
@@ -330,6 +336,8 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 - **USE-8** **Remaining quota** for an alias:
   - for each eligible profile, the minimum over its configured periods of `max(0, limit - used)`, where NULL means unlimited;
   - then the maximum of that across eligible profiles.
+
+  Per period, the usage pages show the remaining of the profile that gives the overall value. When every profile is used up, they show the profile that admits again first, by its reset dates: the latest end among its used-up periods, where a `0` limit never admits again. A period that profile doesn't limit is Unlimited. A per-period maximum across profiles isn't shown: it describes no limit that admission applies.
 
   Show **Unlimited**, **Exhausted** and **No eligible model profile** distinctly. Remaining quota indicates when admission will stop; it doesn't promise a number of tokens.
 - **USE-9** Administrator requests skip quotas (AUTH-10) but are recorded.
@@ -401,7 +409,7 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - `usage.estimate.*` (METER-4);
   - `decisionCacheSeconds` (`30`);
   - `global.defaultAdminUserId`, for the internal session (AUTH-12);
-  - an optional `noAccessHelp` text or link, shown by the Workspace when a user has no eligible model (UI);
+  - `noAccessHelp.text` (plain text, at most 1,000 characters) and `noAccessHelp.url` (an absolute `http` or `https` link), both optional, shown to a user with no eligible model (UI). LLM Services checks them at startup and serves them through API-13 and in a no-access My Usage report. They are `llm-services` values: the web server chart never reads them. Without text, the pages say "Please contact system admin for access."; without a link, they show none;
 - **DEP-4** MAGDA v8 is unreleased, so there is no released-user migration. Release notes must say that LLM access is no longer implied by `agentWorkspace/access`. A Workspace user needs the "Agent Workspace Users" stock role (which now includes "Use LLM profiles", AUTH-11) **and** a Public or audience profile, or another invoke grant.
 
 ## Acceptance tests

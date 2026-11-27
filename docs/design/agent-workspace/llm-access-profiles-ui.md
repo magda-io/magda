@@ -22,11 +22,12 @@ The LLM Services menu entry is shown when at least one tab is.
 
 | Column | Content |
 | --- | --- |
-| Name | Link to the profile |
+| Name | Profile name (plain text) |
 | Models | Aliases, or **All available models (\*)** |
 | Audience | Org unit name, **Public**, both, or **Roles only** |
 | Daily / weekly / monthly limit | Compact; per user and per model (MODEL-3). Blank means unlimited |
 | Status | Enabled / Disabled |
+| Actions | **Open** button for the profile |
 
 The list is server-side paginated with name search. A **Create profile** button is shown to holders of `llm/access/create`.
 
@@ -39,7 +40,7 @@ The list is server-side paginated with name search. A **Create profile** button 
 | Enabled | Switch | |
 | Org unit (audience) | Searchable org unit picker, or **No org unit** | Each unit is shown with its full path (e.g. *Corporate › Finance › Payroll*). Managers read org units through the stock role (AUTH-11); without that, the picker says no units are visible and offers only **No org unit**. See the help text below |
 | Public | Switch (`constraint_exemption`) | See the help text below |
-| Daily, weekly, monthly limit | Optional non-negative whole numbers (tokens) | Help: "Per user and per model. Blank means no limit; 0 blocks new requests." |
+| Daily, weekly, monthly limit | Optional non-negative whole numbers (tokens), shown with digit groups (32,343,232) when not being edited | Help: "Per user and per model. Blank means no limit; 0 blocks new requests." Only plain digits or correctly grouped commas are accepted; anything else is a validation error, never a different number |
 
 **Org unit help text:** "Users in this org unit, or in any org unit below it, can use this profile if they hold an org-unit-scoped Use permission (included in the Agent Workspace Users role). Users in units above it don't get access. Example: a profile on *Finance* is available to people in *Finance* and *Finance › Payroll*, but not to people in *Corporate*, the unit above Finance."
 
@@ -72,23 +73,27 @@ The user's own data only. The user ID comes from the session, never from the pag
 | Section | Content |
 | --- | --- |
 | Totals | Total (all time), Today, This week (Monday start), This month |
-| Models | For each alias the user can use: remaining quota (USE-8) per period and overall, shown as a number, **Unlimited** or **Exhausted**; measured and estimated tokens shown separately |
-| No access | When there's no eligible profile: "**No eligible model profile.** Ask your administrator for access." plus the configured help text or link (DEP-3) |
+| Models | For each alias the user can use: remaining quota (USE-8) overall, and per period for the profile giving it, shown as a number, **Unlimited** or **Exhausted**; measured and estimated tokens shown separately. Note: "When several profiles cover a model, the amount left in each period is that of the profile giving the most remaining." |
+| No access | When there's no eligible profile: a **No eligible model profile** message, then the help line (DEP-3): the configured text, or "Please contact system admin for access.", and a **Request access** link only when one is configured |
 | Daily history | Paginated rows: date, model, measured input, measured output, estimated, total. Filter by model and date range |
+
+Token counts of a million or more are shown compactly (e.g. 503.2M), with the exact count as a tooltip.
 
 Always show the accounting timezone (e.g. "Times are in Australia/Sydney"). Explain under Remaining: "Remaining is an estimate of when new requests will be refused. Requests already running can go over it."
 
 ## User Usage
 
-Search a user by ID. Name and email search, and the names on result rows, work only when the viewer may read users; otherwise rows show IDs (API-12). Optional filters: model and date range.
+Search a user by ID. Name and email search, and the names on result rows, work only when the viewer may read users (API-12). Optional filters: model and date range.
 
-For the selected user, show the same sections as My Usage. Add a note: "This usage may come from several profiles."
+The results table has **Name** and **Email** columns (the ID appears only when neither is readable), total, measured and estimated tokens, the last usage date, and an **Open usage report** button. When more users match a name search than were checked, say so and suggest a narrower search or the user ID.
+
+The report is headed "User usage report" and lists the user's **Name**, **Email** and **ID** ("Not available" when the viewer may not read them; "Deleted user" for a user who no longer exists, whose history is kept). It then shows the same sections as My Usage, with a note: "This usage may come from several profiles."
 
 Responses are server-paginated. There is no quota-reset or export action.
 
 ## Agent Workspace: no model access
 
-When the Workspace user has no eligible model (`GET /api/v0/llm/v1/models` returns no aliases), the Workspace shows before or alongside the session: "**No AI model access.** Your account can open the Agent Workspace but has no LLM access yet. Contact your administrator." plus the configured help text or link (DEP-3). The agent must not fail without explanation.
+When the Workspace user has no eligible model (`GET /api/v0/llm/v1/models` returns no aliases), the Workspace shows, before or alongside the session, a message titled **No LLM model access**: "Your account can open the Agent Workspace but has no LLM access yet.", then the help line (DEP-3): the configured text, or "Please contact system admin for access.", and a **Request access** link only when one is configured. The agent must not fail without explanation.
 
 ## States and accessibility
 
