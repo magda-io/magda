@@ -11,6 +11,7 @@
 - [Access groups guide](./access-groups.md)
 - [Access groups architecture and authorisation](./architecture/access-groups.md)
 - [LLM Services architecture](./architecture/llm-services.md)
+- [LLM profiles and soft limits: unreleased v8 release notes](./llm-services-release-notes.md)
 - [Agent Workspace deployment and operations](./agent-workspace-deployment.md)
 - [Agent Workspace / Agent Skills E2E cases](./e2e-test-cases/README.md)
 - [Architecture Decision Records (ADRs)](./adrs/)

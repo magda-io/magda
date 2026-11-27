@@ -260,10 +260,182 @@ llm-services:
       key: master-key
 ```
 
-MAGDA cannot inspect an external backend's model catalog. The operator is
-responsible for ensuring every served alias exists there. This deployment-wide
-allowlist remains an independent restriction even when per-user OPA model
-authorization is added.
+MAGDA reads the backend's advertised model list when available for wildcard
+coverage and the profile model picker; it cannot guarantee that an external
+backend actually routes every configured alias. The operator is responsible for
+that configuration. If the model list is unavailable, wildcard profiles fall
+back to the configured allowlist. This deployment-wide allowlist remains an
+independent restriction alongside per-user OPA model authorization.
+
+### LLM access profiles and usage
+
+**v8 development / PoC behaviour change (DEP-4):** `agentWorkspace/access`
+allows opening the Workspace; it no longer implies LLM invocation. Administrators
+can call deployment-allowed models without a profile, but ordinary users need an
+enabled, covering profile and an invoke grant. Deploying an LLM backend alone
+does not grant model access. See the [release notes](./llm-services-release-notes.md)
+and [current architecture](./architecture/llm-services.md).
+
+#### Deploy the matching services and migrations
+
+Keep LLM Services, Authorization API, OPA, web client, Gateway, Authorization DB
+migrator and LLM Services DB migrator on the same feature revision. Enabling
+`global.llmServices.enabled` includes both `llm-services` and `llm-services-db`.
+The latter creates the component-owned `llm` database with profiles and the daily
+usage ledger, using the existing combined-db or the configured external
+PostgreSQL mapping. **No new PostgreSQL server, Redis or LiteLLM database is
+required.** A dedicated instance is an explicit database-topology choice, not a
+prerequisite. Include `llm` in database backup/restore and capacity planning.
+
+Check the post-install/upgrade `llm-services-db-migrator` Job and the
+Authorization DB migration `V2_6__llm_access_profiles.sql`. The former creates
+`access_profiles` / `daily_model_usage`; the latter creates `llm/*` operations,
+stock permissions and the unassigned **LLM Profile Managers** role. It extends
+**Agent Workspace Users** only if that role still exists; it does not recreate a
+deleted role, assign users, create a default access profile, or silently grant
+LLM access to Authenticated Users. The chart supplies DB credentials through
+Secrets and the standard PostgreSQL TLS configuration. Do not put credentials in
+profile records or Helm examples.
+
+`global.defaultAdminUserId` must identify the existing administrator used for
+LLM Services' internal Auth API session. Callers' management decisions are made
+first with their own sessions; this service credential must never be exposed to
+the browser or Workspace. A local process without `DB_HOST` has only logging
+settlement, unavailable profile/usage APIs, and is **not** a deployed quota setup.
+
+The bundled backend is pinned to
+`ghcr.io/magda-io/litellm:v1.83.14-stable.patch.3` (LiteLLM 1.83.14). Do not
+carry forward 1.81.12-specific metering claims as current qualification evidence.
+An external backend and every new provider/model need separate compatibility
+checks, including terminal usage, incomplete/cancelled streams and tools.
+
+#### Set up access deliberately
+
+1. As an administrator, assign **LLM Profile Managers** only to trusted central
+   budget managers. They can manage and invoke every profile, read all usage and
+   read org units; they cannot generally edit roles or user membership. Their
+   invoke permission is still subject to profile limits.
+2. Open **Settings → LLM Services → Access Profiles**, create a profile, choose
+   explicit served aliases or **All available models (*)**, and set per-user,
+   per-model daily/weekly/monthly limits. Blank means unlimited; `0` blocks new
+   non-administrator requests. Wildcard includes aliases added by operators
+   later, so choose it deliberately.
+3. Grant access using one or more of:
+   - **Agent Workspace Users** plus a Public profile: the stock role includes
+     the exemption-capable invoke grant; Public is not anonymous access.
+   - **Agent Workspace Users** plus a profile on the user's org unit or an
+     ancestor: a Finance profile covers Finance and its descendant units, not
+     Corporate above it or a sibling unit. A user without an org unit needs
+     Public, role-based or unconstrained invoke access.
+   - The profile's **Roles with access → Add role**: attach its managed invoke
+     permission to an existing role. Individual users join that role through
+     the normal Users administration UI. No managed role per profile or direct
+     user grant is created.
+4. **Authenticated Users is intentionally selectable (AUTH-8): attaching it
+   makes this profile available to everyone signed in.** It does not expose the
+   profile anonymously or grant profile-management rights. Anonymous Users and
+   Admin Users are excluded. Consider cost and audience before confirming this
+   broad grant; the migration never makes it automatically.
+5. Verify with an ordinary user, not only an administrator: eligible model list,
+   one normal request, own usage, an unrelated/no-grant user, and exhausted-limit
+   refusal. Administrators bypass profiles/quotas and cannot prove ordinary
+   access was configured correctly. Users may open Workspace while model access
+   is absent; the UI shows a no-access message rather than granting access.
+
+Managers edit profiles centrally: owner/org-unit constraints and Public do not
+grant management rights. Saving requires a revision; after `409`, reload rather
+than overwriting someone else's change. Profile deletion removes its permission
+from roles, never those roles or users, and retains usage history. An error can
+follow an applied Auth API change, so inspect/retry rather than assuming nothing
+changed. A missing managed permission is recreated on the next role attachment;
+a conflicting permission with the recorded ID requires operator investigation,
+not adoption by name.
+
+#### Accounting configuration and monitoring
+
+At the `magda-core` level (nest these under `magda.magda-core` for the local
+umbrella):
+
+```yaml
+llm-services:
+  decisionCacheSeconds: 30
+  usage:
+    timeZone: Australia/Sydney
+    estimate:
+      bytesPerToken: 6
+      outputAllowanceTokens: 256
+      incompleteFactor: 0.25
+      outputTokens: 4096
+      outputTokensByModel: {}
+  noAccessHelp:
+    text: Contact your organisation's access administrator.
+    url: https://example.org/request-access
+```
+
+`decisionCacheSeconds` accepts integers from 0 to 30; `0` disables the per-user
+caller-access cache. Role/grant and org-unit changes can otherwise take the
+configured TTL to apply. Profile
+edits apply to later requests without that delay; running requests finish and
+settle normally. Timezone controls request-start day, Monday-start week and
+calendar-month accounting, including DST. Do not change it on live data without
+a migration/reporting plan: old dates are not reinterpreted.
+
+`noAccessHelp.text` is optional plain text up to 1,000 characters; its optional
+URL must be absolute HTTP(S). Both are checked at service startup and served by
+LLM Services, not read by the web-server chart. The browser supplies the default
+contact-administrator message when no additional help is configured.
+
+Metering has measured and estimated counters. The current calibrated fallback
+settings live in the [LLM Services chart values](../../deploy/helm/internal-charts/llm-services/values.yaml)
+and [settlement implementation](../../magda-llm-services/src/metering/settlement.ts).
+These example settings are the current defaults: estimated input uses forwarded
+request bytes / 6; observed text/tool delta bytes use the same ratio plus a
+256-token hidden allowance. Only when no output delta is observed does the
+4096-token output fallback (or per-alias override) apply. Incomplete attempts
+multiply estimated input plus hidden/fallback allowance by 0.25; observed visible
+output is never discounted. Valid final usage is always measured unchanged,
+including incomplete/failed terminals. See the [exact formula](./architecture/llm-services.md#metering-boundary).
+
+Treat them as approximate soft-budget controls, not provider billing or a hard
+cut-off; evaluate calibration on representative requests before changing them.
+A missing final usage snapshot is not zero usage. Visible text/tool deltas do not
+account for hidden reasoning. Observer caps bound memory; oversize events are
+still forwarded unchanged but can require estimated settlement.
+
+Monitor `llm-usage-settled` and critical `llm-usage-ledger-write-failed` events,
+measured/estimated proportions, unknown/oversize observer outcomes and
+`llm-usage-ledger-healthy-again`. Retain only safe metadata; do not collect
+prompts, model output, tool arguments, request bodies, provider credentials or
+session tokens as release evidence. A successful HTTP response alone does not
+prove its ledger increment was committed.
+
+Soft limits reserve nothing: concurrent requests, long streams and background
+requests may overshoot. A settlement failure gates bounded calls in the affected
+process until a rolled-back write probe succeeds; the gate is not a shared
+multi-replica control, and writes are not retried after uncertain commits.
+Unbounded profiles can bypass that write gate after a successful eligibility
+read, but a database/read outage can still fail their eligibility query.
+Administrators bypass quota admission and are still metered. Process crashes
+before settlement can lose counts; there is no durable settlement queue or
+repair/replay API. Do not zero daily rows as a workaround: usage is shared across
+profiles and its history is retained.
+
+The readiness endpoint checks database connectivity (`SELECT 1`), not write
+health or accounting completeness. On `503 llm_usage_unavailable`, check database
+connectivity/schema, migrator Jobs, client permissions and critical accounting
+logs. A restored health probe lifts the gate but does not reconstruct missed
+settlements. `403 llm_no_eligible_profile` means profile/grant/model coverage;
+`429 llm_quota_exceeded` means every eligible profile is exhausted and sends
+`x-should-retry: false`. Do not conflate these with provider `502` or retry quota
+errors in a tight loop.
+
+Use **My Usage** to inspect one's own totals, remaining and daily rows; **User
+Usage** requires unconstrained `llm/usage/read`. The latter can show IDs even
+when the viewer cannot read names/emails. Another user's remaining quota uses
+that user's grants, not the viewer's administrator access. Daily API filters
+`from` and `to` are inclusive local dates. Unlimited, exhausted and no eligible
+profile are distinct; period figures belong to one selected profile and do not
+stack limits from different profiles.
 
 ### Models
 

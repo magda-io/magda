@@ -32,3 +32,5 @@ wondering "why was it done this way?".
 - [0010 — Separate distribution structure from access mechanics](./0010-separate-distribution-structure-and-access-contracts.md)
 - [0011 — Keep Data Understanding metadata provenance-aware and advisory](./0011-provenance-aware-advisory-data-understanding.md)
 - [0012 — Typed access group authorisation, with group records written only by the access group API](./0012-typed-access-group-authorisation.md)
+- [0013 — Central LLM profile management with audience and role-based invoke grants](./0013-central-llm-profile-management-and-invoke-grants.md)
+- [0014 — Translate one caller invoke decision into profile SQL](./0014-translate-llm-invoke-decisions-to-profile-sql.md)
