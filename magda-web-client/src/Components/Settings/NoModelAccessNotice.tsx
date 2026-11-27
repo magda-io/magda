@@ -23,22 +23,29 @@ export function safeHelpUrl(url?: string): string | undefined {
     }
 }
 
-/** The operator's optional help text and link (DEP-3 `noAccessHelp`). */
+/** Shown when the operator set no `noAccessHelp.text`. */
+export const DEFAULT_NO_ACCESS_HELP_TEXT =
+    "Please contact system admin for access.";
+
+/**
+ * How to get access (DEP-3 `noAccessHelp`): the operator's text, or a short
+ * default, then the operator's link when one is set.
+ */
 export const NoAccessHelpContent: FunctionComponent<{
     help?: NoAccessHelp | null;
 }> = ({ help }) => {
+    const text = help?.text?.trim() || DEFAULT_NO_ACCESS_HELP_TEXT;
     const url = safeHelpUrl(help?.url);
-    if (!help?.text && !url) {
-        return null;
-    }
     return (
         <p className="llm-no-access-help">
-            {help?.text ? <span>{help.text}</span> : null}
-            {help?.text && url ? " " : null}
+            <span>{text}</span>
             {url ? (
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                    {help?.text ? "Request access" : url}
-                </a>
+                <>
+                    {" "}
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                        Request access
+                    </a>
+                </>
             ) : null}
         </p>
     );
@@ -92,8 +99,7 @@ const NoModelAccessNotice: FunctionComponent = () => {
         >
             <p>
                 <strong>No AI model access.</strong> Your account can open the
-                Agent Workspace but has no LLM access yet. Contact your
-                administrator.
+                Agent Workspace but has no LLM access yet.
             </p>
             <NoAccessHelpContent help={result.help} />
         </Message>

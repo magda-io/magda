@@ -23,7 +23,7 @@ import {
 import {
     DailyUsageHistory,
     EMPTY_FILTERS,
-    formatTokens,
+    TokenCount,
     UsageFilterControls,
     UsageFilters,
     UsageReportView
@@ -171,28 +171,32 @@ export const UserUsageListPage: FunctionComponent = () => {
                             <Column width={130} align="right">
                                 <HeaderCell>Total tokens</HeaderCell>
                                 <Cell>
-                                    {(row: UserUsageRow) =>
-                                        formatTokens(row.tokens)
-                                    }
+                                    {(row: UserUsageRow) => (
+                                        <TokenCount value={row.tokens} />
+                                    )}
                                 </Cell>
                             </Column>
                             <Column width={130} align="right">
                                 <HeaderCell>Measured</HeaderCell>
                                 <Cell>
-                                    {(row: UserUsageRow) =>
-                                        formatTokens(
-                                            row.measuredInputTokens +
+                                    {(row: UserUsageRow) => (
+                                        <TokenCount
+                                            value={
+                                                row.measuredInputTokens +
                                                 row.measuredOutputTokens
-                                        )
-                                    }
+                                            }
+                                        />
+                                    )}
                                 </Cell>
                             </Column>
                             <Column width={120} align="right">
                                 <HeaderCell>Estimated</HeaderCell>
                                 <Cell>
-                                    {(row: UserUsageRow) =>
-                                        formatTokens(row.estimatedTokens)
-                                    }
+                                    {(row: UserUsageRow) => (
+                                        <TokenCount
+                                            value={row.estimatedTokens}
+                                        />
+                                    )}
                                 </Cell>
                             </Column>
                             <Column width={130}>

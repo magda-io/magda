@@ -292,13 +292,24 @@ describe("My Usage page", () => {
         expect(text()).not.toContain("No eligible model profile");
     });
 
+    it("shows a million tokens or more compactly, with the exact count as a tooltip", async () => {
+        mockGetMyUsage.mockResolvedValue(
+            report({ totals: periodAmounts(999999, 503212345) })
+        );
+        await render(MY_USAGE_PATH);
+        expect(text()).toContain("Total (all time)503.2M tokens");
+        expect(text()).toContain("Today999,999 tokens");
+        expect(text()).toContain("Measured503.2M");
+        const exact = container.querySelector('[title="503,212,345 tokens"]');
+        expect(exact?.textContent).toBe("503.2M");
+    });
+
     it("shows No eligible model profile, not 0, with the configured help (UI case 6)", async () => {
         mockGetMyUsage.mockResolvedValue(report(NO_ACCESS));
         await render(MY_USAGE_PATH);
         expect(text()).toContain(
-            "No eligible model profile. Ask your administrator for access."
+            "No eligible model profile.Request access from the service desk. Request access"
         );
-        expect(text()).toContain("Request access from the service desk.");
         const link = container.querySelector<HTMLAnchorElement>(
             ".llm-no-access-help a"
         )!;
@@ -307,14 +318,41 @@ describe("My Usage page", () => {
         expect(container.querySelector("table.llm-usage-models")).toBeNull();
     });
 
-    it("handles missing or unsafe help configuration", async () => {
+    it("shows the default help without text, and no link without a URL", async () => {
+        const help = () =>
+            container.querySelector(".llm-no-access-help")?.textContent;
+        const link = () => container.querySelector(".llm-no-access-help a");
+
         mockGetMyUsage.mockResolvedValue(
             report({ ...NO_ACCESS, noAccessHelp: null })
         );
         await render(MY_USAGE_PATH);
         expect(text()).toContain("No eligible model profile.");
-        expect(container.querySelector(".llm-no-access-help")).toBeNull();
+        expect(help()).toBe("Please contact system admin for access.");
+        expect(link()).toBeNull();
 
+        mockGetMyUsage.mockResolvedValue(
+            report({ ...NO_ACCESS, noAccessHelp: { text: "Ask the desk." } })
+        );
+        await render(MY_USAGE_PATH);
+        expect(help()).toBe("Ask the desk.");
+        expect(link()).toBeNull();
+
+        mockGetMyUsage.mockResolvedValue(
+            report({
+                ...NO_ACCESS,
+                noAccessHelp: { url: "https://help.example.test/llm" }
+            })
+        );
+        await render(MY_USAGE_PATH);
+        expect(help()).toBe(
+            "Please contact system admin for access. Request access"
+        );
+        expect(link()?.getAttribute("href")).toBe(
+            "https://help.example.test/llm"
+        );
+
+        // an unsafe link is never shown
         mockGetMyUsage.mockResolvedValue(
             report({
                 ...NO_ACCESS,
@@ -322,7 +360,8 @@ describe("My Usage page", () => {
             })
         );
         await render(MY_USAGE_PATH);
-        expect(container.querySelector(".llm-no-access-help")).toBeNull();
+        expect(help()).toBe("Please contact system admin for access.");
+        expect(link()).toBeNull();
     });
 
     it("explains a ledger outage and retries", async () => {
@@ -502,7 +541,7 @@ describe("Agent Workspace no model access (UI case 10)", () => {
         });
         await render("/workspace");
         expect(text()).toContain(
-            "No AI model access. Your account can open the Agent Workspace but has no LLM access yet. Contact your administrator."
+            "No AI model access. Your account can open the Agent Workspace but has no LLM access yet."
         );
         expect(text()).toContain("Request access from the service desk.");
         expect(
@@ -511,12 +550,19 @@ describe("Agent Workspace no model access (UI case 10)", () => {
         ).toBe("https://help.example.test/llm");
     });
 
-    it("shows the message alone when the help is missing or can't be read", async () => {
+    it("shows the default help when none is configured or it can't be read", async () => {
         mockListInvocableModels.mockResolvedValue([]);
-        mockGetNoAccessHelp.mockRejectedValue(new Error("offline"));
-        await render("/workspace");
-        expect(text()).toContain("No AI model access.");
-        expect(container.querySelector(".llm-no-access-help")).toBeNull();
+        for (const outcome of [
+            () => mockGetNoAccessHelp.mockResolvedValue(null),
+            () => mockGetNoAccessHelp.mockRejectedValue(new Error("offline"))
+        ]) {
+            outcome();
+            await render("/workspace");
+            expect(text()).toContain(
+                "No AI model access. Your account can open the Agent Workspace but has no LLM access yet.Please contact system admin for access."
+            );
+            expect(container.querySelector(".llm-no-access-help a")).toBeNull();
+        }
     });
 
     it("shows nothing when the user has a model, or the check fails", async () => {

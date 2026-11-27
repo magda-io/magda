@@ -25,9 +25,27 @@ const Cell = Table.Cell;
 
 const DEFAULT_PAGE_SIZE = 10;
 
+const compactTokens = new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1
+});
+
+/** Exact below a million tokens; compact (1.2M, 503M, 1.5B) from there. */
 export function formatTokens(value: number): string {
-    return value.toLocaleString("en");
+    return Math.abs(value) >= 1e6
+        ? compactTokens.format(value)
+        : value.toLocaleString("en");
 }
+
+/** A token count; a compact one keeps the exact count as its tooltip. */
+export const TokenCount: FunctionComponent<{ value: number }> = ({ value }) =>
+    Math.abs(value) >= 1e6 ? (
+        <span title={`${value.toLocaleString("en")} tokens`}>
+            {formatTokens(value)}
+        </span>
+    ) : (
+        <>{formatTokens(value)}</>
+    );
 
 /** USE-8: a number, **Unlimited**, **Exhausted** or **No eligible model profile**. */
 export const RemainingValue: FunctionComponent<{
@@ -47,7 +65,7 @@ export const RemainingValue: FunctionComponent<{
         default:
             return (
                 <span className="llm-remaining limited">
-                    {formatTokens(remaining.remainingTokens)} tokens
+                    <TokenCount value={remaining.remainingTokens} /> tokens
                 </span>
             );
     }
@@ -60,21 +78,25 @@ const AmountsTile: FunctionComponent<{
     <div className="llm-usage-tile">
         <h3>{title}</h3>
         <p className="llm-usage-tile-total">
-            {formatTokens(amounts.tokens)} <span>tokens</span>
+            <TokenCount value={amounts.tokens} /> <span>tokens</span>
         </p>
         <dl>
             <div>
                 <dt>Measured</dt>
                 <dd>
-                    {formatTokens(
-                        amounts.measuredInputTokens +
+                    <TokenCount
+                        value={
+                            amounts.measuredInputTokens +
                             amounts.measuredOutputTokens
-                    )}
+                        }
+                    />
                 </dd>
             </div>
             <div>
                 <dt>Estimated</dt>
-                <dd>{formatTokens(amounts.estimatedTokens)}</dd>
+                <dd>
+                    <TokenCount value={amounts.estimatedTokens} />
+                </dd>
             </div>
         </dl>
     </div>
@@ -122,9 +144,9 @@ const ModelsTable: FunctionComponent<{ models: ModelUsage[] }> = ({
                         {PERIODS.map((period) => (
                             <td key={period.key}>
                                 <span className="llm-usage-used">
-                                    {formatTokens(
-                                        model.usage[period.key].tokens
-                                    )}{" "}
+                                    <TokenCount
+                                        value={model.usage[period.key].tokens}
+                                    />{" "}
                                     used
                                 </span>
                                 {model.eligible ? (
@@ -142,13 +164,17 @@ const ModelsTable: FunctionComponent<{ models: ModelUsage[] }> = ({
                             </td>
                         ))}
                         <td>
-                            {formatTokens(
-                                model.usage.allTime.measuredInputTokens +
+                            <TokenCount
+                                value={
+                                    model.usage.allTime.measuredInputTokens +
                                     model.usage.allTime.measuredOutputTokens
-                            )}
+                                }
+                            />
                         </td>
                         <td>
-                            {formatTokens(model.usage.allTime.estimatedTokens)}
+                            <TokenCount
+                                value={model.usage.allTime.estimatedTokens}
+                            />
                         </td>
                     </tr>
                 ))}
@@ -209,10 +235,10 @@ export const UsageReportView: FunctionComponent<{
                         className="llm-no-eligible-profile"
                     >
                         <p>
-                            <strong>No eligible model profile.</strong>{" "}
+                            <strong>No eligible model profile.</strong>
                             {subject === "self"
-                                ? "Ask your administrator for access."
-                                : "This user can't use any model now."}
+                                ? null
+                                : " This user can't use any model now."}
                         </p>
                         {subject === "self" ? (
                             <NoAccessHelpContent help={report.noAccessHelp} />
@@ -271,24 +297,32 @@ const DailyTable: FunctionComponent<{
         <Column width={140} align="right">
             <HeaderCell>Measured input</HeaderCell>
             <Cell>
-                {(row: DailyUsageRow) => formatTokens(row.measuredInputTokens)}
+                {(row: DailyUsageRow) => (
+                    <TokenCount value={row.measuredInputTokens} />
+                )}
             </Cell>
         </Column>
         <Column width={140} align="right">
             <HeaderCell>Measured output</HeaderCell>
             <Cell>
-                {(row: DailyUsageRow) => formatTokens(row.measuredOutputTokens)}
+                {(row: DailyUsageRow) => (
+                    <TokenCount value={row.measuredOutputTokens} />
+                )}
             </Cell>
         </Column>
         <Column width={120} align="right">
             <HeaderCell>Estimated</HeaderCell>
             <Cell>
-                {(row: DailyUsageRow) => formatTokens(row.estimatedTokens)}
+                {(row: DailyUsageRow) => (
+                    <TokenCount value={row.estimatedTokens} />
+                )}
             </Cell>
         </Column>
         <Column width={120} align="right">
             <HeaderCell>Total</HeaderCell>
-            <Cell>{(row: DailyUsageRow) => formatTokens(row.tokens)}</Cell>
+            <Cell>
+                {(row: DailyUsageRow) => <TokenCount value={row.tokens} />}
+            </Cell>
         </Column>
     </Table>
 );
