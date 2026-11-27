@@ -47,6 +47,9 @@ const userUsageBreadcrumb = { to: USER_USAGE_PATH, title: "User LLM Usage" };
 /** Shown for a name or email the viewer may not read (API-12). */
 export const NOT_VISIBLE = "Not available";
 
+/** The name of a user who no longer exists; their usage history remains. */
+export const DELETED_USER = "Deleted user";
+
 /**
  * The user's name for the list. A viewer who may not read users sees
  * neither name nor email (API-12): the ID is shown instead, so rows can
@@ -66,7 +69,10 @@ export const UserDetails: FunctionComponent<{ user: UsageUser }> = ({
     <dl className="llm-usage-user-details">
         <div>
             <dt>Name</dt>
-            <dd>{user.displayName || NOT_VISIBLE}</dd>
+            <dd>
+                {user.displayName ||
+                    (user.deleted ? DELETED_USER : NOT_VISIBLE)}
+            </dd>
         </div>
         <div>
             <dt>Email</dt>
@@ -149,6 +155,16 @@ export const UserUsageListPage: FunctionComponent = () => {
                         setPage(1);
                     }}
                 />
+                {result?.searchTruncated ? (
+                    <Message showIcon type="warning">
+                        More than{" "}
+                        {(result.searchMaxMatches ?? 0).toLocaleString("en")}{" "}
+                        users match &quot;{q}&quot;; only the first{" "}
+                        {(result.searchMaxMatches ?? 0).toLocaleString("en")} by
+                        name were checked for usage. Refine the search, or
+                        search by user ID.
+                    </Message>
+                ) : null}
                 {invalidRange ? (
                     <Message showIcon type="warning">
                         The From date must not be after the To date.

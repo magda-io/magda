@@ -339,6 +339,8 @@ export interface NoAccessHelp {
 
 export interface UsageUser {
     id: string;
+    /** On a User Usage report: the user no longer exists. */
+    deleted?: boolean;
     /** Only when the viewer may read users (API-12). */
     displayName?: string;
     email?: string;
@@ -426,7 +428,13 @@ export async function getMyDailyUsage(
  */
 export async function listUserUsage(
     query: UsageQuery & { q?: string } = {}
-): Promise<{ items: UserUsageRow[]; total: number }> {
+): Promise<{
+    items: UserUsageRow[];
+    total: number;
+    /** More users match the name or email than the server checked. */
+    searchTruncated?: boolean;
+    searchMaxMatches?: number;
+}> {
     const response = await request("GET", "usage/users", {
         query: usageQuery(query)
     });

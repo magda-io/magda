@@ -82,31 +82,45 @@ export function toFormState(profile?: AccessProfile): FormState {
 
 export type FormErrors = Partial<Record<keyof FormState, string>>;
 
-/** A limit as typed, without digit group separators (`,`, `_`, spaces). */
+/**
+ * A limit's digits: plain (`32343232`) or grouped in threes with commas
+ * (`32,343,232`). Anything else, e.g. `1,5`, a lone comma or a misplaced
+ * separator, is `undefined`: invalid, never silently changed. Blank is `""`.
+ */
+function limitDigits(value: string): string | undefined {
+    const text = value.trim();
+    if (/^\d*$/.test(text)) {
+        return text;
+    }
+    return /^\d{1,3}(,\d{3})+$/.test(text) ? text.replace(/,/g, "") : undefined;
+}
+
+/** A limit for editing: plain digits, or the text as typed if invalid. */
 export function unformatLimit(value: string): string {
-    return value.replace(/[,_\s]/g, "");
+    return limitDigits(value) ?? value;
 }
 
 /**
- * A limit with digit group separators (`32,343,232`), for reading big
- * numbers; text that isn't a whole number is left as typed.
+ * A limit with digit groups (`32,343,232`), for reading big numbers. Text
+ * that isn't a valid limit is left as typed, so its error stays visible.
  */
 export function formatLimit(value: string): string {
-    const text = unformatLimit(value);
-    return /^\d+$/.test(text) && Number.isSafeInteger(Number(text))
-        ? Number(text).toLocaleString("en")
+    const digits = limitDigits(value);
+    return digits && Number.isSafeInteger(Number(digits))
+        ? Number(digits).toLocaleString("en")
         : value;
 }
 
+/** Only a blank field is unlimited (`null`); `undefined` is invalid. */
 function parseLimit(value: string): number | null | undefined {
-    const text = unformatLimit(value);
-    if (!text) {
-        return null;
-    }
-    if (!/^\d+$/.test(text)) {
+    const digits = limitDigits(value);
+    if (digits === undefined) {
         return undefined;
     }
-    const number = Number(text);
+    if (!digits) {
+        return null;
+    }
+    const number = Number(digits);
     return Number.isSafeInteger(number) ? number : undefined;
 }
 

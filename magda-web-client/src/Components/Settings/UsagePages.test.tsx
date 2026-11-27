@@ -504,6 +504,30 @@ describe("User Usage pages", () => {
         );
     });
 
+    it("says when more users match a name search than were checked", async () => {
+        mockListUserUsage.mockResolvedValue({
+            items: [],
+            total: 0,
+            searchTruncated: true,
+            searchMaxMatches: 2000
+        });
+        await render(USER_USAGE_PATH);
+        expect(text()).toContain(
+            "only the first 2,000 by name were checked for usage. Refine the search, or search by user ID."
+        );
+    });
+
+    it("names a deleted user and keeps their history", async () => {
+        mockGetUserUsage.mockResolvedValue(
+            report({ ...NO_ACCESS, user: { id: OTHER_ID, deleted: true } })
+        );
+        await render(`${USER_USAGE_PATH}/${OTHER_ID}`);
+        expect(
+            container.querySelector(".llm-usage-user-details")?.textContent
+        ).toBe(`NameDeleted userEmailNot availableID${OTHER_ID}`);
+        expect(text()).toContain("Totals");
+    });
+
     it("explains an empty search", async () => {
         mockListUserUsage.mockResolvedValue({ items: [], total: 0 });
         await render(USER_USAGE_PATH);

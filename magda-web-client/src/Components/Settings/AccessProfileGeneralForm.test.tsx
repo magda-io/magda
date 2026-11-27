@@ -240,7 +240,7 @@ function labelled(text: string) {
 describe("limit formatting", () => {
     it("groups digits for reading, strips them for editing, and accepts them when saving", () => {
         expect(formatLimit("32343232")).toBe("32,343,232");
-        expect(formatLimit(" 300_000_000 ")).toBe("300,000,000");
+        expect(formatLimit(" 300,000,000 ")).toBe("300,000,000");
         expect(formatLimit("0")).toBe("0");
         expect(formatLimit("")).toBe("");
         expect(formatLimit("1.5")).toBe("1.5");
@@ -249,13 +249,44 @@ describe("limit formatting", () => {
             toFormState({ ...profile, allowedMonthlyTokens: 300000000 } as any)
                 .allowedMonthlyTokens
         ).toBe("300,000,000");
-        expect(
+        const save = (allowedMonthlyTokens: string) =>
             validateForm({
                 ...toFormState(),
                 name: "Finance",
-                allowedMonthlyTokens: "300,000,000"
-            }).fields?.allowedMonthlyTokens
-        ).toBe(300000000);
+                allowedMonthlyTokens
+            });
+        expect(save("300,000,000").fields?.allowedMonthlyTokens).toBe(
+            300000000
+        );
+        expect(save("  ").fields?.allowedMonthlyTokens).toBeNull();
+    });
+
+    it("never silently changes a malformed limit: it's invalid, and only blank is unlimited", () => {
+        for (const typed of [
+            "1,5",
+            ",",
+            "1,,000",
+            ",100",
+            "100,",
+            "1,0000",
+            "12,34,567",
+            "1 000",
+            "1_000",
+            "-1"
+        ]) {
+            const result = validateForm({
+                ...toFormState(),
+                name: "Finance",
+                allowedDailyTokens: typed
+            });
+            expect([typed, result.fields]).toEqual([typed, undefined]);
+            expect(result.errors.allowedDailyTokens).toBe(
+                "Enter a whole number of tokens, or leave it blank."
+            );
+            // left as typed, so the error is visible
+            expect(formatLimit(typed)).toBe(typed);
+            expect(unformatLimit(typed)).toBe(typed);
+        }
     });
 });
 
