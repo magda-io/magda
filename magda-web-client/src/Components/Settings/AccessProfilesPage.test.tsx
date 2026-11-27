@@ -256,7 +256,8 @@ describe("AccessProfilesPage", () => {
                 "Unlimited",
                 "Unlimited",
                 "Unlimited",
-                "Enabled"
+                "Enabled",
+                "Open"
             ],
             [
                 "Finance",
@@ -265,7 +266,8 @@ describe("AccessProfilesPage", () => {
                 "100K",
                 "2.5M",
                 "0",
-                "Disabled"
+                "Disabled",
+                "Open"
             ],
             [
                 "Both",
@@ -274,7 +276,8 @@ describe("AccessProfilesPage", () => {
                 "Unlimited",
                 "Unlimited",
                 "Unlimited",
-                "Enabled"
+                "Enabled",
+                "Open"
             ],
             [
                 "Team",
@@ -283,14 +286,24 @@ describe("AccessProfilesPage", () => {
                 "Unlimited",
                 "Unlimited",
                 "Unlimited",
-                "Enabled"
+                "Enabled",
+                "Open"
             ]
         ]);
-        expect(
-            container.querySelector(
-                `a[href="${ACCESS_PROFILES_PATH}/3b1eceed-603e-4173-91ff-a3475c75b25b"]`
-            )?.textContent
-        ).toBe("Demo: Public default model");
+        // the name isn't a link: each row's Open button opens the profile
+        const links = Array.from(container.querySelectorAll("tbody a"));
+        expect(links.map((a) => a.textContent)).toEqual([
+            "Open",
+            "Open",
+            "Open",
+            "Open"
+        ]);
+        expect(links[0].getAttribute("href")).toBe(
+            `${ACCESS_PROFILES_PATH}/3b1eceed-603e-4173-91ff-a3475c75b25b`
+        );
+        expect(links[0].getAttribute("aria-label")).toBe(
+            "Open profile Demo: Public default model"
+        );
         expect(container.textContent).toContain(
             "Limits are tokens per user and per model. A blank limit means no limit."
         );

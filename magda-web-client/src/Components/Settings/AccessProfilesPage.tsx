@@ -207,29 +207,19 @@ const AccessProfilesPage: FunctionComponent = () => {
                             loading={loading}
                             rowKey="id"
                         >
-                            <Column width={220} resizable>
+                            <Column width={200} flexGrow={2} resizable>
                                 <HeaderCell>Name</HeaderCell>
-                                <Cell>
-                                    {(row: AccessProfile) => (
-                                        <Link
-                                            to={getUrlWithPopUpQueryString(
-                                                accessProfilePath(row.id)
-                                            )}
-                                        >
-                                            {row.name}
-                                        </Link>
-                                    )}
-                                </Cell>
+                                <Cell dataKey="name" fullText />
                             </Column>
-                            <Column width={200} flexGrow={1}>
+                            <Column width={160} flexGrow={2}>
                                 <HeaderCell>Models</HeaderCell>
-                                <Cell>
+                                <Cell fullText>
                                     {(row: AccessProfile) =>
                                         formatModels(row.allowedModels)
                                     }
                                 </Cell>
                             </Column>
-                            <Column width={180} resizable>
+                            <Column width={130} flexGrow={1} resizable>
                                 <HeaderCell>Audience</HeaderCell>
                                 <Cell>
                                     {(row: AccessProfile) => (
@@ -237,7 +227,7 @@ const AccessProfilesPage: FunctionComponent = () => {
                                     )}
                                 </Cell>
                             </Column>
-                            <Column width={90} align="right">
+                            <Column width={80} align="right">
                                 <HeaderCell>Daily limit</HeaderCell>
                                 <Cell>
                                     {(row: AccessProfile) => (
@@ -267,12 +257,30 @@ const AccessProfilesPage: FunctionComponent = () => {
                                     )}
                                 </Cell>
                             </Column>
-                            <Column width={100}>
+                            <Column width={85}>
                                 <HeaderCell>Status</HeaderCell>
                                 <Cell>
                                     {(row: AccessProfile) =>
                                         row.enabled ? "Enabled" : "Disabled"
                                     }
+                                </Cell>
+                            </Column>
+                            <Column width={85}>
+                                <HeaderCell>Actions</HeaderCell>
+                                <Cell className="access-profiles-actions-cell">
+                                    {(row: AccessProfile) => (
+                                        <Button
+                                            as={Link}
+                                            to={getUrlWithPopUpQueryString(
+                                                accessProfilePath(row.id)
+                                            )}
+                                            size="sm"
+                                            appearance="ghost"
+                                            aria-label={`Open profile ${row.name}`}
+                                        >
+                                            Open
+                                        </Button>
+                                    )}
                                 </Cell>
                             </Column>
                         </Table>
