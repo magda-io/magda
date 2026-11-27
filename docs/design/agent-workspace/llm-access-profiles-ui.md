@@ -1,6 +1,6 @@
 # LLM access profiles: Settings UI
 
-**Status:** proposed screens for [#3838](https://github.com/magda-io/magda/issues/3838). **Not implemented.** This document covers screens and interactions only. Rules and APIs are in the [design](./llm-access-profiles.md), and the requirement numbers (e.g. **AUTH-7**) refer to it.
+**Status:** implemented PoC screens for [#3838](https://github.com/magda-io/magda/issues/3838) on the **unreleased v8 development line**, with reconciliation under review in [PR #3973](https://github.com/magda-io/magda/pull/3973). This is not a production-readiness or completed browser/accessibility-qualification claim. This document covers screens and interactions only. Rules and APIs are in the [design](./llm-access-profiles.md), and the requirement numbers (e.g. **AUTH-7**) refer to it.
 
 Follow the existing Settings conventions (Access Groups, Roles, Users) for navigation, data grids, pop-ups and accessibility. Hidden tabs and disabled buttons are only a convenience; the API enforces every rule.
 
@@ -60,7 +60,7 @@ A grid of the roles that hold the profile's Use permission (API-3):
 | --- | --- | --- |
 | Name, with the ID as secondary text | Role description | **Remove** |
 
-- **Add role** opens a pop-up with a searchable role picker (API-4) showing name, description and ID. Anonymous Users, Admin Users and roles already attached are not offered. Confirm text: "Everyone with role *R* will be able to use this profile."
+- **Add role** opens a pop-up with a searchable role picker (API-4) showing name, description and ID. Anonymous Users, Admin Users and roles already attached are not offered. Anonymous Users has no individual authenticated identity to meter. Attaching Admin Users would be pointless: administrators already have every deployment-allowed model without a profile or quota. **Authenticated Users is offered deliberately:** attaching grants this profile to everyone who can sign in, including future users, subject to its enabled state, models and soft limits (AUTH-8). This is distinct from marking a profile Public. Confirm text: "Everyone with role *R* will be able to use this profile."
 - **Remove** asks for confirmation, then removes only this profile's access from that role. The role and its users are not changed.
 - Note above the grid: "To give individual people access, add them to one of these roles in **Settings → Users**. People may also have access through the profile's org unit or the Public setting."
 - The grid doesn't list users, and doesn't try to work out who effectively has access.
@@ -68,7 +68,7 @@ A grid of the roles that hold the profile's Use permission (API-3):
 
 ## My Usage
 
-The user's own data only. The user ID comes from the session, never from the page (API-7).
+The user's own data only. The user ID comes from the session, never from the page (API-7). The API accepts any authenticated user even when the navigation tab is hidden because the user has no invoke permission.
 
 | Section | Content |
 | --- | --- |
@@ -105,7 +105,7 @@ When the Workspace user has no eligible model (`GET /api/v0/llm/v1/models` retur
 
 1. A user with only constrained `llm/access/*` permissions sees no Access Profiles tab, and is denied by the API even with a deep link (AUTH-3).
 2. An LLM Profile Manager creates a profile with `*` and limits, then attaches a role; a user in that role can use it.
-3. **Add role** doesn't offer Anonymous Users, Admin Users or roles already attached. **Remove** leaves the role, its users and any other profiles unchanged.
+3. **Add role** doesn't offer Anonymous Users, Admin Users or roles already attached, for the reasons in AUTH-8. It does offer Authenticated Users: attaching grants this profile to everyone who can sign in, including future users, without requiring Public. **Remove** leaves the role, its users and any other profiles unchanged; removing Authenticated Users removes that broad role grant, not other audience/Public grants.
 4. The Org unit help text's example matches the behaviour: a user in the profile's unit or a unit below has access; a user in a unit above or in a sibling unit doesn't. A profile with no org unit gives no org unit access.
 5. Public plus the stock "Use LLM profiles" permission gives access to users with no org unit, profile role or other grant. Public without an exemption-capable grant gives nothing.
 6. My Usage appears for a user with any invoke permission. When nothing is eligible it shows "No eligible model profile", not 0. It never shows another user's data, whatever the URL.

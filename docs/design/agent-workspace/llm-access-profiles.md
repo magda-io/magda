@@ -1,7 +1,7 @@
 # LLM access profiles and soft usage limits
 
-- **Status:** proposed MAGDA v8 design for [#3838](https://github.com/magda-io/magda/issues/3838). **Not implemented.** The implementation PoC is tracked in [#3937](https://github.com/magda-io/magda/issues/3937). The screens are in the [Settings UI design](./llm-access-profiles-ui.md).
-- **Evidence:** the [LiteLLM/DSH metering PoC #3934](https://github.com/magda-io/magda/issues/3934) ([draft PR #3936](https://github.com/magda-io/magda/pull/3936)) shows that usage can be metered on one tested provider route ([PoC evidence](#poc-evidence-and-limits)). It isn't a production metering implementation.
+- **Status:** implemented PoC for [#3838](https://github.com/magda-io/magda/issues/3838) on the **unreleased v8 development line**, tracked in [#3937](https://github.com/magda-io/magda/issues/3937). This living design includes the reconciliation changes under review in [PR #3973](https://github.com/magda-io/magda/pull/3973); it is **not a production-readiness or completed-qualification claim**. [#3950](https://github.com/magda-io/magda/issues/3950) tracks qualification separately. The screens are in the [Settings UI design](./llm-access-profiles-ui.md). Keep design PR #3932 open during review.
+- **Evidence:** the [LiteLLM/DSH metering PoC #3934](https://github.com/magda-io/magda/issues/3934) ([draft PR #3936](https://github.com/magda-io/magda/pull/3936)) provides **dated** evidence for one provider route ([PoC evidence](#poc-evidence-and-limits)). Its old LiteLLM version and test counts are not current full-feature qualification.
 - **Owner:** MAGDA LLM Services. Neither the Registry nor LiteLLM manages profiles or usage.
 - **Related:**
   - [LLM Services architecture](../../docs/architecture/llm-services.md);
@@ -29,7 +29,7 @@ Authorization API: llm/access and llm/usage resources and operations, stock role
 LLM Services database: profiles, and one usage row per (user, public model alias, local day)
 ```
 
-What changes compared with today: LLM invocation no longer depends on `agentWorkspace/access`. The Workspace itself still requires that permission. Independent LLM clients need only an invoke grant (**AUTH-4**). Provider Secrets stay private to LiteLLM.
+Compared with the earlier Workspace-only access gate, LLM invocation no longer depends on `agentWorkspace/access`. The Workspace itself still requires that permission. Independent LLM clients need only an invoke grant (**AUTH-4**). Provider Secrets stay private to LiteLLM.
 
 ### Non-goals
 
@@ -90,8 +90,10 @@ What changes compared with today: LLM invocation no longer depends on `agentWork
 - **AUTH-8** Attaching and detaching a profile's permission needs only unconstrained `llm/access/update`. LLM Services makes the Auth API change itself (AUTH-12). It can only add or remove that profile's own invoke permission, so a profile manager can't gain any access beyond LLM invoke.
 
   Two roles can't be chosen:
-  - **Anonymous Users:** there is no user ID to meter, and AUTH-4 requires one;
-  - **Admin Users:** pointless, administrators already have access.
+  - **Anonymous Users:** there is no individual authenticated identity to meter, and AUTH-4 requires a non-empty user ID;
+  - **Admin Users:** attaching is pointless: administrators already have access to every deployment-allowed model without a profile (AUTH-10).
+
+  **Authenticated Users is allowed.** Attaching a profile to this role deliberately grants it to **everyone who can sign in**, including users created later, subject to that profile's enabled state, model coverage and soft limits. It does not grant anonymous access and does not require the Public setting. This is a broad role grant, distinct from Public plus an exemption-capable permission (AUTH-6).
 
   Profile managers are **not** given `authObject/role/update` instead. That permission alone lets its holder create any permission inside any role, including their own (`POST /roles/:roleId/permissions`), which makes it effectively administrator.
 - **AUTH-9** `llm/usage/read` lets a caller read **other users'** usage (User Usage). In v8 it is allowed only for unconstrained permissions. A caller always reads their own usage without any permission (API-7).
@@ -104,6 +106,8 @@ What changes compared with today: LLM invocation no longer depends on `agentWork
 - **AUTH-11** The Authorization DB migration seeds the following, with fixed UUIDs in the style of `V2_4__agent_workspace_and_skills.sql`:
   - **Unconstrained permissions** for `llm/access/{create,read,update,delete,invoke}` and `llm/usage/read`. They are held by a new, unassigned stock role **"LLM Profile Managers"**, so managers can also view and test every profile, and see usage when tuning limits. The role's only `authObject/*` permission is an unconstrained, read-only `authObject/orgUnit/read`, so managers can choose a profile's org unit and see the names of the units profiles use. Without it, a manager who isn't an administrator sees no org units at all.
   - **A stock permission "Use LLM profiles":** `llm/access/invoke`, org unit constrained (audience, AUTH-5), `allowExemption=true`. It is added to the existing unassigned **"Agent Workspace Users"** stock role. On its own it grants nothing until a profile exists. With it, setup is one step: create a profile and either mark it Public or give it an org unit.
+
+  The migration does not assign users, create a default profile or attach a profile to Authenticated Users. If Agent Workspace Users was deleted, the migration does not recreate it; the stock invoke permission is still seeded without that role link.
 
 ### Credentials
 
@@ -194,7 +198,7 @@ allow {
   - the eligible models and remaining quota in My Usage (API-7).
 - **EVAL-3** The residual depends only on the caller (roles, permissions, org unit). LLM Services may cache it per user for up to **30 seconds** (`llm-services.decisionCacheSeconds`, default `30`). That TTL is the documented delay before a revoked grant stops working. This is acceptable because the limits control a budget; they aren't billing.
 
-  The session user's `whoami` result (the session check and the Admin Users role, AUTH-10) is cached with the residual, for the same TTL; a TTL of `0` disables the cache.
+  The session user's `whoami` result (the session check and the Admin Users role, AUTH-10) is cached with the residual, for the same TTL. Configuration accepts only **0–30 seconds**; `0` disables the cache. Revocation and org-unit or administrator-role changes may take that TTL to apply; an already running stream is not revoked.
 
   Profile changes take effect immediately, because the profile attributes are read from SQL on every request.
 - **EVAL-4** Management operations (AUTH-3) need no profile attributes. They are a plain decision on the operation. List and read responses need no per-row filtering: a caller who may read one profile may read all of them.
@@ -244,10 +248,10 @@ CREATE TABLE daily_model_usage (
 
 ## Model coverage
 
-- **MODEL-1** The operator-managed Helm `llm-services.allowedModels` is an outer restriction for everyone, administrators included. Provider routing and credentials stay in Helm and Secrets. There is no model table and no model management UI.
+- **MODEL-1** The operator-managed aliases in Helm **`global.llmServices.defaultModel` and `global.llmServices.additionalModels`** form the deployment allowlist, an outer restriction for everyone, administrators included. The shared model-entry schema drives LLM Services, bundled LiteLLM and the Workspace; it replaces the earlier `llm-services.allowedModels` setting. Clients use exact public aliases, not provider model IDs. Provider routing and credentials stay in Helm and Secrets. There is no model table and no model management UI.
 - **MODEL-2** `["*"]` covers every alias that is both deployment-allowed and served by the backend, including aliases added later. It never means arbitrary provider model names. If the backend's model list is unavailable, treat `*` as the explicitly configured allowlist.
 
-  Explicit aliases are validated against the allowlist when written, and checked again on each request. A profile can lose coverage when an operator removes an alias.
+  Explicit aliases are validated against deployment-allowed, backend-served aliases when written, with the same allowlist fallback when the backend list is unavailable, and checked against the allowlist again on each request. A profile can lose coverage when an operator removes an alias. Successful backend lists are cached for 60 seconds and failures for 15 seconds; discovery is not a provider-health guarantee. An external backend must route every configured public alias.
 - **MODEL-3** Limits apply **separately to each alias**. A `["*"]` profile with a daily limit of 100k allows 100k tokens per user for each alias, not 100k across all of them.
 
 ## Profile lifecycle
@@ -287,7 +291,7 @@ CREATE TABLE daily_model_usage (
 
 ## Public API
 
-All paths are relative to `/api/v0/llm`. They are proposed. Every response is user-specific and sends `Cache-Control: private, no-store`, including proxied model responses: the backend's `Cache-Control` is never forwarded.
+All paths are relative to `/api/v0/llm`. These are the PoC API contracts. Every response is user-specific and sends `Cache-Control: private, no-store`, including proxied model responses: the backend's `Cache-Control` is never forwarded. API history date filters (`from` / `to`) are inclusive local dates; internal period sums use half-open date ranges (USE-4).
 
 | | HTTP | Authorization | Result |
 | --- | --- | --- | --- |
@@ -304,7 +308,7 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 | API-13 | `GET /access-help` | Any authenticated user | The operator's `noAccessHelp` (DEP-3), for the Workspace's no-access message |
 
 - **API-11** Errors are safe and don't leak identities or Secrets:
-  - `401` unauthenticated;
+  - `401` unauthenticated, invalid session or a session naming a deleted user;
   - `403` the alias isn't allowed, or no eligible profile covers it (error code `llm_no_eligible_profile`);
   - `404` for a missing profile or role;
   - `409` stale revision (error code `llm_profile_stale_revision`, with the current revision);
@@ -312,6 +316,8 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
   - `428` an update without `If-Match`;
   - `429` with error code `llm_quota_exceeded` when every eligible profile's limit is used up. It also sends `x-should-retry: false`, because OpenAI SDKs otherwise retry a `429` automatically;
   - `503` when the Auth API is unavailable, or a required ledger read is unavailable or gated (USE-10, error code `llm_usage_unavailable`).
+
+  Lifecycle errors do not promise that nothing changed: an Auth API refusal may surface as `502`, while a timeout or lost response can leave an uncertain outcome across the two services (LIFE-1, LIFE-3, LIFE-4). Show a safe, actionable error without exposing the upstream body or credentials.
 - **API-12** User Usage finds users by ID. `GET /usage/users` lists users with usage, most tokens first, filtered by model and date range. A user ID always returns that user, including a deleted one with usage. Search by name or email, and display names on result rows, use the **caller's** session against the Auth API users endpoints. A caller without user read rights sees IDs only.
 
   A name or email search reads every match the caller may read, up to 2,000, and only then keeps those with usage, so a user isn't missed because of where their name sorts. When more match, the response says so and the page asks for a narrower search.
@@ -341,14 +347,14 @@ All paths are relative to `/api/v0/llm`. They are proposed. Every response is us
 
   Show **Unlimited**, **Exhausted** and **No eligible model profile** distinctly. Remaining quota indicates when admission will stop; it doesn't promise a number of tokens.
 - **USE-9** Administrator requests skip quotas (AUTH-10) but are recorded.
-- **USE-10** If the ledger can't be read before admission, fail requests bounded by a limit with `503`, rather than letting unchecked spending through. Administrators and profiles without limits follow their normal path.
+- **USE-10** Profiles and usage share the **same `llm` database**. Non-administrator eligibility reads join the profile and period usage, so a failed required read returns **`503` even when a profile has no limits**. This fail-closed rule preserves profile authority; an unlimited limit is not permission to bypass a failed database read. Administrators retain their existing allowlist-bound bypass path (AUTH-10), and their forwarded usage is still settled on a best-effort basis.
 
   If a settlement write fails after the response headers have been sent:
   - log a critical accounting error, with no prompts or content;
-  - stop admitting bounded requests until a ledger health check passes (a write probe that is always rolled back). Profiles without limits and administrators keep their normal path;
-  - don't retry the write: a write whose commit acknowledgement was lost would count the request twice. A repeated settlement of the same request ID is dropped.
+  - stop admitting bounded requests **in that service process** until a ledger health check passes (a write probe that is always rolled back). Profiles without limits can continue only after a successful eligibility read; administrators retain their existing path;
+  - don't retry the write: a write whose commit acknowledgement was lost could count the request twice. Repeated settlement of the same request ID is suppressed **in process**, not by a durable request journal.
 
-  Never report an uncommitted count as recorded.
+  The failed-write gate and settlement duplicate suppression are process-local. Another replica does not inherit the gate; a process crash before settlement can lose usage. These are accepted limitations of the soft-budget PoC, separate from intentional concurrent overshoot (USE-6). There is no durable exactly-once, shared multi-replica gate or replay guarantee. Never report an uncommitted count as recorded. Readiness checks database connectivity, not accounting completeness or the failed-write gate.
 
 ## Metering
 
@@ -357,8 +363,8 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
 - **METER-1** Count **one final usage snapshot per forwarded request**: Chat `usage.prompt_tokens` + `usage.completion_tokens`, or Responses `usage.input_tokens` + `usage.output_tokens` (in streams, the terminal `response.usage`).
   - If `total_tokens` is present, check it equals input + output.
   - Accept final usage from `response.completed` or `response.incomplete`, and from `response.failed` only when it carries a valid snapshot.
-  - Count `[DONE]` after a Responses terminal event as a marker, not as another request.
-  - A Chat `finish_reason` on its own isn't a terminal.
+  - Count `[DONE]` after a Responses terminal event as a marker, not as another request. **`[DONE]` alone is not a Responses terminal:** a stream ending without `response.completed`, `response.failed` or `response.incomplete` is an incomplete attempt.
+  - A Chat `finish_reason` on its own isn't a terminal. Invalid, malformed or oversize later Chat usage must not let `[DONE]` promote an earlier provisional zero or stale snapshot as final usage.
   - Never sum duplicate, conflicting or provisional usage events.
   - Usage that is missing, invalid or oversize is **unknown**, never zero.
 - **METER-2** Request handling differs by endpoint:
@@ -366,26 +372,41 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   | API / mode | Format on the tested route | Handling |
   | --- | --- | --- |
   | Chat, non-streaming | `usage.prompt_tokens`, `completion_tokens`, `total_tokens` | Validate, debit once |
-  | Chat, streaming | Final usage chunk, then `[DONE]` | In LiteLLM 1.81.12, an omitted or `true` `stream_options.include_usage` produced usage; `false` suppressed it. Make sure usage is requested for quota-bounded calls, with provider compatibility tests. Never treat `false` as a free call. If usage can't be requested safely, debit an estimate |
+  | Chat, streaming | Final usage chunk, then `[DONE]` | Request usage with `stream_options.include_usage=true`; a caller's `false` must not make the call free. The historical 1.81.12 experiment observed that `false` suppressed usage. Provider compatibility still needs route-specific tests; when valid final usage cannot be read, debit an estimate |
   | Responses, non-streaming | `usage.input_tokens`, `output_tokens`, `total_tokens` | Validate, debit once |
   | Responses, streaming | Terminal `response.completed` / `response.incomplete` with nested `response.usage`, then `[DONE]` | **Never add Chat `stream_options`**: the tested route returned `400`. Accept usage on `response.incomplete` |
 - **METER-3** The streaming observer is bounded and metadata-only:
   - it preserves bytes, chunk order, headers, backpressure and cancellation;
   - it handles any fragmentation, UTF-8 and CRLF boundaries;
   - it never buffers whole streams, rebuilds output, or logs prompts, responses or tool arguments;
-  - the tested limits are a 64 KiB SSE event buffer and a 1 MiB non-streaming JSON cap. Production limits are explicit configuration, and dropped, oversize or unknown events are counted.
+  - the default limits are a 64 KiB SSE event buffer and a 1 MiB non-streaming JSON cap; they are explicit configuration, and dropped, oversize or unknown events are counted;
+  - quality metadata may record request-body bytes, observed nonempty text/tool-argument delta bytes, terminal type and allowlisted status, `[DONE]` marker count and normal-completion state. Count bytes without retaining or logging content; do not count repeated `*.done` or terminal output snapshots again.
 
   The observer sits inside the proxy path; the PoC's loopback tap isn't a production design.
 
   Metering must never stop a valid response being forwarded. Invalid observer limits stop the service at startup. An observer that fails at run time is dropped, the response is still forwarded, and the request is estimated (METER-4).
 - **METER-3a** A LiteLLM response cut off mid-way ends the client's response as a **failed connection**, never with a normal end that would make it look complete. This is the Gateway's rule since #3930. Once headers are sent, an upstream error destroys the client response; before then, the client gets `502`.
-- **METER-4** **Estimate** when there is no valid final usage and the upstream may have processed the request (cancellation, timeout, malformed or oversize events, interruption). METER-7 lists exactly which outcomes are estimated:
+- **METER-4** **Estimate** when there is no valid final usage and the upstream may have processed the request (cancellation, timeout, malformed or oversize events, interruption). METER-7 lists exactly which outcomes are estimated. Use the simplified soft-budget heuristic:
 
-  `estimated_tokens = ceil(request body bytes / bytesPerToken) + outputAllowance`
+  ```text
+  input = ceil(forwarded request body bytes / bytesPerToken)
+  if nonempty visible text/tool output was observed:
+      visible = ceil(observed output bytes / bytesPerToken)
+      fallback = 0
+  else:
+      visible = 0
+      fallback = outputTokensByModel[alias] if configured, otherwise outputTokens
+  factor = 1 for normal completion, otherwise incompleteFactor
+  estimated_tokens = visible + ceil((input + fallback) * factor)
+  ```
 
-  It increments `estimated_tokens` and `estimated_requests`, never the measured columns. Defaults: `llm-services.usage.estimate.bytesPerToken: 4`, `llm-services.usage.estimate.outputTokens: 4096`, with optional per-alias overrides. These are initial values to tune with evidence. The estimate is never based only on visible output text, which misses reasoning, cached input and background generation.
-- **METER-5** Settle once per request (USE-7). Track `terminalSeen` separately from `usageFinal`: a terminal event with invalid usage isn't final metering. Repeated events, close/error callbacks and `[DONE]` must not cause a second upsert. A crash before settlement is an accepted limitation of a soft quota.
-- **METER-6** Meter **every** model request made for the user, independently against its own alias: tool-call requests and continuations, and auxiliary or background requests such as DSH titles. A background request cancelled at shutdown follows METER-4.
+  Defaults under `llm-services.usage.estimate`: **`bytesPerToken: 5`**, **`outputTokens: 4096`**, **`outputTokensByModel: {}`**, **`incompleteFactor: 0.25`**. Thus input and visible output both use bytes divided by 5 by default. There is **no extra output or hidden-reasoning allowance** when visible output was observed; the 4,096-token fallback (or per-alias override) applies only when visible output could not be observed. An explicit per-alias fallback of `0` is preserved, not replaced with the default.
+
+  A failed/incomplete terminal, absent terminal (including Responses `[DONE]` alone), interruption, unobservable format or observer failure is not normal completion. The factor discounts only estimated input and the no-visible-output fallback; visible output is never discounted. **Valid final usage is always measured unchanged**, including usage on failed/incomplete terminals; it never takes this estimate or its discount.
+
+  Increment `estimated_tokens` and `estimated_requests`, never the measured columns. These defaults are **provisional soft-budget policy assumptions, not empirical calibration, a tokenizer, hidden-token measurement or a provider-billing fraction**. Request JSON and output text need not have the same token/byte ratio, and visible output misses hidden reasoning. Keep the heuristic explicit and simple rather than inventing a hidden-output allowance. The configured ratio and incomplete factor can be tuned, but none is an accuracy or upper-bound guarantee.
+- **METER-5** Settle once per request within the process (USE-7). Track `terminalSeen` separately from `usageFinal`: a terminal event with invalid usage isn't final metering. Track Responses terminal types separately from `[DONE]`. Repeated events, close/error callbacks and `[DONE]` must not cause a second upsert. Duplicate suppression is process-local, not durable exactly-once accounting (USE-10); a crash before settlement is an accepted limitation of a soft quota.
+- **METER-6** Meter **every** model request made for the user, independently against its own alias: tool-call requests and continuations, and auxiliary or background requests such as DSH titles. Each retry is another forwarded attempt and is metered independently; do not collapse a session or visible turn into one request. DSH retry/title policy belongs to the client, not a facade metering exemption. A background request cancelled at shutdown follows METER-4.
 - **METER-7** **Charging outcomes.** Only a model response can be charged:
 
   | Outcome | Charge |
@@ -393,26 +414,29 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   | Refused before forwarding (authorisation, quota, validation) | Nothing |
   | Never reached LiteLLM (connection refused, DNS failure) | Nothing |
   | Any non-2xx answer from LiteLLM or the provider (4xx or 5xx) | Nothing: there is no model response |
-  | 2xx with valid final usage | Measured (METER-1) |
-  | 2xx without valid final usage: a terminal event without usage, no terminal, malformed or oversize usage, or an unreadable content type | Estimated (METER-4) |
-  | 2xx cut short: the client disconnects, or the upstream connection fails or times out mid-response | Measured if final usage already arrived, otherwise estimated |
-  | Sent upstream, then the connection fails or times out before any response | Estimated: the model may still have processed it |
+  | 2xx with valid final usage, including failed/incomplete terminal usage | Measured unchanged (METER-1), no incomplete discount |
+  | 2xx normally completed without valid final usage | Estimated with factor `1` (METER-4) |
+  | 2xx without a normal terminal, including Responses `[DONE]` alone, failed/incomplete terminal without valid usage, or an unreadable content type | Estimated with `incompleteFactor` on input/fallback only (METER-4) |
+  | 2xx cut short: the client disconnects, or the upstream connection fails or times out mid-response | Measured if final usage already arrived, otherwise estimated with the incomplete factor |
+  | Sent upstream, then the connection fails or times out before any response | Estimated with the incomplete factor: the model may still have processed it |
 
-  The PoC saw a real completed Responses stream from the pinned LiteLLM whose terminal event carried no usage. The estimate fallback is needed in practice, not only in theory.
+  Malformed or oversize usage is unknown, not zero; use the normal/incomplete rule for the observed completion state. The historical 1.81.12 PoC saw a completed Responses stream without terminal usage, so estimate fallback is needed in practice, not only in theory. That observation does not establish the current pin's missing-usage frequency or the accuracy of an estimate.
 
 ## Deployment
 
-- **DEP-1** Add an `llm-services-db` chart and a `magda-migrator-llm-services-db` image (using `magda-db-migrator`, like session-db and tenant-db). They create the `llm` database on combined-db, or on a configured external instance, with their own password Secret and login. No new Postgres server, no Redis, no LiteLLM database.
-- **DEP-2** The Auth objects (AUTH-1, AUTH-11) are seeded by a new `magda-migrator-authorization-db` migration, because they live in the Auth DB.
-- **DEP-3** New `llm-services` chart values:
+- **DEP-1** The `llm-services-db` chart and `magda-migrator-llm-services-db` image (using `magda-db-migrator`, like session-db and tenant-db) create the `llm` database on combined-db, or on a configured external instance, with their own password Secret and login. No new Postgres server, no Redis, no LiteLLM database. Operators must include this database and its credentials in the normal backup/restore plan; restored usage and profile state remain authoritative.
+- **DEP-2** The Auth objects (AUTH-1, AUTH-11) are seeded by `magda-migrator-authorization-db` migration `V2_6__llm_access_profiles.sql`, because they live in the Auth DB. Deployment needs both service migrators, not only the LLM tables.
+- **DEP-3** `llm-services` chart values:
   - `usage.timeZone` (`Australia/Sydney`);
   - `usage.estimate.*` (METER-4);
-  - `decisionCacheSeconds` (`30`);
+  - `decisionCacheSeconds` (`30`, accepted range `0–30`, EVAL-3);
   - `global.defaultAdminUserId`, for the internal session (AUTH-12);
   - `noAccessHelp.text` (plain text, at most 1,000 characters) and `noAccessHelp.url` (an absolute `http` or `https` link), both optional, shown to a user with no eligible model (UI). LLM Services checks them at startup and serves them through API-13 and in a no-access My Usage report. They are `llm-services` values: the web server chart never reads them. Without text, the pages say "Please contact system admin for access."; without a link, they show none;
 - **DEP-4** MAGDA v8 is unreleased, so there is no released-user migration. Release notes must say that LLM access is no longer implied by `agentWorkspace/access`. A Workspace user needs the "Agent Workspace Users" stock role (which now includes "Use LLM profiles", AUTH-11) **and** a Public or audience profile, or another invoke grant.
 
 ## Acceptance tests
+
+These are acceptance cases, **not a claim that every case has passed**. Record the exact revision, component/provider versions, real versus fixture services and PASS / FAIL / SKIPPED outcomes in qualification evidence. Historical observer counts are not current full-feature results; synthetic provider fixtures do not qualify other provider routes.
 
 - **TEST-1** Policy: every case listed under the [policy sketch](#policy-sketch).
 - **TEST-2** Partial evaluation: residuals for each grant type translate into SQL. The SQL selects exactly the profiles a full decision would allow, for the same fixtures. The admin and no-grant results short-circuit.
@@ -426,7 +450,8 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
 - **TEST-4** Role grants:
   - attach and detach need only `llm/access/update`;
   - a caller with constrained `llm/access/update` is denied;
-  - Anonymous Users and Admin Users are rejected;
+  - Anonymous Users and Admin Users are rejected for the reasons in AUTH-8;
+  - Authenticated Users is allowed: attaching grants this profile to existing and future signed-in users, never anonymous users; detaching removes only that grant and retains the permission;
   - attaching grants the role's users invoke on that profile only.
 - **TEST-5** Audience (AUTH-5):
   - own unit, ancestor unit, descendant unit (no access), sibling (no access);
@@ -441,7 +466,7 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - a stream that crosses midnight;
   - concurrent upserts;
   - `429` versus `403`;
-  - ledger outage `503`;
+  - required profile/ledger read outage `503` for non-administrators, including unlimited profiles; process-local failed-write gate and recovery, with unlimited access still requiring a successful eligibility read (USE-10);
   - administrator requests recorded but not limited.
 - **TEST-7** Metering: everything in METER-1 to METER-7, against pinned LiteLLM and real DSH Responses streaming. Other providers need their own compatibility tests before their metering is claimed.
 - **TEST-8** API: personal endpoints ignore any supplied user ID; User Usage requires `llm/usage/read`; `Cache-Control: private, no-store` is sent; nothing leaks in errors.
@@ -462,13 +487,8 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
 
 ## PoC evidence and limits
 
-The [live findings](https://github.com/magda-io/magda/blob/poc/3934-litellm-usage-observer/magda-llm-services/poc/live-findings.md) of [draft PR #3936](https://github.com/magda-io/magda/pull/3936) (20 November 2026) report:
+The **current bundled pin** is `ghcr.io/magda-io/litellm:v1.83.14-stable.patch.3` (LiteLLM 1.83.14). The provider-qualified route is the tested **OpenAI Responses streaming** route through that backend. Provider compatibility is endpoint/model-specific, not implied by LiteLLM's routing catalogue. Chat and other providers/backends need their own compatibility evidence before support is claimed.
 
-- **Setup:** bundled `ghcr.io/berriai/litellm:main-v1.81.12-stable` (installed LiteLLM 1.81.12; image ID `sha256:bbe33922e37bb76a065f85b847cb34744e98b408df66c6c4b4425e48b9e8c573`), one real OpenAI route (`openai/gpt-6.1-sol` behind `magda-agent-default`) and installed DSH 0.2.1-alpha.1, in isolated minikube headless sessions behind the existing facade. Streamed Responses requests and real bash tool-call continuations succeeded through a read-only tap. This was not browser UI testing.
-- **A measured continuation:** input 4,312 + output 18 = 4,330, including 4,223 cached input (part of input) and 11 reasoning tokens (part of output).
-- **Auxiliary requests:** a concurrent title request ended `response.incomplete` with valid usage. Five wire requests were seen, but only four finished reporting before shutdown, so in-flight auxiliary requests aren't always meterable.
-- **Chat with tools:** the tested model rejected tool-bearing Chat Completions requests whatever the usage settings, and installed DSH sends tools even for ordinary tasks. Responses is the verified DSH route for this provider.
-- **Tests:** 50 passing automated tests (fragmented SSE, byte preservation, backpressure, cancellation), with synthetic offline fixtures kept separate from the live results.
-- **Not verified:** Anthropic, Bedrock, Azure, other OpenAI-compatible backends, browser sessions, all failure races, and provider billing accuracy. LiteLLM 1.81.12 showed no `always_include_stream_usage` option; don't rely on one.
+The [historical live findings](https://github.com/magda-io/magda/blob/poc/3934-litellm-usage-observer/magda-llm-services/poc/live-findings.md) of [draft PR #3936](https://github.com/magda-io/magda/pull/3936) describe the initial observer experiment on an older LiteLLM version. Keep its run-specific environment, counts and outcomes there, not as current qualification results in this design. Current qualification is tracked separately in #3950 / PR #3973.
 
-This supports MAGDA-owned, approximate token accounting on the current pinned LiteLLM, without an upgrade. It doesn't validate other providers.
+Compatibility checks must distinguish fixture coverage from real-provider evidence, cover terminal usage and cancellation behavior, and meter tool continuations and auxiliary requests as separate forwarded attempts. Neither a successful route nor historical metering observations establish the accuracy of the provisional METER-4 policy defaults or provider billing. Record run-specific results with the PR or release evidence, not in this living contract.
