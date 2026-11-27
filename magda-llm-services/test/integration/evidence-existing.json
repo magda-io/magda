@@ -1,0 +1,93 @@
+{
+  "event": "harness-existing-tests",
+  "runId": "magda-3945-9ecdc7f2-befb-447b-9226-1de74a8887c0",
+  "timestamp": "2026-11-27T08:55:28.893Z",
+  "files": [
+    "magda-llm-services/src/test/ProfileRepository.spec.ts",
+    "magda-llm-services/src/test/UsageLedger.spec.ts",
+    "magda-llm-services/src/test/createApp.spec.ts",
+    "magda-llm-services/src/test/invocation.spec.ts",
+    "magda-llm-services/src/test/metering.spec.ts",
+    "magda-llm-services/src/test/periodsAndQuota.spec.ts",
+    "magda-llm-services/src/test/profileApi.spec.ts",
+    "magda-llm-services/src/test/usageApi.spec.ts",
+    "magda-llm-services/src/test/usageObserver.spec.ts",
+    "magda-llm-services/src/test/validation.spec.ts",
+    "magda-authorization-api/src/test/LlmAccessPartialDecision.spec.ts",
+    "magda-authorization-api/src/test/LlmAccessProfilesMigration.spec.ts",
+    "magda-authorization-api/src/test/LlmAccessProfilesSupport.spec.ts"
+  ],
+  "passed": 216,
+  "failed": 0,
+  "pending": 0,
+  "durationMs": 6201,
+  "failures": [],
+  "perFile": {
+    "magda-llm-services/src/test/ProfileRepository.spec.ts": {
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/UsageLedger.spec.ts": {
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/createApp.spec.ts": {
+      "passed": 13,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/invocation.spec.ts": {
+      "passed": 24,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/metering.spec.ts": {
+      "passed": 31,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/periodsAndQuota.spec.ts": {
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/profileApi.spec.ts": {
+      "passed": 24,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/usageApi.spec.ts": {
+      "passed": 24,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/usageObserver.spec.ts": {
+      "passed": 33,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-llm-services/src/test/validation.spec.ts": {
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-authorization-api/src/test/LlmAccessPartialDecision.spec.ts": {
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-authorization-api/src/test/LlmAccessProfilesMigration.spec.ts": {
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    "magda-authorization-api/src/test/LlmAccessProfilesSupport.spec.ts": {
+      "passed": 15,
+      "failed": 0,
+      "pending": 0
+    }
+  },
+  "topology": "Existing tests use disposable real PostgreSQL; partial-decision tests use real OPA; many service tests deliberately fake Auth/provider. Not provider E2E."
+}

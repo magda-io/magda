@@ -1,0 +1,10 @@
+{
+    "extends": "../../../tsconfig-global.json",
+    "compilerOptions": {
+        "baseUrl": "../../..",
+        "paths": {
+            "magda-typescript-common/src/*": ["magda-typescript-common/src/*"],
+            "@magda/typescript-common/dist/*": ["magda-typescript-common/src/*"]
+        }
+    }
+}
