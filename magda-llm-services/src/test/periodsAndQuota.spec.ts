@@ -12,6 +12,8 @@ import {
     profileAdmits,
     profileRemaining,
     ProfileLimits,
+    bestProfile,
+    periodRemainingQuota,
     remainingQuota
 } from "../usage/quota.js";
 
@@ -174,6 +176,56 @@ describe("quota maths (#3838 USE-5, USE-8, DATA-3)", () => {
         assert.deepEqual(remainingQuota([limits(10), limits(0)], usage), {
             status: "exhausted",
             remainingTokens: 0
+        });
+    });
+
+    it("gives per-period remaining under the profile that gives the overall remaining", () => {
+        const usage = { day: 60, week: 200, month: 900 };
+        // A: min(40, 100) = 40; B: 50 → B gives the overall 50
+        assert.deepEqual(
+            periodRemainingQuota(
+                [limits(100, null, 1000), limits(null, 250, null)],
+                usage
+            ),
+            {
+                day: { status: "unlimited" },
+                week: { status: "limited", remainingTokens: 50 },
+                month: { status: "unlimited" }
+            }
+        );
+        // an unlimited profile wins: every period is unlimited
+        assert.deepEqual(
+            periodRemainingQuota([limits(100), limits(null)], usage),
+            {
+                day: { status: "unlimited" },
+                week: { status: "unlimited" },
+                month: { status: "unlimited" }
+            }
+        );
+        assert.deepEqual(periodRemainingQuota([], usage).day, {
+            status: "no_eligible_profile"
+        });
+    });
+
+    it("when every profile is used up, shows the one that admits again first", () => {
+        const usage = { day: 60, week: 200, month: 900 };
+        const monthly = limits(null, null, 500);
+        const daily = limits(50, 1000, null);
+        for (const profiles of [
+            [monthly, daily],
+            [daily, monthly]
+        ]) {
+            assert.equal(bestProfile(profiles, usage), daily);
+            assert.deepEqual(periodRemainingQuota(profiles, usage), {
+                day: { status: "exhausted", remainingTokens: 0 },
+                week: { status: "limited", remainingTokens: 800 },
+                month: { status: "unlimited" }
+            });
+        }
+        assert.deepEqual(periodRemainingQuota([limits(0, 0, 0)], usage), {
+            day: { status: "exhausted", remainingTokens: 0 },
+            week: { status: "exhausted", remainingTokens: 0 },
+            month: { status: "exhausted", remainingTokens: 0 }
         });
     });
 });

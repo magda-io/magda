@@ -13,6 +13,7 @@ import Modal from "rsuite/Modal";
 import Panel from "rsuite/Panel";
 import Breadcrumb from "./Breadcrumb";
 import SideNavigation from "./SideNavigation";
+import NoModelAccessNotice from "./NoModelAccessNotice";
 import {
     AGENT_WORKSPACE_RUNTIME_URL,
     AgentWorkspaceSkillSync,
@@ -770,6 +771,7 @@ const AgentWorkspacePage: FunctionComponent = () => {
                         {requestError}
                     </Message>
                 ) : null}
+                <NoModelAccessNotice />
                 {renderContent()}
             </main>
 

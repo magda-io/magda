@@ -25,6 +25,8 @@ Kubernetes: `>= 1.24.0-0`
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `""` |  |
 | litellm.enabled | bool | `true` |  |
+| noAccessHelp.text | string | `""` | Optional text shown, after "No AI model access. Contact your administrator.", to users who can open the Agent Workspace (or My Usage) but have no eligible model profile, e.g. how to request access. Plain text, at most 1000 characters. |
+| noAccessHelp.url | string | `""` | Optional absolute `http` or `https` link shown with that message, e.g. an access request form. |
 | replicas | int | `1` |  |
 | resources.limits.cpu | string | `"500m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |

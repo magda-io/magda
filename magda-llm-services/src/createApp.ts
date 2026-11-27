@@ -20,6 +20,8 @@ import UsageLedger from "./usage/UsageLedger.js";
 import ProfileService from "./profiles/ProfileService.js";
 import createProfileRouter from "./profiles/createProfileRouter.js";
 import { DEFAULT_USAGE_TIME_ZONE } from "./usage/periods.js";
+import createUsageRouter, { NoAccessHelp } from "./usage/createUsageRouter.js";
+import UserDirectory from "./usage/UserDirectory.js";
 
 export function parseAllowedModels(value: string | undefined): Set<string> {
     if (value === undefined) {
@@ -80,6 +82,10 @@ export interface LlmServicesConfig {
     profiles?: ProfileService;
     /** MODEL-2: LiteLLM's served aliases; by default built from `liteLlmUrl`. */
     servedModels?: ServedModels;
+    /** DEP-3 `noAccessHelp`: shown to users without an eligible model. */
+    noAccessHelp?: NoAccessHelp;
+    /** API-12 user names and search; by default against `authApiUrl`. */
+    userDirectory?: UserDirectory;
 }
 
 // Upstream connection errors where the request can't have reached the model
@@ -295,6 +301,20 @@ export default function createApp(config: LlmServicesConfig) {
             allowedModels,
             servedModels,
             profiles: config.profiles
+        })
+    );
+
+    // usage and remaining quota (API-7, API-8, #3949)
+    app.use(
+        "/v0",
+        createUsageRouter({
+            jwtSecret,
+            authApiUrl,
+            callers,
+            admission,
+            ledger,
+            noAccessHelp: config.noAccessHelp,
+            userDirectory: config.userDirectory
         })
     );
 

@@ -1,0 +1,148 @@
+.llm-usage-report,
+.llm-usage-daily,
+.llm-user-usage-list {
+    h2 {
+        font-size: 1.25rem;
+        margin: 24px 0 10px;
+    }
+
+    .llm-usage-note,
+    .llm-usage-time-zone {
+        color: #575757;
+        font-size: 0.875rem;
+        max-width: 760px;
+        margin-top: 8px;
+    }
+
+    .llm-usage-tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        max-width: 960px;
+    }
+
+    .llm-usage-tile {
+        border: 1px solid #e5e5ea;
+        border-radius: 6px;
+        padding: 12px 14px;
+
+        h3 {
+            font-size: 0.875rem;
+            font-weight: normal;
+            color: #575757;
+            margin: 0 0 4px;
+        }
+
+        .llm-usage-tile-total {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 0 6px;
+            span {
+                font-size: 0.875rem;
+                font-weight: normal;
+            }
+        }
+
+        dl {
+            margin: 0;
+            font-size: 0.8125rem;
+            div {
+                display: flex;
+                justify-content: space-between;
+            }
+            dt {
+                font-weight: normal;
+            }
+            dd {
+                margin: 0;
+            }
+        }
+    }
+
+    .llm-usage-models-wrapper {
+        overflow-x: auto;
+    }
+
+    table.llm-usage-models {
+        border-collapse: collapse;
+        min-width: 760px;
+        th,
+        td {
+            border-bottom: 1px solid #e5e5ea;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        thead th {
+            font-size: 0.8125rem;
+            color: #575757;
+            white-space: nowrap;
+        }
+        .llm-usage-used,
+        .llm-usage-left {
+            display: block;
+            white-space: nowrap;
+        }
+        .llm-usage-left {
+            font-size: 0.8125rem;
+            color: #575757;
+        }
+    }
+
+    .llm-remaining {
+        &.exhausted,
+        &.no-profile {
+            font-weight: bold;
+        }
+        &.exhausted {
+            color: #c41d00;
+        }
+    }
+
+    .llm-usage-filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px;
+        margin-bottom: 12px;
+        label {
+            display: block;
+            font-size: 0.8125rem;
+            margin-bottom: 4px;
+        }
+        .rs-picker {
+            min-width: 200px;
+        }
+    }
+
+    .pagination-container {
+        padding: 20px 0;
+    }
+}
+
+.llm-no-access-help {
+    margin-top: 6px;
+}
+
+.llm-user-usage-list .llm-usage-search {
+    max-width: 420px;
+    margin-bottom: 12px;
+    label {
+        display: block;
+        font-size: 0.8125rem;
+        margin-bottom: 4px;
+    }
+    svg {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+.llm-usage-user small {
+    color: #575757;
+}
+
+h1.llm-usage-user-heading {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+}

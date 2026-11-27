@@ -241,7 +241,7 @@ describe("LLM Services Settings navigation", () => {
         expect(groupTitles()).toContain("LLM Services");
     });
 
-    it("is hidden with only constrained or invoke permissions (AUTH-3)", () => {
+    it("hides Access Profiles and User Usage with only constrained permissions (AUTH-3, AUTH-9)", () => {
         const constrained = {
             ...user([]),
             permissions: [
@@ -259,12 +259,41 @@ describe("LLM Services Settings navigation", () => {
                     id: "p3",
                     userOwnershipConstraint: true,
                     operations: [{ id: "o3", uri: "llm/access/read" }]
+                },
+                {
+                    id: "p4",
+                    orgUnitOwnershipConstraint: true,
+                    operations: [{ id: "o4", uri: "llm/usage/read" }]
                 }
             ]
         };
         render(constrained);
         expect(groupTitles()).not.toContain("LLM Services");
-        render(user(["llm/access/invoke"]));
-        expect(groupTitles()).not.toContain("LLM Services");
+    });
+
+    it("shows only My Usage for an invoke permission of any constraint (UI case 6)", () => {
+        render({
+            ...user([]),
+            permissions: [
+                {
+                    id: "p1",
+                    orgUnitOwnershipConstraint: true,
+                    allowExemption: true,
+                    operations: [{ id: "o1", uri: "llm/access/invoke" }]
+                }
+            ]
+        });
+        expect(groupTitles()).toContain("LLM Services");
+        expandLlmServices();
+        expect(links()).toContain("/settings/llm-services/my-usage");
+        expect(links()).not.toContain("/settings/llm-services/access-profiles");
+        expect(links()).not.toContain("/settings/llm-services/user-usage");
+    });
+
+    it("shows User Usage for an unconstrained llm/usage/read holder (UI case 8)", () => {
+        render(user(["llm/usage/read"]));
+        expandLlmServices();
+        expect(links()).toContain("/settings/llm-services/user-usage");
+        expect(links()).not.toContain("/settings/llm-services/my-usage");
     });
 });

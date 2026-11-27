@@ -24,7 +24,9 @@ import {
     MdOutlineLibraryBooks,
     MdPeopleOutline,
     MdOutlineAutoAwesome,
-    MdOutlineVpnKey
+    MdOutlineVpnKey,
+    MdOutlineDataUsage,
+    MdOutlineQueryStats
 } from "react-icons/md";
 import { BsPersonCircle, BsJournals } from "react-icons/bs";
 import "./SideNavigation.scss";
@@ -39,7 +41,11 @@ import {
     AGENT_WORKSPACE_ACCESS_OPERATION,
     SHARED_SKILL_OPERATIONS
 } from "./agentWorkspaceAccess";
-import { canReadAccessProfiles } from "./llmServicesAccess";
+import {
+    canReadAccessProfiles,
+    canReadUserUsage,
+    canViewMyUsage
+} from "./llmServicesAccess";
 import {
     getUrlWithPopUpQueryString,
     showSideNav
@@ -138,7 +144,7 @@ const defaultMenuItems: MenuItem[] = [
     ...(config.featureFlags.llmServices
         ? [
               {
-                  // A non-clickable group; more pages join it later (#3838).
+                  // A non-clickable group, shown when one of its tabs is (UI doc)
                   title: "LLM Services",
                   path: "/settings/llm-services-group",
                   icon: <MdOutlineAutoAwesome />,
@@ -149,6 +155,20 @@ const defaultMenuItems: MenuItem[] = [
                           icon: <MdOutlineVpnKey />,
                           // AUTH-3: only unconstrained `llm/access/read`
                           requireUser: canReadAccessProfiles
+                      },
+                      {
+                          title: "My Usage",
+                          path: "/settings/llm-services/my-usage",
+                          icon: <MdOutlineDataUsage />,
+                          // any `llm/access/invoke` permission, of any constraint
+                          requireUser: canViewMyUsage
+                      },
+                      {
+                          title: "User Usage",
+                          path: "/settings/llm-services/user-usage",
+                          icon: <MdOutlineQueryStats />,
+                          // AUTH-9: only unconstrained `llm/usage/read`
+                          requireUser: canReadUserUsage
                       }
                   ]
               }

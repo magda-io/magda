@@ -297,3 +297,190 @@ export async function getAvailableModels(): Promise<AvailableModels> {
     const response = await request("GET", "available-models");
     return response.json();
 }
+
+/** Token sums (USE-1): measured input + output, plus estimates. */
+export interface UsageAmounts {
+    tokens: number;
+    measuredInputTokens: number;
+    measuredOutputTokens: number;
+    estimatedTokens: number;
+    estimatedRequests: number;
+}
+
+export interface PeriodAmounts {
+    allTime: UsageAmounts;
+    day: UsageAmounts;
+    week: UsageAmounts;
+    month: UsageAmounts;
+}
+
+/** USE-8: shown as a number, Unlimited, Exhausted or No eligible model profile. */
+export type RemainingQuota =
+    | { status: "no_eligible_profile" }
+    | { status: "unlimited" }
+    | { status: "exhausted"; remainingTokens: 0 }
+    | { status: "limited"; remainingTokens: number };
+
+export type UsagePeriod = "day" | "week" | "month";
+
+export interface ModelUsage {
+    modelAlias: string;
+    eligible: boolean;
+    remaining: RemainingQuota;
+    periodRemaining: Record<UsagePeriod, RemainingQuota>;
+    usage: PeriodAmounts;
+}
+
+/** DEP-3 `noAccessHelp`: optional text and link set by the operator. */
+export interface NoAccessHelp {
+    text?: string;
+    url?: string;
+}
+
+export interface UsageUser {
+    id: string;
+    /** Only when the viewer may read users (API-12). */
+    displayName?: string;
+    email?: string;
+}
+
+/** API-7 / API-8: a user's usage report. */
+export interface UsageReport {
+    user: UsageUser;
+    /** The accounting time zone (USE-3). */
+    timeZone: string;
+    asOf: string;
+    /** Local dates; the `*End` dates are exclusive. */
+    periods: {
+        day: string;
+        weekStart: string;
+        weekEnd: string;
+        monthStart: string;
+        monthEnd: string;
+    };
+    access: "administrator" | "profiles" | "none";
+    totals: PeriodAmounts;
+    models: ModelUsage[];
+    /** Set only when the user has no eligible model. */
+    noAccessHelp: NoAccessHelp | null;
+}
+
+export interface DailyUsageRow extends UsageAmounts {
+    localDate: string;
+    modelAlias: string;
+}
+
+/** `from` and `to` are inclusive local dates (`YYYY-MM-DD`). */
+export interface UsageQuery {
+    model?: string;
+    from?: string;
+    to?: string;
+    offset?: number;
+    limit?: number;
+}
+
+export interface DailyUsage {
+    timeZone: string;
+    items: DailyUsageRow[];
+    total: number;
+}
+
+export interface UserUsageRow extends UsageAmounts {
+    userId: string;
+    lastUsageDate: string | null;
+    user: UsageUser;
+}
+
+function usageQuery(query: UsageQuery & { q?: string }) {
+    const result: Record<string, string | number> = {};
+    Object.entries(query).forEach(([key, value]) => {
+        if (value !== undefined && value !== "") {
+            result[key] = typeof value === "string" ? value.trim() : value;
+        }
+    });
+    return result;
+}
+
+const userUsagePath = (userId: string) =>
+    `usage/users/${encodeURIComponent(userId)}`;
+
+/** API-7: the signed-in user's own usage; never another user's. */
+export async function getMyUsage(): Promise<UsageReport> {
+    const response = await request("GET", "usage/me");
+    return response.json();
+}
+
+/** API-7: the signed-in user's daily history. */
+export async function getMyDailyUsage(
+    query: UsageQuery = {}
+): Promise<DailyUsage> {
+    const response = await request("GET", "usage/me/daily", {
+        query: usageQuery(query)
+    });
+    return response.json();
+}
+
+/**
+ * API-8 / API-12: users with usage, most tokens first. `q` is a user ID, or a
+ * name or email (found only among users the viewer may read).
+ */
+export async function listUserUsage(
+    query: UsageQuery & { q?: string } = {}
+): Promise<{ items: UserUsageRow[]; total: number }> {
+    const response = await request("GET", "usage/users", {
+        query: usageQuery(query)
+    });
+    return response.json();
+}
+
+/** API-8: another user's usage report. */
+export async function getUserUsage(userId: string): Promise<UsageReport> {
+    const response = await request("GET", userUsagePath(userId));
+    return response.json();
+}
+
+/** API-8: another user's daily history. */
+export async function getUserDailyUsage(
+    userId: string,
+    query: UsageQuery = {}
+): Promise<DailyUsage> {
+    const response = await request("GET", `${userUsagePath(userId)}/daily`, {
+        query: usageQuery(query)
+    });
+    return response.json();
+}
+
+/** DEP-3: the operator's help for users without model access. */
+export async function getNoAccessHelp(): Promise<NoAccessHelp | null> {
+    const response = await request("GET", "access-help");
+    return (await response.json()).noAccessHelp ?? null;
+}
+
+/** API-9: the model aliases the signed-in user can invoke. */
+export async function listInvocableModels(): Promise<string[]> {
+    const response = await request("GET", "v1/models");
+    const body = await response.json();
+    return Array.isArray(body?.data)
+        ? body.data
+              .map((model: any) => model?.id)
+              .filter((id: unknown) => typeof id === "string")
+        : [];
+}
+
+/**
+ * Actionable text for a usage API error (UI doc, "States and accessibility").
+ */
+export function describeUsageError(error: unknown): string {
+    if (error instanceof LlmServicesApiError) {
+        if (error.status === 403) {
+            return "You don't have permission to see other users' LLM usage. Ask your administrator for the LLM Profile Managers role.";
+        }
+        if (error.status === 400) {
+            return `Check the filters: ${error.message}`;
+        }
+        if (error.status === 503 && error.code === "llm_usage_unavailable") {
+            return "LLM usage accounting is temporarily unavailable. Retry shortly.";
+        }
+    }
+    return describeLlmServicesError(error);
+}
