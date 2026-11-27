@@ -52,6 +52,8 @@ spec:
             - {name: NO_ACCESS_HELP_URL, value: {{ .Values.noAccessHelp.url | default "" | quote }}}
             - {name: USAGE_ESTIMATE_BYTES_PER_TOKEN, value: {{ .Values.usage.estimate.bytesPerToken | int | quote }}}
             - {name: USAGE_ESTIMATE_OUTPUT_TOKENS, value: {{ .Values.usage.estimate.outputTokens | int | quote }}}
+            - {name: USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS, value: {{ .Values.usage.estimate.outputAllowanceTokens | int | quote }}}
+            - {name: USAGE_ESTIMATE_INCOMPLETE_FACTOR, value: {{ .Values.usage.estimate.incompleteFactor | quote }}}
             - {name: USAGE_ESTIMATE_OUTPUT_TOKENS_BY_MODEL, value: {{ .Values.usage.estimate.outputTokensByModel | default dict | toJson | quote }}}
             - {name: USAGE_OBSERVER_MAX_EVENT_BYTES, value: {{ .Values.usage.observer.maxEventBytes | int | quote }}}
             - {name: USAGE_OBSERVER_MAX_JSON_BYTES, value: {{ .Values.usage.observer.maxJsonBytes | int | quote }}}

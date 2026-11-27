@@ -25,7 +25,7 @@ litellm:
 
 # Usage metering (#3838). Approximate token volume for soft limits, not billing.
 # -- How long, in seconds, a caller's `llm/access/invoke` decision is cached
-# (0 to 300; 0 disables the cache). This is the delay before a revoked grant
+# (0 to 30; 0 disables the cache). This is the delay before a revoked grant
 # stops working. Profile changes apply at once.
 decisionCacheSeconds: 30
 
@@ -47,11 +47,17 @@ usage:
   estimate:
     # -- When a model response has no valid final usage (missing, unreadable, or
     # cut short by a disconnect or timeout), it's charged an estimate:
-    # ceil(request body bytes / bytesPerToken) + outputTokens. Error answers
-    # (any non-2xx status) cost nothing.
-    bytesPerToken: 4
-    # -- Estimated output tokens per request without final usage.
+    # Input is ceil(request body bytes / bytesPerToken). Visible text/tool
+    # output uses the same ratio plus outputAllowanceTokens; otherwise use
+    # outputTokens. Incomplete attempts discount input and allowance only.
+    # Error answers (any non-2xx status) cost nothing.
+    bytesPerToken: 6
+    # -- Fallback output tokens when visible output cannot be observed.
     outputTokens: 4096
+    # -- Hidden/reasoning token allowance added when visible output is observed.
+    outputAllowanceTokens: 256
+    # -- Factor (0 to 1) on unobserved input and allowance for incomplete attempts.
+    incompleteFactor: 0.25
     # -- Optional per-model-alias override of `outputTokens`, e.g. `{"my-alias": 8192}`.
     outputTokensByModel: {}
   observer:

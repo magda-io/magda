@@ -19,7 +19,7 @@ Kubernetes: `>= 1.24.0-0`
 | backend.masterKeySecret.key | string | `""` |  |
 | backend.masterKeySecret.name | string | `""` |  |
 | backend.url | string | `""` |  |
-| decisionCacheSeconds | int | `30` | How long, in seconds, a caller's `llm/access/invoke` decision is cached (0 to 300; 0 disables the cache). This is the delay before a revoked grant stops working. Profile changes apply at once. |
+| decisionCacheSeconds | int | `30` | How long, in seconds, a caller's `llm/access/invoke` decision is cached (0 to 30; 0 disables the cache). This is the delay before a revoked grant stops working. Profile changes apply at once. |
 | global | object | `{}` |  |
 | image.name | string | `"magda-llm-services"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
@@ -32,8 +32,10 @@ Kubernetes: `>= 1.24.0-0`
 | resources.limits.memory | string | `"256Mi"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"64Mi"` |  |
-| usage.estimate.bytesPerToken | int | `4` | When a model response has no valid final usage (missing, unreadable, or cut short by a disconnect or timeout), it's charged an estimate: ceil(request body bytes / bytesPerToken) + outputTokens. Error answers (any non-2xx status) cost nothing. |
-| usage.estimate.outputTokens | int | `4096` | Estimated output tokens per request without final usage. |
+| usage.estimate.bytesPerToken | int | `6` | When a model response has no valid final usage (missing, unreadable, or cut short by a disconnect or timeout), it's charged an estimate: Input is ceil(request body bytes / bytesPerToken). Visible text/tool output uses the same ratio plus outputAllowanceTokens; otherwise use outputTokens. Incomplete attempts discount input and allowance only. Error answers (any non-2xx status) cost nothing. |
+| usage.estimate.incompleteFactor | float | `0.25` | Factor (0 to 1) on unobserved input and allowance for incomplete attempts. |
+| usage.estimate.outputAllowanceTokens | int | `256` | Hidden/reasoning token allowance added when visible output is observed. |
+| usage.estimate.outputTokens | int | `4096` | Fallback output tokens when visible output cannot be observed. |
 | usage.estimate.outputTokensByModel | object | `{}` | Optional per-model-alias override of `outputTokens`, e.g. `{"my-alias": 8192}`. |
 | usage.observer.maxEventBytes | int | `65536` | Largest server-sent event, in bytes, the usage observer buffers. A larger event is skipped for metering (still forwarded unchanged). |
 | usage.observer.maxJsonBytes | int | `1048576` | Largest non-streaming JSON response, in bytes, the observer buffers. |

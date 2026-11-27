@@ -9,9 +9,31 @@ import jwt from "jsonwebtoken";
 import pg from "pg";
 import createApp, { LlmServicesConfig } from "../createApp.js";
 import UsageLedger from "../usage/UsageLedger.js";
+import CallerAccessResolver, {
+    parseDecisionCacheSeconds
+} from "../access/CallerAccess.js";
 import { localDateOf } from "../usage/periods.js";
 import { createTestDatabase } from "./testDb.js";
 import { ADMIN_ROLE, FakeAuthApi, startFakeAuthApi } from "./fakeAuthApi.js";
+
+describe("decision cache configuration (EVAL-3)", () => {
+    it("caps revocation delay at 30 seconds, including direct construction", () => {
+        assert.equal(parseDecisionCacheSeconds(undefined), 30);
+        assert.equal(parseDecisionCacheSeconds("0"), 0);
+        assert.equal(parseDecisionCacheSeconds("30"), 30);
+        for (const value of ["31", "300", "-1", "0.5", "NaN"]) {
+            assert.throws(() => parseDecisionCacheSeconds(value));
+            assert.throws(
+                () =>
+                    new CallerAccessResolver({
+                        jwtSecret: "test",
+                        authApiUrl: "http://localhost/v0",
+                        decisionCacheSeconds: Number(value)
+                    })
+            );
+        }
+    });
+});
 
 // #3838 #3941: profile-based invocation through the service: one cached
 // partial decision per caller (EVAL-1, EVAL-3), eligibility plus quota
@@ -78,6 +100,7 @@ describe("profile-based model invocation (integration, #3838 #3941)", function (
     /** What LiteLLM's /v1/models serves; `null` = unavailable. */
     let served: string[] | null;
     let usagePerResponse: { input: number; output: number };
+    let upstreamGate: (() => Promise<void>) | undefined;
 
     const RECORDED_ALIASES: string[] = RECORDED.profiles.map((p: any) =>
         aliasOf(p.id)
@@ -98,7 +121,7 @@ describe("profile-based model invocation (integration, #3838 #3941)", function (
         upstream = await listen((req, res) => {
             const chunks: Buffer[] = [];
             req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-            req.on("end", () => {
+            req.on("end", async () => {
                 if (req.method === "GET" && req.url === "/v1/models") {
                     if (!served) {
                         res.writeHead(503).end();
@@ -115,6 +138,7 @@ describe("profile-based model invocation (integration, #3838 #3941)", function (
                 }
                 const body = JSON.parse(Buffer.concat(chunks).toString());
                 upstreamRequests.push({ path: req.url, body });
+                await upstreamGate?.();
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -144,6 +168,7 @@ describe("profile-based model invocation (integration, #3838 #3941)", function (
         upstreamRequests = [];
         served = [...allowedModels].filter((m) => m !== "unserved-model");
         usagePerResponse = { input: 7, output: 3 };
+        upstreamGate = undefined;
     });
 
     afterEach(async () => {
@@ -470,6 +495,64 @@ describe("profile-based model invocation (integration, #3838 #3941)", function (
     });
 
     describe("quota admission (USE-5, USE-6, TEST-6)", () => {
+        it("allows concurrent soft overshoot, then refuses the next request without forwarding", async () => {
+            await seed({
+                id: "00000000-0000-4000-8000-000000000911",
+                allowedModels: ["shared-model"],
+                daily: 1
+            });
+            grant(USER, "unconstrained");
+            let release!: () => void;
+            let arrived!: () => void;
+            const held = new Promise<void>((resolve) => {
+                release = resolve;
+            });
+            const bothForwarded = new Promise<void>((resolve) => {
+                arrived = resolve;
+            });
+            upstreamGate = async () => {
+                if (upstreamRequests.length === 2) arrived();
+                await held;
+            };
+            await withApp(async (client) => {
+                const calls = [
+                    client.invoke(USER, "shared-model"),
+                    client.invoke(USER, "shared-model")
+                ];
+                let timer: NodeJS.Timeout | undefined;
+                try {
+                    await Promise.race([
+                        bothForwarded,
+                        new Promise((_, reject) => {
+                            timer = setTimeout(
+                                () =>
+                                    reject(
+                                        new Error(
+                                            "Two soft-limit requests were not forwarded"
+                                        )
+                                    ),
+                                3000
+                            );
+                        })
+                    ]);
+                    assert.equal(await usedTokens(USER, "shared-model"), 0);
+                } finally {
+                    clearTimeout(timer);
+                    release();
+                }
+                assert.deepEqual(
+                    (await Promise.all(calls)).map((r) => r.status),
+                    [200, 200]
+                );
+                await waitForUsage(USER, "shared-model", 20);
+                assert.equal(await usedTokens(USER, "shared-model"), 20);
+                assert.equal(
+                    (await client.invoke(USER, "shared-model")).status,
+                    429
+                );
+                assert.equal(upstreamRequests.length, 2);
+            });
+        });
         it("answers 429 llm_quota_exceeded once a limit is used up, and 403 without a profile", async () => {
             await seed({
                 id: "00000000-0000-4000-8000-0000000000a1",

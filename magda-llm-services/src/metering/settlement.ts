@@ -56,6 +56,22 @@ export interface SettlementQuality {
     oversizedEvents?: number;
     unknownEventTypes?: number;
     invalidUsageEvents?: number;
+    requestBodyBytes?: number;
+    outputBytes?: number;
+    outputObserved?: boolean;
+    doneMarkers?: number;
+    terminalType?:
+        | "chat"
+        | "response.completed"
+        | "response.failed"
+        | "response.incomplete";
+    responseStatus?:
+        | "completed"
+        | "failed"
+        | "incomplete"
+        | "in_progress"
+        | "queued";
+    completedNormally?: boolean;
 }
 
 /**
@@ -81,28 +97,40 @@ export class LoggingUsageSink implements UsageSink {
 }
 
 export interface UsageEstimateConfig {
-    /** Request body bytes per estimated input token (default 4). */
+    /** Request body bytes per estimated input token (default 6; JSON-heavy DSH evidence). */
     bytesPerToken: number;
-    /** Estimated output tokens per request (default 4096). */
+    /** Fallback output tokens when visible output could not be observed. */
     outputTokens: number;
-    /** Optional per-alias override of `outputTokens`. */
+    /** Optional per-alias override of the fallback output tokens. */
     outputTokensByModel: Readonly<Record<string, number>>;
+    /** Hidden/reasoning allowance added to observed output (default 256). */
+    outputAllowanceTokens: number;
+    /** Discount on unobserved input + allowance for incomplete attempts (default 0.25). */
+    incompleteFactor: number;
 }
 
 export const DEFAULT_USAGE_ESTIMATE: UsageEstimateConfig = {
-    bytesPerToken: 4,
+    bytesPerToken: 6,
     outputTokens: 4096,
-    outputTokensByModel: {}
+    outputTokensByModel: {},
+    outputAllowanceTokens: 256,
+    incompleteFactor: 0.25
 };
 
 /**
- * METER-4: `ceil(request body bytes / bytesPerToken) + outputAllowance`. A
- * deliberately coarse, documented estimate, not a tokenizer.
+ * METER-4: observed output is never discounted. Input and hidden/fallback
+ * output are discounted for incomplete attempts. This is a configurable PoC
+ * heuristic, not a tokenizer or provider billing reconciliation.
  */
 export function estimateTokens(
     requestBodyBytes: number,
     modelAlias: string,
-    config: UsageEstimateConfig = DEFAULT_USAGE_ESTIMATE
+    config: UsageEstimateConfig = DEFAULT_USAGE_ESTIMATE,
+    observation: {
+        outputBytes?: number;
+        outputObserved?: boolean;
+        completedNormally?: boolean;
+    } = {}
 ): number {
     const output = Object.prototype.hasOwnProperty.call(
         config.outputTokensByModel,
@@ -110,7 +138,23 @@ export function estimateTokens(
     )
         ? config.outputTokensByModel[modelAlias]
         : config.outputTokens;
-    return Math.ceil(requestBodyBytes / config.bytesPerToken) + output;
+    const visible = observation.outputObserved
+        ? Math.ceil((observation.outputBytes ?? 0) / config.bytesPerToken)
+        : 0;
+    const allowance = observation.outputObserved
+        ? config.outputAllowanceTokens
+        : output;
+    const factor =
+        observation.completedNormally === false ? config.incompleteFactor : 1;
+    return Math.min(
+        Number.MAX_SAFE_INTEGER,
+        visible +
+            Math.ceil(
+                (Math.ceil(requestBodyBytes / config.bytesPerToken) +
+                    allowance) *
+                    factor
+            )
+    );
 }
 
 function positiveInteger(value: unknown, name: string): number {
@@ -142,7 +186,9 @@ export function parseUsageEstimateConfig(
     const config: UsageEstimateConfig = {
         bytesPerToken: DEFAULT_USAGE_ESTIMATE.bytesPerToken,
         outputTokens: DEFAULT_USAGE_ESTIMATE.outputTokens,
-        outputTokensByModel: {}
+        outputTokensByModel: {},
+        outputAllowanceTokens: DEFAULT_USAGE_ESTIMATE.outputAllowanceTokens,
+        incompleteFactor: DEFAULT_USAGE_ESTIMATE.incompleteFactor
     };
     if (env.USAGE_ESTIMATE_BYTES_PER_TOKEN) {
         config.bytesPerToken = positiveInteger(
@@ -155,6 +201,21 @@ export function parseUsageEstimateConfig(
             Number(env.USAGE_ESTIMATE_OUTPUT_TOKENS),
             "USAGE_ESTIMATE_OUTPUT_TOKENS"
         );
+    }
+    if (env.USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS) {
+        config.outputAllowanceTokens = nonNegativeInteger(
+            Number(env.USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS),
+            "USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS"
+        );
+    }
+    if (env.USAGE_ESTIMATE_INCOMPLETE_FACTOR) {
+        const factor = Number(env.USAGE_ESTIMATE_INCOMPLETE_FACTOR);
+        if (!Number.isFinite(factor) || factor < 0 || factor > 1) {
+            throw new Error(
+                "USAGE_ESTIMATE_INCOMPLETE_FACTOR must be between 0 and 1"
+            );
+        }
+        config.incompleteFactor = factor;
     }
     if (env.USAGE_ESTIMATE_OUTPUT_TOKENS_BY_MODEL) {
         let parsed: unknown;

@@ -13,6 +13,8 @@
  */
 export interface UsageObserverOptions {
     format: "sse" | "json";
+    /** Set by the facade; Responses requires a response.* terminal, not DONE. */
+    api?: "chat" | "responses";
     maxEventBytes?: number;
     maxJsonBytes?: number;
 }
@@ -68,6 +70,21 @@ export interface UsageObservation {
     invalidUsageEvents: number;
     terminalEvents: number;
     terminalSeen: boolean;
+    doneMarkers: number;
+    terminalType?:
+        | "chat"
+        | "response.completed"
+        | "response.failed"
+        | "response.incomplete";
+    responseStatus?:
+        | "completed"
+        | "failed"
+        | "incomplete"
+        | "in_progress"
+        | "queued";
+    /** UTF-8 bytes in text/tool-argument deltas only, never retained content. */
+    outputBytes: number;
+    outputObserved: boolean;
     /** Only true after finish; EOF alone is not a provider terminal marker. */
     missingTerminal: boolean;
     finished: boolean;
@@ -124,8 +141,10 @@ export class UsageObserver {
     private skipLf = false;
     private oversized = false;
     private firstEvent = true;
+    private api?: "chat" | "responses";
 
     constructor(options: UsageObserverOptions) {
+        this.api = options.api;
         if (options.format !== "sse" && options.format !== "json") {
             throw new TypeError("Observer format must be sse or json");
         }
@@ -148,6 +167,9 @@ export class UsageObserver {
             invalidUsageEvents: 0,
             terminalEvents: 0,
             terminalSeen: false,
+            doneMarkers: 0,
+            outputBytes: 0,
+            outputObserved: false,
             missingTerminal: false,
             finished: false,
             peakBufferedBytes: 0,
@@ -239,6 +261,7 @@ export class UsageObserver {
     }
 
     private discardOversized(): void {
+        this.invalidateChatCandidate();
         this.oversized = true;
         this.buffered = 0;
         this.buffer.fill(0);
@@ -289,15 +312,20 @@ export class UsageObserver {
         this.metadata.eventsSeen = increment(this.metadata.eventsSeen);
         const payload = data.join("\n");
         if (payload.trim() === "[DONE]") {
-            this.terminal(true);
+            this.metadata.doneMarkers = increment(this.metadata.doneMarkers);
+            if (this.api !== "responses") this.terminal(true, "chat");
             return;
         }
         this.parseJson(payload, eventType, false);
     }
 
-    private terminal(finalUsage: boolean): void {
+    private terminal(
+        finalUsage: boolean,
+        type: UsageObservation["terminalType"]
+    ): void {
         this.metadata.terminalEvents = increment(this.metadata.terminalEvents);
         if (!this.metadata.terminalSeen) {
+            this.metadata.terminalType = type;
             this.metadata.usageFinal = finalUsage && !!this.metadata.usage;
         }
         this.metadata.terminalSeen = true;
@@ -316,6 +344,7 @@ export class UsageObserver {
             this.metadata.malformedEvents = increment(
                 this.metadata.malformedEvents
             );
+            this.invalidateChatCandidate();
             return;
         }
         const root = object(parsed);
@@ -337,6 +366,23 @@ export class UsageObserver {
             }
         }
         const response = object(root.response);
+        if (type?.startsWith("response") || root.object === "response") {
+            this.api = "responses";
+        }
+        const status = response?.status ?? root.status;
+        if (
+            !this.metadata.terminalSeen &&
+            [
+                "completed",
+                "failed",
+                "incomplete",
+                "in_progress",
+                "queued"
+            ].includes(status as string)
+        ) {
+            this.metadata.responseStatus = status as UsageObservation["responseStatus"];
+        }
+        this.observeOutput(root, type, jsonBody);
         const terminalStatus =
             root.status === "completed" ||
             root.status === "failed" ||
@@ -352,7 +398,73 @@ export class UsageObserver {
         // Chat finish_reason ends generation, not the stream: usage may follow.
         // Only [DONE] is a terminal marker for streaming Chat responses. Unknown
         // JSON envelopes and queued/in_progress responses are not terminal.
-        if (isTerminal) this.terminal(validUsage);
+        if (isTerminal) {
+            const terminalType =
+                type && terminalTypes.has(type)
+                    ? (type as UsageObservation["terminalType"])
+                    : root.object === "chat.completion"
+                    ? "chat"
+                    : (`response.${root.status}` as UsageObservation["terminalType"]);
+            this.terminal(validUsage, terminalType);
+        }
+    }
+
+    private observeOutput(
+        root: JsonObject,
+        type: string | undefined,
+        jsonBody: boolean
+    ): void {
+        if (this.metadata.terminalSeen) return;
+        const count = (value: unknown) => {
+            if (typeof value !== "string" || value.length === 0) return;
+            this.metadata.outputObserved = true;
+            this.metadata.outputBytes = increment(
+                this.metadata.outputBytes,
+                Buffer.byteLength(value)
+            );
+        };
+        // Count only deltas, never the duplicate *.done / terminal snapshots.
+        if (
+            type === "response.output_text.delta" ||
+            type === "response.function_call_arguments.delta"
+        ) {
+            count(root.delta);
+        }
+        if (Array.isArray(root.choices)) {
+            for (const choice of root.choices) {
+                const message = object(
+                    object(choice)?.[jsonBody ? "message" : "delta"]
+                );
+                count(message?.content);
+                if (Array.isArray(message?.tool_calls)) {
+                    for (const tool of message.tool_calls)
+                        count(object(object(tool)?.function)?.arguments);
+                }
+            }
+        }
+        if (
+            jsonBody &&
+            root.object === "response" &&
+            Array.isArray(root.output)
+        ) {
+            for (const item of root.output) {
+                const output = object(item);
+                if (output?.type === "function_call") count(output.arguments);
+                if (Array.isArray(output?.content)) {
+                    for (const part of output.content) {
+                        const content = object(part);
+                        if (content?.type === "output_text")
+                            count(content.text);
+                    }
+                }
+            }
+        }
+    }
+
+    private invalidateChatCandidate(): void {
+        if (this.api !== "responses" && !this.metadata.terminalSeen) {
+            this.metadata.usage = undefined;
+        }
     }
 
     private observeUsage(rawUsage: unknown): boolean {
@@ -376,6 +488,9 @@ export class UsageObserver {
             this.metadata.invalidUsageEvents = increment(
                 this.metadata.invalidUsageEvents
             );
+            // A later invalid Chat snapshot must not let DONE promote an
+            // earlier interim zero (or another stale candidate) as final.
+            this.invalidateChatCandidate();
             return false;
         }
         const valid: ObservedUsage = {

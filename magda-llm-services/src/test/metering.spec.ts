@@ -180,6 +180,111 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
         );
     });
 
+    for (const terminal of [
+        undefined,
+        "response.completed",
+        "response.failed",
+        "response.incomplete"
+    ]) {
+        it(`estimates ${
+            terminal ?? "DONE-only"
+        } Responses with completion evidence and observed output`, async () => {
+            const stream =
+                sse({
+                    type: "response.created",
+                    response: { status: "in_progress" }
+                }) +
+                sse({ type: "response.output_text.delta", delta: "🐟" }) +
+                (terminal
+                    ? sse({
+                          type: terminal,
+                          response: { status: terminal.slice(9) }
+                      })
+                    : "") +
+                DONE;
+            await withApp(
+                async (req, res) => {
+                    await readBody(req);
+                    res.writeHead(200, { "content-type": "text/event-stream" });
+                    res.end(stream);
+                },
+                async (appUrl, sink) => {
+                    const body = JSON.stringify({
+                        model: MODEL,
+                        stream: true,
+                        input: "x",
+                        user: "forged-user"
+                    });
+                    const response = await post(appUrl, "/v1/responses", body);
+                    assert.equal(await response.text(), stream);
+                    const [settlement] = await sink.waitFor(1);
+                    assert.equal(settlement.kind, "estimated");
+                    assert.equal(settlement.userId, userId);
+                    assert.equal(settlement.quality.terminalType, terminal);
+                    assert.equal(settlement.quality.terminalSeen, !!terminal);
+                    assert.equal(settlement.quality.doneMarkers, 1);
+                    assert.equal(settlement.quality.outputBytes, 4);
+                    assert.equal(
+                        settlement.quality.requestBodyBytes,
+                        Buffer.byteLength(body)
+                    );
+                    assert.equal(
+                        settlement.quality.completedNormally,
+                        terminal === "response.completed"
+                    );
+                    if (settlement.kind === "estimated")
+                        assert.equal(
+                            settlement.estimatedTokens,
+                            1 +
+                                Math.ceil(
+                                    (Math.ceil(Buffer.byteLength(body) / 6) +
+                                        256) *
+                                        (terminal === "response.completed"
+                                            ? 1
+                                            : 0.25)
+                                )
+                        );
+                }
+            );
+        });
+    }
+
+    for (const terminal of ["response.failed", "response.incomplete"]) {
+        it(`does not discount valid final usage on ${terminal}`, async () => {
+            await withApp(
+                async (req, res) => {
+                    await readBody(req);
+                    res.writeHead(200, { "content-type": "text/event-stream" });
+                    res.end(
+                        sse({
+                            type: terminal,
+                            response: {
+                                status: terminal.slice(9),
+                                usage: { input_tokens: 20, output_tokens: 10 }
+                            }
+                        }) + DONE
+                    );
+                },
+                async (appUrl, sink) => {
+                    await (
+                        await post(
+                            appUrl,
+                            "/v1/responses",
+                            JSON.stringify({ model: MODEL, stream: true })
+                        )
+                    ).arrayBuffer();
+                    const [settlement] = await sink.waitFor(1);
+                    assert.equal(settlement.kind, "measured");
+                    if (settlement.kind === "measured") {
+                        assert.equal(settlement.inputTokens, 20);
+                        assert.equal(settlement.outputTokens, 10);
+                    }
+                    assert.equal(settlement.quality.completedNormally, false);
+                }
+            );
+        });
+    }
+
     it("asks for usage on a streaming Chat request that turned it off, and meters the usage chunk", async () => {
         let forwarded: any;
         await withApp(
@@ -332,7 +437,9 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
                 assert.equal(settlement.reason, "unobservable");
                 assert.equal(
                     settlement.estimatedTokens,
-                    Math.ceil(Buffer.byteLength(body) / 4) + 4096
+                    Math.ceil(
+                        (Math.ceil(Buffer.byteLength(body) / 6) + 4096) * 0.25
+                    )
                 );
             }
         );
@@ -634,9 +741,10 @@ describe("usage metering in the proxy (#3838 METER-1 to METER-6)", function (thi
 
 describe("metering helpers", () => {
     it("estimates request bytes over bytesPerToken plus the output allowance (METER-4)", () => {
-        assert.equal(estimateTokens(10, "m"), 3 + 4096);
+        assert.equal(estimateTokens(10, "m"), 2 + 4096);
         assert.equal(
             estimateTokens(8, "big", {
+                ...DEFAULT_USAGE_ESTIMATE,
                 bytesPerToken: 2,
                 outputTokens: 100,
                 outputTokensByModel: { big: 1000 }
@@ -650,6 +758,61 @@ describe("metering helpers", () => {
         );
     });
 
+    it("calibrates observed output without discounting generated bytes", () => {
+        // DSH evidence: ~43KB / ~7.5K input tokens (~5.7 bytes/token).
+        const config = DEFAULT_USAGE_ESTIMATE;
+        assert.equal(
+            estimateTokens(43000, MODEL, config, {
+                outputObserved: true,
+                outputBytes: 30,
+                completedNormally: true
+            }),
+            7167 + 5 + 256
+        );
+        assert.equal(
+            estimateTokens(43000, MODEL, config, {
+                outputObserved: true,
+                outputBytes: 30,
+                completedNormally: false
+            }),
+            Math.ceil((7167 + 256) * 0.25) + 5
+        );
+        assert.equal(
+            estimateTokens(
+                0,
+                MODEL,
+                { ...config, incompleteFactor: 0 },
+                {
+                    outputObserved: true,
+                    outputBytes: 30,
+                    completedNormally: false
+                }
+            ),
+            5
+        );
+        assert.equal(
+            estimateTokens(
+                0,
+                MODEL,
+                { ...config, incompleteFactor: 1 },
+                {
+                    outputObserved: true,
+                    outputBytes: 0,
+                    completedNormally: false
+                }
+            ),
+            256
+        );
+        assert.equal(
+            estimateTokens(Number.MAX_SAFE_INTEGER, MODEL, {
+                ...config,
+                bytesPerToken: 1,
+                outputTokens: Number.MAX_SAFE_INTEGER
+            }),
+            Number.MAX_SAFE_INTEGER
+        );
+    });
+
     it("parses estimate settings from the environment", () => {
         assert.deepEqual(parseUsageEstimateConfig({}), DEFAULT_USAGE_ESTIMATE);
         assert.deepEqual(
@@ -659,6 +822,7 @@ describe("metering helpers", () => {
                 USAGE_ESTIMATE_OUTPUT_TOKENS_BY_MODEL: '{"a":10}'
             }),
             {
+                ...DEFAULT_USAGE_ESTIMATE,
                 bytesPerToken: 3,
                 outputTokens: 0,
                 outputTokensByModel: { a: 10 }
@@ -667,6 +831,10 @@ describe("metering helpers", () => {
         for (const env of [
             { USAGE_ESTIMATE_BYTES_PER_TOKEN: "0" },
             { USAGE_ESTIMATE_OUTPUT_TOKENS: "-1" },
+            { USAGE_ESTIMATE_OUTPUT_ALLOWANCE_TOKENS: "-1" },
+            { USAGE_ESTIMATE_INCOMPLETE_FACTOR: "-0.1" },
+            { USAGE_ESTIMATE_INCOMPLETE_FACTOR: "1.1" },
+            { USAGE_ESTIMATE_INCOMPLETE_FACTOR: "NaN" },
             { USAGE_ESTIMATE_OUTPUT_TOKENS_BY_MODEL: "[1]" },
             { USAGE_ESTIMATE_OUTPUT_TOKENS_BY_MODEL: '{"a":1.5}' }
         ]) {

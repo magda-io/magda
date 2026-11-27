@@ -54,9 +54,9 @@ export function parseDecisionCacheSeconds(value: string | undefined): number {
         return DEFAULT_DECISION_CACHE_SECONDS;
     }
     const seconds = Number(value);
-    if (!Number.isInteger(seconds) || seconds < 0 || seconds > 300) {
+    if (!Number.isInteger(seconds) || seconds < 0 || seconds > 30) {
         throw new Error(
-            "DECISION_CACHE_SECONDS must be an integer from 0 to 300"
+            "DECISION_CACHE_SECONDS must be an integer from 0 to 30"
         );
     }
     return seconds;
@@ -97,8 +97,9 @@ export default class CallerAccessResolver {
             options.authApiUrl.replace(/\/$/, "")
         );
         this.cacheMs =
-            (options.decisionCacheSeconds ?? DEFAULT_DECISION_CACHE_SECONDS) *
-            1000;
+            parseDecisionCacheSeconds(
+                options.decisionCacheSeconds?.toString()
+            ) * 1000;
         this.maxCacheEntries = options.maxCacheEntries ?? 10_000;
     }
 
