@@ -41,7 +41,7 @@ The migration adds the unassigned **LLM Profile Managers** role (central managem
 
 ### Partial decision and consistency boundary
 
-On a caller-access cache miss, LLM Services verifies `whoami`, distinguishes Admin Users, and for non-administrators obtains one partial `llm/access/invoke` decision with `input.object.llmAccessProfile` unknown. The flat fields `org_unit_id`, `use_permission_id` and `constraint_exemption` match SQL columns. `AuthDecision.toSql` translates the residual into a parameterised condition on `access_profiles p`; unconditional true/false short-circuits. No Registry record, SQL view or full decision per profile is needed (EVAL-1).
+On a caller-access cache miss, LLM Services verifies `whoami`, distinguishes Admin Users, and for non-administrators obtains one partial `llm/access/invoke` decision with `input.object.llmAccessProfile` unknown. The flat fields `org_unit_id`, `use_permission_id` and `constraint_exemption` match SQL columns. `AuthDecision.toSql` translates the residual into a parameterised condition on `access_profiles p`. An unconditional true removes only the authorization filter, not enabled-state, model or quota checks; false grants no profile access. No Registry record, SQL view or full decision per profile is needed (EVAL-1).
 
 The same access condition drives admission, `GET /v1/models` and usage-report eligibility. Access is cached per user, per process for `decisionCacheSeconds` (default **30**; `0` disables; implementation accepts **0–30**). Grant revocations, org-unit changes and administrator-role changes may take that configured TTL to apply. Profile attributes are read on each query, so profile edits affect subsequent requests without waiting for this cache. Already running requests are not revoked. See [ADR 0014](../adrs/0014-translate-llm-invoke-decisions-to-profile-sql.md) and [caller access implementation](../../../magda-llm-services/src/access/CallerAccess.ts).
 
@@ -51,7 +51,7 @@ The allowlist consists of aliases in `global.llmServices.defaultModel` followed 
 
 A profile names explicit aliases or exactly `["*"]`. Wildcard means the intersection of deployment-allowed and backend-served aliases, including later additions; when the backend's model list cannot be read it falls back to the explicit deployment allowlist. Successful backend lists are cached for 60 seconds and failures for 15 seconds. Explicit profile aliases are validated against available aliases on writes, and remain bounded by the deployment allowlist on requests. An external backend must actually route every configured alias. See [served-model handling](../../../magda-llm-services/src/access/ServedModels.ts).
 
-`GET /v1/models` lists eligible aliases **even if their quota is exhausted**. An empty list means no eligible model, not a zero remaining budget. It is not the same as the manager-only `GET /available-models` picker.
+`GET /v1/models` lists eligible aliases **even if their quota is exhausted**. An empty list means no eligible model, not a zero remaining budget. It is not the same as the profile-reader `GET /available-models` picker.
 
 Each model entry's `reasoningEfforts` maps accepted levels to provider values, or is `false` for a non-reasoning model. Bundled LiteLLM uses the mapped `reasoningEffort`, omitting it for the empty string `""` or a non-reasoning model. Workspace uses the default model unless `agent-services.model` selects another served alias. See [Models](../agent-workspace-deployment.md#models) for field semantics, examples and rollout behaviour.
 
@@ -75,7 +75,7 @@ After forwarding, settlement atomically increments the daily row once with measu
 
 Profiles and usage share the same `llm` database. Non-administrator admission **fails closed** with `503` when its eligibility/usage query cannot be read, including for an unbounded profile; an unlimited budget does not bypass the database authority needed to prove access. This is the accepted read-failure behavior, not a promise of unlimited-profile availability during an outage.
 
-A failed settlement write logs a critical accounting event, is **not retried** (its commit may be uncertain), and gates bounded admissions **in that service process** until a rolled-back write probe passes. This gate is not shared across replicas. Administrators bypass quota admission; an unbounded eligible profile may bypass the write-failure gate only after a successful eligibility read. `/status/ready` checks `SELECT 1`, not accounting completeness or the write gate. See [admission](../../../magda-llm-services/src/access/Admission.ts) and [ledger](../../../magda-llm-services/src/usage/UsageLedger.ts).
+A failed settlement write logs a critical accounting event, is **not retried** (its commit may be uncertain), and gates bounded admissions **in that service process** until a rolled-back write probe passes. This gate is not shared across replicas. Administrators bypass quota admission; an unbounded eligible profile may bypass the write-failure gate only after a successful eligibility read. The service's `/v0/status/ready` checks `SELECT 1`, not accounting completeness or the write gate. See [admission](../../../magda-llm-services/src/access/Admission.ts) and [ledger](../../../magda-llm-services/src/usage/UsageLedger.ts).
 
 ### Metering boundary
 
@@ -90,12 +90,12 @@ if nonempty visible text/tool output was observed:
     fallback = 0
 else:
     visible = 0
-    fallback = outputTokensByModel[alias] or outputTokens
+    fallback = outputTokensByModel[alias] if that override exists, otherwise outputTokens
 factor = 1 for normal completion, otherwise incompleteFactor
 estimated_tokens = visible + ceil((input + fallback) * factor)
 ```
 
-The same configurable byte ratio is used for request input and visible output. No extra output amount is added when visible output has been observed. The `outputTokens` fallback, or its per-alias override, applies **only when no nonempty visible output was observed**.
+The same configurable byte ratio is used for request input and visible output. No extra output amount is added when visible output has been observed. The `outputTokens` fallback, or its per-alias override, applies **only when no nonempty visible output was observed**. An explicitly configured per-alias override of `0` is valid and must not fall back to `outputTokens`.
 
 A failed/incomplete terminal, missing terminal, interruption, unobservable format or observer failure is not normal completion. Visible output is **never discounted**; the incomplete factor applies to estimated input and any fallback output only. Valid final usage remains measured and unchanged, including failed/incomplete terminals; the formula applies only to estimates.
 
@@ -103,7 +103,8 @@ Defaults in the [chart values](../../../deploy/helm/internal-charts/llm-services
 
 - Chat uses one validated final `usage.prompt_tokens` / `completion_tokens` snapshot. Streaming Chat requests ask for usage; Responses requests must not be given Chat `stream_options`.
 - Responses uses `input_tokens` / `output_tokens`, including valid terminal usage on completed, incomplete or failed events. Terminal detection and valid final usage are separate. `[DONE]` and repeated events do not cause additional settlement.
-- Missing, invalid, conflicting, unreadable or oversize usage is **unknown**, not free. A processed request without valid final usage uses the configurable estimate, recorded separately from measured counters. Visible output alone cannot account for hidden reasoning or background generation.
+- Usage snapshots are not summed. Before the terminal, a later valid snapshot may replace an interim one; the first terminal freezes final accounting and later conflicting frames cannot overwrite it. An invalid, malformed or oversize later Chat frame invalidates its provisional usage candidate, so `[DONE]` cannot promote a stale interim zero.
+- Missing, invalid, unreadable or oversize **final** usage is unknown, not free. A processed request without valid final usage uses the configurable estimate, recorded separately from measured counters. Visible output alone cannot account for hidden reasoning or background generation.
 - Requests rejected before forwarding, definite connection/DNS failures and non-2xx upstream answers cost nothing. A request sent upstream with an uncertain outcome may be estimated. Client cancellation after a 2xx response uses valid final usage if already observed, otherwise an estimate.
 - Observation is bounded (default 64 KiB SSE event, 1 MiB non-streaming JSON) and forwards the original bytes through the same backpressure path. Parser buffers are transient; it does not log or persist prompts, model output or tool arguments. An observer runtime failure must not stop forwarding a valid response.
 - A truncated upstream response fails the client's connection; it must not be presented as a normally completed response. Before headers, an upstream connection failure returns `502`. The proxy has a 120-second upstream inactivity timeout and a 2 MiB JSON request-body limit.

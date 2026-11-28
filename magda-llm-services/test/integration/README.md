@@ -4,7 +4,7 @@ This **opt-in API integration harness** connects the real current-source Authori
 
 It complements, rather than replaces, the focused service/policy suites. It does not qualify browser/UI/Gateway/DSH integration or real provider compatibility.
 
-The separate, optional [live browser smoke](./live-browser-smoke.cjs) **does** access a deployment and sends one billable provider request. Its setup and the fresh-install smoke are in the reusable [LLM Services test procedure](../../../docs/docs/e2e-test-cases/llm-services.md). Keep dated results and generated evidence outside tracked source, with the PR or release evidence. The safety/isolation guarantees below apply to `run.mjs`, not that separate operator-invoked live check.
+The separate, optional [live browser smoke](./live-browser-smoke.cjs) **does** access a deployment and sends one model request, which may incur charges when the backend uses a real provider. Its setup and the fresh-install smoke are in the reusable [LLM Services test procedure](../../../docs/docs/e2e-test-cases/llm-services.md). Keep dated results and generated evidence outside tracked source, with the PR or release evidence. The safety/isolation guarantees below apply to `run.mjs`, not that separate operator-invoked live check.
 
 ## Run
 

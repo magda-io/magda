@@ -254,11 +254,15 @@ llm-services:
   litellm:
     enabled: false
   backend:
-    url: https://llm.example/v1
+    url: https://llm.example
     masterKeySecret:
       name: external-litellm-key
       key: master-key
 ```
+
+`backend.url` is the backend root (or deployment prefix), **without `/v1`**:
+LLM Services appends `/v1/models`, `/v1/responses` or `/v1/chat/completions`.
+Including `/v1` in the configured URL would duplicate that path segment.
 
 MAGDA reads the backend's advertised model list when available for wildcard
 coverage and the profile model picker; it cannot guarantee that an external
@@ -652,10 +656,12 @@ compatibility improvements.
 
 3. A Magda authentication plugin or another way to establish a user session,
    and a role assignment granting `agentWorkspace/access` to Workspace users
-   (administrators already have it). `magda-auth-internal` is not a dependency of `magda-core`.
-4. Images for Agent Manager, Agent Runtime, LLM Services, Authorization API,
-   Gateway, Web Server, and Authorization DB Migrator published to a registry
-   accessible by the cluster.
+   (administrators already have it). Ordinary users also need an enabled,
+   covering LLM profile and invoke grant; follow [Set up access deliberately](#set-up-access-deliberately).
+   `magda-auth-internal` is not a dependency of `magda-core`.
+4. Matching images for Agent Manager, Agent Runtime, LLM Services, Authorization
+   API and OPA, Gateway, Web Server, and both the Authorization DB and LLM Services
+   DB migrators published to a registry accessible by the cluster.
 5. A provider API key stored outside Helm values:
 
    ```sh
@@ -804,8 +810,22 @@ helm upgrade --install magda deploy/helm/local-deployment \
   --namespace magda --create-namespace \
   -f deploy/helm/agent-workspace-minikube.yml \
   -f /tmp/agent-workspace-ingress-values.yaml \
-  --timeout 15m --wait
+  --timeout 15m
+
+# After the post-install/post-upgrade migration hooks have completed:
+kubectl -n magda rollout status deployment/llm-services --timeout=5m
+kubectl -n magda rollout status deployment/litellm --timeout=5m
+kubectl -n magda rollout status deployment/authorization-api --timeout=5m
+kubectl -n magda rollout status deployment/gateway --timeout=5m
+kubectl -n magda rollout status deployment/web --timeout=5m
+kubectl -n magda rollout status deployment/agent-manager --timeout=5m
 ```
+
+Do not add `--wait` or `--wait-for-jobs` to this install command. The database
+migrators run as post-install/post-upgrade hooks, while service readiness depends
+on their schema and client login. Waiting for application readiness before those
+hooks run can deadlock a fresh installation. Helm waits for hook Jobs to finish
+without `--wait`; check application readiness afterward as shown above.
 
 Use the browser at `https://magda.test:18443` after configuring your local
 ingress port mapping and hosts entry. Verify `/auth/plugins` lists the internal
@@ -996,20 +1016,28 @@ operator cleanup and does not satisfy the automatic deletion claim.
 
 ### Basic smoke verification
 
-After deployment:
+After deployment, set `MAGDA_NAMESPACE` to the Helm release namespace and
+`SANDBOX_NAMESPACE` to the rendered Sandbox namespace. The named Minikube overlay
+uses `magda` / `magda-agent`; without an explicit
+`global.agentWorkspace.sandboxNamespace`, the default is
+`<release-namespace>-agents` (with collision-safe truncation for long names).
 
 ```sh
-kubectl -n magda rollout status deploy/agent-manager
-kubectl -n magda rollout status deploy/llm-services
-kubectl -n magda rollout status deploy/litellm
-kubectl -n magda-agent get sandboxclaims,sandboxes,pods
+kubectl -n "${MAGDA_NAMESPACE:?}" rollout status deploy/agent-manager
+kubectl -n "${MAGDA_NAMESPACE:?}" rollout status deploy/llm-services
+kubectl -n "${MAGDA_NAMESPACE:?}" rollout status deploy/litellm
+kubectl -n "${SANDBOX_NAMESPACE:?}" get sandboxclaims,sandboxes,pods
 ```
 
-Log in as an administrator or a user with **Agent Workspace Users**, open
-**Settings → Agent Workspace**, start the
+For the ordinary-user check, complete [Set up access deliberately](#set-up-access-deliberately):
+assign **Agent Workspace Users** plus an enabled Public/audience profile covering
+the model, or another eligible invoke grant. The Workspace role alone is not
+sufficient. Log in as that user, open **Settings → Agent Workspace**, start the
 workspace, and wait for `READY`. Verify the managed DSH UI, a real model/tool
 response through `/api/v0/llm/v1/responses`, `mgd auth status`, a Registry read,
-and destructive cleanup of the claim and managed key.
+and destructive cleanup of the claim and managed key. An administrator can run a
+separate connectivity smoke, but its profile/quota bypass does not prove the
+ordinary user's model access works.
 
 This smoke test is not a GKE security qualification. The full lifecycle test and
 mandatory GKE qualification gate—including gVisor, positive/negative networking,
