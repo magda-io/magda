@@ -1,6 +1,6 @@
 # MAGDA LLM Services architecture
 
-**Status:** The opt-in LLM facade and optional LiteLLM deployment are implemented in merged Agent Workspace MVP #3850 on the `next` development branch. Per-user model access profiles, quotas and usage accounting proposed in [#3838](https://github.com/magda-io/magda/issues/3838) are **not** implemented.
+**Scope:** This page describes the merged Agent Workspace MVP #3850 baseline on `next`, including its original Workspace-only gate and allowlist settings. Per-user profiles, soft limits and usage accounting for [#3838](https://github.com/magda-io/magda/issues/3838) are implemented separately in the [#3937 PoC](https://github.com/magda-io/magda/issues/3937), with reconciliation under review in [PR #3973](https://github.com/magda-io/magda/pull/3973), but are not yet merged into `next`. The [living design](../../design/agent-workspace/llm-access-profiles.md) describes that PoC, not the older baseline below; neither this design PR nor PoC status claims production qualification.
 
 ## Component and routing boundary
 
@@ -32,8 +32,8 @@ The caller's Magda authentication does not become a LiteLLM provider credential.
 
 The initial bundled LiteLLM deployment can run without a PostgreSQL, Redis, Admin UI, virtual-key or usage database. Router state/limits may be per replica; this is *not* globally coordinated quota enforcement. Explicit metering and quota guarantees require later implementation and acceptance tests.
 
-## Future model entitlements and quotas (not shipped)
+## Profile and soft-limit PoC (not yet merged into `next`)
 
-[#3838](https://github.com/magda-io/magda/issues/3838) proposes Registry-backed LLM access profiles and typed authorization/usage limits. Do not document profile CRUD, per-user token budgets, quota resetting, dynamic entitlement filtering or model-level rights as present. Future design material is in [the proposed profile design](../../design/agent-workspace/llm-access-profiles.md); it must be reviewed against actual code and security requirements before implementation.
+[#3838](https://github.com/magda-io/magda/issues/3838) now has an implemented PoC: centrally managed profiles in the component-owned PostgreSQL database, role/audience/exemption invoke grants, and approximate per-user, per-model daily, weekly and monthly limits. **Public is not everyone automatically:** it requires an exemption-capable invoke grant. The PoC replaces the Workspace-only invoke gate and old allowlist setting described above. See [the living design](../../design/agent-workspace/llm-access-profiles.md) and [its Settings UI](../../design/agent-workspace/llm-access-profiles-ui.md); the maintained replacement architecture and qualification evidence are under review in [PR #3973](https://github.com/magda-io/magda/pull/3973). Keep this older baseline distinct from that implementation until integration.
 
 See [Workspace architecture](./agent-workspace.md), [Workspace security](./agent-workspace-security.md), [deployment](../agent-workspace-deployment.md) and [Agent Workspace E2E](../e2e-test-cases/agent-workspace.md).
