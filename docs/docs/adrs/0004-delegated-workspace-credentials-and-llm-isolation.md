@@ -3,6 +3,7 @@
 - **Status:** Accepted (implemented in merged #3850)
 - **Date:** 2026-11-04 (recorded retrospectively)
 - **Related:** [#3825](https://github.com/magda-io/magda/issues/3825), [#3850](https://github.com/magda-io/magda/pull/3850)
+- **Amended for LLM invocation:** [ADR 0013](./0013-central-llm-profile-management-and-invoke-grants.md) separates `llm/access/invoke` from Workspace access and records implemented profiles. The Workspace delegation and provider-isolation decisions below remain unchanged; references to future profiles describe the original #3850 state.
 
 ## Context
 

@@ -25,15 +25,14 @@ litellm:
 
 # Usage metering (#3838). Approximate token volume for soft limits, not billing.
 # -- How long, in seconds, a caller's `llm/access/invoke` decision is cached
-# (0 to 300; 0 disables the cache). This is the delay before a revoked grant
+# (0 to 30; 0 disables the cache). This is the delay before a revoked grant
 # stops working. Profile changes apply at once.
 decisionCacheSeconds: 30
 
 noAccessHelp:
-  # -- Optional text shown, after "No AI model access. Contact your
-  # administrator.", to users who can open the Agent Workspace (or My Usage)
-  # but have no eligible model profile, e.g. how to request access. Plain text,
-  # at most 1000 characters.
+  # -- Optional help for users with no eligible model profile in the Agent
+  # Workspace or My Usage. Replaces the default help text, "Please contact
+  # system admin for access." Plain text, at most 1000 characters.
   text: ""
   # -- Optional absolute `http` or `https` link shown with that message, e.g.
   # an access request form.
@@ -45,13 +44,18 @@ usage:
   # deployment without a plan: existing dates aren't reinterpreted.
   timeZone: Australia/Sydney
   estimate:
-    # -- When a model response has no valid final usage (missing, unreadable, or
-    # cut short by a disconnect or timeout), it's charged an estimate:
-    # ceil(request body bytes / bytesPerToken) + outputTokens. Error answers
-    # (any non-2xx status) cost nothing.
-    bytesPerToken: 4
-    # -- Estimated output tokens per request without final usage.
+    # -- Provisional bytes-per-token policy for soft budget control, not a
+    # measured tokenizer or billing value. Used for both request and visible
+    # text/tool output bytes. With visible output, no extra allowance is added.
+    # Otherwise outputTokens (or its per-model override) is the fallback.
+    # Estimate = visible + ceil((input + fallbackIfNoVisibleOutput) * factor).
+    # Valid final usage is measured unchanged; non-2xx answers cost nothing.
+    bytesPerToken: 5
+    # -- Provisional fallback tokens only when no visible output was observed.
     outputTokens: 4096
+    # -- Provisional factor (0 to 1) on input plus fallback for incomplete attempts.
+    # Visible output is never discounted. Normally completed responses use 1.
+    incompleteFactor: 0.25
     # -- Optional per-model-alias override of `outputTokens`, e.g. `{"my-alias": 8192}`.
     outputTokensByModel: {}
   observer:

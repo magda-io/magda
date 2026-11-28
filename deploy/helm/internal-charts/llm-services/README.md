@@ -19,21 +19,22 @@ Kubernetes: `>= 1.24.0-0`
 | backend.masterKeySecret.key | string | `""` |  |
 | backend.masterKeySecret.name | string | `""` |  |
 | backend.url | string | `""` |  |
-| decisionCacheSeconds | int | `30` | How long, in seconds, a caller's `llm/access/invoke` decision is cached (0 to 300; 0 disables the cache). This is the delay before a revoked grant stops working. Profile changes apply at once. |
+| decisionCacheSeconds | int | `30` | How long, in seconds, a caller's `llm/access/invoke` decision is cached (0 to 30; 0 disables the cache). This is the delay before a revoked grant stops working. Profile changes apply at once. |
 | global | object | `{}` |  |
 | image.name | string | `"magda-llm-services"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.tag | string | `""` |  |
 | litellm.enabled | bool | `true` |  |
-| noAccessHelp.text | string | `""` | Optional text shown, after "No AI model access. Contact your administrator.", to users who can open the Agent Workspace (or My Usage) but have no eligible model profile, e.g. how to request access. Plain text, at most 1000 characters. |
+| noAccessHelp.text | string | `""` | Optional help for users with no eligible model profile in the Agent Workspace or My Usage. Replaces the default help text, "Please contact system admin for access." Plain text, at most 1000 characters. |
 | noAccessHelp.url | string | `""` | Optional absolute `http` or `https` link shown with that message, e.g. an access request form. |
 | replicas | int | `1` |  |
 | resources.limits.cpu | string | `"500m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"64Mi"` |  |
-| usage.estimate.bytesPerToken | int | `4` | When a model response has no valid final usage (missing, unreadable, or cut short by a disconnect or timeout), it's charged an estimate: ceil(request body bytes / bytesPerToken) + outputTokens. Error answers (any non-2xx status) cost nothing. |
-| usage.estimate.outputTokens | int | `4096` | Estimated output tokens per request without final usage. |
+| usage.estimate.bytesPerToken | int | `5` | Provisional bytes-per-token policy for soft budget control, not a measured tokenizer or billing value. Used for both request and visible text/tool output bytes. With visible output, no extra allowance is added. Otherwise outputTokens (or its per-model override) is the fallback. Estimate = visible + ceil((input + fallbackIfNoVisibleOutput) * factor). Valid final usage is measured unchanged; non-2xx answers cost nothing. |
+| usage.estimate.incompleteFactor | float | `0.25` | Provisional factor (0 to 1) on input plus fallback for incomplete attempts. Visible output is never discounted. Normally completed responses use 1. |
+| usage.estimate.outputTokens | int | `4096` | Provisional fallback tokens only when no visible output was observed. |
 | usage.estimate.outputTokensByModel | object | `{}` | Optional per-model-alias override of `outputTokens`, e.g. `{"my-alias": 8192}`. |
 | usage.observer.maxEventBytes | int | `65536` | Largest server-sent event, in bytes, the usage observer buffers. A larger event is skipped for metering (still forwarded unchanged). |
 | usage.observer.maxJsonBytes | int | `1048576` | Largest non-streaming JSON response, in bytes, the observer buffers. |

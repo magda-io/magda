@@ -78,6 +78,10 @@ export default class RequestMeter {
         try {
             this.observer = createUsageObserver({
                 format,
+                api:
+                    this.options.endpoint === "/v1/responses"
+                        ? "responses"
+                        : "chat",
                 maxEventBytes: this.options.maxEventBytes,
                 maxJsonBytes: this.options.maxJsonBytes
             });
@@ -169,7 +173,16 @@ export default class RequestMeter {
             malformedEvents: observation.malformedEvents,
             oversizedEvents: observation.oversizedEvents,
             unknownEventTypes: observation.unknownEventTypes,
-            invalidUsageEvents: observation.invalidUsageEvents
+            invalidUsageEvents: observation.invalidUsageEvents,
+            doneMarkers: observation.doneMarkers,
+            terminalType: observation.terminalType,
+            responseStatus: observation.responseStatus,
+            outputBytes: observation.outputBytes,
+            outputObserved: observation.outputObserved,
+            completedNormally:
+                !interrupted &&
+                (observation.terminalType === "chat" ||
+                    observation.terminalType === "response.completed")
         };
         // A non-streaming JSON body is final when it parses with usage; a
         // stream is final only after an authoritative terminal (METER-1).
@@ -196,7 +209,10 @@ export default class RequestMeter {
             modelAlias: this.options.modelAlias,
             requestStartedAt: this.options.requestStartedAt,
             endpoint: this.options.endpoint,
-            quality
+            quality: {
+                requestBodyBytes: this.options.requestBodyBytes,
+                ...quality
+            }
         };
     }
 
@@ -211,7 +227,11 @@ export default class RequestMeter {
             estimatedTokens: estimateTokens(
                 this.options.requestBodyBytes,
                 this.options.modelAlias,
-                this.options.estimate
+                this.options.estimate,
+                {
+                    ...quality,
+                    completedNormally: quality.completedNormally ?? false
+                }
             )
         };
     }

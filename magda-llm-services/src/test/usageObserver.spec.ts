@@ -144,6 +144,78 @@ describe("bounded usage observer (#3838 METER-1, METER-3; from the #3934 PoC)", 
         assert.equal(observe(source + done).missingTerminal, false);
     });
 
+    it("does not promote DONE-only Responses streams or provisional usage to a completed response", () => {
+        for (const source of [
+            done,
+            frame({
+                type: "response.created",
+                response: {
+                    status: "in_progress",
+                    usage: { input_tokens: 10, output_tokens: 0 }
+                }
+            }) + done
+        ]) {
+            const observer = createUsageObserver({
+                format: "sse",
+                api: "responses"
+            });
+            observer.write(Buffer.from(source));
+            const result = observer.finish();
+            assert.equal(result.doneMarkers, 1);
+            assert.equal(result.terminalSeen, false);
+            assert.equal(result.missingTerminal, true);
+            assert.equal(result.usageFinal, false);
+            assert.equal(result.terminalType, undefined);
+        }
+    });
+
+    it("counts UTF-8 text and tool delta bytes, not repeated done snapshots or later frames", () => {
+        const source =
+            frame({ type: "response.output_text.delta", delta: "🐟" }) +
+            frame({
+                type: "response.function_call_arguments.delta",
+                delta: "{}"
+            }) +
+            frame({ type: "response.output_text.done", text: "🐟" }) +
+            frame({
+                type: "response.completed",
+                response: { status: "completed" }
+            }) +
+            done +
+            frame({ type: "response.output_text.delta", delta: "ignored" });
+        for (let split = 0; split <= Buffer.byteLength(source); split++) {
+            const observer = createUsageObserver({
+                format: "sse",
+                api: "responses"
+            });
+            const bytes = Buffer.from(source);
+            observer.write(bytes.subarray(0, split));
+            observer.write(bytes.subarray(split));
+            const result = observer.finish();
+            assert.equal(result.outputBytes, 6);
+            assert.equal(result.outputObserved, true);
+            assert.equal(result.terminalType, "response.completed");
+            assert.equal(result.responseStatus, "completed");
+            assert.equal(result.terminalEvents, 1);
+            assert.equal(result.doneMarkers, 1);
+            assert.ok(!JSON.stringify(result).includes("🐟"));
+        }
+        const chatResult = observe(
+            frame({
+                choices: [
+                    {
+                        delta: {
+                            content: "🐟",
+                            tool_calls: [{ function: { arguments: "{}" } }]
+                        }
+                    }
+                ]
+            }) + done
+        );
+        assert.equal(chatResult.outputBytes, 6);
+        assert.equal(chatResult.terminalType, "chat");
+    });
+
     it("extracts Responses nested terminal usage and validated reasoning/cache subsets", () => {
         const usage = {
             input_tokens: 20,
@@ -351,6 +423,46 @@ describe("bounded usage observer (#3838 METER-1, METER-3; from the #3934 PoC)", 
             assert.equal(result.eventsSeen, 1);
             assert.ok(!JSON.stringify(result).includes("PRIVATE"));
         }
+    });
+
+    it("does not promote stale interim Chat usage after an invalid, malformed or oversize final event", () => {
+        for (const bad of [
+            frame(chat({ prompt_tokens: -1, completion_tokens: 12 })),
+            "data: {bad\n\n",
+            "data: " + "x".repeat(1000) + "\n\n"
+        ]) {
+            const observer = createUsageObserver({
+                format: "sse",
+                api: "chat",
+                maxEventBytes: 512
+            });
+            observer.write(
+                Buffer.from(
+                    frame(chat({ prompt_tokens: 0, completion_tokens: 0 })) +
+                        bad +
+                        done
+                )
+            );
+            const result = observer.finish();
+            assert.equal(result.terminalSeen, true);
+            assert.equal(result.usageFinal, false);
+            assert.equal(result.usage, undefined);
+            // A subsequently valid snapshot before DONE can recover.
+            const recovered = createUsageObserver({
+                format: "sse",
+                api: "chat",
+                maxEventBytes: 512
+            });
+            recovered.write(
+                Buffer.from(frame(chat()) + bad + frame(chat()) + done)
+            );
+            assert.equal(recovered.finish().usageFinal, true);
+        }
+        const empty = observe(
+            frame({ choices: [{ delta: { content: "" } }] }) + done
+        );
+        assert.equal(empty.outputObserved, false);
+        assert.equal(empty.outputBytes, 0);
     });
 
     it("freezes Chat usage at DONE and ignores later conflicting or newly appearing usage", () => {
