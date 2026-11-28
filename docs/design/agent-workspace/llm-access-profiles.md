@@ -5,7 +5,7 @@
 - **Owner:** MAGDA LLM Services. Neither the Registry nor LiteLLM manages profiles or usage.
 - **Related:**
   - [LLM Services architecture](../../docs/architecture/llm-services.md);
-  - [constraint semantics](../../docs/architecture/Guide%20to%20Magda%20Internals.md#what-permission-constraints-are-for) and [constraint exemption](../../docs/architecture/Guide%20to%20Magda%20Internals.md#constraint-exemption);
+  - [constraint semantics](https://github.com/magda-io/magda/blob/next/docs/docs/architecture/Guide%20to%20Magda%20Internals.md#what-permission-constraints-are-for) and [constraint exemption](https://github.com/magda-io/magda/blob/next/docs/docs/architecture/Guide%20to%20Magda%20Internals.md#constraint-exemption);
   - [ADR 0012](../../docs/adrs/0012-typed-access-group-authorisation.md).
 
 Requirements are numbered (e.g. **AUTH-3**) so tickets, PRs and tests can cite them. Everything else is explanation.
@@ -71,7 +71,7 @@ Compared with the earlier Workspace-only access gate, LLM invocation no longer d
   | 3 | Pre-authorised invoke | `use_permission_id` equals the ID of that same permission |
   | 4 | Any invoke permission with `allowExemption=true` | `constraint_exemption` is true (a **public** profile, AUTH-6) |
 
-  Owner-constrained and combined owner + org unit invoke permissions match nothing: profiles have no owner.
+  Owner-constrained and combined owner + org unit constraints provide no ownership-based match: profiles have no owner. Such an invoke permission can still match a Public profile through grant 4 if it independently has `allowExemption=true`.
 
   A decision is only made for **eligible** profiles: enabled, and covering the requested alias (MODEL-2). Passing it is necessary but not sufficient: the request must also pass the quota check (USE-6).
 - **AUTH-5** **Audience meaning of the org unit constraint, for invoke only.** A profile in org unit X is available to every user in X's subtree, i.e. to users whose org unit is X or below X.
@@ -83,7 +83,7 @@ Compared with the earlier Workspace-only access gate, LLM invocation no longer d
   - A parent-unit user who needs a child unit's profile gets it through a role (AUTH-7).
 
   The Auth API adds `input.user.orgUnitAncestorIds` to every decision's OPA input: the user's org unit plus all its ancestors, from `NestedSetModelQueryer.getAllParents(orgUnitId, true)`. It is `[]` for a user without an org unit.
-- **AUTH-6** **Exemption applies to invoke only** (see [constraint exemption](../../docs/architecture/Guide%20to%20Magda%20Internals.md#constraint-exemption)). A manager marks a profile **Public** (`constraint_exemption=true`). The administrator decides who "the public" is, by deciding which roles hold an invoke permission with `allowExemption=true`. Under AUTH-3, exemption has nothing to relax for management operations.
+- **AUTH-6** **Exemption applies to invoke only** (see [constraint exemption](https://github.com/magda-io/magda/blob/next/docs/docs/architecture/Guide%20to%20Magda%20Internals.md#constraint-exemption)). A manager marks a profile **Public** (`constraint_exemption=true`). The administrator decides who "the public" is, by deciding which roles hold an invoke permission with `allowExemption=true`. Under AUTH-3, exemption has nothing to relax for management operations.
 - **AUTH-7** **Each profile has exactly one managed permission**: pre-authorised `llm/access/invoke` on `llm/access`, with `allowExemption=false`, stored as `use_permission_id`. Managers grant a profile by attaching that permission to **existing roles**. There is no managed role per profile, no direct-user grant and no custom permission.
 
   To give individual users access, a user administrator adds them to one of those roles in Settings → Users. That needs the usual `authObject/user/update`, which may be org unit scoped.
@@ -180,7 +180,7 @@ allow {
 
 `llm.usage` allows `llm/usage/read` with `hasNoConstraintPermission` only. Policy tests must cover:
 - each grant type, including wrong resource, wrong operation and wrong flags;
-- an owner-constrained invoke permission matching nothing;
+- an owner-constrained invoke permission denying an ordinary profile, while Public still matches when that invoke permission independently allows exemption;
 - a pre-authorised ID taken from one permission combined with flags from another not matching;
 - the org unit cases in AUTH-5;
 - a profile with no org unit;
@@ -191,7 +191,7 @@ allow {
 
 - **EVAL-1** For invoke, LLM Services makes **one partial decision** per caller: `llm/access/invoke`, with `input.object.llmAccessProfile` unknown, requested with the caller's session through `AuthDecisionQueryClient`.
 
-  The existing `AuthDecision.toSql({ prefixes: ["input.object.llmAccessProfile"], tableRef: "p" })` translates the residual directly into comparisons on `access_profiles` columns (e.g. `COALESCE("p"."org_unit_id"::TEXT = $1::TEXT, false)`), as the Auth API already does for org units. No SQL view and no custom `AspectQuery` are needed. An unconditional `true` (administrators, unconstrained invoke) or `false` result skips the SQL condition.
+  The existing `AuthDecision.toSql({ prefixes: ["input.object.llmAccessProfile"], tableRef: "p" })` translates the residual directly into comparisons on `access_profiles` columns (e.g. `COALESCE("p"."org_unit_id"::TEXT = $1::TEXT, false)`), as the Auth API already does for org units. No SQL view and no custom `AspectQuery` are needed. An unconditional `false` grants no profile access. An unconditional `true` for a non-administrator removes only the authorization filter: enabled state, model coverage and quota checks still apply. Administrators are distinguished through AUTH-10 before the ordinary profile path.
 - **EVAL-2** The same residual drives:
   - request admission (USE-6);
   - `GET /v1/models` (API-9);
@@ -261,9 +261,9 @@ CREATE TABLE daily_model_usage (
   2. Create its permission through the Auth API with that ID (AUTHAPI-4; pre-authorised invoke, `allowExemption=false`). Give it a name that includes the profile name and ID, for administrators; the name is never used as proof of ownership.
   3. Commit.
 
-  If anything fails once step 2 was attempted (the Auth API call, an unknown outcome such as a timeout, or the commit), roll back and make **one** compensating delete of the permission by its ID. If that delete fails too, log it and return the error, without retrying. An ID that turns out to be in use (`409`) is never ours, and is never deleted.
+  If the work fails before commit, attempt to roll back the local transaction. Once step 2 was attempted, an Auth API error, unknown outcome such as a timeout, or failed commit acknowledgement also triggers **one** compensating delete of the permission by its ID. If that delete fails too, log it and return the original error, without retrying. An ID that turns out to be in use (`409`) is never ours, and is never deleted.
 
-  Only a crash between steps 2 and 3 leaves a permission that no profile refers to. No role holds it and no profile matches it, so it grants nothing; this is accepted.
+  This is not a distributed transaction. A crash, failed compensation or Auth request completing after a timeout can leave an unreferenced permission; that permission alone grants no profile access. A lost database commit acknowledgement can instead leave a saved profile whose permission was removed by compensation. Report the error, log the relevant IDs and reload/inspect state before retrying; a missing permission is recovered on the next role attachment (LIFE-5). Never promise that a failed request changed nothing.
 - **LIFE-2** **Update:** managers may change every field (AUTH-3) with an `If-Match` revision. Validate any new `org_unit_id` through the Auth API. Changes apply to later requests; streams already in progress settle normally.
 - **LIFE-3** **Attach or detach a role** (AUTH-8):
   - Attach with `POST /v0/auth/roles/:roleId/permissions/:permissionId`.
@@ -275,7 +275,7 @@ CREATE TABLE daily_model_usage (
   2. Delete the permission together with all its role links, in one Auth API call (AUTHAPI-2). A permission that is already gone counts as deleted.
   3. Commit.
 
-  If step 2 fails, roll back: the profile and its permission are unchanged, and the user can retry. If the commit fails after step 2, the profile remains without a permission, and a retry finishes the delete. Roles and users are never deleted.
+  If step 2 fails, attempt to roll back the local row deletion. A definite Auth API refusal before mutation leaves the permission unchanged; a lost response or timeout may mean its deletion already committed. A failed database commit acknowledgement is also an uncertain outcome: the profile may remain without its permission, or its deletion may already have committed. Reload to distinguish a remaining profile from `404`; retrying a remaining profile can finish because an already-missing permission counts as deleted. Roles and users are never deleted. An error does not guarantee that the profile and permission are both unchanged.
 - **LIFE-5** **A missing permission** is re-created, with the **same** ID, when a role is next attached to the profile. There is no background reconcile.
 
   A permission can go missing because `deleteRole` also deletes permissions that only that role holds. If an administrator deletes the only role holding a profile's permission (the Auth API first requires removing the role from all its users), the permission disappears. Its holders are gone with that role, so re-creating it loses nothing. Until then, the profile simply has no roles: audience, Public and unconstrained access don't use the permission.
@@ -301,7 +301,7 @@ All paths are relative to `/api/v0/llm`. These are the PoC API contracts. Every 
 | API-4 | `GET /access-profiles/:id/role-candidates?q=` | `llm/access/update` | Role picker: ID, name and description only; excludes Anonymous Users, Admin Users and roles already attached |
 | API-5 | `PUT`/`DELETE /access-profiles/:id/roles/:roleId` | `llm/access/update` | Attach or detach (LIFE-3) |
 | API-6 | `GET /available-models` | `llm/access/read` | Deployment-allowed, served aliases, for the profile form |
-| API-7 | `GET /usage/me`, `GET /usage/me/daily` | Any authenticated user; always the session's own user ID | Totals, eligible aliases with remaining quota (USE-8), daily history |
+| API-7 | `GET /usage/me`, `GET /usage/me/daily` | Any authenticated user; always the session's own user ID | Totals, eligible aliases with remaining quota (USE-8), previously used aliases with no current access, daily history |
 | API-8 | `GET /usage/users`, `GET /usage/users/:userId`, `GET /usage/users/:userId/daily` | `llm/usage/read` | Other users' totals, remaining quota and history |
 | API-9 | `GET /v1/models` | Invoke (EVAL-2) | Aliases covered by at least one eligible profile the caller can invoke; administrators see every allowed alias |
 | API-10 | `POST /v1/chat/completions`, `POST /v1/responses` | Invoke + quota (USE-6) | Forward to LiteLLM and meter (METER-*) |
@@ -365,11 +365,11 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
   - Accept final usage from `response.completed` or `response.incomplete`, and from `response.failed` only when it carries a valid snapshot.
   - Count `[DONE]` after a Responses terminal event as a marker, not as another request. **`[DONE]` alone is not a Responses terminal:** a stream ending without `response.completed`, `response.failed` or `response.incomplete` is an incomplete attempt.
   - A Chat `finish_reason` on its own isn't a terminal. Invalid, malformed or oversize later Chat usage must not let `[DONE]` promote an earlier provisional zero or stale snapshot as final usage.
-  - Never sum duplicate, conflicting or provisional usage events.
-  - Usage that is missing, invalid or oversize is **unknown**, never zero.
+  - Never sum duplicate, conflicting or provisional usage events. Before a terminal, a later valid snapshot may replace an interim one. The first terminal freezes final accounting; later conflicting frames cannot overwrite it.
+  - Final usage that is missing, invalid or oversize is **unknown**, never zero.
 - **METER-2** Request handling differs by endpoint:
 
-  | API / mode | Format on the tested route | Handling |
+  | API / mode | Expected usage format | Handling |
   | --- | --- | --- |
   | Chat, non-streaming | `usage.prompt_tokens`, `completion_tokens`, `total_tokens` | Validate, debit once |
   | Chat, streaming | Final usage chunk, then `[DONE]` | Request usage with `stream_options.include_usage=true`; a caller's `false` must not make the call free. The historical 1.81.12 experiment observed that `false` suppressed usage. Provider compatibility still needs route-specific tests; when valid final usage cannot be read, debit an estimate |
@@ -424,8 +424,8 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
 
 ## Deployment
 
-- **DEP-1** The `llm-services-db` chart and `magda-migrator-llm-services-db` image (using `magda-db-migrator`, like session-db and tenant-db) create the `llm` database on combined-db, or on a configured external instance, with their own password Secret and login. No new Postgres server, no Redis, no LiteLLM database. Operators must include this database and its credentials in the normal backup/restore plan; restored usage and profile state remain authoritative.
-- **DEP-2** The Auth objects (AUTH-1, AUTH-11) are seeded by `magda-migrator-authorization-db` migration `V2_6__llm_access_profiles.sql`, because they live in the Auth DB. Deployment needs both service migrators, not only the LLM tables.
+- **DEP-1** The `llm-services-db` chart and `magda-migrator-llm-services-db` image (using `magda-db-migrator`, like session-db and tenant-db) create the component-owned `llm` database and grant its service access through the standard PostgreSQL `client` role and Secret helpers. In combined-db mode the role/password are shared with the combined instance (`combined-db-password`); this is a separate logical database, not a dedicated login or PostgreSQL server. Dedicated/external PostgreSQL uses the configured database topology and credential Secrets. No Redis or LiteLLM database is required. Operators must include this database and the applicable credentials in the normal backup/restore plan; restored usage and profile state remain authoritative.
+- **DEP-2** The Auth objects (AUTH-1, AUTH-11) are seeded by `magda-migrator-authorization-db` migration `V2_6__llm_access_profiles.sql`, because they live in the Auth DB. Deployment needs both service migrators, not only the LLM tables. They run as post-install/post-upgrade hook Jobs: let the hooks finish before checking application readiness. Helm `--wait` can prevent a fresh install from reaching the hooks when readiness depends on the missing schema/client login.
 - **DEP-3** `llm-services` chart values:
   - `usage.timeZone` (`Australia/Sydney`);
   - `usage.estimate.*` (METER-4);
@@ -439,10 +439,11 @@ These rules follow from PoC #3936. They apply to every request that reaches Lite
 These are acceptance cases, **not a claim that every case has passed**. Record the exact revision, component/provider versions, real versus fixture services and PASS / FAIL / SKIPPED outcomes in qualification evidence. Historical observer counts are not current full-feature results; synthetic provider fixtures do not qualify other provider routes.
 
 - **TEST-1** Policy: every case listed under the [policy sketch](#policy-sketch).
-- **TEST-2** Partial evaluation: residuals for each grant type translate into SQL. The SQL selects exactly the profiles a full decision would allow, for the same fixtures. The admin and no-grant results short-circuit.
+- **TEST-2** Partial evaluation: residuals for each grant type translate into SQL. The SQL selects exactly the profiles a full decision would allow, for the same fixtures. No-grant/unconditional false denies access; unconditional non-administrator true still checks profiles and quotas. Only the administrator path bypasses those checks.
 - **TEST-3** Lifecycle:
   - create provisions exactly one correctly flagged permission;
-  - a failed create leaves no profile, and its permission is deleted by ID (including after a lost response or a failed commit); a failed delete leaves the profile unchanged;
+  - definite pre-commit failures roll back local state; failed creates attempt exactly one permission cleanup by ID, never deleting an ID collision;
+  - lost Auth responses, failed compensation and unknown database commit outcomes preserve the LIFE-1/LIFE-4 caveats: verify actual state instead of assuming rollback or guaranteed cleanup;
   - delete removes the permission from every role and never deletes a role or user;
   - after the only holder role is deleted, attaching a role re-creates the permission with the same ID;
   - detaching the last role keeps the permission;

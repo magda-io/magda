@@ -38,7 +38,7 @@ The list is server-side paginated with name search. A **Create profile** button 
 | Name, description | Text | Name required |
 | Models | Multi-select of available aliases (API-6), or the exclusive option **All available models (\*)** | Help: "New models the operator adds become available under \*" |
 | Enabled | Switch | |
-| Org unit (audience) | Searchable org unit picker, or **No org unit** | Each unit is shown with its full path (e.g. *Corporate › Finance › Payroll*). Managers read org units through the stock role (AUTH-11); without that, the picker says no units are visible and offers only **No org unit**. See the help text below |
+| Org unit (audience) | Searchable org unit picker, or **No org unit** | Listed units show their full path (e.g. *Corporate › Finance › Payroll*). Managers read them through the stock role (AUTH-11). An empty listing offers **No org unit**, but an existing audience that cannot be listed is preserved as **Org unit `<ID>`**, not silently cleared. Listing failures show an error and **Retry**. See the help text below |
 | Public | Switch (`constraint_exemption`) | See the help text below |
 | Daily, weekly, monthly limit | Optional non-negative whole numbers (tokens), shown with digit groups (32,343,232) when not being edited | Help: "Per user and per model. Blank means no limit; 0 blocks new requests." Only plain digits or correctly grouped commas are accepted; anything else is a validation error, never a different number |
 
@@ -50,7 +50,7 @@ Saving sends the revision. A stale save shows "This profile was changed by someo
 
 **Delete** asks for confirmation: "Delete profile *X*? Users will lose the access this profile gives, and it will be removed from every role that holds it. Their usage history is kept." It doesn't count the roles: the exact list is on **Roles with access**. If the deletion fails, the dialog stays open with the error, so the user can retry.
 
-Error messages say what failed and whether retrying helps, but never promise that nothing changed. A `503` can come from the Gateway, and an Auth API change can be applied even when its response is lost (LIFE-1, LIFE-3, LIFE-4).
+Error messages should say what failed and whether retrying helps, without promising rollback. A `503` can come from the Gateway, and a mutation can be applied even when its response is lost (LIFE-1, LIFE-3, LIFE-4). Treat a lost or failed response as an uncertain outcome: reload/verify state before retrying. The current PoC's generic save-error heading, "The profile wasn't saved", is not proof that the server rolled back; that copy must not be interpreted as a transaction guarantee.
 
 ### Profile page: Roles with access
 
@@ -73,7 +73,7 @@ The user's own data only. The user ID comes from the session, never from the pag
 | Section | Content |
 | --- | --- |
 | Totals | Total (all time), Today, This week (Monday start), This month |
-| Models | For each alias the user can use: remaining quota (USE-8) overall, and per period for the profile giving it, shown as a number, **Unlimited** or **Exhausted**; measured and estimated tokens shown separately. Note: "When several profiles cover a model, the amount left in each period is that of the profile giving the most remaining." |
+| Models | Eligible aliases **plus aliases with recorded usage**. Eligible aliases show remaining quota (USE-8) overall and per period for the profile giving it, as a number, **Unlimited** or **Exhausted**. Historical aliases without current access retain measured/estimated history and show **No eligible model profile**, without per-period "Left" values. Note: "When several profiles cover a model, the amount left in each period is that of the profile giving the most remaining." |
 | No access | When there's no eligible profile: a **No eligible model profile** message, then the help line (DEP-3): the configured text, or "Please contact system admin for access.", and a **Request access** link only when one is configured |
 | Daily history | Paginated rows: date, model, measured input, measured output, estimated, total. Filter by model and date range |
 
@@ -109,7 +109,7 @@ When the Workspace user has no eligible model (`GET /api/v0/llm/v1/models` retur
 4. The Org unit help text's example matches the behaviour: a user in the profile's unit or a unit below has access; a user in a unit above or in a sibling unit doesn't. A profile with no org unit gives no org unit access.
 5. Public plus the stock "Use LLM profiles" permission gives access to users with no org unit, profile role or other grant. Public without an exemption-capable grant gives nothing.
 6. My Usage appears for a user with any invoke permission. When nothing is eligible it shows "No eligible model profile", not 0. It never shows another user's data, whatever the URL.
-7. With two eligible profiles for a model, remaining is the larger of the two profiles' minimum remaining; Unlimited and Exhausted are shown distinctly.
+7. With two eligible profiles for a model, remaining is the larger of the two profiles' minimum remaining; Unlimited and Exhausted are shown distinctly. An alias with recorded usage but no remaining access keeps its history and shows **No eligible model profile**, not a zero budget or an invocable-model claim.
 8. User Usage is visible and usable only with `llm/usage/read`. Names appear only for viewers who may read users.
 9. A stale profile save shows the reload message and keeps the form contents.
 10. A Workspace user with no eligible model sees the no-access message.
