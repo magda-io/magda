@@ -30,10 +30,9 @@ litellm:
 decisionCacheSeconds: 30
 
 noAccessHelp:
-  # -- Optional text shown, after "No AI model access. Contact your
-  # administrator.", to users who can open the Agent Workspace (or My Usage)
-  # but have no eligible model profile, e.g. how to request access. Plain text,
-  # at most 1000 characters.
+  # -- Optional help for users with no eligible model profile in the Agent
+  # Workspace or My Usage. Replaces the default help text, "Please contact
+  # system admin for access." Plain text, at most 1000 characters.
   text: ""
   # -- Optional absolute `http` or `https` link shown with that message, e.g.
   # an access request form.
